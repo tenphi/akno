@@ -2,11 +2,14 @@ import { open } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, statusLabel, style, truncate } from '../output.ts';
 
-const INGEST_HELP = `akno ingest <path> [options]
+const INGEST_HELP = `akno ingest <path | url> [options]
 
-  Pull a file into memory: extract its text, OCR it if there is no text layer, name it
-  from its contents, summarize it, and route it to a folder. You never run an
-  extraction tool.
+  Pull a file, a folder, or a URL into memory: extract the text, OCR it if there is no
+  text layer, name it from its contents, summarize it, and route it to a folder. You
+  never run an extraction tool.
+
+  A folder is walked one level deep — a recursive pass over a folder pointed at by
+  mistake is a thousand model calls — and every file gets its own verdict.
 
   Extraction uses what macOS already has — PDFKit for a text layer, the Vision
   framework for OCR. A small helper is compiled on first use and cached.
@@ -19,13 +22,23 @@ const INGEST_HELP = `akno ingest <path> [options]
 
   --folder <path>     Put it here, instead of letting routing decide.
   --label <text>      A description for the stored file.
+  --limit <n>         Files to look at when ingesting a folder (default 50).
+  --move              Move the source instead of copying it.
   --actor <who>       user | agent. The user is never gated.
   --json`;
 
 export async function ingestCommand(argv: string[]): Promise<number> {
-  const { values, positionals } = parse<{ folder?: string; label?: string; actor?: string }>(argv, {
+  const { values, positionals } = parse<{
+    folder?: string;
+    label?: string;
+    limit?: string;
+    move: boolean;
+    actor?: string;
+  }>(argv, {
     folder: { type: 'string' },
     label: { type: 'string' },
+    limit: { type: 'string' },
+    move: { type: 'boolean', default: false },
     actor: { type: 'string' },
   });
 
@@ -40,15 +53,41 @@ export async function ingestCommand(argv: string[]): Promise<number> {
   });
 
   try {
+    const target = positionals[0]!;
     const result = await mem.ingest({
-      path: positionals[0]!,
+      // A URL and a path are told apart here rather than by the op, so `./https-notes`
+      // stays a path and does not become a fetch.
+      ...(/^https?:\/\//i.test(target) ? { url: target } : { path: target }),
       ...(values.folder ? { folder: values.folder } : {}),
       ...(values.label ? { label: values.label } : {}),
+      ...(values.limit ? { limit: Number(values.limit) } : {}),
+      ...(values.move ? { route: true } : {}),
     });
 
     if (values.json) {
       json(result);
       return result.outcome === 'ok' || result.outcome === 'duplicate' ? 0 : 2;
+    }
+
+    if (result.batch) {
+      // A folder: one line per file, because three filing themselves and two needing a
+      // decision is not one outcome.
+      heading(result.note ?? `${result.batch.length} files`);
+      const width = Math.max(...result.batch.map((entry) => entry.source.length));
+      for (const entry of result.batch) {
+        const label =
+          entry.outcome === 'ok'
+            ? style.green('filed')
+            : entry.outcome === 'duplicate'
+              ? style.grey('already stored')
+              : entry.outcome === 'error'
+                ? style.red('error')
+                : style.yellow(entry.outcome === 'requires_approval' ? 'needs a home' : 'skipped');
+        line(
+          `  ${entry.source.padEnd(width)}  ${label}  ${style.grey(entry.slug ?? truncate(entry.note ?? '', 60))}`,
+        );
+      }
+      return result.batch.some((entry) => entry.outcome === 'ok') ? 0 : 2;
     }
 
     if (result.outcome === 'duplicate') {

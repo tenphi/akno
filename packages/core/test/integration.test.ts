@@ -367,8 +367,10 @@ describe('input validation', () => {
     await expect(mem.ingest({ path: '/tmp/definitely-not-here.pdf' })).rejects.toThrow(/no file at/);
   });
 
-  it('refuses a URL by name — that part is genuinely not built', async () => {
-    await expect(mem.ingest({ url: 'https://example.com/x.pdf' })).rejects.toThrow(/not implemented/i);
+  it('fetches only http and https', async () => {
+    // `file://` would turn `ingest({url})` into a way to read any path on the machine
+    // through an interface that looks like it fetches the web.
+    await expect(mem.ingest({ url: 'ftp://example.com/x.pdf' })).rejects.toThrow(/only http and https/);
   });
 
   it('validates a write input before doing anything', async () => {
@@ -520,5 +522,119 @@ describe('reserved paths', () => {
     const scratchMem = await openScratch(true);
     expect(fs.readFileSync(path.join(scratch, 'timeline.md'), 'utf8')).toBe(ledger);
     await scratchMem.close();
+  });
+});
+
+/**
+ * §5, §6. A rule is config, not content — so changing one has to reach pages whose files
+ * have not been touched since. Without that, adding `class: excluded` to a folder and
+ * re-indexing reports "everything unchanged" and leaves those pages indexed, searchable
+ * and asserted as facts: the config silently doing nothing.
+ */
+describe('changing a rule', () => {
+  let scratch: string;
+  let scratchState: string;
+
+  const openWith = (folders: Record<string, unknown>): Promise<Akno> =>
+    open({
+      aknoPath: scratch,
+      stateDir: scratchState,
+      isolated: true,
+      overrides: {
+        akno_path: scratch,
+        state_dir: scratchState,
+        providers: {},
+        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+        folders,
+      },
+    });
+
+  beforeEach(() => {
+    scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-rules-kb-'));
+    scratchState = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-rules-state-'));
+    fs.mkdirSync(path.join(scratch, 'logs'), { recursive: true });
+    fs.writeFileSync(path.join(scratch, 'notes.md'), '# Notes\n\nRent is 1111 EUR per month.\n');
+    fs.writeFileSync(path.join(scratch, 'logs/monday.md'), '# Monday\n\nA long transcript of talking.\n');
+    fs.writeFileSync(
+      path.join(scratch, 'logs/declared.md'),
+      '---\nclass: full\n---\n\n# Declared\n\nThis page states its own class.\n',
+    );
+  });
+
+  afterEach(() => {
+    fs.rmSync(scratch, { recursive: true, force: true });
+    fs.rmSync(scratchState, { recursive: true, force: true });
+  });
+
+  it('re-indexes pages whose class moved, without the files changing', async () => {
+    let handle = await openWith({});
+    let report = await handle.index({});
+    expect(report.pagesIndexed).toBe(3);
+    await handle.close();
+
+    // Nothing on disk changed between these two passes. Only the rule did.
+    handle = await openWith({ 'logs/**': { class: 'excluded' } });
+    report = await handle.index({});
+    expect(report.excluded).toBe(1);
+    expect(report.warnings.some((w) => /rules changed/.test(w))).toBe(true);
+
+    const listed = await handle.list({});
+    expect(listed.pages?.map((page) => page.slug) ?? []).not.toContain('logs/monday');
+    // §4: a class the page declares in its own frontmatter outranks any rule, so this one
+    // is not the rule's to move.
+    const declared = await handle.read({ slug: 'logs/declared' });
+    expect(declared.page?.class).toBe('full');
+    await handle.close();
+  });
+
+  it('brings a page back when the rule stops excluding it', async () => {
+    let handle = await openWith({ 'logs/**': { class: 'excluded' } });
+    await handle.index({});
+    await handle.close();
+
+    handle = await openWith({ 'logs/**': { class: 'reference' } });
+    const report = await handle.index({});
+    expect(report.excluded).toBe(0);
+    const page = await handle.read({ slug: 'logs/monday' });
+    expect(page.page?.class).toBe('reference');
+    // Reference pages are still searchable — the class governs what recall pulls in
+    // unprompted, not whether the text is indexed (§5).
+    const found = await handle.recall({ query: 'transcript talking', mode: 'lookup' });
+    expect(found.cards.map((card) => card.slug)).toContain('logs/monday');
+    await handle.close();
+  });
+
+  it('reads rules from the knowledge base without indexing the file that holds them', async () => {
+    // §4. `akno.json` lives inside the notes, and rules travel with them — but the file
+    // is Akno's own configuration, not memory. It was being registered as an attachment
+    // of the root, which is how a taxonomy ends up reported by `doctor` as a document whose
+    // contents could not be extracted.
+    fs.writeFileSync(
+      path.join(scratch, 'akno.json'),
+      JSON.stringify({ folders: { 'logs/**': { class: 'reference' } } }),
+    );
+
+    const handle = await openWith({});
+    await handle.index({});
+
+    const page = await handle.read({ slug: 'logs/monday' });
+    expect(page.page?.class).toBe('reference');
+
+    const report = await handle.doctor({ probeModels: false });
+    expect(report.counts.documents).toBe(0);
+    await handle.close();
+  });
+
+  it('costs nothing when the rules have not moved', async () => {
+    let handle = await openWith({ 'logs/**': { class: 'reference' } });
+    await handle.index({});
+    await handle.close();
+
+    handle = await openWith({ 'logs/**': { class: 'reference' } });
+    const report = await handle.index({});
+    expect(report.pagesIndexed).toBe(0);
+    expect(report.pagesUnchanged).toBe(3);
+    expect(report.warnings.some((w) => /rules changed/.test(w))).toBe(false);
+    await handle.close();
   });
 });

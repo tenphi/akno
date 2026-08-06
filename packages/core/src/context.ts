@@ -31,6 +31,13 @@ export interface AknoContext {
   /** False when another process holds the write handle (§16). */
   writable: boolean;
   lockHeldBy: number | null;
+  /**
+   * Why this handle cannot write, when it cannot. `requested` is a caller asking for a
+   * read-only handle — `doctor` does, so that inspecting a knowledge base never takes the
+   * write lock away from a running service. It is not a problem, and reporting it as one
+   * ("another process holds the write handle") named a process that was never there.
+   */
+  readOnlyReason: 'requested' | 'held' | 'unwritable' | null;
 }
 
 /**

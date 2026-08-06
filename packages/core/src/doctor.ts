@@ -3,6 +3,7 @@ import path from 'node:path';
 import type { AknoContext } from './context.ts';
 import { looksLikeLedger } from './reserved.ts';
 import { extractionCapabilities } from './ingest/extract.ts';
+import { readOnlyExplanation } from './open.ts';
 
 /**
  * §14, §6. What's present, what's degraded, and **what that costs.** The last
@@ -32,6 +33,7 @@ export interface DoctorReport {
   configSources: string[];
   writable: boolean;
   lockHeldBy: number | null;
+  readOnlyReason: 'requested' | 'held' | 'unwritable' | null;
   vectorBackend: 'vec0' | 'fallback';
   counts: {
     pages: number;
@@ -173,7 +175,9 @@ export async function doctor(
   reserved.push({
     path: `${ctx.config.paths.inbox}/`,
     state: fs.existsSync(inboxAbs) ? 'ok' : 'missing',
-    ...(fs.existsSync(inboxAbs) ? {} : { note: 'no drop folder; ingest routing lands with the write path' }),
+    ...(fs.existsSync(inboxAbs)
+      ? {}
+      : { note: 'no drop folder yet — create it, or set `paths.inbox`, and dropped files file themselves' }),
   });
 
   // ── Warnings ─────────────────────────────────────────────────────────────
@@ -194,11 +198,12 @@ export async function doctor(
   if (counts.brokenLinks > 0) {
     warnings.push(`${counts.brokenLinks} wikilinks point at pages that do not exist.`);
   }
-  if (!ctx.writable) {
-    warnings.push(
-      `another process (pid ${ctx.lockHeldBy}) holds the write handle, so this instance is read-only. ` +
-        'Do not run two Aknos against one knowledge base.',
-    );
+  // Only a *surprise* is a warning. `doctor` itself asks for a read-only handle so that
+  // inspecting a knowledge base never takes the write lock from a running service, and
+  // announcing that as a problem — naming a process that does not exist — sent the reader
+  // hunting for a second Akno there was no evidence of.
+  if (!ctx.writable && ctx.readOnlyReason !== 'requested') {
+    warnings.push(`this instance is read-only: ${readOnlyExplanation(ctx.readOnlyReason, ctx.lockHeldBy)}`);
   }
   if (ctx.store.vectors.kind === 'fallback') {
     warnings.push(
@@ -209,6 +214,17 @@ export async function doctor(
   if (counts.pages === 0) {
     warnings.push('the index is empty — run `akno index`.');
   }
+  // A rule is matched against a page's *slug*, which carries no extension, so a glob
+  // ending in `.md` can never match anything. `akno rules` lists it like any other rule,
+  // which makes it look applied — the one thing a config guard should never do.
+  for (const rule of ctx.config.rules) {
+    const extension = ctx.config.pageExtensions.find((ext) => rule.glob.toLowerCase().endsWith(ext));
+    if (!extension) continue;
+    warnings.push(
+      `the rule '${rule.glob}' (${rule.source}) can never match: rules apply to slugs, which have no ` +
+        `extension. Write '${rule.glob.slice(0, -extension.length)}' instead.`,
+    );
+  }
 
   return {
     aknoPath: ctx.config.aknoPath,
@@ -216,6 +232,7 @@ export async function doctor(
     configSources: ctx.config.sources,
     writable: ctx.writable,
     lockHeldBy: ctx.lockHeldBy,
+    readOnlyReason: ctx.readOnlyReason,
     vectorBackend: ctx.store.vectors.kind,
     counts,
     byClass,

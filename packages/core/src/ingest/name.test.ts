@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanSlug, nameIsUseless } from './name.ts';
+import { cleanSlug, nameIsUseless, unslug } from './name.ts';
 
 /**
  * §11. **A good name is left alone.** Renaming is the one destructive thing ingest
@@ -127,5 +127,22 @@ describe('cleanSlug', () => {
     const slug = cleanSlug('a very long answer that goes on and on '.repeat(10));
     expect(slug!.length).toBeLessThanOrEqual(80);
     expect(slug!.endsWith('-')).toBe(false);
+  });
+});
+
+describe('unslug', () => {
+  it('turns a title a model answered with a slug back into words', () => {
+    // Seen on a real ingest of an RFC: the prompt asks for "what a person would call
+    // this" and a small model echoed the slug back. The title is what every recall card
+    // shows, so it is the field where a machine-shaped answer is most visible.
+    expect(unslug('ip-datagrams-on-avian-carriers')).toBe('ip datagrams on avian carriers');
+    expect(unslug('annual_water_statement_2026')).toBe('annual water statement 2026');
+  });
+
+  it('leaves a hyphenated title someone meant alone', () => {
+    // Only fires when there is no space at all, so a real title keeps its hyphens.
+    expect(unslug('Zephyr QX-100 warranty')).toBe('Zephyr QX-100 warranty');
+    expect(unslug('Warranty')).toBe('Warranty');
+    expect(unslug(null)).toBeNull();
   });
 });

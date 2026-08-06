@@ -36,6 +36,16 @@ export interface Store {
 export function openStore(options: StoreOptions): Store {
   fs.mkdirSync(path.dirname(options.dbPath), { recursive: true });
 
+  // A read-only open of a file that is not there fails with SQLite's "unable to open
+  // database file", which reads like a permissions problem on the very first run — when
+  // the real answer is that nothing has been indexed yet.
+  if ((options.readOnly ?? false) && !fs.existsSync(options.dbPath)) {
+    throw new AknoError(
+      'unavailable',
+      `there is no index at ${options.dbPath} yet — run \`akno index\` first`,
+    );
+  }
+
   let db: Database.Database;
   try {
     db = new Database(options.dbPath, { readonly: options.readOnly ?? false });
@@ -127,6 +137,12 @@ function migrate(db: Database.Database): void {
 export interface WriteLock {
   readonly acquired: boolean;
   readonly heldByPid: number | null;
+  /**
+   * Why it was not taken, when it wasn't. "A live process holds it" and "the lock file
+   * could not be written" call for different actions, and reporting the second as the
+   * first sends the user looking for a process that does not exist.
+   */
+  readonly failure?: 'held' | 'unwritable';
   release(): void;
 }
 
@@ -135,7 +151,7 @@ export function acquireWriteLock(lockPath: string): WriteLock {
 
   const existing = readLockPid(lockPath);
   if (existing !== null && existing !== process.pid && isProcessAlive(existing)) {
-    return { acquired: false, heldByPid: existing, release: () => {} };
+    return { acquired: false, heldByPid: existing, failure: 'held', release: () => {} };
   }
 
   try {
@@ -143,7 +159,7 @@ export function acquireWriteLock(lockPath: string): WriteLock {
     // above already proved nothing is behind it.
     fs.writeFileSync(lockPath, String(process.pid), 'utf8');
   } catch {
-    return { acquired: false, heldByPid: existing, release: () => {} };
+    return { acquired: false, heldByPid: null, failure: 'unwritable', release: () => {} };
   }
 
   let released = false;

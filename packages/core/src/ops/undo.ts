@@ -27,6 +27,7 @@ export async function undo(ctx: AknoContext, rawInput: unknown): Promise<UndoOut
   return {
     status: 'ok',
     reversed: reversed.summary,
-    restored: reversed.restored,
+    ...(reversed.restored.length > 0 ? { restored: reversed.restored } : {}),
+    ...(reversed.removed.length > 0 ? { removed: reversed.removed } : {}),
   };
 }

@@ -25,6 +25,12 @@ import { forget as forgetOp } from './ops/forget.ts';
 import { undo as undoOp } from './ops/undo.ts';
 import { move as moveOp } from './ops/move.ts';
 import { ingest as ingestOp } from './ops/ingest.ts';
+import { isInInbox, processInbox, type InboxResult } from './ingest/inbox.ts';
+
+/** Host-facing watch callbacks, including the inbox result the watcher triggers. */
+export interface AknoWatchEvents extends WatcherEvents {
+  onInbox?: (result: InboxResult) => void;
+}
 
 export interface OpenOptions extends LoadOptions {
   /**
@@ -37,7 +43,7 @@ export interface OpenOptions extends LoadOptions {
   writable?: boolean;
   /** Start the FSEvents watcher and the periodic sweep. Off for one-shot commands. */
   watch?: boolean;
-  watchEvents?: WatcherEvents;
+  watchEvents?: AknoWatchEvents;
 }
 
 export interface Akno extends AknoOps {
@@ -62,11 +68,39 @@ export interface Akno extends AknoOps {
   approve(proposalId: string): Promise<{ subject: string; write?: OpResult<'write'> }>;
   /** A declined proposal is remembered, so the agent stops re-asking (§5). */
   decline(proposalId: string): Promise<{ subject: string }>;
+  /**
+   * §11. Process whatever is sitting in an inbox folder: extract, name, route, and move
+   * what finds a home. Safe to call repeatedly — a file that could not be routed stays
+   * put and is reconsidered next time, which is what makes an inbox a to-do list rather
+   * than a queue that loses things.
+   */
+  inbox(options?: { limit?: number }): Promise<InboxResult>;
   /** Force a full reconcile — what a host calls on wake. */
   reconcile(): Promise<void>;
   /** Call any op by name, validating input against the registry. The door path. */
   call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>>;
   close(): Promise<void>;
+}
+
+/**
+ * One sentence for each way a handle can be read-only. Kept in one place because the same
+ * explanation belongs in a thrown error, in `doctor`, and in the CLI, and three copies
+ * would drift into three different claims about what is happening.
+ */
+export function readOnlyExplanation(
+  reason: 'requested' | 'held' | 'unwritable' | null,
+  heldByPid: number | null,
+): string {
+  switch (reason) {
+    case 'held':
+      return `pid ${heldByPid} holds it. Do not run two Aknos against one knowledge base.`;
+    case 'unwritable':
+      return 'the lock file could not be written — check the permissions on the state directory.';
+    case 'requested':
+      return 'this handle was opened read-only.';
+    default:
+      return 'this handle cannot write.';
+  }
 }
 
 /**
@@ -91,11 +125,13 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   let lock: WriteLock | null = null;
   let writable = options.writable !== false;
   let lockHeldBy: number | null = null;
+  let readOnlyReason: AknoContext['readOnlyReason'] = writable ? null : 'requested';
   if (writable) {
     lock = acquireWriteLock(config.lockPath);
     if (!lock.acquired) {
       writable = false;
       lockHeldBy = lock.heldByPid;
+      readOnlyReason = lock.failure ?? 'held';
     }
   }
 
@@ -121,13 +157,25 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     actor: options.actor ?? 'agent',
     writable,
     lockHeldBy,
+    readOnlyReason,
   };
 
   if (writable && config.createReservedPaths) ensureReservedPaths(config);
 
   let watcher: Watcher | null = null;
   if (options.watch && writable && config.watch.enabled) {
-    watcher = new Watcher(config, indexer, options.watchEvents ?? {});
+    watcher = new Watcher(config, indexer, {
+      ...(options.watchEvents ?? {}),
+      // §11: dropping a file in the inbox is the whole interface. Indexing it where it
+      // landed would leave it sitting there forever, which is the one thing an inbox
+      // must not do.
+      onArrival: async (changed) => {
+        const arrivals = changed.filter((relPath) => isInInbox(ctx, relPath));
+        if (arrivals.length === 0) return;
+        const result = await processInbox(ctx, { only: arrivals });
+        options.watchEvents?.onInbox?.(result);
+      },
+    });
     watcher.start();
   }
 
@@ -164,7 +212,10 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     }
 
     if (definition.kind === 'write' && !writable) {
-      throw new AknoError('read_only', `${op} needs the write handle, which pid ${lockHeldBy} is holding`);
+      throw new AknoError(
+        'read_only',
+        `${op} needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+      );
     }
 
     const implementation = implementations[op];
@@ -199,7 +250,10 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     async index(indexOptions: IndexOptions = {}): Promise<IndexReport> {
       if (!writable) {
-        throw new AknoError('read_only', `pid ${lockHeldBy} holds the write handle; cannot index`);
+        throw new AknoError(
+          'read_only',
+          `cannot index — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
       }
       return indexer.run(indexOptions);
     },
@@ -240,6 +294,8 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       ctx.gate.resolve(proposalId, 'declined');
       return { subject: proposal.subject };
     },
+
+    inbox: (inboxOptions) => processInbox(ctx, inboxOptions ?? {}),
 
     async reconcile(): Promise<void> {
       if (watcher) await watcher.reconcileNow();

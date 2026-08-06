@@ -3,11 +3,15 @@ import path from 'node:path';
 import { AknoError, WriteInput, type WriteOutput, type WriteTarget } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 import { parsePage } from '../kb/page.ts';
+import { effectiveRule } from '../rules/compile.ts';
 import { detectConflict } from '../write/conflict.ts';
 import { applyEdit, type BodyEdit } from '../write/edit.ts';
 import { insertEvent, newLedger } from '../write/ledger.ts';
+import { extract } from '../ingest/extract.ts';
+import { excerptOf, provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
+import type { Extraction } from '../ingest/extract.ts';
 
 /**
  * §8, §10. Create, append, patch or replace a page — and the only thing that
@@ -114,6 +118,41 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     ...(edited.firstChangedLine ? { line: edited.firstChangedLine } : {}),
   });
 
+  // §11's storage rules, reached through `write` rather than `ingest`: content-addressed
+  // off the page basename, extracted on arrival, embedded in the page. The difference is
+  // only who chose the destination — here the caller did, so nothing is routed or named.
+  const attached: PendingAttachment[] = [];
+  if (input.documents?.length) {
+    for (const document of input.documents) {
+      const source = path.resolve(document.path);
+      if (!(await fsp.stat(source).catch(() => null))) {
+        throw new AknoError('not_found', `no file to attach at ${source}`);
+      }
+
+      const stored = await storeDocument({ ctx, source, pageSlug: slug, move: false });
+      files.push(stored.file);
+
+      const extraction = await extract({
+        absPath: source,
+        maxOcrPages: ctx.config.ingest.maxOcrPages,
+        maxBytes: ctx.config.ingest.maxFileBytes,
+        ...(ctx.models.vision.available ? { vision: ctx.models.vision } : {}),
+      });
+
+      attached.push({
+        relPath: stored.relPath,
+        extraction,
+        ...(document.label ? { label: document.label } : {}),
+      });
+      wrote.push({ slug, action: 'attached' });
+    }
+
+    // The page has to reference what is now beside it, or the attachment is orphaned from
+    // a reader's point of view even though the index knows about it.
+    const embedded = await appendEmbeds(ctx, relPath, slug, attached, files[0]!);
+    if (embedded) files[0] = embedded;
+  }
+
   // The ledger line and the page land in one change, so §10's promise holds:
   // there is no way to get a ledger line whose detail page was never written.
   if (input.event) {
@@ -139,13 +178,99 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   // The indexer records the file itself as part of indexing it.
   const report = await ctx.indexer.run({ only: files.map((file) => file.relPath) });
 
+  // After indexing: the `documents` rows exist now, so the extraction can be recorded
+  // against them. The row keeps the *whole* text — the body carries a capped excerpt, and
+  // `read({document})` should not be limited by what fits comfortably in a page.
+  const documents = attached.map((entry) => {
+    const id = recordDocument({
+      ctx,
+      relPath: entry.relPath,
+      extraction: entry.extraction,
+      ...(entry.label ? { label: entry.label } : {}),
+    });
+    return { id: id ?? '', rel_path: entry.relPath, text_from: entry.extraction.via };
+  });
+
   return {
     status: 'ok',
     outcome: 'ok',
     change_id: changeId,
     wrote,
     facts: { retired: 0, added: report.factsDerived },
+    ...(documents.length > 0 ? { documents } : {}),
   };
+}
+
+/**
+ * Adds `![[file]]` embeds for attachments the page does not already reference, records
+ * each one's provenance beside it, and puts the extracted text below the page's
+ * `<!-- reference -->` fence.
+ *
+ * The text goes into the body on purpose. §11 promises that a stored document is
+ * searchable by its own content, and search reads chunks, which are derived from
+ * Markdown — text kept only in the `documents` row is text recall cannot reach. §5's own
+ * example is this shape: a short writeup, then the document's wording below the fence,
+ * indexed for search, never mined, never returned whole.
+ *
+ * Appended rather than spliced, with one exception: when the page already has a fence, the
+ * embeds go *above* it and the text below, because an embed is part of the writeup and
+ * everything under the fence is evidence. Otherwise a page's structure belongs to whoever
+ * wrote it, and guessing where an embed "should" go would rewrite their layout.
+ */
+async function appendEmbeds(
+  ctx: AknoContext,
+  relPath: string,
+  slug: string,
+  attached: PendingAttachment[],
+  pageEntry: ChangeFile,
+): Promise<ChangeFile | null> {
+  const current = await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8');
+
+  const embeds: string[] = [];
+  const evidence: string[] = [];
+  for (const entry of attached) {
+    const name = path.basename(entry.relPath);
+    if (!current.includes(name)) {
+      const provenance = provenanceLines(entry.extraction);
+      // Blank line between the embed and its provenance, matching a page `ingest`
+      // composes: a list crammed against an image reads as part of the image's caption.
+      embeds.push(provenance.length > 0 ? `![[${name}]]\n\n${provenance.join('\n')}` : `![[${name}]]`);
+    }
+    const text = excerptOf(entry.extraction);
+    if (text.length > 0) evidence.push(`## ${name}\n\n${text}`);
+  }
+  if (embeds.length === 0 && evidence.length === 0) return null;
+
+  // A page the rules already class as `reference` end to end needs no fence — everything
+  // on it is evidence already, and adding one would claim a distinction that is not there.
+  const wholePageIsReference = effectiveRule(slug, ctx.config.rules).class === 'reference';
+  const fenceAt = current.indexOf(FENCE);
+  const head = fenceAt === -1 ? current : current.slice(0, fenceAt);
+  const tail = fenceAt === -1 ? '' : current.slice(fenceAt);
+
+  let next = head.replace(/\s+$/, '');
+  if (embeds.length > 0) next += `\n\n${embeds.join('\n\n')}`;
+  if (tail.length > 0) {
+    next += `\n\n${tail.replace(/\s+$/, '')}`;
+  } else if (evidence.length > 0 && !wholePageIsReference) {
+    next += `\n\n${FENCE}`;
+  }
+  if (evidence.length > 0) next += `\n\n${evidence.join('\n\n')}`;
+
+  const written = await writeFileAtomic(ctx.config.aknoPath, relPath, `${next}\n`);
+  // The page entry was recorded before the embeds existed; replace its `after` so undo
+  // restores the version that was actually on disk when the change completed.
+  return { ...pageEntry, after: written.after };
+}
+
+const FENCE = '<!-- reference -->';
+
+/** An attachment stored on disk but not yet recorded — the row does not exist until the
+ *  indexer has seen the file. */
+interface PendingAttachment {
+  relPath: string;
+  extraction: Extraction;
+  label?: string;
 }
 
 // ─── Event-only write ───────────────────────────────────────────────────────

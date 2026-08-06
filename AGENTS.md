@@ -32,14 +32,14 @@ benchmark inputs:
 - Verbatim text lifted from a real note, contract, letter, email or legal document.
 - Real product model numbers taken from someone's possessions.
 
-Note what is *not* on that list: `documents/car-insurance-2026`, "renewal date", "lease" — the *shapes* of a
+Note what is _not_ on that list: `documents/car-insurance-2026`, "renewal date", "lease" — the _shapes_ of a
 personal knowledge base. Those are the point of the project and must stay. What has to be invented is the
 **content**.
 
 ### How to write a fixture from a real failure
 
 When something breaks on a real page, the reproduction is almost never the specific words. It is the
-*structure* — a bold-key line, a table row, a hedge word, a line longer than the cap. Extract the structure and
+_structure_ — a bold-key line, a table row, a hedge word, a line longer than the cap. Extract the structure and
 rebuild it from invented parts:
 
 Wrong: paste the line as it appeared, so the fixture is a bold-key frontmatter field from a real identity
@@ -55,20 +55,20 @@ scoreConfidence('- **Warranty:** five years', 'Warranty');
 Note that this example cannot show you the wrong version, because writing it down here would be the leak. That
 is the general shape of the problem: the bad fixture is always the one that is easiest to demonstrate.
 
-A comment naming the real case leaks too. Describe the *shape* — "a bold-key line", not "the passport page".
+A comment naming the real case leaks too. Describe the _shape_ — "a bold-key line", not "the passport page".
 
 ### The shared vocabulary
 
 Use these across the repo so a reader can tell at a glance that a fixture is invented, and so grepping for a
 real name never returns a false positive:
 
-| For | Use |
-|---|---|
-| A person | `Ada Marlow` (`people/ada-marlow`), `Bo Winters` |
-| A company | `Vulpine Mutual` |
-| A product | `Zephyr QX-100` |
-| Money | `1111 EUR`, `2222 EUR`, `€33/month` — obviously placeholder |
-| A place | `Blackwater Bay` |
+| For       | Use                                                         |
+| --------- | ----------------------------------------------------------- |
+| A person  | `Ada Marlow` (`people/ada-marlow`), `Bo Winters`            |
+| A company | `Vulpine Mutual`                                            |
+| A product | `Zephyr QX-100`                                             |
+| Money     | `1111 EUR`, `2222 EUR`, `€33/month` — obviously placeholder |
+| A place   | `Blackwater Bay`                                            |
 
 Repeated digits are chosen on purpose. A number like `1111` announces itself as a placeholder; a plausible,
 irregular figure does not, and a reviewer has no way to tell it apart from a real amount someone actually pays.

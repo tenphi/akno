@@ -50,12 +50,46 @@ function makePdf(text: string): Buffer {
   return Buffer.from(pdf, 'latin1');
 }
 
+/**
+ * A deterministic "topic" embedder: one-hot over a few keyword buckets, so a query and a
+ * page about the same subject score a cosine of 1 and anything else 0.
+ *
+ * Routing thresholds `relevance`, which means these tests need *some* real relevance to
+ * exist — with no embedding model nothing has any, nothing can clear the threshold, and a
+ * test that a file gets filed would be asserting on a code path that cannot run. A live
+ * model cannot be scripted into producing the case under test, and real cosine values are
+ * model-dependent, so the signal is faked and the decision made from it is real.
+ */
+const TOPICS = ['warranty', 'dishwasher', 'water', 'invoice'];
+
+function stubEmbedding(text: string): number[] {
+  const lower = text.toLowerCase();
+  const vector = Array.from({ length: TOPICS.length + 1 }, () => 0);
+  const hit = TOPICS.findIndex((topic) => lower.includes(topic));
+  vector[hit === -1 ? TOPICS.length : hit] = 1;
+  return vector;
+}
+
 async function startStubChat(): Promise<typeof server> {
   let reply: Record<string, unknown> = {};
   const instance = http.createServer((request, response) => {
-    request.resume();
+    const chunks: Buffer[] = [];
+    request.on('data', (chunk: Buffer) => chunks.push(chunk));
     request.on('end', () => {
       response.writeHead(200, { 'content-type': 'application/json' });
+      if (request.url?.includes('/embeddings')) {
+        const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as { input?: unknown };
+        const inputs = Array.isArray(body.input) ? body.input : [String(body.input ?? '')];
+        response.end(
+          JSON.stringify({
+            data: inputs.map((input, index) => ({
+              index,
+              embedding: stubEmbedding(String(input)),
+            })),
+          }),
+        );
+        return;
+      }
       response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reply) } }] }));
     });
   });
@@ -77,6 +111,19 @@ const NAMED = {
   type: 'warranty',
   folder: null,
   confidence: 0.92,
+};
+
+/**
+ * A named document about a subject nothing in this knowledge base mentions, so no folder
+ * can clear `route_threshold` and routing has to refuse.
+ */
+const UNPLACEABLE = {
+  title: 'Meridian water statement 2026',
+  slug: 'water-statement-2026',
+  summary: 'Annual water statement, 214.60 EUR due 12 September 2026.',
+  type: 'statement',
+  folder: null,
+  confidence: 0.9,
 };
 
 beforeEach(async () => {
@@ -105,7 +152,7 @@ beforeEach(async () => {
       state_dir: stateDir,
       providers: { stub: { base_url: server.url } },
       models: {
-        embedding: { id: null },
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
         reranker: { id: null, enabled: false },
         chat: { provider: 'stub', id: 'stub-chat' },
       },
@@ -357,7 +404,7 @@ describe('routing and gating', () => {
   it('leaves a file where it is when nothing scores high enough', async () => {
     // §11: an unrouted file sits visibly where you dropped it. An inbox with three
     // things in it is a to-do list; a misfiled document is a lost one.
-    server.reply({ ...NAMED, summary: 'Entirely unrelated subject matter.', folder: null });
+    server.reply(UNPLACEABLE);
     const result = await mem.ingest({
       path: drop('IMG_4830.pdf', makePdf('Entirely unrelated subject matter, nothing to do with anything.')),
     });
@@ -387,7 +434,7 @@ describe('routing and gating', () => {
         state_dir: stateDir,
         providers: { stub: { base_url: server.url } },
         models: {
-          embedding: { id: null },
+          embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
           reranker: { id: null, enabled: false },
           chat: { provider: 'stub', id: 'stub-chat' },
         },
@@ -400,5 +447,402 @@ describe('routing and gating', () => {
     });
     expect(result.outcome).toBe('requires_approval');
     expect(fs.existsSync(path.join(root, 'warranties'))).toBe(false);
+  });
+});
+
+/**
+ * §11. `ingest` pulls from "a file, a folder, a URL". The folder walk is one level deep
+ * on purpose — a recursive pass over a folder pointed at by mistake is a thousand model
+ * calls and a knowledge base full of pages nobody asked for.
+ */
+describe('a folder', () => {
+  it('gives every file its own verdict', async () => {
+    drop('one.pdf', makePdf('First warranty document, distinct text here.'));
+    drop('two.txt', 'Second document, also about a Zephyr QX-100 warranty.');
+    drop('three.bin', Buffer.from([1, 2, 3]));
+
+    const result = await mem.ingest({ path: inbox, folder: 'home' });
+    expect(result.batch).toHaveLength(3);
+    // Two filing themselves and one skipped is not one outcome, and collapsing it
+    // would lose the one.
+    expect(result.batch!.filter((entry) => entry.outcome === 'ok')).toHaveLength(2);
+    expect(result.batch!.find((entry) => entry.source === 'three.bin')?.outcome).toBe('skipped');
+  });
+
+  it('does not walk into subfolders', async () => {
+    fs.mkdirSync(path.join(inbox, 'deeper'));
+    fs.writeFileSync(path.join(inbox, 'deeper', 'buried.txt'), 'A document buried one level down.');
+    drop('surface.txt', 'A document about the Zephyr QX-100 warranty at the surface.');
+
+    const result = await mem.ingest({ path: inbox, folder: 'home' });
+    expect(result.batch!.map((entry) => entry.source)).toEqual(['surface.txt']);
+  });
+
+  it('reports what it did not look at rather than implying that was all', async () => {
+    for (let i = 0; i < 4; i++) drop(`doc-${i}.txt`, `Distinct warranty document number ${i} for a Zephyr.`);
+    const result = await mem.ingest({ path: inbox, folder: 'home', limit: 2 });
+    expect(result.batch).toHaveLength(2);
+    expect(result.note).toMatch(/2 more were not looked at/);
+  });
+
+  it('keeps going when one file in the folder fails', async () => {
+    drop('installer.dmg', Buffer.from('blocked by rule'));
+    drop('good.txt', 'A perfectly readable document about a Zephyr QX-100 warranty.');
+    const result = await mem.ingest({ path: inbox, folder: 'home' });
+    expect(result.batch!.find((entry) => entry.source === 'installer.dmg')?.outcome).toBe('error');
+    expect(result.batch!.find((entry) => entry.source === 'good.txt')?.outcome).toBe('ok');
+  });
+
+  it('says so when the folder is empty', async () => {
+    const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-empty-'));
+    const result = await mem.ingest({ path: empty, folder: 'home' });
+    expect(result.outcome).toBe('skipped');
+    expect(result.note).toMatch(/holds no files/);
+    fs.rmSync(empty, { recursive: true, force: true });
+  });
+});
+
+describe('a URL', () => {
+  /** A local server, so the suite never reaches the network. */
+  async function serve(handler: (request: http.IncomingMessage, response: http.ServerResponse) => void) {
+    const instance = http.createServer(handler);
+    await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
+    const { port } = instance.address() as { port: number };
+    return {
+      origin: `http://127.0.0.1:${port}`,
+      close: () => new Promise<void>((resolve) => instance.close(() => resolve())),
+    };
+  }
+
+  it('fetches, extracts and files it', async () => {
+    const bytes = makePdf('Warranty certificate for the Zephyr QX-100, fetched over http.');
+    const fixture = await serve((_request, response) => {
+      response.writeHead(200, { 'content-type': 'application/pdf' });
+      response.end(bytes);
+    });
+    try {
+      const result = await mem.ingest({ url: `${fixture.origin}/download`, folder: 'home' });
+      expect(result.outcome).toBe('ok');
+      expect(result.text_from).toBe('text-layer');
+      // Where it came from is the question a downloaded document cannot otherwise answer.
+      const page = fs.readFileSync(path.join(root, `${result.slug}.md`), 'utf8');
+      expect(page).toContain(`source_url: ${fixture.origin}/download`);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('takes the filename from Content-Disposition when there is one', async () => {
+    const fixture = await serve((_request, response) => {
+      response.writeHead(200, {
+        'content-type': 'application/pdf',
+        'content-disposition': 'attachment; filename="zephyr-warranty-2026.pdf"',
+      });
+      response.end(makePdf('Warranty certificate for the Zephyr QX-100.'));
+    });
+    try {
+      // A name that carries information is kept, even when it came from a server.
+      const result = await mem.ingest({ url: `${fixture.origin}/x`, folder: 'home' });
+      expect(result.renamed_from).toBeUndefined();
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('refuses a filename that tries to escape the temp directory', async () => {
+    const fixture = await serve((_request, response) => {
+      response.writeHead(200, {
+        'content-type': 'application/pdf',
+        'content-disposition': 'attachment; filename="../../../etc/passwd"',
+      });
+      response.end(makePdf('Warranty certificate for the Zephyr QX-100.'));
+    });
+    try {
+      // A server chooses this header, so it is untrusted input that becomes a filename.
+      const result = await mem.ingest({ url: `${fixture.origin}/x`, folder: 'home' });
+      expect(result.outcome).toBe('ok');
+      expect(result.rel_path).not.toContain('..');
+      expect(fs.existsSync('/etc/passwd.pdf')).toBe(false);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('enforces the size cap on the bytes that arrive', async () => {
+    const fixture = await serve((_request, response) => {
+      // Chunked, with no Content-Length at all — so there is nothing to trust and the
+      // cap has to hold against the stream itself. (Node's own server would truncate a
+      // body that exceeded a declared Content-Length, so declaring one would test Node.)
+      response.writeHead(200, { 'content-type': 'text/plain' });
+      for (let i = 0; i < 40; i++) response.write('x'.repeat(1_048_576));
+      response.end();
+    });
+    try {
+      await expect(mem.ingest({ url: `${fixture.origin}/big`, folder: 'home' })).rejects.toThrow(
+        /larger than the configured limit/,
+      );
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('reports an http error rather than filing an error page', async () => {
+    const fixture = await serve((_request, response) => {
+      response.writeHead(404);
+      response.end('nope');
+    });
+    try {
+      await expect(mem.ingest({ url: `${fixture.origin}/missing`, folder: 'home' })).rejects.toThrow(/404/);
+    } finally {
+      await fixture.close();
+    }
+  });
+
+  it('refuses a scheme that is not http or https', async () => {
+    await expect(mem.ingest({ url: 'file:///etc/passwd' })).rejects.toThrow(/only http and https/);
+  });
+});
+
+describe('the inbox', () => {
+  /** Drops a file into the knowledge base's own inbox folder, where §11 says it files itself. */
+  function dropInInbox(name: string, content: Buffer | string): string {
+    const absPath = path.join(root, 'inbox', name);
+    fs.mkdirSync(path.dirname(absPath), { recursive: true });
+    fs.writeFileSync(absPath, content);
+    return absPath;
+  }
+
+  it('extracts, names, routes and moves a dropped file out', async () => {
+    // The stub names a folder that exists, which is what lets routing land without an
+    // embedding model. Without one there is no `relevance` to threshold, and refusing to
+    // route is the correct behaviour — see the next test.
+    server.reply({ ...NAMED, folder: 'home' });
+    const source = dropInInbox('Scan 2026-08-06 at 14.22.pdf', makePdf('Warranty for the Zephyr QX-100.'));
+
+    const result = await mem.inbox();
+
+    expect(result.filed).toEqual([
+      { source: 'inbox/Scan 2026-08-06 at 14.22.pdf', slug: 'home/warranty-zephyr-qx100-2026-03' },
+    ]);
+    // Moved, not copied. The inbox is the one place Akno relocates a file, and a file
+    // left behind would be filed again on the next pass.
+    expect(fs.existsSync(source)).toBe(false);
+    expect(fs.existsSync(path.join(root, 'home/warranty-zephyr-qx100-2026-03.md'))).toBe(true);
+    expect(
+      fs.readdirSync(path.join(root, 'home')).some((name) => /^warranty-.*-[0-9a-f]{8}\.pdf$/.test(name)),
+    ).toBe(true);
+  });
+
+  it('does not let the namer overrule a refusal', async () => {
+    // The regression this guards, found on a real knowledge base: below the threshold,
+    // routing fell through to whatever folder the chat model had suggested. The
+    // best-scoring folder was `receipts/` at 0.383 against a threshold of 0.5 — the
+    // refusal was right — and the fallback then filed a water bill into an employment
+    // folder, overriding the refusal with a signal weaker than the rejected one.
+    //
+    // There is no embedding model here, so nothing has a relevance and nothing can clear
+    // the threshold. A suggestion pointing at a folder that exists must still not win.
+    server.reply({ ...UNPLACEABLE, folder: 'home' });
+    const source = dropInInbox('unclear.pdf', makePdf('An annual water statement for the property.'));
+
+    const result = await mem.inbox();
+
+    expect(result.filed).toEqual([]);
+    expect(result.waiting).toHaveLength(1);
+    expect(fs.existsSync(source)).toBe(true);
+    expect(fs.existsSync(path.join(root, 'home/water-statement-2026.md'))).toBe(false);
+  });
+
+  it('leaves an unroutable file in the inbox with a proposal', async () => {
+    // §11: below the threshold it stays in the inbox. An inbox with three things in it is
+    // a to-do list; a misfiled document is a lost one.
+    server.reply(UNPLACEABLE);
+    const source = dropInInbox('unclear.pdf', makePdf('An annual water statement for the property.'));
+
+    const result = await mem.inbox();
+
+    expect(result.filed).toEqual([]);
+    expect(result.waiting).toHaveLength(1);
+    expect(result.waiting[0]!.proposalId).toMatch(/^prop_/);
+    expect(fs.existsSync(source)).toBe(true);
+  });
+
+  it('reconsiders what is still waiting on the next pass', async () => {
+    server.reply(UNPLACEABLE);
+    const source = dropInInbox('unclear.pdf', makePdf('Warranty for the Zephyr QX-100 dishwasher.'));
+    expect((await mem.inbox()).waiting).toHaveLength(1);
+
+    // Nothing was consumed, so the same file is still a candidate — that is what makes the
+    // inbox a to-do list rather than a queue that loses things.
+    server.reply({ ...NAMED, folder: 'home' });
+    const second = await mem.inbox();
+    expect(second.filed).toHaveLength(1);
+    expect(fs.existsSync(source)).toBe(false);
+  });
+
+  it('does not treat a Markdown page in the inbox as an arrival', async () => {
+    // §4 puts a README there, and someone may well write a note about what they dropped.
+    dropInInbox('README.md', '# Inbox\n\nDrop anything here.\n');
+    const result = await mem.inbox();
+    expect(result.filed).toEqual([]);
+    expect(result.skipped).toEqual([
+      { source: 'inbox/README.md', reason: 'a Markdown page, not a dropped document' },
+    ]);
+  });
+
+  it('treats any folder carrying route: true as an inbox', async () => {
+    // `route: true` is what makes a folder an inbox — not its name. A knowledge base that
+    // calls it `dropbox/` gets the same behaviour.
+    const other = await open({
+      aknoPath: root,
+      stateDir,
+      isolated: true,
+      actor: 'user',
+      overrides: {
+        akno_path: root,
+        state_dir: stateDir,
+        providers: { stub: { base_url: server.url } },
+        models: {
+          embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
+          reranker: { id: null, enabled: false },
+          chat: { provider: 'stub', id: 'stub-chat' },
+        },
+        folders: { 'dropbox/**': { ingest: 'auto', route: true } },
+      },
+    });
+    try {
+      server.reply({ ...NAMED, folder: 'home' });
+      fs.mkdirSync(path.join(root, 'dropbox'), { recursive: true });
+      fs.writeFileSync(path.join(root, 'dropbox/thing.pdf'), makePdf('Warranty for the Zephyr QX-100.'));
+
+      // Both are walked: declaring `dropbox/` must not quietly stop `inbox/` from being an
+      // inbox, since §4 creates it with a README promising exactly this behaviour.
+      fs.mkdirSync(path.join(root, 'inbox'), { recursive: true });
+      fs.writeFileSync(path.join(root, 'inbox/note.md'), '# A note\n');
+
+      const result = await other.inbox();
+      expect(result.filed.map((entry) => entry.source)).toEqual(['dropbox/thing.pdf']);
+      expect(result.skipped.map((entry) => entry.source)).toEqual(['inbox/note.md']);
+    } finally {
+      await other.close();
+    }
+  });
+
+  it('reports nothing when there is no inbox on disk', async () => {
+    const result = await mem.inbox();
+    expect(result).toEqual({ filed: [], waiting: [], skipped: [] });
+  });
+});
+
+describe('attachments on write', () => {
+  it('stores, embeds and extracts a document the caller attaches', async () => {
+    const source = drop(
+      'receipt.txt',
+      'Dishwasher repair, 4 August 2026, 180 euro, Meridian Appliance Care.',
+    );
+
+    const result = await mem.write({
+      slug: 'home/dishwasher-repair',
+      title: 'Dishwasher repair',
+      content: 'The Zephyr QX-100 was repaired on 4 August 2026.',
+      documents: [{ path: source, label: 'The invoice' }],
+    });
+
+    expect(result.outcome).toBe('ok');
+    expect(result.wrote?.some((target) => target.action === 'attached')).toBe(true);
+    // Content-addressed off the page basename, so several documents can sit on one page
+    // and `label` stays a description rather than a disambiguator.
+    const stored = result.documents![0]!;
+    expect(stored.rel_path).toMatch(/^home\/dishwasher-repair-[0-9a-f]{8}\.txt$/);
+    expect(stored.text_from).toBe('plain');
+    expect(fs.existsSync(path.join(root, stored.rel_path))).toBe(true);
+    // Copied, not moved: a file handed to `write` was not dropped in an inbox.
+    expect(fs.existsSync(source)).toBe(true);
+
+    const page = fs.readFileSync(path.join(root, 'home/dishwasher-repair.md'), 'utf8');
+    expect(page).toContain(`![[${path.basename(stored.rel_path)}]]`);
+  });
+
+  it('makes the attached text searchable by its own content', async () => {
+    // §11's promise, and the reason the text goes into the body: search reads chunks, and
+    // chunks come from Markdown. Text kept only in the `documents` row is unreachable.
+    const source = drop('policy.txt', 'The Meridian bicycle policy excludes theft from an unlocked shed.');
+    await mem.write({
+      slug: 'home/bicycle',
+      title: 'Bicycle',
+      content: 'A city bike, insured.',
+      documents: [{ path: source }],
+    });
+
+    const found = await mem.recall({ query: 'unlocked shed', mode: 'lookup' });
+    expect(found.cards.map((card) => card.slug)).toContain('home/bicycle');
+  });
+
+  it('puts the document text below the fence and the embed above it', async () => {
+    // §5: above the fence are claims, below is evidence. An embed is part of the writeup.
+    const source = drop('policy.txt', 'Excludes theft from an unlocked shed.');
+    await mem.write({
+      slug: 'home/bicycle',
+      title: 'Bicycle',
+      content: 'A city bike, insured.',
+      documents: [{ path: source }],
+    });
+
+    const page = fs.readFileSync(path.join(root, 'home/bicycle.md'), 'utf8');
+    const fence = page.indexOf('<!-- reference -->');
+    expect(fence).toBeGreaterThan(-1);
+    expect(page.indexOf('![[')).toBeLessThan(fence);
+    expect(page.indexOf('unlocked shed')).toBeGreaterThan(fence);
+  });
+
+  it('keeps a second attachment out of the first one’s fence section', async () => {
+    const first = drop('one.txt', 'The first document mentions a warranty.');
+    await mem.write({
+      slug: 'home/two-files',
+      title: 'Two files',
+      content: 'Two documents belong here.',
+      documents: [{ path: first }],
+    });
+
+    const second = drop('two.txt', 'The second document mentions a service visit.');
+    const result = await mem.write({
+      slug: 'home/two-files',
+      append: 'And a second one arrived.',
+      documents: [{ path: second }],
+    });
+
+    const page = fs.readFileSync(path.join(root, 'home/two-files.md'), 'utf8');
+    // One fence, both embeds above it, both texts below.
+    expect(page.match(/<!-- reference -->/g)).toHaveLength(1);
+    const fence = page.indexOf('<!-- reference -->');
+    expect(page.indexOf(`![[${path.basename(result.documents![0]!.rel_path)}]]`)).toBeLessThan(fence);
+    expect(page.indexOf('service visit')).toBeGreaterThan(fence);
+    expect(page.indexOf('a warranty')).toBeGreaterThan(fence);
+  });
+
+  it('refuses to attach a file that is not there', async () => {
+    await expect(
+      mem.write({
+        slug: 'home/missing-attachment',
+        content: 'Nothing to see.',
+        documents: [{ path: path.join(inbox, 'does-not-exist.pdf') }],
+      }),
+    ).rejects.toThrow(/no file to attach/);
+  });
+
+  it('is undone whole: the page, the stored file and the text together', async () => {
+    const source = drop('receipt.txt', 'Dishwasher repair, 180 euro.');
+    const written = await mem.write({
+      slug: 'home/undo-me',
+      title: 'Undo me',
+      content: 'A page with an attachment.',
+      documents: [{ path: source }],
+    });
+    const stored = written.documents![0]!.rel_path;
+
+    await mem.undo({ change_id: written.change_id! });
+
+    expect(fs.existsSync(path.join(root, 'home/undo-me.md'))).toBe(false);
+    expect(fs.existsSync(path.join(root, stored))).toBe(false);
   });
 });

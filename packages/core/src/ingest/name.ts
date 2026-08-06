@@ -114,7 +114,7 @@ export async function nameDocument(options: NameOptions): Promise<NamedDocument>
   if (!parsed) return { ...empty, error: 'naming returned unparseable JSON' };
 
   const slug = cleanSlug(parsed.slug);
-  const title = cleanText(parsed.title, 120);
+  const title = unslug(cleanText(parsed.title, 120));
   if (!slug || !title) return { ...empty, error: 'naming returned no usable slug or title' };
 
   const suggested = cleanText(parsed.folder, 200);
@@ -129,6 +129,21 @@ export async function nameDocument(options: NameOptions): Promise<NamedDocument>
     confidence: clampConfidence(parsed.confidence),
     error: null,
   };
+}
+
+/**
+ * A title a small model produced by echoing the slug — `ip-datagrams-on-avian-carriers` —
+ * turned back into words.
+ *
+ * The prompt asks for "what a person would call this", and models answer that with a slug
+ * often enough to matter: the title is what every recall card shows, so it is the one
+ * field where a machine-shaped answer is most visible. Only fired when there is no space
+ * at all, so a hyphenated title someone meant — `Zephyr QX-100 warranty` — is untouched.
+ */
+export function unslug(title: string | null): string | null {
+  if (title === null || /\s/.test(title)) return title;
+  if (!/[-_]/.test(title)) return title;
+  return title.replace(/[-_]+/g, ' ');
 }
 
 function cleanText(value: unknown, max: number): string | null {

@@ -134,10 +134,15 @@ export async function runBench(akno: Akno, options: BenchOptions = {}): Promise<
       budgetMs: 50,
       iterations: Math.min(iterations, 5),
       run: () => options.writable!.index({ structuralOnly: true }),
-      skip: () =>
-        options.writable?.writable
-          ? null
-          : 'needs the write handle; another process holds it, or this handle is read-only',
+      // Guessing between "someone else has the lock" and "you did not ask for it" sends
+      // the reader looking for a process that may not exist. The handle knows which it is.
+      skip: () => {
+        if (!options.writable) return 'not measured without a writable handle — rerun with `--write`';
+        if (options.writable.writable) return null;
+        return options.writable.lockHeldBy !== null
+          ? `pid ${options.writable.lockHeldBy} holds the write handle`
+          : 'the write handle could not be taken — check the permissions on the state directory';
+      },
     },
 
     // ── Reported, not asserted: these include a model round trip ──────────────

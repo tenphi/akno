@@ -387,6 +387,25 @@ describe('undo', () => {
     await mem.close();
   });
 
+  it('says which files it put back and which it deleted', async () => {
+    // Two opposite events. A page that no longer exists reported as "restored" tells the
+    // caller a file is there when it is not — and after an undo, that is exactly the thing
+    // they are about to act on.
+    const mem = await openAs('agent');
+
+    const created = await mem.write({ slug: 'home/wifi', content: 'Attic.' });
+    const undoneCreate = await mem.undo({ change_id: created.change_id! });
+    expect(undoneCreate.removed).toEqual(['home/wifi.md']);
+    expect(undoneCreate.restored).toBeUndefined();
+
+    const appended = await mem.write({ slug: 'home/lease', append: '- Deposit: 2222 EUR' });
+    const undoneAppend = await mem.undo({ change_id: appended.change_id! });
+    expect(undoneAppend.restored).toEqual(['home/lease.md']);
+    expect(undoneAppend.removed).toBeUndefined();
+
+    await mem.close();
+  });
+
   it('refuses to undo twice', async () => {
     const mem = await openAs('agent');
     const result = await mem.write({ slug: 'home/lease', append: '- X: 1' });

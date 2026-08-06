@@ -13,6 +13,13 @@ import {
   type SecretRef,
 } from './schema.ts';
 
+/**
+ * §4. The rules file that travels with the notes. Named here rather than inline because
+ * the indexer has to know to skip it: it lives *inside* the knowledge base but is Akno's
+ * own configuration, and indexing it files the taxonomy as a memory object.
+ */
+export const KB_RULES_FILE = 'akno.json';
+
 export interface LoadOptions {
   /** Wins over every file, for `open({ aknoPath })` and `--akno-path`. */
   aknoPath?: string;
@@ -325,7 +332,7 @@ function resolve(
 
   // Rules found in the knowledge base win over machine config, so they can be
   // versioned with the notes and survive a move to another machine (§5).
-  const kbRulesPath = path.join(aknoPath, 'akno.json');
+  const kbRulesPath = path.join(aknoPath, KB_RULES_FILE);
   const kbRules = readJsoncFile<{ folders?: Record<string, unknown>; gate?: string }>(kbRulesPath);
   const rules = compileRules([
     ...ruleLayers,

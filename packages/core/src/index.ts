@@ -5,13 +5,15 @@
  * deep import for a caller who accepts the churn; tests import them relatively.
  */
 
-export { open, type Akno, type OpenOptions } from './open.ts';
+export { open, readOnlyExplanation, type Akno, type OpenOptions } from './open.ts';
 export { loadConfig, type LoadOptions } from './config/load.ts';
 export type { AknoConfig, FolderRule, ResolvedModelRole, ResolvedProvider } from './config/schema.ts';
 export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
 export { runBench, type BenchOptions, type BenchReport, type BenchResult } from './bench.ts';
 export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.ts';
 export type { WatcherEvents } from './watch/watcher.ts';
+export type { AknoWatchEvents } from './open.ts';
+export type { InboxResult } from './ingest/inbox.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 

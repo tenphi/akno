@@ -95,7 +95,7 @@ export class Journal {
    * recreated. Forward order would try to recreate the source while the
    * destination still holds it.
    */
-  async undo(changeId: string): Promise<{ restored: string[]; summary: string }> {
+  async undo(changeId: string): Promise<{ restored: string[]; removed: string[]; summary: string }> {
     const change = this.#store.db.prepare('SELECT * FROM changes WHERE id = ?').get(changeId) as
       { id: string; op: string; summary: string; status: string } | undefined;
     if (!change) throw new AknoError('not_found', `no change with id ${changeId}`);
@@ -114,6 +114,7 @@ export class Journal {
     }[];
 
     const restored: string[] = [];
+    const removed: string[] = [];
     for (const file of files) {
       if (file.snapshot) {
         // A binary: the bytes are in trash, not in the journal.
@@ -124,14 +125,18 @@ export class Journal {
       } else {
         await restoreFile(this.#aknoPath, file.rel_path, file.before);
       }
-      restored.push(file.rel_path);
+      // No prior content and no snapshot means the change created this file, so putting it
+      // back is deleting it. Two opposite outcomes reported under one word is one of them
+      // being reported wrongly.
+      if (!file.snapshot && file.before === null) removed.push(file.rel_path);
+      else restored.push(file.rel_path);
     }
 
     this.#store.db
       .prepare("UPDATE changes SET status = 'undone', undone_at = ? WHERE id = ?")
       .run(new Date().toISOString(), changeId);
 
-    return { restored, summary: change.summary };
+    return { restored, removed, summary: change.summary };
   }
 
   list(limit = 20): ChangeSummary[] {

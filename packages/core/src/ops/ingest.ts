@@ -3,8 +3,10 @@ import path from 'node:path';
 import { AknoError, IngestInput, type IngestOutput } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 import { effectiveRule } from '../rules/compile.ts';
-import { extract } from '../ingest/extract.ts';
-import { nameDocument, nameIsUseless } from '../ingest/name.ts';
+import { extract, type Extraction } from '../ingest/extract.ts';
+import { cleanupFetch, fetchDocument } from '../ingest/fetch.ts';
+import { nameDocument, nameIsUseless, type NamedDocument } from '../ingest/name.ts';
+import { excerptOf, provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { hashFile } from '../kb/scan.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
@@ -13,43 +15,155 @@ import { recall } from './recall.ts';
 import { normalizeSlug } from './write.ts';
 
 /**
- * §11. Pull a document into memory: **extract, OCR, name, summarize, and route.**
+ * §11. Pull documents into memory — **a file, a folder, a URL** — and for each:
+ * extract, OCR, name, summarize, and route.
  *
- * `ingest` is the op that earns the most from living in the layer. §17's list of
- * things usually asked of a model includes "run text extraction and OCR on
- * documents", "give `IMG_4821.HEIC` a name that means something", and "decide where a
- * dropped file belongs" — three prompt instructions replaced by one call that happens
- * every time.
+ * `ingest` is the op that earns the most from living in the layer. §17's list of things
+ * usually asked of a model includes "run text extraction and OCR on documents", "give
+ * `IMG_4821.HEIC` a name that means something", and "decide where a dropped file
+ * belongs" — three prompt instructions replaced by one call that happens every time.
  *
- * Order matters and follows §11: extract first, because everything else depends on
- * having the text; then name from the content; then route; then gate. A file whose
- * text cannot be read is never given a confident name, and one whose destination is
- * unclear is left where it is rather than filed confidently into the wrong place.
+ * Order follows §11: extract first, because everything else depends on having the text;
+ * then name from the content; then route; then gate. A file whose text cannot be read is
+ * never given a confident name, and one whose destination is unclear is left where it is
+ * rather than filed confidently into the wrong place.
  */
 export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<IngestOutput> {
   const input = IngestInput.parse(rawInput);
-  if (input.url) {
-    throw new AknoError('not_implemented', 'ingesting a URL is not implemented; pass a local path');
-  }
+
+  if (input.url) return ingestUrl(ctx, input);
 
   const source = path.resolve(input.path!);
   const stat = await fsp.stat(source).catch(() => null);
   if (!stat) throw new AknoError('not_found', `no file at ${source}`);
-  if (stat.isDirectory()) {
-    throw new AknoError('invalid', 'pass a file; ingesting a whole folder is not implemented');
+
+  if (stat.isDirectory()) return ingestFolder(ctx, input, source);
+  return ingestFile(ctx, input, {
+    source,
+    originalName: path.basename(source),
+    move: input.route ?? false,
+  });
+}
+
+// ─── A URL ──────────────────────────────────────────────────────────────────
+
+async function ingestUrl(
+  ctx: AknoContext,
+  input: ReturnType<typeof IngestInput.parse>,
+): Promise<IngestOutput> {
+  const fetched = await fetchDocument({ url: input.url!, maxBytes: ctx.config.ingest.maxFileBytes });
+  try {
+    return await ingestFile(ctx, input, {
+      source: fetched.path,
+      originalName: fetched.originalName,
+      // The temp copy is ours; moving it saves a copy and leaves nothing behind.
+      move: true,
+      // Worth recording: months later, "where did this come from" is the question a
+      // downloaded document cannot otherwise answer.
+      sourceUrl: fetched.finalUrl,
+    });
+  } finally {
+    await cleanupFetch(fetched);
+  }
+}
+
+// ─── A folder ───────────────────────────────────────────────────────────────
+
+/**
+ * One level deep, deliberately. A recursive walk of a folder someone pointed at by
+ * mistake is a thousand model calls and a knowledge base full of pages nobody asked for;
+ * a flat pass over a downloads folder is the case that actually comes up.
+ *
+ * Every file gets its own verdict. Three filing themselves and two needing a decision is
+ * not one outcome, and collapsing it would lose the two.
+ */
+async function ingestFolder(
+  ctx: AknoContext,
+  input: ReturnType<typeof IngestInput.parse>,
+  folder: string,
+): Promise<IngestOutput> {
+  const limit = input.limit ?? 50;
+  const entries = (await fsp.readdir(folder, { withFileTypes: true }))
+    .filter((entry) => entry.isFile() && !entry.name.startsWith('.'))
+    .map((entry) => entry.name)
+    .sort();
+
+  if (entries.length === 0) {
+    return { status: 'empty', outcome: 'skipped', note: `${folder} holds no files` };
   }
 
-  const extension = path.extname(source).toLowerCase();
+  const batch: NonNullable<IngestOutput['batch']> = [];
+  let landed = 0;
+
+  for (const name of entries.slice(0, limit)) {
+    try {
+      const result = await ingestFile(ctx, input, {
+        source: path.join(folder, name),
+        originalName: name,
+        move: input.route ?? false,
+      });
+      batch.push({
+        source: name,
+        outcome: result.outcome,
+        ...(result.slug ? { slug: result.slug } : {}),
+        ...(result.note ? { note: result.note } : {}),
+      });
+      if (result.outcome === 'ok') landed++;
+    } catch (err) {
+      // One unreadable file must not abandon the rest of the folder.
+      batch.push({
+        source: name,
+        outcome: 'error',
+        note: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+
+  const notLookedAt = entries.length - Math.min(entries.length, limit);
+  return {
+    status: 'ok',
+    outcome: landed > 0 ? 'ok' : 'skipped',
+    batch,
+    // §2: default to visible. A silent cap reads as "that was all of them".
+    note:
+      notLookedAt > 0
+        ? `${landed} of ${Math.min(entries.length, limit)} filed; ${notLookedAt} more were not looked at (--limit)`
+        : `${landed} of ${entries.length} filed`,
+  };
+}
+
+// ─── One file ───────────────────────────────────────────────────────────────
+
+export interface FileSource {
+  source: string;
+  originalName: string;
+  /**
+   * §11: **the inbox is the only place Akno moves files.** A file dropped straight
+   * into `documents/` was put there on purpose; Akno will name it, page it and index
+   * it, but never relocate it. An external file handed to `ingest` is copied, so the
+   * caller still has what they passed.
+   */
+  move: boolean;
+  sourceUrl?: string;
+}
+
+export async function ingestFile(
+  ctx: AknoContext,
+  input: ReturnType<typeof IngestInput.parse>,
+  file: FileSource,
+): Promise<IngestOutput> {
+  const extension = path.extname(file.originalName).toLowerCase();
   if (ctx.config.ingest.blockedExtensions.includes(extension.replace(/^\./, ''))) {
     throw new AknoError('invalid', `${extension} files are not ingested (ingest.blocked_extensions)`);
   }
 
   // ── Dedupe ──────────────────────────────────────────────────────────────
   // §11: re-ingesting a document is a no-op that returns where it already lives.
-  const sha = await hashFile(source);
+  const sha = await hashFile(file.source);
   const existing = ctx.store.db
     .prepare(
-      'SELECT d.id, d.rel_path, p.slug FROM documents d LEFT JOIN pages p ON p.id = d.page_id WHERE d.sha256 = ?',
+      `SELECT d.id, d.rel_path, p.slug FROM documents d
+         LEFT JOIN pages p ON p.id = d.page_id WHERE d.sha256 = ?`,
     )
     .get(sha) as { id: string; rel_path: string; slug: string | null } | undefined;
   if (existing) {
@@ -65,31 +179,28 @@ export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<Inges
 
   // ── Extract ─────────────────────────────────────────────────────────────
   const extraction = await extract({
-    absPath: source,
+    absPath: file.source,
     maxOcrPages: ctx.config.ingest.maxOcrPages,
     maxBytes: ctx.config.ingest.maxFileBytes,
     ...(ctx.models.vision.available ? { vision: ctx.models.vision } : {}),
   });
 
   // ── Name ────────────────────────────────────────────────────────────────
-  const folders = existingFolders(ctx);
   const named =
     extraction.text.length > 0
       ? await nameDocument({
           text: extraction.text,
-          originalName: path.basename(source),
-          folders,
+          originalName: file.originalName,
+          folders: existingFolders(ctx),
           chat: ctx.models.chat,
         })
       : null;
 
-  const keepsOriginalName = !nameIsUseless(path.basename(source));
   const confident = named !== null && named.confidence >= ctx.config.ingest.nameConfidence;
-
-  // §11's second guard. A photo of a garden or a corrupt scan keeps its name, gets no
-  // page, and is flagged rather than given a confident wrong one. Skipping is a
-  // *result*, not a failure — the caller is told exactly which guard fired.
   if (!confident) {
+    // §11's second guard. A photo of a garden or a corrupt scan keeps its name, gets no
+    // page, and is flagged rather than given a confident wrong one. Skipping is a
+    // *result*, not a failure — the caller is told exactly which guard fired.
     return {
       status: extraction.text.length === 0 ? 'degraded' : 'ok',
       outcome: 'skipped',
@@ -107,11 +218,11 @@ export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<Inges
   }
 
   // ── Route ───────────────────────────────────────────────────────────────
-  const destination = await route(ctx, input, named, extraction.text);
+  const destination = await route(ctx, input, named);
   if (destination.kind === 'unrouted') {
-    // §11: an unrouted file sits visibly where you dropped it, rather than being
-    // filed confidently into the wrong place, where you would never look for it. An
-    // inbox with three things in it is a to-do list; a misfiled document is a lost one.
+    // §11: an unrouted file sits visibly where you dropped it, rather than being filed
+    // confidently into the wrong place, where you would never look for it. An inbox with
+    // three things in it is a to-do list; a misfiled document is a lost one.
     return {
       status: 'ok',
       outcome: 'requires_approval',
@@ -119,7 +230,7 @@ export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<Inges
       ...(extraction.pageCount !== null ? { page_count: extraction.pageCount } : {}),
       ocr: extraction.ocr,
       text_from: extraction.via,
-      approval: proposeDestination(ctx, named, destination.nearest, source),
+      approval: proposeDestination(ctx, named, destination.nearest, file),
       note: `nothing scored above ${ctx.config.routeThreshold} — the file stays where it is`,
     };
   }
@@ -127,8 +238,21 @@ export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<Inges
   const folder = destination.folder;
   const pageSlug = normalizeSlug(folder ? `${folder}/${named.slug}` : named.slug);
 
+  // §11: **ingestion behaviour is a rule, not a heuristic**, because the right answer
+  // genuinely differs by folder — a research paper you want mined, a contract you do not.
+  // Declaring it once per folder is cheaper and more predictable than classifying every
+  // arrival with a model.
+  const rule = effectiveRule(pageSlug, ctx.config.rules);
+  if (rule.ingest === 'ignore') {
+    return {
+      status: 'ok',
+      outcome: 'skipped',
+      note: `the rule for '${folder ?? '.'}' says ingest: ignore — the file was left where it is`,
+    };
+  }
+
   // A new folder is gated exactly as a `write` into it would be (§5).
-  const gated = ctx.gate.check(pageSlug, ctx.actor, { path: source, folder });
+  const gated = ctx.gate.check(pageSlug, ctx.actor, { path: file.source, folder });
   if (!gated.allowed) {
     return {
       status: 'ok',
@@ -142,64 +266,53 @@ export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<Inges
   }
 
   // ── Store ───────────────────────────────────────────────────────────────
-  // §11: stored files are content-addressed as `<page-basename>-<sha8>.<ext>`. That
-  // is worth more than it looks — files are unique by construction, several can sit
-  // on one page without ambiguity, and `label` goes back to being a description
-  // rather than a disambiguator.
   const finalSlug = await uniqueSlug(ctx, pageSlug);
-  const attachmentRel = `${finalSlug}-${sha.slice(0, 8)}${extension}`;
-  const pageRel = `${finalSlug}.md`;
-
-  const bytes = await fsp.readFile(source);
-  await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, attachmentRel)), { recursive: true });
-  await fsp.writeFile(path.join(ctx.config.aknoPath, attachmentRel), bytes);
-
-  const rule = effectiveRule(finalSlug, ctx.config.rules);
-  const page = composePage({
-    named,
-    extraction,
-    attachment: path.basename(attachmentRel),
-    // §5's fence: a short human writeup, then the document itself. Everything below
-    // is indexed for search, never mined, never returned whole.
-    fence: rule.class !== 'reference',
+  const stored = await storeDocument({
+    ctx,
+    source: file.source,
+    pageSlug: finalSlug,
+    move: file.move,
   });
-  const written = await writeFileAtomic(ctx.config.aknoPath, pageRel, page);
+  const files: ChangeFile[] = [stored.file];
 
-  const files: ChangeFile[] = [
-    { relPath: attachmentRel, action: 'created', before: null, after: null },
-    { relPath: pageRel, action: 'created', before: null, after: written.after },
-  ];
+  // `ingest: "file"` indexes the bytes and their text with no page at all — for a folder
+  // of media where a stub page per file would be noise, not memory.
+  const wantsPage = rule.ingest !== 'file';
+  let pageRel: string | null = null;
+
+  if (wantsPage) {
+    pageRel = `${finalSlug}.md`;
+    const page = composePage({
+      named,
+      extraction,
+      attachment: path.basename(stored.relPath),
+      ...(file.sourceUrl ? { sourceUrl: file.sourceUrl } : {}),
+      ...(input.label ? { label: input.label } : {}),
+      // §5's fence: a short human writeup, then the document itself. Everything below is
+      // indexed for search, never mined, never returned whole. A page that is already
+      // `reference` end to end needs no fence.
+      fence: rule.class !== 'reference',
+    });
+    const written = await writeFileAtomic(ctx.config.aknoPath, pageRel, page);
+    files.push({ relPath: pageRel, action: 'created', before: null, after: written.after });
+  }
 
   const changeId = ctx.journal.record({
     actor: ctx.actor,
     op: 'ingest',
-    summary: `ingested ${path.basename(source)} as ${finalSlug}`,
+    summary: `ingested ${file.originalName} as ${finalSlug}`,
     files,
   });
 
-  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+  await ctx.indexer.run({ only: files.map((entry) => entry.relPath) });
 
-  const documentId =
-    (
-      ctx.store.db.prepare('SELECT id FROM documents WHERE rel_path = ?').get(attachmentRel) as
-        { id: string } | undefined
-    )?.id ?? `doc_${sha.slice(0, 12)}`;
-
-  // The extracted text belongs in the index, not only in the page body: §11 promises
-  // a stored PDF is searchable by its own content, and the body carries a capped
-  // excerpt so a 40-page contract does not become a 40-page Markdown file.
-  ctx.store.db
-    .prepare(
-      'UPDATE documents SET text = ?, summary = ?, page_count = ?, ocr = ?, label = ? WHERE rel_path = ?',
-    )
-    .run(
-      extraction.text,
-      named.summary,
-      extraction.pageCount,
-      extraction.ocr ? 1 : 0,
-      named.title,
-      attachmentRel,
-    );
+  const documentId = recordDocument({
+    ctx,
+    relPath: stored.relPath,
+    extraction,
+    summary: named.summary,
+    label: input.label ?? named.title,
+  });
 
   const related = destination.related.filter((slug) => slug !== finalSlug).slice(0, 4);
 
@@ -207,14 +320,14 @@ export async function ingest(ctx: AknoContext, rawInput: unknown): Promise<Inges
     status: 'ok',
     outcome: 'ok',
     change_id: changeId,
-    document: documentId,
-    slug: finalSlug,
-    rel_path: attachmentRel,
+    ...(documentId ? { document: documentId } : {}),
+    ...(pageRel ? { slug: finalSlug } : {}),
+    rel_path: stored.relPath,
     summary: named.summary,
     ...(extraction.pageCount !== null ? { page_count: extraction.pageCount } : {}),
     ocr: extraction.ocr,
     text_from: extraction.via,
-    ...(keepsOriginalName ? {} : { renamed_from: path.basename(source) }),
+    ...(nameIsUseless(file.originalName) ? { renamed_from: file.originalName } : {}),
     ...(related.length > 0 ? { related } : {}),
     ...(extraction.note ? { note: extraction.note } : {}),
   };
@@ -228,34 +341,29 @@ type Destination =
 
 /**
  * §11. **Routing is a folder decision, not a page-level one** — Akno picks *where a
- * document belongs*, not what it is called relative to its neighbours. It never
- * invents a new folder to route into; a document with no home clears no threshold and
- * stays put.
- */
-/**
- * §8 step 2 / §11. Routing thresholds **`relevance`, never `score`.**
+ * document belongs*, not what it is called relative to its neighbours. It never invents a
+ * new folder to route into; a document with no home clears no threshold and stays put.
  *
- * `score` orders one result set: the best hit is 1.0 whether it is a perfect match or
- * the least bad of a bad batch. Thresholding it meant every document found a home and
- * §11's "a document with no home stays put" could never fire — routing looked like it
- * worked and was in fact unconditional.
- *
- * `relevance` is absolute when a cross-encoder or the embedding arm supplied one. With
- * neither — a lexical-only search — there is no number to compare, so routing refuses
- * and asks. §19 says the failure this guards against, a fact quietly landing on a
- * plausible wrong page, is invisible until someone reads it back months later; a
- * guess is worse than a question.
+ * Thresholds `relevance`, never `score`. `score` orders one result set: the best hit is
+ * 1.0 whether it is a perfect match or the least bad of a bad batch. Thresholding it
+ * meant every document found a home and "a document with no home stays put" could never
+ * fire — routing looked like it worked and was in fact unconditional.
  */
 async function route(
   ctx: AknoContext,
   input: ReturnType<typeof IngestInput.parse>,
-  named: { summary: string; type: string | null; suggestedFolder: string | null },
-  text: string,
+  named: NamedDocument,
 ): Promise<Destination> {
-  // An explicit destination is the caller's decision, not a guess to second-guess.
-  // Still worth one recall, for the `related` list.
   const result = await recall(ctx, {
-    query: `${named.type ?? 'document'}. ${named.summary} ${text.slice(0, 400)}`,
+    // Title, type and summary — and deliberately *not* the document's raw text.
+    //
+    // Measured on a real 223-page knowledge base: adding 400 characters of extracted text
+    // collapsed the spread across candidate folders from 0.49 to 0.014, with everything
+    // sitting at 0.98–0.99. A query that long resembles everything a little, so nothing
+    // can fail `route_threshold` and the winner is decided by noise — a water bill was
+    // filed under `travel/2026` while the folder holding its own previous statement did
+    // not make the top eight. The threshold was not too low; the query made it unusable.
+    query: routingQuery(named),
     mode: 'lookup',
     limit: 8,
     depth: 'summary',
@@ -265,6 +373,7 @@ async function route(
   });
   const related = result.cards.map((card) => card.slug);
 
+  // An explicit destination is the caller's decision, not a guess to second-guess.
   if (input.folder) {
     return { kind: 'folder', folder: input.folder.replace(/\/+$/, ''), related };
   }
@@ -280,28 +389,50 @@ async function route(
   }
 
   const ranked = [...scored.entries()].sort((a, b) => b[1] - a[1]);
-  const best = ranked[0];
   const nearest =
     ranked.length > 0
       ? ranked.slice(0, 5).map(([folder]) => folder)
       : [...new Set(result.cards.map((card) => card.slug.split('/')[0]!))].slice(0, 5);
 
-  if (best && best[1] >= ctx.config.routeThreshold) {
-    return { kind: 'folder', folder: best[0], related };
+  // Folders the *evidence* supports. Everything below is chosen from this set and never
+  // from outside it, which is the whole content of §11's threshold.
+  const clears = ranked.filter(([, relevance]) => relevance >= ctx.config.routeThreshold);
+
+  if (clears.length > 0) {
+    // The model's suggestion is a tie-breaker among folders that already cleared, not a
+    // candidate of its own. Two independent signals agreeing is worth more than the
+    // ranking's own margin, which between neighbours is often a rounding error.
+    const seconded = clears.find(([folder]) => folder === named.suggestedFolder);
+    return { kind: 'folder', folder: (seconded ?? clears[0]!)[0], related };
   }
 
-  // The model's suggestion is a fallback, and only for a folder that exists — it was
-  // given the list precisely so it could not invent one.
-  if (named.suggestedFolder) return { kind: 'folder', folder: named.suggestedFolder, related };
-
+  // Nothing cleared. The suggestion does **not** get to overrule that.
+  //
+  // It used to: below the threshold, routing fell through to whatever folder the chat
+  // model had named. On a real knowledge base that filed a water bill into an employment
+  // folder — `receipts/` was the top-scoring folder at 0.383 against a threshold of 0.5,
+  // the refusal was correct, and the fallback then overrode it with a signal weaker than
+  // the one that had just been rejected. §11 offers exactly two outcomes here, and
+  // "somewhere plausible" is not one of them: a misfiled document is a lost one.
   return { kind: 'unrouted', nearest, related };
+}
+
+/**
+ * What routing asks about: what the document *is*, not what it says.
+ *
+ * Exported so the shape is pinned by a test. It is a one-line function guarding a
+ * measured cliff — see `route` above — and one well-meant "include a bit of the text for
+ * context" edit puts every folder back at 0.99.
+ */
+export function routingQuery(named: Pick<NamedDocument, 'title' | 'type' | 'summary'>): string {
+  return [named.title, named.type, named.summary].filter(Boolean).join('. ');
 }
 
 function proposeDestination(
   ctx: AknoContext,
-  named: { title: string; slug: string; summary: string },
+  named: NamedDocument,
   nearest: string[],
-  source: string,
+  file: FileSource,
 ): { proposal_id: string; reason: string; nearest: string[] } {
   const id = newPrefixedId('prop');
   ctx.store.db
@@ -314,14 +445,12 @@ function proposeDestination(
       new Date().toISOString(),
       `where does "${named.title}" go?`,
       named.slug,
-      JSON.stringify({ path: source }),
+      // Enough to replay on approval. A fetched temp file is gone by then, which is why
+      // a URL ingest records the URL instead of the path.
+      JSON.stringify(file.sourceUrl ? { url: file.sourceUrl } : { path: file.source }),
       JSON.stringify(nearest),
     );
-  return {
-    proposal_id: id,
-    reason: `"${named.title}" — ${named.summary}`,
-    nearest,
-  };
+  return { proposal_id: id, reason: `"${named.title}" — ${named.summary}`, nearest };
 }
 
 // ─── Page composition ───────────────────────────────────────────────────────
@@ -332,39 +461,22 @@ function proposeDestination(
  * mined, never returned whole.
  */
 function composePage(options: {
-  named: { title: string; summary: string; type: string | null };
-  extraction: {
-    text: string;
-    pageCount: number | null;
-    ocr: boolean;
-    confidence: number | null;
-    via: string;
-  };
+  named: NamedDocument;
+  extraction: Extraction;
   attachment: string;
   fence: boolean;
+  sourceUrl?: string;
+  label?: string;
 }): string {
   const { named, extraction } = options;
   const front = [`title: ${titleCase(named.title)}`];
   if (named.type) front.push(`type: ${named.type}`);
+  // Frontmatter, not prose: a URL is machine-readable provenance, and §4 preserves every
+  // key Akno does not own, so adding one of its own here is safe.
+  if (options.sourceUrl) front.push(`source_url: ${options.sourceUrl}`);
 
-  const facts: string[] = [];
-  if (extraction.pageCount !== null) facts.push(`- Pages: ${extraction.pageCount}`);
-  // §2's cite-or-stay-quiet, applied to provenance. A reader deciding whether to trust
-  // a number below should know whether it was typed, read off a scan, or *described by
-  // a model that looked at a picture* — the last is not the document's own text at all,
-  // and presenting the three the same way is a false claim about where words came from.
-  if (extraction.via === 'ocr') {
-    const confidence =
-      extraction.confidence !== null ? ` (confidence ${extraction.confidence.toFixed(2)})` : '';
-    facts.push(`- Text below: recognised by OCR${confidence}`);
-  } else if (extraction.via === 'vision') {
-    facts.push("- Text below: a model's description of the image, not text found in it");
-  }
-
-  // Capped: the full text lives in the index, which is what search reads. A 40-page
-  // contract pasted into Markdown makes the page unreadable and the repo enormous.
-  const excerpt = extraction.text.slice(0, 20_000);
-  const truncated = extraction.text.length > excerpt.length;
+  const facts = provenanceLines(extraction);
+  if (options.label) facts.push(`- Label: ${options.label}`);
 
   return (
     `---\n${front.join('\n')}\n---\n\n` +
@@ -373,8 +485,7 @@ function composePage(options: {
     `![[${options.attachment}]]\n` +
     (facts.length > 0 ? `\n${facts.join('\n')}\n` : '') +
     (options.fence ? `\n<!-- reference -->\n` : '') +
-    `\n${excerpt}\n` +
-    (truncated ? `\n[…truncated. The full text is in the index and is searchable.]\n` : '')
+    `\n${excerptOf(extraction)}\n`
   );
 }
 
@@ -382,21 +493,17 @@ function composePage(options: {
 
 /**
  * Only the first letter. A model asked for a title often answers in lowercase, and
- * `# car rental invoice` reads as sloppy beside pages a person wrote — but
- * title-casing every word would mangle `Zephyr QX-100` and proper nouns the model got
- * right.
+ * `# car rental invoice` reads as sloppy beside pages a person wrote — but title-casing
+ * every word would mangle `Zephyr QX-100` and proper nouns the model got right.
  */
 function titleCase(title: string): string {
   return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
 function existingFolders(ctx: AknoContext): string[] {
-  const rows = ctx.store.db
-    .prepare(
-      `SELECT DISTINCT substr(slug, 1, length(slug) - length(replace(slug, '/', '')) ) AS x, slug
-         FROM pages WHERE instr(slug, '/') > 0`,
-    )
-    .all() as { slug: string }[];
+  const rows = ctx.store.db.prepare("SELECT slug FROM pages WHERE instr(slug, '/') > 0").all() as {
+    slug: string;
+  }[];
   const folders = new Set<string>();
   for (const row of rows) folders.add(row.slug.slice(0, row.slug.lastIndexOf('/')));
   return [...folders].sort();

@@ -128,6 +128,28 @@ describe('fact lifecycle', () => {
     expect(page.page!.superseded).toBeUndefined();
   });
 
+  /**
+   * The same failure through a different door: an *empty* derivation. Reading "which
+   * source lines are still live" from the incoming facts made zero facts look like every
+   * line vanishing at once, so a page that merely became `reference` — or one where a
+   * small model returned nothing that pass — retired its whole history as superseded on
+   * lines nobody had touched.
+   */
+  it('does not invent supersession when a derivation comes back empty', async () => {
+    server.setFacts([{ line: 7, claim: 'The rent is 1111 EUR per month.' }]);
+    await mem.index({});
+
+    // Same file, byte for byte. This pass simply produced no facts.
+    server.setFacts([]);
+    await mem.index({ rederive: true });
+
+    const page = await mem.read({ slug: 'lease' });
+    expect(page.page!.superseded).toBeUndefined();
+    // Gone, not retired: nothing was superseded, so there is no history to report. The
+    // next pass over the same unchanged line can derive it again.
+    expect(page.page!.lines.find((entry) => entry.text.includes('1111'))?.confidence).toBeUndefined();
+  });
+
   it('supersedes when the source line actually changes', async () => {
     server.setFacts([{ line: 7, claim: 'The rent is 1111 EUR per month.' }]);
     await mem.index({});

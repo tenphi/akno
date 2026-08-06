@@ -108,6 +108,7 @@ export async function undoCommand(argv: string[]): Promise<number> {
     }
     line(`${statusLabel(result.status)} reversed ${style.bold(result.reversed ?? '')}`);
     for (const file of result.restored ?? []) line(`  ${style.green('restored')}  ${file}`);
+    for (const file of result.removed ?? []) line(`  ${style.yellow('removed ')}  ${file}`);
     return 0;
   } finally {
     await mem.close();

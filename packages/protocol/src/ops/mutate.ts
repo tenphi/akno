@@ -60,7 +60,16 @@ export type UndoInput = z.infer<typeof UndoInput>;
 
 export const UndoOutput = ResultEnvelope.extend({
   reversed: z.string().optional(),
+  /** Files whose previous content was put back. */
   restored: z.array(z.string()).optional(),
+  /**
+   * Files the change had created, and which reversing it therefore deleted.
+   *
+   * Separate from `restored` because they are opposite events. Reporting the removal of a
+   * page as "restored" tells the caller a file is there when it is not — and after an
+   * `undo` that is precisely the thing they are about to act on.
+   */
+  removed: z.array(z.string()).optional(),
 });
 export type UndoOutput = z.infer<typeof UndoOutput>;
 
@@ -87,13 +96,21 @@ export type MoveOutput = z.infer<typeof MoveOutput>;
  */
 export const IngestInput = z
   .object({
+    /** A file, or a folder to walk one level deep. */
     path: z.string().optional(),
+    /** An http or https URL. Fetched, then treated as a file. */
     url: z.string().url().optional(),
     /** Destination folder. Omit to let routing decide. */
     folder: z.string().optional(),
-    /** Move the file to where routing says it belongs. The inbox does this by rule. */
+    /**
+     * Move the file instead of copying it. §11: the inbox is the only place Akno
+     * moves files, and it sets this by rule — a file dropped straight into
+     * `documents/` was put there on purpose.
+     */
     route: z.boolean().optional(),
     label: z.string().optional(),
+    /** Cap for a folder walk, so a wrong path cannot start a thousand model calls. */
+    limit: z.number().int().positive().max(500).optional(),
   })
   .refine((v) => Boolean(v.path || v.url), { message: 'ingest requires a path or a url' });
 export type IngestInput = z.infer<typeof IngestInput>;
@@ -119,5 +136,20 @@ export const IngestOutput = ResultEnvelope.extend({
   renamed_from: z.string().optional(),
   related: z.array(z.string()).optional(),
   approval: ApprovalRequest.optional(),
+  /**
+   * One entry per file when a folder was ingested. The outer `outcome` is `ok` if
+   * anything landed — a folder where three files filed themselves and two need a
+   * decision is not a failure, and collapsing it to one verdict would lose the two.
+   */
+  batch: z
+    .array(
+      z.object({
+        source: z.string(),
+        outcome: z.enum(['ok', 'requires_approval', 'duplicate', 'skipped', 'error']),
+        slug: z.string().optional(),
+        note: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 export type IngestOutput = z.infer<typeof IngestOutput>;

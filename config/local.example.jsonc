@@ -54,6 +54,10 @@
   "folders": {
     // "reference/**": { "class": "reference", "ingest": "document" },
     // "conversations/**": { "class": "reference", "rank": 0.5 },
-    // "templates/**": { "class": "excluded" }
+    // "templates/**": { "class": "excluded" },
+    //
+    // An inbox: drop anything here and it files itself. `route: true` is what makes
+    // it one, and it is the only place Akno moves files.
+    // "inbox/**": { "ingest": "auto", "route": true }
   }
 }

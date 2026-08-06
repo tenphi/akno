@@ -5,6 +5,11 @@ import type { Indexer, IndexReport } from '../index/indexer.ts';
 
 export interface WatcherEvents {
   onIndexed?: (report: IndexReport, changed: string[]) => void;
+  /**
+   * Files that appeared or changed, after they have been indexed. §11's inbox hangs off
+   * this: a dropped file has to be *acted on*, not merely noticed.
+   */
+  onArrival?: (changed: string[]) => Promise<void>;
   onError?: (error: Error) => void;
 }
 
@@ -140,6 +145,9 @@ export class Watcher {
         ...(wholeTree ? {} : { only: changed }),
       });
       this.#events.onIndexed?.(report, changed);
+      // After indexing, so an inbox handler sees a knowledge base that already knows
+      // about the file it is about to move.
+      if (this.#events.onArrival) await this.#events.onArrival(changed);
     } catch (error) {
       this.#events.onError?.(error as Error);
     } finally {

@@ -58,7 +58,7 @@ export type WriteInput = z.infer<typeof WriteInput>;
 export const WriteTarget = z.object({
   slug: z.string(),
   line: z.number().int().positive().optional(),
-  action: z.enum(['created', 'appended', 'patched', 'replaced', 'superseded', 'event']),
+  action: z.enum(['created', 'appended', 'patched', 'replaced', 'superseded', 'event', 'attached']),
 });
 export type WriteTarget = z.infer<typeof WriteTarget>;
 
@@ -90,6 +90,10 @@ export const WriteOutput = ResultEnvelope.extend({
   change_id: z.string().optional(),
   wrote: z.array(WriteTarget).optional(),
   facts: z.object({ retired: z.number().int(), added: z.number().int() }).optional(),
+  /** Attachments stored by this write, content-addressed and extracted (§11). */
+  documents: z
+    .array(z.object({ id: z.string(), rel_path: z.string(), text_from: z.string().optional() }))
+    .optional(),
   conflict: ConflictReport.optional(),
   approval: ApprovalRequest.optional(),
 });

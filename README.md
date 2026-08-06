@@ -9,9 +9,9 @@ or any editor, with no import step and no proprietary store.
 Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
 event and link from the Markdown.
 
-> **Status: all ten ops work.** Indexing, watching, retrieval, the write path, and `ingest` with extraction and
-> OCR are implemented and tested against a real 223-page knowledge base. What remains is the maintenance cycle
-> and the inbox — see [What is not built yet](#what-is-not-built-yet).
+> **Status: every op works.** Indexing, watching, retrieval, the write path, the inbox, and `ingest` from a file,
+> a folder or a URL — with extraction and OCR — are implemented and tested against a real 223-page knowledge
+> base. What remains is the maintenance cycle — see [What is not built yet](#what-is-not-built-yet).
 
 ---
 
@@ -111,7 +111,8 @@ run.
 
 ## The ops
 
-Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one.
+Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one. Plus
+`context`, the pre-turn bundle, normally called by the host rather than by the agent.
 
 | Op         |     | What it does                                                                                                                                                     |
 | ---------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -120,15 +121,15 @@ Ten, small on purpose: every additional op is another chance for an agent to pic
 | `list`     | ✅  | Browse structure: folders, pages by type/tag/class/recency, or a tree outline.                                                                                   |
 | `timeline` | ✅  | When things happened — by range, subject, or match.                                                                                                              |
 | `context`  | ✅  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
-| `write`    | ⬜  | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
-| `remember` | ⬜  | Hand over a transcript; Akno runs the retain mission and produces the writes.                                                                                  |
-| `forget`   | ⬜  | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
-| `undo`     | ⬜  | Reverse a change by id.                                                                                                                                          |
-| `move`     | ⬜  | Relocate a page with its documents.                                                                                                                              |
-| `ingest`   | ⬜  | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                   |
+| `write`    | ✅  | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
+| `remember` | ✅  | Hand over a transcript; Akno runs the retain mission and produces the writes.                                                                                  |
+| `forget`   | ✅  | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
+| `undo`     | ✅  | Reverse a change by id.                                                                                                                                          |
+| `move`     | ✅  | Relocate a page with its documents.                                                                                                                              |
+| `ingest`   | ✅  | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                   |
 
-`⬜` ops validate their input against the final schema, then return `not_implemented`. They are advertised over
-every door, so a caller can discover them today and will not need to change when they land.
+Every op is advertised over every door from one registry, with its schema, so a caller discovers what exists
+rather than being told in prose.
 
 ## Three doors, one registry
 
@@ -239,12 +240,9 @@ build time, recall accuracy and a second structure to keep in sync, to save mill
 Named honestly, because a README that implies more than exists is the same failure mode Akno is built to
 prevent:
 
-- **The inbox.** `ingest` files what you hand it, but nothing watches a drop folder yet, so `route: true` on
-  `inbox/**` does nothing. Attachments that predate ingest are discovered and attached to their page but not
-  extracted; `doctor` says how many.
 - **The maintenance cycle** (`dream`, `observe`, `reflect`), including §8's thorough offline conflict pass.
-- **Ingesting a URL or a folder.** `ingest` takes one local file; both other forms return `not_implemented`.
-- **Attachments on `write`.** The `documents` field is accepted by the schema and ignored — use `ingest`.
+- **Extracting attachments that predate Akno.** They are discovered and attached to their page, but their
+  contents are not searchable until you re-add one with `akno ingest <path>`. `doctor` says how many there are.
 
 ## Documents
 
@@ -285,6 +283,61 @@ Stored files are content-addressed as `<page-basename>-<sha8>.<ext>`, so they ar
 re-ingesting the same bytes is a no-op that tells you where they already live. Every page records **where its
 text came from** — a text layer, OCR with its confidence, or a vision model's _description_ — because those are
 different claims and reporting them identically would be a false one.
+
+### A file, a folder, or a URL
+
+```bash
+akno ingest ~/Downloads/policy.pdf          # one file
+akno ingest ~/Downloads --limit 20          # one level deep, a verdict per file
+akno ingest https://example.com/policy.pdf  # fetched, then treated identically
+```
+
+A folder is walked **one level deep**. A recursive pass over a folder someone pointed at by mistake is a
+thousand model calls and a knowledge base full of pages nobody asked for; a flat pass over `~/Downloads` is the
+case that actually comes up. Every file gets its own verdict, one unreadable file does not abandon the rest, and
+a `--limit` that cut the pass short says so — a silent cap reads as "that was all of them".
+
+A URL is fetched with three limits worth naming: **http and https only** (`file://` would make `ingest` a way to
+read any path on the machine through something that looks like it fetches the web), the size cap applies to
+**the bytes that arrive** rather than to the `Content-Length` a server claims, and the filename comes from
+`Content-Disposition`, then the URL, then the content type — each of which can be useless, which is fine,
+because naming happens from the content anyway. The final URL lands in the page's `source_url`, since "where did
+this come from" is the one question a downloaded document cannot otherwise answer.
+
+### The inbox
+
+A folder where you drop anything and it files itself. `route: true` is what makes a folder an inbox — not its
+name:
+
+```jsonc
+"folders": {
+  "inbox/**": { "ingest": "auto", "route": true }
+}
+```
+
+`akno serve` processes arrivals as they land; `akno inbox` does a one-off pass on a machine that is not
+running the service. Above `route_threshold` the file and its page move to where they belong. Below it, the file
+**stays in the inbox** with a proposal — visible where you dropped it, rather than filed confidently into the
+wrong place where you would never look for it.
+
+**The inbox is the only place Akno moves files.** A file dropped straight into `documents/` was put there on
+purpose: Akno will name it, page it and index it, but never relocate it. Every move is journalled and
+reversible with `akno undo`.
+
+### Attachments on `write`
+
+`write` takes documents too, for when the caller already knows where something belongs:
+
+```bash
+akno write --slug home/dishwasher --append "Repaired on 4 August." \
+             --attach ~/Desktop/receipt.pdf=The invoice
+```
+
+The file is copied in beside the page, content-addressed off it, extracted, embedded with `![[…]]`, and its text
+placed below the page's `<!-- reference -->` fence — where it is indexed for search but never mined for facts and
+never returned whole. That last part is why the text goes into the Markdown rather than only into the index:
+search reads chunks, chunks come from Markdown, and text kept only in the database is text recall cannot reach.
+Nothing is routed or named, because the caller already decided both.
 
 ## Platform
 

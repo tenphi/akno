@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { open } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
@@ -17,6 +18,10 @@ const WRITE_HELP = `akno write [options]
                         Also append a timeline line, in the same change.
   --title / --type / --tag <t,...> / --link <slug,...>
                         Frontmatter for a page being created.
+  --attach <path[=label]>
+                        Attach a file, repeatable. It is copied in beside the page,
+                        named after it, and its text is extracted and indexed — so a
+                        PDF you attach is searchable by its own contents.
   --actor <who>         user | agent. The user is never gated; default agent.
   --resolve-conflict <token>
                         Proceed past a conflict you have already asked about.
@@ -36,6 +41,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
     type?: string;
     tag?: string;
     link?: string;
+    attach?: string[];
     actor?: string;
     'resolve-conflict'?: string;
     'dry-run': boolean;
@@ -51,6 +57,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
     type: { type: 'string' },
     tag: { type: 'string' },
     link: { type: 'string' },
+    attach: { type: 'string', multiple: true },
     actor: { type: 'string' },
     'resolve-conflict': { type: 'string' },
     'dry-run': { type: 'boolean', default: false },
@@ -96,6 +103,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
       ...(values.type ? { type: values.type } : {}),
       ...(values.tag ? { tags: values.tag.split(',').map((t) => t.trim()) } : {}),
       ...(values.link ? { links: values.link.split(',').map((l) => l.trim()) } : {}),
+      ...(values.attach?.length ? { documents: values.attach.map(parseAttachment) } : {}),
       ...(values['resolve-conflict'] ? { resolve_conflict: values['resolve-conflict'] } : {}),
       ...(values['dry-run'] ? { dry_run: true } : {}),
     });
@@ -122,6 +130,7 @@ export function printWriteOutcome(result: {
   change_id?: string;
   wrote?: { slug: string; line?: number; action: string }[];
   facts?: { retired: number; added: number };
+  documents?: { id: string; rel_path: string; text_from?: string }[];
   conflict?: { slug: string; line: number; existing: string; incoming: string; token: string };
   approval?: { proposal_id: string; reason: string; nearest: string[] };
   note?: string;
@@ -166,11 +175,32 @@ export function printWriteOutcome(result: {
     const where = target.line ? `${target.slug}:${target.line}` : target.slug;
     line(`  ${style.green(target.action.padEnd(9))} ${where}`);
   }
+  for (const document of result.documents ?? []) {
+    // Which extractor produced the text is not a detail: a vision model's description of
+    // a photograph is not the same claim as a PDF's own text layer.
+    line(
+      `  ${style.green('stored'.padEnd(9))} ${document.rel_path} ${document.text_from ? style.grey(`(text: ${document.text_from})`) : ''}`,
+    );
+  }
   if (result.facts && result.facts.added > 0) {
     line(style.grey(`  ${result.facts.added} fact(s) derived from the new lines`));
   }
   if (result.note) line(style.grey(`  ${result.note}`));
   return 0;
+}
+
+/**
+ * `path` or `path=label`. Split at the last `=` and only when the left side is a file
+ * that exists, because a path may legitimately contain one and a wrong guess would
+ * silently attach the wrong thing — or nothing.
+ */
+function parseAttachment(raw: string): { path: string; label?: string } {
+  const at = raw.lastIndexOf('=');
+  if (at > 0) {
+    const candidate = raw.slice(0, at);
+    if (fs.existsSync(candidate)) return { path: candidate, label: raw.slice(at + 1) };
+  }
+  return { path: raw };
 }
 
 function parseEvent(raw: string): { date: string; summary: string } | null {

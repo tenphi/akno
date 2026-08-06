@@ -121,6 +121,25 @@ export async function derivePage(
   };
 }
 
+/**
+ * The hash of every non-blank line of the page body, trimmed exactly as the deriver sees a
+ * line before hashing it.
+ *
+ * This is what tells "the sentence that made this claim is gone" apart from "this
+ * derivation did not repeat it" — the first is a supersession, the second is not, and §7
+ * hangs the difference between retiring a fact and deleting it on exactly that. Answered
+ * from the page rather than from the incoming facts, because a derivation that returns
+ * nothing at all says nothing about whether the page still says what it said.
+ */
+export function bodyLineHashes(page: ParsedPage): Set<string> {
+  const out = new Set<string>();
+  for (const raw of page.lines) {
+    const text = raw.trim();
+    if (text.length > 0) out.add(sha256(text));
+  }
+  return out;
+}
+
 /** Lines eligible for fact mining: above the fence, non-blank, not a heading. */
 function mineableLines(page: ParsedPage): { line: number; text: string }[] {
   const out: { line: number; text: string }[] = [];

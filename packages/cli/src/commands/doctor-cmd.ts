@@ -1,4 +1,4 @@
-import { open } from '@akno/core';
+import { open, readOnlyExplanation } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, ms, style } from '../output.ts';
 
@@ -36,7 +36,10 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       ['knowledge base', report.aknoPath],
       ['state', report.stateDir],
       ['config', report.configSources.map((s) => s.replace(process.env.HOME ?? '~', '~')).join(' → ')],
-      ['writable', report.writable ? 'yes' : `no — pid ${report.lockHeldBy} holds the write handle`],
+      [
+        'writable',
+        report.writable ? 'yes' : `no — ${readOnlyExplanation(report.readOnlyReason, report.lockHeldBy)}`,
+      ],
       ['vector backend', report.vectorBackend === 'vec0' ? 'sqlite-vec (exact brute force)' : 'JS fallback'],
     ]);
 

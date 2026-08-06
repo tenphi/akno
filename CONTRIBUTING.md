@@ -93,14 +93,29 @@ Changes here need more care than the line count suggests.
   still walking the whole tree — which is what `undo`, `forget` and `move` need, because only a full walk can
   conclude a file is gone. A full pass with no scope re-derives everything, and one `write` then blocks on the
   entire backlog.
-- **Compare like with like.** Inline conflict detection runs the *same* extractor over the page and over the
+- **Compare like with like.** Inline conflict detection runs the _same_ extractor over the page and over the
   incoming text. Joining a structurally-extracted attribute against a model-assigned one silently never matches,
   which is how `- Nights: 5` landed on top of `- Nights: 3` with no conflict reported.
 - **Threshold `relevance`, never `score`.** `score` orders one result set — the best hit is 1.0 whether it is a
   perfect match or the least bad of a bad batch — so thresholding it made routing unconditional and §11's "a
   document with no home stays put" impossible to reach. `relevance` is absolute when a cross-encoder or the
   embedding arm supplied one, and absent otherwise, which is when routing must refuse and ask.
-- **Never report where text came from inaccurately.** A vision model's *description* of a photograph is not a
+- **A threshold is only as good as the query it scores.** Routing once built its query from the document's
+  summary plus 400 characters of its text. Measured on a 223-page base, that collapsed the spread across
+  candidate folders from 0.49 to 0.014 — everything at 0.98–0.99, so nothing could fail `route_threshold` and
+  the winner was noise: a water bill filed under `travel/2026` while the folder holding its own previous
+  statement missed the top eight. A long query resembles everything a little. `routingQuery` is one line and has
+  a test for exactly this reason.
+- **Rules are config, and config changes have to reach the index.** A rule edit is not a file edit, so the stat
+  fast path skips every page and the pass reports "223 unchanged" while the new `class` does nothing. The
+  resolved rules are fingerprinted in `meta`; when the fingerprint moves, pages whose class moved are
+  re-indexed and their derivations dropped. Note that an excluded page has no `pages` row at all — walk `files`
+  too, or exclusion becomes a one-way door.
+- **Never infer "the source line is gone" from the absence of a fact.** Retiring vs deleting hangs on whether
+  the _page_ still contains the line, so the live-line set comes from the page. Read from the incoming facts, a
+  derivation that returned nothing looks like every line vanishing at once, and a page that merely became
+  `reference` retires its whole history as superseded on lines nobody touched.
+- **Never report where text came from inaccurately.** A vision model's _description_ of a photograph is not a
   transcription of text in it, and a PDF's own text layer is not OCR. `text_from` distinguishes them because
   presenting them identically is a false claim about provenance — the exact sin §2 exists to prevent.
 

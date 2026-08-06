@@ -2,12 +2,13 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoConfig } from '../config/schema.ts';
+import { KB_RULES_FILE } from '../config/load.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { hashFile, mapWithConcurrency, scanTree, type ScannedFile } from '../kb/scan.ts';
 import { ATTACHMENT_NAME, parsePage, resolveClass, type ParsedPage } from '../kb/page.ts';
 import { withId } from '../kb/frontmatter.ts';
 import { applyReferenceFence, chunkPage, embeddingText, type Chunk } from './chunk.ts';
-import { derivePage, type DerivedFact } from './derive.ts';
+import { bodyLineHashes, derivePage, type DerivedFact } from './derive.ts';
 import { eventId, factId, newPageId, sha256 } from '../store/ids.ts';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
@@ -115,7 +116,7 @@ export class Indexer {
     progress({ phase: 'scan', done: 0, total: 0 });
     const scanned = await scanTree({
       root: this.#config.aknoPath,
-      ignore: this.#config.ignore,
+      ignore: this.scanIgnore(),
       pageExtensions: this.#config.pageExtensions,
       maxPageBytes: this.#config.maxPageBytes,
     });
@@ -123,6 +124,14 @@ export class Indexer {
     report.scanned = files.length;
 
     const known = this.knownFiles();
+
+    // ── Rule changes ───────────────────────────────────────────────────────
+    // A rule edit is not a file edit. Without this, adding `class: excluded` to a folder
+    // and re-indexing reports "223 pages unchanged" and leaves those pages indexed,
+    // searchable and asserted as facts — the config silently doing nothing, which is
+    // exactly the failure Akno exists to avoid. A `--only` pass sees a fraction of the
+    // tree and is not the place to conclude anything about the rest of it.
+    const reclassified = options.only ? new Set<string>() : this.reclassify(report);
 
     // ── Stat fast path ─────────────────────────────────────────────────────
     // mtime is a fast path, not a correctness guarantee — sync clients and
@@ -132,7 +141,7 @@ export class Indexer {
     for (const file of files) {
       const prior = known.get(file.relPath);
       const moved = !prior || prior.size !== file.size || prior.mtime_ns !== file.mtimeNs;
-      if (options.verify || moved) changed.push(file);
+      if (options.verify || moved || reclassified.has(file.relPath)) changed.push(file);
       else {
         file.sha256 = prior.sha256;
         if (file.kind === 'page') report.pagesUnchanged++;
@@ -155,7 +164,12 @@ export class Indexer {
     const needsIndex = changed.filter((file) => {
       if (!file.sha256) return false;
       const prior = known.get(file.relPath);
-      if (prior && prior.sha256 === file.sha256 && !options.reindexUnchanged) {
+      if (
+        prior &&
+        prior.sha256 === file.sha256 &&
+        !options.reindexUnchanged &&
+        !reclassified.has(file.relPath)
+      ) {
         this.touchFile(file);
         if (file.kind === 'page') report.pagesUnchanged++;
         return false;
@@ -211,6 +225,81 @@ export class Indexer {
     report.durationMs = performance.now() - started;
     progress({ phase: 'done', done: 1, total: 1 });
     return report;
+  }
+
+  /**
+   * Pages whose class moved because the *rules* moved, not because the file did.
+   *
+   * The resolved rules are fingerprinted in `meta`. While the fingerprint holds this is
+   * one query that finds nothing; when it moves, every page is re-resolved and the ones
+   * that changed class are handed back to be re-indexed. Their derivations are dropped in
+   * the same breath: a page that just became `reference` was fact-mined under the old
+   * rule, and those facts assert claims the rules now say it never made.
+   *
+   * A class declared in frontmatter wins over any rule (§4), so such a page cannot be
+   * moved by a rule edit and is left alone.
+   */
+  private reclassify(report: IndexReport): Set<string> {
+    const fingerprint = sha256(JSON.stringify(this.#config.rules));
+    if (this.#store.meta(RULES_FINGERPRINT) === fingerprint) return new Set();
+
+    const rows = this.#store.db.prepare('SELECT id, slug, rel_path, class, frontmatter FROM pages').all() as {
+      id: string;
+      slug: string;
+      rel_path: string;
+      class: string;
+      frontmatter: string;
+    }[];
+
+    const moved = new Set<string>();
+    const clearDerived = this.#store.db.prepare('UPDATE pages SET derived_hash = NULL WHERE id = ?');
+    for (const row of rows) {
+      const declared = declaredClassOf(row.frontmatter);
+      if (declared) continue;
+      if (this.classFor(row.slug) === row.class) continue;
+      moved.add(row.rel_path);
+      clearDerived.run(row.id);
+    }
+
+    // A page the rules excluded has no `pages` row at all — that is what excluded means.
+    // Walking only `pages` would therefore make exclusion a one-way door: deleting the
+    // rule would leave the file recorded, unchanged on disk, and permanently invisible.
+    const dropped = this.#store.db
+      .prepare("SELECT rel_path FROM files WHERE kind = 'page' AND page_id IS NULL")
+      .all() as { rel_path: string }[];
+    for (const row of dropped) {
+      const slug = row.rel_path.replace(/\.(md|markdown)$/i, '');
+      if (this.classFor(slug) === 'excluded') continue;
+      moved.add(row.rel_path);
+    }
+
+    if (moved.size > 0) {
+      // §2, default to visible: a pass that quietly re-indexed a third of the knowledge
+      // base because a rule changed should say so.
+      report.warnings.push(
+        `the rules changed since the last pass: ${moved.size} page(s) changed class and were re-indexed`,
+      );
+    }
+    this.#store.setMeta(RULES_FINGERPRINT, fingerprint);
+    return moved;
+  }
+
+  /**
+   * What the scan skips: the configured list, plus Akno's own files inside the knowledge
+   * base.
+   *
+   * `akno.json` is not memory — it is the rules that decide what memory *is*. It was
+   * being registered as an attachment of the root, which is how a taxonomy ends up
+   * described in `doctor` as a document whose contents could not be extracted.
+   */
+  private scanIgnore(): string[] {
+    return [...this.#config.ignore, KB_RULES_FILE];
+  }
+
+  /** The class the current rules give a slug, ignoring what the page itself declares. */
+  private classFor(slug: string): string {
+    const rule = effectiveRule(slug, this.#config.rules);
+    return resolveClass({ slug, declaredClass: null }, rule, this.#config.paths.observations).class;
   }
 
   // ─── Files table ──────────────────────────────────────────────────────────
@@ -732,7 +821,7 @@ export class Indexer {
             this.#store.db
               .prepare('UPDATE pages SET summary = ?, keywords = ?, derived_hash = ? WHERE id = ?')
               .run(derived.summary, JSON.stringify(derived.keywords), row.body_hash, row.id);
-            this.replaceFacts(row.id, derived.facts);
+            this.replaceFacts(row.id, derived.facts, bodyLineHashes(page));
           });
           report.pagesDerived++;
           report.factsDerived += derived.facts.length;
@@ -761,8 +850,13 @@ export class Indexer {
    * `--rederive` flood recall with "was X until today" for values that never
    * changed — and an invented historical claim is worse than none, because a
    * reader has no way to tell it apart from a real one.
+   *
+   * `presentLines` therefore comes from **the page**, not from the incoming facts. Read
+   * from the facts, an empty derivation looks like every source line vanishing at once, so
+   * a page that merely became `reference` — or one where a small model returned no facts
+   * this time — retired its whole history as superseded on lines nobody had touched.
    */
-  private replaceFacts(pageId: string, facts: DerivedFact[]): void {
+  private replaceFacts(pageId: string, facts: DerivedFact[], presentLines: Set<string>): void {
     const now = nowIso();
     const today = now.slice(0, 10);
 
@@ -770,8 +864,6 @@ export class Indexer {
       .prepare('SELECT id, source_line_hash FROM facts WHERE page_id = ?')
       .all(pageId) as { id: string; source_line_hash: string }[];
     const incomingIds = new Set(facts.map((fact) => factId(pageId, fact.sourceLineHash, fact.claim)));
-    // The source lines this derivation could still see.
-    const liveLineHashes = new Set(facts.map((fact) => fact.sourceLineHash));
 
     const insert = this.#store.db.prepare(
       `INSERT INTO facts(id, page_id, claim, subject, attribute, value, line_start, line_end,
@@ -804,7 +896,7 @@ export class Indexer {
     const drop = this.#store.db.prepare('DELETE FROM facts WHERE id = ?');
     for (const row of existing) {
       if (incomingIds.has(row.id)) continue;
-      if (liveLineHashes.has(row.source_line_hash)) drop.run(row.id);
+      if (presentLines.has(row.source_line_hash)) drop.run(row.id);
       else retire.run(today, row.id);
     }
   }
@@ -853,4 +945,22 @@ function guessMime(relPath: string): string | null {
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+/** `meta` key holding the fingerprint of the rules the index was last built under. */
+const RULES_FINGERPRINT = 'rules_fingerprint';
+
+/**
+ * The class a page declares in its own frontmatter, if any. Read from the stored
+ * frontmatter rather than the file, because this runs over every page on a rule change
+ * and re-reading the tree to answer "did anything move" would cost more than the move.
+ */
+function declaredClassOf(frontmatter: string): string | null {
+  try {
+    const parsed = JSON.parse(frontmatter) as { class?: unknown };
+    const declared = typeof parsed.class === 'string' ? parsed.class : null;
+    return declared === 'full' || declared === 'reference' || declared === 'excluded' ? declared : null;
+  } catch {
+    return null;
+  }
 }
