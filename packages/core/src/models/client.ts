@@ -210,9 +210,94 @@ export function parseJsonLoose<T>(raw: string): T | null {
     candidates.push(trimmed.slice(firstBracket, lastBracket + 1));
   }
 
+  // Direct parse *then* repair, per candidate, most-complete candidate first.
+  // The order matters: repairing the whole body has to beat parsing a narrower
+  // slice of it, or an inner array lifted out of a truncated object wins and the
+  // caller silently receives `["lease","rent"]` where it expected the object.
   for (const candidate of candidates) {
     try {
       return JSON.parse(candidate) as T;
+    } catch {
+      // The body was cut off mid-value because the model hit its token ceiling.
+      // Everything before the cut is still valid, so closing what is open
+      // recovers it — the difference between a long page getting most of its
+      // facts and getting none.
+      const repaired = closeTruncatedJson(candidate);
+      if (repaired === null) continue;
+      try {
+        return JSON.parse(repaired) as T;
+      } catch {
+        continue;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Recovers the longest parseable prefix of a truncated JSON body.
+ *
+ * Rather than guessing where a safe cut is, this records every position where a
+ * value just completed — along with the bracket stack owed at that point — then
+ * tries them newest-first and returns the first that actually parses. Validating
+ * instead of guessing is what makes it correct around the two cases that break a
+ * hand-rolled scanner: a bracket inside a string, and a cut immediately after an
+ * object *key* (`{"a"` closes to `{"a"}`, which does not parse, so it falls back).
+ *
+ * Returns null when the input is not truncated JSON — a genuinely malformed body
+ * must stay reported as malformed rather than becoming half an object.
+ */
+export function closeTruncatedJson(input: string): string | null {
+  const start = input.search(/[{[]/);
+  if (start === -1) return null;
+
+  const stack: string[] = [];
+  const candidates: { offset: number; closers: string }[] = [];
+  let inString = false;
+  let escaped = false;
+
+  const mark = (offset: number): void => {
+    if (stack.length > 0) {
+      candidates.push({ offset, closers: [...stack].reverse().join('') });
+    }
+  };
+
+  for (let i = start; i < input.length; i++) {
+    const char = input[i]!;
+
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') {
+        inString = false;
+        // A string just closed. It may be a key, in which case this candidate
+        // will fail to parse and a later attempt will use an earlier one.
+        mark(i + 1);
+      }
+      continue;
+    }
+
+    if (char === '"') inString = true;
+    else if (char === '{' || char === '[') stack.push(char === '{' ? '}' : ']');
+    else if (char === '}' || char === ']') {
+      if (stack.pop() !== char) return null; // Mismatched: not a truncation.
+      mark(i + 1);
+    } else if (/[\d}\]eln]/.test(char) && !/[\d.eE+-]/.test(input[i + 1] ?? '')) {
+      // End of a number or of `true`/`false`/`null`.
+      mark(i + 1);
+    }
+  }
+
+  // Nothing left open means the body was complete, and this function has no
+  // business rewriting it.
+  if (stack.length === 0) return null;
+
+  for (let i = candidates.length - 1; i >= 0; i--) {
+    const candidate = candidates[i]!;
+    const repaired = input.slice(start, candidate.offset).replace(/,\s*$/, '') + candidate.closers;
+    try {
+      JSON.parse(repaired);
+      return repaired;
     } catch {
       continue;
     }

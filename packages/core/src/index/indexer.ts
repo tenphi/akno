@@ -682,6 +682,7 @@ export class Indexer {
         if (derived.error) {
           report.warnings.push(`derivation for ${row.slug}: ${derived.error}`);
         } else {
+          if (derived.partial) report.warnings.push(`derivation for ${row.slug}: ${derived.partial}`);
           this.store.transaction(() => {
             this.store.db
               .prepare('UPDATE pages SET summary = ?, keywords = ?, derived_hash = ? WHERE id = ?')

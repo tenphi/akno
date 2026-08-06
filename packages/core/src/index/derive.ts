@@ -24,6 +24,8 @@ export interface DerivedPage {
   facts: DerivedFact[];
   /** Set when the model was unavailable or returned nothing usable. */
   error: string | null;
+  /** Set when some of the derivation succeeded and some did not. Reported, not thrown. */
+  partial?: string;
 }
 
 const SYSTEM = `You extract structure from a personal knowledge base page. Reply with JSON only.
@@ -43,6 +45,11 @@ Rules for facts:
 - The claim must be understandable with no other context: resolve pronouns, name the subject.
 - subject/attribute/value may be null when the line does not decompose cleanly.
 - Prefer fewer, better facts. An empty list is a correct answer for a page of prose.`;
+
+const SUMMARY_ONLY = `Summarize a personal knowledge base page. Reply with JSON only.
+
+{ "summary": "one or two sentences, under 200 characters, stating what this page is about and its most load-bearing values",
+  "keywords": ["up to 8 short lowercase terms someone might search for"] }`;
 
 /**
  * One call per page returning summary, keywords and facts together — the model
@@ -70,7 +77,7 @@ export async function derivePage(
       { role: 'system', content: SYSTEM },
       { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
     ],
-    { json: true, maxTokens: 1200 },
+    { json: true, maxTokens: 2400 },
   );
 
   if (!result.ok || !result.value) return { ...empty, error: result.error ?? 'derivation failed' };
@@ -80,7 +87,28 @@ export async function derivePage(
     keywords?: unknown;
     facts?: unknown;
   }>(result.value);
-  if (!parsed) return { ...empty, error: 'derivation returned unparseable JSON' };
+
+  if (!parsed) {
+    // A long page can defeat a small model's JSON even with the repair pass. A
+    // summary is the more valuable half — it is what recall shows on every card —
+    // so ask for that alone rather than losing the page entirely.
+    const retry = await chat.chat(
+      [
+        { role: 'system', content: SUMMARY_ONLY },
+        { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
+      ],
+      { json: true, maxTokens: 400 },
+    );
+    const retried = retry.ok && retry.value ? parseJsonLoose<{ summary?: unknown; keywords?: unknown }>(retry.value) : null;
+    if (!retried) return { ...empty, error: 'derivation returned unparseable JSON' };
+    return {
+      summary: options.summaries ? cleanSummary(retried.summary) : null,
+      keywords: options.summaries ? cleanKeywords(retried.keywords) : [],
+      facts: [],
+      error: null,
+      partial: 'facts were not derived — the page is too long for the chat model to answer in JSON',
+    };
+  }
 
   const byLine = new Map(mineable.map((entry) => [entry.line, entry.text]));
 
@@ -208,6 +236,7 @@ export function scoreConfidence(
 ): number {
   let score = 0.62;
   const lower = sourceText.toLowerCase();
+  const claimWords = claim.trim().split(/\s+/).filter(Boolean);
 
   // A hedge is the author saying they are not sure. Believe them.
   if (HEDGES.some((hedge) => lower.includes(hedge))) score -= 0.28;
@@ -232,8 +261,24 @@ export function scoreConfidence(
 
   // A claim far longer than its source is the deriver adding, not restating.
   if (claim.length > sourceText.length * 2.5 + 40) score -= 0.12;
-  // A very short fragment rarely stands on its own.
+  // A very short source line rarely stands on its own.
   if (sourceText.trim().length < 12) score -= 0.15;
+
+  // §7 asks whether the line states a **well-formed** durable claim, and a claim
+  // that is not a sentence cannot be one however well-formed its source is. This
+  // matters more than it looks: a markdown table row (`| UTILITIES | 2 | ... |`)
+  // and a bold-key line (`- **Warranty:** five years`) both trip every
+  // structural signal above, so a deriver that answers with the *label* rather
+  // than the claim was scoring 0.86 on a single word.
+  if (claimWords.length < 3) score -= 0.34;
+  else if (claimWords.length === 3) score -= 0.16;
+  // A bare label — one capitalized word, or a shouted table header — is the
+  // fragment case even when it is long enough to pass the word count.
+  if (/^[A-Z][A-Za-z]*$/.test(claim.trim()) || /^[A-Z][A-Z\s]+$/.test(claim.trim())) score -= 0.2;
+  // No verb-like token and no value means there is nothing being asserted.
+  if (claimWords.length < 6 && !/\d/.test(claim) && !/\b(is|are|was|were|has|have|will|prefers|lives|costs|expires|renews|includes|owns|uses|works|covers|holds|requires|means)\b/i.test(claim)) {
+    score -= 0.12;
+  }
 
   return Math.round(Math.max(0.05, Math.min(0.98, score)) * 100) / 100;
 }
