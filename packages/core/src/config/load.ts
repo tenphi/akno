@@ -414,6 +414,9 @@ function resolve(
       ),
     },
     maintenance: {
+      // Resolved through the same path as any role, so a typo in the provider name fails the
+      // same way and `doctor` can probe it like the rest.
+      model: doc.maintenance?.model ? resolveRole('chat', doc.maintenance.model, providers, 120_000) : null,
       retain: {
         enabled: doc.maintenance?.retain?.enabled ?? true,
         mission: doc.maintenance?.retain?.mission ?? null,
@@ -435,6 +438,10 @@ function resolve(
         // §13: at a few hundred pages a "pattern" is one coincidence away from noise.
         enabled: doc.maintenance?.reflect?.enabled ?? false,
         mission: doc.maintenance?.reflect?.mission ?? null,
+      },
+      adopt: {
+        enabled: doc.maintenance?.adopt?.enabled ?? true,
+        maxPages: doc.maintenance?.adopt?.max_pages ?? 20,
       },
       conflicts: {
         enabled: doc.maintenance?.conflicts?.enabled ?? true,

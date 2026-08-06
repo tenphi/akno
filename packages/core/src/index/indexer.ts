@@ -29,7 +29,13 @@ export interface IndexOptions {
   structuralOnly?: boolean;
   /** Re-derive summaries and facts even where the body hash has not moved. */
   rederive?: boolean;
-  /** Re-chunk and re-embed even where the content hash matches. */
+  /**
+   * Re-examine the named paths even though nothing about them changed.
+   *
+   * The point is ownership, not content: after a page is written *for* an existing attachment,
+   * the attachment's bytes are the same as ever, so the stat fast path skips it and nothing
+   * re-resolves which page owns it. This forces that one question to be asked again.
+   */
   reindexUnchanged?: boolean;
   onProgress?: (progress: IndexProgress) => void;
   /** Restrict the pass to these relative paths — what the watcher uses. */
@@ -156,8 +162,9 @@ export class Indexer {
     for (const file of files) {
       const prior = known.get(file.relPath);
       const moved = !prior || prior.size !== file.size || prior.mtime_ns !== file.mtimeNs;
-      if (options.verify || moved || reclassified.has(file.relPath)) changed.push(file);
-      else {
+      if (options.verify || moved || options.reindexUnchanged || reclassified.has(file.relPath)) {
+        changed.push(file);
+      } else {
         file.sha256 = prior.sha256;
         if (file.kind === 'page') report.pagesUnchanged++;
       }

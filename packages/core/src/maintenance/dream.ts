@@ -8,6 +8,8 @@ import { normalizeSlug } from '../ops/write.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import { findCrossPageConflicts, verifyConflicts, type CrossPageConflict } from './conflicts.ts';
 import { housekeeping, type Housekeeping } from './housekeeping.ts';
+import { ModelClient } from '../models/client.ts';
+import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
 
 /**
  * §13. The maintenance cycle: three tiers, each with a configurable mission.
@@ -30,9 +32,9 @@ import { housekeeping, type Housekeeping } from './housekeeping.ts';
  * every phase reports rather than repairs unless writing is the phase's entire purpose.
  */
 
-export type DreamPhase = 'observe' | 'reflect' | 'conflicts' | 'housekeeping';
+export type DreamPhase = 'observe' | 'reflect' | 'adopt' | 'conflicts' | 'housekeeping';
 
-export const DREAM_PHASES: DreamPhase[] = ['observe', 'reflect', 'conflicts', 'housekeeping'];
+export const DREAM_PHASES: DreamPhase[] = ['observe', 'reflect', 'adopt', 'conflicts', 'housekeeping'];
 
 export interface ObservationWritten {
   slug: string;
@@ -54,9 +56,13 @@ export interface DreamReport {
   observations: ObservationWritten[];
   /** Candidates a guardrail refused, with the guard that refused them (§13). */
   rejected: { pattern: string; reason: string }[];
+  /** Documents given a page of their own (§11), and any that were left alone. */
+  adopted: AdoptedDocument[];
   conflicts: CrossPageConflict[];
   housekeeping: Housekeeping | null;
   changeId: string | null;
+  /** The `adopt` phase's change, kept apart from observe's. */
+  adoptChangeId: string | null;
   warnings: string[];
   durationMs: number;
 }
@@ -70,13 +76,22 @@ export interface DreamOptions {
 
 export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promise<DreamReport> {
   const started = performance.now();
+  // §13's tiers run unattended and are worth a better model than per-turn work needs — measured:
+  // the same observe pass over one knowledge base produced 15 candidates worth about four with a
+  // local 3B, and 8 candidates with no guard violations at all with a strong one. When
+  // `maintenance.model` is set, the whole cycle uses it and nothing else does.
+  const cycle: AknoContext = ctx.config.maintenance.model
+    ? { ...ctx, models: { ...ctx.models, chat: new ModelClient(ctx.config.maintenance.model) } }
+    : ctx;
   const report: DreamReport = {
     phases: [],
     observations: [],
     rejected: [],
+    adopted: [],
     conflicts: [],
     housekeeping: null,
     changeId: null,
+    adoptChangeId: null,
     warnings: [],
     durationMs: 0,
   };
@@ -84,7 +99,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   const wanted = options.phase ? [options.phase] : DREAM_PHASES;
   for (const phase of wanted) {
     const phaseStarted = performance.now();
-    const skipped = await runPhase(ctx, phase, options, report);
+    const skipped = await runPhase(cycle, phase, options, report);
     report.phases.push({
       phase,
       ran: skipped === null,
@@ -123,6 +138,37 @@ async function runPhase(
         return `no chat model: ${ctx.models.chat.unavailableReason ?? 'unavailable'}`;
       }
       await reflectPhase(ctx, options, report);
+      return null;
+    }
+    case 'adopt': {
+      if (!ctx.config.maintenance.adopt.enabled) return 'disabled in config';
+      const result = await adoptOrphans(ctx, {
+        limit: ctx.config.maintenance.adopt.maxPages,
+        dryRun: options.dryRun ?? false,
+      });
+      report.adopted = result.adopted;
+      if (result.files.length > 0) {
+        // Its own change, separate from observe's: adopting a document is a mechanical write
+        // from what the file says, and undoing it should not also undo a night's inferences.
+        report.adoptChangeId = ctx.journal.record({
+          actor: 'agent',
+          op: 'write',
+          summary: `adopt: ${result.files.length} page(s) for documents that had none`,
+          files: result.files,
+        });
+        // The documents as well as the new pages, forced: the whole point of the phase is that
+        // the attachment gains an owner, and its bytes have not changed, so the stat fast path
+        // would skip the one file whose ownership just became answerable. Ownership then
+        // resolves the ordinary way — through the `![[…]]` embed the page carries — rather than
+        // by writing `page_id` behind the indexer's back.
+        const adoptedFiles = result.adopted
+          .filter((entry) => entry.action === 'created')
+          .flatMap((entry) => entry.files);
+        await ctx.indexer.run({
+          only: [...result.files.map((file) => file.relPath), ...adoptedFiles],
+          reindexUnchanged: true,
+        });
+      }
       return null;
     }
     case 'conflicts': {

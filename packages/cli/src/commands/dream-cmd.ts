@@ -10,6 +10,8 @@ const DREAM_HELP = `akno dream [options]
                    observations/ with their evidence, and never restates a fact.
     reflect        Decision principles built on observations. Off by default — at a few
                    hundred pages a "pattern" is one coincidence away from noise.
+    adopt          A page for a document that has none, written beside the file — so its
+                   text can be returned at all. Honours \`ingest: "file"\`.
     conflicts      The thorough pass inline checking cannot do: facts from different
                    pages that state different values for the same thing.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
@@ -88,6 +90,16 @@ function printDream(report: DreamReport, dryRun: boolean): number {
     }
   }
 
+  if (report.adopted.length > 0) {
+    const created = report.adopted.filter((entry) => entry.action === 'created');
+    heading(`${created.length} document(s) given a page${dryRun ? ' (would be)' : ''}`);
+    for (const entry of report.adopted) {
+      const mark = entry.action === 'created' ? style.green('page   ') : style.grey('left   ');
+      line(`  ${mark} ${entry.slug}  ${style.grey(entry.files.join(', '))}`);
+      if (entry.reason) line(`          ${style.grey(entry.reason)}`);
+    }
+  }
+
   const real = report.conflicts.filter((entry) => entry.verdict !== 'not_a_conflict');
   const cleared = report.conflicts.length - real.length;
   if (report.conflicts.length > 0) {
@@ -140,8 +152,13 @@ function printDream(report: DreamReport, dryRun: boolean): number {
     for (const warning of report.warnings.slice(0, 10)) line(`  ${style.yellow('·')} ${warning}`);
   }
 
-  if (report.changeId) {
-    line(`\n  ${style.grey('reverse the whole run with')} ${style.bold(`akno undo ${report.changeId}`)}`);
+  for (const [what, id] of [
+    ['the observations', report.changeId],
+    ['the pages it wrote for documents', report.adoptChangeId],
+  ] as const) {
+    // Two changes rather than one: undoing a night's inferences should not also undo the pages
+    // that made documents searchable, and the other way round.
+    if (id) line(`\n  ${style.grey(`reverse ${what} with`)} ${style.bold(`akno undo ${id}`)}`);
   }
   return 0;
 }

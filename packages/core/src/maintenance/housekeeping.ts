@@ -66,6 +66,7 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
   const orphanTotal = count(ctx, 'SELECT count(*) AS c FROM documents WHERE page_id IS NULL');
 
   const drift = findDrift(ctx);
+  const adoptEnabled = ctx.config.maintenance.adopt.enabled;
 
   return {
     brokenLinks: brokenRows.map((row) => ({
@@ -76,7 +77,9 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
     orphanedDocuments: orphanRows.map((row) => ({
       relPath: row.rel_path,
       reason: row.extracted
-        ? 'no page owns it, so its text cannot be returned — embed it from a page with `![[filename]]`'
+        ? adoptEnabled
+          ? 'no page owns it — the adopt phase will write one beside it'
+          : 'no page owns it, so its text cannot be returned — embed it from a page with `![[filename]]`, or enable maintenance.adopt'
         : 'no page owns it, and nothing could be read from it',
     })),
     drift: drift.slice(0, LIST_CAP),

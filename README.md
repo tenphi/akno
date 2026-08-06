@@ -393,20 +393,38 @@ Nothing is routed or named, because the caller already decided both.
 | `conflicts`    | Facts on **different** pages stating different values for one thing — which inline checking cannot see. |
 | `housekeeping` | Broken links, orphaned documents, pages that have drifted from their folder's rules.                    |
 
-Only `observe` and `reflect` write, and only by appending: a changed pattern gets a new dated line, nothing is
-ever deleted, and a whole run is one `akno undo`. Everything else reports. A maintenance process that tidies a
-knowledge base behind its owner's back is worse than the mess it fixes.
+`observe` and `reflect` write only by appending: a changed pattern gets a new dated line, nothing is ever
+deleted. `adopt` writes new pages and never touches a file. Each phase's writes are their own `akno undo`, so
+reversing a night's inferences does not also reverse the pages that made documents searchable. Everything else
+reports — a maintenance process that tidies a knowledge base behind its owner's back is worse than the mess it
+fixes.
+
+**A document with no page is the one thing the cycle repairs.** Recall returns page cards, so an attachment
+nobody's page points at is extracted, indexed, and unreachable. `adopt` writes the page `ingest` would have
+written — the title from the filename, the body from the summary extraction already produced, then the embed that
+makes the link hold — and the document's own text becomes answerable, cited by its page number inside the file. It
+honours a folder rule of `ingest: "file"`, which exists for precisely the case where a stub page per file would be
+noise, and it is capped per run so a folder of 500 unowned PDFs does not become 500 pages before anyone has read
+the first report.
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default) — that is
 what "observe runs on a schedule" means on macOS. `--no-dream` skips it.
 
-**Observe ships off, and that is a measurement rather than caution.** Its guardrails are enforced in code, not
-asked for in a prompt: at least two distinct source pages, every cited slug checked against what the model was
-actually shown, `full` pages only, no observation admissible as evidence for another, no hedged language, nothing
-about a person's private life, and nothing that describes the records rather than what they record. Run against a
-real 223-page knowledge base with a local 3B chat model, those guards refused 18 candidates and passed 15 — of
-which about four were worth keeping. The guards hold; what they cannot do is make a small model insightful. Turn
-it on with a model you have watched produce patterns worth having, and read the first run with `--dry-run`.
+**Observe ships off, and what it produces is almost entirely a function of the model behind it.** Its guardrails
+are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug checked
+against what the model was actually shown, `full` pages only, no observation admissible as evidence for another,
+no hedged language, nothing about a person's private life, and nothing that describes the records rather than what
+they record. The same pass over the same 223-page knowledge base:
+
+| Chat model         | Candidates | Refused by a guard | Worth keeping |
+| ------------------ | ---------- | ------------------ | ------------- |
+| local 3B           | 15         | 18                 | about four    |
+| a strong API model | 8          | **0**              | most of them  |
+
+The guards hold either way — with the better model they never had to fire. What they cannot do is make a small
+model insightful, which is why the tier is opt-in and why `maintenance.model` exists: the cycle runs unattended
+once a night and is worth a better model than per-turn work needs, without sending every recall expansion to a
+paid API. Read the first run with `--dry-run`.
 
 The same run is why the conflict pass reports rather than repairs. It found five cross-page candidates on that
 base and the model correctly cleared all five — three months of banking pages stating different totals, and three

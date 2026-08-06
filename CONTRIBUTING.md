@@ -130,6 +130,10 @@ Changes here need more care than the line count suggests.
 - **Group observation input by folder, not by subject alone.** A small deriver writes the _attribute_ into
   `subject`, so grouping on it joined a bag with a drum kit and a Roman church with a person's page. Given
   unrelated facts under one heading, a model will find a pattern across them: the input was the bug.
+- **Ownership has to be re-asked, not assumed.** After `adopt` writes a page _for_ an existing attachment, the
+  attachment's bytes are unchanged, so the stat fast path skips the one file whose ownership just became
+  answerable. It re-indexes those paths with `reindexUnchanged`, so ownership still resolves the ordinary way —
+  through the `![[…]]` embed the new page carries — rather than by writing `page_id` behind the indexer's back.
 - **Never cite a line that does not exist.** A hit inside a PDF is not a line of the Markdown page. Document
   hits come back as a quote attributed to the document and its page number; only body hits produce `lines`.
 - **Never report where text came from inaccurately.** A vision model's _description_ of a photograph is not a

@@ -522,3 +522,106 @@ describe('observe when a knowledge base has not asked for it', () => {
     expect(report.observations).toEqual([]);
   });
 });
+
+/**
+ * §11. An attachment nobody's page points at is extracted like any other and then has nowhere
+ * to be returned from, because recall returns page cards. `adopt` gives it the page `ingest`
+ * would have given it — an orphan is an arrival nobody ran `ingest` on.
+ */
+describe('adopt', () => {
+  beforeEach(() => {
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'household/lease scan.txt'), 'The lease runs to August 2027.\n');
+  });
+
+  it('writes a page beside the file, and the document becomes searchable', async () => {
+    await mem.index({});
+    expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(1);
+
+    const report = await mem.dream({ phase: 'adopt' });
+    expect(report.adopted).toHaveLength(1);
+    expect(report.adopted[0]!.action).toBe('created');
+    expect(report.adopted[0]!.slug).toBe('household/lease-scan');
+
+    const page = fs.readFileSync(path.join(root, 'household/lease-scan.md'), 'utf8');
+    // The title comes from the filename, tidied — nothing invented about a file Akno was not
+    // asked to name. The embed is what makes the ownership hold on the next pass.
+    expect(page).toContain('title: Lease scan');
+    expect(page).toContain('![[lease scan.txt]]');
+    // The file itself is untouched: §11 is explicit that only the inbox moves files.
+    expect(fs.existsSync(path.join(root, 'household/lease scan.txt'))).toBe(true);
+
+    // The point of the phase, not just that a page appeared.
+    expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(0);
+    const found = await mem.recall({ query: 'lease runs to August 2027', mode: 'lookup' });
+    const card = found.cards.find((entry) => entry.slug === 'household/lease-scan');
+    expect(card?.documents?.[0]?.quote).toContain('August 2027');
+  });
+
+  it('gives the parts of one document a single page', async () => {
+    fs.writeFileSync(path.join(root, 'household/permit.txt'), 'Permit page one.\n');
+    fs.writeFileSync(path.join(root, 'household/permit-2.txt'), 'Permit page two.\n');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'adopt' });
+    const permit = report.adopted.find((entry) => entry.slug === 'household/permit');
+    expect(permit?.files).toEqual(['household/permit.txt', 'household/permit-2.txt']);
+
+    const page = fs.readFileSync(path.join(root, 'household/permit.md'), 'utf8');
+    expect(page).toContain('![[permit.txt]]');
+    expect(page).toContain('![[permit-2.txt]]');
+  });
+
+  it('honours the rule that says this folder wants no pages', async () => {
+    // `ingest: "file"` exists for a folder of media where a stub page per file would be noise
+    // rather than memory, and this is the behaviour it turns off.
+    await mem.close();
+    mem = await openMem({ folders: { 'household/**': { ingest: 'file' } } });
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'adopt' });
+    expect(report.adopted[0]!.action).toBe('skipped');
+    expect(report.adopted[0]!.reason).toMatch(/ingest: file/);
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+  });
+
+  it('leaves someone else’s page alone when one is already there', async () => {
+    fs.writeFileSync(path.join(root, 'household/lease-scan.md'), '# Notes\n\nMy own page.\n', 'utf8');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'adopt' });
+    expect(report.adopted[0]!.action).toBe('skipped');
+    expect(report.adopted[0]!.reason).toMatch(/already exists/);
+    expect(fs.readFileSync(path.join(root, 'household/lease-scan.md'), 'utf8')).toContain('My own page.');
+  });
+
+  it('caps how many it writes in one run', async () => {
+    // A folder of 500 unowned files should not become 500 pages before anyone has read the
+    // first report.
+    for (let i = 0; i < 4; i++) {
+      fs.writeFileSync(path.join(root, `household/scan-${i}.txt`), `Scan number ${i}.\n`);
+    }
+    await mem.close();
+    mem = await openMem({ maintenance: { adopt: { max_pages: 2 } } });
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'adopt' });
+    expect(report.adopted.filter((entry) => entry.action === 'created')).toHaveLength(2);
+  });
+
+  it('writes nothing on a dry run', async () => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt', dryRun: true });
+    expect(report.adopted[0]!.action).toBe('created');
+    expect(report.adoptChangeId).toBeNull();
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+  });
+
+  it('is undone as its own change, apart from a night’s observations', async () => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt' });
+    await mem.undo({ change_id: report.adoptChangeId! });
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    expect(fs.existsSync(path.join(root, 'household/lease scan.txt'))).toBe(true);
+  });
+});

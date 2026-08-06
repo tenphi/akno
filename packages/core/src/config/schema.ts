@@ -134,6 +134,16 @@ const TierDoc = z.object({
 });
 
 const MaintenanceDoc = z.object({
+  /**
+   * The chat model the cycle uses, when it should not be the one per-turn work uses.
+   *
+   * Not a fifth role in §14's sense — it is the same `chat` capability, pointed somewhere else
+   * for the one caller that runs unattended. Measured on a real base: the observe tier's output
+   * is almost entirely a function of the model behind it, and a knowledge base wanting a strong
+   * model once a night should not thereby send every recall expansion to a paid API.
+   */
+  // Nullable so the committed default can name the key while leaving it unset.
+  model: ChatRoleDoc.nullable().optional(),
   retain: TierDoc.optional(),
   observe: TierDoc.extend({
     /** Distinct source pages an observation needs. §13's floor is two. */
@@ -142,6 +152,13 @@ const MaintenanceDoc = z.object({
     max_subjects: z.number().int().positive().optional(),
   }).optional(),
   reflect: TierDoc.optional(),
+  adopt: z
+    .object({
+      enabled: z.boolean().optional(),
+      /** Pages created per run. A folder of media should not become 500 pages overnight. */
+      max_pages: z.number().int().positive().optional(),
+    })
+    .optional(),
   conflicts: z
     .object({
       enabled: z.boolean().optional(),
@@ -276,6 +293,8 @@ export interface AknoConfig {
     blockedExtensions: string[];
   };
   maintenance: {
+    /** Null when the cycle uses the `chat` role, which is the default. */
+    model: ResolvedModelRole | null;
     retain: { enabled: boolean; mission: string | null };
     observe: {
       enabled: boolean;
@@ -285,6 +304,7 @@ export interface AknoConfig {
     };
     /** §13: ships as an extension point, off by default. */
     reflect: { enabled: boolean; mission: string | null };
+    adopt: { enabled: boolean; maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; maxPairs: number };
   };
   trashRetentionDays: number;

@@ -200,6 +200,18 @@
   // inference engine honest lives in the fixed part, and a replaceable prompt is
   // how they all get lost at once.
   "maintenance": {
+    // The chat model the cycle uses, when it should not be the one per-turn work
+    // uses. Not a fifth role (§14) — the same `chat` capability, pointed somewhere
+    // else for the one caller that runs unattended.
+    //
+    // This is worth setting. Measured on a real 223-page base: the observe tier
+    // produced 15 candidates worth about four with a local 3B, and 8 candidates
+    // with no guardrail violations at all with a strong model. A knowledge base
+    // that wants a good model once a night should not thereby send every recall
+    // expansion to a paid API.
+    //
+    //   "model": { "provider": "openai", "id": "gpt-5.6-luna" }
+    "model": null,
     // Retain is the `remember` op, available per-turn (§13) — the tier that needs
     // to be fresh does not wait for a timer. `dream` does not re-run it.
     "retain": {
@@ -231,6 +243,17 @@
     "reflect": {
       "enabled": false,
       "mission": null
+    },
+    // Give a document that no page owns a page of its own, beside the file, from
+    // the summary extraction already produced. Without this its text is indexed
+    // and unreachable, because recall returns page cards. Honours a folder rule of
+    // `ingest: "file"`, which exists for exactly the case where a stub page per
+    // file would be noise — and never touches the file itself.
+    "adopt": {
+      "enabled": true,
+      // A folder of 500 unowned PDFs should not become 500 pages overnight before
+      // anyone has read the first report.
+      "max_pages": 20
     },
     // §8's thorough pass: facts on different pages that state different values
     // for the same thing — which inline checking cannot see, because neither page
