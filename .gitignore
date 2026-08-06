@@ -22,7 +22,10 @@ config/*.local.jsonc
 
 # ─── Akno state ─────────────────────────────────────────────────────────
 # Everything derived. `rm -rf` any of it and `akno index` rebuilds it.
+# The glob covers any in-repo state dir (`--state-dir ./.akno-dev`), so a file
+# type that lands there later cannot leak just because it is not a *.db.
 .akno/
+.akno-*/
 *.db
 *.db-wal
 *.db-shm

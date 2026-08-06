@@ -700,20 +700,33 @@ export class Indexer {
   }
 
   /**
-   * §7. Supersession is structural: a fact whose line still exists keeps its
-   * `first_seen` and its id; one whose line is gone gets `valid_to` set rather
-   * than being deleted, so recall can return it *as superseded* — "was €28 until
-   * June" — instead of as a second competing current answer.
+   * §7. Supersession is structural: a fact whose source line is gone or changed
+   * gets `valid_to` set rather than being deleted, so recall can return it *as
+   * superseded* — "was €28 until June" — instead of as a second competing current
+   * answer.
+   *
+   * The distinction that matters is **why** a fact disappeared:
+   *
+   * - Its source line changed or went away → a real supersession. Retire it.
+   * - Its source line is byte-identical and the deriver merely phrased the claim
+   *   differently → not a supersession at all. Delete it.
+   *
+   * Conflating the two invents history. §8 already notes that a fresh derivation
+   * may phrase a claim differently, so retiring on id alone would make every
+   * `--rederive` flood recall with "was X until today" for values that never
+   * changed — and an invented historical claim is worse than none, because a
+   * reader has no way to tell it apart from a real one.
    */
   private replaceFacts(pageId: string, facts: DerivedFact[]): void {
     const now = nowIso();
     const today = now.slice(0, 10);
 
     const existing = this.store.db
-      .prepare('SELECT id, valid_to FROM facts WHERE page_id = ?')
-      .all(pageId) as { id: string; valid_to: string | null }[];
-    const existingIds = new Set(existing.map((row) => row.id));
+      .prepare('SELECT id, source_line_hash FROM facts WHERE page_id = ?')
+      .all(pageId) as { id: string; source_line_hash: string }[];
     const incomingIds = new Set(facts.map((fact) => factId(pageId, fact.sourceLineHash, fact.claim)));
+    // The source lines this derivation could still see.
+    const liveLineHashes = new Set(facts.map((fact) => fact.sourceLineHash));
 
     const insert = this.store.db.prepare(
       `INSERT INTO facts(id, page_id, claim, subject, attribute, value, line_start, line_end,
@@ -725,9 +738,8 @@ export class Indexer {
     );
 
     for (const fact of facts) {
-      const id = factId(pageId, fact.sourceLineHash, fact.claim);
       insert.run(
-        id,
+        factId(pageId, fact.sourceLineHash, fact.claim),
         pageId,
         fact.claim,
         fact.subject,
@@ -744,8 +756,11 @@ export class Indexer {
     }
 
     const retire = this.store.db.prepare('UPDATE facts SET valid_to = ? WHERE id = ? AND valid_to IS NULL');
-    for (const id of existingIds) {
-      if (!incomingIds.has(id)) retire.run(today, id);
+    const drop = this.store.db.prepare('DELETE FROM facts WHERE id = ?');
+    for (const row of existing) {
+      if (incomingIds.has(row.id)) continue;
+      if (liveLineHashes.has(row.source_line_hash)) drop.run(row.id);
+      else retire.run(today, row.id);
     }
   }
 }
