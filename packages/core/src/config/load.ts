@@ -267,6 +267,7 @@ function resolveRole(
   if (typeof doc?.dimensions === 'number') resolved.dimensions = doc.dimensions;
   if (typeof doc?.batch === 'number') resolved.batch = doc.batch;
   if (typeof doc?.top_k === 'number') resolved.topK = doc.top_k;
+  if (typeof doc?.max_chars === 'number') resolved.maxChars = doc.max_chars;
   if (typeof doc?.max_output_tokens === 'number') resolved.maxOutputTokens = doc.max_output_tokens;
   if (typeof doc?.concurrency === 'number') resolved.concurrency = doc.concurrency;
   return resolved;

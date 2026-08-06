@@ -105,6 +105,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       input.query,
       hits,
       ctx.config.models.reranker.topK ?? 40,
+      ctx.config.models.reranker.maxChars ?? 800,
     );
     hits = result.hits;
     reranked = result.degraded === null;

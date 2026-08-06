@@ -205,6 +205,12 @@ export function toMatchExpression(query: string): string | null {
  * candidates are re-scored against the original query — which is where a
  * cross-encoder earns its cost, since it sees the query and the passage together.
  *
+ * Two measured facts about cost, since they are counter-intuitive: the reranker is
+ * by far the most expensive stage in the pipeline (≈1s against ≈33ms for embedding
+ * and ≈4ms for the lexical arm on a local bge-reranker-v2-m3), and its cost is per
+ * *candidate*, not per character. So `topK` is the only real latency dial, and
+ * turning it down trades away which pages come back — see `config/default.jsonc`.
+ *
  * The output is on **one scale with the un-reranked tail**, which is not a detail.
  * A cross-encoder emits logits (bge-reranker spans roughly -12 to +8) while fusion
  * emits reciprocal ranks around 0.01-0.2. Returning both in one array means any
@@ -217,6 +223,7 @@ export async function rerankHits(
   query: string,
   hits: ChunkHit[],
   topK: number,
+  maxChars = 800,
 ): Promise<{ hits: ChunkHit[]; degraded: DegradedReason | null; note: string | null }> {
   if (!reranker.available || hits.length <= 1) {
     return reranker.available
@@ -225,11 +232,19 @@ export async function rerankHits(
   }
 
   const candidates = hits.slice(0, topK);
+  // One prepared statement for the whole batch rather than one per candidate.
+  const select = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?');
   const texts = candidates.map((hit) => {
-    const row = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?').get(hit.chunkId) as
-      { heading_path: string; text: string } | undefined;
+    const row = select.get(hit.chunkId) as { heading_path: string; text: string } | undefined;
     if (!row) return '';
-    return row.heading_path ? `${row.heading_path}\n${row.text}` : row.text;
+    const full = row.heading_path ? `${row.heading_path}\n${row.text}` : row.text;
+    // Bounds the request payload. Measured as *free* rather than fast: truncating
+    // from the 4,000-char chunk cap to 800 changed neither latency (1036 → 1028 ms)
+    // nor a single result across 8 queries, because this reranker's cost is per
+    // candidate, not per character. `topK` is the latency dial, and lowering that
+    // does change which pages come back. Kept anyway — a cross-encoder's relevance
+    // signal is front-loaded, and an unbounded payload is worth not having.
+    return full.length > maxChars ? full.slice(0, maxChars) : full;
   });
 
   const result = await reranker.rerank(query, texts, candidates.length);

@@ -31,7 +31,11 @@ const EmbeddingRoleDoc = z.object({
   dimensions: z.number().int().positive().optional(),
   batch: z.number().int().positive().optional(),
 });
-const RerankerRoleDoc = z.object({ ...modelRoleBase, top_k: z.number().int().positive().optional() });
+const RerankerRoleDoc = z.object({
+  ...modelRoleBase,
+  top_k: z.number().int().positive().optional(),
+  max_chars: z.number().int().positive().optional(),
+});
 const ChatRoleDoc = z.object({
   ...modelRoleBase,
   max_output_tokens: z.number().int().positive().optional(),
@@ -162,6 +166,8 @@ export interface ResolvedModelRole {
   dimensions?: number;
   batch?: number;
   topK?: number;
+  /** Characters of each candidate sent to the reranker. Cost scales with tokens. */
+  maxChars?: number;
   maxOutputTokens?: number;
   concurrency?: number;
   /** Why the role is unusable, when it is. Reported verbatim by `doctor`. */

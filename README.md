@@ -26,7 +26,7 @@ value is superseded". A prompt is a suggestion. Akno's position is that this bel
 where it runs every time:
 
 - Retrieval returns **page cards with line addresses**, so every claim traces to a sentence in a file.
-- Absence is **a result** — and it distinguishes *nothing matched* from *the index is unavailable*.
+- Absence is **a result** — and it distinguishes _nothing matched_ from _the index is unavailable_.
 - A superseded value comes back **labelled as superseded**, not as a competing current claim.
 - `question` mode reports **coverage**: which concepts of the question the results actually cover.
 - Structure rules — where things go, what is quotable — are **enforced**, not requested.
@@ -66,12 +66,12 @@ states a well-formed durable claim, not how sure it is that the claim is true.
 
 Two files, and only one of them is ever committed.
 
-| File | Committed | Holds |
-|---|---|---|
-| `config/default.jsonc` | **yes** | Every key, with a machine-independent default. Documentation as much as configuration. |
-| `config/local.example.jsonc` | **yes** | The template you copy. |
-| `config/local.jsonc` | **no** — gitignored | Your knowledge base path, your endpoints, your model ids. |
-| `.env` | **no** — gitignored | Secrets only. |
+| File                         | Committed           | Holds                                                                                  |
+| ---------------------------- | ------------------- | -------------------------------------------------------------------------------------- |
+| `config/default.jsonc`       | **yes**             | Every key, with a machine-independent default. Documentation as much as configuration. |
+| `config/local.example.jsonc` | **yes**             | The template you copy.                                                                 |
+| `config/local.jsonc`         | **no** — gitignored | Your knowledge base path, your endpoints, your model ids.                              |
+| `.env`                       | **no** — gitignored | Secrets only.                                                                          |
 
 Precedence, lowest to highest:
 
@@ -97,10 +97,10 @@ both config files, so structure rules are versioned alongside the knowledge base
 Three roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint; one local
 server can host all three.
 
-| Role | Without it |
-|---|---|
-| Embedding | lexical search only — FTS5 with porter stemming still works |
-| Reranker | hybrid score ordering instead of cross-encoder reranking |
+| Role       | Without it                                                                      |
+| ---------- | ------------------------------------------------------------------------------- |
+| Embedding  | lexical search only — FTS5 with porter stemming still works                     |
+| Reranker   | hybrid score ordering instead of cross-encoder reranking                        |
 | Small chat | no summaries, keywords, fact derivation or query expansion — recall still works |
 
 `akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Model
@@ -114,19 +114,19 @@ run.
 
 Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one.
 
-| Op | | What it does |
-|---|---|---|
-| `recall` | ✅ | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query. |
-| `read` | ✅ | One exact thing: a page by slug or id, or a document by id. |
-| `list` | ✅ | Browse structure: folders, pages by type/tag/class/recency, or a tree outline. |
-| `timeline` | ✅ | When things happened — by range, subject, or match. |
-| `context` | ✅ | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall. |
-| `write` | ⬜ | Create, append, patch or replace a page. Carries documents, events, tags and links. |
-| `remember` | ⬜ | Hand over a transcript; Akno runs the retain mission and produces the writes. |
-| `forget` | ⬜ | Retract a fact by removing the sentence that produced it; trash a page or document. |
-| `undo` | ⬜ | Reverse a change by id. |
-| `move` | ⬜ | Relocate a page with its documents. |
-| `ingest` | ⬜ | Extract, OCR, name, summarize and route a file, folder or URL. |
+| Op         |     | What it does                                                                                                                                                     |
+| ---------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `recall`   | ✅  | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query. |
+| `read`     | ✅  | One exact thing: a page by slug or id, or a document by id.                                                                                                      |
+| `list`     | ✅  | Browse structure: folders, pages by type/tag/class/recency, or a tree outline.                                                                                   |
+| `timeline` | ✅  | When things happened — by range, subject, or match.                                                                                                              |
+| `context`  | ✅  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
+| `write`    | ⬜  | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
+| `remember` | ⬜  | Hand over a transcript; Akno runs the retain mission and produces the writes.                                                                                  |
+| `forget`   | ⬜  | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
+| `undo`     | ⬜  | Reverse a change by id.                                                                                                                                          |
+| `move`     | ⬜  | Relocate a page with its documents.                                                                                                                              |
+| `ingest`   | ⬜  | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                   |
 
 `⬜` ops validate their input against the final schema, then return `not_implemented`. They are advertised over
 every door, so a caller can discover them today and will not need to change when they land.
@@ -141,7 +141,7 @@ const { cards } = await mem.recall({ query: 'car insurance renewal', budget: 800
 
 ```ts
 import { connect } from '@akno/client';
-const mem = await connect();                 // unix socket, identical interface
+const mem = await connect(); // unix socket, identical interface
 ```
 
 ```bash
@@ -181,11 +181,11 @@ Not everything in a knowledge base is knowledge. A lot of it is **evidence**: co
 transcripts. You want it stored and findable. You do not want a fact extractor asserting things from it, or
 eleven pages of contract text landing in a retrieval budget.
 
-| Class | Indexed | `recall` returns | Fact-mined |
-|---|---|---|---|
-| `full` *(default)* | yes | summary + matching lines; whole body on `depth: "full"` | yes |
-| `reference` | yes | summary + a capped quote window | **no** |
-| `excluded` | no | nothing | no |
+| Class              | Indexed | `recall` returns                                        | Fact-mined |
+| ------------------ | ------- | ------------------------------------------------------- | ---------- |
+| `full` _(default)_ | yes     | summary + matching lines; whole body on `depth: "full"` | yes        |
+| `reference`        | yes     | summary + a capped quote window                         | **no**     |
+| `excluded`         | no      | nothing                                                 | no         |
 
 > Reference pages are evidence. Full pages are claims. Only claims become facts.
 
@@ -200,12 +200,34 @@ every time, and `recall({ include: ['reference'], depth: 'full' })` lifts the ca
 `akno bench` asserts the spec's budgets so CI fails on regression rather than someone noticing months later.
 Measured against a real 223-page knowledge base (1,068 chunks, Apple Silicon):
 
-| | |
-|---|---|
-| Structural index, cold, 223 pages | 322 ms |
-| Re-index, nothing changed | **10.7 ms** |
-| Point lookup by slug | < 1 ms |
-| FTS5 match | < 1 ms |
+|                                   |            |                          |
+| --------------------------------- | ---------- | ------------------------ |
+| Structural index, cold, 223 pages | 322 ms     |                          |
+| Re-index, nothing changed         | **8.7 ms** | budget 50 ms             |
+| First query, index path only      | 3.3 ms     | budget 50 ms             |
+| `recall`, lexical only            | 2.0 ms     | budget 20 ms             |
+| Point lookup by slug              | 0.4 ms     | budget 10 ms             |
+| `timeline`, 6-month window        | 0.1 ms     | budget 20 ms             |
+| `recall`, hybrid + rerank         | 1,820 ms   | _reported, not budgeted_ |
+
+**Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
+1,820 ms of the 1,823 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints
+FAIL has measured somebody's GPU, not this code, and gets ignored within a week. `doctor` reports the two apart
+for the same reason.
+
+Where that 1.8 s goes, measured by removing one stage at a time:
+
+| Pipeline                | p50       |
+| ----------------------- | --------- |
+| Lexical only            | 4 ms      |
+| \+ embedding            | 33 ms     |
+| \+ cross-encoder rerank | ~1,030 ms |
+| \+ query expansion      | ~1,820 ms |
+
+The reranker dominates, and its cost is per _candidate_, not per character — truncating candidates from 4,000
+chars to 800 changed neither latency nor a single result, while dropping `top_k` from 40 to 20 saved 400 ms and
+changed which pages came back. So `top_k` stays at 40 and `config/default.jsonc` records the trade. Set
+`recall.expansion: false` or point `models.chat` at something faster if you would rather have the latency.
 
 A restart does not re-index — it **stats**. Only files whose mtime or size moved get hashed. mtime is a fast
 path, not a correctness guarantee, so a full hash sweep runs on the periodic backstop and on `index --verify`.
@@ -267,7 +289,7 @@ most important thing to prove is that Akno degrades rather than fails. It also a
 base is left byte-identical, and that deleting the index and re-indexing reproduces the same counts.
 
 Fact lifecycle is tested against a stub chat endpoint (`packages/core/test/facts.test.ts`) rather than a live
-model, because every assertion there is about the conclusion the indexer draws from a *given* derivation — a
+model, because every assertion there is about the conclusion the indexer draws from a _given_ derivation — a
 real model cannot be scripted into producing the case you need.
 
 ## License
