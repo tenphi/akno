@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractConcepts, inferMode, splitMultiPart } from './expand.js';
+import { extractConcepts, inferMode, splitMultiPart } from './expand.ts';
 
 /**
  * §9. Mode inference is a default, and getting it wrong costs relevance, never

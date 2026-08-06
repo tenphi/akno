@@ -1,7 +1,7 @@
 {
   "name": "@akno/core",
   "version": "0.1.0",
-  "description": "Akno — the memory layer itself: index, ops, watcher, models",
+  "description": "Akno \u2014 the memory layer itself: index, ops, watcher, models",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
     "better-sqlite3": "^12.4.1",
     "sqlite-vec": "^0.1.9",
     "yaml": "^2.9.0",
-    "zod": "^4.4.3"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12"

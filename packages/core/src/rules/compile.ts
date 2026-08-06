@@ -1,4 +1,4 @@
-import { FolderRuleDoc, type FolderRule } from '../config/schema.js';
+import { FolderRuleDoc, type FolderRule } from '../config/schema.ts';
 
 /**
  * §5. Rules are glob-scoped and **most-specific-wins**. Specificity is derived
@@ -46,7 +46,7 @@ function specificityOf(glob: string): number {
 /** Cached because `matches` is called once per page per index pass. */
 const regexCache = new Map<string, RegExp>();
 
-export function globToRegExp(glob: string): RegExp {
+function globToRegExp(glob: string): RegExp {
   const cached = regexCache.get(glob);
   if (cached) return cached;
 
@@ -62,7 +62,10 @@ export function globToRegExp(glob: string): RegExp {
       continue;
     }
     if (i > 0) out += '/';
-    out += segment.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*').replace(/\?/g, '[^/]');
+    out += segment
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '[^/]*')
+      .replace(/\?/g, '[^/]');
   }
   out += '$';
 

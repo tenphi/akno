@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.mjs", "vitest.config.ts"],
+      "project": ["scripts/**/*.mjs"]
+    },
+    "packages/protocol": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/core": {
+      "entry": ["src/index.ts", "src/**/*.test.ts", "test/**/*.test.ts"],
+      "project": ["src/**/*.ts", "test/**/*.ts"]
+    },
+    "packages/client": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "packages/cli": {
+      "entry": ["src/bin.ts"],
+      "project": ["src/**/*.ts"]
+    }
+  }
+}

@@ -1,10 +1,10 @@
 import { ContextInput, type Card, type ContextOutput, type Event } from '@akno/protocol';
-import type { AknoContext } from '../context.js';
-import { estimateTokens } from '../recall/assemble.js';
-import { recall } from './recall.js';
-import { read } from './read.js';
-import { timeline } from './timeline.js';
-import { list } from './list.js';
+import type { AknoContext } from '../context.ts';
+import { estimateTokens } from '../recall/assemble.ts';
+import { recall } from './recall.ts';
+import { read } from './read.ts';
+import { timeline } from './timeline.ts';
+import { list } from './list.ts';
 
 /**
  * §9. **One budget, one assembly.** `context` composes the whole pre-turn bundle

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeLinkTarget, parsePage, resolveClass } from './page.js';
-import { parseFrontmatter, withId } from './frontmatter.js';
+import { normalizeLinkTarget, parsePage, resolveClass } from './page.ts';
+import { parseFrontmatter, withId } from './frontmatter.ts';
 
 describe('parseFrontmatter', () => {
   it('parses a block and reports where the body starts', () => {
@@ -108,10 +108,7 @@ describe('parsePage', () => {
   });
 
   it('extracts links from anywhere in the body', () => {
-    expect(page.links.map((link) => link.toSlug)).toEqual([
-      'people/ada-marlow',
-      'finance/accounts',
-    ]);
+    expect(page.links.map((link) => link.toSlug)).toEqual(['people/ada-marlow', 'finance/accounts']);
   });
 
   it('falls back to the first heading when there is no title', () => {

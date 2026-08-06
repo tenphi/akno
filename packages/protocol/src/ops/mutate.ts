@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ResultEnvelope } from '../common.js';
-import { ApprovalRequest, WriteTarget } from './write.js';
+import { ResultEnvelope } from '../common.ts';
+import { ApprovalRequest, WriteTarget } from './write.ts';
 
 /**
  * §8. Hand over a transcript or notes; Akno runs the retain mission with its

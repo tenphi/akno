@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { open, type Akno } from '../src/index.js';
+import { open, type Akno } from '../src/index.ts';
 
 /**
  * §7, §8. Facts are pointers into Markdown, so their lifecycle is decided by what
@@ -75,7 +75,9 @@ beforeEach(async () => {
   server = await startStubChat();
   fs.writeFileSync(
     path.join(root, 'lease.md'),
-    ['---', 'title: Lease', '---', '', '# Lease', '', '- Rent: 1111 EUR', '- Landlord: Bo Winters', ''].join('\n'),
+    ['---', 'title: Lease', '---', '', '# Lease', '', '- Rent: 1111 EUR', '- Landlord: Bo Winters', ''].join(
+      '\n',
+    ),
     'utf8',
   );
   mem = await openMem();
@@ -91,7 +93,13 @@ afterEach(async () => {
 describe('fact lifecycle', () => {
   it('derives a fact and attaches its confidence to the source line', async () => {
     server.setFacts([
-      { line: 7, claim: 'The rent is 1111 EUR per month.', subject: 'lease', attribute: 'rent', value: '1111 EUR' },
+      {
+        line: 7,
+        claim: 'The rent is 1111 EUR per month.',
+        subject: 'lease',
+        attribute: 'rent',
+        value: '1111 EUR',
+      },
     ]);
     await mem.index({});
 
@@ -131,9 +139,7 @@ describe('fact lifecycle', () => {
 
     const page = await mem.read({ slug: 'lease' });
     // The old value comes back labelled, not as a second current answer.
-    expect(page.page!.superseded?.map((entry) => entry.claim)).toEqual([
-      'The rent is 1111 EUR per month.',
-    ]);
+    expect(page.page!.superseded?.map((entry) => entry.claim)).toEqual(['The rent is 1111 EUR per month.']);
     expect(page.page!.lines.some((entry) => entry.text.includes('2222'))).toBe(true);
   });
 
@@ -142,11 +148,7 @@ describe('fact lifecycle', () => {
     await mem.index({});
 
     const lease = path.join(root, 'lease.md');
-    fs.writeFileSync(
-      lease,
-      fs.readFileSync(lease, 'utf8').replace('- Landlord: Bo Winters\n', ''),
-      'utf8',
-    );
+    fs.writeFileSync(lease, fs.readFileSync(lease, 'utf8').replace('- Landlord: Bo Winters\n', ''), 'utf8');
     server.setFacts([]);
     await mem.index({});
 
@@ -174,7 +176,16 @@ describe('fact lifecycle', () => {
   it('does not mine below a reference fence', async () => {
     fs.writeFileSync(
       path.join(root, 'contract.md'),
-      ['# Contract', '', 'Signed in August.', '', '<!-- reference -->', '', 'CLAUSE 1. The tenant shall pay 1111.', ''].join('\n'),
+      [
+        '# Contract',
+        '',
+        'Signed in August.',
+        '',
+        '<!-- reference -->',
+        '',
+        'CLAUSE 1. The tenant shall pay 1111.',
+        '',
+      ].join('\n'),
       'utf8',
     );
     // The model is told about line 7 — but it sits below the fence, so it was

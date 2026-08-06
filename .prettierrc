@@ -1,5 +1,15 @@
 {
   "singleQuote": true,
   "printWidth": 110,
-  "trailingComma": "all"
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": [
+        "*.jsonc"
+      ],
+      "options": {
+        "trailingComma": "none"
+      }
+    }
+  ]
 }

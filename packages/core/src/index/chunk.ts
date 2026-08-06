@@ -1,4 +1,4 @@
-import type { ParsedPage } from '../kb/page.js';
+import type { ParsedPage } from '../kb/page.ts';
 
 export interface Chunk {
   ord: number;
@@ -35,18 +35,119 @@ interface Section {
  *   4. A page with no headings under the cap is one chunk. Most pages are.
  */
 export function chunkPage(page: ParsedPage, options: ChunkOptions): Chunk[] {
-  const sections = splitByHeading(page, 2);
   const chunks: Chunk[] = [];
 
-  for (const section of sections) {
-    for (const piece of fitSection(section, options)) {
-      chunks.push(piece);
+  for (const section of splitByHeading(page, 2)) {
+    if (measure(section) <= options.maxChars) {
+      chunks.push(toChunk(section));
+      continue;
+    }
+
+    // Step 2, and it is the step worth having: an oversized `##` section usually
+    // has `###` subsections, and the author put them there to say where topics
+    // start. Splitting on them instead of on blank lines keeps each chunk's
+    // breadcrumb specific — `Policy › Excess` rather than a second anonymous
+    // slice of `Policy` — which is what a reader sees on the card.
+    const subsections = splitSection(section, 3);
+    for (const subsection of subsections) {
+      if (measure(subsection) <= options.maxChars) chunks.push(toChunk(subsection));
+      // Step 3: still over the cap, so fall back to paragraph boundaries.
+      else chunks.push(...splitByParagraph(subsection, options));
     }
   }
 
   return chunks
+    .flatMap((chunk) => enforceCap(chunk, options))
     .filter((chunk) => chunk.text.trim().length > 0)
     .map((chunk, index) => ({ ...chunk, ord: index }));
+}
+
+/**
+ * The spec's three steps all split on structure the author supplied — headings,
+ * then blank lines. None of them can divide a *single* line longer than the cap,
+ * and those exist: a pasted paragraph with no wrapping, a wide markdown table row,
+ * an inlined data URI. Without this the "hard cap" is not hard, and a chunk can
+ * arrive at the embedding endpoint over its context length, where it is silently
+ * truncated — losing the tail of a page with no indication that it happened.
+ *
+ * So sentence boundaries first, and a blunt character cut only when there are
+ * none. Line addressing survives either way: every piece keeps the line range it
+ * came from, because it came from one line.
+ */
+function enforceCap(chunk: Chunk, options: ChunkOptions): Chunk[] {
+  if (chunk.text.length <= options.maxChars) return [chunk];
+
+  const pieces: string[] = [];
+  let rest = chunk.text;
+  while (rest.length > options.maxChars) {
+    const window = rest.slice(0, options.maxChars);
+    // Prefer the last sentence end in the back half of the window: cutting at the
+    // very first one would produce a stream of tiny chunks.
+    const boundary = lastSentenceEnd(window, Math.floor(options.maxChars / 2));
+    const cut = boundary ?? lastSpace(window, Math.floor(options.maxChars / 2)) ?? options.maxChars;
+    pieces.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).trim();
+  }
+  if (rest.length > 0) pieces.push(rest);
+
+  return pieces.map((text) => ({ ...chunk, text }));
+}
+
+function lastSentenceEnd(text: string, minimum: number): number | null {
+  for (let i = text.length - 1; i >= minimum; i--) {
+    const char = text[i]!;
+    if ((char === '.' || char === '?' || char === '!' || char === ';') && /\s/.test(text[i + 1] ?? ' ')) {
+      return i + 1;
+    }
+  }
+  return null;
+}
+
+function lastSpace(text: string, minimum: number): number | null {
+  const index = text.lastIndexOf(' ');
+  return index >= minimum ? index + 1 : null;
+}
+
+function measure(section: Section): number {
+  return section.lines.reduce((total, line) => total + line.text.length + 1, -1);
+}
+
+function toChunk(section: Section): Chunk {
+  return {
+    ord: 0,
+    kind: 'full',
+    headingPath: section.headings.join(' › '),
+    text: section.lines.map((line) => line.text).join('\n'),
+    lineStart: section.lines[0]!.line,
+    lineEnd: section.lines.at(-1)!.line,
+  };
+}
+
+/**
+ * Re-splits one already-extracted section on a deeper heading level. Lines before
+ * the first subheading stay with the parent, so a section's own introduction is
+ * not orphaned onto whichever subsection happens to follow it.
+ */
+function splitSection(section: Section, depth: number): Section[] {
+  const out: Section[] = [];
+  const headings = [...section.headings];
+  let current: Section = { headings: [...headings], lines: [], depth: section.depth };
+
+  for (const entry of section.lines) {
+    const heading = /^(#{1,6})\s+(.*)$/.exec(entry.text);
+    if (heading && heading[1]!.length === depth) {
+      if (current.lines.length > 0) out.push(current);
+      const label = heading[2]!.replace(/[#*`]/g, '').trim();
+      current = { headings: [...headings, label], lines: [entry], depth };
+      continue;
+    }
+    current.lines.push(entry);
+  }
+  if (current.lines.length > 0) out.push(current);
+
+  // No subheadings found: hand the section back unchanged so the caller falls
+  // through to paragraph splitting rather than looping.
+  return out.length > 1 ? out : [section];
 }
 
 /**
@@ -102,23 +203,13 @@ function compactHeadings(stack: (string | undefined)[]): string[] {
   return stack.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0);
 }
 
-function fitSection(section: Section, options: ChunkOptions): Chunk[] {
-  const text = section.lines.map((l) => l.text).join('\n');
-  const lineStart = section.lines[0]!.line;
-  const lineEnd = section.lines.at(-1)!.line;
+/**
+ * Step 3. Paragraph boundaries with a small overlap: splitting mid-sentence costs
+ * retrieval quality for no gain, and a blank line is the author's own boundary —
+ * the same reason headings are trusted above.
+ */
+function splitByParagraph(section: Section, options: ChunkOptions): Chunk[] {
   const headingPath = section.headings.join(' › ');
-
-  if (text.length <= options.maxChars) {
-    return [{ ord: 0, kind: 'full', headingPath, text, lineStart, lineEnd }];
-  }
-
-  // Step 3: paragraph boundaries with a small overlap. Splitting mid-sentence
-  // costs retrieval quality for no gain — a blank line is the author's own
-  // boundary, the same reason headings are trusted above.
-  return splitByParagraph(section, options, headingPath);
-}
-
-function splitByParagraph(section: Section, options: ChunkOptions, headingPath: string): Chunk[] {
   const chunks: Chunk[] = [];
   let buffer: { text: string; line: number }[] = [];
   let bufferChars = 0;
@@ -140,6 +231,16 @@ function splitByParagraph(section: Section, options: ChunkOptions, headingPath: 
     for (let i = buffer.length - 1; i >= 0 && overlapChars < options.overlapChars; i--) {
       overlap.unshift(buffer[i]!);
       overlapChars += buffer[i]!.text.length + 1;
+    }
+    // An overlap that kept *everything* makes no progress, and the final flush
+    // then emits the same text a second time — duplicating content in the index,
+    // where one line can match twice and inflate a page's apparent relevance. It
+    // happens whenever a single line is longer than overlapChars, which is most
+    // long lines.
+    if (overlap.length === buffer.length) {
+      buffer = [];
+      bufferChars = 0;
+      return;
     }
     buffer = overlap;
     bufferChars = overlapChars;

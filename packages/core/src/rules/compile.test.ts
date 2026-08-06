@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileRules, effectiveRule, matchRules, matchesGlob } from './compile.js';
+import { compileRules, effectiveRule, matchRules, matchesGlob } from './compile.ts';
 
 describe('globToRegExp', () => {
   it('matches a folder and its descendants under **', () => {
@@ -12,7 +12,7 @@ describe('globToRegExp', () => {
 
   it('keeps a single * inside one segment', () => {
     expect(matchesGlob('people/ada', 'people/*')).toBe(true);
-    expect(matchesGlob('people/nested/maria', 'people/*')).toBe(false);
+    expect(matchesGlob('people/nested/ada', 'people/*')).toBe(false);
   });
 
   it('matches everything under a bare **', () => {

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AknoContext } from './context.js';
+import type { AknoContext } from './context.ts';
+import { looksLikeLedger } from './reserved.ts';
 
 /**
  * §14, §6. What's present, what's degraded, and **what that costs.** The last
@@ -56,7 +57,10 @@ export interface DoctorReport {
   warnings: string[];
 }
 
-export async function doctor(ctx: AknoContext, options: { probeModels?: boolean } = {}): Promise<DoctorReport> {
+export async function doctor(
+  ctx: AknoContext,
+  options: { probeModels?: boolean } = {},
+): Promise<DoctorReport> {
   const db = ctx.store.db;
   const warnings: string[] = [];
 
@@ -109,10 +113,13 @@ export async function doctor(ctx: AknoContext, options: { probeModels?: boolean 
 
   // ── Models ───────────────────────────────────────────────────────────────
   const consequences: Record<string, string> = {
-    embedding: 'lexical search only — no semantic matching, and question-mode hypothetical expansion is inert',
-    reranker: 'hybrid score ordering instead of cross-encoder reranking; recall still works, ordering is coarser',
+    embedding:
+      'lexical search only — no semantic matching, and question-mode hypothetical expansion is inert',
+    reranker:
+      'hybrid score ordering instead of cross-encoder reranking; recall still works, ordering is coarser',
     chat: 'no summaries, keywords, fact derivation, query expansion, remember or observations — recall still works',
-    vision: 'photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals',
+    vision:
+      'photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals',
   };
 
   const models: RoleReport[] = [];
@@ -204,21 +211,15 @@ export async function doctor(ctx: AknoContext, options: { probeModels?: boolean 
     vectorBackend: ctx.store.vectors.kind,
     counts,
     byClass,
-    index: { openMs: round(openMs), lexicalMs: round(lexicalMs), vectorMs: vectorMs === null ? null : round(vectorMs) },
+    index: {
+      openMs: round(openMs),
+      lexicalMs: round(lexicalMs),
+      vectorMs: vectorMs === null ? null : round(vectorMs),
+    },
     models,
     reserved,
     warnings,
   };
-}
-
-/** An event ledger has event lines in it. A project plan named `timeline.md` does not. */
-function looksLikeLedger(absPath: string): boolean {
-  try {
-    const head = fs.readFileSync(absPath, 'utf8').slice(0, 8000);
-    return /^\s*[-*]\s+\*\*\d{4}-\d{2}-\d{2}\*\*\s*\|/m.test(head) || /^#\s*Timeline/im.test(head);
-  } catch {
-    return false;
-  }
 }
 
 function round(value: number): number {

@@ -1,5 +1,5 @@
 import { TimelineInput, type TimelineOutput } from '@akno/protocol';
-import type { AknoContext } from '../context.js';
+import type { AknoContext } from '../context.ts';
 
 /**
  * §10. When things happened. Reading is always filtered — a ledger spans years.

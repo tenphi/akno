@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { closeTruncatedJson, parseJsonLoose } from './client.js';
+import { closeTruncatedJson, parseJsonLoose } from './client.ts';
 
 describe('parseJsonLoose', () => {
   it('parses clean JSON', () => {
@@ -29,9 +29,7 @@ describe('parseJsonLoose', () => {
       '{"line":7,"claim":"The rent is 1111 EUR."},' +
       '{"line":8,"claim":"The lease renews on 2027-06-02."},' +
       '{"line":9,"claim":"The landl';
-    const parsed = parseJsonLoose<{ summary: string; facts: { line: number; claim?: string }[] }>(
-      truncated,
-    );
+    const parsed = parseJsonLoose<{ summary: string; facts: { line: number; claim?: string }[] }>(truncated);
     expect(parsed?.summary).toBe('A lease page.');
     // Both complete facts survive with their line numbers intact.
     expect(parsed?.facts[0]).toEqual({ line: 7, claim: 'The rent is 1111 EUR.' });

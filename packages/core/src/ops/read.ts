@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { AknoError, ReadInput, type PageClass, type ReadOutput } from '@akno/protocol';
-import type { AknoContext } from '../context.js';
+import type { AknoContext } from '../context.ts';
 
 /**
  * §5. `read({slug})` returns the full body of a `reference` page every time.

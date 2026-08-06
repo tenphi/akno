@@ -239,6 +239,10 @@ packages/cli        commands and the three doors
 config/             default.jsonc (committed) + local.jsonc (never)
 ```
 
+Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`, and
+`@modelcontextprotocol/sdk` for the MCP door. Terminal colour is `node:util`'s `styleText`, request deadlines are
+`AbortSignal.timeout`, and the file walker is `node:fs` — none of that needs a package.
+
 `@akno/protocol` exists so `@akno/client` can share schemas with `@akno/core` without pulling
 `better-sqlite3` and `sqlite-vec` into a host's build.
 
@@ -246,15 +250,25 @@ config/             default.jsonc (committed) + local.jsonc (never)
 
 ```bash
 pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — 86 tests, no models required
-pnpm typecheck
-pnpm lint
+pnpm test          # vitest — 143 tests, no models required
+pnpm lint          # oxlint
+pnpm knip          # dead exports and unused dependencies
 pnpm bench
+pnpm akno …      # the CLI from source, no bundler
 ```
+
+The source runs on Node directly: `node packages/cli/src/bin.ts recall "…"`. That works because relative imports
+name the file that is actually on disk (`./output.ts`, rewritten to `.js` on emit by
+`rewriteRelativeImportExtensions`) and `erasableSyntaxOnly` keeps the source inside what Node's own type
+stripping supports. There is no bundler or loader in the dev path.
 
 The integration suite builds a real knowledge base on disk and indexes it **with no models configured** — the
 most important thing to prove is that Akno degrades rather than fails. It also asserts that the knowledge
 base is left byte-identical, and that deleting the index and re-indexing reproduces the same counts.
+
+Fact lifecycle is tested against a stub chat endpoint (`packages/core/test/facts.test.ts`) rather than a live
+model, because every assertion there is about the conclusion the indexer draws from a *given* derivation — a
+real model cannot be scripted into producing the case you need.
 
 ## License
 

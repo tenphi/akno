@@ -1,6 +1,6 @@
-import { parseJsonLoose, type ModelClient } from '../models/client.js';
-import { sha256 } from '../store/ids.js';
-import type { ParsedPage } from '../kb/page.js';
+import { parseJsonLoose, type ModelClient } from '../models/client.ts';
+import { sha256 } from '../store/ids.ts';
+import type { ParsedPage } from '../kb/page.ts';
 
 /**
  * §6, §7. Deriving structure from text already in the knowledge base — facts,
@@ -99,7 +99,8 @@ export async function derivePage(
       ],
       { json: true, maxTokens: 400 },
     );
-    const retried = retry.ok && retry.value ? parseJsonLoose<{ summary?: unknown; keywords?: unknown }>(retry.value) : null;
+    const retried =
+      retry.ok && retry.value ? parseJsonLoose<{ summary?: unknown; keywords?: unknown }>(retry.value) : null;
     if (!retried) return { ...empty, error: 'derivation returned unparseable JSON' };
     return {
       summary: options.summaries ? cleanSummary(retried.summary) : null,
@@ -198,6 +199,15 @@ function optionalString(value: unknown): string | null {
   return trimmed.length > 0 && trimmed.length <= 200 ? trimmed : null;
 }
 
+/** Verb-ish tokens that make a fragment read as a statement. Not linguistics —
+ *  just enough to tell "Rent is 1111 EUR" from "3 March 1911". */
+const VERBS =
+  /\b(is|are|was|were|has|have|had|will|can|prefers|lives|costs|expires|renews|includes|owns|uses|works|covers|holds|requires|means|pays|runs|starts|ends|contains|supports|allows)\b/i;
+
+/** A date with nothing attached: "3 March 1911", "5 May 1990", "2026-11-04". */
+const BARE_DATE =
+  /^(\d{1,2}\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)?\s*\d{0,4}$|^\d{4}-\d{2}-\d{2}$/i;
+
 const HEDGES = [
   'probably',
   'maybe',
@@ -251,7 +261,11 @@ export function scoreConfidence(
   // A number, date, currency or identifier — where conflicts are real and
   // detectable (§8), and where a wrong value actually costs something.
   if (/\d/.test(sourceText)) score += 0.08;
-  if (/\d{4}-\d{2}-\d{2}|[€$£]\s?\d|\b\d+(?:[.,]\d+)?\s?(?:%|eur|usd|gbp|kg|km|months?|years?)\b/i.test(sourceText)) {
+  if (
+    /\d{4}-\d{2}-\d{2}|[€$£]\s?\d|\b\d+(?:[.,]\d+)?\s?(?:%|eur|usd|gbp|kg|km|months?|years?)\b/i.test(
+      sourceText,
+    )
+  ) {
     score += 0.07;
   }
 
@@ -270,14 +284,26 @@ export function scoreConfidence(
   // and a bold-key line (`- **Warranty:** five years`) both trip every
   // structural signal above, so a deriver that answers with the *label* rather
   // than the claim was scoring 0.86 on a single word.
-  if (claimWords.length < 3) score -= 0.34;
-  else if (claimWords.length === 3) score -= 0.16;
+  // A `Key: value` claim is self-contained at any length — the key *is* the
+  // subject — so the word-count penalty must not bury "Capacity: 2.5 L".
+  const hasKey = /^[A-Z][^:]{1,40}:\s*\S/.test(claim);
+  if (!hasKey) {
+    if (claimWords.length < 3) score -= 0.34;
+    else if (claimWords.length === 3) score -= 0.16;
+  }
   // A bare label — one capitalized word, or a shouted table header — is the
   // fragment case even when it is long enough to pass the word count.
   if (/^[A-Z][A-Za-z]*$/.test(claim.trim()) || /^[A-Z][A-Z\s]+$/.test(claim.trim())) score -= 0.2;
   // No verb-like token and no value means there is nothing being asserted.
-  if (claimWords.length < 6 && !/\d/.test(claim) && !/\b(is|are|was|were|has|have|will|prefers|lives|costs|expires|renews|includes|owns|uses|works|covers|holds|requires|means)\b/i.test(claim)) {
-    score -= 0.12;
+  if (claimWords.length < 6 && !/\d/.test(claim) && !VERBS.test(claim)) score -= 0.12;
+
+  // A claim with no *subject* is not self-contained however well-formed it looks.
+  // Two shapes: a bare date or measurement with nothing it belongs to, and a
+  // predicate starting with a lowercase verb where the subject was dropped.
+  // A `Key: value` line is deliberately exempt — the key *is* the subject.
+  if (!hasKey) {
+    if (/^[\d\s,.:/–—-]+$/.test(claim) || BARE_DATE.test(claim)) score -= 0.3;
+    else if (/^[a-z]+\s/.test(claim) && VERBS.test(claimWords[0] ?? '')) score -= 0.22;
   }
 
   return Math.round(Math.max(0.05, Math.min(0.98, score)) * 100) / 100;

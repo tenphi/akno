@@ -1,4 +1,5 @@
-import type { ResolvedModelRole } from '../config/schema.js';
+import type { DegradedReason } from '@akno/protocol';
+import type { ResolvedModelRole } from '../config/schema.ts';
 
 /**
  * §14. Any OpenAI-compatible endpoint, per role. One local server can host all
@@ -10,10 +11,19 @@ import type { ResolvedModelRole } from '../config/schema.js';
  * can report `degraded` instead of pretending the knowledge base is empty.
  */
 
+/**
+ * Why a model call failed, as a value. The alternative — reading it back out of
+ * the human-readable `error` string with `includes('rerank')` — is a translation
+ * layer that silently stops working the moment a message is reworded, on exactly
+ * the path whose job is to report degradation honestly.
+ */
+export type ModelFailure = 'unavailable' | 'timeout' | 'request_failed' | 'bad_response';
+
 export interface ModelOutcome<T> {
   ok: boolean;
   value: T | null;
-  /** Present on failure. Surfaced verbatim in `doctor` and in `degraded`. */
+  reason?: ModelFailure;
+  /** Human-readable detail. For `doctor` and logs, never for control flow. */
   error?: string;
   latencyMs: number;
 }
@@ -24,43 +34,67 @@ export interface ChatMessage {
 }
 
 export class ModelClient {
-  constructor(private readonly role: ResolvedModelRole) {}
+  readonly #role: ResolvedModelRole;
+
+  constructor(role: ResolvedModelRole) {
+    this.#role = role;
+  }
 
   get available(): boolean {
-    return this.role.enabled && this.role.provider !== null && this.role.id !== null;
+    return this.#role.enabled && this.#role.provider !== null && this.#role.id !== null;
   }
 
   get unavailableReason(): string | null {
-    return this.role.unavailableReason;
+    return this.#role.unavailableReason;
   }
 
   get modelId(): string | null {
-    return this.role.id;
+    return this.#role.id;
+  }
+
+  get role(): ResolvedModelRole['role'] {
+    return this.#role.role;
+  }
+
+  /** True when the user asked for this role, whether or not it resolved. */
+  get requested(): boolean {
+    return this.#role.requested;
+  }
+
+  /** Maps an outcome onto the vocabulary a caller branches on. */
+  degradedReason(outcome: { reason?: ModelFailure }): DegradedReason {
+    return degradedReasonFor(this.#role.role, outcome.reason ?? 'unavailable');
   }
 
   private async post<T>(endpoint: string, body: unknown, timeoutMs?: number): Promise<ModelOutcome<T>> {
     const started = performance.now();
-    if (!this.available || !this.role.provider) {
-      return { ok: false, value: null, error: this.role.unavailableReason ?? 'model unavailable', latencyMs: 0 };
+    if (!this.available || !this.#role.provider) {
+      return {
+        ok: false,
+        value: null,
+        reason: 'unavailable',
+        error: this.#role.unavailableReason ?? 'model unavailable',
+        latencyMs: 0,
+      };
     }
 
-    const controller = new AbortController();
-    // Cleared in `finally`: an uncleared abort timer keeps the event loop alive
-    // for the full timeout after the request has already resolved, which turns a
-    // 40ms CLI command into a 60-second one.
-    const timer = setTimeout(() => controller.abort(), timeoutMs ?? this.role.timeoutMs);
+    const deadline = timeoutMs ?? this.#role.timeoutMs;
     try {
       const headers: Record<string, string> = {
         'content-type': 'application/json',
-        ...this.role.provider.headers,
+        ...this.#role.provider.headers,
       };
-      if (this.role.provider.apiKey) headers.authorization = `Bearer ${this.role.provider.apiKey}`;
+      if (this.#role.provider.apiKey) headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
 
-      const response = await fetch(`${this.role.provider.baseUrl}${endpoint}`, {
+      const response = await fetch(`${this.#role.provider.baseUrl}${endpoint}`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),
-        signal: controller.signal,
+        // `AbortSignal.timeout` is self-clearing. A hand-rolled
+        // setTimeout+AbortController leaks a pending timer on every request that
+        // resolves before its deadline, which holds the event loop open for the
+        // full timeout and turns a 40ms CLI command into a 60-second one.
+        signal: AbortSignal.timeout(deadline),
       });
 
       if (!response.ok) {
@@ -68,23 +102,24 @@ export class ModelClient {
         return {
           ok: false,
           value: null,
-          error: `${this.role.role} endpoint returned ${response.status}${detail ? `: ${detail}` : ''}`,
+          reason: 'request_failed',
+          error: `${this.#role.role} endpoint returned ${response.status}${detail ? `: ${detail}` : ''}`,
           latencyMs: performance.now() - started,
         };
       }
       return { ok: true, value: (await response.json()) as T, latencyMs: performance.now() - started };
     } catch (err) {
-      const aborted = err instanceof Error && err.name === 'AbortError';
+      // `AbortSignal.timeout` rejects with TimeoutError, not AbortError.
+      const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
       return {
         ok: false,
         value: null,
-        error: aborted
-          ? `${this.role.role} timed out after ${timeoutMs ?? this.role.timeoutMs}ms`
-          : `${this.role.role} request failed: ${err instanceof Error ? err.message : String(err)}`,
+        reason: timedOut ? 'timeout' : 'request_failed',
+        error: timedOut
+          ? `${this.#role.role} timed out after ${deadline}ms`
+          : `${this.#role.role} request failed: ${err instanceof Error ? err.message : String(err)}`,
         latencyMs: performance.now() - started,
       };
-    } finally {
-      clearTimeout(timer);
     }
   }
 
@@ -96,7 +131,7 @@ export class ModelClient {
     if (inputs.length === 0) return { ok: true, value: [], latencyMs: 0 };
     const result = await this.post<{ data: { embedding: number[] | string; index: number }[] }>(
       '/embeddings',
-      { model: this.role.id, input: inputs, encoding_format: 'float' },
+      { model: this.#role.id, input: inputs, encoding_format: 'float' },
     );
     if (!result.ok || !result.value) return { ...result, value: null };
 
@@ -109,7 +144,13 @@ export class ModelClient {
       vectors[entry.index ?? 0] = values;
     }
     if (vectors.some((v) => !v)) {
-      return { ok: false, value: null, error: 'embedding response was missing entries', latencyMs: result.latencyMs };
+      return {
+        ok: false,
+        value: null,
+        reason: 'bad_response',
+        error: 'embedding response was missing entries',
+        latencyMs: result.latencyMs,
+      };
     }
     return { ok: true, value: vectors, latencyMs: result.latencyMs };
   }
@@ -121,10 +162,9 @@ export class ModelClient {
     topN?: number,
   ): Promise<ModelOutcome<{ index: number; score: number }[]>> {
     if (documents.length === 0) return { ok: true, value: [], latencyMs: 0 };
-    const result = await this.post<{ results: { index: number; relevance_score?: number; score?: number }[] }>(
-      '/rerank',
-      { model: this.role.id, query, documents, top_n: topN ?? documents.length },
-    );
+    const result = await this.post<{
+      results: { index: number; relevance_score?: number; score?: number }[];
+    }>('/rerank', { model: this.#role.id, query, documents, top_n: topN ?? documents.length });
     if (!result.ok || !result.value) return { ...result, value: null };
     const results = (result.value.results ?? []).map((entry) => ({
       index: entry.index,
@@ -138,9 +178,9 @@ export class ModelClient {
     options: { json?: boolean; maxTokens?: number; temperature?: number; timeoutMs?: number } = {},
   ): Promise<ModelOutcome<string>> {
     const body: Record<string, unknown> = {
-      model: this.role.id,
+      model: this.#role.id,
       messages,
-      max_tokens: options.maxTokens ?? this.role.maxOutputTokens ?? 1024,
+      max_tokens: options.maxTokens ?? this.#role.maxOutputTokens ?? 1024,
       temperature: options.temperature ?? 0,
     };
     // A 3B model free-forms its way out of a JSON contract given the chance.
@@ -154,7 +194,13 @@ export class ModelClient {
     if (!result.ok || !result.value) return { ...result, value: null };
     const content = result.value.choices?.[0]?.message?.content;
     if (typeof content !== 'string') {
-      return { ok: false, value: null, error: 'chat response had no content', latencyMs: result.latencyMs };
+      return {
+        ok: false,
+        value: null,
+        reason: 'bad_response',
+        error: 'chat response had no content',
+        latencyMs: result.latencyMs,
+      };
     }
     return { ok: true, value: content, latencyMs: result.latencyMs };
   }
@@ -167,18 +213,60 @@ export class ModelClient {
    */
   async ping(): Promise<ModelOutcome<number>> {
     if (!this.available) {
-      return { ok: false, value: null, error: this.role.unavailableReason ?? 'unavailable', latencyMs: 0 };
+      return {
+        ok: false,
+        value: null,
+        reason: 'unavailable',
+        error: this.#role.unavailableReason ?? 'unavailable',
+        latencyMs: 0,
+      };
     }
-    if (this.role.role === 'embedding') {
+    if (this.#role.role === 'embedding') {
       const result = await this.embed(['ping']);
-      return { ok: result.ok, value: result.ok ? result.latencyMs : null, error: result.error, latencyMs: result.latencyMs };
+      return {
+        ok: result.ok,
+        value: result.ok ? result.latencyMs : null,
+        ...(result.reason ? { reason: result.reason } : {}),
+        ...(result.error ? { error: result.error } : {}),
+        latencyMs: result.latencyMs,
+      };
     }
-    if (this.role.role === 'reranker') {
+    if (this.#role.role === 'reranker') {
       const result = await this.rerank('ping', ['ping'], 1);
-      return { ok: result.ok, value: result.ok ? result.latencyMs : null, error: result.error, latencyMs: result.latencyMs };
+      return {
+        ok: result.ok,
+        value: result.ok ? result.latencyMs : null,
+        ...(result.reason ? { reason: result.reason } : {}),
+        ...(result.error ? { error: result.error } : {}),
+        latencyMs: result.latencyMs,
+      };
     }
     const result = await this.chat([{ role: 'user', content: 'ok' }], { maxTokens: 1 });
-    return { ok: result.ok, value: result.ok ? result.latencyMs : null, error: result.error, latencyMs: result.latencyMs };
+    return {
+      ok: result.ok,
+      value: result.ok ? result.latencyMs : null,
+      ...(result.reason ? { reason: result.reason } : {}),
+      ...(result.error ? { error: result.error } : {}),
+      latencyMs: result.latencyMs,
+    };
+  }
+}
+
+/**
+ * The single place a model failure becomes the vocabulary a caller branches on.
+ * `unavailable` means the role was never configured or is switched off — the
+ * result is weaker but the knowledge base is intact; everything else means a
+ * configured model did not answer, which an operator needs to see.
+ */
+function degradedReasonFor(role: ResolvedModelRole['role'], failure: ModelFailure): DegradedReason {
+  const unconfigured = failure === 'unavailable';
+  switch (role) {
+    case 'embedding':
+      return unconfigured ? 'no_embedding_model' : 'embedding_failed';
+    case 'reranker':
+      return unconfigured ? 'no_reranker' : 'rerank_failed';
+    default:
+      return unconfigured ? 'no_chat_model' : 'expansion_failed';
   }
 }
 

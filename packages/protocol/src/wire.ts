@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ERROR_CODES } from './errors.js';
+import { ERROR_CODES } from './errors.ts';
 
 /**
  * Newline-delimited JSON, one object per line, over a unix socket or an HTTP

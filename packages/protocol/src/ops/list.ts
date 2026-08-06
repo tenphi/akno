@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PageClass, ResultEnvelope } from '../common.js';
+import { PageClass, ResultEnvelope } from '../common.ts';
 
 /** Browse structure: folders, or pages by type / tag / class / recency. */
 export const ListInput = z.object({

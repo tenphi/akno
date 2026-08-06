@@ -18,6 +18,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "composite": true,
-    "incremental": true
+    "incremental": true,
+    "erasableSyntaxOnly": true,
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   }
 }

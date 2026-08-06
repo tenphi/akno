@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DatePrefix, ResultEnvelope } from '../common.js';
+import { DatePrefix, ResultEnvelope } from '../common.ts';
 
 /** Reading is always filtered — a ledger spans years (§10). */
 export const TimelineInput = z.object({

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ResultEnvelope } from '../common.js';
+import { ResultEnvelope } from '../common.ts';
 
 /**
  * §10. There is no `add_event` op, and nothing about line syntax reaches a
@@ -50,11 +50,9 @@ export const WriteInput = z
   .refine((v) => Boolean(v.slug || v.propose_slug || v.event), {
     message: 'write requires a slug, a proposed slug, or an event',
   })
-  .refine(
-    (v) =>
-      [v.content, v.append, v.patch, v.replace].filter((x) => x !== undefined).length <= 1,
-    { message: 'write takes at most one of: content, append, patch, replace' },
-  );
+  .refine((v) => [v.content, v.append, v.patch, v.replace].filter((x) => x !== undefined).length <= 1, {
+    message: 'write takes at most one of: content, append, patch, replace',
+  });
 export type WriteInput = z.infer<typeof WriteInput>;
 
 export const WriteTarget = z.object({

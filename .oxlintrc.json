@@ -1,0 +1,51 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "oxc", "promise"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn"
+  },
+  "ignorePatterns": ["**/dist/**", "**/*.tsbuildinfo"],
+  "rules": {
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports"
+      }
+    ],
+    "typescript/no-explicit-any": "warn",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
+    "no-console": "off",
+    "no-empty": [
+      "error",
+      {
+        "allowEmptyCatch": true
+      }
+    ],
+    "no-await-in-loop": "off",
+    "oxc/no-map-spread": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "packages/core/test/**", "scripts/**"],
+      "rules": {
+        "typescript/no-explicit-any": "off",
+        "typescript/no-non-null-assertion": "off"
+      }
+    }
+  ]
+}

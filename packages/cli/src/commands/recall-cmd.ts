@@ -1,9 +1,9 @@
 import type { Card, RecallMode } from '@akno/protocol';
-import { openOptionsFrom, parse } from '../args.js';
-import { heading, json, line, statusLabel, style, truncate } from '../output.js';
-import { resolveOps } from '../ops-handle.js';
+import { openOptionsFrom, parse } from '../args.ts';
+import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
+import { resolveOps } from '../ops-handle.ts';
 
-export const RECALL_HELP = `akno recall <query> [options]
+const RECALL_HELP = `akno recall <query> [options]
 
   Search memory. Returns page cards: a summary plus the lines that matched, each
   with the file and line it came from.
@@ -85,7 +85,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
  * pile of ranked chunks cannot give: the status, the coverage, and a line address
  * on every quoted line.
  */
-export function printRecall(result: {
+function printRecall(result: {
   status: string;
   degraded?: string[];
   cards: Card[];

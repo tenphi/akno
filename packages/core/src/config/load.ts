@@ -1,10 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { AknoError } from '@akno/protocol';
-import { readJsoncFile } from './jsonc.js';
-import { expandTilde, findRepoRoot, resolveUserPath } from './paths.js';
-import { compileRules } from '../rules/compile.js';
+import { readJsoncFile } from './jsonc.ts';
+import { expandTilde, findRepoRoot, resolveUserPath } from './paths.ts';
+import { compileRules } from '../rules/compile.ts';
 import {
   ConfigDoc,
   type AknoConfig,
@@ -12,7 +11,7 @@ import {
   type ResolvedModelRole,
   type ResolvedProvider,
   type SecretRef,
-} from './schema.js';
+} from './schema.ts';
 
 export interface LoadOptions {
   /** Wins over every file, for `open({ aknoPath })` and `--akno-path`. */
@@ -120,10 +119,10 @@ function findDefaultConfig(): string {
     const inRepo = path.join(repoRoot, 'config', 'default.jsonc');
     if (fs.existsSync(inRepo)) return inRepo;
   }
-  // Installed: `config/` is shipped beside the package's `dist`.
-  const here = path.dirname(fileURLToPath(import.meta.url));
+  // Installed: `config/` is shipped beside the package's `dist` (see the core
+  // package's prepack), so walk up from this module rather than from cwd.
   for (const up of ['..', '../..', '../../..']) {
-    const candidate = path.resolve(here, up, 'config', 'default.jsonc');
+    const candidate = path.resolve(import.meta.dirname, up, 'config', 'default.jsonc');
     if (fs.existsSync(candidate)) return candidate;
   }
   return path.join(findRepoRoot() ?? process.cwd(), 'config', 'default.jsonc');
@@ -188,7 +187,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * Appending would make it impossible to *remove* a default, and a config you
  * cannot subtract from is a config you end up fighting.
  */
-export function mergeDoc<T>(base: T, overlay: T): T {
+function mergeDoc<T>(base: T, overlay: T): T {
   if (!isPlainObject(base) || !isPlainObject(overlay)) {
     return (overlay === undefined ? base : overlay) as T;
   }

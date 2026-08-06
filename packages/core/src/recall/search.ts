@@ -1,11 +1,12 @@
-import type { Store } from '../store/db.js';
-import type { ModelClient } from '../models/client.js';
+import type { DegradedReason } from '@akno/protocol';
+import type { Store } from '../store/db.ts';
+import type { ModelClient } from '../models/client.ts';
 
 export interface ChunkHit {
   chunkId: number;
   pageId: string;
   score: number;
-  /** Which arm found it. Reported by `--explain` and useful when tuning. */
+  /** Which arms found it. Used by fusion to merge duplicates across arms. */
   from: ('vector' | 'lexical')[];
 }
 
@@ -17,13 +18,15 @@ export interface SearchOptions {
   candidatesPerArm: number;
   /** Restrict to these page ids. Used by filters and by `context` pinning. */
   pageIds?: Set<string>;
+  /** Above this many vectors, restrict the vector arm to lexical candidates (§6). */
+  prefilterAbove?: number;
 }
 
 export interface SearchResult {
   hits: ChunkHit[];
-  degraded: string[];
-  /** True when the vector arm never ran, so the result is lexical only. */
-  lexicalOnly: boolean;
+  degraded: DegradedReason[];
+  /** Human-readable detail for logs and `doctor`, never for control flow. */
+  notes: string[];
 }
 
 /**
@@ -39,25 +42,37 @@ export async function hybridSearch(
   embedding: ModelClient,
   options: SearchOptions,
 ): Promise<SearchResult> {
-  const degraded: string[] = [];
+  const degraded: DegradedReason[] = [];
+  const notes: string[] = [];
 
   const lexical = lexicalSearch(store, options.queries, options.candidatesPerArm, options.pageIds);
 
   let vector: ChunkHit[] = [];
-  let lexicalOnly = true;
   if (embedding.available) {
     const embedded = await embedding.embed(options.vectorTexts);
     if (embedded.ok && embedded.value) {
-      lexicalOnly = false;
-      vector = vectorSearch(store, embedded.value, options.candidatesPerArm, options.pageIds);
+      // §6 step 1: candidate pre-filtering. Scoring only the lexical candidate
+      // set instead of every vector raises the ceiling several-fold for free —
+      // but it cannot help a purely semantic query with no lexical overlap, so it
+      // is a fallback for a knowledge base past the brute-force threshold, not
+      // the default. Below the threshold, an exact scan of everything is both
+      // faster than it needs to be and strictly more accurate.
+      const prefilter =
+        options.prefilterAbove !== undefined && store.vectors.count() > options.prefilterAbove
+          ? new Set(lexical.map((hit) => hit.chunkId))
+          : undefined;
+      if (prefilter) notes.push(`vector scan pre-filtered to ${prefilter.size} lexical candidates`);
+      vector = vectorSearch(store, embedded.value, options.candidatesPerArm, options.pageIds, prefilter);
     } else {
-      degraded.push(embedded.error ?? 'embedding failed');
+      degraded.push(embedding.degradedReason(embedded));
+      if (embedded.error) notes.push(embedded.error);
     }
   } else {
-    degraded.push(embedding.unavailableReason ?? 'no embedding model');
+    degraded.push(embedding.degradedReason({}));
+    if (embedding.unavailableReason) notes.push(embedding.unavailableReason);
   }
 
-  return { hits: fuse(lexical, vector), degraded, lexicalOnly };
+  return { hits: fuse([lexical, vector]), degraded, notes };
 }
 
 /**
@@ -66,12 +81,7 @@ export async function hybridSearch(
  * with eight alternatives ranks a chunk matching one weak term above a chunk
  * matching the original phrase.
  */
-export function lexicalSearch(
-  store: Store,
-  queries: string[],
-  limit: number,
-  pageIds?: Set<string>,
-): ChunkHit[] {
+function lexicalSearch(store: Store, queries: string[], limit: number, pageIds?: Set<string>): ChunkHit[] {
   const perQuery: ChunkHit[][] = [];
 
   for (const query of queries) {
@@ -94,7 +104,12 @@ export function lexicalSearch(
         rows
           .filter((row) => !pageIds || pageIds.has(row.page_id))
           // bm25 returns negative numbers, more negative being better.
-          .map((row) => ({ chunkId: row.chunk_id, pageId: row.page_id, score: -row.rank, from: ['lexical' as const] })),
+          .map((row) => ({
+            chunkId: row.chunk_id,
+            pageId: row.page_id,
+            score: -row.rank,
+            from: ['lexical' as const],
+          })),
       );
     } catch {
       // A MATCH expression FTS5 rejects is a bad query, not a broken index.
@@ -102,7 +117,7 @@ export function lexicalSearch(
     }
   }
 
-  return fuseLists(perQuery);
+  return fuse(perQuery);
 }
 
 function vectorSearch(
@@ -110,13 +125,14 @@ function vectorSearch(
   vectors: Float32Array[],
   limit: number,
   pageIds?: Set<string>,
+  prefilter?: Set<number>,
 ): ChunkHit[] {
   const perVector: ChunkHit[][] = [];
   const pageOf = store.db.prepare('SELECT page_id FROM chunks WHERE id = ?');
 
   for (const vector of vectors) {
     if (vector.length !== store.vectors.dimensions) continue;
-    const hits = store.vectors.search(vector, limit);
+    const hits = store.vectors.search(vector, limit, prefilter);
     const mapped: ChunkHit[] = [];
     for (const hit of hits) {
       const row = pageOf.get(hit.chunkId) as { page_id: string } | undefined;
@@ -127,7 +143,7 @@ function vectorSearch(
     perVector.push(mapped);
   }
 
-  return fuseLists(perVector);
+  return fuse(perVector);
 }
 
 /**
@@ -137,22 +153,14 @@ function vectorSearch(
  */
 const RRF_K = 60;
 
-function fuseLists(lists: ChunkHit[][]): ChunkHit[] {
-  if (lists.length === 0) return [];
-  if (lists.length === 1) return lists[0]!;
-  return fuseMany(lists);
-}
+function fuse(lists: ChunkHit[][]): ChunkHit[] {
+  const populated = lists.filter((list) => list.length > 0);
+  // One list needs no fusion, and passing it through keeps its own scores rather
+  // than flattening them all onto the reciprocal-rank scale.
+  if (populated.length <= 1) return populated[0] ?? [];
 
-function fuse(lexical: ChunkHit[], vector: ChunkHit[]): ChunkHit[] {
-  if (vector.length === 0) return lexical;
-  if (lexical.length === 0) return vector;
-  return fuseMany([lexical, vector]);
-}
-
-function fuseMany(lists: ChunkHit[][]): ChunkHit[] {
   const merged = new Map<number, ChunkHit>();
-
-  for (const list of lists) {
+  for (const list of populated) {
     const sorted = [...list].sort((a, b) => b.score - a.score);
     for (let rank = 0; rank < sorted.length; rank++) {
       const hit = sorted[rank]!;
@@ -209,29 +217,30 @@ export async function rerankHits(
   query: string,
   hits: ChunkHit[],
   topK: number,
-): Promise<{ hits: ChunkHit[]; degraded: string | null }> {
+): Promise<{ hits: ChunkHit[]; degraded: DegradedReason | null; note: string | null }> {
   if (!reranker.available || hits.length <= 1) {
-    return { hits, degraded: reranker.available ? null : reranker.unavailableReason };
+    return reranker.available
+      ? { hits, degraded: null, note: null }
+      : { hits, degraded: reranker.degradedReason({}), note: reranker.unavailableReason };
   }
 
   const candidates = hits.slice(0, topK);
   const texts = candidates.map((hit) => {
     const row = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?').get(hit.chunkId) as
-      | { heading_path: string; text: string }
-      | undefined;
+      { heading_path: string; text: string } | undefined;
     if (!row) return '';
     return row.heading_path ? `${row.heading_path}\n${row.text}` : row.text;
   });
 
   const result = await reranker.rerank(query, texts, candidates.length);
   if (!result.ok || !result.value) {
-    return { hits, degraded: result.error ?? 'rerank failed' };
+    return { hits, degraded: reranker.degradedReason(result), note: result.error ?? null };
   }
   if (result.value.length === 0) {
     // An endpoint that answers 200 with no results has not reranked anything.
     // Reporting that is the difference between "coarser ordering" and a silent
     // regression nobody notices for months.
-    return { hits, degraded: 'rerank returned no results' };
+    return { hits, degraded: 'rerank_failed', note: 'rerank returned no results' };
   }
 
   const reordered: ChunkHit[] = [];
@@ -255,7 +264,7 @@ export async function rerankHits(
     score: (floor * (tail.length - index)) / (tail.length + 1),
   }));
 
-  return { hits: [...reordered, ...rescaledTail], degraded: null };
+  return { hits: [...reordered, ...rescaledTail], degraded: null, note: null };
 }
 
 function sigmoid(logit: number): number {

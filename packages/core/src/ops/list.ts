@@ -1,6 +1,6 @@
 import { ListInput, type ListOutput, type PageClass } from '@akno/protocol';
-import type { AknoContext } from '../context.js';
-import { matchRules } from '../rules/compile.js';
+import type { AknoContext } from '../context.ts';
+import { matchRules } from '../rules/compile.ts';
 
 /**
  * Browse structure rather than search it. The point of this op is that an agent
@@ -120,7 +120,12 @@ function listFolders(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>
         pages_deep: deep.get(folderPath) ?? 0,
         folders: subfolders.get(folderPath)?.size ?? 0,
         ...(match.rule
-          ? { rule: { ...(match.rule.class ? { class: match.rule.class } : {}), source: `${match.rule.glob} (${match.rule.source})` } }
+          ? {
+              rule: {
+                ...(match.rule.class ? { class: match.rule.class } : {}),
+                source: `${match.rule.glob} (${match.rule.source})`,
+              },
+            }
           : {}),
       };
     });

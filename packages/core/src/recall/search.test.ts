@@ -1,8 +1,8 @@
 import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
-import type { ModelClient } from '../models/client.js';
-import type { Store } from '../store/db.js';
-import { normalizeScores, rerankHits, toMatchExpression, type ChunkHit } from './search.js';
+import type { ModelClient } from '../models/client.ts';
+import type { Store } from '../store/db.ts';
+import { normalizeScores, rerankHits, toMatchExpression, type ChunkHit } from './search.ts';
 
 describe('toMatchExpression', () => {
   it('turns a natural-language query into a legal FTS5 expression', () => {
@@ -77,17 +77,28 @@ describe('rerankHits', () => {
     return { db } as unknown as Store;
   }
 
-  function fakeReranker(scores: number[]): ModelClient {
+  /** Only what `rerankHits` touches. Typed through ModelClient so a change to the
+   *  real surface breaks these stubs rather than letting them drift. */
+  function stubReranker(overrides: Partial<ModelClient> = {}): ModelClient {
     return {
       available: true,
+      requested: true,
       unavailableReason: null,
       modelId: 'fake',
+      role: 'reranker',
+      degradedReason: () => 'rerank_failed',
+      ...overrides,
+    } as unknown as ModelClient;
+  }
+
+  function fakeReranker(scores: number[]): ModelClient {
+    return stubReranker({
       rerank: async () => ({
         ok: true,
         value: scores.map((score, index) => ({ index, score })),
         latencyMs: 1,
       }),
-    } as unknown as ModelClient;
+    } as unknown as Partial<ModelClient>);
   }
 
   const hits: ChunkHit[] = Array.from({ length: 5 }, (_, i) => ({
@@ -124,19 +135,38 @@ describe('rerankHits', () => {
   });
 
   it('reports a rerank that returned nothing instead of silently not reranking', async () => {
-    const empty = { ...fakeReranker([]), rerank: async () => ({ ok: true, value: [], latencyMs: 1 }) };
-    const result = await rerankHits(store, empty as unknown as ModelClient, 'q', hits, 3);
-    expect(result.degraded).toBe('rerank returned no results');
+    const empty = stubReranker({
+      rerank: async () => ({ ok: true, value: [], latencyMs: 1 }),
+    } as unknown as Partial<ModelClient>);
+    const result = await rerankHits(store, empty, 'q', hits, 3);
+    expect(result.degraded).toBe('rerank_failed');
+    expect(result.note).toBe('rerank returned no results');
   });
 
   it('degrades rather than throwing when the endpoint fails', async () => {
-    const broken = {
-      available: true,
-      unavailableReason: null,
-      rerank: async () => ({ ok: false, value: null, error: 'reranker timed out', latencyMs: 1 }),
-    };
-    const result = await rerankHits(store, broken as unknown as ModelClient, 'q', hits, 3);
-    expect(result.degraded).toBe('reranker timed out');
+    const broken = stubReranker({
+      rerank: async () => ({
+        ok: false,
+        value: null,
+        reason: 'timeout',
+        error: 'reranker timed out',
+        latencyMs: 1,
+      }),
+    } as unknown as Partial<ModelClient>);
+    const result = await rerankHits(store, broken, 'q', hits, 3);
+    // The reason is a value the caller branches on; the message is for a human.
+    expect(result.degraded).toBe('rerank_failed');
+    expect(result.note).toBe('reranker timed out');
     expect(result.hits).toEqual(hits);
+  });
+
+  it('names an unconfigured reranker differently from a broken one', async () => {
+    const absent = stubReranker({
+      available: false,
+      unavailableReason: 'no model id configured for reranker',
+      degradedReason: () => 'no_reranker',
+    } as unknown as Partial<ModelClient>);
+    const result = await rerankHits(store, absent, 'q', hits, 3);
+    expect(result.degraded).toBe('no_reranker');
   });
 });

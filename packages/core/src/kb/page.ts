@@ -1,21 +1,21 @@
 import path from 'node:path';
 import type { PageClass } from '@akno/protocol';
-import { parseFrontmatter, readString, readTags, type Frontmatter } from './frontmatter.js';
-import { sha256 } from '../store/ids.js';
+import { parseFrontmatter, readString, readTags, type Frontmatter } from './frontmatter.ts';
+import { sha256 } from '../store/ids.ts';
 
 /**
  * §4. Reserved markers inside a page. This is the complete list — everything
  * else in a body is prose Akno does not interpret.
  */
-export const REFERENCE_FENCE = /^<!--\s*reference\s*-->\s*$/i;
+const REFERENCE_FENCE = /^<!--\s*reference\s*-->\s*$/i;
 /** `- **2026-06-02** | Renewed the apartment lease. [[home/lease]]` */
-export const EVENT_LINE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|\s*(.+?)\s*$/;
-export const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
-export const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s]+\.md)(?:#[^)]*)?\)/g;
+const EVENT_LINE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|\s*(.+?)\s*$/;
+const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
+const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s]+\.md)(?:#[^)]*)?\)/g;
 /** `<page-basename>-<8 hex>.<ext>` is read as an attachment of that page (§11). */
 export const ATTACHMENT_NAME = /^(.+)-([0-9a-f]{8})\.([A-Za-z0-9]+)$/;
 
-export interface ParsedEvent {
+interface ParsedEvent {
   date: string;
   summary: string;
   /** The first wikilink on the line, if any. Plenty of events never have one. */
@@ -23,7 +23,7 @@ export interface ParsedEvent {
   line: number;
 }
 
-export interface ParsedLink {
+interface ParsedLink {
   toSlug: string;
   kind: 'wikilink' | 'markdown';
   line: number;
@@ -83,7 +83,10 @@ export function parsePage(relPath: string, content: string): ParsedPage {
       events.push({
         date: event[1]!,
         // The link is part of the line's syntax, not part of what happened.
-        summary: summary.replace(WIKILINK, '').replace(/\s{2,}/g, ' ').trim(),
+        summary: summary
+          .replace(WIKILINK, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim(),
         targetSlug: firstWikilink(summary),
         line: absoluteLine,
       });
@@ -139,7 +142,7 @@ function deriveTitle(lines: string[], relPath: string): string {
   return base.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function relPathToSlug(relPath: string): string {
+function relPathToSlug(relPath: string): string {
   return relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, '');
 }
 
@@ -156,7 +159,10 @@ function firstWikilink(text: string): string | null {
  * false "broken link" reports.
  */
 export function normalizeLinkTarget(target: string, fromSlug?: string): string {
-  let cleaned = target.trim().replace(/\\/g, '/').replace(/\.(md|markdown)$/i, '');
+  let cleaned = target
+    .trim()
+    .replace(/\\/g, '/')
+    .replace(/\.(md|markdown)$/i, '');
   if (cleaned.startsWith('./')) cleaned = cleaned.slice(2);
 
   if (fromSlug && (cleaned.startsWith('../') || !cleaned.includes('/'))) {

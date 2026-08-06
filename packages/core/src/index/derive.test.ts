@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scoreConfidence } from './derive.js';
+import { scoreConfidence } from './derive.ts';
 
 /**
  * §7, §19. Confidence answers one narrow question: how sure is the deriver that
@@ -36,9 +36,9 @@ describe('scoreConfidence', () => {
   });
 
   it('scores an unchecked task low — an intention is not a fact', () => {
-    expect(scoreConfidence('- [ ] Call the landlord about the rent', 'Call the landlord about the rent.')).toBeLessThan(
-      0.55,
-    );
+    expect(
+      scoreConfidence('- [ ] Call the landlord about the rent', 'Call the landlord about the rent.'),
+    ).toBeLessThan(0.55);
   });
 
   /**
@@ -50,7 +50,7 @@ describe('scoreConfidence', () => {
    */
   it('penalizes a claim that is a fragment rather than a sentence', () => {
     const fragment = scoreConfidence('- **Warranty:** five years', 'Warranty');
-    const sentence = scoreConfidence('- **Warranty:** five years', 'Their warranty is five years.');
+    const sentence = scoreConfidence('- **Warranty:** five years', 'The warranty runs for five years.');
     expect(fragment).toBeLessThan(0.55);
     expect(sentence).toBeGreaterThan(0.75);
     expect(sentence - fragment).toBeGreaterThan(0.25);
@@ -75,6 +75,26 @@ describe('scoreConfidence', () => {
       'The household purchased a Zephyr dishwasher in March 2026 with a five-year warranty covering parts and labour.',
     );
     expect(inflated).toBeLessThan(0.6);
+  });
+
+  /**
+   * §19 leaves confidence open and asks for measurement against a labelled set.
+   * These are the shapes that survived the first calibration pass over a real
+   * knowledge base and were still scoring high while carrying no subject.
+   */
+  it('penalizes a claim with no subject', () => {
+    // A bare date. The line it came from said what the date was *for*; the claim
+    // does not, so it cannot be read on its own.
+    expect(scoreConfidence('- Born: 2 February 1970', '2 February 1970')).toBeLessThan(0.6);
+    expect(scoreConfidence('- Renews: 2027-06-02', '2027-06-02')).toBeLessThan(0.6);
+    // A dropped subject: who or what has specific hours?
+    expect(scoreConfidence('The museum has specific hours.', 'has specific hours')).toBeLessThan(0.6);
+  });
+
+  it('exempts a Key: value claim, where the key is the subject', () => {
+    // These read fine alone, so the short-claim penalty must not bury them.
+    expect(scoreConfidence('- Capacity: 2.5 L', 'Capacity: 2.5 L')).toBeGreaterThan(0.7);
+    expect(scoreConfidence('- Weight: 350 g', 'Weight: 350 g')).toBeGreaterThan(0.7);
   });
 
   it('stays inside 0..1 for every input', () => {

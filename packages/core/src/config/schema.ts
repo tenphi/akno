@@ -26,20 +26,20 @@ const modelRoleBase = {
   timeout_ms: z.number().int().positive().optional(),
 };
 
-export const EmbeddingRoleDoc = z.object({
+const EmbeddingRoleDoc = z.object({
   ...modelRoleBase,
   dimensions: z.number().int().positive().optional(),
   batch: z.number().int().positive().optional(),
 });
-export const RerankerRoleDoc = z.object({ ...modelRoleBase, top_k: z.number().int().positive().optional() });
-export const ChatRoleDoc = z.object({
+const RerankerRoleDoc = z.object({ ...modelRoleBase, top_k: z.number().int().positive().optional() });
+const ChatRoleDoc = z.object({
   ...modelRoleBase,
   max_output_tokens: z.number().int().positive().optional(),
   concurrency: z.number().int().positive().optional(),
 });
-export const VisionRoleDoc = z.object({ ...modelRoleBase });
+const VisionRoleDoc = z.object({ ...modelRoleBase });
 
-export const ModelsDoc = z.object({
+const ModelsDoc = z.object({
   embedding: EmbeddingRoleDoc.optional(),
   reranker: RerankerRoleDoc.optional(),
   chat: ChatRoleDoc.optional(),
@@ -63,14 +63,14 @@ export const FolderRuleDoc = z.object({
 });
 export type FolderRuleDoc = z.infer<typeof FolderRuleDoc>;
 
-export const PathsDoc = z.object({
+const PathsDoc = z.object({
   timeline: z.string().optional(),
   inbox: z.string().optional(),
   observations: z.string().optional(),
   journal: z.string().optional(),
 });
 
-export const IndexDoc = z.object({
+const IndexDoc = z.object({
   chunk_target_chars: z.number().int().positive().optional(),
   chunk_max_chars: z.number().int().positive().optional(),
   chunk_overlap_chars: z.number().int().nonnegative().optional(),
@@ -80,7 +80,7 @@ export const IndexDoc = z.object({
   ann_threshold_chunks: z.number().int().positive().optional(),
 });
 
-export const RecallDoc = z.object({
+const RecallDoc = z.object({
   default_budget: z.number().int().positive().optional(),
   default_limit: z.number().int().positive().optional(),
   candidates_per_arm: z.number().int().positive().optional(),
@@ -97,14 +97,14 @@ export const RecallDoc = z.object({
     .optional(),
 });
 
-export const WatchDoc = z.object({
+const WatchDoc = z.object({
   enabled: z.boolean().optional(),
   debounce_ms: z.number().int().nonnegative().optional(),
   sweep_interval_ms: z.number().int().nonnegative().optional(),
   verify_interval_ms: z.number().int().nonnegative().optional(),
 });
 
-export const ServerDoc = z.object({
+const ServerDoc = z.object({
   socket: z.string().optional(),
   http: z.string().nullable().optional(),
   mcp_allow: z.array(z.string()).optional(),

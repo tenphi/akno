@@ -1,28 +1,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {
-  AknoError,
-  OPS,
-  type AknoOps,
-  type OpName,
-  type OpInput,
-  type OpResult,
-} from '@akno/protocol';
-import { loadConfig, type LoadOptions } from './config/load.js';
-import type { AknoConfig } from './config/schema.js';
-import { acquireWriteLock, openStore, type WriteLock } from './store/db.js';
-import { ModelClient } from './models/client.js';
-import { Assembler } from './recall/assemble.js';
-import { Indexer, type IndexOptions, type IndexReport } from './index/indexer.js';
-import { Watcher, type WatcherEvents } from './watch/watcher.js';
-import { doctor, type DoctorReport } from './doctor.js';
-import { effectiveRule, matchRules } from './rules/compile.js';
-import type { AknoContext } from './context.js';
-import { recall } from './ops/recall.js';
-import { read } from './ops/read.js';
-import { list } from './ops/list.js';
-import { timeline } from './ops/timeline.js';
-import { context as contextOp } from './ops/context.js';
+import { AknoError, OPS, type AknoOps, type OpName, type OpInput, type OpResult } from '@akno/protocol';
+import { loadConfig, type LoadOptions } from './config/load.ts';
+import type { AknoConfig } from './config/schema.ts';
+import { acquireWriteLock, openStore, type WriteLock } from './store/db.ts';
+import { ModelClient } from './models/client.ts';
+import { Assembler } from './recall/assemble.ts';
+import { Indexer, type IndexOptions, type IndexReport } from './index/indexer.ts';
+import { Watcher, type WatcherEvents } from './watch/watcher.ts';
+import { doctor, type DoctorReport } from './doctor.ts';
+import { effectiveRule, matchRules } from './rules/compile.ts';
+import { looksLikeLedger } from './reserved.ts';
+import type { AknoContext } from './context.ts';
+import { recall } from './ops/recall.ts';
+import { read } from './ops/read.ts';
+import { list } from './ops/list.ts';
+import { timeline } from './ops/timeline.ts';
+import { context as contextOp } from './ops/context.ts';
 
 export interface OpenOptions extends LoadOptions {
   /** Take the write handle. False for a second process that only reads (§16). */
@@ -95,7 +89,6 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     store,
     models,
     assembler: new Assembler(config, store),
-    indexer,
     writable,
     lockHeldBy,
   };
@@ -135,10 +128,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     }
 
     if (definition.kind === 'write' && !writable) {
-      throw new AknoError(
-        'read_only',
-        `${op} needs the write handle, which pid ${lockHeldBy} is holding`,
-      );
+      throw new AknoError('read_only', `${op} needs the write handle, which pid ${lockHeldBy} is holding`);
     }
 
     const implementation = implementations[op];
@@ -213,6 +203,21 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
  */
 function ensureReservedPaths(config: AknoConfig): void {
   const timelineAbs = path.join(config.aknoPath, config.paths.timeline);
+
+  // §4 is emphatic here: if a reserved path already exists and isn't what Akno
+  // expects — a `timeline.md` that is somebody's project plan — Akno warns,
+  // points at the config key, and **refuses to start** rather than adopting a file
+  // the user meant something else by. Silently treating it as a ledger would start
+  // appending event lines into the middle of their document.
+  if (fs.existsSync(timelineAbs) && !looksLikeLedger(timelineAbs)) {
+    throw new AknoError(
+      'invalid',
+      `${config.paths.timeline} already exists and does not look like an event ledger — it has no ` +
+        '`- **YYYY-MM-DD** | …` lines. Akno will not adopt a file you meant something else by. ' +
+        'Point it elsewhere with `paths.timeline`, or set `create_reserved_paths: false`.',
+    );
+  }
+
   if (!fs.existsSync(timelineAbs)) {
     const year = new Date().getFullYear();
     fs.mkdirSync(path.dirname(timelineAbs), { recursive: true });
@@ -230,6 +235,12 @@ function ensureReservedPaths(config: AknoConfig): void {
   }
 
   const inboxAbs = path.join(config.aknoPath, config.paths.inbox);
+  if (fs.existsSync(inboxAbs) && !fs.statSync(inboxAbs).isDirectory()) {
+    throw new AknoError(
+      'invalid',
+      `${config.paths.inbox} exists and is not a directory. Remap it with \`paths.inbox\`.`,
+    );
+  }
   if (!fs.existsSync(inboxAbs)) {
     fs.mkdirSync(inboxAbs, { recursive: true });
     fs.writeFileSync(

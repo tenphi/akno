@@ -1,8 +1,8 @@
 import { open } from '@akno/core';
-import { openOptionsFrom, parse } from '../args.js';
-import { heading, json, kv, line, ms, progressWriter, style, warn } from '../output.js';
+import { openOptionsFrom, parse } from '../args.ts';
+import { heading, json, kv, line, ms, progressWriter, style, warn } from '../output.ts';
 
-export const INDEX_HELP = `akno index [options]
+const INDEX_HELP = `akno index [options]
 
   Reconcile the index against the knowledge base. Safe to run any time — a pass
   with nothing changed stats the tree and stops.

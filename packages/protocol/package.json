@@ -1,7 +1,7 @@
 {
   "name": "@akno/protocol",
   "version": "0.1.0",
-  "description": "Akno op registry and schemas — the single source of truth every door is generated from",
+  "description": "Akno op registry and schemas \u2014 the single source of truth every door is generated from",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,8 +12,10 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
-    "zod": "^4.4.3"
+    "zod": "catalog:"
   }
 }

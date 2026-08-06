@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { open, type Akno } from '../src/index.js';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { open, type Akno } from '../src/index.ts';
 
 /**
  * End-to-end over a real knowledge base on disk, with **no models configured**.
@@ -228,7 +228,10 @@ describe('recall without any model', () => {
   });
 
   it('caps what a reference page contributes unprompted', async () => {
-    const result = await mem.recall({ query: 'deliveries bicycles quiet hours waste lift balcony', mode: 'lookup' });
+    const result = await mem.recall({
+      query: 'deliveries bicycles quiet hours waste lift balcony',
+      mode: 'lookup',
+    });
     const card = result.cards.find((entry) => entry.slug === 'reference/building-rules');
     expect(card).toBeDefined();
     // The page has seven articles; the quote window defaults to six lines.
@@ -443,5 +446,72 @@ describe('rebuilding the index', () => {
     expect(after.counts.chunks).toBe(before.counts.chunks);
     expect(after.counts.events).toBe(before.counts.events);
     expect(after.counts.links).toBe(before.counts.links);
+  });
+});
+
+/**
+ * §4. Akno owns what a handful of paths *mean*, and the rule for all of them is
+ * the same: if one already exists and isn't what Akno expects, leave it
+ * completely alone. Warn, point at the config key, refuse to start.
+ */
+describe('reserved paths', () => {
+  let scratch: string;
+  let scratchState: string;
+
+  beforeEach(() => {
+    scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-reserved-kb-'));
+    scratchState = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-reserved-state-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(scratch, { recursive: true, force: true });
+    fs.rmSync(scratchState, { recursive: true, force: true });
+  });
+
+  const openScratch = (createReserved: boolean) =>
+    open({
+      aknoPath: scratch,
+      stateDir: scratchState,
+      isolated: true,
+      overrides: {
+        akno_path: scratch,
+        state_dir: scratchState,
+        create_reserved_paths: createReserved,
+        providers: {},
+        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+      },
+    });
+
+  it('refuses to start rather than adopt a timeline.md that means something else', async () => {
+    fs.writeFileSync(
+      path.join(scratch, 'timeline.md'),
+      '# Project timeline\n\nQ1: hire. Q2: ship. Q3: rest.\n',
+      'utf8',
+    );
+    // Appending ledger lines into the middle of someone's project plan is not a
+    // recoverable mistake, so this must be a refusal and not a warning.
+    await expect(openScratch(true)).rejects.toThrow(/does not look like an event ledger/);
+  });
+
+  it('creates a ledger when there is none and it was asked to', async () => {
+    const scratchMem = await openScratch(true);
+    const written = fs.readFileSync(path.join(scratch, 'timeline.md'), 'utf8');
+    expect(written).toMatch(/^#\s*Timeline/m);
+    expect(fs.existsSync(path.join(scratch, 'inbox', 'README.md'))).toBe(true);
+    await scratchMem.close();
+  });
+
+  it('creates nothing at all by default', async () => {
+    const scratchMem = await openScratch(false);
+    expect(fs.readdirSync(scratch)).toEqual([]);
+    await scratchMem.close();
+  });
+
+  it('accepts an existing ledger and appends nothing on open', async () => {
+    const ledger = '# Timeline\n\n## 2026\n- **2026-01-02** | Something happened.\n';
+    fs.writeFileSync(path.join(scratch, 'timeline.md'), ledger, 'utf8');
+    const scratchMem = await openScratch(true);
+    expect(fs.readFileSync(path.join(scratch, 'timeline.md'), 'utf8')).toBe(ledger);
+    await scratchMem.close();
   });
 });

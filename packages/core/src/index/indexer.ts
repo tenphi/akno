@@ -1,16 +1,16 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import type { AknoConfig } from '../config/schema.js';
-import { effectiveRule } from '../rules/compile.js';
-import { hashFile, mapWithConcurrency, scanTree, type ScannedFile } from '../kb/scan.js';
-import { ATTACHMENT_NAME, parsePage, resolveClass, type ParsedPage } from '../kb/page.js';
-import { withId } from '../kb/frontmatter.js';
-import { applyReferenceFence, chunkPage, embeddingText, type Chunk } from './chunk.js';
-import { derivePage, type DerivedFact } from './derive.js';
-import { eventId, factId, newPageId, sha256 } from '../store/ids.js';
-import type { Store } from '../store/db.js';
-import type { ModelClient } from '../models/client.js';
+import type { AknoConfig } from '../config/schema.ts';
+import { effectiveRule } from '../rules/compile.ts';
+import { hashFile, mapWithConcurrency, scanTree, type ScannedFile } from '../kb/scan.ts';
+import { ATTACHMENT_NAME, parsePage, resolveClass, type ParsedPage } from '../kb/page.ts';
+import { withId } from '../kb/frontmatter.ts';
+import { applyReferenceFence, chunkPage, embeddingText, type Chunk } from './chunk.ts';
+import { derivePage, type DerivedFact } from './derive.ts';
+import { eventId, factId, newPageId, sha256 } from '../store/ids.ts';
+import type { Store } from '../store/db.ts';
+import type { ModelClient } from '../models/client.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path (§6). */
@@ -70,11 +70,15 @@ interface FileRow {
  * moved get hashed, so a full restart with nothing changed is a 1.2ms sweep.
  */
 export class Indexer {
-  constructor(
-    private readonly config: AknoConfig,
-    private readonly store: Store,
-    private readonly models: { embedding: ModelClient; chat: ModelClient },
-  ) {}
+  readonly #config: AknoConfig;
+  readonly #store: Store;
+  readonly #models: { embedding: ModelClient; chat: ModelClient };
+
+  constructor(config: AknoConfig, store: Store, models: { embedding: ModelClient; chat: ModelClient }) {
+    this.#config = config;
+    this.#store = store;
+    this.#models = models;
+  }
 
   async run(options: IndexOptions = {}): Promise<IndexReport> {
     const started = performance.now();
@@ -99,14 +103,12 @@ export class Indexer {
 
     progress({ phase: 'scan', done: 0, total: 0 });
     const scanned = await scanTree({
-      root: this.config.aknoPath,
-      ignore: this.config.ignore,
-      pageExtensions: this.config.pageExtensions,
-      maxPageBytes: this.config.maxPageBytes,
+      root: this.#config.aknoPath,
+      ignore: this.#config.ignore,
+      pageExtensions: this.#config.pageExtensions,
+      maxPageBytes: this.#config.maxPageBytes,
     });
-    const files = options.only
-      ? scanned.filter((file) => options.only!.includes(file.relPath))
-      : scanned;
+    const files = options.only ? scanned.filter((file) => options.only!.includes(file.relPath)) : scanned;
     report.scanned = files.length;
 
     const known = this.knownFiles();
@@ -128,7 +130,7 @@ export class Indexer {
 
     progress({ phase: 'hash', done: 0, total: changed.length });
     let hashed = 0;
-    await mapWithConcurrency(changed, this.config.index.hashConcurrency, async (file) => {
+    await mapWithConcurrency(changed, this.#config.index.hashConcurrency, async (file) => {
       try {
         file.sha256 = await hashFile(file.absPath);
       } catch (err) {
@@ -196,20 +198,20 @@ export class Indexer {
   // ─── Files table ──────────────────────────────────────────────────────────
 
   private knownFiles(): Map<string, FileRow> {
-    const rows = this.store.db
+    const rows = this.#store.db
       .prepare('SELECT rel_path, size, mtime_ns, sha256, kind, page_id FROM files')
       .all() as FileRow[];
     return new Map(rows.map((row) => [row.rel_path, row]));
   }
 
   private touchFile(file: ScannedFile): void {
-    this.store.db
+    this.#store.db
       .prepare('UPDATE files SET mtime_ns = ?, size = ?, indexed_at = ? WHERE rel_path = ?')
       .run(file.mtimeNs, file.size, nowIso(), file.relPath);
   }
 
   private recordFile(file: ScannedFile, pageId: string | null): void {
-    this.store.db
+    this.#store.db
       .prepare(
         `INSERT INTO files(rel_path, size, mtime_ns, sha256, kind, page_id, indexed_at)
          VALUES(?, ?, ?, ?, ?, ?, ?)
@@ -243,11 +245,11 @@ export class Indexer {
       if (successor && successor.kind === row.kind && row.page_id) {
         // Same bytes, new path: follow the id rather than retiring it.
         const slug = successor.relPath.replace(/\.(md|markdown)$/i, '');
-        this.store.transaction(() => {
-          this.store.db
+        this.#store.transaction(() => {
+          this.#store.db
             .prepare('UPDATE pages SET slug = ?, rel_path = ? WHERE id = ?')
             .run(slug, successor.relPath, row.page_id);
-          this.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(row.rel_path);
+          this.#store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(row.rel_path);
         });
         report.pagesRenamed++;
         // The successor still needs indexing for its links and events, but its
@@ -256,15 +258,15 @@ export class Indexer {
         continue;
       }
 
-      this.store.transaction(() => {
+      this.#store.transaction(() => {
         if (row.page_id) {
-          this.store.vectors.removeForPage(row.page_id);
+          this.#store.vectors.removeForPage(row.page_id);
           this.deleteChunkRows(row.page_id);
-          this.store.db.prepare('DELETE FROM pages WHERE id = ?').run(row.page_id);
+          this.#store.db.prepare('DELETE FROM pages WHERE id = ?').run(row.page_id);
         } else {
-          this.store.db.prepare('DELETE FROM documents WHERE rel_path = ?').run(row.rel_path);
+          this.#store.db.prepare('DELETE FROM documents WHERE rel_path = ?').run(row.rel_path);
         }
-        this.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(row.rel_path);
+        this.#store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(row.rel_path);
       });
       if (row.kind === 'page') report.pagesRemoved++;
     }
@@ -283,8 +285,8 @@ export class Indexer {
 
     const content = await fsp.readFile(file.absPath, 'utf8');
     const page = parsePage(file.relPath, content);
-    const rule = effectiveRule(page.slug, this.config.rules);
-    const resolved = resolveClass(page, { ...rule, glob: rule.glob }, this.config.paths.observations);
+    const rule = effectiveRule(page.slug, this.#config.rules);
+    const resolved = resolveClass(page, { ...rule, glob: rule.glob }, this.#config.paths.observations);
 
     if (resolved.class === 'excluded') {
       // An excluded page must leave nothing behind, including from a pass that
@@ -299,9 +301,9 @@ export class Indexer {
     const pageId = this.resolvePageId(page, file);
     const chunks = applyReferenceFence(
       chunkPage(page, {
-        targetChars: this.config.index.chunkTargetChars,
-        maxChars: this.config.index.chunkMaxChars,
-        overlapChars: this.config.index.chunkOverlapChars,
+        targetChars: this.#config.index.chunkTargetChars,
+        maxChars: this.#config.index.chunkMaxChars,
+        overlapChars: this.#config.index.chunkOverlapChars,
       }),
       page.referenceFenceLine,
     );
@@ -312,7 +314,7 @@ export class Indexer {
         ? chunks.map((chunk) => ({ ...chunk, kind: 'reference' as const }))
         : chunks;
 
-    this.store.transaction(() => {
+    this.#store.transaction(() => {
       this.upsertPage(pageId, page, resolved.class, file);
       this.replaceChunks(pageId, effectiveChunks);
       this.replaceEvents(pageId, page);
@@ -325,7 +327,7 @@ export class Indexer {
     report.eventsIndexed += page.events.length;
 
     // The single write Akno ever makes into a page, and only when asked (§12).
-    if (this.config.writeIds && !page.frontmatterId) {
+    if (this.#config.writeIds && !page.frontmatterId) {
       await this.writeIdIntoPage(file, content, pageId, report);
     }
   }
@@ -337,9 +339,8 @@ export class Indexer {
    */
   private resolvePageId(page: ParsedPage, file: ScannedFile): string {
     if (page.frontmatterId) {
-      const existing = this.store.db
-        .prepare('SELECT id FROM pages WHERE id = ?')
-        .get(page.frontmatterId) as { id: string } | undefined;
+      const existing = this.#store.db.prepare('SELECT id FROM pages WHERE id = ?').get(page.frontmatterId) as
+        { id: string } | undefined;
       if (existing) return existing.id;
       // A page carrying an id from another machine keeps it — that is the point
       // of writing one at all.
@@ -350,16 +351,16 @@ export class Indexer {
     if (byPath) return byPath;
 
     if (file.sha256) {
-      const byHash = this.store.db
+      const byHash = this.#store.db
         .prepare('SELECT page_id FROM files WHERE sha256 = ? AND kind = ? AND page_id IS NOT NULL LIMIT 1')
         .get(file.sha256, 'page') as { page_id: string } | undefined;
       if (byHash?.page_id) {
-        const stillThere = this.store.db
+        const stillThere = this.#store.db
           .prepare('SELECT rel_path FROM pages WHERE id = ?')
           .get(byHash.page_id) as { rel_path: string } | undefined;
         // Only adopt the id if the original file is actually gone; otherwise this
         // is a genuine duplicate and both pages need their own identity.
-        if (stillThere && !fileExists(path.join(this.config.aknoPath, stillThere.rel_path))) {
+        if (stillThere && !fileExists(path.join(this.#config.aknoPath, stillThere.rel_path))) {
           return byHash.page_id;
         }
       }
@@ -369,9 +370,8 @@ export class Indexer {
   }
 
   private pageIdForPath(relPath: string): string | null {
-    const row = this.store.db.prepare('SELECT id FROM pages WHERE rel_path = ?').get(relPath) as
-      | { id: string }
-      | undefined;
+    const row = this.#store.db.prepare('SELECT id FROM pages WHERE rel_path = ?').get(relPath) as
+      { id: string } | undefined;
     return row?.id ?? null;
   }
 
@@ -397,17 +397,11 @@ export class Indexer {
     }
   }
 
-  private upsertPage(
-    pageId: string,
-    page: ParsedPage,
-    pageClass: string,
-    file: ScannedFile,
-  ): void {
-    const existing = this.store.db.prepare('SELECT created_at FROM pages WHERE id = ?').get(pageId) as
-      | { created_at: string | null }
-      | undefined;
+  private upsertPage(pageId: string, page: ParsedPage, pageClass: string, file: ScannedFile): void {
+    const existing = this.#store.db.prepare('SELECT created_at FROM pages WHERE id = ?').get(pageId) as
+      { created_at: string | null } | undefined;
 
-    this.store.db
+    this.#store.db
       .prepare(
         `INSERT INTO pages(
            id, slug, rel_path, title, type, tags, class, frontmatter, body_hash,
@@ -442,14 +436,14 @@ export class Indexer {
   }
 
   private replaceChunks(pageId: string, chunks: Chunk[]): void {
-    this.store.vectors.removeForPage(pageId);
+    this.#store.vectors.removeForPage(pageId);
     this.deleteChunkRows(pageId);
 
-    const insert = this.store.db.prepare(
+    const insert = this.#store.db.prepare(
       `INSERT INTO chunks(page_id, ord, kind, heading_path, text, line_start, line_end, embedded)
        VALUES(?, ?, ?, ?, ?, ?, ?, 0)`,
     );
-    const insertFts = this.store.db.prepare(
+    const insertFts = this.#store.db.prepare(
       'INSERT INTO chunks_fts(rowid, text, heading_path) VALUES(?, ?, ?)',
     );
     for (const chunk of chunks) {
@@ -468,24 +462,24 @@ export class Indexer {
 
   /** FTS5 external-content tables need explicit deletes; there are no triggers. */
   private deleteChunkRows(pageId: string): void {
-    const rows = this.store.db.prepare('SELECT id FROM chunks WHERE page_id = ?').all(pageId) as {
+    const rows = this.#store.db.prepare('SELECT id FROM chunks WHERE page_id = ?').all(pageId) as {
       id: number;
     }[];
-    const deleteFts = this.store.db.prepare('DELETE FROM chunks_fts WHERE rowid = ?');
+    const deleteFts = this.#store.db.prepare('DELETE FROM chunks_fts WHERE rowid = ?');
     for (const row of rows) deleteFts.run(row.id);
-    this.store.db.prepare('DELETE FROM chunks WHERE page_id = ?').run(pageId);
+    this.#store.db.prepare('DELETE FROM chunks WHERE page_id = ?').run(pageId);
   }
 
   private replaceEvents(pageId: string, page: ParsedPage): void {
-    this.store.db.prepare('DELETE FROM events WHERE source_page = ?').run(pageId);
-    const insert = this.store.db.prepare(
+    this.#store.db.prepare('DELETE FROM events WHERE source_page = ?').run(pageId);
+    const insert = this.#store.db.prepare(
       `INSERT INTO events(id, date, summary, target_slug, source_slug, source_page, line)
        VALUES(?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`,
     );
     for (const event of page.events) {
       // Duplicates collapse on (date, target, summary), so an event that exists
       // both in the ledger and on its page counts once (§10).
-      const target = event.targetSlug ?? (isLedger(page.slug, this.config) ? null : page.slug);
+      const target = event.targetSlug ?? (isLedger(page.slug, this.#config) ? null : page.slug);
       insert.run(
         eventId(event.date, target, event.summary),
         event.date,
@@ -499,11 +493,11 @@ export class Indexer {
   }
 
   private replaceLinks(pageId: string, page: ParsedPage): void {
-    this.store.db.prepare('DELETE FROM links WHERE from_page = ?').run(pageId);
-    const insert = this.store.db.prepare(
+    this.#store.db.prepare('DELETE FROM links WHERE from_page = ?').run(pageId);
+    const insert = this.#store.db.prepare(
       'INSERT INTO links(from_page, to_slug, to_page, kind, line, broken) VALUES(?, ?, ?, ?, ?, ?)',
     );
-    const findPage = this.store.db.prepare('SELECT id FROM pages WHERE slug = ?');
+    const findPage = this.#store.db.prepare('SELECT id FROM pages WHERE slug = ?');
     for (const link of page.links) {
       const target = findPage.get(link.toSlug) as { id: string } | undefined;
       insert.run(pageId, link.toSlug, target?.id ?? null, link.kind, link.line, target ? 0 : 1);
@@ -516,7 +510,7 @@ export class Indexer {
    * and one nobody reads.
    */
   private resolveLinks(): void {
-    this.store.db.exec(`
+    this.#store.db.exec(`
       UPDATE links SET
         to_page = (SELECT id FROM pages WHERE pages.slug = links.to_slug),
         broken  = CASE WHEN EXISTS (SELECT 1 FROM pages WHERE pages.slug = links.to_slug) THEN 0 ELSE 1 END
@@ -524,10 +518,10 @@ export class Indexer {
   }
 
   private removePage(pageId: string): void {
-    this.store.transaction(() => {
-      this.store.vectors.removeForPage(pageId);
+    this.#store.transaction(() => {
+      this.#store.vectors.removeForPage(pageId);
       this.deleteChunkRows(pageId);
-      this.store.db.prepare('DELETE FROM pages WHERE id = ?').run(pageId);
+      this.#store.db.prepare('DELETE FROM pages WHERE id = ?').run(pageId);
     });
   }
 
@@ -543,8 +537,8 @@ export class Indexer {
   private registerAttachment(file: ScannedFile, report: IndexReport): void {
     const pageId = this.attachmentOwner(file.relPath);
     const id = `doc_${(file.sha256 ?? file.relPath).slice(0, 12)}`;
-    this.store.transaction(() => {
-      this.store.db
+    this.#store.transaction(() => {
+      this.#store.db
         .prepare(
           `INSERT INTO documents(id, page_id, rel_path, mime, sha256, label, text, summary,
                                  page_count, ocr, bytes, indexed_at)
@@ -569,7 +563,7 @@ export class Indexer {
   private attachmentOwner(relPath: string): string | null {
     const dir = path.posix.dirname(relPath.replace(/\\/g, '/'));
     const base = path.posix.basename(relPath);
-    const find = this.store.db.prepare('SELECT id FROM pages WHERE slug = ?');
+    const find = this.#store.db.prepare('SELECT id FROM pages WHERE slug = ?');
 
     const addressed = ATTACHMENT_NAME.exec(base);
     if (addressed) {
@@ -586,21 +580,18 @@ export class Indexer {
 
   // ─── Embedding ────────────────────────────────────────────────────────────
 
-  private async embedPending(
-    report: IndexReport,
-    progress: (p: IndexProgress) => void,
-  ): Promise<void> {
-    if (!this.models.embedding.available) return;
+  private async embedPending(report: IndexReport, progress: (p: IndexProgress) => void): Promise<void> {
+    if (!this.#models.embedding.available) return;
 
-    const pending = this.store.db
+    const pending = this.#store.db
       .prepare('SELECT id, text, heading_path FROM chunks WHERE embedded = 0 ORDER BY id')
       .all() as { id: number; text: string; heading_path: string }[];
     if (pending.length === 0) return;
 
-    const batchSize = this.config.models.embedding.batch ?? 32;
+    const batchSize = this.#config.models.embedding.batch ?? 32;
     progress({ phase: 'embed', done: 0, total: pending.length });
 
-    const markEmbedded = this.store.db.prepare('UPDATE chunks SET embedded = 1 WHERE id = ?');
+    const markEmbedded = this.#store.db.prepare('UPDATE chunks SET embedded = 1 WHERE id = ?');
     let done = 0;
 
     for (let i = 0; i < pending.length; i += batchSize) {
@@ -616,7 +607,7 @@ export class Indexer {
         }),
       );
 
-      const result = await this.models.embedding.embed(texts);
+      const result = await this.#models.embedding.embed(texts);
       if (!result.ok || !result.value) {
         // A partial embed is honest and recoverable: `embedded = 0` rows are
         // picked up next pass, and recall reports `degraded` in the meantime.
@@ -624,11 +615,11 @@ export class Indexer {
         break;
       }
 
-      this.store.transaction(() => {
+      this.#store.transaction(() => {
         for (let j = 0; j < batch.length; j++) {
           const vector = result.value![j];
           if (!vector) continue;
-          this.store.vectors.upsert(batch[j]!.id, vector);
+          this.#store.vectors.upsert(batch[j]!.id, vector);
           markEmbedded.run(batch[j]!.id);
         }
       });
@@ -646,34 +637,40 @@ export class Indexer {
     progress: (p: IndexProgress) => void,
     force: boolean,
   ): Promise<void> {
-    const wantSummaries = this.config.index.summaries;
-    const wantFacts = this.config.index.facts;
+    const wantSummaries = this.#config.index.summaries;
+    const wantFacts = this.#config.index.facts;
     if (!wantSummaries && !wantFacts) return;
-    if (!this.models.chat.available) return;
+    if (!this.#models.chat.available) return;
 
     // §7: no eligibility list — every `full` page is a candidate. A `reference`
     // page is summarized but never fact-mined; `derivePage` enforces that by
     // reading only above the fence, and a fully-reference page has no mineable
     // region at all.
-    const pending = this.store.db
+    const pending = this.#store.db
       .prepare(
         `SELECT id, slug, rel_path, body_hash, class FROM pages
           WHERE class != 'excluded' AND (? = 1 OR derived_hash IS NULL OR derived_hash != body_hash)
           ORDER BY updated_at DESC`,
       )
-      .all(force ? 1 : 0) as { id: string; slug: string; rel_path: string; body_hash: string; class: string }[];
+      .all(force ? 1 : 0) as {
+      id: string;
+      slug: string;
+      rel_path: string;
+      body_hash: string;
+      class: string;
+    }[];
     if (pending.length === 0) return;
 
     progress({ phase: 'derive', done: 0, total: pending.length });
-    const concurrency = Math.max(1, this.config.models.chat.concurrency ?? 2);
+    const concurrency = Math.max(1, this.#config.models.chat.concurrency ?? 2);
     let done = 0;
 
     await mapWithConcurrency(pending, concurrency, async (row) => {
       try {
-        const content = await fsp.readFile(path.join(this.config.aknoPath, row.rel_path), 'utf8');
+        const content = await fsp.readFile(path.join(this.#config.aknoPath, row.rel_path), 'utf8');
         const page = parsePage(row.rel_path, content);
         const isReference = row.class === 'reference';
-        const derived = await derivePage(page, this.models.chat, {
+        const derived = await derivePage(page, this.#models.chat, {
           summaries: wantSummaries,
           // A reference page is evidence. Only claims become facts (§5).
           facts: wantFacts && !isReference,
@@ -683,8 +680,8 @@ export class Indexer {
           report.warnings.push(`derivation for ${row.slug}: ${derived.error}`);
         } else {
           if (derived.partial) report.warnings.push(`derivation for ${row.slug}: ${derived.partial}`);
-          this.store.transaction(() => {
-            this.store.db
+          this.#store.transaction(() => {
+            this.#store.db
               .prepare('UPDATE pages SET summary = ?, keywords = ?, derived_hash = ? WHERE id = ?')
               .run(derived.summary, JSON.stringify(derived.keywords), row.body_hash, row.id);
             this.replaceFacts(row.id, derived.facts);
@@ -721,14 +718,14 @@ export class Indexer {
     const now = nowIso();
     const today = now.slice(0, 10);
 
-    const existing = this.store.db
+    const existing = this.#store.db
       .prepare('SELECT id, source_line_hash FROM facts WHERE page_id = ?')
       .all(pageId) as { id: string; source_line_hash: string }[];
     const incomingIds = new Set(facts.map((fact) => factId(pageId, fact.sourceLineHash, fact.claim)));
     // The source lines this derivation could still see.
     const liveLineHashes = new Set(facts.map((fact) => fact.sourceLineHash));
 
-    const insert = this.store.db.prepare(
+    const insert = this.#store.db.prepare(
       `INSERT INTO facts(id, page_id, claim, subject, attribute, value, line_start, line_end,
                          source_line_hash, confidence, valid_from, valid_to, first_seen, last_seen)
        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
@@ -755,8 +752,8 @@ export class Indexer {
       );
     }
 
-    const retire = this.store.db.prepare('UPDATE facts SET valid_to = ? WHERE id = ? AND valid_to IS NULL');
-    const drop = this.store.db.prepare('DELETE FROM facts WHERE id = ?');
+    const retire = this.#store.db.prepare('UPDATE facts SET valid_to = ? WHERE id = ? AND valid_to IS NULL');
+    const drop = this.#store.db.prepare('DELETE FROM facts WHERE id = ?');
     for (const row of existing) {
       if (incomingIds.has(row.id)) continue;
       if (liveLineHashes.has(row.source_line_hash)) drop.run(row.id);

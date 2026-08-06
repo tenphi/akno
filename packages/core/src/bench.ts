@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import type { Akno } from './open.js';
+import type { Akno } from './open.ts';
 
 /**
  * §6. **Benchmarks are part of the project.** Numbers rot, and the one that

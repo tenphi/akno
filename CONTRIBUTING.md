@@ -91,14 +91,36 @@ Changes here need more care than the line count suggests.
 - `akno bench` asserts the performance budgets. If you make something slower, the budget should move
   deliberately and with a reason in the commit message, not quietly.
 
+## Toolchain
+
+- **oxlint**, not ESLint. Roughly 5x faster wall-clock and 12x less CPU on this repo, and it caught a real
+  issue ESLint's config had not been asked about (an error rethrown without `cause`). Config in
+  `.oxlintrc.json`. Nothing here needed type-aware rules, which is the one thing oxlint does not do.
+- **knip** for dead exports and unused dependencies, in CI. It found 39 gratuitous `export`s on the first run —
+  an export is a promise not to break something, and a barrel full of false promises hides the real contract.
+- **No bundler in the dev path.** Node 22.18+ strips types itself. Source imports name the `.ts` file on disk
+  and `rewriteRelativeImportExtensions` turns them into `.js` on emit; `erasableSyntaxOnly` keeps the source
+  inside what stripping supports, which is why classes use `#private` fields rather than parameter properties.
+  Add a parameter property or an enum and the build will tell you.
+- **`pnpm-workspace.yaml` holds a `catalog:`** for versions shared across packages. Two packages resolving
+  different majors of zod produce schemas that look interchangeable and are not.
+- **`minimumReleaseAge: 4320`** (three days). A brand-new release will not resolve; that is deliberate, and it
+  has already blocked one same-day publish during development.
+
 ## Style
 
-Prettier and ESLint are configured; `pnpm format` and `pnpm lint:fix`. Beyond that:
+Prettier and oxlint are configured; `pnpm format` and `pnpm lint:fix`. Beyond that:
 
 Comments should explain **why**, especially where the obvious implementation is wrong. `git blame` covers what
 changed; a comment earns its place by recording the reasoning that is not visible in the code — the failure
 mode being avoided, the alternative that was rejected, the measurement behind a constant. A comment restating
 the line above it is noise.
+
+## Never use real data in tests
+
+See [AGENTS.md](AGENTS.md). Short version: every name, number and body of text in a tracked file must be
+invented, because Akno is developed against a real knowledge base and the fastest way to write a regression
+test is to paste in the page that just failed.
 
 ## Reporting a bug
 

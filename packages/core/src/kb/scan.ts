@@ -3,7 +3,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 
-export type FileKind = 'page' | 'attachment';
+type FileKind = 'page' | 'attachment';
 
 export interface ScannedFile {
   relPath: string;

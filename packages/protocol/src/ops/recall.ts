@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Card, DatePrefix, Depth, PageClass, RecallMode, ResultEnvelope, SlugFilter } from '../common.js';
+import { Card, DatePrefix, Depth, PageClass, RecallMode, ResultEnvelope, SlugFilter } from '../common.ts';
 
 export const RecallInput = z.object({
   query: z.string().min(1),

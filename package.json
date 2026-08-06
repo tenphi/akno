@@ -2,7 +2,7 @@
   "name": "akno-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Akno — a two-way memory layer for agents over a Markdown knowledge base",
+  "description": "Akno \u2014 a two-way memory layer for agents over a Markdown knowledge base",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "packageManager": "pnpm@10.32.1",
@@ -12,25 +12,23 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean",
-    "typecheck": "tsc --build --dry && tsc -p packages/protocol --noEmit && tsc -p packages/core --noEmit && tsc -p packages/cli --noEmit && tsc -p packages/client --noEmit",
-    "akno": "tsx packages/cli/src/bin.ts",
+    "typecheck": "tsc --build --force --emitDeclarationOnly false --noEmit false",
+    "akno": "node packages/cli/src/bin.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint packages",
-    "lint:fix": "eslint packages --fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "format": "prettier --write \"packages/**/*.ts\" \"*.json\" \"config/*.jsonc\"",
     "format:check": "prettier --check \"packages/**/*.ts\" \"*.json\" \"config/*.jsonc\"",
-    "bench": "tsx packages/cli/src/bin.ts bench"
+    "bench": "node packages/cli/src/bin.ts bench",
+    "knip": "knip"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
     "@types/node": "^22.10.0",
-    "eslint": "^9.35.0",
-    "globals": "^15.12.0",
+    "knip": "6.31.0",
+    "oxlint": "1.76.0",
     "prettier": "^3.8.1",
-    "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.35.0",
     "vitest": "^4.0.18"
   }
 }

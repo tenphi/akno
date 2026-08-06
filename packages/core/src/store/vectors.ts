@@ -1,7 +1,7 @@
 import type { Database } from 'better-sqlite3';
-import { VECTOR_FALLBACK_DDL, vectorTableDdl } from './migrations.js';
+import { VECTOR_FALLBACK_DDL, vectorTableDdl } from './migrations.ts';
 
-export interface VectorHit {
+interface VectorHit {
   chunkId: number;
   /** Cosine similarity in 0..1, already converted from distance. */
   score: number;
@@ -27,11 +27,11 @@ export interface VectorIndex {
   clear(): void;
 }
 
-export function encodeVector(embedding: Float32Array): Buffer {
+function encodeVector(embedding: Float32Array): Buffer {
   return Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
 }
 
-export function decodeVector(buffer: Buffer): Float32Array {
+function decodeVector(buffer: Buffer): Float32Array {
   // Copy rather than alias: better-sqlite3 buffers are not guaranteed to outlive
   // the statement, and a dangling view is a very confusing bug.
   const copy = Buffer.from(buffer);
@@ -49,28 +49,28 @@ function key(chunkId: number): bigint {
 
 class Vec0Index implements VectorIndex {
   readonly kind = 'vec0' as const;
+  readonly #db: Database;
+  readonly dimensions: number;
 
-  constructor(
-    private readonly db: Database,
-    readonly dimensions: number,
-  ) {}
+  constructor(db: Database, dimensions: number) {
+    this.#db = db;
+    this.dimensions = dimensions;
+  }
 
   upsert(chunkId: number, embedding: Float32Array): void {
-    this.db.prepare('DELETE FROM vec_chunks WHERE chunk_id = ?').run(key(chunkId));
-    this.db
+    this.#db.prepare('DELETE FROM vec_chunks WHERE chunk_id = ?').run(key(chunkId));
+    this.#db
       .prepare('INSERT INTO vec_chunks(chunk_id, embedding) VALUES (?, ?)')
       .run(key(chunkId), encodeVector(embedding));
   }
 
   remove(chunkId: number): void {
-    this.db.prepare('DELETE FROM vec_chunks WHERE chunk_id = ?').run(key(chunkId));
+    this.#db.prepare('DELETE FROM vec_chunks WHERE chunk_id = ?').run(key(chunkId));
   }
 
   removeForPage(pageId: string): void {
-    const ids = this.db
-      .prepare('SELECT id FROM chunks WHERE page_id = ?')
-      .all(pageId) as { id: number }[];
-    const stmt = this.db.prepare('DELETE FROM vec_chunks WHERE chunk_id = ?');
+    const ids = this.#db.prepare('SELECT id FROM chunks WHERE page_id = ?').all(pageId) as { id: number }[];
+    const stmt = this.#db.prepare('DELETE FROM vec_chunks WHERE chunk_id = ?');
     for (const { id } of ids) stmt.run(key(id));
   }
 
@@ -82,7 +82,7 @@ class Vec0Index implements VectorIndex {
     // pre-filtered search scores the candidate set directly instead.
     if (restrictTo) {
       const placeholders = [...restrictTo].map(() => '?').join(',');
-      const rows = this.db
+      const rows = this.#db
         .prepare(
           `SELECT chunk_id, vec_distance_cosine(embedding, ?) AS distance
              FROM vec_chunks WHERE chunk_id IN (${placeholders})
@@ -92,7 +92,7 @@ class Vec0Index implements VectorIndex {
       return rows.map((r) => ({ chunkId: Number(r.chunk_id), score: 1 - r.distance }));
     }
 
-    const rows = this.db
+    const rows = this.#db
       .prepare(
         `SELECT chunk_id, distance FROM vec_chunks
           WHERE embedding MATCH ? AND k = ? ORDER BY distance`,
@@ -102,30 +102,31 @@ class Vec0Index implements VectorIndex {
   }
 
   count(): number {
-    const row = this.db.prepare('SELECT count(*) AS c FROM vec_chunks').get() as { c: number };
+    const row = this.#db.prepare('SELECT count(*) AS c FROM vec_chunks').get() as { c: number };
     return row.c;
   }
 
   clear(): void {
-    this.db.exec('DELETE FROM vec_chunks');
+    this.#db.exec('DELETE FROM vec_chunks');
   }
 }
 
 /** Pure-SQLite fallback with cosine in JS, for a platform sqlite-vec cannot load. */
 class FallbackIndex implements VectorIndex {
   readonly kind = 'fallback' as const;
+  readonly #db: Database;
+  readonly dimensions: number;
 
-  constructor(
-    private readonly db: Database,
-    readonly dimensions: number,
-  ) {
-    this.db.exec(VECTOR_FALLBACK_DDL);
+  constructor(db: Database, dimensions: number) {
+    this.#db = db;
+    this.dimensions = dimensions;
+    this.#db.exec(VECTOR_FALLBACK_DDL);
   }
 
   upsert(chunkId: number, embedding: Float32Array): void {
     let sumSquares = 0;
     for (const value of embedding) sumSquares += value * value;
-    this.db
+    this.#db
       .prepare(
         `INSERT INTO vec_fallback(chunk_id, embedding, norm) VALUES (?, ?, ?)
            ON CONFLICT(chunk_id) DO UPDATE SET embedding = excluded.embedding, norm = excluded.norm`,
@@ -134,11 +135,11 @@ class FallbackIndex implements VectorIndex {
   }
 
   remove(chunkId: number): void {
-    this.db.prepare('DELETE FROM vec_fallback WHERE chunk_id = ?').run(chunkId);
+    this.#db.prepare('DELETE FROM vec_fallback WHERE chunk_id = ?').run(chunkId);
   }
 
   removeForPage(pageId: string): void {
-    this.db
+    this.#db
       .prepare('DELETE FROM vec_fallback WHERE chunk_id IN (SELECT id FROM chunks WHERE page_id = ?)')
       .run(pageId);
   }
@@ -149,7 +150,7 @@ class FallbackIndex implements VectorIndex {
     for (const value of query) queryNorm += value * value;
     queryNorm = Math.sqrt(queryNorm) || 1;
 
-    const rows = this.db.prepare('SELECT chunk_id, embedding, norm FROM vec_fallback').all() as {
+    const rows = this.#db.prepare('SELECT chunk_id, embedding, norm FROM vec_fallback').all() as {
       chunk_id: number;
       embedding: Buffer;
       norm: number;
@@ -169,12 +170,12 @@ class FallbackIndex implements VectorIndex {
   }
 
   count(): number {
-    const row = this.db.prepare('SELECT count(*) AS c FROM vec_fallback').get() as { c: number };
+    const row = this.#db.prepare('SELECT count(*) AS c FROM vec_fallback').get() as { c: number };
     return row.c;
   }
 
   clear(): void {
-    this.db.exec('DELETE FROM vec_fallback');
+    this.#db.exec('DELETE FROM vec_fallback');
   }
 }
 
@@ -194,8 +195,7 @@ export function openVectorIndex(db: Database, dimensions: number, vecLoaded: boo
  */
 export function reconcileDimensions(db: Database, dimensions: number, vecLoaded: boolean): boolean {
   const row = db.prepare("SELECT value FROM meta WHERE key = 'embedding_dimensions'").get() as
-    | { value: string }
-    | undefined;
+    { value: string } | undefined;
   const recorded = row ? Number(row.value) : null;
 
   if (recorded === dimensions) return false;
@@ -205,7 +205,8 @@ export function reconcileDimensions(db: Database, dimensions: number, vecLoaded:
     db.exec('DROP TABLE IF EXISTS vec_fallback');
     db.exec('UPDATE chunks SET embedded = 0');
   }
-  db.prepare("INSERT INTO meta(key, value) VALUES('embedding_dimensions', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
-    .run(String(dimensions));
+  db.prepare(
+    "INSERT INTO meta(key, value) VALUES('embedding_dimensions', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+  ).run(String(dimensions));
   return recorded !== null;
 }

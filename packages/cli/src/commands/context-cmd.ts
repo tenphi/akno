@@ -1,8 +1,8 @@
-import { openOptionsFrom, parse } from '../args.js';
-import { heading, json, line, statusLabel, style, truncate } from '../output.js';
-import { resolveOps } from '../ops-handle.js';
+import { openOptionsFrom, parse } from '../args.ts';
+import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
+import { resolveOps } from '../ops-handle.ts';
 
-export const CONTEXT_HELP = `akno context [query] [options]
+const CONTEXT_HELP = `akno context [query] [options]
 
   The whole pre-turn bundle against one budget: pinned pages, recent timeline, a
   structure outline, and this turn's recall. Normally called by a host before the

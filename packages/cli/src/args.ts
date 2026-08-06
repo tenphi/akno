@@ -5,7 +5,7 @@ import { parseArgs, type ParseArgsConfig } from 'node:util';
  * one-shot invocation can point at a different knowledge base without editing a
  * config file — useful for tests and for a second knowledge base you touch rarely.
  */
-export const GLOBAL_OPTIONS = {
+const GLOBAL_OPTIONS = {
   'akno-path': { type: 'string' as const },
   'state-dir': { type: 'string' as const },
   json: { type: 'boolean' as const, default: false },

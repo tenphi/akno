@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 import { AknoError, OPS, OP_NAMES } from '@akno/protocol';
-import { fail, line, style } from './output.js';
-import { indexCommand } from './commands/index-cmd.js';
-import { recallCommand } from './commands/recall-cmd.js';
-import { listCommand, readCommand, timelineCommand } from './commands/read-cmd.js';
-import { benchCommand, configCommand, doctorCommand, rulesCommand } from './commands/doctor-cmd.js';
-import { serveCommand, serviceCommand } from './commands/serve-cmd.js';
-import { contextCommand } from './commands/context-cmd.js';
+import { fail, line, style } from './output.ts';
+import { indexCommand } from './commands/index-cmd.ts';
+import { recallCommand } from './commands/recall-cmd.ts';
+import { readCommand } from './commands/read-cmd.ts';
+import { listCommand } from './commands/list-cmd.ts';
+import { timelineCommand } from './commands/timeline-cmd.ts';
+import { doctorCommand } from './commands/doctor-cmd.ts';
+import { rulesCommand } from './commands/rules-cmd.ts';
+import { benchCommand } from './commands/bench-cmd.ts';
+import { configCommand } from './commands/config-cmd.ts';
+import { serveCommand, serviceCommand } from './commands/serve-cmd.ts';
+import { contextCommand } from './commands/context-cmd.ts';
 
 const VERSION = '0.1.0';
 

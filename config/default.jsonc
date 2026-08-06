@@ -42,7 +42,16 @@
 
   // ─── Ingestion & structure ────────────────────────────────────────────────
   // Directories never walked, at any depth.
-  "ignore": [".git", ".obsidian", ".trash", ".akno", "node_modules", ".DS_Store", ".stfolder", ".stversions"],
+  "ignore": [
+    ".git",
+    ".obsidian",
+    ".trash",
+    ".akno",
+    "node_modules",
+    ".DS_Store",
+    ".stfolder",
+    ".stversions"
+  ],
   // Extensions indexed as pages. Everything else is an attachment candidate.
   "page_extensions": [".md", ".markdown"],
   // Bytes above which a page is chunked but not summarized or fact-mined.

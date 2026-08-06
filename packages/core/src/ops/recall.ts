@@ -1,8 +1,8 @@
-import { RecallInput, type RecallOutput, type PageClass } from '@akno/protocol';
-import type { AknoContext } from '../context.js';
-import { classifyDegradation, indexDegradation } from '../context.js';
-import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.js';
-import { hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.js';
+import { RecallInput, type DegradedReason, type PageClass, type RecallOutput } from '@akno/protocol';
+import type { AknoContext } from '../context.ts';
+import { indexDegradation } from '../context.ts';
+import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
+import { hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.ts';
 
 /**
  * §9. The retrieval op. Expand → hybrid search → rerank → assemble → fit a
@@ -17,10 +17,12 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   const input = RecallInput.parse(rawInput);
   const mode = input.mode ?? inferMode(input.query);
   const depth = input.depth ?? (mode === 'explore' ? 'summary' : 'lines');
-  const limit = input.limit ?? (mode === 'explore' ? ctx.config.recall.defaultLimit * 2 : ctx.config.recall.defaultLimit);
+  const limit =
+    input.limit ?? (mode === 'explore' ? ctx.config.recall.defaultLimit * 2 : ctx.config.recall.defaultLimit);
   const budget = input.budget ?? ctx.config.recall.defaultBudget;
 
-  const degradedReasons: string[] = [];
+  const degraded = new Set<DegradedReason>();
+  const notes: string[] = [];
 
   // A knowledge base with nothing in it is `empty`, not a failure — but it must
   // not be confused with an index that could not be read.
@@ -54,7 +56,8 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     allQueries.push(...expansion.queries);
     allVectorTexts.push(...expansion.vectorTexts);
     allConcepts.push(...expansion.concepts);
-    if (expansion.degraded) degradedReasons.push(expansion.degraded);
+    if (expansion.degraded) degraded.add(expansion.degraded);
+    if (expansion.note) notes.push(expansion.note);
   }
 
   const pageIds = resolveFilter(ctx, input);
@@ -75,6 +78,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       queries: dedupe(allQueries),
       vectorTexts: dedupe(allVectorTexts),
       candidatesPerArm: ctx.config.recall.candidatesPerArm,
+      prefilterAbove: ctx.config.index.annThresholdChunks,
       ...(pageIds ? { pageIds } : {}),
     });
   } catch (err) {
@@ -89,7 +93,8 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       note: err instanceof Error ? err.message : String(err),
     };
   }
-  degradedReasons.push(...search.degraded);
+  for (const reason of search.degraded) degraded.add(reason);
+  notes.push(...search.notes);
 
   let hits: ChunkHit[] = search.hits;
   let reranked = false;
@@ -103,12 +108,14 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     );
     hits = result.hits;
     reranked = result.degraded === null;
-    if (result.degraded) degradedReasons.push(result.degraded);
-  } else if (ctx.config.models.reranker.requested && !ctx.models.reranker.available) {
+    if (result.degraded) degraded.add(result.degraded);
+    if (result.note) notes.push(result.note);
+  } else if (ctx.models.reranker.requested && !ctx.models.reranker.available) {
     // `requested` rather than `enabled`: the resolved `enabled` is already false
     // whenever the role is unusable, so testing it here could never fire and a
     // user who asked for a reranker would never be told they are not getting one.
-    degradedReasons.push(ctx.models.reranker.unavailableReason ?? 'no reranker');
+    degraded.add(ctx.models.reranker.degradedReason({}));
+    if (ctx.models.reranker.unavailableReason) notes.push(ctx.models.reranker.unavailableReason);
   }
 
   // Fused ranks only mean something relative to each other, so put them on a
@@ -119,36 +126,44 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     hits,
     mode,
     depth,
+    // §9. A lookup wants deep line windows around what matched; a question wants
+    // tight ones across more cards, because the answer is usually one line and
+    // the surrounding paragraph is budget spent on nothing.
+    lineWindow:
+      mode === 'question'
+        ? Math.max(2, Math.ceil(ctx.config.recall.lineWindow / 2))
+        : ctx.config.recall.lineWindow,
     limit,
     budget,
     concepts: dedupe(allConcepts),
     include: (input.include as PageClass[] | undefined) ?? null,
   });
 
-  const degraded = [...new Set([...classifyDegradation(degradedReasons), ...indexDegradation(ctx.store)])];
+  for (const reason of indexDegradation(ctx.store)) degraded.add(reason);
+  const reasons = [...degraded];
   const searched = dedupe(allQueries);
 
   if (assembled.cards.length === 0) {
     // `empty` carries the expanded queries that found nothing. That list is the
     // proof an agent needs to say "not recorded" honestly.
     return {
-      status: degraded.length > 0 ? 'degraded' : 'empty',
-      ...(degraded.length > 0 ? { degraded } : {}),
+      status: reasons.length > 0 ? 'degraded' : 'empty',
+      ...(reasons.length > 0 ? { degraded: reasons } : {}),
       cards: [],
       searched,
       budget_used: 0,
       mode,
       ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
       note:
-        degraded.length > 0
+        reasons.length > 0
           ? 'nothing matched, and the search ran without part of its model stack — this is not proof of absence'
           : 'nothing matched any of the queries listed in `searched`',
     };
   }
 
   return {
-    status: degraded.length > 0 ? 'degraded' : 'ok',
-    ...(degraded.length > 0 ? { degraded } : {}),
+    status: reasons.length > 0 ? 'degraded' : 'ok',
+    ...(reasons.length > 0 ? { degraded: reasons } : {}),
     cards: assembled.cards,
     searched,
     budget_used: assembled.budgetUsed,
@@ -160,7 +175,9 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
 /** Filters are applied as a page-id restriction so both search arms honour them. */
 function resolveFilter(ctx: AknoContext, input: ReturnType<typeof RecallInput.parse>): Set<string> | null {
   const filter = input.filter;
-  const hasFilter = Boolean(filter?.folder || filter?.type || filter?.tags?.length || filter?.class || input.since || input.until);
+  const hasFilter = Boolean(
+    filter?.folder || filter?.type || filter?.tags?.length || filter?.class || input.since || input.until,
+  );
   if (!hasFilter) return null;
 
   const clauses: string[] = [];

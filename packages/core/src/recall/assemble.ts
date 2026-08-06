@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Card, Depth, Line, PageClass, RecallMode, SupersededClaim } from '@akno/protocol';
-import type { AknoConfig } from '../config/schema.js';
-import type { Store } from '../store/db.js';
-import { isObservation } from '../kb/page.js';
-import { effectiveRule } from '../rules/compile.js';
-import type { ChunkHit } from './search.js';
+import type { AknoConfig } from '../config/schema.ts';
+import type { Store } from '../store/db.ts';
+import { isObservation } from '../kb/page.ts';
+import { effectiveRule } from '../rules/compile.ts';
+import type { ChunkHit } from './search.ts';
 
 export interface AssembleOptions {
   hits: ChunkHit[];
@@ -13,6 +13,8 @@ export interface AssembleOptions {
   depth: Depth;
   limit: number;
   budget: number;
+  /** Body lines per card. §9 gives lookup deep windows and question tight ones. */
+  lineWindow: number;
   /** Concepts the query asked about. Terms are matched against what came back. */
   concepts: string[];
   /** `include: ['reference'], depth: 'full'` lifts the reference quote cap (§5). */
@@ -52,10 +54,13 @@ interface FactRow {
  * artifact and means nothing to a reader.
  */
 export class Assembler {
-  constructor(
-    private readonly config: AknoConfig,
-    private readonly store: Store,
-  ) {}
+  readonly #config: AknoConfig;
+  readonly #store: Store;
+
+  constructor(config: AknoConfig, store: Store) {
+    this.#config = config;
+    this.#store = store;
+  }
 
   assemble(options: AssembleOptions): Assembled {
     // Group by page, keeping each page's best-scoring chunk as its representative.
@@ -117,16 +122,16 @@ export class Assembler {
    * compete for relevance on equal terms, then come back capped.
    */
   private rankFactor(page: PageRow): number {
-    const rule = effectiveRule(page.slug, this.config.rules);
+    const rule = effectiveRule(page.slug, this.#config.rules);
     if (typeof rule.rank === 'number') return rule.rank;
-    if (isObservation(page.slug, this.config.paths.observations)) {
-      return this.config.recall.rank.observation;
+    if (isObservation(page.slug, this.#config.paths.observations)) {
+      return this.#config.recall.rank.observation;
     }
-    return page.class === 'reference' ? this.config.recall.rank.reference : this.config.recall.rank.full;
+    return page.class === 'reference' ? this.#config.recall.rank.reference : this.#config.recall.rank.full;
   }
 
   private pageRow(pageId: string): PageRow | null {
-    const row = this.store.db
+    const row = this.#store.db
       .prepare(
         `SELECT id, slug, rel_path, title, type, tags, class, summary, keywords, body_line, updated_at
            FROM pages WHERE id = ?`,
@@ -137,11 +142,10 @@ export class Assembler {
 
   private buildCard(page: PageRow, hits: ChunkHit[], score: number, options: AssembleOptions): Card {
     const best = hits[0]!;
-    const chunk = this.store.db
+    const chunk = this.#store.db
       .prepare('SELECT heading_path, line_start, line_end, kind FROM chunks WHERE id = ?')
       .get(best.chunkId) as
-      | { heading_path: string; line_start: number; line_end: number; kind: string }
-      | undefined;
+      { heading_path: string; line_start: number; line_end: number; kind: string } | undefined;
 
     const isReference = page.class === 'reference' || chunk?.kind === 'reference';
     const wantsFullReference = options.depth === 'full' && options.include?.includes('reference');
@@ -151,10 +155,10 @@ export class Assembler {
       options.depth === 'summary'
         ? 0
         : isReference && !wantsFullReference
-          ? this.config.recall.referenceQuoteLines
+          ? this.#config.recall.referenceQuoteLines
           : options.depth === 'full'
             ? Number.POSITIVE_INFINITY
-            : this.config.recall.lineWindow;
+            : options.lineWindow;
 
     const lines = maxLines === 0 ? [] : this.readLines(page, hits, maxLines, options.depth);
     const facts = this.factsFor(page.id);
@@ -193,7 +197,7 @@ export class Assembler {
   private readLines(page: PageRow, hits: ChunkHit[], maxLines: number, depth: Depth): Line[] {
     let content: string;
     try {
-      content = fs.readFileSync(path.join(this.config.aknoPath, page.rel_path), 'utf8');
+      content = fs.readFileSync(path.join(this.#config.aknoPath, page.rel_path), 'utf8');
     } catch {
       return [];
     }
@@ -208,7 +212,7 @@ export class Assembler {
     // Collect the line ranges of the matching chunks, best first.
     const ranges: { start: number; end: number }[] = [];
     for (const hit of hits.slice(0, 4)) {
-      const row = this.store.db
+      const row = this.#store.db
         .prepare('SELECT line_start, line_end FROM chunks WHERE id = ?')
         .get(hit.chunkId) as { line_start: number; line_end: number } | undefined;
       if (row) ranges.push({ start: row.line_start, end: row.line_end });
@@ -234,20 +238,20 @@ export class Assembler {
   }
 
   private factsFor(pageId: string): FactRow[] {
-    return this.store.db
+    return this.#store.db
       .prepare('SELECT claim, line_start, confidence, valid_to FROM facts WHERE page_id = ?')
       .all(pageId) as FactRow[];
   }
 
   private linksFor(pageId: string): string[] {
-    const rows = this.store.db
+    const rows = this.#store.db
       .prepare('SELECT DISTINCT to_slug FROM links WHERE from_page = ? AND broken = 0 LIMIT 12')
       .all(pageId) as { to_slug: string }[];
     return rows.map((row) => row.to_slug);
   }
 
   private documentsFor(pageId: string): NonNullable<Card['documents']> {
-    const rows = this.store.db
+    const rows = this.#store.db
       .prepare('SELECT id, rel_path, mime, label, page_count FROM documents WHERE page_id = ? LIMIT 8')
       .all(pageId) as {
       id: string;
@@ -294,7 +298,9 @@ function supersededFor(facts: FactRow[]): SupersededClaim[] {
  */
 export function computeCoverage(concepts: string[], cards: Card[]): Record<string, boolean> {
   const haystack = cards
-    .map((card) => [card.title, card.summary ?? '', card.breadcrumb ?? '', ...card.lines.map((l) => l.text)].join(' '))
+    .map((card) =>
+      [card.title, card.summary ?? '', card.breadcrumb ?? '', ...card.lines.map((l) => l.text)].join(' '),
+    )
     .join(' ')
     .toLowerCase();
 

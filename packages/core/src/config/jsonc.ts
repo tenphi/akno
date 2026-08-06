@@ -6,7 +6,7 @@ import fs from 'node:fs';
  * as configuration, and a format that cannot hold a comment forces that
  * explanation somewhere the reader will not be looking.
  */
-export function stripJsonComments(input: string): string {
+function stripJsonComments(input: string): string {
   let out = '';
   let i = 0;
   const len = input.length;
@@ -60,11 +60,15 @@ function stripTrailingCommas(input: string): string {
   return input.replace(/,(\s*[}\]])/g, '$1');
 }
 
-export function parseJsonc<T = unknown>(content: string, label = '<string>'): T {
+function parseJsonc<T = unknown>(content: string, label = '<string>'): T {
   try {
     return JSON.parse(stripTrailingCommas(stripJsonComments(content))) as T;
   } catch (err) {
-    throw new Error(`${label} is not valid JSON/JSONC: ${err instanceof Error ? err.message : String(err)}`);
+    throw new Error(`${label} is not valid JSON/JSONC: ${err instanceof Error ? err.message : String(err)}`, {
+      // The original carries the offset of the offending character, which is the
+      // only part of a JSON syntax error worth having.
+      cause: err,
+    });
   }
 }
 

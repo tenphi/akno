@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { connect, defaultSocketPath } from '@akno/client';
 import { loadConfig, open, type Akno } from '@akno/core';
 import type { AknoOps } from '@akno/protocol';
-import { style } from './output.js';
+import { style } from './output.ts';
 
 export interface OpsHandle {
   ops: AknoOps;
@@ -41,9 +41,7 @@ export async function resolveOps(
       // A stale socket file from a crashed service is common enough that
       // failing here would be a bad default.
       if (!values.json) {
-        process.stderr.write(
-          style.grey(`no service on ${socketPath}; opening the index in-process\n`),
-        );
+        process.stderr.write(style.grey(`no service on ${socketPath}; opening the index in-process\n`));
       }
     }
   }

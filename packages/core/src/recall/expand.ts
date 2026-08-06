@@ -1,5 +1,5 @@
-import type { RecallMode } from '@akno/protocol';
-import { parseJsonLoose, type ModelClient } from '../models/client.js';
+import type { DegradedReason, RecallMode } from '@akno/protocol';
+import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**
  * §9. Looking something up and answering a question are not the same retrieval
@@ -89,7 +89,9 @@ export interface Expansion {
   vectorTexts: string[];
   /** Concepts `coverage` is computed against, in question mode. */
   concepts: string[];
-  degraded: string | null;
+  degraded: DegradedReason | null;
+  /** Human-readable detail, for logs and `doctor`. */
+  note: string | null;
 }
 
 /**
@@ -111,19 +113,16 @@ export async function expandQuery(
     vectorTexts: [query],
     concepts: extractConcepts(query),
     degraded: null,
+    note: null,
   };
 
   if (!enabled) return base;
   if (!chat.available) {
-    return { ...base, degraded: chat.unavailableReason ?? 'chat model unavailable' };
+    return { ...base, degraded: chat.degradedReason({}), note: chat.unavailableReason };
   }
 
   const instruction =
-    mode === 'question'
-      ? QUESTION_PROMPT
-      : mode === 'explore'
-        ? EXPLORE_PROMPT
-        : LOOKUP_PROMPT;
+    mode === 'question' ? QUESTION_PROMPT : mode === 'explore' ? EXPLORE_PROMPT : LOOKUP_PROMPT;
 
   const result = await chat.chat(
     [
@@ -136,7 +135,7 @@ export async function expandQuery(
   );
 
   if (!result.ok || !result.value) {
-    return { ...base, degraded: result.error ?? 'query expansion failed' };
+    return { ...base, degraded: chat.degradedReason(result), note: result.error ?? null };
   }
 
   const parsed = parseJsonLoose<{
@@ -144,7 +143,9 @@ export async function expandQuery(
     answers?: unknown;
     concepts?: unknown;
   }>(result.value);
-  if (!parsed) return { ...base, degraded: 'query expansion returned unparseable JSON' };
+  if (!parsed) {
+    return { ...base, degraded: 'expansion_failed', note: 'query expansion returned unparseable JSON' };
+  }
 
   const queries = dedupe([query, ...stringList(parsed.queries, 6)]);
   const answers = stringList(parsed.answers, 4);
@@ -157,6 +158,7 @@ export async function expandQuery(
     vectorTexts: dedupe([query, ...answers]),
     concepts: concepts.length > 0 ? concepts.map((c) => c.toLowerCase()) : base.concepts,
     degraded: null,
+    note: null,
   };
 }
 
@@ -200,11 +202,70 @@ function dedupe(values: string[]): string[] {
 }
 
 const STOPWORDS = new Set([
-  'a', 'an', 'and', 'are', 'as', 'at', 'be', 'been', 'but', 'by', 'can', 'did', 'do', 'does',
-  'for', 'from', 'had', 'has', 'have', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'me',
-  'my', 'of', 'on', 'or', 'our', 'should', 'so', 'that', 'the', 'their', 'them', 'then', 'there',
-  'these', 'they', 'this', 'to', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'who',
-  'why', 'will', 'with', 'would', 'you', 'your', 'about', 'any', 'much', 'many', 'does',
+  'a',
+  'an',
+  'and',
+  'are',
+  'as',
+  'at',
+  'be',
+  'been',
+  'but',
+  'by',
+  'can',
+  'did',
+  'do',
+  'does',
+  'for',
+  'from',
+  'had',
+  'has',
+  'have',
+  'how',
+  'i',
+  'if',
+  'in',
+  'into',
+  'is',
+  'it',
+  'its',
+  'me',
+  'my',
+  'of',
+  'on',
+  'or',
+  'our',
+  'should',
+  'so',
+  'that',
+  'the',
+  'their',
+  'them',
+  'then',
+  'there',
+  'these',
+  'they',
+  'this',
+  'to',
+  'was',
+  'we',
+  'were',
+  'what',
+  'when',
+  'where',
+  'which',
+  'who',
+  'why',
+  'will',
+  'with',
+  'would',
+  'you',
+  'your',
+  'about',
+  'any',
+  'much',
+  'many',
+  'does',
 ]);
 
 /**

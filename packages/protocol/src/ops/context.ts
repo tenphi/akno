@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { Card, RecallMode, ResultEnvelope } from '../common.js';
-import { Event } from './timeline.js';
+import { Card, RecallMode, ResultEnvelope } from '../common.ts';
+import { Event } from './timeline.ts';
 
 /**
  * §9. One budget, one assembly. `context` composes the whole pre-turn bundle —

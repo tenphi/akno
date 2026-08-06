@@ -5,6 +5,12 @@ packages:
 # A compromised release is usually yanked well inside that window.
 minimumReleaseAge: 4320
 
+# One declared version per shared dependency. Three packages depend on zod, and a
+# monorepo where two of them resolve different majors produces schemas that look
+# interchangeable and are not.
+catalog:
+  zod: ^4.4.3
+
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild

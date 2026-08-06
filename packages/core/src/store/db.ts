@@ -3,8 +3,8 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import * as sqliteVec from 'sqlite-vec';
 import { AknoError } from '@akno/protocol';
-import { MIGRATIONS } from './migrations.js';
-import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.js';
+import { MIGRATIONS } from './migrations.ts';
+import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
 
 export interface StoreOptions {
   dbPath: string;

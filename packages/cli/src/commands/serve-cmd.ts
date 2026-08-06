@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { open } from '@akno/core';
-import { openOptionsFrom, parse } from '../args.js';
-import { heading, kv, line, ms, style, warn } from '../output.js';
-import { serveSocket } from '../serve/socket.js';
-import { serveHttp } from '../serve/http.js';
-import { serveMcp } from '../serve/mcp.js';
+import { openOptionsFrom, parse } from '../args.ts';
+import { heading, kv, line, ms, style, warn } from '../output.ts';
+import { serveSocket } from '../serve/socket.ts';
+import { serveHttp } from '../serve/http.ts';
+import { serveMcp } from '../serve/mcp.ts';
 
-export const SERVE_HELP = `akno serve [options]
+const SERVE_HELP = `akno serve [options]
 
   Hold the index, the watcher and the model connections in one long-lived
   process. Spawning a process per memory call costs 33ms against 0.04ms for a
@@ -86,7 +86,9 @@ export async function serveCommand(argv: string[]): Promise<number> {
 
   if (values['index-on-start'] && mem.writable) {
     const report = await mem.index({});
-    log(`startup index: ${report.pagesIndexed} indexed, ${report.pagesUnchanged} unchanged in ${ms(report.durationMs)}`);
+    log(
+      `startup index: ${report.pagesIndexed} indexed, ${report.pagesUnchanged} unchanged in ${ms(report.durationMs)}`,
+    );
   }
 
   const closers: (() => Promise<void>)[] = [];
@@ -97,9 +99,7 @@ export async function serveCommand(argv: string[]): Promise<number> {
       closers.push(() => server.close());
       log(`MCP ready over stdio — ${(allow ?? []).length || 'all'} ops, ${mem.config.aknoPath}`);
     } else {
-      const socketPath = values.socket
-        ? path.resolve(values.socket)
-        : mem.config.socketPath;
+      const socketPath = values.socket ? path.resolve(values.socket) : mem.config.socketPath;
       const socket = await serveSocket(mem, socketPath, { ...(allow ? { allow } : {}), log });
       closers.push(() => socket.close());
 
@@ -153,7 +153,7 @@ function waitForShutdown(log: (message: string) => void): Promise<void> {
   });
 }
 
-export const SERVICE_HELP = `akno service <install | uninstall | status>
+const SERVICE_HELP = `akno service <install | uninstall | status>
 
   Manage the macOS launchd user agent, so nobody hand-edits XML. Because it is
   KeepAlive, the service outlives every host that talks to it.`;
@@ -173,12 +173,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     return 1;
   }
 
-  const plistPath = path.join(
-    process.env.HOME ?? '',
-    'Library',
-    'LaunchAgents',
-    `${PLIST_LABEL}.plist`,
-  );
+  const plistPath = path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents', `${PLIST_LABEL}.plist`);
   const action = positionals[0];
 
   if (action === 'status') {
@@ -222,13 +217,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   return 0;
 }
 
-function plist(
-  label: string,
-  node: string,
-  script: string,
-  args: string[],
-  logDir: string,
-): string {
+function plist(label: string, node: string, script: string, args: string[], logDir: string): string {
   const programArgs = [node, script, ...args]
     .map((arg) => `    <string>${escapeXml(arg)}</string>`)
     .join('\n');

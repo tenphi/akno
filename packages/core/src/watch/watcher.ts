@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AknoConfig } from '../config/schema.js';
-import type { Indexer, IndexReport } from '../index/indexer.js';
+import type { AknoConfig } from '../config/schema.ts';
+import type { Indexer, IndexReport } from '../index/indexer.ts';
 
 export interface WatcherEvents {
   onIndexed?: (report: IndexReport, changed: string[]) => void;
@@ -27,18 +27,22 @@ export class Watcher {
   /** Set when a change arrived mid-index; guarantees one more pass after it. */
   private dirty = false;
 
-  constructor(
-    private readonly config: AknoConfig,
-    private readonly indexer: Indexer,
-    private readonly events: WatcherEvents = {},
-  ) {}
+  readonly #config: AknoConfig;
+  readonly #indexer: Indexer;
+  readonly #events: WatcherEvents;
+
+  constructor(config: AknoConfig, indexer: Indexer, events: WatcherEvents = {}) {
+    this.#config = config;
+    this.#indexer = indexer;
+    this.#events = events;
+  }
 
   start(): void {
     if (this.watcher) return;
 
     try {
       this.watcher = fs.watch(
-        this.config.aknoPath,
+        this.#config.aknoPath,
         { recursive: true, persistent: true },
         (_type, filename) => {
           if (!filename) {
@@ -54,27 +58,27 @@ export class Watcher {
           this.schedule();
         },
       );
-      this.watcher.on('error', (error) => this.events.onError?.(error as Error));
+      this.watcher.on('error', (error) => this.#events.onError?.(error as Error));
     } catch (error) {
       // A watch that cannot be established is not fatal: the sweep below still
       // reconciles, just with more latency.
-      this.events.onError?.(error as Error);
+      this.#events.onError?.(error as Error);
     }
 
-    if (this.config.watch.sweepIntervalMs > 0) {
+    if (this.#config.watch.sweepIntervalMs > 0) {
       this.sweepTimer = setInterval(() => {
         this.dirty = true;
         void this.flush();
-      }, this.config.watch.sweepIntervalMs);
+      }, this.#config.watch.sweepIntervalMs);
       this.sweepTimer.unref();
     }
 
-    if (this.config.watch.verifyIntervalMs > 0) {
+    if (this.#config.watch.verifyIntervalMs > 0) {
       // The correctness path: a full hash sweep that catches a sync client or a
       // restored backup which preserved mtime across a real content change.
       this.verifyTimer = setInterval(() => {
         void this.flush({ verify: true });
-      }, this.config.watch.verifyIntervalMs);
+      }, this.#config.watch.verifyIntervalMs);
       this.verifyTimer.unref();
     }
   }
@@ -101,7 +105,7 @@ export class Watcher {
   private shouldIgnore(relPath: string): boolean {
     const segments = relPath.split('/');
     if (segments.some((segment) => segment.startsWith('.'))) return true;
-    if (segments.some((segment) => this.config.ignore.includes(segment))) return true;
+    if (segments.some((segment) => this.#config.ignore.includes(segment))) return true;
     // Editors and sync clients write to a temp name then rename. Indexing the
     // temp file wastes a pass and briefly indexes a partial page.
     const base = segments.at(-1) ?? '';
@@ -111,7 +115,7 @@ export class Watcher {
   private schedule(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
     // FSEvents coalesces, but an editor still produces a write storm on save.
-    this.debounceTimer = setTimeout(() => void this.flush(), this.config.watch.debounceMs);
+    this.debounceTimer = setTimeout(() => void this.flush(), this.#config.watch.debounceMs);
   }
 
   private async flush(options: { verify?: boolean } = {}): Promise<void> {
@@ -129,15 +133,15 @@ export class Watcher {
     this.running = true;
 
     try {
-      const report = await this.indexer.run({
+      const report = await this.#indexer.run({
         ...(options.verify ? { verify: true } : {}),
         // A targeted pass cannot conclude anything about deletions, so a
         // coalesced or swept run deliberately walks the whole tree.
         ...(wholeTree ? {} : { only: changed }),
       });
-      this.events.onIndexed?.(report, changed);
+      this.#events.onIndexed?.(report, changed);
     } catch (error) {
-      this.events.onError?.(error as Error);
+      this.#events.onError?.(error as Error);
     } finally {
       this.running = false;
       if (this.dirty || this.pending.size > 0) this.schedule();

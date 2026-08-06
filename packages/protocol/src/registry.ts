@@ -1,10 +1,10 @@
 import type { z } from 'zod';
-import { RecallInput, RecallOutput } from './ops/recall.js';
-import { ReadInput, ReadOutput } from './ops/read.js';
-import { ListInput, ListOutput } from './ops/list.js';
-import { TimelineInput, TimelineOutput } from './ops/timeline.js';
-import { ContextInput, ContextOutput } from './ops/context.js';
-import { WriteInput, WriteOutput } from './ops/write.js';
+import { RecallInput, RecallOutput } from './ops/recall.ts';
+import { ReadInput, ReadOutput } from './ops/read.ts';
+import { ListInput, ListOutput } from './ops/list.ts';
+import { TimelineInput, TimelineOutput } from './ops/timeline.ts';
+import { ContextInput, ContextOutput } from './ops/context.ts';
+import { WriteInput, WriteOutput } from './ops/write.ts';
 import {
   ForgetInput,
   ForgetOutput,
@@ -16,7 +16,7 @@ import {
   RememberOutput,
   UndoInput,
   UndoOutput,
-} from './ops/mutate.js';
+} from './ops/mutate.ts';
 
 /**
  * §16. The library is the product: one op registry, one schema per op, three

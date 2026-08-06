@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DocumentRef, Line, PageClass, ResultEnvelope, SupersededClaim } from '../common.js';
+import { DocumentRef, Line, PageClass, ResultEnvelope, SupersededClaim } from '../common.ts';
 
 /** One exact thing: a page by slug or id, or a document by id. */
 export const ReadInput = z

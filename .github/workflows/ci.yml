@@ -42,9 +42,18 @@ jobs:
             echo "::error::a home path in committed defaults — default.jsonc must be machine-independent"
             exit 1
           fi
+          # Akno is developed against a real knowledge base, so the fastest way to
+          # write a regression test is to paste in the page that failed. See the
+          # rule in AGENTS.md. This catches the shape of the mistake, not every
+          # instance of it — a personal grep list belongs outside the repo.
+          if git grep -nEi 'passport (number|no)[: ]|iban[: ]|\+[0-9]{10,}|[0-9]{4} ?[0-9]{4} ?[0-9]{4} ?[0-9]{4}' -- ':!*.lock' ':!pnpm-lock.yaml'; then
+            echo "::error::what looks like real personal data in a tracked file — see AGENTS.md"
+            exit 1
+          fi
 
       - run: pnpm build
       - run: pnpm lint
+      - run: pnpm knip
       - run: pnpm test
 
       # The read path must work with no models configured — the integration suite

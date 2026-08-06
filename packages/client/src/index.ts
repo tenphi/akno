@@ -46,7 +46,9 @@ export function defaultSocketPath(): string {
 }
 
 export async function connect(options: ConnectOptions = {}): Promise<AknoClient> {
-  return options.http ? connectHttp(options.http, options) : connectSocket(options.socket ?? defaultSocketPath(), options);
+  return options.http
+    ? connectHttp(options.http, options)
+    : connectSocket(options.socket ?? defaultSocketPath(), options);
 }
 
 // ─── Unix socket ────────────────────────────────────────────────────────────
