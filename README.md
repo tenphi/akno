@@ -241,8 +241,6 @@ Named honestly, because a README that implies more than exists is the same failu
 prevent:
 
 - **The maintenance cycle** (`dream`, `observe`, `reflect`), including §8's thorough offline conflict pass.
-- **Extracting attachments that predate Akno.** They are discovered and attached to their page, but their
-  contents are not searchable until you re-add one with `akno ingest <path>`. `doctor` says how many there are.
 
 ## Documents
 
@@ -323,6 +321,44 @@ wrong place where you would never look for it.
 **The inbox is the only place Akno moves files.** A file dropped straight into `documents/` was put there on
 purpose: Akno will name it, page it and index it, but never relocate it. Every move is journalled and
 reversible with `akno undo`.
+
+### A document's own text is indexed as the document
+
+Every attachment is extracted on arrival — including the ones that predate Akno, or that
+someone dropped into a folder by hand. Their text is chunked **per page of the document** and indexed against
+the document itself, so a stored PDF is searchable by its own content and a hit can say which page it is on:
+
+```
+recall "who replaced the drain pump"
+
+  household/dishwasher-repair-2026-08 (full, 0.91)
+    household/dishwasher-repair-2026-08-8e7705eb.pdf p1
+      MERIDIAN APPLIANCE CARE
+      Replaced the drain pump
+```
+
+The text deliberately does **not** go into the Markdown page. §6 invalidates document text when the _file's_
+hash changes, which a page body cannot honour; indexing the same words twice made every match inside a document
+arrive as two hits against one recall budget; and a copy pasted into someone's page is a copy no later change to
+the file can ever correct. The page says what the document is and where it lives — what a person would have
+written — and recall quotes the document as a quote, attributed to the document and its page, never as a line
+citation on a page that has no such line.
+
+A document with no page has nowhere to be returned, since recall returns page cards. Ownership comes from the
+filename (`<page-basename>-<8 hex>.<ext>`), from a matching stem (`passport.pdf` beside `passport.md`), or from
+a page embedding it with `![[filename]]` — the author saying which file belongs where. `doctor` reports anything
+still unreachable and how to fix it.
+
+**A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document, not two.** Files that
+differ only by a trailing `-<n>` are read as parts of one document: one owning page, one summary, and page
+numbers that run through the whole thing — so a hit on the second file's first page is cited as page 5 of the
+passport, which is a page a reader can actually look up. `read({document})` on any part returns all of it.
+
+The rule is narrow on purpose, because the cost of a wrong guess is two unrelated documents welded together with
+one summary describing neither: the extension has to match (`passport.jpg` beside `passport.pdf` is another
+rendition, not a second half), the suffix has to be one or two digits (`bill-2026.pdf` is a year), the folder
+has to match (two people can each have a `residence-permit-2.jpg`), and a content-addressed `-<8 hex>` suffix is
+never a part.
 
 ### Attachments on `write`
 

@@ -58,7 +58,23 @@ export const DocumentRef = z.object({
   mime: z.string().optional(),
   label: z.string().optional(),
   pages: z.number().int().nonnegative().optional(),
+  /**
+   * Files this document is made of, when more than one — `passport.pdf` plus
+   * `passport-2.pdf` is one document in two files (§11). `pages` and `matched_page` both
+   * count through the whole of it, so a page number is one a reader can look up.
+   */
+  parts: z.number().int().positive().optional(),
   matched_page: z.number().int().positive().optional(),
+  /** What the document is, in a sentence — §11 gives a stored document a summary of its own. */
+  summary: z.string().optional(),
+  /**
+   * The matching text from inside the document, capped by `recall.reference_quote_lines`.
+   *
+   * A document is evidence, not a claim (§5), so it comes back as a quote window rather
+   * than in full — and as a quote attributed to the document and its page, never as a line
+   * citation on the Markdown page, which has no such line.
+   */
+  quote: z.string().optional(),
 });
 export type DocumentRef = z.infer<typeof DocumentRef>;
 

@@ -19,6 +19,16 @@ import Vision
 import CoreGraphics
 import ImageIO
 
+/// One page's worth of text, so a citation can name the page it came from.
+///
+/// §11 says a card points at the page, the document, **and the page number within it**.
+/// One joined blob cannot support that last part, and a quote from page 9 of a contract
+/// attributed to no page is a citation a reader cannot check.
+struct Section: Encodable {
+    var page: Int
+    var text: String
+}
+
 struct Result: Encodable {
     var text: String
     var pages: Int
@@ -26,6 +36,7 @@ struct Result: Encodable {
     /// Vision's own mean confidence over recognised lines, 0..1. Absent for a text
     /// layer, where there is nothing to be unsure about.
     var confidence: Double?
+    var sections: [Section]?
     var error: String?
 }
 
@@ -41,7 +52,7 @@ func emit(_ result: Result) -> Never {
 }
 
 func fail(_ message: String) -> Never {
-    emit(Result(text: "", pages: 0, ocr: false, confidence: nil, error: message))
+    emit(Result(text: "", pages: 0, ocr: false, confidence: nil, sections: nil, error: message))
 }
 
 /// Vision text recognition over one image. `accurate` rather than `fast`: this runs
@@ -141,7 +152,16 @@ switch mode {
 case "image":
     guard let image = loadImage(path) else { fail("could not decode the image") }
     guard let (text, confidence) = recognise(image) else { fail("Vision could not run") }
-    emit(Result(text: text, pages: 1, ocr: true, confidence: confidence, error: nil))
+    emit(
+        Result(
+            text: text,
+            pages: 1,
+            ocr: true,
+            confidence: confidence,
+            sections: [Section(page: 1, text: text)],
+            error: nil
+        )
+    )
 
 case "pdf":
     guard let document = PDFDocument(url: URL(fileURLWithPath: path)) else {
@@ -158,21 +178,38 @@ case "pdf":
         // with one typed cover sheet still gets OCR'd.
         let perPage = pageCount > 0 ? trimmed.count / pageCount : trimmed.count
         if perPage >= 40 {
-            emit(Result(text: trimmed, pages: pageCount, ocr: false, confidence: nil, error: nil))
+            // Page by page as well as joined: the join is what a summary reads, the
+            // sections are what a citation points into.
+            var sections: [Section] = []
+            for pageIndex in 0..<pageCount {
+                guard let page = document.page(at: pageIndex), let pageText = page.string else { continue }
+                let pageTrimmed = pageText.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !pageTrimmed.isEmpty { sections.append(Section(page: pageIndex + 1, text: pageTrimmed)) }
+            }
+            emit(
+                Result(
+                    text: trimmed,
+                    pages: pageCount,
+                    ocr: false,
+                    confidence: nil,
+                    sections: sections.isEmpty ? nil : sections,
+                    error: nil
+                )
+            )
         }
     }
 
     // No usable text layer: it is a scan. OCR a bounded number of pages — a 200-page
     // contract does not need every page to be searchable to be findable, and the
     // caller is told how many were read.
-    var parts: [String] = []
+    var sections: [Section] = []
     var confidenceTotal = 0.0
     var read = 0
     for pageIndex in 0..<min(pageCount, maxOcrPages) {
         guard let page = document.page(at: pageIndex), let image = render(page) else { continue }
         guard let (text, confidence) = recognise(image) else { continue }
         if !text.isEmpty {
-            parts.append(text)
+            sections.append(Section(page: pageIndex + 1, text: text))
             confidenceTotal += confidence
             read += 1
         }
@@ -181,10 +218,11 @@ case "pdf":
     let mean = read > 0 ? confidenceTotal / Double(read) : 0
     emit(
         Result(
-            text: parts.joined(separator: "\n\n"),
+            text: sections.map(\.text).joined(separator: "\n\n"),
             pages: pageCount,
             ocr: true,
             confidence: mean,
+            sections: sections.isEmpty ? nil : sections,
             error: nil
         )
     )

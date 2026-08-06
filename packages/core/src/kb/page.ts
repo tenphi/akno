@@ -25,7 +25,14 @@ interface ParsedEvent {
 
 interface ParsedLink {
   toSlug: string;
-  kind: 'wikilink' | 'markdown';
+  /**
+   * `embed` is `[[receipt-3f8c1a2b.pdf]]` — a pointer at a *file*, not at a page.
+   *
+   * Worth its own kind for two reasons: an embed can never be a broken page link, and it is
+   * the page's author saying which file belongs to this page, which is a better statement of
+   * ownership than any filename convention can be.
+   */
+  kind: 'wikilink' | 'markdown' | 'embed';
   line: number;
 }
 
@@ -93,7 +100,12 @@ export function parsePage(relPath: string, content: string): ParsedPage {
     }
 
     for (const match of raw.matchAll(WIKILINK)) {
-      links.push({ toSlug: normalizeLinkTarget(match[1]!), kind: 'wikilink', line: absoluteLine });
+      const target = normalizeLinkTarget(match[1]!);
+      links.push({
+        toSlug: target,
+        kind: isFileTarget(target) ? 'embed' : 'wikilink',
+        line: absoluteLine,
+      });
     }
     for (const match of raw.matchAll(MARKDOWN_LINK)) {
       links.push({
@@ -158,6 +170,18 @@ function firstWikilink(text: string): string | null {
  * that here is the difference between a working backlink graph and a wall of
  * false "broken link" reports.
  */
+/**
+ * True for a target that names a file rather than a page.
+ *
+ * `normalizeLinkTarget` has already stripped `.md`, so anything with an extension left is
+ * not a page: `[[receipt-3f8c1a2b.pdf]]`, `[[scan.jpg]]`. Counting those as page links made
+ * every embedded attachment show up in `doctor` as a wikilink pointing at a page that does
+ * not exist — noise that buries the real broken links.
+ */
+function isFileTarget(target: string): boolean {
+  return /\.[A-Za-z0-9]{1,8}$/.test(target);
+}
+
 export function normalizeLinkTarget(target: string, fromSlug?: string): string {
   let cleaned = target
     .trim()

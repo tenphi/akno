@@ -38,6 +38,15 @@ export interface Extraction {
   via: 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'vision' | 'none';
   /** Set when nothing could be extracted, and why. Never thrown. */
   note: string | null;
+  /**
+   * The same text page by page, when the format has pages.
+   *
+   * §11 says a card points at the page, the document, **and the page number within it**.
+   * That last part needs the text kept per page: a quote from page 9 of a contract with no
+   * page attached is a citation a reader cannot check. Absent for formats with no pages —
+   * a `.txt` file has none, and inventing "page 1" would be a claim, not a fact.
+   */
+  sections?: { page: number; text: string }[];
 }
 
 const IMAGE_EXTENSIONS = new Set([
@@ -117,6 +126,7 @@ interface SwiftResult {
   pages: number;
   ocr: boolean;
   confidence?: number;
+  sections?: { page: number; text: string }[];
   error?: string;
 }
 
@@ -141,6 +151,7 @@ async function pdf(options: ExtractOptions): Promise<Extraction> {
     ocr: result.ocr,
     confidence: result.confidence ?? null,
     via: result.ocr ? 'ocr' : 'text-layer',
+    ...(result.sections?.length ? { sections: result.sections } : {}),
     note:
       result.ocr && result.pages > options.maxOcrPages
         ? `scanned: OCR read the first ${options.maxOcrPages} of ${result.pages} pages`
@@ -161,6 +172,7 @@ async function image(options: ExtractOptions): Promise<Extraction> {
       confidence: result?.confidence ?? null,
       via: 'ocr',
       note: null,
+      sections: [{ page: 1, text }],
     };
   }
 

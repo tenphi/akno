@@ -288,3 +288,77 @@ export function applyReferenceFence(chunks: Chunk[], fenceLine: number | null): 
 export function embeddingText(chunk: Chunk): string {
   return chunk.headingPath ? `${chunk.headingPath}\n\n${chunk.text}` : chunk.text;
 }
+
+/** A document's chunk: its text, plus the page inside the document it came from. */
+export interface DocumentChunk {
+  ord: number;
+  text: string;
+  /** Page within the document, or null for a format with no pages. */
+  docPage: number | null;
+}
+
+/**
+ * §11. Chunks a document's extracted text so a PDF is searchable by its own content and a
+ * hit can name the page it is on.
+ *
+ * Page boundaries are honoured before size: a chunk that straddles two pages cannot be
+ * cited as being on either, and "page 9 of the contract" is the part of the citation a
+ * reader actually uses to check it. Within a page, long text is split on blank lines and
+ * then on sentence ends, because a document has no headings to follow — which is exactly
+ * what distinguishes this from `chunkPage`.
+ */
+export function chunkDocument(
+  extraction: { text: string; sections?: { page: number; text: string }[] },
+  options: Pick<ChunkOptions, 'targetChars' | 'maxChars'>,
+): DocumentChunk[] {
+  const pages = extraction.sections?.length ? extraction.sections : [{ page: 0, text: extraction.text }];
+
+  const out: DocumentChunk[] = [];
+  for (const page of pages) {
+    for (const text of splitText(page.text, options)) {
+      out.push({ ord: out.length, text, docPage: page.page > 0 ? page.page : null });
+    }
+  }
+  return out;
+}
+
+/** Blank lines first, then sentence ends, then a hard cut — in that order of preference. */
+function splitText(text: string, options: Pick<ChunkOptions, 'targetChars' | 'maxChars'>): string[] {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return [];
+  if (trimmed.length <= options.maxChars) return [trimmed];
+
+  const out: string[] = [];
+  let current = '';
+  const flush = (): void => {
+    const value = current.trim();
+    if (value.length > 0) out.push(value);
+    current = '';
+  };
+
+  for (const paragraph of trimmed.split(/\n\s*\n/)) {
+    for (const piece of paragraph.length > options.maxChars ? sentences(paragraph, options) : [paragraph]) {
+      if (current.length > 0 && current.length + piece.length > options.targetChars) flush();
+      current = current.length > 0 ? `${current}\n\n${piece}` : piece;
+      if (current.length >= options.targetChars) flush();
+    }
+  }
+  flush();
+  return out;
+}
+
+function sentences(text: string, options: Pick<ChunkOptions, 'maxChars'>): string[] {
+  const parts = text.split(/(?<=[.!?])\s+/);
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part.length <= options.maxChars) {
+      out.push(part);
+      continue;
+    }
+    // Scanned text can be one unbroken run with no punctuation at all. A hard cut is the
+    // honest last resort: better a chunk boundary mid-sentence than a chunk the embedder
+    // silently truncates.
+    for (let i = 0; i < part.length; i += options.maxChars) out.push(part.slice(i, i + options.maxChars));
+  }
+  return out;
+}

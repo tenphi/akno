@@ -134,7 +134,8 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
 function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
   const row = ctx.store.db
     .prepare(
-      `SELECT d.id, d.rel_path, d.mime, d.sha256, d.label, d.text, d.page_count, d.ocr, d.bytes, p.slug
+      `SELECT d.id, d.rel_path, d.mime, d.sha256, d.label, d.text, d.page_count, d.ocr, d.bytes,
+              d.group_key, p.slug
          FROM documents d LEFT JOIN pages p ON p.id = d.page_id WHERE d.id = ?`,
     )
     .get(documentId) as
@@ -148,24 +149,63 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
         page_count: number | null;
         ocr: number;
         bytes: number;
+        group_key: string | null;
         slug: string | null;
       }
     | undefined;
 
   if (!row) throw new AknoError('not_found', `no document with id ${documentId}`);
 
-  // §11 promises extraction on arrival, always. That lands with `ingest`; until
-  // then a document row is real but has no text, and saying which is better than
-  // returning `null` and letting the caller assume the file is empty.
-  const note =
-    row.text === null
-      ? 'text extraction is not available in this build — the document is registered but not extracted'
-      : undefined;
+  // §11. A document someone's scanner cut into `passport.pdf` and `passport-2.pdf` is one
+  // document, so reading any part returns the whole of it: the text of every part in order,
+  // the total page count, and the other parts' paths. Asking for a passport and getting
+  // half of it, with nothing saying so, is the failure this avoids.
+  const parts = ctx.store.db
+    .prepare(
+      `SELECT id, rel_path, text, page_count, ocr FROM documents
+        WHERE group_key = ? ORDER BY part`,
+    )
+    .all(row.group_key ?? row.rel_path) as {
+    id: string;
+    rel_path: string;
+    text: string | null;
+    page_count: number | null;
+    ocr: number;
+  }[];
+
+  const readable = parts.filter((part) => part.text !== null);
+  const text = readable.length > 0 ? readable.map((part) => part.text).join('\n\n') : null;
+  const pageCount = parts.reduce<number | null>(
+    (sum, part) => (part.page_count === null ? sum : (sum ?? 0) + part.page_count),
+    null,
+  );
+
+  const notes: string[] = [];
+  if (text === null) {
+    notes.push(
+      'nothing could be read from this file — a photo with no text in it, or a format with no extractor',
+    );
+  } else if (readable.length < parts.length) {
+    // Partial is a result, not a failure — but a caller reasoning over half a contract has
+    // to know which half it has.
+    notes.push(
+      `${parts.length - readable.length} of ${parts.length} parts could not be read: ` +
+        parts
+          .filter((part) => part.text === null)
+          .map((part) => part.rel_path)
+          .join(', '),
+    );
+  }
+  if (parts.length > 1) {
+    notes.push(
+      `${parts.length} files, read as one document: ${parts.map((part) => part.rel_path).join(', ')}`,
+    );
+  }
 
   return {
-    status: row.text === null ? 'degraded' : 'ok',
-    ...(row.text === null ? { degraded: ['no_chat_model' as const] } : {}),
-    ...(note ? { note } : {}),
+    status: text === null ? 'degraded' : 'ok',
+    ...(text === null ? { degraded: ['no_chat_model' as const] } : {}),
+    ...(notes.length > 0 ? { note: notes.join('. ') } : {}),
     document: {
       id: row.id,
       page: row.slug,
@@ -173,9 +213,9 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
       mime: row.mime,
       sha256: row.sha256,
       label: row.label,
-      page_count: row.page_count,
-      ocr: row.ocr === 1,
-      text: row.text,
+      page_count: pageCount,
+      ocr: parts.some((part) => part.ocr === 1),
+      text,
       bytes: row.bytes,
     },
   };

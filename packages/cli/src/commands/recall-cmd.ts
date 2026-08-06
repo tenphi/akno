@@ -133,11 +133,24 @@ function printRecall(result: {
       line(style.yellow(`  superseded: ${truncate(entry.claim, 90)} (until ${entry.valid_to})`));
     }
     if (card.documents?.length) {
-      line(
-        style.grey(
-          `  documents: ${card.documents.map((doc) => `${doc.rel_path ?? doc.id}${doc.pages ? ` (${doc.pages}p)` : ''}`).join(', ')}`,
-        ),
-      );
+      const matched = card.documents.filter((doc) => doc.quote);
+      const rest = card.documents.filter((doc) => !doc.quote);
+      // A document that matched is quoted with the page inside it, because that is the
+      // citation a reader checks. The rest are listed as what else is attached.
+      for (const doc of matched) {
+        const where = doc.matched_page ? `p${doc.matched_page}` : 'text';
+        const parts = doc.parts ? style.grey(` (${doc.parts} files, ${doc.pages ?? '?'}p)`) : '';
+        line(`  ${style.grey(`${doc.rel_path ?? doc.id} ${where}`)}${parts}`);
+        if (doc.summary) line(`    ${style.grey(truncate(doc.summary, 106))}`);
+        for (const quoted of doc.quote!.split('\n')) line(`    ${truncate(quoted, 106)}`);
+      }
+      if (rest.length > 0) {
+        line(
+          style.grey(
+            `  documents: ${rest.map((doc) => `${doc.rel_path ?? doc.id}${doc.pages ? ` (${doc.pages}p)` : ''}`).join(', ')}`,
+          ),
+        );
+      }
     }
     if (card.links?.length) line(style.grey(`  links: ${card.links.slice(0, 8).join(', ')}`));
   }

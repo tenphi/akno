@@ -44,6 +44,8 @@ export interface DoctorReport {
     events: number;
     documents: number;
     documentsExtracted: number;
+    /** Extracted, but owned by no page — so nothing recall can return (§9). */
+    documentsUnsearchable: number;
     links: number;
     brokenLinks: number;
     excludedRules: number;
@@ -81,6 +83,9 @@ export async function doctor(
     events: count('SELECT count(*) AS c FROM events'),
     documents: count('SELECT count(*) AS c FROM documents'),
     documentsExtracted: count('SELECT count(*) AS c FROM documents WHERE text IS NOT NULL'),
+    documentsUnsearchable: count(
+      'SELECT count(*) AS c FROM documents WHERE text IS NOT NULL AND page_id IS NULL',
+    ),
     links: count('SELECT count(*) AS c FROM links'),
     brokenLinks: count('SELECT count(*) AS c FROM links WHERE broken = 1'),
     excludedRules: ctx.config.rules.filter((rule) => rule.class === 'excluded').length,
@@ -189,9 +194,16 @@ export async function doctor(
   }
   if (counts.documents > counts.documentsExtracted) {
     warnings.push(
-      `${counts.documents - counts.documentsExtracted} attachments are registered but not extracted, so ` +
-        'their contents are not searchable. They predate ingest, or arrived by hand — re-add one with ' +
-        '`akno ingest <path>` to extract it.',
+      `${counts.documents - counts.documentsExtracted} attachments have no readable text — a photo with ` +
+        'nothing written in it, or a format with no extractor. They are still listed on their page.',
+    );
+  }
+  if (counts.documentsUnsearchable > 0) {
+    // Extracted, but with no page to hang a card on: recall returns page cards, so a
+    // document nothing points at has nowhere to be returned. Say so, and say the fix.
+    warnings.push(
+      `${counts.documentsUnsearchable} attachments have text that recall cannot reach, because no page ` +
+        'owns them. Embed one from a page with `![[filename]]`, or name it `<page>-<8 hex>.<ext>`.',
     );
   }
   if (extraction.note) warnings.push(extraction.note);

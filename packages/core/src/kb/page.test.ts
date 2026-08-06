@@ -168,3 +168,27 @@ describe('resolveClass', () => {
     });
   });
 });
+
+describe('embeds of files', () => {
+  it('are not page links, and never broken ones', () => {
+    // `doctor` counted every embedded attachment as a wikilink pointing at a page that does
+    // not exist — noise that buries the real broken links.
+    const page = parsePage(
+      'home/passport.md',
+      '# Passport\n\n![[passport-2.pdf]]\n![[scan.JPG]]\n\nSee [[people/ada-marlow]] and [[home/lease]].\n',
+    );
+    const byKind = (kind: string): string[] =>
+      page.links.filter((link) => link.kind === kind).map((link) => link.toSlug);
+
+    expect(byKind('embed')).toEqual(['passport-2.pdf', 'scan.JPG']);
+    expect(byKind('wikilink')).toEqual(['people/ada-marlow', 'home/lease']);
+  });
+
+  it('still treats a wikilink written with a .md extension as a page', () => {
+    // Obsidian writes both forms; `normalizeLinkTarget` strips the extension, so what is
+    // left with an extension is a file and what is not is a page.
+    const page = parsePage('index.md', '# Index\n\n[[home/lease.md]] and [[people/ada-marlow]].\n');
+    expect(page.links.every((link) => link.kind === 'wikilink')).toBe(true);
+    expect(page.links.map((link) => link.toSlug)).toEqual(['home/lease', 'people/ada-marlow']);
+  });
+});

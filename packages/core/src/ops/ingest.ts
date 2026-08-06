@@ -6,7 +6,7 @@ import { effectiveRule } from '../rules/compile.ts';
 import { extract, type Extraction } from '../ingest/extract.ts';
 import { cleanupFetch, fetchDocument } from '../ingest/fetch.ts';
 import { nameDocument, nameIsUseless, type NamedDocument } from '../ingest/name.ts';
-import { excerptOf, provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
+import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { hashFile } from '../kb/scan.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
@@ -288,10 +288,6 @@ export async function ingestFile(
       attachment: path.basename(stored.relPath),
       ...(file.sourceUrl ? { sourceUrl: file.sourceUrl } : {}),
       ...(input.label ? { label: input.label } : {}),
-      // §5's fence: a short human writeup, then the document itself. Everything below is
-      // indexed for search, never mined, never returned whole. A page that is already
-      // `reference` end to end needs no fence.
-      fence: rule.class !== 'reference',
     });
     const written = await writeFileAtomic(ctx.config.aknoPath, pageRel, page);
     files.push({ relPath: pageRel, action: 'created', before: null, after: written.after });
@@ -456,15 +452,19 @@ function proposeDestination(
 // ─── Page composition ───────────────────────────────────────────────────────
 
 /**
- * §5. Most document pages are a short human writeup followed by the document itself.
- * Above the fence: normal, mined, quotable in full. Below: indexed for search, never
- * mined, never returned whole.
+ * A short writeup and a pointer to the file — **not** the file's text.
+ *
+ * The extracted text used to be pasted in below a `<!-- reference -->` fence, and it was a
+ * copy: §6 invalidates document text on the *file* hash, which a page body cannot honour,
+ * and indexing the same words twice made every match inside a document arrive as two hits
+ * against one budget. The text is indexed against the document instead, where a hit can
+ * name the page within the PDF that produced it (§11). What the reader gets here is what a
+ * person would have written: what it is, and where the thing itself lives.
  */
 function composePage(options: {
   named: NamedDocument;
   extraction: Extraction;
   attachment: string;
-  fence: boolean;
   sourceUrl?: string;
   label?: string;
 }): string {
@@ -483,9 +483,7 @@ function composePage(options: {
     `# ${titleCase(named.title)}\n\n` +
     `${named.summary}\n\n` +
     `![[${options.attachment}]]\n` +
-    (facts.length > 0 ? `\n${facts.join('\n')}\n` : '') +
-    (options.fence ? `\n<!-- reference -->\n` : '') +
-    `\n${excerptOf(extraction)}\n`
+    (facts.length > 0 ? `\n${facts.join('\n')}\n` : '')
   );
 }
 

@@ -249,6 +249,44 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX proposals_status  ON proposals(status);
   CREATE INDEX proposals_subject ON proposals(subject, status);
   `,
+
+  // ── 3. A document's own text, indexed as the document ──────────────────────
+  //
+  // §11: a stored PDF is searchable by its own content, and the card points at the page,
+  // the document, and *the page number within it*. §6 lists document text as derived from
+  // the attachment and invalidated when the file hash changes — which is only true if the
+  // text is indexed against the document rather than pasted into someone's Markdown.
+  //
+  // Document chunks live in `chunks` on purpose: FTS, the vector table and rank fusion all
+  // read that one table, so a document's text is searched by the same machinery as a page's
+  // with nothing new to keep in step. They carry the owning page's id as well, which is
+  // what lets a hit inside a PDF surface as a card for the page it belongs to.
+  `
+  ALTER TABLE chunks ADD COLUMN document_id TEXT REFERENCES documents(id) ON DELETE CASCADE;
+  -- The page number *within the document*. NULL for a format with no pages: a .txt file
+  -- has none, and inventing "page 1" would be a claim rather than a fact.
+  ALTER TABLE chunks ADD COLUMN doc_page INTEGER;
+  CREATE INDEX chunks_document ON chunks(document_id, ord);
+
+  -- The file hash the current text was extracted from. §6's invalidation rule, written
+  -- down: text is re-extracted when this stops matching the file.
+  ALTER TABLE documents ADD COLUMN extracted_sha TEXT;
+  `,
+
+  // ── 4. Multi-part documents ────────────────────────────────────────────────
+  //
+  // A scanner that produced `passport.pdf` and `passport-2.pdf` did not produce two
+  // documents. Parts share a `group_key` — the rel_path of part one — which is what gives
+  // them one owning page, one summary, and page numbers that run through the whole thing
+  // rather than restarting at 1 halfway.
+  `
+  ALTER TABLE documents ADD COLUMN group_key TEXT;
+  ALTER TABLE documents ADD COLUMN part INTEGER NOT NULL DEFAULT 1;
+  -- Pages in the parts before this one, so a citation can say "page 5 of the passport"
+  -- rather than "page 2 of the second file", which is not a thing a reader can look up.
+  ALTER TABLE documents ADD COLUMN page_offset INTEGER NOT NULL DEFAULT 0;
+  CREATE INDEX documents_group ON documents(group_key, part);
+  `,
 ];
 
 /**

@@ -3,12 +3,21 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoConfig } from '../config/schema.ts';
 import { KB_RULES_FILE } from '../config/load.ts';
+import { extract } from '../ingest/extract.ts';
+import { documentPart } from '../ingest/parts.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { hashFile, mapWithConcurrency, scanTree, type ScannedFile } from '../kb/scan.ts';
 import { ATTACHMENT_NAME, parsePage, resolveClass, type ParsedPage } from '../kb/page.ts';
 import { withId } from '../kb/frontmatter.ts';
-import { applyReferenceFence, chunkPage, embeddingText, type Chunk } from './chunk.ts';
-import { bodyLineHashes, derivePage, type DerivedFact } from './derive.ts';
+import {
+  applyReferenceFence,
+  chunkDocument,
+  chunkPage,
+  embeddingText,
+  type Chunk,
+  type DocumentChunk,
+} from './chunk.ts';
+import { bodyLineHashes, derivePage, summarizeDocument, type DerivedFact } from './derive.ts';
 import { eventId, factId, newPageId, sha256 } from '../store/ids.ts';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
@@ -39,7 +48,7 @@ export interface IndexOptions {
 }
 
 export interface IndexProgress {
-  phase: 'scan' | 'hash' | 'pages' | 'embed' | 'derive' | 'documents' | 'done';
+  phase: 'scan' | 'hash' | 'pages' | 'embed' | 'derive' | 'documents' | 'extract' | 'done';
   done: number;
   total: number;
   detail?: string;
@@ -56,6 +65,8 @@ export interface IndexReport {
   chunksEmbedded: number;
   pagesDerived: number;
   documentsLinked: number;
+  /** Attachments whose text was read this pass (§11: extraction on arrival, always). */
+  documentsExtracted: number;
   eventsIndexed: number;
   factsDerived: number;
   excluded: number;
@@ -105,6 +116,7 @@ export class Indexer {
       chunksEmbedded: 0,
       pagesDerived: 0,
       documentsLinked: 0,
+      documentsExtracted: 0,
       eventsIndexed: 0,
       factsDerived: 0,
       excluded: 0,
@@ -218,6 +230,9 @@ export class Indexer {
     if (!options.structuralOnly) {
       const scoped = options.modelPaths ?? options.only;
       const scope = scoped ? this.#pageIdsFor(scoped) : null;
+      // Before embedding, so the chunks it produces are embedded in the same pass rather
+      // than sitting unsearchable until the next one.
+      await this.extractPending(report, progress, options.only ?? null);
       await this.embedPending(report, progress, scope);
       await this.derivePending(report, progress, options.rederive ?? false, scope);
     }
@@ -367,8 +382,7 @@ export class Indexer {
 
       this.#store.transaction(() => {
         if (row.page_id) {
-          this.#store.vectors.removeForPage(row.page_id);
-          this.deleteChunkRows(row.page_id);
+          this.deleteChunkRows(ALL_CHUNKS_FOR_PAGE, row.page_id);
           this.#store.db.prepare('DELETE FROM pages WHERE id = ?').run(row.page_id);
         } else {
           this.#store.db.prepare('DELETE FROM documents WHERE rel_path = ?').run(row.rel_path);
@@ -543,8 +557,10 @@ export class Indexer {
   }
 
   private replaceChunks(pageId: string, chunks: Chunk[]): void {
-    this.#store.vectors.removeForPage(pageId);
-    this.deleteChunkRows(pageId);
+    // Only the page's *body* chunks. Its documents' chunks come from the files beside it,
+    // are invalidated by those files' hashes (§6), and would otherwise be destroyed by
+    // every edit to the page and rebuilt only on the next extraction pass.
+    this.deleteChunkRows(BODY_CHUNKS_FOR_PAGE, pageId);
 
     const insert = this.#store.db.prepare(
       `INSERT INTO chunks(page_id, ord, kind, heading_path, text, line_start, line_end, embedded)
@@ -567,14 +583,20 @@ export class Indexer {
     }
   }
 
-  /** FTS5 external-content tables need explicit deletes; there are no triggers. */
-  private deleteChunkRows(pageId: string): void {
-    const rows = this.#store.db.prepare('SELECT id FROM chunks WHERE page_id = ?').all(pageId) as {
-      id: number;
-    }[];
+  /**
+   * FTS5 external-content tables need explicit deletes; there are no triggers. Vectors are
+   * removed per chunk id for the same reason a page's document chunks survive a page edit:
+   * `removeForPage` cannot tell the two kinds apart.
+   */
+  private deleteChunkRows(select: string, parameter: string): void {
+    const rows = this.#store.db.prepare(select).all(parameter) as { id: number }[];
     const deleteFts = this.#store.db.prepare('DELETE FROM chunks_fts WHERE rowid = ?');
-    for (const row of rows) deleteFts.run(row.id);
-    this.#store.db.prepare('DELETE FROM chunks WHERE page_id = ?').run(pageId);
+    const deleteChunk = this.#store.db.prepare('DELETE FROM chunks WHERE id = ?');
+    for (const row of rows) {
+      deleteFts.run(row.id);
+      this.#store.vectors.remove(row.id);
+      deleteChunk.run(row.id);
+    }
   }
 
   private replaceEvents(pageId: string, page: ParsedPage): void {
@@ -606,6 +628,11 @@ export class Indexer {
     );
     const findPage = this.#store.db.prepare('SELECT id FROM pages WHERE slug = ?');
     for (const link of page.links) {
+      if (link.kind === 'embed') {
+        // A file embed is not a page reference and can never be a broken one.
+        insert.run(pageId, link.toSlug, null, 'embed', link.line, 0);
+        continue;
+      }
       const target = findPage.get(link.toSlug) as { id: string } | undefined;
       insert.run(pageId, link.toSlug, target?.id ?? null, link.kind, link.line, target ? 0 : 1);
     }
@@ -621,13 +648,13 @@ export class Indexer {
       UPDATE links SET
         to_page = (SELECT id FROM pages WHERE pages.slug = links.to_slug),
         broken  = CASE WHEN EXISTS (SELECT 1 FROM pages WHERE pages.slug = links.to_slug) THEN 0 ELSE 1 END
+      WHERE kind != 'embed'
     `);
   }
 
   private removePage(pageId: string): void {
     this.#store.transaction(() => {
-      this.#store.vectors.removeForPage(pageId);
-      this.deleteChunkRows(pageId);
+      this.deleteChunkRows(ALL_CHUNKS_FOR_PAGE, pageId);
       this.#store.db.prepare('DELETE FROM pages WHERE id = ?').run(pageId);
     });
   }
@@ -642,19 +669,37 @@ export class Indexer {
    * rather than starting from an empty one.
    */
   private registerAttachment(file: ScannedFile, report: IndexReport): void {
-    const pageId = this.attachmentOwner(file.relPath);
+    // Parts of one document resolve ownership through the group, so `passport-2.pdf` lands
+    // on the page that owns `passport.pdf` rather than nowhere at all (§11).
+    const group = documentPart(file.relPath, {
+      // Asked of the disk rather than of `files`, so the answer does not depend on which of
+      // the two parts this pass happened to reach first.
+      hasPartOne: (groupKey) => fs.existsSync(path.join(this.#config.aknoPath, groupKey)),
+    });
+    const pageId = this.attachmentOwner(group.groupKey) ?? this.attachmentOwner(file.relPath);
     const id = `doc_${(file.sha256 ?? file.relPath).slice(0, 12)}`;
     this.#store.transaction(() => {
       this.#store.db
         .prepare(
           `INSERT INTO documents(id, page_id, rel_path, mime, sha256, label, text, summary,
-                                 page_count, ocr, bytes, indexed_at)
-           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?)
+                                 page_count, ocr, bytes, indexed_at, group_key, part)
+           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?)
            ON CONFLICT(rel_path) DO UPDATE SET
              page_id = excluded.page_id, sha256 = excluded.sha256,
-             mime = excluded.mime, bytes = excluded.bytes, indexed_at = excluded.indexed_at`,
+             mime = excluded.mime, bytes = excluded.bytes, indexed_at = excluded.indexed_at,
+             group_key = excluded.group_key, part = excluded.part`,
         )
-        .run(id, pageId, file.relPath, guessMime(file.relPath), file.sha256 ?? '', file.size, nowIso());
+        .run(
+          id,
+          pageId,
+          file.relPath,
+          guessMime(file.relPath),
+          file.sha256 ?? '',
+          file.size,
+          nowIso(),
+          group.groupKey,
+          group.part,
+        );
       this.recordFile(file, null);
     });
     if (pageId) report.documentsLinked++;
@@ -666,6 +711,11 @@ export class Indexer {
    * `passport.pdf` beside `passport.md` is the one people already have, and
    * refusing to recognise it would make the feature useless on an existing
    * knowledge base.
+   */
+  /**
+   * The page a file belongs to: by Akno's own `<page>-<8 hex>.<ext>` naming, by a matching
+   * stem beside it, or because a page embeds it. Called with the group's part-one path
+   * first, so every part of a multi-part document lands on one page.
    */
   private attachmentOwner(relPath: string): string | null {
     const dir = path.posix.dirname(relPath.replace(/\\/g, '/'));
@@ -682,7 +732,24 @@ export class Indexer {
     const stem = base.replace(/\.[^.]+$/, '');
     const slug = dir === '.' ? stem : `${dir}/${stem}`;
     const row = find.get(slug) as { id: string } | undefined;
-    return row?.id ?? null;
+    if (row) return row.id;
+
+    // A page that embeds the file says so itself, which beats any naming convention: this
+    // is how `passport-2.pdf` belongs to `passport.md`, and it is what the author wrote.
+    // Scoped to the same folder, because two people's pages can each embed a file called
+    // `residence-permit-2.jpg` and they are not the same file.
+    const embedded = this.#store.db
+      .prepare(
+        `SELECT p.id, p.rel_path FROM links l
+           JOIN pages p ON p.id = l.from_page
+          WHERE l.kind = 'embed' AND l.to_slug = ?`,
+      )
+      .all(base) as { id: string; rel_path: string }[];
+    for (const candidate of embedded) {
+      const candidateDir = path.posix.dirname(candidate.rel_path.replace(/\\/g, '/'));
+      if (candidateDir === dir) return candidate.id;
+    }
+    return null;
   }
 
   // ─── Embedding ────────────────────────────────────────────────────────────
@@ -697,6 +764,155 @@ export class Indexer {
       if (row) out.add(row.id);
     }
     return out;
+  }
+
+  /**
+   * §11. **Extraction happens on arrival, always** — and this is what makes that true for
+   * attachments Akno did not place itself: a PDF someone dropped into `documents/` by
+   * hand, or one that predates Akno entirely. Their text is read, chunked, and indexed
+   * against the document, so the file is searchable by its own content.
+   *
+   * §6 puts the invalidation rule on the *file* hash, which is why `extracted_sha` exists:
+   * re-extract when the bytes change, and never otherwise. Extraction is local — PDFKit,
+   * Vision, `textutil` — so a backlog costs seconds, not model calls.
+   *
+   * A document with no page of its own is extracted but not chunked: a chunk has to belong
+   * to a card, and inventing a page for a file the rules said to keep pageless
+   * (`ingest: "file"`) would undo that decision. `doctor` reports the count.
+   */
+  private async extractPending(
+    report: IndexReport,
+    progress: (p: IndexProgress) => void,
+    only: string[] | null,
+  ): Promise<void> {
+    const scopeClause = only ? ` AND d.rel_path IN (${only.map(() => '?').join(',')})` : '';
+    const stale = this.#store.db
+      .prepare(
+        `SELECT DISTINCT d.group_key FROM documents d
+          WHERE (
+                  d.extracted_sha IS NULL
+               OR d.extracted_sha != d.sha256
+               -- Self-healing: a page removed and restored takes its document's chunks with
+               -- it, and the file hash never moved to signal that they are missing.
+               OR (d.page_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM chunks WHERE chunks.document_id = d.id))
+                )
+          ${scopeClause}`,
+      )
+      .all(...(only ?? [])) as { group_key: string }[];
+    if (stale.length === 0) return;
+
+    // Whole groups, in part order. One stale part shifts the page offsets of every part
+    // after it, so a group is extracted together or not at all — otherwise a citation reads
+    // "page 5" against a document that has since become six pages longer at the front.
+    const partsOf = this.#store.db.prepare(
+      `SELECT id, rel_path, sha256, page_id, part, summary FROM documents
+        WHERE group_key = ? ORDER BY part`,
+    );
+    const groups = stale.map((row) => partsOf.all(row.group_key) as DocumentPartRow[]);
+    const total = groups.reduce((sum, parts) => sum + parts.length, 0);
+
+    progress({ phase: 'extract', done: 0, total });
+    let done = 0;
+
+    for (const parts of groups) {
+      let pageOffset = 0;
+      const extractedText: string[] = [];
+      for (const row of parts) {
+        const absPath = path.join(this.#config.aknoPath, row.rel_path);
+        try {
+          const extraction = await extract({
+            absPath,
+            maxOcrPages: this.#config.ingest.maxOcrPages,
+            maxBytes: this.#config.ingest.maxFileBytes,
+          });
+
+          const offset = pageOffset;
+          this.#store.transaction(() => {
+            this.#store.db
+              .prepare(
+                `UPDATE documents
+                    SET text = ?, page_count = ?, ocr = ?, extracted_sha = ?, page_offset = ?
+                  WHERE id = ?`,
+              )
+              .run(
+                extraction.text.length > 0 ? extraction.text : null,
+                extraction.pageCount,
+                extraction.ocr ? 1 : 0,
+                // Recorded even when nothing could be read, so an unreadable file is not
+                // re-OCR'd on every pass. A changed file gets another go.
+                row.sha256,
+                offset,
+                row.id,
+              );
+
+            if (row.page_id && extraction.text.length > 0) {
+              this.replaceDocumentChunks(
+                row.id,
+                row.page_id,
+                chunkDocument(extraction, {
+                  targetChars: this.#config.index.chunkTargetChars,
+                  maxChars: this.#config.index.chunkMaxChars,
+                }),
+                offset,
+              );
+            }
+          });
+
+          pageOffset += extraction.pageCount ?? 0;
+          if (extraction.text.length > 0) extractedText.push(extraction.text);
+          if (extraction.text.length > 0) report.documentsExtracted++;
+          else if (extraction.note) report.warnings.push(`${row.rel_path}: ${extraction.note}`);
+        } catch (err) {
+          report.warnings.push(`could not extract ${row.rel_path}: ${errorMessage(err)}`);
+        }
+        progress({ phase: 'extract', done: ++done, total, detail: row.rel_path });
+      }
+
+      // One summary for the whole document, written onto every part. §11 gives a stored
+      // document a summary of its own, and a scanner's split is not a reason to have two
+      // summaries describing halves of one passport.
+      const needsSummary = parts.some((row) => row.summary === null);
+      if (extractedText.length > 0 && needsSummary && this.#models.chat.available) {
+        const summarized = await summarizeDocument(extractedText.join('\n\n'), this.#models.chat);
+        if (summarized.summary) {
+          const write = this.#store.db.prepare('UPDATE documents SET summary = ? WHERE id = ?');
+          this.#store.transaction(() => {
+            for (const row of parts) write.run(summarized.summary, row.id);
+          });
+        } else if (summarized.error) {
+          report.warnings.push(`could not summarize ${parts[0]!.rel_path}: ${summarized.error}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * A document's chunks are `reference` in the §5 sense: evidence, quoted in a capped
+   * window, never mined for facts. A contract is not the household asserting its terms.
+   */
+  private replaceDocumentChunks(
+    documentId: string,
+    pageId: string,
+    chunks: DocumentChunk[],
+    pageOffset: number,
+  ): void {
+    this.deleteChunkRows(CHUNKS_FOR_DOCUMENT, documentId);
+
+    const insert = this.#store.db.prepare(
+      `INSERT INTO chunks(page_id, document_id, doc_page, ord, kind, heading_path, text,
+                          line_start, line_end, embedded)
+       VALUES(?, ?, ?, ?, 'reference', '', ?, 0, 0, 0)`,
+    );
+    const insertFts = this.#store.db.prepare(
+      'INSERT INTO chunks_fts(rowid, text, heading_path) VALUES(?, ?, ?)',
+    );
+    for (const chunk of chunks) {
+      // The page number within the *whole* document, not within this file: page 2 of
+      // `passport-2.pdf` is page 5 of the passport, and that is the one a reader can find.
+      const docPage = chunk.docPage === null ? null : chunk.docPage + pageOffset;
+      const result = insert.run(pageId, documentId, docPage, chunk.ord, chunk.text);
+      insertFts.run(Number(result.lastInsertRowid), chunk.text, '');
+    }
   }
 
   private async embedPending(
@@ -964,3 +1180,16 @@ function declaredClassOf(frontmatter: string): string | null {
     return null;
   }
 }
+
+interface DocumentPartRow {
+  id: string;
+  rel_path: string;
+  sha256: string;
+  page_id: string | null;
+  part: number;
+  summary: string | null;
+}
+
+const ALL_CHUNKS_FOR_PAGE = 'SELECT id FROM chunks WHERE page_id = ?';
+const BODY_CHUNKS_FOR_PAGE = 'SELECT id FROM chunks WHERE page_id = ? AND document_id IS NULL';
+const CHUNKS_FOR_DOCUMENT = 'SELECT id FROM chunks WHERE document_id = ?';

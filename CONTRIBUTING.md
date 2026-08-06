@@ -115,6 +115,17 @@ Changes here need more care than the line count suggests.
   the _page_ still contains the line, so the live-line set comes from the page. Read from the incoming facts, a
   derivation that returned nothing looks like every line vanishing at once, and a page that merely became
   `reference` retires its whole history as superseded on lines nobody touched.
+- **A document's text belongs to the document, not to a page body.** §6 invalidates it on the _file's_ hash,
+  which a page body cannot honour, and indexing the same words in both places makes one match arrive twice
+  against one recall budget. Document chunks live in `chunks` with a `document_id` and a `doc_page` so FTS,
+  vectors and fusion need no second mechanism — but they carry the owning page's id too, and `replaceChunks`
+  must leave them alone or every page edit silently unindexes its attachments.
+- **Parts of one document are one document.** `passport.pdf` and `passport-2.pdf` share a `group_key`, are
+  extracted together so page offsets stay consistent, get one summary, and collapse to one entry on a card. When
+  several parts match, quote the **best-ranked** part — iterating parts in order instead quoted whichever file
+  happened to be part one.
+- **Never cite a line that does not exist.** A hit inside a PDF is not a line of the Markdown page. Document
+  hits come back as a quote attributed to the document and its page number; only body hits produce `lines`.
 - **Never report where text came from inaccurately.** A vision model's _description_ of a photograph is not a
   transcription of text in it, and a PDF's own text layer is not OCR. `text_from` distinguishes them because
   presenting them identically is a false claim about provenance — the exact sin §2 exists to prevent.

@@ -285,8 +285,10 @@ describe('storage', () => {
     expect(page).toContain('type: warranty');
     expect(page).toContain(NAMED.summary);
     expect(page).toContain(`![[${path.basename(result.rel_path!)}]]`);
-    // §5's fence: the writeup above is a claim, the document text below is evidence.
-    expect(page).toContain('<!-- reference -->');
+    // What a person would have written: what it is, and where the thing itself lives. The
+    // document's own text is indexed against the document (§6 invalidates it on the file
+    // hash, which a page body cannot honour), so it is not copied in here.
+    expect(page).not.toContain('Warranty certificate for the Zephyr QX-100.');
   });
 
   it('makes the extracted text searchable through the index', async () => {
@@ -778,8 +780,10 @@ describe('attachments on write', () => {
     expect(found.cards.map((card) => card.slug)).toContain('home/bicycle');
   });
 
-  it('puts the document text below the fence and the embed above it', async () => {
-    // §5: above the fence are claims, below is evidence. An embed is part of the writeup.
+  it('leaves the page the caller wrote alone apart from the embed', async () => {
+    // Akno writes one thing into a page it did not author: the embed that says the file
+    // is there (plus its provenance). Pasting the document's text in as well put a copy in
+    // the user's Markdown that no later change to the file could ever correct.
     const source = drop('policy.txt', 'Excludes theft from an unlocked shed.');
     await mem.write({
       slug: 'home/bicycle',
@@ -789,15 +793,33 @@ describe('attachments on write', () => {
     });
 
     const page = fs.readFileSync(path.join(root, 'home/bicycle.md'), 'utf8');
-    const fence = page.indexOf('<!-- reference -->');
-    expect(fence).toBeGreaterThan(-1);
-    expect(page.indexOf('![[')).toBeLessThan(fence);
-    expect(page.indexOf('unlocked shed')).toBeGreaterThan(fence);
+    expect(page).toContain('A city bike, insured.');
+    expect(page).toContain('![[');
+    expect(page).not.toContain('unlocked shed');
+    expect(page).not.toContain('<!-- reference -->');
   });
 
-  it('keeps a second attachment out of the first one’s fence section', async () => {
+  it('quotes the matching document text on the card, attributed to the document', async () => {
+    const source = drop('policy.txt', 'Excludes theft from an unlocked shed.');
+    const written = await mem.write({
+      slug: 'home/bicycle',
+      title: 'Bicycle',
+      content: 'A city bike, insured.',
+      documents: [{ path: source }],
+    });
+
+    const found = await mem.recall({ query: 'unlocked shed', mode: 'lookup' });
+    const card = found.cards.find((entry) => entry.slug === 'home/bicycle');
+    const document = card?.documents?.find((entry) => entry.rel_path === written.documents![0]!.rel_path);
+    expect(document?.quote).toContain('unlocked shed');
+    // Never as a line of the Markdown page: the page has no such line, and a citation
+    // pointing at the wrong line is worse than no citation.
+    expect(card?.lines.some((line) => line.text.includes('unlocked shed'))).toBe(false);
+  });
+
+  it('adds a second attachment without disturbing the first', async () => {
     const first = drop('one.txt', 'The first document mentions a warranty.');
-    await mem.write({
+    const one = await mem.write({
       slug: 'home/two-files',
       title: 'Two files',
       content: 'Two documents belong here.',
@@ -805,19 +827,20 @@ describe('attachments on write', () => {
     });
 
     const second = drop('two.txt', 'The second document mentions a service visit.');
-    const result = await mem.write({
+    const two = await mem.write({
       slug: 'home/two-files',
       append: 'And a second one arrived.',
       documents: [{ path: second }],
     });
 
     const page = fs.readFileSync(path.join(root, 'home/two-files.md'), 'utf8');
-    // One fence, both embeds above it, both texts below.
-    expect(page.match(/<!-- reference -->/g)).toHaveLength(1);
-    const fence = page.indexOf('<!-- reference -->');
-    expect(page.indexOf(`![[${path.basename(result.documents![0]!.rel_path)}]]`)).toBeLessThan(fence);
-    expect(page.indexOf('service visit')).toBeGreaterThan(fence);
-    expect(page.indexOf('a warranty')).toBeGreaterThan(fence);
+    expect(page).toContain(`![[${path.basename(one.documents![0]!.rel_path)}]]`);
+    expect(page).toContain(`![[${path.basename(two.documents![0]!.rel_path)}]]`);
+    expect(page).toContain('And a second one arrived.');
+    // Both are searchable by their own contents, as two separate documents on one page.
+    const found = await mem.recall({ query: 'service visit', mode: 'lookup' });
+    const card = found.cards.find((entry) => entry.slug === 'home/two-files');
+    expect(card?.documents?.some((entry) => entry.quote?.includes('service visit'))).toBe(true);
   });
 
   it('refuses to attach a file that is not there', async () => {
@@ -844,5 +867,96 @@ describe('attachments on write', () => {
 
     expect(fs.existsSync(path.join(root, 'home/undo-me.md'))).toBe(false);
     expect(fs.existsSync(path.join(root, stored))).toBe(false);
+  });
+});
+
+/**
+ * §11. A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document in
+ * two files. Two documents would mean two pages, two summaries, two half-answers — and a
+ * "page 2" that is really page 5 of the passport.
+ */
+describe('a document in several files', () => {
+  beforeEach(() => {
+    // A page and two files that belong to it, placed by hand rather than by ingest.
+    fs.writeFileSync(
+      path.join(root, 'home/lease.md'),
+      '---\ntitle: Lease\n---\n\n# Lease\n\nThe apartment lease.\n\n![[lease-2.pdf]]\n',
+      'utf8',
+    );
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf('LEASE AGREEMENT clause one, the rent.'));
+    fs.writeFileSync(
+      path.join(root, 'home/lease-2.pdf'),
+      makePdf('Clause seven, the deposit is returned within thirty days.'),
+    );
+  });
+
+  it('reads both parts as one document, with page numbers running through', async () => {
+    await mem.index({});
+
+    const found = await mem.recall({ query: 'deposit returned within thirty days', mode: 'lookup' });
+    const card = found.cards.find((entry) => entry.slug === 'home/lease');
+    const document = card?.documents?.find((entry) => entry.quote);
+
+    // One entry for the document, not one per file.
+    expect(card?.documents).toHaveLength(1);
+    expect(document?.parts).toBe(2);
+    expect(document?.rel_path).toBe('home/lease.pdf');
+    expect(document?.pages).toBe(2);
+    // The match is on the second file's only page, which is page 2 of the document.
+    expect(document?.matched_page).toBe(2);
+    expect(document?.quote).toContain('thirty days');
+  });
+
+  it('returns the whole document when either part is read', async () => {
+    await mem.index({});
+    const card = (await mem.recall({ query: 'clause one the rent', mode: 'lookup' })).cards.find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    const id = card!.documents![0]!.id;
+
+    const read = await mem.read({ document: id });
+    expect(read.document?.text).toContain('clause one');
+    expect(read.document?.text).toContain('thirty days');
+    expect(read.document?.page_count).toBe(2);
+    expect(read.document?.note).toBeUndefined();
+    expect(read.note).toContain('2 files, read as one document');
+  });
+
+  it('gives the document one summary rather than one per file', async () => {
+    server.reply({ summary: 'An apartment lease: rent, and a deposit returned within thirty days.' });
+    await mem.index({});
+
+    const card = (await mem.recall({ query: 'deposit returned', mode: 'lookup' })).cards.find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    expect(card?.documents?.[0]?.summary).toBe(
+      'An apartment lease: rent, and a deposit returned within thirty days.',
+    );
+  });
+
+  it('does not group two people’s files that happen to share a name', async () => {
+    // Same basename, different folders. Welding these together would put one person's
+    // permit inside the other's document.
+    fs.mkdirSync(path.join(root, 'ada'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'bo'), { recursive: true });
+    for (const who of ['ada', 'bo']) {
+      fs.writeFileSync(
+        path.join(root, `${who}/permit.md`),
+        `---\ntitle: ${who} permit\n---\n\n# Permit\n\nA residence permit.\n`,
+        'utf8',
+      );
+      fs.writeFileSync(path.join(root, `${who}/permit.pdf`), makePdf(`Residence permit for ${who}.`));
+      fs.writeFileSync(path.join(root, `${who}/permit-2.pdf`), makePdf(`Second page for ${who}.`));
+    }
+    await mem.index({});
+
+    for (const who of ['ada', 'bo']) {
+      const card = (await mem.recall({ query: `second page for ${who}`, mode: 'lookup' })).cards.find(
+        (entry) => entry.slug === `${who}/permit`,
+      );
+      expect(card?.documents).toHaveLength(1);
+      expect(card?.documents?.[0]?.rel_path).toBe(`${who}/permit.pdf`);
+      expect(card?.documents?.[0]?.parts).toBe(2);
+    }
   });
 });

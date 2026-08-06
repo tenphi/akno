@@ -327,3 +327,41 @@ export function scoreConfidence(
 
   return Math.round(Math.max(0.05, Math.min(0.98, score)) * 100) / 100;
 }
+
+const DOCUMENT_SUMMARY = `Summarize a document stored in a personal knowledge base — a bill, a contract, a
+scan, a receipt. Reply with JSON only.
+
+{ "summary": "one or two sentences, under 200 characters, saying what this document is and its most
+load-bearing values: who issued it, what it covers, amounts, dates, identifiers" }
+
+The text may be OCR output with errors in it, and may be only the first pages of a longer document. Summarize
+what is there. Do not guess at what is missing.`;
+
+/**
+ * §11. A stored document has "extracted text, a summary, embeddings" of its own.
+ *
+ * One summary per *document*, not per file: a passport split into `passport.pdf` and
+ * `passport-2.pdf` is one thing, and two half-summaries describe neither. The caller joins
+ * the parts' text before calling, so what is summarized is the whole document.
+ */
+export async function summarizeDocument(
+  text: string,
+  chat: ModelClient,
+): Promise<{ summary: string | null; error: string | null }> {
+  if (!chat.available) return { summary: null, error: chat.unavailableReason ?? 'chat model unavailable' };
+
+  // Enough to say what a document is without paying for a 40-page contract: the opening
+  // pages of a document are where it identifies itself.
+  const excerpt = text.slice(0, 6000);
+  const result = await chat.chat(
+    [
+      { role: 'system', content: DOCUMENT_SUMMARY },
+      { role: 'user', content: excerpt },
+    ],
+    { json: true, maxTokens: 300 },
+  );
+  if (!result.ok || !result.value) return { summary: null, error: result.error ?? 'summary failed' };
+
+  const parsed = parseJsonLoose<{ summary?: unknown }>(result.value);
+  return { summary: parsed ? cleanSummary(parsed.summary) : null, error: null };
+}

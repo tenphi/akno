@@ -132,27 +132,6 @@ export function provenanceLines(extraction: Extraction): string[] {
   return out;
 }
 
-/**
- * The document's own text, as it goes into the page body below the `<!-- reference -->`
- * fence (§5's example is exactly this: a short writeup, then the policy wording).
- *
- * It has to be *in the Markdown*, not only in the `documents` row, because §11 promises a
- * stored PDF is searchable by its own content and search reads chunks — which are derived
- * from the body. Text kept only in the row is text recall cannot reach.
- *
- * Capped, because the index is what search actually reads: a 40-page contract pasted into
- * Markdown makes the page unreadable and the repository enormous, and the tail of it adds
- * nothing a query was going to match on anyway.
- */
-const EXCERPT_CHARS = 20_000;
-
-export function excerptOf(extraction: Extraction): string {
-  const excerpt = extraction.text.slice(0, EXCERPT_CHARS);
-  return extraction.text.length > excerpt.length
-    ? `${excerpt}\n\n[…truncated. The full text is in the index and is searchable.]`
-    : excerpt;
-}
-
 async function sha256File(absPath: string): Promise<string> {
   const { createHash } = await import('node:crypto');
   const hash = createHash('sha256');

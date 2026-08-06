@@ -147,12 +147,16 @@ export class Assembler {
   }
 
   private buildCard(page: PageRow, hits: ChunkHit[], score: number, options: AssembleOptions): Card {
-    const best = hits[0]!;
-    const chunk = this.#store.db
-      .prepare('SELECT heading_path, line_start, line_end, kind FROM chunks WHERE id = ?')
-      .get(best.chunkId) as
-      { heading_path: string; line_start: number; line_end: number; kind: string } | undefined;
+    const meta = this.chunkMeta(hits.map((hit) => hit.chunkId));
 
+    // A hit inside an attachment is not a line of the Markdown page. Keeping the two apart
+    // is what stops `readLines` from citing line 14 of a page because page 14 of a PDF
+    // matched — §2's cite-or-stay-quiet: a citation pointing at the wrong line is worse
+    // than no citation.
+    const bodyHits = hits.filter((hit) => !meta.get(hit.chunkId)?.document_id);
+    const documentHits = hits.filter((hit) => meta.get(hit.chunkId)?.document_id);
+
+    const chunk = meta.get((bodyHits[0] ?? hits[0]!).chunkId);
     const isReference = page.class === 'reference' || chunk?.kind === 'reference';
     const wantsFullReference = options.depth === 'full' && options.include?.includes('reference');
 
@@ -166,7 +170,8 @@ export class Assembler {
             ? Number.POSITIVE_INFINITY
             : options.lineWindow;
 
-    const lines = maxLines === 0 ? [] : this.readLines(page, hits, maxLines, options.depth);
+    const lines =
+      maxLines === 0 || bodyHits.length === 0 ? [] : this.readLines(page, bodyHits, maxLines, options.depth);
     const facts = this.factsFor(page.id);
 
     const card: Card = {
@@ -187,7 +192,7 @@ export class Assembler {
     const links = this.linksFor(page.id);
     if (links.length > 0) card.links = links;
 
-    const documents = this.documentsFor(page.id);
+    const documents = this.documentsFor(page.id, documentHits, meta, options);
     if (documents.length > 0) card.documents = documents;
 
     if (isReference && !wantsFullReference && lines.length >= maxLines) card.truncated = true;
@@ -253,28 +258,115 @@ export class Assembler {
 
   private linksFor(pageId: string): string[] {
     const rows = this.#store.db
-      .prepare('SELECT DISTINCT to_slug FROM links WHERE from_page = ? AND broken = 0 LIMIT 12')
+      .prepare(
+        "SELECT DISTINCT to_slug FROM links WHERE from_page = ? AND broken = 0 AND kind != 'embed' LIMIT 12",
+      )
       .all(pageId) as { to_slug: string }[];
     return rows.map((row) => row.to_slug);
   }
 
-  private documentsFor(pageId: string): NonNullable<Card['documents']> {
+  /**
+   * The page's attachments, with the matching text quoted from any that matched.
+   *
+   * §11: the card points at the page, the document, **and the page number within it**. That
+   * is the whole reason document text is chunked per page — a quote from page 9 of a
+   * contract attributed to nothing is a citation a reader cannot check.
+   *
+   * A document that matched is always included, even past the display cap: dropping the one
+   * that produced the hit would leave a card quoting evidence it does not list.
+   */
+  private documentsFor(
+    pageId: string,
+    documentHits: ChunkHit[],
+    meta: Map<number, ChunkMeta>,
+    options: AssembleOptions,
+  ): NonNullable<Card['documents']> {
+    // Best hit per document, in rank order — `documentHits` arrives best first. Keeping the
+    // order matters once a document has parts: when two pages of one contract both match,
+    // the card must quote the stronger one, not whichever file happens to be part one.
+    const matched = new Map<string, ChunkMeta>();
+    const rank: string[] = [];
+    for (const hit of documentHits) {
+      const row = meta.get(hit.chunkId);
+      if (!row?.document_id || matched.has(row.document_id)) continue;
+      matched.set(row.document_id, row);
+      rank.push(row.document_id);
+    }
+
     const rows = this.#store.db
-      .prepare('SELECT id, rel_path, mime, label, page_count FROM documents WHERE page_id = ? LIMIT 8')
-      .all(pageId) as {
-      id: string;
-      rel_path: string;
-      mime: string | null;
-      label: string | null;
-      page_count: number | null;
-    }[];
-    return rows.map((row) => ({
-      id: row.id,
-      rel_path: row.rel_path,
-      ...(row.mime ? { mime: row.mime } : {}),
-      ...(row.label ? { label: row.label } : {}),
-      ...(row.page_count !== null ? { pages: row.page_count } : {}),
-    }));
+      .prepare(
+        `SELECT id, rel_path, mime, label, page_count, group_key, part, summary FROM documents
+          WHERE page_id = ? ORDER BY group_key, part`,
+      )
+      .all(pageId) as DocumentRow[];
+    for (const [id] of matched) {
+      if (rows.some((row) => row.id === id)) continue;
+      // A document that matched is always included, even when it hangs off another page:
+      // a card quoting evidence it does not list is a card a reader cannot follow.
+      const row = this.#store.db
+        .prepare(
+          `SELECT id, rel_path, mime, label, page_count, group_key, part, summary
+             FROM documents WHERE id = ?`,
+        )
+        .get(id) as DocumentRow | undefined;
+      if (row) rows.unshift(row);
+    }
+
+    // §11. Parts of one document are one document. Collapsed onto part one, with the pages
+    // summed, so a card says "the passport, 14 pages" rather than listing three files whose
+    // page numbers each restart at 1.
+    const groups = new Map<string, DocumentRow[]>();
+    for (const row of rows) {
+      const key = row.group_key ?? row.rel_path;
+      const existing = groups.get(key);
+      if (existing) existing.push(row);
+      else groups.set(key, [row]);
+    }
+
+    const out: NonNullable<Card['documents']> = [];
+    for (const parts of groups.values()) {
+      const ordered = [...parts].sort((a, b) => a.part - b.part);
+      const first = ordered[0]!;
+      // The group's best-ranked matching part, not its first part.
+      const bestId = rank.find((id) => ordered.some((part) => part.id === id));
+      const hit = bestId === undefined ? undefined : matched.get(bestId);
+      const pages = ordered.reduce<number | null>(
+        (sum, part) => (part.page_count === null ? sum : (sum ?? 0) + part.page_count),
+        null,
+      );
+
+      out.push({
+        id: first.id,
+        rel_path: first.rel_path,
+        ...(first.mime ? { mime: first.mime } : {}),
+        ...(first.label ? { label: first.label } : {}),
+        ...(pages !== null ? { pages } : {}),
+        ...(ordered.length > 1 ? { parts: ordered.length } : {}),
+        // Only for the document that matched: a summary per attachment on every card would
+        // spend the budget describing files nobody asked about.
+        ...(hit && first.summary ? { summary: first.summary } : {}),
+        // Already group-relative: the indexer stores each part's page numbers with the
+        // pages before it added on.
+        ...(hit?.doc_page !== null && hit?.doc_page !== undefined ? { matched_page: hit.doc_page } : {}),
+        // Not quoted at `depth: "summary"`, which asks for cards without evidence windows.
+        ...(hit && options.depth !== 'summary'
+          ? { quote: quoteWindow(hit.text, this.#config.recall.referenceQuoteLines) }
+          : {}),
+      });
+    }
+    return out;
+  }
+
+  /** One query for every hit chunk's metadata, rather than one per hit inside two loops. */
+  private chunkMeta(chunkIds: number[]): Map<number, ChunkMeta> {
+    if (chunkIds.length === 0) return new Map();
+    const rows = this.#store.db
+      .prepare(
+        `SELECT id, heading_path, line_start, line_end, kind, document_id, doc_page, text
+           FROM chunks WHERE id IN (${chunkIds.map(() => '?').join(',')})`,
+      )
+      .all(...chunkIds) as ChunkMeta[];
+    return new Map(rows.map((row) => [row.id, row]));
   }
 }
 
@@ -356,4 +448,40 @@ export function estimateTokens(card: Card): number {
 
 function round(value: number): number {
   return Math.round(value * 10000) / 10000;
+}
+
+interface ChunkMeta {
+  id: number;
+  heading_path: string;
+  line_start: number;
+  line_end: number;
+  kind: string;
+  document_id: string | null;
+  doc_page: number | null;
+  text: string;
+}
+
+interface DocumentRow {
+  id: string;
+  rel_path: string;
+  mime: string | null;
+  label: string | null;
+  page_count: number | null;
+  group_key: string | null;
+  part: number;
+  summary: string | null;
+}
+
+/**
+ * §5. A reference region comes back as **a capped quote window**, and a document is
+ * reference by nature. Capped in lines rather than characters so the same knob that
+ * governs a fenced region governs this, and so a quote never ends mid-word.
+ */
+function quoteWindow(text: string, maxLines: number): string {
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const kept = lines.slice(0, Math.max(1, maxLines));
+  return kept.join('\n') + (lines.length > kept.length ? '\n…' : '');
 }
