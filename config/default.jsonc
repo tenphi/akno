@@ -1,0 +1,189 @@
+{
+  // ───────────────────────────────────────────────────────────────────────────
+  // Akno — committed defaults.
+  //
+  // This file is version-controlled and must stay machine-independent: no home
+  // paths, no endpoints, no credentials, no model ids that assume a particular
+  // server. Override anything here in `config/local.jsonc` (gitignored) or in
+  // `~/.akno/config.json`.
+  //
+  // Precedence, lowest to highest:
+  //   config/default.jsonc → ~/.akno/config.json → config/local.jsonc → AKNO_* env
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // The Markdown knowledge base. Null on purpose: Akno refuses to start
+  // rather than guessing which folder holds your notes.
+  "akno_path": null,
+
+  // Everything Akno derives — the index, the trash, the journal, logs, the
+  // socket. Deleting it costs one re-index and no data.
+  "state_dir": "~/.akno",
+
+  // ─── Reserved paths (§4) ──────────────────────────────────────────────────
+  // Remappable so a collision with something you already have is resolvable.
+  // Relative to akno_path.
+  "paths": {
+    "timeline": "timeline.md",
+    "inbox": "inbox",
+    "observations": "observations",
+    "journal": "journal"
+  },
+
+  // Create `timeline.md` and `inbox/` on startup if missing. Off by default so
+  // a first run against an existing knowledge base changes nothing at all.
+  "create_reserved_paths": false,
+
+  // ─── Identity (§12) ───────────────────────────────────────────────────────
+  // Akno's only write into a page is a frontmatter `id:`. Off by default: the
+  // sidecar map in akno.db carries identity, and renames are followed by body
+  // hash. Turn this on for identity that survives `rm akno.db` and a move to
+  // another machine.
+  "write_ids": false,
+
+  // ─── Ingestion & structure ────────────────────────────────────────────────
+  // Directories never walked, at any depth.
+  "ignore": [".git", ".obsidian", ".trash", ".akno", "node_modules", ".DS_Store", ".stfolder", ".stversions"],
+  // Extensions indexed as pages. Everything else is an attachment candidate.
+  "page_extensions": [".md", ".markdown"],
+  // Bytes above which a page is chunked but not summarized or fact-mined.
+  "max_page_bytes": 1048576,
+
+  // ─── Gating (§5) ──────────────────────────────────────────────────────────
+  // "top-level" | "all" | "none". The user is never gated; only agents are.
+  "gate": "top-level",
+  // Below this score `remember` and inbox routing propose instead of writing.
+  // 0.5 is a starting default, not a measured one (§19).
+  "route_threshold": 0.5,
+  // "ledger" | "daily" — where an event with no page behind it lands.
+  "loose_events": "ledger",
+  // "none" | "summary" | "all" — write derived data back into frontmatter as a
+  // body-hash-keyed cache. Visible in Obsidian; a stale entry is never trusted.
+  "derived_in_frontmatter": "none",
+
+  // ─── Providers ────────────────────────────────────────────────────────────
+  // Any OpenAI-compatible endpoint. `api_key` names an env var; it never holds
+  // a key. One local server can host every role.
+  // Null endpoint on purpose: committed defaults assume nothing about this
+  // machine, not even that something is listening on a well-known port. Set this
+  // in config/local.jsonc — `akno doctor` reports every role that has no
+  // endpoint and what its absence costs.
+  "providers": {
+    "local": {
+      "base_url": null,
+      "api_key": null
+    }
+  },
+
+  // ─── Models (§14) ─────────────────────────────────────────────────────────
+  // Three roles, all optional, each degrading rather than failing. `id: null`
+  // means the role is unconfigured — Akno reports it in `doctor` and takes
+  // the documented degraded path.
+  "models": {
+    // Without it: lexical search only.
+    "embedding": {
+      "provider": "local",
+      "id": null,
+      "dimensions": 1024,
+      "batch": 32,
+      "timeout_ms": 60000
+    },
+    // Without it: hybrid score ordering.
+    "reranker": {
+      "provider": "local",
+      "id": null,
+      "enabled": false,
+      "top_k": 40,
+      "timeout_ms": 30000
+    },
+    // Without it: no summaries, no keywords, no fact derivation, no query
+    // expansion, no `remember`, no observations. Recall still works.
+    "chat": {
+      "provider": "local",
+      "id": null,
+      "max_output_tokens": 1024,
+      "concurrency": 2,
+      "timeout_ms": 120000
+    },
+    // Off by default. OCR covers scans and screenshots, which is most arrivals.
+    "vision": {
+      "provider": "local",
+      "id": null,
+      "enabled": false,
+      "timeout_ms": 120000
+    }
+  },
+
+  // ─── Indexing (§6) ────────────────────────────────────────────────────────
+  "index": {
+    // Chunks follow the document's own headings; these are the size gates.
+    "chunk_target_chars": 1200,
+    "chunk_max_chars": 4000,
+    "chunk_overlap_chars": 120,
+    // Model-backed derivation. Each is independently skippable, and skipping
+    // one degrades a feature rather than failing the index.
+    "summaries": true,
+    "facts": true,
+    // Files hashed concurrently during a sweep.
+    "hash_concurrency": 8,
+    // Switch on sqlite-vec's ANN index above this many chunks. Brute force is
+    // strictly better below it (§6).
+    "ann_threshold_chunks": 20000
+  },
+
+  // ─── Recall (§9) ──────────────────────────────────────────────────────────
+  "recall": {
+    "default_budget": 8000,
+    "default_limit": 8,
+    // Candidates pulled from each arm of the hybrid search before fusion.
+    "candidates_per_arm": 60,
+    // Lines of body returned per card in lookup mode.
+    "line_window": 6,
+    // Hard cap on what a `reference` page contributes unprompted (§19: a guess).
+    "reference_quote_lines": 6,
+    // Query expansion — off means the query is searched verbatim.
+    "expansion": true,
+    // Expansion is optional, so it gets its own short deadline rather than the
+    // chat role's. A recall that waits two minutes for an optional model call has
+    // failed at its job; past this it degrades and searches the query verbatim.
+    "expansion_timeout_ms": 4000,
+    // Multiplied into the final score at assembly, not at search.
+    "rank": {
+      "full": 1,
+      "reference": 0.85,
+      "observation": 0.6
+    }
+  },
+
+  // ─── Watching (§12, §16) ──────────────────────────────────────────────────
+  "watch": {
+    "enabled": true,
+    // FSEvents coalesces; this debounce collapses an editor's write storm.
+    "debounce_ms": 400,
+    // The correctness path. FSEvents can drop events after sleep/wake or a
+    // large sync, so a periodic stat sweep is the backstop, not the watcher.
+    "sweep_interval_ms": 300000,
+    // Full hash sweep — catches a sync client or restore that preserved mtime.
+    "verify_interval_ms": 3600000
+  },
+
+  // ─── Doors (§16) ──────────────────────────────────────────────────────────
+  "server": {
+    // Unix socket, relative to state_dir. Filesystem permissions are the auth.
+    "socket": "akno.sock",
+    // Loopback HTTP for sandboxed or remote agents. Null = off.
+    "http": null,
+    // Ops an MCP caller may invoke. Trust is a parameter, not a property of the
+    // transport — the same code runs with different permissions.
+    "mcp_allow": ["recall", "read", "list", "timeline", "context"]
+  },
+
+  // How long a deleted page or document is recoverable from trash.
+  "trash_retention_days": 30,
+
+  // ─── Rules (§5) ───────────────────────────────────────────────────────────
+  // Glob-scoped, most-specific-wins. Empty by default: Akno ships no folder
+  // taxonomy. A knowledge base with no rules at all works — every page is
+  // `full`. Rules at `<akno_path>/akno.json` win over these, so they can
+  // travel with the notes.
+  "folders": {}
+}

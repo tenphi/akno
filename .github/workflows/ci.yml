@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # No local config or credentials may reach the repo. `default.jsonc` must
+      # stay machine-independent, and `local.jsonc` must never be tracked.
+      - name: No committed local config or secrets
+        run: |
+          if git ls-files --error-unmatch config/local.jsonc >/dev/null 2>&1; then
+            echo "::error::config/local.jsonc is tracked — it must stay gitignored"
+            exit 1
+          fi
+          if git ls-files | grep -qE '(^|/)\.env$'; then
+            echo "::error::a .env file is tracked"
+            exit 1
+          fi
+          if grep -nE '"api_key"[[:space:]]*:[[:space:]]*"' config/default.jsonc config/local.example.jsonc; then
+            echo "::error::an inline api_key literal in committed config — use { \"env\": \"NAME\" }"
+            exit 1
+          fi
+          if grep -nE '/(Users|home)/[a-zA-Z]' config/default.jsonc; then
+            echo "::error::a home path in committed defaults — default.jsonc must be machine-independent"
+            exit 1
+          fi
+
+      - run: pnpm build
+      - run: pnpm lint
+      - run: pnpm test
+
+      # The read path must work with no models configured — the integration suite
+      # covers that, and it is the property that keeps CI free of an LLM.
+      - name: Smoke — index and query a generated knowledge base
+        run: node scripts/smoke.mjs

@@ -1,0 +1,447 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { open, type Akno } from '../src/index.js';
+
+/**
+ * End-to-end over a real knowledge base on disk, with **no models configured**.
+ * That is deliberate: §2 says degrade, never fail, and the most important thing
+ * to prove is that a knowledge base with no embedding model, no reranker and no
+ * chat model still indexes, still searches, and still says what it lost.
+ */
+
+const KB = {
+  'index.md': `---
+title: Index
+---
+
+# Index
+
+What the folders are for. [[home/lease]] and [[people/ada-marlow]].
+`,
+
+  'timeline.md': `---
+type: timeline
+title: Timeline
+---
+
+# Timeline
+
+## 2026
+- **2026-06-02** | Renewed the apartment lease for another year. [[home/lease]]
+- **2026-03-20** | Replaced the dishwasher — Zephyr, five-year warranty. [[home/appliances]]
+`,
+
+  'home/lease.md': `---
+title: Apartment lease
+type: contract
+tags: [home, legal]
+---
+
+# Apartment lease
+
+## Terms
+- Landlord: Bo Winters
+- Rent: 1111 EUR per month
+- Renews: 2027-06-02
+
+Related: [[people/ada-marlow]]
+
+- **2024-08-05** | Signed the lease.
+`,
+
+  'home/appliances.md': `---
+title: Appliances
+tags: [home]
+---
+
+# Appliances
+
+## Dishwasher
+Zephyr QX-100, installed 2026-03-20, five-year warranty.
+`,
+
+  'people/ada-marlow.md': `---
+title: Ada Marlow
+type: person
+---
+
+# Ada Marlow
+
+Prefers email over calls. Second driver on the car insurance.
+`,
+
+  'reference/building-rules.md': `---
+title: Building rules
+---
+
+# Building rules
+
+<!-- reference -->
+
+HOUSE RULES OF THE ASSOCIATION
+
+Article 1. No deliveries after 20:00.
+Article 2. Bicycles must be stored in the designated racks.
+Article 3. Quiet hours are 22:00 to 07:00 on weekdays.
+Article 4. Waste must be separated.
+Article 5. The lift may not be used for moving furniture.
+Article 6. Balcony plants may not overhang the railing.
+Article 7. Subletting requires written consent.
+`,
+
+  'templates/page.md': `---
+title: Template
+---
+
+# {{title}}
+
+Placeholder body that should never be indexed.
+`,
+
+  'documents/passport-ada.md': `---
+title: Passport (Ada)
+type: document
+---
+
+# Passport (Ada)
+
+Placeholder identity document, expires 2033.
+`,
+
+  // A plain attachment beside its page — the shape an existing knowledge base
+  // already has, not the content-addressed one Akno would create.
+  'documents/passport-ada.pdf': '%PDF-1.4 fake bytes for the test\n',
+
+  'nested/deep/note.md': `# A deep note
+
+It mentions the dishwasher too.
+`,
+
+  'broken.md': `# Broken
+
+This links to [[nowhere/at-all]].
+`,
+};
+
+let root: string;
+let stateDir: string;
+let mem: Akno;
+
+beforeAll(async () => {
+  root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-kb-'));
+  stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-state-'));
+
+  for (const [relPath, content] of Object.entries(KB)) {
+    const absPath = path.join(root, relPath);
+    fs.mkdirSync(path.dirname(absPath), { recursive: true });
+    fs.writeFileSync(absPath, content, 'utf8');
+  }
+
+  mem = await open({
+    aknoPath: root,
+    stateDir,
+    isolated: true,
+    overrides: {
+      akno_path: root,
+      state_dir: stateDir,
+      // No models. Every model-backed feature must degrade, not fail.
+      providers: {},
+      models: {
+        embedding: { id: null },
+        reranker: { id: null, enabled: false },
+        chat: { id: null },
+      },
+      folders: {
+        'reference/**': { class: 'reference' },
+        'templates/**': { class: 'excluded' },
+      },
+    },
+  });
+
+  await mem.index({});
+});
+
+afterAll(async () => {
+  await mem?.close();
+  fs.rmSync(root, { recursive: true, force: true });
+  fs.rmSync(stateDir, { recursive: true, force: true });
+});
+
+describe('index', () => {
+  it('indexes every page except the excluded folder', async () => {
+    const health = await mem.doctor({ probeModels: false });
+    // 10 markdown files, one of which is under templates/**.
+    expect(health.counts.pages).toBe(9);
+    expect(health.byClass.excluded).toBeUndefined();
+    expect(health.byClass.reference).toBe(1);
+  });
+
+  it('leaves nothing behind for an excluded page', async () => {
+    await expect(mem.read({ slug: 'templates/page' })).rejects.toThrow(/no page/);
+  });
+
+  it('is a no-op when nothing changed', async () => {
+    const report = await mem.index({});
+    expect(report.pagesIndexed).toBe(0);
+    expect(report.pagesUnchanged).toBe(10);
+    expect(report.hashed).toBe(0);
+  });
+
+  it('links a plain attachment to the page beside it', async () => {
+    const page = await mem.read({ slug: 'documents/passport-ada' });
+    expect(page.page?.documents?.[0]?.rel_path).toBe('documents/passport-ada.pdf');
+  });
+
+  it('reports a link that points nowhere', async () => {
+    const page = await mem.read({ slug: 'broken' });
+    expect(page.page?.broken_links).toEqual(['nowhere/at-all']);
+  });
+
+  it('records backlinks in both directions', async () => {
+    const ada = await mem.read({ slug: 'people/ada-marlow' });
+    expect(ada.page?.backlinks).toContain('home/lease');
+    expect(ada.page?.backlinks).toContain('index');
+  });
+});
+
+describe('recall without any model', () => {
+  it('finds a page lexically and reports why it is degraded', async () => {
+    const result = await mem.recall({ query: 'dishwasher Zephyr warranty', mode: 'lookup' });
+    expect(result.status).toBe('degraded');
+    // §9: absence — and weakness — has a *reason*, not a silent empty result.
+    expect(result.degraded).toContain('no_embedding_model');
+    expect(result.cards.map((card) => card.slug)).toContain('home/appliances');
+  });
+
+  it('returns a line address on every line it quotes', async () => {
+    const result = await mem.recall({ query: 'rent per month landlord', mode: 'lookup' });
+    const card = result.cards.find((entry) => entry.slug === 'home/lease');
+    expect(card).toBeDefined();
+    expect(card!.lines.length).toBeGreaterThan(0);
+    for (const line of card!.lines) {
+      // The address has to be real: the line at that number must be the text.
+      const actual = fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8').split('\n')[line.n - 1];
+      expect(actual).toBe(line.text);
+    }
+  });
+
+  it('caps what a reference page contributes unprompted', async () => {
+    const result = await mem.recall({ query: 'deliveries bicycles quiet hours waste lift balcony', mode: 'lookup' });
+    const card = result.cards.find((entry) => entry.slug === 'reference/building-rules');
+    expect(card).toBeDefined();
+    // The page has seven articles; the quote window defaults to six lines.
+    expect(card!.lines.length).toBeLessThanOrEqual(6);
+    expect(card!.truncated).toBe(true);
+  });
+
+  it('lifts the cap when asked explicitly — class is relevance, not access control', async () => {
+    const result = await mem.recall({
+      query: 'deliveries bicycles quiet hours waste lift balcony subletting',
+      mode: 'lookup',
+      depth: 'full',
+      include: ['reference'],
+    });
+    const card = result.cards.find((entry) => entry.slug === 'reference/building-rules');
+    expect(card!.lines.length).toBeGreaterThan(6);
+  });
+
+  it('returns the full body of a reference page from read, every time', async () => {
+    const page = await mem.read({ slug: 'reference/building-rules' });
+    expect(page.page?.lines.some((line) => line.text.includes('Subletting'))).toBe(true);
+  });
+
+  it('proves absence rather than implying it', async () => {
+    const result = await mem.recall({ query: 'zzzzz nonexistent unicorn ledger', mode: 'lookup' });
+    expect(['empty', 'degraded']).toContain(result.status);
+    expect(result.cards).toHaveLength(0);
+    // The queries that found nothing are the proof.
+    expect(result.searched.length).toBeGreaterThan(0);
+    expect(result.note).toBeTruthy();
+  });
+
+  it('honours a folder filter', async () => {
+    const result = await mem.recall({ query: 'dishwasher', filter: { folder: 'nested' } });
+    for (const card of result.cards) expect(card.slug.startsWith('nested/')).toBe(true);
+  });
+
+  it('reports coverage in question mode', async () => {
+    const result = await mem.recall({ query: 'what is the rent and who is the landlord?', mode: 'question' });
+    expect(result.mode).toBe('question');
+    expect(result.coverage).toBeDefined();
+    expect(Object.keys(result.coverage!).length).toBeGreaterThan(0);
+  });
+
+  it('fits a budget, and says when it dropped something', async () => {
+    const result = await mem.recall({ query: 'the', mode: 'explore', budget: 120, limit: 20 });
+    expect(result.budget_used).toBeLessThanOrEqual(400);
+  });
+});
+
+describe('timeline', () => {
+  it('indexes ledger lines and dated lines on ordinary pages alike', async () => {
+    const result = await mem.timeline({ limit: 50 });
+    const dates = result.events.map((event) => event.date);
+    expect(dates).toContain('2026-06-02');
+    // This one is written on home/lease.md, not in the ledger.
+    expect(dates).toContain('2024-08-05');
+  });
+
+  it('carries the link and the source address', async () => {
+    const result = await mem.timeline({ match: 'dishwasher' });
+    expect(result.events[0]?.slug).toBe('home/appliances');
+    expect(result.events[0]?.source).toBe('timeline');
+    expect(result.events[0]?.line).toBeGreaterThan(0);
+  });
+
+  it('filters by range', async () => {
+    const result = await mem.timeline({ since: '2026-04', until: '2026-12' });
+    expect(result.events.map((event) => event.date)).toEqual(['2026-06-02']);
+  });
+
+  it('filters by subject in both senses', async () => {
+    const linked = await mem.timeline({ subject: 'home/lease' });
+    // The ledger line links to it, and the page carries its own dated line.
+    expect(linked.events.length).toBe(2);
+  });
+});
+
+describe('list', () => {
+  it('walks folders with deep counts and the governing rule', async () => {
+    const result = await mem.list({ kind: 'folders' });
+    const reference = result.folders?.find((folder) => folder.path === 'reference');
+    expect(reference?.rule?.class).toBe('reference');
+    const nested = result.folders?.find((folder) => folder.path === 'nested');
+    expect(nested?.pages_deep).toBe(1);
+  });
+
+  it('filters pages by type and by tag', async () => {
+    const byType = await mem.list({ kind: 'pages', type: 'person' });
+    expect(byType.pages?.map((page) => page.slug)).toEqual(['people/ada-marlow']);
+
+    const byTag = await mem.list({ kind: 'pages', tag: 'home' });
+    expect(byTag.pages?.length).toBe(2);
+  });
+
+  it('produces a tree outline', async () => {
+    const result = await mem.list({ kind: 'tree', depth: 2 });
+    expect(result.tree).toContain('home/');
+    expect(result.tree).toContain('nested/');
+    expect(result.tree).not.toContain('templates/');
+  });
+});
+
+describe('context', () => {
+  it('assembles pinned pages, timeline and recall against one budget', async () => {
+    const result = await mem.context({
+      query: 'what is the rent?',
+      budget: 4000,
+      pinned: ['people/ada-marlow'],
+      timeline_days: 100000,
+      structure: true,
+    });
+    expect(result.pinned.map((card) => card.slug)).toEqual(['people/ada-marlow']);
+    expect(result.events.length).toBeGreaterThan(0);
+    expect(result.structure).toBeTruthy();
+    expect(result.budget_used).toBeLessThanOrEqual(4000);
+    // A pinned page must not be paid for twice.
+    expect(result.cards.map((card) => card.slug)).not.toContain('people/ada-marlow');
+  });
+
+  it('survives a stale pin', async () => {
+    const result = await mem.context({ budget: 2000, pinned: ['gone/missing'], structure: false });
+    expect(result.dropped?.cards).toBeGreaterThan(0);
+  });
+});
+
+describe('the write path', () => {
+  it('advertises every op but refuses the unimplemented ones by name', async () => {
+    await expect(mem.write({ slug: 'a/b', content: 'x' })).rejects.toThrow(/not implemented/i);
+    await expect(mem.remember({ text: 'x' })).rejects.toThrow(/not implemented/i);
+  });
+
+  it('still validates input against the final schema before refusing', async () => {
+    // Two body operations at once is a schema violation, and it must be caught
+    // as `invalid` rather than swallowed by `not_implemented`.
+    await expect(mem.write({ slug: 'a/b', content: 'x', append: 'y' })).rejects.toThrow(/invalid/i);
+  });
+});
+
+describe('reconciling a hand edit', () => {
+  it('follows a rename by content and keeps the page id', async () => {
+    const before = await mem.read({ slug: 'nested/deep/note' });
+    const pageId = before.page!.id;
+
+    fs.mkdirSync(path.join(root, 'nested/other'), { recursive: true });
+    fs.renameSync(path.join(root, 'nested/deep/note.md'), path.join(root, 'nested/other/renamed.md'));
+
+    const report = await mem.index({});
+    expect(report.pagesRenamed).toBe(1);
+
+    const after = await mem.read({ slug: 'nested/other/renamed' });
+    // §12: the id survives, which is what keeps facts and journal history attached.
+    expect(after.page!.id).toBe(pageId);
+    await expect(mem.read({ slug: 'nested/deep/note' })).rejects.toThrow(/no page/);
+  });
+
+  it('picks up an edit and retires what is gone', async () => {
+    const lease = path.join(root, 'home/lease.md');
+    fs.writeFileSync(lease, fs.readFileSync(lease, 'utf8').replace('1111 EUR', '2222 EUR'), 'utf8');
+
+    await mem.index({});
+    const result = await mem.recall({ query: 'rent per month', mode: 'lookup' });
+    const card = result.cards.find((entry) => entry.slug === 'home/lease');
+    expect(card!.lines.some((line) => line.text.includes('2222'))).toBe(true);
+    expect(card!.lines.some((line) => line.text.includes('1111'))).toBe(false);
+  });
+
+  it('removes a deleted page from the index', async () => {
+    fs.rmSync(path.join(root, 'broken.md'));
+    const report = await mem.index({});
+    expect(report.pagesRemoved).toBe(1);
+    await expect(mem.read({ slug: 'broken' })).rejects.toThrow(/no page/);
+  });
+
+  it('leaves the knowledge base byte-identical when write_ids is off', async () => {
+    // The whole point of sidecar identity: Akno added no frontmatter anywhere.
+    for (const relPath of Object.keys(KB)) {
+      if (!relPath.endsWith('.md')) continue;
+      if (!fs.existsSync(path.join(root, relPath))) continue;
+      const content = fs.readFileSync(path.join(root, relPath), 'utf8');
+      expect(content).not.toMatch(/^id:/m);
+    }
+  });
+});
+
+describe('rebuilding the index', () => {
+  it('reproduces everything from the Markdown alone', async () => {
+    const before = await mem.doctor({ probeModels: false });
+    await mem.close();
+
+    for (const suffix of ['', '-wal', '-shm']) {
+      fs.rmSync(path.join(stateDir, `akno.db${suffix}`), { force: true });
+    }
+
+    mem = await open({
+      aknoPath: root,
+      stateDir,
+      isolated: true,
+      overrides: {
+        akno_path: root,
+        state_dir: stateDir,
+        providers: {},
+        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+        folders: { 'reference/**': { class: 'reference' }, 'templates/**': { class: 'excluded' } },
+      },
+    });
+    await mem.index({});
+
+    const after = await mem.doctor({ probeModels: false });
+    // §2: `rm akno.db && akno index` reproduces every chunk, event and link.
+    expect(after.counts.pages).toBe(before.counts.pages);
+    expect(after.counts.chunks).toBe(before.counts.chunks);
+    expect(after.counts.events).toBe(before.counts.events);
+    expect(after.counts.links).toBe(before.counts.links);
+  });
+});

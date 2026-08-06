@@ -1,0 +1,59 @@
+{
+  // ───────────────────────────────────────────────────────────────────────────
+  // Template for `config/local.jsonc` — which is GITIGNORED and never committed.
+  //
+  //   cp config/local.example.jsonc config/local.jsonc
+  //
+  // Only the keys you want to change. Everything else falls through to
+  // `config/default.jsonc`. Put nothing secret here: a credential is referenced
+  // by env var name (see .env.example), never written into a config file.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Your knowledge base. Required — there is no sensible default for this.
+  "akno_path": "~/Notes",
+
+  // One OpenAI-compatible endpoint can serve all three roles. A local
+  // llama-server / LM Studio / Ollama router takes no auth, so no key is needed.
+  "providers": {
+    "local": {
+      "base_url": "http://127.0.0.1:8080/v1",
+      "api_key": null
+    }
+    // A hosted provider, if you want a stronger chat model for summaries and
+    // fact derivation. The key lives in .env under this name.
+    // "openai": {
+    //   "base_url": "https://api.openai.com/v1",
+    //   "api_key": { "env": "AKNO_OPENAI_API_KEY" }
+    // }
+  },
+
+  // Model ids as your endpoint reports them — check with `curl $BASE_URL/models`.
+  // `akno doctor` tells you which roles resolved and what each missing one costs.
+  "models": {
+    "embedding": {
+      "provider": "local",
+      "id": "text-embedding-qwen3-embedding-0.6b",
+      // Recorded per vector. Changing it triggers a re-index rather than
+      // silently corrupting the index.
+      "dimensions": 1024
+    },
+    "reranker": {
+      "provider": "local",
+      "id": "bge-reranker-v2-m3",
+      "enabled": true
+    },
+    "chat": {
+      "provider": "local",
+      "id": "llama-3.2-3b-instruct"
+    }
+  },
+
+  // Rules can live here, or travel with the notes at <akno_path>/akno.json —
+  // which wins over both config files. Glob-scoped, most-specific-wins.
+  // `akno rules <path>` prints which rule won and why.
+  "folders": {
+    // "reference/**": { "class": "reference", "ingest": "document" },
+    // "conversations/**": { "class": "reference", "rank": 0.5 },
+    // "templates/**": { "class": "excluded" }
+  }
+}

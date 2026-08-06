@@ -1,0 +1,39 @@
+import { z } from 'zod';
+import { Card, DatePrefix, Depth, PageClass, RecallMode, ResultEnvelope, SlugFilter } from '../common.js';
+
+export const RecallInput = z.object({
+  query: z.string().min(1),
+  /** Inferred from the query when absent. Passing it explicitly always wins, and
+   *  getting it wrong costs relevance, never correctness (§9). */
+  mode: RecallMode.optional(),
+  depth: Depth.optional(),
+  limit: z.number().int().positive().max(100).optional(),
+  /** Token budget for the assembled response. Whole cards are filled first. */
+  budget: z.number().int().positive().optional(),
+  /** `reference` pages compete for relevance on equal terms and come back capped.
+   *  Passing `include: ['reference']` with `depth: 'full'` overrides the cap —
+   *  class is a relevance policy, not access control (§5). */
+  include: z.array(PageClass).optional(),
+  filter: SlugFilter.optional(),
+  since: DatePrefix.optional(),
+  until: DatePrefix.optional(),
+});
+export type RecallInput = z.infer<typeof RecallInput>;
+
+export const RecallOutput = ResultEnvelope.extend({
+  cards: z.array(Card),
+  /** Every query actually issued, including expansions. On `empty` this is the
+   *  proof — an agent can say "not recorded" because the layer showed its work. */
+  searched: z.array(z.string()),
+  budget_used: z.number().int().nonnegative(),
+  /**
+   * §9. `question` mode only. Which concepts from the question the results
+   * actually cover. Deterministic — did the key terms appear in what came back —
+   * not a model judging whether the answer is there. Closes the most common
+   * hallucination path: a page ranks first because it matches half the question,
+   * and the agent invents the other half.
+   */
+  coverage: z.record(z.string(), z.boolean()).optional(),
+  mode: RecallMode,
+});
+export type RecallOutput = z.infer<typeof RecallOutput>;

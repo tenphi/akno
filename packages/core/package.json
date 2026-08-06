@@ -1,0 +1,32 @@
+{
+  "name": "@akno/core",
+  "version": "0.1.0",
+  "description": "Akno — the memory layer itself: index, ops, watcher, models",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "config"
+  ],
+  "dependencies": {
+    "@akno/protocol": "workspace:*",
+    "better-sqlite3": "^12.4.1",
+    "sqlite-vec": "^0.1.9",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12"
+  },
+  "scripts": {
+    "prepack": "node -e \"require('node:fs').mkdirSync('config',{recursive:true});require('node:fs').copyFileSync('../../config/default.jsonc','config/default.jsonc')\""
+  }
+}

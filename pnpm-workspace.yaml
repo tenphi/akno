@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+
+# Do not resolve a dependency version published less than three days ago.
+# A compromised release is usually yanked well inside that window.
+minimumReleaseAge: 4320
+
+onlyBuiltDependencies:
+  - better-sqlite3
+  - esbuild

@@ -1,0 +1,280 @@
+import type { Store } from '../store/db.js';
+import type { ModelClient } from '../models/client.js';
+
+export interface ChunkHit {
+  chunkId: number;
+  pageId: string;
+  score: number;
+  /** Which arm found it. Reported by `--explain` and useful when tuning. */
+  from: ('vector' | 'lexical')[];
+}
+
+export interface SearchOptions {
+  /** Queries for the lexical arm. */
+  queries: string[];
+  /** Texts for the vector arm — in question mode, hypothetical answers (§9). */
+  vectorTexts: string[];
+  candidatesPerArm: number;
+  /** Restrict to these page ids. Used by filters and by `context` pinning. */
+  pageIds?: Set<string>;
+}
+
+export interface SearchResult {
+  hits: ChunkHit[];
+  degraded: string[];
+  /** True when the vector arm never ran, so the result is lexical only. */
+  lexicalOnly: boolean;
+}
+
+/**
+ * §9. Pipeline: query expansion → vector + FTS5 hybrid → rerank → group hits by
+ * page → build cards → fill budget. This module is the middle: two arms, fused.
+ *
+ * FTS5 does not care about size — it is sub-millisecond at 2,000 chunks and at
+ * 100,000. The vector arm is brute force by decision (§6), which is exact and
+ * fast enough an order of magnitude past the knowledge base this is built for.
+ */
+export async function hybridSearch(
+  store: Store,
+  embedding: ModelClient,
+  options: SearchOptions,
+): Promise<SearchResult> {
+  const degraded: string[] = [];
+
+  const lexical = lexicalSearch(store, options.queries, options.candidatesPerArm, options.pageIds);
+
+  let vector: ChunkHit[] = [];
+  let lexicalOnly = true;
+  if (embedding.available) {
+    const embedded = await embedding.embed(options.vectorTexts);
+    if (embedded.ok && embedded.value) {
+      lexicalOnly = false;
+      vector = vectorSearch(store, embedded.value, options.candidatesPerArm, options.pageIds);
+    } else {
+      degraded.push(embedded.error ?? 'embedding failed');
+    }
+  } else {
+    degraded.push(embedding.unavailableReason ?? 'no embedding model');
+  }
+
+  return { hits: fuse(lexical, vector), degraded, lexicalOnly };
+}
+
+/**
+ * FTS5 with bm25 ranking. Every query in the expansion runs separately and the
+ * results fuse, rather than being OR-ed into one giant MATCH — a single query
+ * with eight alternatives ranks a chunk matching one weak term above a chunk
+ * matching the original phrase.
+ */
+export function lexicalSearch(
+  store: Store,
+  queries: string[],
+  limit: number,
+  pageIds?: Set<string>,
+): ChunkHit[] {
+  const perQuery: ChunkHit[][] = [];
+
+  for (const query of queries) {
+    const match = toMatchExpression(query);
+    if (!match) continue;
+    try {
+      const rows = store.db
+        .prepare(
+          `SELECT c.id AS chunk_id, c.page_id,
+                  bm25(chunks_fts, 1.0, 2.0) AS rank
+             FROM chunks_fts
+             JOIN chunks c ON c.id = chunks_fts.rowid
+            WHERE chunks_fts MATCH ?
+            ORDER BY rank
+            LIMIT ?`,
+        )
+        .all(match, limit) as { chunk_id: number; page_id: string; rank: number }[];
+
+      perQuery.push(
+        rows
+          .filter((row) => !pageIds || pageIds.has(row.page_id))
+          // bm25 returns negative numbers, more negative being better.
+          .map((row) => ({ chunkId: row.chunk_id, pageId: row.page_id, score: -row.rank, from: ['lexical' as const] })),
+      );
+    } catch {
+      // A MATCH expression FTS5 rejects is a bad query, not a broken index.
+      continue;
+    }
+  }
+
+  return fuseLists(perQuery);
+}
+
+function vectorSearch(
+  store: Store,
+  vectors: Float32Array[],
+  limit: number,
+  pageIds?: Set<string>,
+): ChunkHit[] {
+  const perVector: ChunkHit[][] = [];
+  const pageOf = store.db.prepare('SELECT page_id FROM chunks WHERE id = ?');
+
+  for (const vector of vectors) {
+    if (vector.length !== store.vectors.dimensions) continue;
+    const hits = store.vectors.search(vector, limit);
+    const mapped: ChunkHit[] = [];
+    for (const hit of hits) {
+      const row = pageOf.get(hit.chunkId) as { page_id: string } | undefined;
+      if (!row) continue;
+      if (pageIds && !pageIds.has(row.page_id)) continue;
+      mapped.push({ chunkId: hit.chunkId, pageId: row.page_id, score: hit.score, from: ['vector'] });
+    }
+    perVector.push(mapped);
+  }
+
+  return fuseLists(perVector);
+}
+
+/**
+ * Reciprocal rank fusion. Chosen over score normalization because bm25 and
+ * cosine are not on comparable scales and never will be — RRF only needs the
+ * ordering within each arm, which is the one thing both arms are reliable about.
+ */
+const RRF_K = 60;
+
+function fuseLists(lists: ChunkHit[][]): ChunkHit[] {
+  if (lists.length === 0) return [];
+  if (lists.length === 1) return lists[0]!;
+  return fuseMany(lists);
+}
+
+function fuse(lexical: ChunkHit[], vector: ChunkHit[]): ChunkHit[] {
+  if (vector.length === 0) return lexical;
+  if (lexical.length === 0) return vector;
+  return fuseMany([lexical, vector]);
+}
+
+function fuseMany(lists: ChunkHit[][]): ChunkHit[] {
+  const merged = new Map<number, ChunkHit>();
+
+  for (const list of lists) {
+    const sorted = [...list].sort((a, b) => b.score - a.score);
+    for (let rank = 0; rank < sorted.length; rank++) {
+      const hit = sorted[rank]!;
+      const contribution = 1 / (RRF_K + rank + 1);
+      const existing = merged.get(hit.chunkId);
+      if (existing) {
+        existing.score += contribution;
+        for (const arm of hit.from) if (!existing.from.includes(arm)) existing.from.push(arm);
+      } else {
+        merged.set(hit.chunkId, { ...hit, score: contribution, from: [...hit.from] });
+      }
+    }
+  }
+
+  return [...merged.values()].sort((a, b) => b.score - a.score);
+}
+
+/**
+ * FTS5's MATCH syntax will happily reject a natural-language query — a bare `?`,
+ * an unbalanced quote, a stray `NEAR`. Quoting every token and OR-ing them makes
+ * any user input a legal expression, which matters because a thrown syntax error
+ * here would read to the caller as "nothing matched".
+ */
+export function toMatchExpression(query: string): string | null {
+  const tokens = query
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s'-]/gu, ' ')
+    .split(/\s+/)
+    .map((token) => token.replace(/^[-']+|[-']+$/g, ''))
+    .filter((token) => token.length > 1);
+
+  if (tokens.length === 0) return null;
+  // A quoted phrase for the whole query, plus each token, so an exact phrase
+  // outranks a bag of words without excluding partial matches.
+  const quoted = tokens.map((token) => `"${token.replace(/"/g, '')}"`);
+  const phrase = tokens.length > 1 ? `"${tokens.join(' ')}" OR ` : '';
+  return `${phrase}${quoted.join(' OR ')}`;
+}
+
+/**
+ * §14. Without a reranker, hybrid score ordering stands. With one, the top
+ * candidates are re-scored against the original query — which is where a
+ * cross-encoder earns its cost, since it sees the query and the passage together.
+ *
+ * The output is on **one scale with the un-reranked tail**, which is not a detail.
+ * A cross-encoder emits logits (bge-reranker spans roughly -12 to +8) while fusion
+ * emits reciprocal ranks around 0.01-0.2. Returning both in one array means any
+ * later `Math.max` over a page's chunks prefers a mediocre fused hit to a
+ * confidently-judged one, and the reranker silently stops mattering.
+ */
+export async function rerankHits(
+  store: Store,
+  reranker: ModelClient,
+  query: string,
+  hits: ChunkHit[],
+  topK: number,
+): Promise<{ hits: ChunkHit[]; degraded: string | null }> {
+  if (!reranker.available || hits.length <= 1) {
+    return { hits, degraded: reranker.available ? null : reranker.unavailableReason };
+  }
+
+  const candidates = hits.slice(0, topK);
+  const texts = candidates.map((hit) => {
+    const row = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?').get(hit.chunkId) as
+      | { heading_path: string; text: string }
+      | undefined;
+    if (!row) return '';
+    return row.heading_path ? `${row.heading_path}\n${row.text}` : row.text;
+  });
+
+  const result = await reranker.rerank(query, texts, candidates.length);
+  if (!result.ok || !result.value) {
+    return { hits, degraded: result.error ?? 'rerank failed' };
+  }
+  if (result.value.length === 0) {
+    // An endpoint that answers 200 with no results has not reranked anything.
+    // Reporting that is the difference between "coarser ordering" and a silent
+    // regression nobody notices for months.
+    return { hits, degraded: 'rerank returned no results' };
+  }
+
+  const reordered: ChunkHit[] = [];
+  for (const entry of result.value) {
+    const hit = candidates[entry.index];
+    // A logit through a sigmoid is a relevance in (0, 1) — comparable across
+    // queries, and readable as a score rather than as a model internal.
+    if (hit) reordered.push({ ...hit, score: sigmoid(entry.score) });
+  }
+  reordered.sort((a, b) => b.score - a.score);
+
+  const seen = new Set(reordered.map((hit) => hit.chunkId));
+  const tail = hits.filter((hit) => !seen.has(hit.chunkId));
+
+  // The reranker judged the top K; the tail was never looked at, so it cannot
+  // outrank a judged hit. Compress it into the band below the weakest judged one,
+  // preserving its fused order.
+  const floor = reordered.at(-1)?.score ?? 0;
+  const rescaledTail = tail.map((hit, index) => ({
+    ...hit,
+    score: (floor * (tail.length - index)) / (tail.length + 1),
+  }));
+
+  return { hits: [...reordered, ...rescaledTail], degraded: null };
+}
+
+function sigmoid(logit: number): number {
+  return 1 / (1 + Math.exp(-logit));
+}
+
+/**
+ * Puts fused scores on a readable 0..1 scale when no reranker ran. Reciprocal
+ * rank fusion produces values around 0.016 whose absolute magnitude means
+ * nothing, and a card reporting `score: 0.016` reads as "barely a match" when it
+ * is in fact the best hit in the knowledge base.
+ *
+ * The result is **relative within one result set** — it says how this hit compares
+ * to the best hit here, not how relevant it is in the abstract. That is the only
+ * honest reading of a fused rank, and it is what the field is documented as.
+ */
+export function normalizeScores(hits: ChunkHit[]): ChunkHit[] {
+  if (hits.length === 0) return hits;
+  const best = Math.max(...hits.map((hit) => hit.score));
+  if (!Number.isFinite(best) || best <= 0) return hits;
+  return hits.map((hit) => ({ ...hit, score: hit.score / best }));
+}

@@ -1,0 +1,57 @@
+# ─── Config ───────────────────────────────────────────────────────────────
+# Two-file strategy. `config/default.jsonc` is COMMITTED and holds every key
+# with a safe, machine-independent default. Anything that names your machine,
+# your knowledge base, or a model endpoint goes in `config/local.jsonc`, which
+# is NEVER committed. `config/local.example.jsonc` is the committed template.
+#
+# Precedence, lowest to highest:
+#   config/default.jsonc  →  ~/.akno/config.json  →  config/local.jsonc  →  AKNO_* env
+config/local.jsonc
+config/*.local.jsonc
+**/local.jsonc
+
+# ─── Secrets ──────────────────────────────────────────────────────────────
+# Config never holds a credential — only the NAME of an env var that does
+# (`"api_key": { "env": "AKNO_OPENAI_API_KEY" }`). Keys live here.
+.env
+.env.*
+!.env.example
+*.keys.json
+*.secret.json
+*.pem
+
+# ─── Akno state ─────────────────────────────────────────────────────────
+# Everything derived. `rm -rf` any of it and `akno index` rebuilds it.
+.akno/
+*.db
+*.db-wal
+*.db-shm
+*.sock
+*.lock
+
+# ─── Build & deps ─────────────────────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+.pnpm-store/
+
+# ─── Test & bench scratch ─────────────────────────────────────────────────
+coverage/
+.vitest/
+bench-results/
+tmp/
+.tmp-*
+
+# ─── Local agent scaffolding (per-checkout, not shared) ───────────────────
+CLAUDE.local.md
+AGENTS.local.md
+.claude/settings.local.json
+
+# ─── OS & editors ─────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Generated at pack time from the repo root config (see packages/core prepack).
+packages/core/config/
