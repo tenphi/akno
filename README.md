@@ -199,22 +199,24 @@ every time, and `recall({ include: ['reference'], depth: 'full' })` lifts the ca
 ## Performance
 
 `akno bench` asserts the spec's budgets so CI fails on regression rather than someone noticing months later.
-Measured against a real 223-page knowledge base (1,068 chunks, Apple Silicon):
+Measured against a real knowledge base — 221 indexed pages, 1,142 chunks (1,069 from page bodies and 73 from
+inside documents), Apple Silicon:
 
-|                                   |            |                          |
-| --------------------------------- | ---------- | ------------------------ |
-| Structural index, cold, 223 pages | 322 ms     |                          |
-| Re-index, nothing changed         | **8.7 ms** | budget 50 ms             |
-| First query, index path only      | 3.3 ms     | budget 50 ms             |
-| `recall`, lexical only            | 2.0 ms     | budget 20 ms             |
-| Point lookup by slug              | 0.4 ms     | budget 10 ms             |
-| `timeline`, 6-month window        | 0.1 ms     | budget 20 ms             |
-| `recall`, hybrid + rerank         | 1,820 ms   | _reported, not budgeted_ |
+|                              |            |                          |
+| ---------------------------- | ---------- | ------------------------ |
+| Structural index, cold       | 255 ms     |                          |
+| Re-index, nothing changed    | **5.4 ms** | budget 50 ms             |
+| First query, index path only | 3.4 ms     | budget 50 ms             |
+| `recall`, lexical only       | 2.0 ms     | budget 20 ms             |
+| Point lookup by slug         | 0.3 ms     | budget 10 ms             |
+| `timeline`, 6-month window   | 0.1 ms     | budget 20 ms             |
+| `recall`, hybrid + rerank    | 2,010 ms   | _reported, not budgeted_ |
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
-1,820 ms of the 1,823 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints
+2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints
 FAIL has measured somebody's GPU, not this code, and gets ignored within a week. `doctor` reports the two apart
-for the same reason.
+for the same reason. That row moved from 1,820 ms when documents' own text joined the index: more candidates
+reach the reranker, which is the cost of a stored PDF being searchable at all.
 
 Where that 1.8 s goes, measured by removing one stage at a time:
 

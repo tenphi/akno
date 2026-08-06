@@ -4,6 +4,7 @@ import type { AknoContext } from './context.ts';
 import { looksLikeLedger } from './reserved.ts';
 import { extractionCapabilities } from './ingest/extract.ts';
 import { readOnlyExplanation } from './open.ts';
+import { ModelClient } from './models/client.ts';
 
 /**
  * §14, §6. What's present, what's degraded, and **what that costs.** The last
@@ -144,6 +145,32 @@ export async function doctor(
       latencyMs: null,
       error: client.unavailableReason,
       withoutIt: consequences[role] ?? '',
+    };
+    if (options.probeModels !== false && client.available) {
+      const ping = await client.ping();
+      report.latencyMs = Math.round(ping.latencyMs);
+      if (!ping.ok) {
+        report.available = false;
+        report.error = ping.error ?? 'ping failed';
+      }
+    }
+    models.push(report);
+  }
+
+  // The cycle's own model, when a knowledge base points the maintenance tiers somewhere else.
+  // Probed here or nowhere: without this, a typo in it surfaces at 03:00 in a log nobody reads.
+  if (ctx.config.maintenance.model) {
+    const resolved = ctx.config.maintenance.model;
+    const client = new ModelClient(resolved);
+    const report: RoleReport = {
+      role: 'chat (maintenance)',
+      configured: resolved.id !== null,
+      available: client.available,
+      model: resolved.id,
+      endpoint: resolved.provider?.baseUrl ?? null,
+      latencyMs: null,
+      error: client.unavailableReason,
+      withoutIt: 'the maintenance cycle falls back to nothing — observe and reflect cannot run',
     };
     if (options.probeModels !== false && client.available) {
       const ping = await client.ping();
