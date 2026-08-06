@@ -351,17 +351,24 @@ export async function summarizeDocument(
   if (!chat.available) return { summary: null, error: chat.unavailableReason ?? 'chat model unavailable' };
 
   // Enough to say what a document is without paying for a 40-page contract: the opening
-  // pages of a document are where it identifies itself.
-  const excerpt = text.slice(0, 6000);
-  const result = await chat.chat(
-    [
-      { role: 'system', content: DOCUMENT_SUMMARY },
-      { role: 'user', content: excerpt },
-    ],
-    { json: true, maxTokens: 300 },
-  );
-  if (!result.ok || !result.value) return { summary: null, error: result.error ?? 'summary failed' };
+  // pages of a document are where it identifies itself. A second, shorter attempt follows a
+  // reply a small model could not keep as JSON — the same trade `derivePage` makes, and the
+  // difference between a document with a summary and one without.
+  for (const chars of [6000, 2000]) {
+    const result = await chat.chat(
+      [
+        { role: 'system', content: DOCUMENT_SUMMARY },
+        { role: 'user', content: text.slice(0, chars) },
+      ],
+      { json: true, maxTokens: 300 },
+    );
+    if (!result.ok || !result.value) return { summary: null, error: result.error ?? 'summary failed' };
 
-  const parsed = parseJsonLoose<{ summary?: unknown }>(result.value);
-  return { summary: parsed ? cleanSummary(parsed.summary) : null, error: null };
+    const summary = cleanSummary(parseJsonLoose<{ summary?: unknown }>(result.value)?.summary);
+    if (summary) return { summary, error: null };
+  }
+
+  // Reported rather than passed over: a document with no summary is a document that only
+  // full-text search can find, and the caller should know which ones those are.
+  return { summary: null, error: 'the chat model did not return a usable summary' };
 }

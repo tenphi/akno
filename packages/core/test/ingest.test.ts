@@ -934,6 +934,28 @@ describe('a document in several files', () => {
     );
   });
 
+  it('summarizes the document once, and retries later if it could not', async () => {
+    // A summary is invalidated by not having one, not by the file's hash. A model that was
+    // down — or that failed to answer in JSON — must be retried on a later pass rather than
+    // waiting for the bytes on disk to change, which for a scan is never.
+    server.reply({});
+    const first = await mem.index({});
+    expect(first.documentsExtracted).toBe(2);
+    expect(first.documentsSummarized).toBe(0);
+    expect(first.warnings.some((warning) => /could not summarize/.test(warning))).toBe(true);
+
+    server.reply({ summary: 'An apartment lease: rent, and a deposit returned within thirty days.' });
+    const second = await mem.index({});
+    // Nothing on disk changed, so nothing was re-extracted — and the summary still arrived.
+    expect(second.documentsExtracted).toBe(0);
+    expect(second.documentsSummarized).toBe(1);
+
+    const card = (await mem.recall({ query: 'deposit returned', mode: 'lookup' })).cards.find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    expect(card?.documents?.[0]?.summary).toContain('thirty days');
+  });
+
   it('does not group two people’s files that happen to share a name', async () => {
     // Same basename, different folders. Welding these together would put one person's
     // permit inside the other's document.

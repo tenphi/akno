@@ -48,7 +48,7 @@ export interface IndexOptions {
 }
 
 export interface IndexProgress {
-  phase: 'scan' | 'hash' | 'pages' | 'embed' | 'derive' | 'documents' | 'extract' | 'done';
+  phase: 'scan' | 'hash' | 'pages' | 'embed' | 'derive' | 'documents' | 'extract' | 'summarize' | 'done';
   done: number;
   total: number;
   detail?: string;
@@ -67,6 +67,8 @@ export interface IndexReport {
   documentsLinked: number;
   /** Attachments whose text was read this pass (§11: extraction on arrival, always). */
   documentsExtracted: number;
+  /** Documents given a summary this pass — one per document, not one per file. */
+  documentsSummarized: number;
   eventsIndexed: number;
   factsDerived: number;
   excluded: number;
@@ -117,6 +119,7 @@ export class Indexer {
       pagesDerived: 0,
       documentsLinked: 0,
       documentsExtracted: 0,
+      documentsSummarized: 0,
       eventsIndexed: 0,
       factsDerived: 0,
       excluded: 0,
@@ -234,6 +237,7 @@ export class Indexer {
       // than sitting unsearchable until the next one.
       await this.extractPending(report, progress, options.only ?? null);
       await this.embedPending(report, progress, scope);
+      await this.summarizeDocuments(report, progress);
       await this.derivePending(report, progress, options.rederive ?? false, scope);
     }
 
@@ -805,7 +809,7 @@ export class Indexer {
     // after it, so a group is extracted together or not at all — otherwise a citation reads
     // "page 5" against a document that has since become six pages longer at the front.
     const partsOf = this.#store.db.prepare(
-      `SELECT id, rel_path, sha256, page_id, part, summary FROM documents
+      `SELECT id, rel_path, sha256, page_id, part FROM documents
         WHERE group_key = ? ORDER BY part`,
     );
     const groups = stale.map((row) => partsOf.all(row.group_key) as DocumentPartRow[]);
@@ -816,7 +820,6 @@ export class Indexer {
 
     for (const parts of groups) {
       let pageOffset = 0;
-      const extractedText: string[] = [];
       for (const row of parts) {
         const absPath = path.join(this.#config.aknoPath, row.rel_path);
         try {
@@ -859,7 +862,6 @@ export class Indexer {
           });
 
           pageOffset += extraction.pageCount ?? 0;
-          if (extraction.text.length > 0) extractedText.push(extraction.text);
           if (extraction.text.length > 0) report.documentsExtracted++;
           else if (extraction.note) report.warnings.push(`${row.rel_path}: ${extraction.note}`);
         } catch (err) {
@@ -867,22 +869,58 @@ export class Indexer {
         }
         progress({ phase: 'extract', done: ++done, total, detail: row.rel_path });
       }
+    }
+  }
 
-      // One summary for the whole document, written onto every part. §11 gives a stored
-      // document a summary of its own, and a scanner's split is not a reason to have two
-      // summaries describing halves of one passport.
-      const needsSummary = parts.some((row) => row.summary === null);
-      if (extractedText.length > 0 && needsSummary && this.#models.chat.available) {
-        const summarized = await summarizeDocument(extractedText.join('\n\n'), this.#models.chat);
-        if (summarized.summary) {
-          const write = this.#store.db.prepare('UPDATE documents SET summary = ? WHERE id = ?');
-          this.#store.transaction(() => {
-            for (const row of parts) write.run(summarized.summary, row.id);
-          });
-        } else if (summarized.error) {
-          report.warnings.push(`could not summarize ${parts[0]!.rel_path}: ${summarized.error}`);
-        }
+  /**
+   * §11. A stored document has "extracted text, a summary, embeddings" of its own — one
+   * summary per *document*, so a passport split into two files does not get two
+   * half-summaries describing halves of one thing.
+   *
+   * Kept separate from extraction because the two are invalidated by different things:
+   * extraction by the file's hash (§6), a summary by not having one. A model that was down,
+   * or that failed to answer in JSON, is retried on the next pass instead of waiting for the
+   * bytes on disk to change.
+   */
+  private async summarizeDocuments(report: IndexReport, progress: (p: IndexProgress) => void): Promise<void> {
+    if (!this.#models.chat.available) return;
+
+    const groups = this.#store.db
+      .prepare(
+        `SELECT group_key FROM documents
+          WHERE text IS NOT NULL
+          GROUP BY group_key
+          HAVING sum(CASE WHEN summary IS NULL THEN 1 ELSE 0 END) > 0`,
+      )
+      .all() as { group_key: string }[];
+    if (groups.length === 0) return;
+
+    const partsOf = this.#store.db.prepare(
+      'SELECT id, text FROM documents WHERE group_key = ? ORDER BY part',
+    );
+    const write = this.#store.db.prepare('UPDATE documents SET summary = ? WHERE id = ?');
+
+    progress({ phase: 'summarize', done: 0, total: groups.length });
+    let done = 0;
+
+    for (const group of groups) {
+      const parts = partsOf.all(group.group_key) as { id: string; text: string | null }[];
+      const text = parts
+        .map((part) => part.text)
+        .filter((value): value is string => value !== null)
+        .join('\n\n');
+      if (text.length === 0) continue;
+
+      const summarized = await summarizeDocument(text, this.#models.chat);
+      if (summarized.summary) {
+        this.#store.transaction(() => {
+          for (const part of parts) write.run(summarized.summary, part.id);
+        });
+        report.documentsSummarized++;
+      } else if (summarized.error) {
+        report.warnings.push(`could not summarize ${group.group_key}: ${summarized.error}`);
       }
+      progress({ phase: 'summarize', done: ++done, total: groups.length, detail: group.group_key });
     }
   }
 
@@ -1187,7 +1225,6 @@ interface DocumentPartRow {
   sha256: string;
   page_id: string | null;
   part: number;
-  summary: string | null;
 }
 
 const ALL_CHUNKS_FOR_PAGE = 'SELECT id FROM chunks WHERE page_id = ?';
