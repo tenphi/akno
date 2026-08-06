@@ -1,5 +1,6 @@
-import { open, parsePhase, type DreamReport } from '@akno/core';
+import { parsePhase, type DreamReport } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
+import { runMaintenance } from '../ops-handle.ts';
 import { heading, json, kv, line, ms, style, truncate } from '../output.ts';
 
 const DREAM_HELP = `akno dream [options]
@@ -37,23 +38,21 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   }
 
   const phase = values.phase ? parsePhase(values.phase) : undefined;
-  const mem = await open({ ...openOptionsFrom(values), writable: !values['dry-run'] });
+  const input = {
+    ...(phase ? { phase } : {}),
+    ...(values['dry-run'] ? { dryRun: true } : {}),
+  };
 
-  try {
-    const report = await mem.dream({
-      ...(phase ? { phase } : {}),
-      ...(values['dry-run'] ? { dryRun: true } : {}),
-    });
+  // Through the service when one is running: it holds the write handle, and the cycle writes.
+  const report = await runMaintenance('dream', input, values, openOptionsFrom(values), (mem) =>
+    mem.dream(input),
+  );
 
-    if (values.json) {
-      json(report);
-      return 0;
-    }
-
-    return printDream(report, values['dry-run']);
-  } finally {
-    await mem.close();
+  if (values.json) {
+    json(report);
+    return 0;
   }
+  return printDream(report, values['dry-run']);
 }
 
 function printDream(report: DreamReport, dryRun: boolean): number {

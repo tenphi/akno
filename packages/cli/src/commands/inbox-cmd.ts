@@ -1,5 +1,5 @@
-import { open } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
+import { runMaintenance } from '../ops-handle.ts';
 import { heading, json, line, style, truncate } from '../output.ts';
 
 const INBOX_HELP = `akno inbox [options]
@@ -31,11 +31,13 @@ export async function inboxCommand(argv: string[]): Promise<number> {
     return 0;
   }
 
-  // The user running this by hand is the user, so a new destination folder is not gated.
-  const mem = await open({ ...openOptionsFrom(values), actor: 'user' });
-  try {
-    const result = await mem.inbox(values.limit ? { limit: Number(values.limit) } : {});
-
+  const input = values.limit ? { limit: Number(values.limit) } : {};
+  // Through the service when one is running: filing a document writes, and §16 allows exactly
+  // one writer. The user running this by hand is the user, so a new folder is not gated.
+  const result = await runMaintenance('inbox', input, values, openOptionsFrom(values), (mem) =>
+    mem.inbox(input),
+  );
+  {
     if (values.json) {
       json(result);
       return result.waiting.length > 0 ? 2 : 0;
@@ -73,7 +75,5 @@ export async function inboxCommand(argv: string[]): Promise<number> {
     }
 
     return result.waiting.length > 0 ? 2 : 0;
-  } finally {
-    await mem.close();
   }
 }

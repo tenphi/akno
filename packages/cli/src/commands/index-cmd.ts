@@ -1,6 +1,6 @@
-import { open } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, kv, line, ms, progressWriter, style, warn } from '../output.ts';
+import { runMaintenance } from '../ops-handle.ts';
+import { heading, json, kv, line, ms, progressWriter, style } from '../output.ts';
 
 const INDEX_HELP = `akno index [options]
 
@@ -48,24 +48,26 @@ export async function indexCommand(argv: string[]): Promise<number> {
     line(style.grey(`removed ${config.dbPath}`));
   }
 
-  const mem = await open(openOptionsFrom(values));
-  try {
-    if (!mem.writable) {
-      warn(`pid ${mem.lockHeldBy} holds the write handle. Stop it, or index from that process.`);
-      return 1;
-    }
+  const input = {
+    ...(values.verify ? { verify: true } : {}),
+    ...(values.structural ? { structuralOnly: true } : {}),
+    ...(values.rederive ? { rederive: true } : {}),
+  };
 
+  // Through the service when one is running — it holds the write handle. In-process it also
+  // gets a progress writer, which a socket cannot carry: the service logs its own progress.
+  const report = await runMaintenance('index', input, values, openOptionsFrom(values), async (mem) => {
     const progress = progressWriter();
-    const report = await mem.index({
-      ...(values.verify ? { verify: true } : {}),
-      ...(values.structural ? { structuralOnly: true } : {}),
-      ...(values.rederive ? { rederive: true } : {}),
+    return mem.index({
+      ...input,
       onProgress: (update) => progress(update.phase, update.done, update.total, update.detail),
     });
+  });
 
+  {
     if (values.json) {
       json(report);
-      return report.warnings.length > 0 ? 0 : 0;
+      return 0;
     }
 
     heading(`Indexed in ${ms(report.durationMs)}`);
@@ -94,7 +96,5 @@ export async function indexCommand(argv: string[]): Promise<number> {
       }
     }
     return 0;
-  } finally {
-    await mem.close();
   }
 }

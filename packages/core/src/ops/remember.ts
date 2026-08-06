@@ -18,8 +18,20 @@ import { write } from './write.ts';
 export async function remember(ctx: AknoContext, rawInput: unknown): Promise<RememberOutput> {
   const input = RememberInput.parse(rawInput);
 
+  // §13 calls retain a tier with a mission and an on/off switch like the others. Honouring
+  // both here is what makes that config real: a `mission` nothing reads is a promise the file
+  // makes and the code breaks.
+  if (!ctx.config.maintenance.retain.enabled) {
+    return {
+      status: 'ok',
+      outcome: 'noop',
+      note: 'the retain tier is disabled in config (maintenance.retain.enabled) — nothing was kept',
+    };
+  }
+
   const retained = await runRetain(input.text, ctx.models.chat, {
     today: new Date().toISOString().slice(0, 10),
+    ...(ctx.config.maintenance.retain.mission ? { mission: ctx.config.maintenance.retain.mission } : {}),
   });
 
   if (retained.error) {

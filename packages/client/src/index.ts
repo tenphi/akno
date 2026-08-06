@@ -38,6 +38,15 @@ export interface ConnectOptions {
 export interface AknoClient extends AknoOps {
   readonly hello: HelloMessage;
   call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>>;
+  /**
+   * Ask the writer to do maintenance: `index`, `inbox`, `dream`.
+   *
+   * Not an op — §15's ten are what an agent calls about memory, and these are operator
+   * commands about the process. They exist here because §16 makes exactly one process the
+   * writer: with a service running, work that writes is either reachable through it or not
+   * reachable at all.
+   */
+  command(name: string, input?: unknown): Promise<unknown>;
   close(): Promise<void>;
 }
 
@@ -130,24 +139,39 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
   );
   assertVersion(resolved, options);
 
-  async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {
+  async function send(op: string, input: unknown, kind: 'op' | 'command'): Promise<unknown> {
     if (closed) throw new AknoError('unavailable', 'the connection is closed');
     const id = nextId++;
     const promise = new Promise<unknown>((resolve, reject) => {
       pending.set(id, { resolve, reject });
     });
-    socket.write(encodeLine({ id, op, input }));
-    return (await withTimeout(
+    socket.write(encodeLine(kind === 'command' ? { id, op, kind, input } : { id, op, input }));
+    // A command is maintenance: reconciling a large tree or running the cycle takes minutes,
+    // where an op that slow has already failed at its job.
+    const deadline = kind === 'command' ? Math.max(timeoutMs, 15 * 60_000) : timeoutMs;
+    return withTimeout(
       promise,
-      timeoutMs,
-      new AknoError('unavailable', `${op} did not respond within ${timeoutMs}ms`),
-    )) as OpResult<N>;
+      deadline,
+      new AknoError('unavailable', `${op} did not respond within ${deadline}ms`),
+    );
+  }
+
+  async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {
+    return (await send(op, input, 'op')) as OpResult<N>;
+  }
+
+  async function command(name: string, input?: unknown): Promise<unknown> {
+    if (resolved.commands && !resolved.commands.includes(name)) {
+      throw new AknoError('not_implemented', `the service on this socket does not accept '${name}'`);
+    }
+    return send(name, input ?? {}, 'command');
   }
 
   return {
     ...bindOps(call),
     hello: resolved,
     call,
+    command,
     async close(): Promise<void> {
       closed = true;
       await new Promise<void>((resolve) => socket.end(() => resolve()));
@@ -197,7 +221,18 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     }
   }
 
-  return { ...bindOps(call), hello, call, close: async (): Promise<void> => {} };
+  return {
+    ...bindOps(call),
+    hello,
+    call,
+    // Deliberately not over HTTP. That door exists so a containerized agent can reach memory;
+    // asking the host to reconcile its filesystem or run its maintenance cycle is operator
+    // work, and the socket — where filesystem permissions are the auth — is where it belongs.
+    command: async (name: string): Promise<unknown> => {
+      throw new AknoError('forbidden', `'${name}' is not available over the HTTP door — use the socket`);
+    },
+    close: async (): Promise<void> => {},
+  };
 }
 
 // ─── Shared ─────────────────────────────────────────────────────────────────

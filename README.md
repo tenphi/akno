@@ -410,6 +410,12 @@ the first report.
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default) — that is
 what "observe runs on a schedule" means on macOS. `--no-dream` skips it.
 
+**With a service running, maintenance goes through it.** §16 gives exactly one process the write handle, so
+`akno dream`, `akno index` and `akno inbox` are sent over the socket to the writer and run there; without a
+service they run in-process. They are commands rather than ops — §15's ten are what an agent calls about memory,
+these are operator work about the process — and they are socket-only, since that is the door where filesystem
+permissions are the auth.
+
 **Observe ships off, and what it produces is almost entirely a function of the model behind it.** Its guardrails
 are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug checked
 against what the model was actually shown, `full` pages only, no observation admissible as evidence for another,

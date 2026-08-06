@@ -8,9 +8,28 @@ import { ERROR_CODES } from './errors.ts';
  * and every reason to keep it debuggable with `nc` (§16).
  */
 
+/**
+ * The maintenance work a *host* asks the writer to do: reconcile the index, file what is in
+ * the inbox, run the cycle.
+ *
+ * Not ops, deliberately — §15's ten are what an agent calls about memory, and these are
+ * operator commands about the process. They travel the same wire for one reason: §16 makes
+ * exactly one process the writer, so anything that writes has to be reachable *through* it or
+ * be unavailable whenever the service is running. It used to be unavailable, and the nightly
+ * cycle would have failed every night with "another process holds the write handle".
+ */
+export const COMMAND_NAMES = ['index', 'inbox', 'dream'] as const;
+export type CommandName = (typeof COMMAND_NAMES)[number];
+
+export function isCommandName(value: string): value is CommandName {
+  return (COMMAND_NAMES as readonly string[]).includes(value);
+}
+
 export const WireRequest = z.object({
   id: z.union([z.string(), z.number()]),
+  /** An op name, or — when `kind` says so — a command name. */
   op: z.string(),
+  kind: z.enum(['op', 'command']).optional(),
   input: z.unknown().optional(),
 });
 export type WireRequest = z.infer<typeof WireRequest>;
@@ -40,6 +59,8 @@ export const Hello = z.object({
   writable: z.boolean(),
   akno_path: z.string(),
   ops: z.array(z.string()),
+  /** Maintenance commands this door accepts. Absent from an older server. */
+  commands: z.array(z.string()).optional(),
 });
 export type Hello = z.infer<typeof Hello>;
 

@@ -65,3 +65,50 @@ function socketFor(openOptions: { aknoPath?: string; stateDir?: string }): strin
     return defaultSocketPath();
   }
 }
+
+/**
+ * §16. Runs maintenance — `index`, `inbox`, `dream` — through the running service when there
+ * is one, and in-process when there is not.
+ *
+ * Exactly one process may hold the write handle, so with a service running these have to go
+ * *through* it. They used to open the index directly and be refused, each in its own way: the
+ * nightly cycle failed with "another process holds the write handle", `index` warned and
+ * exited, and `inbox` reported an empty inbox it had never been able to read.
+ */
+export async function runMaintenance<T>(
+  command: 'index' | 'inbox' | 'dream',
+  input: Record<string, unknown>,
+  values: { connect?: boolean; json?: boolean },
+  openOptions: { aknoPath?: string; stateDir?: string },
+  inProcess: (akno: Akno) => Promise<T>,
+): Promise<T> {
+  const socketPath = socketFor(openOptions);
+
+  if (values.connect || fs.existsSync(socketPath)) {
+    try {
+      const client = await connect({ socket: socketPath });
+      try {
+        if (!values.json) {
+          process.stderr.write(style.grey(`via the service on ${socketPath}\n`));
+        }
+        return (await client.command(command, input)) as T;
+      } finally {
+        await client.close();
+      }
+    } catch (err) {
+      // `--connect` means the caller wants the service or nothing; otherwise a stale socket
+      // file from a crashed service must not stop a one-off pass.
+      if (values.connect) throw err;
+      if (!values.json) {
+        process.stderr.write(style.grey(`no service on ${socketPath}; running in-process\n`));
+      }
+    }
+  }
+
+  const akno = await open(openOptions);
+  try {
+    return await inProcess(akno);
+  } finally {
+    await akno.close();
+  }
+}

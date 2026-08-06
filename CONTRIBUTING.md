@@ -130,6 +130,11 @@ Changes here need more care than the line count suggests.
 - **Group observation input by folder, not by subject alone.** A small deriver writes the _attribute_ into
   `subject`, so grouping on it joined a bag with a drum kit and a Roman church with a person's page. Given
   unrelated facts under one heading, a model will find a pattern across them: the input was the bug.
+- **Anything that writes must be reachable through the writer.** One process holds the write handle (§16), so a
+  command that opens the index directly is broken the moment a service is running. `dream`, `index` and `inbox`
+  travel the socket as _commands_ — not ops, because §15's ten are the agent's memory surface — and fall back
+  in-process only when no service answers. All three were broken this way, each failing differently: a hard
+  error, a warning, and an "empty inbox" it had never been able to read.
 - **Ownership has to be re-asked, not assumed.** After `adopt` writes a page _for_ an existing attachment, the
   attachment's bytes are unchanged, so the stat fast path skips the one file whose ownership just became
   answerable. It re-indexes those paths with `reindexUnchanged`, so ownership still resolves the ordinary way —
