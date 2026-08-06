@@ -1,0 +1,524 @@
+import fs from 'node:fs';
+import http from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { open, type Akno } from '../src/index.ts';
+
+/**
+ * §13, end to end over a real knowledge base on disk.
+ *
+ * The chat model is a stub, because every case here is about what the *cycle* does with a
+ * given answer — the guardrails, the append-only writing, the re-run safety — and a live
+ * model cannot be scripted into returning the answer each case needs. All fixtures are
+ * invented (see AGENTS.md).
+ */
+
+let root: string;
+let stateDir: string;
+let mem: Akno;
+let server: StubServer;
+
+interface DerivedFact {
+  claim: string;
+  subject: string;
+  attribute: string;
+  value: string;
+}
+
+interface StubServer {
+  url: string;
+  close: () => Promise<void>;
+  /** What the observe mission and the conflict verifier get back. */
+  reply: (value: unknown) => void;
+  /** Facts the deriver returns for a page, so real facts land on real lines. */
+  facts: (byslug: Record<string, DerivedFact[]>) => void;
+  /** The last body the observe mission was given, for asserting what it was shown. */
+  lastObserveInput: () => string;
+}
+
+/**
+ * One stub for three different callers — the deriver, the observe mission, the conflict
+ * verifier — routed on what each one asks. Facts go through the real derivation path rather
+ * than being inserted behind it, so these tests exercise the same rows `observe` reads in
+ * production.
+ */
+async function startStubChat(): Promise<StubServer> {
+  let scripted: unknown = {};
+  let byPage: Record<string, DerivedFact[]> = {};
+  let lastObserve = '';
+
+  const instance = http.createServer((request, response) => {
+    const chunks: Buffer[] = [];
+    request.on('data', (chunk: Buffer) => chunks.push(chunk));
+    request.on('end', () => {
+      const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
+        messages?: { role: string; content: string }[];
+      };
+      const user = body.messages?.at(-1)?.content ?? '';
+      const answer = user.startsWith('Page: ') ? derive(user, byPage) : scripted;
+      if (!user.startsWith('Page: ')) lastObserve = user;
+
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(answer) } }] }));
+    });
+  });
+
+  await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
+  const { port } = instance.address() as { port: number };
+  return {
+    url: `http://127.0.0.1:${port}/v1`,
+    close: () => new Promise<void>((resolve) => instance.close(() => resolve())),
+    reply: (value) => {
+      scripted = value;
+    },
+    facts: (value) => {
+      byPage = value;
+    },
+    lastObserveInput: () => lastObserve,
+  };
+}
+
+/**
+ * The deriver is shown numbered lines and must cite one it was given (§7), so the stub finds
+ * a real line for each fact rather than guessing a number.
+ */
+function derive(user: string, byPage: Record<string, DerivedFact[]>): unknown {
+  const slug = /^Page: (.+)$/m.exec(user)?.[1] ?? '';
+  const lines = [...user.matchAll(/^(\d+): (.+)$/gm)].map((match) => ({
+    line: Number(match[1]),
+    text: match[2]!,
+  }));
+
+  const facts = (byPage[slug] ?? []).flatMap((fact) => {
+    // The line whose words the claim is about, so the fact is anchored where a real
+    // derivation would anchor it.
+    const anchor = lines.find((entry) => shares(entry.text, fact.value)) ?? lines[0];
+    return anchor ? [{ ...fact, line: anchor.line }] : [];
+  });
+
+  return { summary: `${slug} in a sentence.`, keywords: [], facts };
+}
+
+function shares(text: string, value: string): boolean {
+  const words = value
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word.length > 3);
+  return words.some((word) => text.toLowerCase().includes(word));
+}
+
+const PAGES: Record<string, string> = {
+  'home/appliances.md':
+    '---\ntitle: Appliances\n---\n\n# Appliances\n\nThe dishwasher was repaired in March 2026.\n',
+  'home/laundry.md':
+    '---\ntitle: Laundry\n---\n\n# Laundry\n\nThe washing machine was serviced in June 2026.\n',
+  'home/kitchen.md': '---\ntitle: Kitchen\n---\n\n# Kitchen\n\nThe oven was serviced in September 2026.\n',
+  'notes/manual.md':
+    '---\ntitle: Manual\nclass: reference\n---\n\n# Manual\n\nService the appliance every 6 months.\n',
+};
+
+/** The default derivation: one fact per page, all about the same subject. */
+const SERVICING: Record<string, DerivedFact[]> = {
+  'home/appliances': [
+    {
+      claim: 'The dishwasher was repaired in March 2026.',
+      subject: 'appliance servicing',
+      attribute: 'serviced',
+      value: 'March 2026',
+    },
+  ],
+  'home/laundry': [
+    {
+      claim: 'The washing machine was serviced in June 2026.',
+      subject: 'appliance servicing',
+      attribute: 'serviced',
+      value: 'June 2026',
+    },
+  ],
+  'home/kitchen': [
+    {
+      claim: 'The oven was serviced in September 2026.',
+      subject: 'appliance servicing',
+      attribute: 'serviced',
+      value: 'September 2026',
+    },
+  ],
+};
+
+async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
+  return open({
+    aknoPath: root,
+    stateDir,
+    isolated: true,
+    actor: 'user',
+    overrides: {
+      akno_path: root,
+      state_dir: stateDir,
+      providers: { stub: { base_url: server.url } },
+      models: {
+        embedding: { id: null },
+        reranker: { id: null, enabled: false },
+        chat: { provider: 'stub', id: 'stub-chat' },
+      },
+      // Observe ships off (see config/default.jsonc); these tests are about what it does when
+      // a knowledge base turns it on.
+      maintenance: { observe: { enabled: true } },
+      ...overrides,
+    },
+  });
+}
+
+beforeEach(async () => {
+  root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-dream-kb-'));
+  stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-dream-state-'));
+  server = await startStubChat();
+  server.facts(SERVICING);
+
+  for (const [relPath, content] of Object.entries(PAGES)) {
+    fs.mkdirSync(path.join(root, path.dirname(relPath)), { recursive: true });
+    fs.writeFileSync(path.join(root, relPath), content, 'utf8');
+  }
+
+  mem = await openMem();
+  await mem.index({});
+});
+
+afterEach(async () => {
+  await mem?.close();
+  await server?.close();
+  for (const dir of [root, stateDir]) fs.rmSync(dir, { recursive: true, force: true });
+});
+
+const PATTERN = 'Household appliances are serviced roughly every three months.';
+
+const OBSERVED = {
+  observations: [
+    { pattern: PATTERN, evidence: ['home/appliances', 'home/laundry', 'home/kitchen'], confidence: 0.8 },
+  ],
+};
+
+describe('observe', () => {
+  it('writes a page with its evidence, marked as derived', async () => {
+    server.reply(OBSERVED);
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(report.observations).toHaveLength(1);
+    expect(report.observations[0]!.action).toBe('created');
+    // Named after the folder as well as the subject. Grouping on the subject alone joined a
+    // bag with a drum kit on a real knowledge base, because a small deriver writes the
+    // attribute into `subject` — and one page per folder keeps those apart too.
+    expect(report.observations[0]!.slug).toBe('observations/home-appliance-servicing');
+
+    const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    // §4: `derived` and `evidence` are the two keys Akno writes on pages it authors. They
+    // are what makes an inference identifiable as one afterwards.
+    expect(page).toContain('derived: true');
+    expect(page).toContain('- home/appliances');
+    expect(page).toContain(PATTERN);
+    // Not `- **YYYY-MM-DD** |`, which §10 reads as a timeline event anywhere it appears: an
+    // inferred pattern is not something that happened on a date.
+    expect(page).not.toMatch(/- \*\*\d{4}-\d{2}-\d{2}\*\* \|/);
+    const timeline = await mem.timeline({ limit: 50 });
+    expect(timeline.events.some((event) => event.summary.includes('appliances are serviced'))).toBe(false);
+  });
+
+  it('is safe to re-run: the same pattern is not written twice', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const first = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+
+    const second = await mem.dream({ phase: 'observe' });
+    expect(second.observations[0]!.action).toBe('unchanged');
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toBe(first);
+  });
+
+  it('refines by appending, and never deletes what is there', async () => {
+    // §13: a changed pattern gets a new dated line. A curator that can delete loses things
+    // nobody watched it delete.
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+
+    server.reply({
+      observations: [
+        {
+          pattern: 'Household appliances are serviced every four months, in rotation.',
+          evidence: ['home/laundry', 'home/kitchen'],
+        },
+      ],
+    });
+    const report = await mem.dream({ phase: 'observe' });
+    expect(report.observations[0]!.action).toBe('refined');
+
+    const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    expect(page).toContain(PATTERN);
+    expect(page).toContain('every four months');
+    expect(page.match(/^- \d{4}-\d{2}-\d{2} —/gm)).toHaveLength(2);
+  });
+
+  it('never uses a reference page as evidence', async () => {
+    // §5, §13: a reference page is somebody else's words. A pattern inferred from a manual is
+    // exactly the failure this tier must not have.
+    server.facts({
+      ...SERVICING,
+      'notes/manual': [
+        {
+          claim: 'Service the appliance every 6 months.',
+          subject: 'appliance servicing',
+          attribute: 'serviced',
+          value: '6 months',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+
+    server.reply({
+      observations: [
+        {
+          pattern: 'Appliances are serviced quarterly by the household.',
+          evidence: ['notes/manual', 'home/laundry'],
+        },
+      ],
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+    // The manual's fact is not in the input, so citing it leaves one usable page — below the
+    // floor, and refused with the reason.
+    expect(report.observations).toEqual([]);
+    expect(report.rejected[0]?.reason).toMatch(/usable source page/);
+  });
+
+  it('never feeds an observation back into itself', async () => {
+    // §13: an observation is not admissible evidence for another observation. No cascades.
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+
+    // The page exists and is indexed now, with a summary and a fact of its own — a derived
+    // page is still a page.
+    server.facts({
+      ...SERVICING,
+      'observations/home-appliance-servicing': [
+        {
+          claim: PATTERN,
+          subject: 'appliance servicing',
+          attribute: 'serviced',
+          value: 'three months',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+
+    server.reply({ observations: [] });
+    await mem.dream({ phase: 'observe' });
+
+    const shown = server.lastObserveInput();
+    expect(shown).toContain('home/appliances');
+    expect(shown).not.toContain('observations/home-appliance-servicing');
+  });
+
+  it('undoes a whole run as one change', async () => {
+    server.reply(OBSERVED);
+    const report = await mem.dream({ phase: 'observe' });
+    expect(report.changeId).toBeTruthy();
+
+    await mem.undo({ change_id: report.changeId! });
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+  });
+
+  it('writes nothing on a dry run', async () => {
+    server.reply(OBSERVED);
+    const report = await mem.dream({ phase: 'observe', dryRun: true });
+    expect(report.observations[0]!.action).toBe('created');
+    expect(report.changeId).toBeNull();
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+  });
+});
+
+describe('the thorough conflict pass', () => {
+  /** Two `full` pages stating a different interval for the same thing. */
+  const DISAGREEING = {
+    'home/appliances': [
+      {
+        claim: 'Appliances are serviced every 3 months.',
+        subject: 'service interval',
+        attribute: 'interval',
+        value: '3 months',
+      },
+    ],
+    'home/kitchen': [
+      {
+        claim: 'Appliances are serviced every 6 months.',
+        subject: 'service interval',
+        attribute: 'interval',
+        value: '6 months',
+      },
+    ],
+  };
+
+  it('finds two pages that disagree, and reports rather than repairs', async () => {
+    // What inline checking cannot see: neither page is being written, so nothing compares them.
+    server.facts(DISAGREEING);
+    await mem.index({ rederive: true });
+
+    server.reply({ conflict: true, current: 'home/kitchen' });
+    const report = await mem.dream({ phase: 'conflicts' });
+
+    expect(report.conflicts).toHaveLength(1);
+    const conflict = report.conflicts[0]!;
+    expect(conflict.verdict).toBe('real');
+    expect(conflict.likelyCurrent).toBe('home/kitchen');
+    expect(conflict.claims.map((claim) => claim.slug).sort()).toEqual(['home/appliances', 'home/kitchen']);
+    // Reported, never repaired: both pages are exactly as they were.
+    expect(fs.readFileSync(path.join(root, 'home/kitchen.md'), 'utf8')).toBe(PAGES['home/kitchen.md']);
+  });
+
+  it('believes the model when it says two claims do not conflict', async () => {
+    server.facts(DISAGREEING);
+    await mem.index({ rederive: true });
+
+    server.reply({ conflict: false, current: null });
+    const report = await mem.dream({ phase: 'conflicts' });
+    expect(report.conflicts[0]!.verdict).toBe('not_a_conflict');
+  });
+
+  it('ignores a reference page disagreeing with a claim', async () => {
+    // A manual disagreeing with the household's notes is not a contradiction in the
+    // household's memory (§5).
+    server.facts({
+      'home/appliances': DISAGREEING['home/appliances'],
+      'notes/manual': [
+        {
+          claim: 'Service the appliance every 6 months.',
+          subject: 'service interval',
+          attribute: 'interval',
+          value: '6 months',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+
+    const report = await mem.dream({ phase: 'conflicts' });
+    expect(report.conflicts).toEqual([]);
+  });
+
+  it('does not report one page disagreeing with itself', async () => {
+    // That is inline's job, and on one page it is usually a list rather than a contradiction.
+    server.facts({
+      'home/appliances': [
+        ...DISAGREEING['home/appliances'],
+        {
+          claim: 'The kitchen tap is serviced every 6 months.',
+          subject: 'service interval',
+          attribute: 'interval',
+          value: '6 months',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+
+    const report = await mem.dream({ phase: 'conflicts' });
+    expect(report.conflicts).toEqual([]);
+  });
+});
+
+describe('housekeeping', () => {
+  it('reports broken links, orphaned documents and rule drift', async () => {
+    fs.writeFileSync(
+      path.join(root, 'home/appliances.md'),
+      `${PAGES['home/appliances.md']}\nSee [[home/nowhere]].\n`,
+      'utf8',
+    );
+    fs.writeFileSync(path.join(root, 'stray.pdf'), 'not attached to any page');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'housekeeping' });
+    const house = report.housekeeping!;
+    expect(house.brokenLinks.map((link) => link.to)).toContain('home/nowhere');
+    expect(house.orphanedDocuments.map((entry) => entry.relPath)).toContain('stray.pdf');
+    expect(house.counts.brokenLinks).toBeGreaterThan(0);
+  });
+
+  it('reports a page whose type contradicts its folder rule', async () => {
+    await mem.close();
+    mem = await openMem({ folders: { 'home/**': { type: 'appliance' } } });
+    fs.writeFileSync(
+      path.join(root, 'home/laundry.md'),
+      '---\ntitle: Laundry\ntype: chore\n---\n\n# Laundry\n\nServiced in June.\n',
+      'utf8',
+    );
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'housekeeping' });
+    const drift = report.housekeeping!.drift.find((entry) => entry.slug === 'home/laundry');
+    expect(drift?.expected).toBe('type: appliance');
+    expect(drift?.found).toBe('type: chore');
+  });
+});
+
+describe('the cycle', () => {
+  it('runs every enabled phase, and says why the others did not', async () => {
+    server.reply({ observations: [] });
+    const report = await mem.dream({});
+
+    const byPhase = new Map(report.phases.map((phase) => [phase.phase, phase]));
+    expect(byPhase.get('observe')?.ran).toBe(true);
+    expect(byPhase.get('conflicts')?.ran).toBe(true);
+    expect(byPhase.get('housekeeping')?.ran).toBe(true);
+    // §13: reflect ships off by default, and a skipped phase says so rather than looking like
+    // a phase that found nothing.
+    expect(byPhase.get('reflect')?.ran).toBe(false);
+    expect(byPhase.get('reflect')?.skipped).toMatch(/off by default/);
+  });
+
+  it('says which phase could not run when the chat model is missing', async () => {
+    await mem.close();
+    mem = await openMem({ providers: {}, models: { chat: { id: null } } });
+
+    const report = await mem.dream({});
+    const observe = report.phases.find((phase) => phase.phase === 'observe');
+    expect(observe?.ran).toBe(false);
+    expect(observe?.skipped).toMatch(/no chat model/);
+    // The phases that need no model still run — §2: degrade, never fail.
+    expect(report.phases.find((phase) => phase.phase === 'housekeeping')?.ran).toBe(true);
+  });
+
+  it('refuses to write from a read-only handle, but will still report', async () => {
+    const second = await open({
+      aknoPath: root,
+      stateDir,
+      isolated: true,
+      writable: false,
+      overrides: {
+        akno_path: root,
+        state_dir: stateDir,
+        providers: { stub: { base_url: server.url } },
+        models: {
+          embedding: { id: null },
+          reranker: { id: null, enabled: false },
+          chat: { provider: 'stub', id: 'stub-chat' },
+        },
+      },
+    });
+    try {
+      await expect(second.dream({})).rejects.toThrow(/write handle/);
+      server.reply({ observations: [] });
+      await expect(second.dream({ dryRun: true })).resolves.toBeTruthy();
+    } finally {
+      await second.close();
+    }
+  });
+});
+
+describe('observe when a knowledge base has not asked for it', () => {
+  it('is off, and says so rather than looking like a quiet night', async () => {
+    // Off by default from measurement: on a real base with a small chat model, most of what it
+    // produced was not worth keeping, and all of it would have been recalled later as truth.
+    await mem.close();
+    mem = await openMem({ maintenance: { observe: { enabled: false } } });
+
+    const report = await mem.dream({ phase: 'observe' });
+    expect(report.phases[0]!.ran).toBe(false);
+    expect(report.phases[0]!.skipped).toMatch(/disabled/);
+    expect(report.observations).toEqual([]);
+  });
+});

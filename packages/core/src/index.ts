@@ -14,6 +14,17 @@ export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.t
 export type { WatcherEvents } from './watch/watcher.ts';
 export type { AknoWatchEvents } from './open.ts';
 export type { InboxResult } from './ingest/inbox.ts';
+export {
+  DREAM_PHASES,
+  parsePhase,
+  type DreamOptions,
+  type DreamPhase,
+  type DreamReport,
+  type ObservationWritten,
+  type PhaseReport,
+} from './maintenance/dream.ts';
+export type { ConflictClaim, CrossPageConflict } from './maintenance/conflicts.ts';
+export type { BrokenLink, Housekeeping, OrphanedDocument, RuleDrift } from './maintenance/housekeeping.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 

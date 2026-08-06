@@ -191,6 +191,59 @@
     "verify_interval_ms": 3600000
   },
 
+  // ─── The maintenance cycle (§13) ──────────────────────────────────────────
+  // Three tiers: retain → observe → reflect. `akno dream` runs the cycle;
+  // phases are independent and each is safe to re-run.
+  //
+  // A **mission** appends emphasis to a fixed system prompt and never replaces
+  // it. That is a guardrail, not a convenience: every rule that keeps an
+  // inference engine honest lives in the fixed part, and a replaceable prompt is
+  // how they all get lost at once.
+  "maintenance": {
+    // Retain is the `remember` op, available per-turn (§13) — the tier that needs
+    // to be fresh does not wait for a timer. `dream` does not re-run it.
+    "retain": {
+      "enabled": true,
+      "mission": null
+    },
+    // Combine repeated facts into stable patterns. Writes pages under
+    // `observations/` with `derived: true` and the evidence it used, appending
+    // only: a changed pattern gets a new dated line and nothing is deleted.
+    //
+    // Off by default from measurement, not caution. On a real 223-page knowledge
+    // base with a local 3B chat model, one run produced 18 candidate patterns of
+    // which about three were worth keeping — and every one of them would have
+    // been recalled later as truth. The guardrails hold; what they cannot do is
+    // make a small model insightful. Turn this on with a model you have watched
+    // produce patterns worth having, and read the first run with `--dry-run`.
+    "observe": {
+      "enabled": false,
+      "mission": null,
+      // Distinct source pages an observation needs. Two is §13's floor and the
+      // schema refuses less: one page agreeing with itself is not a pattern.
+      "min_evidence": 2,
+      // Subjects looked at per run, most recently touched first.
+      "max_subjects": 40
+    },
+    // §13: ships as an extension point, off by default. At a few hundred pages
+    // and a handful of events a month, a "pattern" is one coincidence away from
+    // noise. Switch it on when a knowledge base has the volume, not before.
+    "reflect": {
+      "enabled": false,
+      "mission": null
+    },
+    // §8's thorough pass: facts on different pages that state different values
+    // for the same thing — which inline checking cannot see, because neither page
+    // is being written. It reports; it never rewrites a claim.
+    "conflicts": {
+      "enabled": true,
+      // Ask the chat model whether a candidate pair really conflicts. Off leaves
+      // every candidate reported as `unverified`, which is honest and cheaper.
+      "verify": true,
+      "max_pairs": 40
+    }
+  },
+
   // ─── Doors (§16) ──────────────────────────────────────────────────────────
   "server": {
     // Unix socket, relative to state_dir. Filesystem permissions are the auth.

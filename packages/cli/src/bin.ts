@@ -16,6 +16,7 @@ import { rememberCommand, writeCommand } from './commands/write-cmd.ts';
 import { approveCommand, forgetCommand, moveCommand, undoCommand } from './commands/mutate-cmd.ts';
 import { ingestCommand } from './commands/ingest-cmd.ts';
 import { inboxCommand } from './commands/inbox-cmd.ts';
+import { dreamCommand } from './commands/dream-cmd.ts';
 
 const VERSION = '0.1.0';
 
@@ -39,6 +40,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     inbox                File whatever was dropped in an inbox folder.
 
   ${style.bold('Admin')}
+    dream                The maintenance cycle: observe, conflicts, housekeeping.
     index                Reconcile the index against the knowledge base.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd agent.
@@ -72,6 +74,7 @@ const COMMANDS: Record<string, Command> = {
   move: moveCommand,
   ingest: ingestCommand,
   inbox: inboxCommand,
+  dream: dreamCommand,
   approve: approveCommand,
   decline: (argv: string[]) => approveCommand(argv, true),
   index: indexCommand,

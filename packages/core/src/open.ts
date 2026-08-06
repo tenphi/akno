@@ -26,6 +26,7 @@ import { undo as undoOp } from './ops/undo.ts';
 import { move as moveOp } from './ops/move.ts';
 import { ingest as ingestOp } from './ops/ingest.ts';
 import { isInInbox, processInbox, type InboxResult } from './ingest/inbox.ts';
+import { dream, type DreamOptions, type DreamReport } from './maintenance/dream.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -75,6 +76,14 @@ export interface Akno extends AknoOps {
    * than a queue that loses things.
    */
   inbox(options?: { limit?: number }): Promise<InboxResult>;
+  /**
+   * §13. The maintenance cycle: observe, reflect, the thorough conflict pass, and the
+   * housekeeping report. Phases are independent and each is safe to re-run.
+   *
+   * Needs the write handle, because `observe` writes pages — and one process at a time, for
+   * the same reason indexing does.
+   */
+  dream(options?: DreamOptions): Promise<DreamReport>;
   /** Force a full reconcile — what a host calls on wake. */
   reconcile(): Promise<void>;
   /** Call any op by name, validating input against the registry. The door path. */
@@ -296,6 +305,18 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     },
 
     inbox: (inboxOptions) => processInbox(ctx, inboxOptions ?? {}),
+
+    async dream(dreamOptions: DreamOptions = {}): Promise<DreamReport> {
+      // A dry run reads and reports; only a real one needs the handle. Refusing both would
+      // make "what would the cycle write?" unanswerable from a second process.
+      if (!writable && !dreamOptions.dryRun) {
+        throw new AknoError(
+          'read_only',
+          `dream needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return dream(ctx, dreamOptions);
+    },
 
     async reconcile(): Promise<void> {
       if (watcher) await watcher.reconcileNow();

@@ -6,6 +6,7 @@ import { heading, kv, line, ms, style, warn } from '../output.ts';
 import { serveSocket } from '../serve/socket.ts';
 import { serveHttp } from '../serve/http.ts';
 import { serveMcp } from '../serve/mcp.ts';
+import { AknoError } from '@akno/protocol';
 
 const SERVE_HELP = `akno serve [options]
 
@@ -153,15 +154,28 @@ function waitForShutdown(log: (message: string) => void): Promise<void> {
   });
 }
 
-const SERVICE_HELP = `akno service <install | uninstall | status>
+const SERVICE_HELP = `akno service <install | uninstall | status> [options]
 
-  Manage the macOS launchd user agent, so nobody hand-edits XML. Because it is
-  KeepAlive, the service outlives every host that talks to it.`;
+  Manage the macOS launchd user agents, so nobody hand-edits XML.
+
+    dev.akno        KeepAlive — the index, watcher and models in one process, which
+                      is why it outlives every host that talks to it.
+    dev.akno.dream  Nightly — the maintenance cycle (§13). Observe runs on a
+                      schedule, and this is that schedule.
+
+  --http <addr>       Serve loopback HTTP as well as the socket.
+  --dream-hour <0-23> When the nightly cycle runs. Default 3.
+  --no-dream          Do not install the nightly agent.`;
 
 const PLIST_LABEL = 'dev.akno';
+const DREAM_LABEL = 'dev.akno.dream';
 
 export async function serviceCommand(argv: string[]): Promise<number> {
-  const { values, positionals } = parse<{ http?: string }>(argv, { http: { type: 'string' } });
+  const { values, positionals } = parse<{ http?: string; 'dream-hour'?: string; dream: boolean }>(argv, {
+    http: { type: 'string' },
+    'dream-hour': { type: 'string' },
+    dream: { type: 'boolean', default: true },
+  });
 
   if (values.help || positionals.length === 0) {
     line(SERVICE_HELP);
@@ -173,27 +187,42 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     return 1;
   }
 
-  const plistPath = path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents', `${PLIST_LABEL}.plist`);
+  const agents = path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents');
+  const plistPath = path.join(agents, `${PLIST_LABEL}.plist`);
+  const dreamPath = path.join(agents, `${DREAM_LABEL}.plist`);
   const action = positionals[0];
 
   if (action === 'status') {
-    if (!fs.existsSync(plistPath)) {
-      line(`${style.grey('not installed')}  ${plistPath}`);
-      return 1;
+    let installed = false;
+    for (const [label, target] of [
+      [PLIST_LABEL, plistPath],
+      [DREAM_LABEL, dreamPath],
+    ] as const) {
+      if (fs.existsSync(target)) {
+        installed = true;
+        line(`${style.green('installed')}  ${target}`);
+        line(style.grey(`  launchctl print gui/$(id -u)/${label}   # live state`));
+      } else {
+        line(`${style.grey('not installed')}  ${target}`);
+      }
     }
-    line(`${style.green('installed')}  ${plistPath}`);
-    line(style.grey('  launchctl print gui/$(id -u)/dev.akno   # live state'));
-    return 0;
+    return installed ? 0 : 1;
   }
 
   if (action === 'uninstall') {
-    if (!fs.existsSync(plistPath)) {
+    const removed = [plistPath, dreamPath].filter((target) => fs.existsSync(target));
+    if (removed.length === 0) {
       line(style.grey('not installed'));
       return 0;
     }
-    fs.rmSync(plistPath);
-    line(`removed ${plistPath}`);
+    for (const target of removed) {
+      fs.rmSync(target);
+      line(`removed ${target}`);
+    }
     line(style.grey(`run: launchctl bootout gui/$(id -u)/${PLIST_LABEL}`));
+    if (removed.includes(dreamPath)) {
+      line(style.grey(`run: launchctl bootout gui/$(id -u)/${DREAM_LABEL}`));
+    }
     return 0;
   }
 
@@ -202,25 +231,91 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     return 1;
   }
 
+  // Before anything is written. A bad hour used to abort between the two agents, leaving the
+  // service installed, the nightly cycle not, and an error message about neither.
+  const hour = dreamHour(values['dream-hour']);
+
   const { loadConfig } = await import('@akno/core');
   const config = loadConfig(openOptionsFrom(values));
   const binary = process.argv[1] ?? 'akno';
   const args = ['serve', ...(values.http ? ['--http', values.http] : [])];
 
-  fs.mkdirSync(path.dirname(plistPath), { recursive: true });
+  fs.mkdirSync(agents, { recursive: true });
   fs.mkdirSync(config.logDir, { recursive: true });
-  fs.writeFileSync(plistPath, plist(PLIST_LABEL, process.execPath, binary, args, config.logDir), 'utf8');
-
+  fs.writeFileSync(
+    plistPath,
+    plist({
+      label: PLIST_LABEL,
+      node: process.execPath,
+      script: binary,
+      args,
+      logDir: config.logDir,
+      keepAlive: true,
+    }),
+    'utf8',
+  );
   line(`wrote ${plistPath}`);
   line(style.grey(`run: launchctl bootstrap gui/$(id -u) ${plistPath}`));
+
+  if (values.dream) {
+    // §13: observe runs on a schedule. A second agent rather than a timer inside `serve`,
+    // because the cycle is a *pass* with an exit code and a log — something a person can run
+    // by hand, read the output of, and undo — not a background thread nobody can address.
+    fs.writeFileSync(
+      dreamPath,
+      plist({
+        label: DREAM_LABEL,
+        node: process.execPath,
+        script: binary,
+        args: ['dream'],
+        logDir: config.logDir,
+        logName: 'dream',
+        calendarHour: hour,
+      }),
+      'utf8',
+    );
+    line(`wrote ${dreamPath}  ${style.grey(`(daily at ${String(hour).padStart(2, '0')}:00)`)}`);
+    line(style.grey(`run: launchctl bootstrap gui/$(id -u) ${dreamPath}`));
+  }
+
   line(style.grey(`logs: ${config.logDir}`));
   return 0;
 }
 
-function plist(label: string, node: string, script: string, args: string[], logDir: string): string {
+/** An hour outside 0-23 is a typo, and a nightly job at "25:00" would silently never run. */
+function dreamHour(raw: string | undefined): number {
+  if (raw === undefined) return 3;
+  const hour = Number(raw);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
+    throw new AknoError('invalid', `--dream-hour wants 0-23, not '${raw}'`);
+  }
+  return hour;
+}
+
+interface PlistOptions {
+  label: string;
+  node: string;
+  script: string;
+  args: string[];
+  logDir: string;
+  /** Log basename, so the nightly cycle does not interleave with the service's log. */
+  logName?: string;
+  /** The service: restarted whenever it stops. */
+  keepAlive?: boolean;
+  /** The nightly cycle: run once a day at this hour. */
+  calendarHour?: number;
+}
+
+function plist(options: PlistOptions): string {
+  const { label, node, script, args, logDir } = options;
+  const logName = options.logName ?? 'akno';
   const programArgs = [node, script, ...args]
     .map((arg) => `    <string>${escapeXml(arg)}</string>`)
     .join('\n');
+  const schedule =
+    options.calendarHour === undefined
+      ? `  <key>RunAtLoad</key><true/>\n  <key>KeepAlive</key>${options.keepAlive ? '<true/>' : '<false/>'}`
+      : `  <key>StartCalendarInterval</key>\n  <dict><key>Hour</key><integer>${options.calendarHour}</integer><key>Minute</key><integer>0</integer></dict>`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -230,11 +325,10 @@ function plist(label: string, node: string, script: string, args: string[], logD
   <array>
 ${programArgs}
   </array>
-  <key>RunAtLoad</key><true/>
-  <key>KeepAlive</key><true/>
+${schedule}
   <key>ProcessType</key><string>Background</string>
-  <key>StandardOutPath</key><string>${escapeXml(path.join(logDir, 'akno.log'))}</string>
-  <key>StandardErrorPath</key><string>${escapeXml(path.join(logDir, 'akno.err.log'))}</string>
+  <key>StandardOutPath</key><string>${escapeXml(path.join(logDir, `${logName}.log`))}</string>
+  <key>StandardErrorPath</key><string>${escapeXml(path.join(logDir, `${logName}.err.log`))}</string>
 </dict>
 </plist>
 `;

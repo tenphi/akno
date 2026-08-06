@@ -9,9 +9,10 @@ or any editor, with no import step and no proprietary store.
 Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
 event and link from the Markdown.
 
-> **Status: every op works.** Indexing, watching, retrieval, the write path, the inbox, and `ingest` from a file,
-> a folder or a URL — with extraction and OCR — are implemented and tested against a real 223-page knowledge
-> base. What remains is the maintenance cycle — see [What is not built yet](#what-is-not-built-yet).
+> **Status: the whole spec is implemented.** Indexing, watching, retrieval, the write path, the inbox, `ingest`
+> from a file, a folder or a URL with extraction and OCR, and the maintenance cycle — all tested against a real
+> 223-page knowledge base. Two tiers of the cycle ship **off**, for reasons measured on that base rather than
+> guessed: see [The maintenance cycle](#the-maintenance-cycle).
 
 ---
 
@@ -235,12 +236,18 @@ path, not a correctness guarantee, so a full hash sweep runs on the periodic bac
 Vector search is exact brute force by decision, not omission: below ~20,000 chunks an approximate index costs
 build time, recall accuracy and a second structure to keep in sync, to save milliseconds nobody notices.
 
-## What is not built yet
+## What ships switched off
 
 Named honestly, because a README that implies more than exists is the same failure mode Akno is built to
-prevent:
+prevent. Nothing in the spec is unimplemented; these are decisions, and each one has a measurement behind it in
+[The maintenance cycle](#the-maintenance-cycle):
 
-- **The maintenance cycle** (`dream`, `observe`, `reflect`), including §8's thorough offline conflict pass.
+- **`observe`** — the tier that infers patterns and writes them as prose. Its guardrails hold; the quality of what
+  survives them is the chat model's, and on a small local model most of it was not worth keeping.
+- **`reflect`** — §13 ships it as an extension point, off until a knowledge base has the volume to make a
+  "pattern" more than a coincidence.
+- **Extraction for attachments that predate Akno** is _on_: they are read during indexing. What stays reported
+  rather than fixed is an attachment no page owns, since recall returns page cards and there is nowhere to put it.
 
 ## Documents
 
@@ -374,6 +381,36 @@ placed below the page's `<!-- reference -->` fence — where it is indexed for s
 never returned whole. That last part is why the text goes into the Markdown rather than only into the index:
 search reads chunks, chunks come from Markdown, and text kept only in the database is text recall cannot reach.
 Nothing is routed or named, because the caller already decided both.
+
+## The maintenance cycle
+
+`akno dream` runs four phases. They are independent, and each is safe to re-run.
+
+| Phase          | What it does                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| `observe`      | Combines repeated facts into stable patterns, writing pages under `observations/` with their evidence.  |
+| `reflect`      | Decision principles built on the tier above. Off by default.                                            |
+| `conflicts`    | Facts on **different** pages stating different values for one thing — which inline checking cannot see. |
+| `housekeeping` | Broken links, orphaned documents, pages that have drifted from their folder's rules.                    |
+
+Only `observe` and `reflect` write, and only by appending: a changed pattern gets a new dated line, nothing is
+ever deleted, and a whole run is one `akno undo`. Everything else reports. A maintenance process that tidies a
+knowledge base behind its owner's back is worse than the mess it fixes.
+
+`akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default) — that is
+what "observe runs on a schedule" means on macOS. `--no-dream` skips it.
+
+**Observe ships off, and that is a measurement rather than caution.** Its guardrails are enforced in code, not
+asked for in a prompt: at least two distinct source pages, every cited slug checked against what the model was
+actually shown, `full` pages only, no observation admissible as evidence for another, no hedged language, nothing
+about a person's private life, and nothing that describes the records rather than what they record. Run against a
+real 223-page knowledge base with a local 3B chat model, those guards refused 18 candidates and passed 15 — of
+which about four were worth keeping. The guards hold; what they cannot do is make a small model insightful. Turn
+it on with a model you have watched produce patterns worth having, and read the first run with `--dry-run`.
+
+The same run is why the conflict pass reports rather than repairs. It found five cross-page candidates on that
+base and the model correctly cleared all five — three months of banking pages stating different totals, and three
+Rome addresses under one `location` heading. A pass that had "fixed" those would have destroyed correct records.
 
 ## Platform
 

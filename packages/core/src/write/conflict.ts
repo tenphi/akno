@@ -73,8 +73,13 @@ function normalizeAttribute(raw: string): string {
  * Two values differ *meaningfully* when their comparable cores differ. Reached
  * only for values that already contain a number or a decisive word, so this is
  * about "€33 vs €33/month" (same) against "€33 vs €47" (different).
+ *
+ * Exported for the thorough pass (§8), which joins facts across the whole knowledge base and
+ * has to decide "differ" exactly the way the inline check does. Two answers to that question
+ * would mean the cycle reporting conflicts a write would have allowed, or missing ones it
+ * would have blocked.
  */
-function valuesConflict(existing: string, incoming: string): boolean {
+export function valuesConflict(existing: string, incoming: string): boolean {
   const left = comparableCore(existing);
   const right = comparableCore(incoming);
   if (left === right) return false;

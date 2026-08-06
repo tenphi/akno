@@ -413,6 +413,35 @@ function resolve(
         extension.replace(/^\./, '').toLowerCase(),
       ),
     },
+    maintenance: {
+      retain: {
+        enabled: doc.maintenance?.retain?.enabled ?? true,
+        mission: doc.maintenance?.retain?.mission ?? null,
+      },
+      observe: {
+        // Off by default, from measurement rather than caution. On a real 223-page knowledge
+        // base with a local 3B chat model, a run produced 18 candidate patterns of which about
+        // three were worth keeping — and every one of them would have been recalled later as
+        // truth. The guardrails hold; what they cannot do is make a small model insightful.
+        // Enable it with a model you have seen produce patterns worth having.
+        enabled: doc.maintenance?.observe?.enabled ?? false,
+        mission: doc.maintenance?.observe?.mission ?? null,
+        // §13's floor, and the schema refuses to go below it: one page agreeing with
+        // itself is not a pattern.
+        minEvidence: Math.max(2, doc.maintenance?.observe?.min_evidence ?? 2),
+        maxSubjects: doc.maintenance?.observe?.max_subjects ?? 40,
+      },
+      reflect: {
+        // §13: at a few hundred pages a "pattern" is one coincidence away from noise.
+        enabled: doc.maintenance?.reflect?.enabled ?? false,
+        mission: doc.maintenance?.reflect?.mission ?? null,
+      },
+      conflicts: {
+        enabled: doc.maintenance?.conflicts?.enabled ?? true,
+        verify: doc.maintenance?.conflicts?.verify ?? true,
+        maxPairs: doc.maintenance?.conflicts?.max_pairs ?? 40,
+      },
+    },
     trashRetentionDays: doc.trash_retention_days ?? 30,
     rules,
     sources,

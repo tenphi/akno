@@ -121,6 +121,37 @@ const IngestDoc = z.object({
   blocked_extensions: z.array(z.string()).optional(),
 });
 
+/**
+ * §13. A **mission** appends emphasis to a fixed system prompt and never replaces it. That
+ * is a guardrail, not a convenience: every rule that keeps an inference engine honest lives
+ * in the fixed part, and a replaceable prompt is how they all get lost at once.
+ */
+const TierDoc = z.object({
+  enabled: z.boolean().optional(),
+  // Nullable so the committed default can *show* the key with no value, rather than leaving
+  // a reader to guess that it exists.
+  mission: z.string().nullable().optional(),
+});
+
+const MaintenanceDoc = z.object({
+  retain: TierDoc.optional(),
+  observe: TierDoc.extend({
+    /** Distinct source pages an observation needs. §13's floor is two. */
+    min_evidence: z.number().int().min(2).optional(),
+    /** Subjects looked at per run, most recently touched first. */
+    max_subjects: z.number().int().positive().optional(),
+  }).optional(),
+  reflect: TierDoc.optional(),
+  conflicts: z
+    .object({
+      enabled: z.boolean().optional(),
+      /** Ask the chat model whether a candidate pair really conflicts. */
+      verify: z.boolean().optional(),
+      max_pairs: z.number().int().positive().optional(),
+    })
+    .optional(),
+});
+
 export const ConfigDoc = z.object({
   akno_path: z.string().nullable().optional(),
   state_dir: z.string().optional(),
@@ -141,6 +172,7 @@ export const ConfigDoc = z.object({
   watch: WatchDoc.optional(),
   server: ServerDoc.optional(),
   ingest: IngestDoc.optional(),
+  maintenance: MaintenanceDoc.optional(),
   trash_retention_days: z.number().int().nonnegative().optional(),
   folders: z.record(z.string(), FolderRuleDoc).optional(),
 });
@@ -242,6 +274,18 @@ export interface AknoConfig {
     /** Below this, a document keeps its name and gets no page (§11). */
     nameConfidence: number;
     blockedExtensions: string[];
+  };
+  maintenance: {
+    retain: { enabled: boolean; mission: string | null };
+    observe: {
+      enabled: boolean;
+      mission: string | null;
+      minEvidence: number;
+      maxSubjects: number;
+    };
+    /** §13: ships as an extension point, off by default. */
+    reflect: { enabled: boolean; mission: string | null };
+    conflicts: { enabled: boolean; verify: boolean; maxPairs: number };
   };
   trashRetentionDays: number;
   rules: FolderRule[];

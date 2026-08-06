@@ -124,6 +124,12 @@ Changes here need more care than the line count suggests.
   extracted together so page offsets stay consistent, get one summary, and collapse to one entry on a card. When
   several parts match, quote the **best-ranked** part — iterating parts in order instead quoted whichever file
   happened to be part one.
+- **An inference engine's guardrails belong in code.** Every §13 rule for `observe` is enforced after the model
+  replies, not asked for in the prompt — because a real run wrote "X lives with a wife" with the prompt rule in
+  place. A prompt is a suggestion; §13's own words are that a replaceable prompt is how every guard gets lost.
+- **Group observation input by folder, not by subject alone.** A small deriver writes the _attribute_ into
+  `subject`, so grouping on it joined a bag with a drum kit and a Roman church with a person's page. Given
+  unrelated facts under one heading, a model will find a pattern across them: the input was the bug.
 - **Never cite a line that does not exist.** A hit inside a PDF is not a line of the Markdown page. Document
   hits come back as a quote attributed to the document and its page number; only body hits produce `lines`.
 - **Never report where text came from inaccurately.** A vision model's _description_ of a photograph is not a
