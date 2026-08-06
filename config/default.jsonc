@@ -19,7 +19,7 @@
   // socket. Deleting it costs one re-index and no data.
   "state_dir": "~/.akno",
 
-  // ─── Reserved paths (§4) ──────────────────────────────────────────────────
+  // ─── Reserved paths ───────────────────────────────────────────────────────
   // Remappable so a collision with something you already have is resolvable.
   // Relative to akno_path.
   "paths": {
@@ -33,7 +33,7 @@
   // a first run against an existing knowledge base changes nothing at all.
   "create_reserved_paths": false,
 
-  // ─── Identity (§12) ───────────────────────────────────────────────────────
+  // ─── Identity ─────────────────────────────────────────────────────────────
   // Akno's only write into a page is a frontmatter `id:`. Off by default: the
   // sidecar map in akno.db carries identity, and renames are followed by body
   // hash. Turn this on for identity that survives `rm akno.db` and a move to
@@ -57,11 +57,11 @@
   // Bytes above which a page is chunked but not summarized or fact-mined.
   "max_page_bytes": 1048576,
 
-  // ─── Gating (§5) ──────────────────────────────────────────────────────────
+  // ─── Gating ───────────────────────────────────────────────────────────────
   // "top-level" | "all" | "none". The user is never gated; only agents are.
   "gate": "top-level",
   // Below this score `remember` and inbox routing propose instead of writing.
-  // 0.5 is a starting default, not a measured one (§19).
+  // 0.5 is a starting default, not a measured one.
   "route_threshold": 0.5,
   // "ledger" | "daily" — where an event with no page behind it lands.
   "loose_events": "ledger",
@@ -83,7 +83,7 @@
     }
   },
 
-  // ─── Models (§14) ─────────────────────────────────────────────────────────
+  // ─── Models ───────────────────────────────────────────────────────────────
   // Three roles, all optional, each degrading rather than failing. `id: null`
   // means the role is unconfigured — Akno reports it in `doctor` and takes
   // the documented degraded path.
@@ -138,7 +138,7 @@
     }
   },
 
-  // ─── Indexing (§6) ────────────────────────────────────────────────────────
+  // ─── Indexing ─────────────────────────────────────────────────────────────
   "index": {
     // Chunks follow the document's own headings; these are the size gates.
     "chunk_target_chars": 1200,
@@ -151,11 +151,11 @@
     // Files hashed concurrently during a sweep.
     "hash_concurrency": 8,
     // Switch on sqlite-vec's ANN index above this many chunks. Brute force is
-    // strictly better below it (§6).
+    // strictly better below it.
     "ann_threshold_chunks": 20000
   },
 
-  // ─── Recall (§9) ──────────────────────────────────────────────────────────
+  // ─── Recall ───────────────────────────────────────────────────────────────
   "recall": {
     "default_budget": 8000,
     "default_limit": 8,
@@ -163,7 +163,8 @@
     "candidates_per_arm": 60,
     // Lines of body returned per card in lookup mode.
     "line_window": 6,
-    // Hard cap on what a `reference` page contributes unprompted (§19: a guess).
+    // Hard cap on what a `reference` page contributes unprompted. A guess, not a
+    // measurement.
     "reference_quote_lines": 6,
     // Query expansion — off means the query is searched verbatim.
     "expansion": true,
@@ -179,7 +180,7 @@
     }
   },
 
-  // ─── Watching (§12, §16) ──────────────────────────────────────────────────
+  // ─── Watching ─────────────────────────────────────────────────────────────
   "watch": {
     "enabled": true,
     // FSEvents coalesces; this debounce collapses an editor's write storm.
@@ -191,7 +192,7 @@
     "verify_interval_ms": 3600000
   },
 
-  // ─── The maintenance cycle (§13) ──────────────────────────────────────────
+  // ─── The maintenance cycle ────────────────────────────────────────────────
   // Three tiers: retain → observe → reflect. `akno dream` runs the cycle;
   // phases are independent and each is safe to re-run.
   //
@@ -201,7 +202,7 @@
   // how they all get lost at once.
   "maintenance": {
     // The chat model the cycle uses, when it should not be the one per-turn work
-    // uses. Not a fifth role (§14) — the same `chat` capability, pointed somewhere
+    // uses. Not a fifth role — the same `chat` capability, pointed somewhere
     // else for the one caller that runs unattended.
     //
     // This is worth setting. Measured on a real 223-page base: the observe tier
@@ -212,7 +213,7 @@
     //
     //   "model": { "provider": "openai", "id": "gpt-5.6-luna" }
     "model": null,
-    // Retain is the `remember` op, available per-turn (§13) — the tier that needs
+    // Retain is the `remember` op, available per-turn — the tier that needs
     // to be fresh does not wait for a timer. `dream` does not re-run it.
     "retain": {
       "enabled": true,
@@ -231,13 +232,13 @@
     "observe": {
       "enabled": false,
       "mission": null,
-      // Distinct source pages an observation needs. Two is §13's floor and the
+      // Distinct source pages an observation needs. Two is the floor and the
       // schema refuses less: one page agreeing with itself is not a pattern.
       "min_evidence": 2,
       // Subjects looked at per run, most recently touched first.
       "max_subjects": 40
     },
-    // §13: ships as an extension point, off by default. At a few hundred pages
+    // Ships as an extension point, off by default. At a few hundred pages
     // and a handful of events a month, a "pattern" is one coincidence away from
     // noise. Switch it on when a knowledge base has the volume, not before.
     "reflect": {
@@ -255,7 +256,7 @@
       // anyone has read the first report.
       "max_pages": 20
     },
-    // §8's thorough pass: facts on different pages that state different values
+    // The thorough pass: facts on different pages that state different values
     // for the same thing — which inline checking cannot see, because neither page
     // is being written. It reports; it never rewrites a claim.
     "conflicts": {
@@ -267,7 +268,7 @@
     }
   },
 
-  // ─── Doors (§16) ──────────────────────────────────────────────────────────
+  // ─── Doors ────────────────────────────────────────────────────────────────
   "server": {
     // Unix socket, relative to state_dir. Filesystem permissions are the auth.
     "socket": "akno.sock",
@@ -278,14 +279,14 @@
     "mcp_allow": ["recall", "read", "list", "timeline", "context"]
   },
 
-  // ─── Ingest (§11) ─────────────────────────────────────────────────────────
+  // ─── Ingest ───────────────────────────────────────────────────────────────
   "ingest": {
     "max_file_mb": 25,
     // Pages OCR'd before stopping. A 200-page scan need not be fully searchable to
     // be findable, and the ingest report says how many were read. Measured on this
     // hardware: ~0.6s per page through the Vision framework.
     "max_ocr_pages": 12,
-    // §11's second guard: below this, the file keeps its name, gets no page, and is
+    // The second naming guard: below this, the file keeps its name, gets no page, and is
     // reported — rather than being given a confident wrong name. Renaming is the one
     // destructive thing ingest does, so the bias is toward not doing it.
     "name_confidence": 0.55,
@@ -315,7 +316,7 @@
   // How long a deleted page or document is recoverable from trash.
   "trash_retention_days": 30,
 
-  // ─── Rules (§5) ───────────────────────────────────────────────────────────
+  // ─── Rules ────────────────────────────────────────────────────────────────
   // Glob-scoped, most-specific-wins. Empty by default: Akno ships no folder
   // taxonomy. A knowledge base with no rules at all works — every page is
   // `full`. Rules at `<akno_path>/akno.json` win over these, so they can

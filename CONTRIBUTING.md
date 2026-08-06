@@ -97,7 +97,7 @@ Changes here need more care than the line count suggests.
   incoming text. Joining a structurally-extracted attribute against a model-assigned one silently never matches,
   which is how `- Nights: 5` landed on top of `- Nights: 3` with no conflict reported.
 - **Threshold `relevance`, never `score`.** `score` orders one result set — the best hit is 1.0 whether it is a
-  perfect match or the least bad of a bad batch — so thresholding it made routing unconditional and §11's "a
+  perfect match or the least bad of a bad batch — so thresholding it made routing unconditional and left "a
   document with no home stays put" impossible to reach. `relevance` is absolute when a cross-encoder or the
   embedding arm supplied one, and absent otherwise, which is when routing must refuse and ask.
 - **A threshold is only as good as the query it scores.** Routing once built its query from the document's
@@ -115,7 +115,7 @@ Changes here need more care than the line count suggests.
   the _page_ still contains the line, so the live-line set comes from the page. Read from the incoming facts, a
   derivation that returned nothing looks like every line vanishing at once, and a page that merely became
   `reference` retires its whole history as superseded on lines nobody touched.
-- **A document's text belongs to the document, not to a page body.** §6 invalidates it on the _file's_ hash,
+- **A document's text belongs to the document, not to a page body.** It is invalidated by the _file's_ hash,
   which a page body cannot honour, and indexing the same words in both places makes one match arrive twice
   against one recall budget. Document chunks live in `chunks` with a `document_id` and a `doc_page` so FTS,
   vectors and fusion need no second mechanism — but they carry the owning page's id too, and `replaceChunks`
@@ -124,15 +124,15 @@ Changes here need more care than the line count suggests.
   extracted together so page offsets stay consistent, get one summary, and collapse to one entry on a card. When
   several parts match, quote the **best-ranked** part — iterating parts in order instead quoted whichever file
   happened to be part one.
-- **An inference engine's guardrails belong in code.** Every §13 rule for `observe` is enforced after the model
+- **An inference engine's guardrails belong in code.** Every rule for `observe` is enforced after the model
   replies, not asked for in the prompt — because a real run wrote "X lives with a wife" with the prompt rule in
-  place. A prompt is a suggestion; §13's own words are that a replaceable prompt is how every guard gets lost.
+  place. A prompt is a suggestion, and a replaceable prompt is how every guard gets lost at once.
 - **Group observation input by folder, not by subject alone.** A small deriver writes the _attribute_ into
   `subject`, so grouping on it joined a bag with a drum kit and a Roman church with a person's page. Given
   unrelated facts under one heading, a model will find a pattern across them: the input was the bug.
-- **Anything that writes must be reachable through the writer.** One process holds the write handle (§16), so a
+- **Anything that writes must be reachable through the writer.** Exactly one process holds the write handle, so a
   command that opens the index directly is broken the moment a service is running. `dream`, `index` and `inbox`
-  travel the socket as _commands_ — not ops, because §15's ten are the agent's memory surface — and fall back
+  travel the socket as _commands_ — not ops, because the ten ops are the agent's memory surface — and fall back
   in-process only when no service answers. All three were broken this way, each failing differently: a hard
   error, a warning, and an "empty inbox" it had never been able to read.
 - **Ownership has to be re-asked, not assumed.** After `adopt` writes a page _for_ an existing attachment, the
@@ -143,7 +143,7 @@ Changes here need more care than the line count suggests.
   hits come back as a quote attributed to the document and its page number; only body hits produce `lines`.
 - **Never report where text came from inaccurately.** A vision model's _description_ of a photograph is not a
   transcription of text in it, and a PDF's own text layer is not OCR. `text_from` distinguishes them because
-  presenting them identically is a false claim about provenance — the exact sin §2 exists to prevent.
+  presenting them identically is a false claim about provenance, which is the one thing this layer must not do.
 
 ## Tests
 
@@ -201,6 +201,11 @@ Comments should explain **why**, especially where the obvious implementation is 
 changed; a comment earns its place by recording the reasoning that is not visible in the code — the failure
 mode being avoided, the alternative that was rejected, the measurement behind a constant. A comment restating
 the line above it is noise.
+
+Comments in the source cite `§N` — sections of the design document Akno was built from, which is not part of
+this repository. Read them as provenance, not as a pointer you are expected to follow: the claim beside the
+citation always states itself in full, because a comment that only works with another document open is a
+comment that does not work. New code does not need to add them.
 
 ## Never use real data in tests
 

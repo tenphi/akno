@@ -9,10 +9,10 @@ or any editor, with no import step and no proprietary store.
 Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
 event and link from the Markdown.
 
-> **Status: the whole spec is implemented.** Indexing, watching, retrieval, the write path, the inbox, `ingest`
-> from a file, a folder or a URL with extraction and OCR, and the maintenance cycle — all tested against a real
-> 223-page knowledge base. Two tiers of the cycle ship **off**, for reasons measured on that base rather than
-> guessed: see [The maintenance cycle](#the-maintenance-cycle).
+> **Status: complete and in use.** Indexing, watching, retrieval, the write path, the inbox, `ingest` from a
+> file, a folder or a URL with extraction and OCR, and the nightly maintenance cycle — developed and measured
+> against a real 223-page knowledge base. Two parts ship switched **off** for reasons measured on that base
+> rather than guessed: see [The maintenance cycle](#the-maintenance-cycle).
 
 ---
 
@@ -33,7 +33,7 @@ where it runs every time:
 
 ## Quick start
 
-Requires Node 22+ and pnpm.
+Requires Node 22+ and pnpm. macOS only, [on purpose](#platform).
 
 ```bash
 pnpm install && pnpm build
@@ -89,45 +89,53 @@ So a config file is always safe to read, diff and paste into an issue. `akno con
 configuration with secrets redacted, and tells you which files it came from — the fastest way to check that
 your `local.jsonc` is actually being read.
 
-Rules can also travel with the notes: if `<akno_path>/akno.json` exists, its `folders` block wins over
-both config files, so structure rules are versioned alongside the knowledge base they describe.
+Rules can also travel with the notes: if `<akno_path>/akno.json` exists, its `folders` block wins over both
+config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as
+configuration and never indexed as a note.
+
+Changing a rule takes effect on the next `akno index`, including for pages nobody has touched since. The
+resolved rules are fingerprinted, so a pass that would otherwise report "223 unchanged" re-examines the pages
+whose class actually moved — a rule edit that silently did nothing was one of the first bugs found here.
 
 ## Models
 
-Three roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint; one local
-server can host all three.
+Four roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint; one local server
+can host all of them.
 
-| Role       | Without it                                                                      |
-| ---------- | ------------------------------------------------------------------------------- |
-| Embedding  | lexical search only — FTS5 with porter stemming still works                     |
-| Reranker   | hybrid score ordering instead of cross-encoder reranking                        |
-| Small chat | no summaries, keywords, fact derivation or query expansion — recall still works |
+| Role       | Without it                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------------- |
+| Embedding  | lexical search only — no semantic matching, and question-mode hypothetical expansion is inert       |
+| Reranker   | hybrid score ordering instead of cross-encoder reranking; ordering is coarser                       |
+| Small chat | no summaries, keywords, fact derivation, query expansion, `remember` or observations — recall works |
+| Vision     | photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals   |
 
-`akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Model
-latency and index latency are reported separately, because a memory system that feels slow after idling is
-almost never suffering from its storage engine.
+`akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Model latency
+and index latency are reported separately, because a memory system that feels slow after idling is almost never
+suffering from its storage engine.
 
-There is no model downloading or serving in this repo. Models are configuration, pointed at an endpoint you
-run.
+The maintenance cycle can point at a different chat model than per-turn work uses — see
+[The maintenance cycle](#the-maintenance-cycle) for why that turned out to matter more than any other setting.
+
+There is no model downloading or serving in this repo. Models are configuration, pointed at an endpoint you run.
 
 ## The ops
 
-Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one. Plus
-`context`, the pre-turn bundle, normally called by the host rather than by the agent.
+Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one. Plus `context`,
+the pre-turn bundle, normally called by the host rather than by the agent.
 
-| Op         |     | What it does                                                                                                                                                     |
-| ---------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `recall`   | ✅  | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query. |
-| `read`     | ✅  | One exact thing: a page by slug or id, or a document by id.                                                                                                      |
-| `list`     | ✅  | Browse structure: folders, pages by type/tag/class/recency, or a tree outline.                                                                                   |
-| `timeline` | ✅  | When things happened — by range, subject, or match.                                                                                                              |
-| `context`  | ✅  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
-| `write`    | ✅  | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
-| `remember` | ✅  | Hand over a transcript; Akno runs the retain mission and produces the writes.                                                                                  |
-| `forget`   | ✅  | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
-| `undo`     | ✅  | Reverse a change by id.                                                                                                                                          |
-| `move`     | ✅  | Relocate a page with its documents.                                                                                                                              |
-| `ingest`   | ✅  | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                   |
+| Op         | What it does                                                                                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `recall`   | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query. |
+| `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                      |
+| `list`     | Browse structure: folders, pages by type/tag/class/recency, or a tree outline.                                                                                   |
+| `timeline` | When things happened — by range, subject, or match.                                                                                                              |
+| `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
+| `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
+| `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes.                                                                                  |
+| `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
+| `undo`     | Reverse a change by id.                                                                                                                                          |
+| `move`     | Relocate a page with its documents.                                                                                                                              |
+| `ingest`   | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                   |
 
 Every op is advertised over every door from one registry, with its schema, so a caller discovers what exists
 rather than being told in prose.
@@ -157,24 +165,35 @@ akno serve --http 127.0.0.1:7777           # for agents in containers or on anot
 
 Every door is generated from one op registry with one schema per op, so they cannot drift into different
 behaviour. Trust is a parameter, not a property of the transport: `server.mcp_allow` restricts what a door
-exposes without a second code path that can grow its own bugs.
+exposes without a second code path that can grow its own bugs — it defaults to the five read ops, so an agent
+reaching Akno over MCP cannot write until you say so.
 
-**Why a long-lived process:** spawning a process per memory call costs ~33ms against ~0.04ms for a long-lived
+**Exactly one process may write.** It takes a lock file with its pid; a second process opens read-only and says
+so, rather than racing. That is why `akno index`, `akno inbox` and `akno dream` are sent over the socket
+to a running service and executed _there_, falling back to in-process only when no service answers. They are
+commands rather than ops — the ops above are what an agent calls about memory, these are operator work about
+the process — and they are socket-only, because that is the door where filesystem permissions are the auth.
+
+**Why a long-lived process:** spawning a process per memory call costs ~33 ms against ~0.04 ms for a long-lived
 handle. None of that is the database — opening a SQLite file is half a millisecond regardless of size. A unix
-socket round trip is ~18µs, which is why IPC cost is not a reason to embed.
+socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 
 ## How your files are treated
 
 **Akno writes nothing into your knowledge base by default.** Not frontmatter, not fact tables, not a
 `timeline.md` you did not ask for.
 
-- Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to
-  have Akno add a frontmatter `id:` — the only thing it ever writes into a page — for identity that survives
-  a database rebuild and a move to another machine.
+- Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to have
+  Akno add a frontmatter `id:` — the only thing it ever writes into a page you wrote — for identity that
+  survives a database rebuild and a move to another machine.
 - `create_reserved_paths: false` by default, so a first run against an existing folder creates nothing.
 - If a reserved path exists and isn't what Akno expects — a `timeline.md` that is a project plan — it is left
   completely alone. `doctor` reports it and points at the config key to remap it.
 - Every frontmatter key except `id` is preserved byte for byte and ignored.
+
+Three operations do author files, and each is journalled and reversible with `akno undo`: `write` and
+`remember` (because you asked them to), `ingest` (a page for a document you handed over), and the maintenance
+cycle (pages under `observations/`, and a page for a document that has none — both opt-outable).
 
 ## Page classes
 
@@ -190,76 +209,20 @@ eleven pages of contract text landing in a retrieval budget.
 
 > Reference pages are evidence. Full pages are claims. Only claims become facts.
 
-A page can switch class mid-body at a `<!-- reference -->` fence: above it, normal and mined; below, indexed
-for search but never mined and never returned whole.
+A page can switch class mid-body at a `<!-- reference -->` fence: above it, normal and mined; below, indexed for
+search but never mined and never returned whole.
 
 This is a **relevance policy, not access control** — `read({slug})` returns the full body of a `reference` page
 every time, and `recall({ include: ['reference'], depth: 'full' })` lifts the cap.
 
-## Performance
-
-`akno bench` asserts the spec's budgets so CI fails on regression rather than someone noticing months later.
-Measured against a real knowledge base — 221 indexed pages, 1,142 chunks (1,069 from page bodies and 73 from
-inside documents), Apple Silicon:
-
-|                              |            |                          |
-| ---------------------------- | ---------- | ------------------------ |
-| Structural index, cold       | 255 ms     |                          |
-| Re-index, nothing changed    | **5.4 ms** | budget 50 ms             |
-| First query, index path only | 3.4 ms     | budget 50 ms             |
-| `recall`, lexical only       | 2.0 ms     | budget 20 ms             |
-| Point lookup by slug         | 0.3 ms     | budget 10 ms             |
-| `timeline`, 6-month window   | 0.1 ms     | budget 20 ms             |
-| `recall`, hybrid + rerank    | 2,010 ms   | _reported, not budgeted_ |
-
-**Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
-2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints
-FAIL has measured somebody's GPU, not this code, and gets ignored within a week. `doctor` reports the two apart
-for the same reason. That row moved from 1,820 ms when documents' own text joined the index: more candidates
-reach the reranker, which is the cost of a stored PDF being searchable at all.
-
-Where that 1.8 s goes, measured by removing one stage at a time:
-
-| Pipeline                | p50       |
-| ----------------------- | --------- |
-| Lexical only            | 4 ms      |
-| \+ embedding            | 33 ms     |
-| \+ cross-encoder rerank | ~1,030 ms |
-| \+ query expansion      | ~1,820 ms |
-
-The reranker dominates, and its cost is per _candidate_, not per character — truncating candidates from 4,000
-chars to 800 changed neither latency nor a single result, while dropping `top_k` from 40 to 20 saved 400 ms and
-changed which pages came back. So `top_k` stays at 40 and `config/default.jsonc` records the trade. Set
-`recall.expansion: false` or point `models.chat` at something faster if you would rather have the latency.
-
-A restart does not re-index — it **stats**. Only files whose mtime or size moved get hashed. mtime is a fast
-path, not a correctness guarantee, so a full hash sweep runs on the periodic backstop and on `index --verify`.
-
-Vector search is exact brute force by decision, not omission: below ~20,000 chunks an approximate index costs
-build time, recall accuracy and a second structure to keep in sync, to save milliseconds nobody notices.
-
-## What ships switched off
-
-Named honestly, because a README that implies more than exists is the same failure mode Akno is built to
-prevent. Nothing in the spec is unimplemented; these are decisions, and each one has a measurement behind it in
-[The maintenance cycle](#the-maintenance-cycle):
-
-- **`observe`** — the tier that infers patterns and writes them as prose. Its guardrails hold; the quality of what
-  survives them is the chat model's, and on a small local model most of it was not worth keeping.
-- **`reflect`** — §13 ships it as an extension point, off until a knowledge base has the volume to make a
-  "pattern" more than a coincidence.
-- **Extraction for attachments that predate Akno** is _on_: they are read during indexing. What stays reported
-  rather than fixed is an attachment no page owns, since recall returns page cards and there is nowhere to put it.
-
 ## Documents
 
-`akno ingest <path>` does what §17 lists as three separate prompt instructions — run extraction and OCR, give
-`IMG_4821.HEIC` a name that means something, decide where a dropped file belongs — as one call that happens
-every time.
+`akno ingest <path>` does in one call what is otherwise three instructions in a prompt: run extraction and
+OCR, give `IMG_4821.HEIC` a name that means something, and decide where a dropped file belongs.
 
-**Extraction uses what macOS already has.** PDFKit reads a text layer; the Vision framework does OCR. A ~200-line
-Swift helper is compiled on first use (about 6 seconds) and cached in `~/Library/Caches`. Measured on Apple
-Silicon:
+**Extraction uses what macOS already has.** PDFKit reads a text layer; the Vision framework does OCR. A
+~200-line Swift helper is compiled on first use (about 6 seconds) and cached in `~/Library/Caches`. Measured on
+Apple Silicon:
 
 |                                            |                                                     |
 | ------------------------------------------ | --------------------------------------------------- |
@@ -273,7 +236,7 @@ unrelated projects being installed and on their CLI flags not changing. Since Ak
 using the platform's own frameworks is the honest choice rather than a shortcut — and Vision is both faster and
 more accurate than tesseract.
 
-Office formats go through `textutil`, which also ships with macOS. `models.vision` is optional and only reached
+Office formats go through `textutil`, which also ships with macOS. The vision role is optional and only reached
 when OCR finds _no_ text in an image — a photo rather than a document.
 
 **Three things `ingest` refuses to do:**
@@ -283,8 +246,8 @@ when OCR finds _no_ text in an image — a photo rather than a document.
   reconstruct.
 - **Name a file it could not read.** Below `ingest.name_confidence` the file keeps its name, gets no page, and is
   reported. A confident wrong name is worse than none.
-- **File a document it cannot place.** No destination clears `route_threshold` → the file stays where it is with
-  a proposal. An inbox with three things in it is a to-do list; a misfiled document is a lost one.
+- **File a document it cannot place.** Nothing clears `route_threshold` → the file stays where it is with a
+  proposal. An inbox with three things in it is a to-do list; a misfiled document is a lost one.
 
 Stored files are content-addressed as `<page-basename>-<sha8>.<ext>`, so they are unique by construction and
 re-ingesting the same bytes is a no-op that tells you where they already live. Every page records **where its
@@ -322,20 +285,26 @@ name:
 }
 ```
 
-`akno serve` processes arrivals as they land; `akno inbox` does a one-off pass on a machine that is not
-running the service. Above `route_threshold` the file and its page move to where they belong. Below it, the file
-**stays in the inbox** with a proposal — visible where you dropped it, rather than filed confidently into the
-wrong place where you would never look for it.
+`akno serve` processes arrivals as they land; `akno inbox` does a one-off pass. Above `route_threshold` the
+file and its page move to where they belong. Below it, the file **stays in the inbox** with a proposal — visible
+where you dropped it, rather than filed confidently into the wrong place where you would never look for it.
 
 **The inbox is the only place Akno moves files.** A file dropped straight into `documents/` was put there on
 purpose: Akno will name it, page it and index it, but never relocate it. Every move is journalled and
 reversible with `akno undo`.
 
+Routing scores candidate folders by relevance and refuses below the threshold, and both halves of that are
+load-bearing. Two bugs found on real data: a query built from the document's summary _plus 400 characters of its
+text_ collapsed the spread across folders from 0.49 to 0.014 — everything at 0.98, so nothing could fail the
+threshold and the winner was noise. And below the threshold, routing used to fall through to whatever folder the
+chat model suggested, overriding a correct refusal with a weaker signal. A water bill reached `travel/2026`
+twice before both were fixed.
+
 ### A document's own text is indexed as the document
 
-Every attachment is extracted on arrival — including the ones that predate Akno, or that
-someone dropped into a folder by hand. Their text is chunked **per page of the document** and indexed against
-the document itself, so a stored PDF is searchable by its own content and a hit can say which page it is on:
+Every attachment is extracted on arrival — including the ones that predate Akno, or that someone dropped into
+a folder by hand. Their text is chunked **per page of the document** and indexed against the document itself, so
+a stored PDF is searchable by its own content and a hit can say which page it is on:
 
 ```
 recall "who replaced the drain pump"
@@ -346,28 +315,29 @@ recall "who replaced the drain pump"
       Replaced the drain pump
 ```
 
-The text deliberately does **not** go into the Markdown page. §6 invalidates document text when the _file's_
-hash changes, which a page body cannot honour; indexing the same words twice made every match inside a document
-arrive as two hits against one recall budget; and a copy pasted into someone's page is a copy no later change to
-the file can ever correct. The page says what the document is and where it lives — what a person would have
-written — and recall quotes the document as a quote, attributed to the document and its page, never as a line
-citation on a page that has no such line.
+The text deliberately does **not** go into the Markdown page. Document text is derived from the _file_ and
+invalidated when the file's hash changes, which a page body cannot honour; indexing the same words twice made
+every match inside a document arrive as two hits against one recall budget; and a copy pasted into someone's
+page is a copy no later change to the file can ever correct. The page says what the document is and where it
+lives — what a person would have written — and recall quotes the document as a quote, attributed to the document
+and its page, never as a line citation on a page that has no such line.
 
 A document with no page has nowhere to be returned, since recall returns page cards. Ownership comes from the
-filename (`<page-basename>-<8 hex>.<ext>`), from a matching stem (`passport.pdf` beside `passport.md`), or from
-a page embedding it with `![[filename]]` — the author saying which file belongs where. `doctor` reports anything
-still unreachable and how to fix it.
+filename (`<page-basename>-<8 hex>.<ext>`), from a matching stem (`passport.pdf` beside `passport.md`), or from a
+page embedding it with `![[filename]]` — the author saying which file belongs where. Anything still unowned gets
+a page of its own from the [maintenance cycle](#the-maintenance-cycle).
 
 **A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document, not two.** Files that
 differ only by a trailing `-<n>` are read as parts of one document: one owning page, one summary, and page
 numbers that run through the whole thing — so a hit on the second file's first page is cited as page 5 of the
-passport, which is a page a reader can actually look up. `read({document})` on any part returns all of it.
+passport, which is a page a reader can actually look up. `read({document})` on any part returns all of it, and
+says how many files it is made of.
 
 The rule is narrow on purpose, because the cost of a wrong guess is two unrelated documents welded together with
 one summary describing neither: the extension has to match (`passport.jpg` beside `passport.pdf` is another
-rendition, not a second half), the suffix has to be one or two digits (`bill-2026.pdf` is a year), the folder
-has to match (two people can each have a `residence-permit-2.jpg`), and a content-addressed `-<8 hex>` suffix is
-never a part.
+rendition, not a second half), the suffix has to be one or two digits and not follow another digit
+(`waternet-annual-bill-2026-07-28.pdf` is not part 28), the folder has to match (two people can each have a
+`residence-permit-2.jpg`), and part one has to exist.
 
 ### Attachments on `write`
 
@@ -378,51 +348,45 @@ akno write --slug home/dishwasher --append "Repaired on 4 August." \
              --attach ~/Desktop/receipt.pdf=The invoice
 ```
 
-The file is copied in beside the page, content-addressed off it, extracted, embedded with `![[…]]`, and its text
-placed below the page's `<!-- reference -->` fence — where it is indexed for search but never mined for facts and
-never returned whole. That last part is why the text goes into the Markdown rather than only into the index:
-search reads chunks, chunks come from Markdown, and text kept only in the database is text recall cannot reach.
+The file is copied in beside the page, content-addressed off it, extracted, and embedded with `![[…]]` plus a
+line recording where its text came from. The document's own text is indexed against the document, exactly as
+above — so the receipt is searchable by its contents without a word of it being pasted into the page you wrote.
 Nothing is routed or named, because the caller already decided both.
 
 ## The maintenance cycle
 
-`akno dream` runs four phases. They are independent, and each is safe to re-run.
+`akno dream` runs five phases. They are independent, and each is safe to re-run.
 
-| Phase          | What it does                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| `observe`      | Combines repeated facts into stable patterns, writing pages under `observations/` with their evidence.  |
-| `reflect`      | Decision principles built on the tier above. Off by default.                                            |
-| `conflicts`    | Facts on **different** pages stating different values for one thing — which inline checking cannot see. |
-| `housekeeping` | Broken links, orphaned documents, pages that have drifted from their folder's rules.                    |
+| Phase          | Writes?   | What it does                                                                                                |
+| -------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `observe`      | appends   | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default. |
+| `reflect`      | appends   | Decision principles built on the tier above. Off by default.                                                |
+| `adopt`        | new pages | A page for a document that has none, beside the file — so its text can be returned at all.                  |
+| `conflicts`    | no        | Facts on **different** pages stating different values for one thing — which inline checking cannot see.     |
+| `housekeeping` | no        | Broken links, orphaned documents, pages that have drifted from their folder's rules.                        |
 
-`observe` and `reflect` write only by appending: a changed pattern gets a new dated line, nothing is ever
-deleted. `adopt` writes new pages and never touches a file. Each phase's writes are their own `akno undo`, so
-reversing a night's inferences does not also reverse the pages that made documents searchable. Everything else
-reports — a maintenance process that tidies a knowledge base behind its owner's back is worse than the mess it
-fixes.
+`observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Each
+phase's writes are their own `akno undo`, so reversing a night's inferences does not also reverse the pages
+that made documents searchable. The rest report, because a maintenance process that tidies a knowledge base
+behind its owner's back is worse than the mess it fixes.
 
-**A document with no page is the one thing the cycle repairs.** Recall returns page cards, so an attachment
-nobody's page points at is extracted, indexed, and unreachable. `adopt` writes the page `ingest` would have
-written — the title from the filename, the body from the summary extraction already produced, then the embed that
-makes the link hold — and the document's own text becomes answerable, cited by its page number inside the file. It
-honours a folder rule of `ingest: "file"`, which exists for precisely the case where a stub page per file would be
-noise, and it is capped per run so a folder of 500 unowned PDFs does not become 500 pages before anyone has read
-the first report.
+`akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
+how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.
 
-`akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default) — that is
-what "observe runs on a schedule" means on macOS. `--no-dream` skips it.
+**`adopt` is the one thing the cycle repairs.** Recall returns page cards, so an attachment nobody's page points
+at is extracted, indexed, and unreachable. `adopt` writes the page `ingest` would have written — the title from
+the filename, the body from the summary extraction already produced, then the embed that makes the link hold —
+and the document's own text becomes answerable, cited by its page number inside the file. It honours a folder
+rule of `ingest: "file"`, which exists for precisely the case where a stub page per file would be noise; it
+leaves a page that is already there alone, since that is almost always your own notes about that very file; and
+it is capped per run so a folder of 500 unowned PDFs does not become 500 pages before anyone has read the first
+report.
 
-**With a service running, maintenance goes through it.** §16 gives exactly one process the write handle, so
-`akno dream`, `akno index` and `akno inbox` are sent over the socket to the writer and run there; without a
-service they run in-process. They are commands rather than ops — §15's ten are what an agent calls about memory,
-these are operator work about the process — and they are socket-only, since that is the door where filesystem
-permissions are the auth.
-
-**Observe ships off, and what it produces is almost entirely a function of the model behind it.** Its guardrails
-are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug checked
-against what the model was actually shown, `full` pages only, no observation admissible as evidence for another,
-no hedged language, nothing about a person's private life, and nothing that describes the records rather than what
-they record. The same pass over the same 223-page knowledge base:
+**`observe` ships off, and what it produces is almost entirely a function of the model behind it.** Its
+guardrails are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug
+checked against what the model was actually shown, `full` pages only, no observation admissible as evidence for
+another, no hedged language, nothing about a person's private life, and nothing that describes the records
+rather than what they record. The same pass over the same knowledge base:
 
 | Chat model         | Candidates | Refused by a guard | Worth keeping |
 | ------------------ | ---------- | ------------------ | ------------- |
@@ -434,9 +398,70 @@ model insightful, which is why the tier is opt-in and why `maintenance.model` ex
 once a night and is worth a better model than per-turn work needs, without sending every recall expansion to a
 paid API. Read the first run with `--dry-run`.
 
-The same run is why the conflict pass reports rather than repairs. It found five cross-page candidates on that
-base and the model correctly cleared all five — three months of banking pages stating different totals, and three
-Rome addresses under one `location` heading. A pass that had "fixed" those would have destroyed correct records.
+Two findings from that base shaped the tier. Grouping facts by the subject a deriver assigned joined a bag with
+a drum kit and a Roman church with a person's page, because a small model writes the _attribute_ into that field
+— grouping is now by folder and subject. And the prompt rule against inferring about someone's private life was
+not enough on its own: a run wrote "…lives with a wife" anyway, which is why that rule is now a code guard with
+a test.
+
+The same run is why the conflict pass reports rather than repairs. It found five cross-page candidates and the
+model correctly cleared all five — three months of banking pages stating different totals, and three Rome
+addresses under one `location` heading. A pass that had "fixed" those would have destroyed correct records.
+
+## Performance
+
+`akno bench` asserts these budgets so CI fails on regression rather than someone noticing months later.
+Measured against a real knowledge base — 221 indexed pages, 1,142 chunks (1,069 from page bodies and 73 from
+inside documents), Apple Silicon:
+
+|                              |            |                          |
+| ---------------------------- | ---------- | ------------------------ |
+| Structural index, cold       | 255 ms     |                          |
+| Re-index, nothing changed    | **5.4 ms** | budget 50 ms             |
+| First query, index path only | 3.4 ms     | budget 50 ms             |
+| `recall`, lexical only       | 2.0 ms     | budget 20 ms             |
+| Point lookup by slug         | 0.3 ms     | budget 10 ms             |
+| `timeline`, 6-month window   | 0.1 ms     | budget 20 ms             |
+| `recall`, hybrid + rerank    | 2,010 ms   | _reported, not budgeted_ |
+
+**Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
+2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL
+has measured somebody's GPU, not this code, and gets ignored within a week. `doctor` reports the two apart for
+the same reason. That row was 1,820 ms before documents' own text joined the index: more candidates now reach
+the reranker, which is the cost of a stored PDF being searchable at all.
+
+Where the model time goes, measured by removing one stage at a time:
+
+| Pipeline                | p50       |
+| ----------------------- | --------- |
+| Lexical only            | 4 ms      |
+| \+ embedding            | 33 ms     |
+| \+ cross-encoder rerank | ~1,030 ms |
+| \+ query expansion      | ~1,820 ms |
+
+The reranker dominates, and its cost is per _candidate_, not per character — truncating candidates from 4,000
+chars to 800 changed neither latency nor a single result, while dropping `top_k` from 40 to 20 saved 400 ms and
+changed which pages came back. So `top_k` stays at 40 and `config/default.jsonc` records the trade. Set
+`recall.expansion: false` or point the chat role at something faster if you would rather have the latency.
+
+A restart does not re-index — it **stats**. Only files whose mtime or size moved get hashed. mtime is a fast
+path, not a correctness guarantee, so a full hash sweep runs on the periodic backstop and on `index --verify`.
+
+Vector search is exact brute force by decision, not omission: below ~20,000 chunks an approximate index costs
+build time, recall accuracy and a second structure to keep in sync, to save milliseconds nobody notices.
+
+## What ships switched off
+
+Named plainly, because a README that implies more than exists is the same failure mode Akno is built to
+prevent. Both of these are decisions with a measurement behind them, not gaps:
+
+- **`observe`** — the tier that infers patterns and writes them as prose. Its guardrails hold; the quality of
+  what survives them is the chat model's, and on a small local model most of it was not worth keeping.
+- **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
+  one coincidence.
+
+Everything else is on: extraction for every attachment including the ones that predate Akno, `adopt`, the
+cross-page conflict pass, and the housekeeping report.
 
 ## Platform
 
@@ -445,8 +470,8 @@ Rome addresses under one `location` heading. A pass that had "fixed" those would
 The engine leans on things macOS gives: FSEvents through recursive `fs.watch`, which reports renames as renames;
 the dataless-file flag, because a notes folder lives in iCloud Drive or Dropbox more often than not; launchd for
 `akno service`; and reconciliation on wake, because a closed laptop is exactly when the folder gets edited on
-another device. A port would not be a build-matrix entry, it would be a second watcher with its own
-correctness argument, and one tested watcher is worth more than two hopeful ones.
+another device. A port would not be a build-matrix entry, it would be a second watcher with its own correctness
+argument, and one tested watcher is worth more than two hopeful ones.
 
 `@akno/core` and the `akno` CLI declare `"os": ["darwin"]`.
 
@@ -458,15 +483,15 @@ index never enter the sandbox, which is also what keeps the single-writer proper
 
 ```
 packages/protocol   op registry, zod schemas, wire format — no dependencies beyond zod
-packages/core       the memory layer: config, store, indexer, models, recall, watcher
+packages/core       the memory layer: config, store, indexer, models, recall, watcher, maintenance
 packages/client     thin typed client over a running service; no native dependencies
 packages/cli        commands and the three doors
 config/             default.jsonc (committed) + local.jsonc (never)
 ```
 
 Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`, and
-`@modelcontextprotocol/sdk` for the MCP door. Terminal colour is `node:util`'s `styleText`, request deadlines are
-`AbortSignal.timeout`, and the file walker is `node:fs` — none of that needs a package.
+`@modelcontextprotocol/sdk` for the MCP door. Terminal colour is `node:util`'s `styleText`, request deadlines
+are `AbortSignal.timeout`, and the file walker is `node:fs` — none of that needs a package.
 
 `@akno/protocol` exists so `@akno/client` can share schemas with `@akno/core` without pulling
 `better-sqlite3` and `sqlite-vec` into a host's build.
@@ -475,7 +500,7 @@ Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`
 
 ```bash
 pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — 250 tests, no models required
+pnpm test          # vitest — 353 tests, no models required
 pnpm lint          # oxlint
 pnpm knip          # dead exports and unused dependencies
 pnpm bench
@@ -488,12 +513,16 @@ name the file that is actually on disk (`./output.ts`, rewritten to `.js` on emi
 stripping supports. There is no bundler or loader in the dev path.
 
 The integration suite builds a real knowledge base on disk and indexes it **with no models configured** — the
-most important thing to prove is that Akno degrades rather than fails. It also asserts that the knowledge
-base is left byte-identical, and that deleting the index and re-indexing reproduces the same counts.
+most important thing to prove is that Akno degrades rather than fails. It also asserts that the knowledge base
+is left byte-identical, and that deleting the index and re-indexing reproduces the same counts.
 
-Fact lifecycle is tested against a stub chat endpoint (`packages/core/test/facts.test.ts`) rather than a live
-model, because every assertion there is about the conclusion the indexer draws from a _given_ derivation — a
-real model cannot be scripted into producing the case you need.
+Anything model-shaped is tested against a stub endpoint rather than a live model, because every assertion is
+about the conclusion Akno draws from a _given_ answer — a real model cannot be scripted into producing the
+case you need. That is how the maintenance guardrails are covered: each one has a test that feeds it exactly the
+output it exists to refuse.
+
+[CONTRIBUTING.md](CONTRIBUTING.md) collects the invariants worth knowing before changing the indexer, the write
+path or the recall pipeline — most of them written down because breaking one produced a bug that was hard to see.
 
 ## License
 
