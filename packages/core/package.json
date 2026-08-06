@@ -28,5 +28,11 @@
   },
   "scripts": {
     "prepack": "node -e \"require('node:fs').mkdirSync('config',{recursive:true});require('node:fs').copyFileSync('../../config/default.jsonc','config/default.jsonc')\""
+  },
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=22.18"
   }
 }

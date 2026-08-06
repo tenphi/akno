@@ -24,6 +24,17 @@ export interface IndexOptions {
   onProgress?: (progress: IndexProgress) => void;
   /** Restrict the pass to these relative paths — what the watcher uses. */
   only?: string[];
+  /**
+   * Restrict the **model-backed** passes to these paths while still walking the
+   * whole tree structurally.
+   *
+   * `undo`, `forget` and `move` all need a full walk, because only a full pass can
+   * conclude a file is gone. But a full walk must not drag the entire embedding and
+   * derivation backlog along with it: reversing a one-line change should not cost
+   * 223 pages of model calls. Structure is ~10ms; model work is seconds per page,
+   * and the two scopes are genuinely different questions.
+   */
+  modelPaths?: string[];
 }
 
 export interface IndexProgress {
@@ -185,9 +196,16 @@ export class Indexer {
     if (!options.only) this.resolveLinks();
 
     // ── Model-backed passes ────────────────────────────────────────────────
+    // Scoped to the pages this pass touched when the caller named files. Without
+    // that scope, a single `write` into a knowledge base with an embedding backlog
+    // blocks on the *whole* backlog — 223 pages of model calls to save one line.
+    // §8 says the indexer follows the write; it does not say it catches up on
+    // everything else first.
     if (!options.structuralOnly) {
-      await this.embedPending(report, progress);
-      await this.derivePending(report, progress, options.rederive ?? false);
+      const scoped = options.modelPaths ?? options.only;
+      const scope = scoped ? this.#pageIdsFor(scoped) : null;
+      await this.embedPending(report, progress, scope);
+      await this.derivePending(report, progress, options.rederive ?? false, scope);
     }
 
     report.durationMs = performance.now() - started;
@@ -580,12 +598,38 @@ export class Indexer {
 
   // ─── Embedding ────────────────────────────────────────────────────────────
 
-  private async embedPending(report: IndexReport, progress: (p: IndexProgress) => void): Promise<void> {
-    if (!this.#models.embedding.available) return;
+  /** Page ids for the given relative paths, for scoping a targeted pass. */
+  #pageIdsFor(relPaths: string[]): Set<string> {
+    const out = new Set<string>();
+    if (relPaths.length === 0) return out;
+    const find = this.#store.db.prepare('SELECT id FROM pages WHERE rel_path = ?');
+    for (const relPath of relPaths) {
+      const row = find.get(relPath) as { id: string } | undefined;
+      if (row) out.add(row.id);
+    }
+    return out;
+  }
 
-    const pending = this.#store.db
-      .prepare('SELECT id, text, heading_path FROM chunks WHERE embedded = 0 ORDER BY id')
-      .all() as { id: number; text: string; heading_path: string }[];
+  private async embedPending(
+    report: IndexReport,
+    progress: (p: IndexProgress) => void,
+    scope: Set<string> | null,
+  ): Promise<void> {
+    if (!this.#models.embedding.available) return;
+    if (scope && scope.size === 0) return;
+
+    const pending = (
+      scope
+        ? this.#store.db
+            .prepare(
+              `SELECT id, text, heading_path FROM chunks
+                WHERE embedded = 0 AND page_id IN (${[...scope].map(() => '?').join(',')}) ORDER BY id`,
+            )
+            .all(...scope)
+        : this.#store.db
+            .prepare('SELECT id, text, heading_path FROM chunks WHERE embedded = 0 ORDER BY id')
+            .all()
+    ) as { id: number; text: string; heading_path: string }[];
     if (pending.length === 0) return;
 
     const batchSize = this.#config.models.embedding.batch ?? 32;
@@ -636,23 +680,27 @@ export class Indexer {
     report: IndexReport,
     progress: (p: IndexProgress) => void,
     force: boolean,
+    scope: Set<string> | null,
   ): Promise<void> {
     const wantSummaries = this.#config.index.summaries;
     const wantFacts = this.#config.index.facts;
     if (!wantSummaries && !wantFacts) return;
     if (!this.#models.chat.available) return;
+    if (scope && scope.size === 0) return;
 
     // §7: no eligibility list — every `full` page is a candidate. A `reference`
     // page is summarized but never fact-mined; `derivePage` enforces that by
     // reading only above the fence, and a fully-reference page has no mineable
     // region at all.
+    const scopeClause = scope ? ` AND id IN (${[...scope].map(() => '?').join(',')})` : '';
     const pending = this.#store.db
       .prepare(
         `SELECT id, slug, rel_path, body_hash, class FROM pages
           WHERE class != 'excluded' AND (? = 1 OR derived_hash IS NULL OR derived_hash != body_hash)
+          ${scopeClause}
           ORDER BY updated_at DESC`,
       )
-      .all(force ? 1 : 0) as {
+      .all(force ? 1 : 0, ...(scope ?? [])) as {
       id: string;
       slug: string;
       rel_path: string;

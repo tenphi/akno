@@ -3,6 +3,9 @@ import type { AknoConfig } from './config/schema.ts';
 import type { Store } from './store/db.ts';
 import type { ModelClient } from './models/client.ts';
 import type { Assembler } from './recall/assemble.ts';
+import type { Indexer } from './index/indexer.ts';
+import type { Journal } from './write/journal.ts';
+import type { Gate } from './write/gate.ts';
 
 /** Everything an op needs, assembled once per process by `open()`. */
 export interface AknoContext {
@@ -15,6 +18,16 @@ export interface AknoContext {
     vision: ModelClient;
   };
   assembler: Assembler;
+  /** The write path needs it to reconcile immediately after its own write. */
+  indexer: Indexer;
+  journal: Journal;
+  gate: Gate;
+  /**
+   * §5. **The user is never gated; only agents are.** Which one is asking is a
+   * property of the caller, not of the op — so it lives here rather than in every
+   * write's input, where a caller could simply claim to be the user.
+   */
+  actor: 'user' | 'agent' | 'akno';
   /** False when another process holds the write handle (§16). */
   writable: boolean;
   lockHeldBy: number | null;

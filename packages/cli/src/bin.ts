@@ -12,6 +12,8 @@ import { benchCommand } from './commands/bench-cmd.ts';
 import { configCommand } from './commands/config-cmd.ts';
 import { serveCommand, serviceCommand } from './commands/serve-cmd.ts';
 import { contextCommand } from './commands/context-cmd.ts';
+import { rememberCommand, writeCommand } from './commands/write-cmd.ts';
+import { approveCommand, forgetCommand, moveCommand, undoCommand } from './commands/mutate-cmd.ts';
 
 const VERSION = '0.1.0';
 
@@ -24,8 +26,14 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     timeline             When things happened.
     context <query>      The whole pre-turn bundle against one budget.
 
-  ${style.bold('Writing')}   ${style.grey('— schemas are final; bodies land in the next cut')}
-    write, remember, forget, undo, move, ingest
+  ${style.bold('Writing')}
+    write                Create, append, patch or replace a page.
+    remember <text>      Hand over notes; Akno decides what to keep and where.
+    forget               Retract a fact, trash a page or a document.
+    undo <change_id>     Reverse a change. \`--list\` shows recent ones.
+    move <from> <to>     Relocate a page with its documents.
+    approve / decline    Resolve a gated proposal. \`--list\` shows pending.
+    ingest               ${style.grey('not implemented — needs extraction and OCR')}
 
   ${style.bold('Admin')}
     index                Reconcile the index against the knowledge base.
@@ -54,6 +62,13 @@ const COMMANDS: Record<string, Command> = {
   list: listCommand,
   timeline: timelineCommand,
   context: contextCommand,
+  write: writeCommand,
+  remember: rememberCommand,
+  forget: forgetCommand,
+  undo: undoCommand,
+  move: moveCommand,
+  approve: approveCommand,
+  decline: (argv: string[]) => approveCommand(argv, true),
   index: indexCommand,
   serve: serveCommand,
   service: serviceCommand,

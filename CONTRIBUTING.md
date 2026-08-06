@@ -15,8 +15,13 @@ pnpm test
 `pnpm test` needs no models and no knowledge base of your own — the integration suite builds one in a temp
 directory. If it passes, your checkout is working.
 
-Node 22+ and pnpm 10+. `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320` (three days), so a brand-new
-release of a dependency will not resolve; that is deliberate.
+Node 22.18+ (native type stripping) and pnpm 10+. `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320` (three
+days), so a brand-new release of a dependency will not resolve; that is deliberate.
+
+**macOS only.** `@akno/core` and the CLI declare `"os": ["darwin"]`, and there is no plan to change that —
+see [Platform](README.md#platform). Do not add a Linux or Windows code path "just in case": an untested
+second watcher is a correctness claim nobody has checked. `@akno/client` is the exception and must stay
+portable, because a Linux container talking to a macOS host over the HTTP door is a supported deployment.
 
 ## The one rule about config
 
@@ -79,6 +84,18 @@ Changes here need more care than the line count suggests.
   byte, which is why frontmatter writes splice text rather than round-tripping through a YAML serializer.
 - **Deleting the index must cost nothing.** Everything except the journal is derived and rebuildable. If you
   add a table, either it is derivable from Markdown or it needs the same durability argument the journal has.
+- **Never pre-record a hash in `files` before the indexer runs.** The stat fast path compares against `files`,
+  so a hash recorded first makes the indexer conclude "unchanged" and skip the page — it lands on disk and never
+  reaches the index. Equally, **never delete a `files` row** to signal a deletion: `known` is built from
+  `files`, so a path that is not there can never appear in the reconciler's vanished set, and the `pages` row
+  survives pointing at a file that is gone. Both bugs shipped once; both are now asserted.
+- **Scope the model passes.** `run({ only })` scopes them for you, and `run({ modelPaths })` scopes them while
+  still walking the whole tree — which is what `undo`, `forget` and `move` need, because only a full walk can
+  conclude a file is gone. A full pass with no scope re-derives everything, and one `write` then blocks on the
+  entire backlog.
+- **Compare like with like.** Inline conflict detection runs the *same* extractor over the page and over the
+  incoming text. Joining a structurally-extracted attribute against a model-assigned one silently never matches,
+  which is how `- Nights: 5` landed on top of `- Nights: 3` with no conflict reported.
 
 ## Tests
 

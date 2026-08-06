@@ -104,13 +104,12 @@ export const OPS = {
       "this turn's recall. Normally called by the host before the model sees the turn, not by the agent.",
   }),
 
-  // ── Write path: schemas are final, bodies land in the next cut ──────────────
   write: op({
     name: 'write',
     kind: 'write',
     input: WriteInput,
     output: WriteOutput,
-    implemented: false,
+    implemented: true,
     description:
       'Create, append, patch or replace a page, optionally with an event, documents, tags and links. Check ' +
       '`outcome`: "conflict" means an existing line claims something different — ask the user rather than ' +
@@ -121,7 +120,7 @@ export const OPS = {
     kind: 'write',
     input: RememberInput,
     output: RememberOutput,
-    implemented: false,
+    implemented: true,
     description:
       'Hand over a transcript or notes and let Akno decide what is worth keeping and where it goes. Use ' +
       'this instead of write when you do not want to choose slugs or phrasing yourself.',
@@ -131,7 +130,7 @@ export const OPS = {
     kind: 'write',
     input: ForgetInput,
     output: ForgetOutput,
-    implemented: false,
+    implemented: true,
     description:
       'Retract a fact by removing the sentence that produced it, delete a page to trash, or drop a document. ' +
       'Always journalled and always reversible with undo for the retention window.',
@@ -141,7 +140,7 @@ export const OPS = {
     kind: 'write',
     input: UndoInput,
     output: UndoOutput,
-    implemented: false,
+    implemented: true,
     description: 'Reverse a change by its id. The id outlives the session.',
   }),
   move: op({
@@ -149,7 +148,7 @@ export const OPS = {
     kind: 'write',
     input: MoveInput,
     output: MoveOutput,
-    implemented: false,
+    implemented: true,
     description:
       'Relocate a page with its documents, rewriting embeds. Inbound links that now point nowhere are ' +
       'reported, never silently rewritten.',

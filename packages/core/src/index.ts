@@ -12,6 +12,8 @@ export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
 export { runBench, type BenchOptions, type BenchReport, type BenchResult } from './bench.ts';
 export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.ts';
 export type { WatcherEvents } from './watch/watcher.ts';
+export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
+export type { ProposalRow } from './write/gate.ts';
 
 // Re-exported so a host importing only `@akno/core` gets the op types and the
 // error class without adding a second dependency it never calls directly.

@@ -185,6 +185,70 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX proposals_status ON proposals(status);
   `,
+
+  // ── 2 ──────────────────────────────────────────────────────────────────────
+  // The journal as shipped had one row per change, which cannot describe the
+  // changes the write path actually makes: a single 'write' can touch a page, the
+  // event ledger and an attachment, and 'undo' has to reverse all of them or none.
+  // Nothing had written to it yet, so it is replaced rather than migrated.
+  `
+  DROP TABLE IF EXISTS journal;
+
+  -- One row per change. The unit 'undo' takes.
+  CREATE TABLE changes (
+    id       TEXT PRIMARY KEY,
+    at       TEXT NOT NULL,
+    -- Who asked: 'agent', 'user', 'akno' (the observe tier), 'inbox'.
+    actor    TEXT NOT NULL,
+    op       TEXT NOT NULL,
+    summary  TEXT NOT NULL,
+    -- 'applied' | 'undone'. An undone change is kept: it is the record that
+    -- something was reversed, which a reader needs as much as the change itself.
+    status   TEXT NOT NULL DEFAULT 'applied',
+    undone_at TEXT
+  );
+  -- Ordering is by rowid, which SQLite increments monotonically. 'at' has
+  -- millisecond resolution and two changes can share one, so it cannot order them.
+  CREATE INDEX changes_at ON changes(at DESC);
+
+  -- One row per file the change touched, in application order. 'before' holds the
+  -- previous bytes rather than a pointer to them, which is why undo survives a
+  -- full rebuild of every other table (§2: only the journal is irreplaceable).
+  CREATE TABLE change_files (
+    change_id  TEXT NOT NULL REFERENCES changes(id) ON DELETE CASCADE,
+    ord        INTEGER NOT NULL,
+    rel_path   TEXT NOT NULL,
+    action     TEXT NOT NULL,
+    before     TEXT,
+    after      TEXT,
+    -- Set instead of 'before' for a binary: the bytes live in trash/<change>/.
+    snapshot   TEXT,
+    PRIMARY KEY (change_id, ord)
+  );
+  CREATE INDEX change_files_path ON change_files(rel_path);
+
+  -- §5. A declined proposal is remembered, so an agent stops re-asking for the
+  -- same folder. The pending content is held here, so approving completes the
+  -- write rather than asking the caller to repeat it.
+  DROP TABLE IF EXISTS proposals;
+  CREATE TABLE proposals (
+    id          TEXT PRIMARY KEY,
+    at          TEXT NOT NULL,
+    kind        TEXT NOT NULL,
+    reason      TEXT NOT NULL,
+    -- What is being asked for, e.g. the top-level folder a write would create.
+    subject     TEXT NOT NULL,
+    -- The op input, replayed verbatim on approval.
+    payload     TEXT NOT NULL,
+    nearest     TEXT NOT NULL DEFAULT '[]',
+    status      TEXT NOT NULL DEFAULT 'pending',
+    resolved_at TEXT,
+    -- Set when approving produced a change, so a proposal can be traced to it.
+    change_id   TEXT
+  );
+  CREATE INDEX proposals_status  ON proposals(status);
+  CREATE INDEX proposals_subject ON proposals(subject, status);
+  `,
 ];
 
 /**

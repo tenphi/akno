@@ -358,15 +358,20 @@ describe('context', () => {
   });
 });
 
-describe('the write path', () => {
-  it('advertises every op but refuses the unimplemented ones by name', async () => {
-    await expect(mem.write({ slug: 'a/b', content: 'x' })).rejects.toThrow(/not implemented/i);
-    await expect(mem.remember({ text: 'x' })).rejects.toThrow(/not implemented/i);
+describe('ops that are not implemented', () => {
+  it('refuses `ingest` by name, and says why', async () => {
+    // Its schema is final and it is advertised over every door, so a caller can
+    // discover it today. Extraction and OCR are what is missing, not the contract.
+    await expect(mem.ingest({ path: '/tmp/x.pdf' })).rejects.toThrow(/not implemented/i);
   });
 
-  it('still validates input against the final schema before refusing', async () => {
-    // Two body operations at once is a schema violation, and it must be caught
-    // as `invalid` rather than swallowed by `not_implemented`.
+  it('validates input against the final schema before refusing', async () => {
+    await expect(mem.ingest({})).rejects.toThrow(/invalid/i);
+  });
+
+  it('validates a write input before doing anything', async () => {
+    // Two body operations at once is a schema violation and must be caught as
+    // `invalid`, not acted on.
     await expect(mem.write({ slug: 'a/b', content: 'x', append: 'y' })).rejects.toThrow(/invalid/i);
   });
 });

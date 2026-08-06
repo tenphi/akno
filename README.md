@@ -9,10 +9,10 @@ or any editor, with no import step and no proprietary store.
 Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
 event and link from the Markdown.
 
-> **Status: the read path works.** Indexing, watching, and `recall` / `read` / `list` / `timeline` / `context`
-> are implemented and tested against a real 223-page knowledge base. The write ops (`write`, `remember`,
-> `forget`, `undo`, `move`, `ingest`) have final schemas, are advertised over every door, and return
-> `not_implemented` — see [What is not built yet](#what-is-not-built-yet).
+> **Status: read and write both work.** Indexing, watching, retrieval, and the write path — `write`,
+> `remember`, `forget`, `undo`, `move`, plus gating and approval — are implemented and tested against a real
+> 223-page knowledge base. `ingest` still returns `not_implemented`, because extraction and OCR are not built;
+> see [What is not built yet](#what-is-not-built-yet).
 
 ---
 
@@ -240,16 +240,30 @@ build time, recall accuracy and a second structure to keep in sync, to save mill
 Named honestly, because a README that implies more than exists is the same failure mode Akno is built to
 prevent:
 
-- **The write path.** `write`, `remember`, `forget`, `undo`, `move` — schemas, conflict-report and
-  approval-request shapes, gating config and the journal table are all in place; the bodies are not.
-- **Document extraction and OCR.** Attachments are discovered and attached to their page, and `doctor` reports
+- **`ingest`, extraction and OCR.** Attachments are discovered and attached to their page, and `doctor` reports
   how many are un-extracted. Nothing reads inside a PDF yet, so `read({document})` returns `degraded` with
-  `text: null` rather than implying the file is empty.
-- **The inbox and routing.** `route_threshold` and the inbox rule are configurable; nothing moves files.
-- **The maintenance cycle** (`dream`, `observe`, `reflect`).
-- **`akno approve`** for gated proposals.
-- **Linux and Windows.** The watcher uses recursive `fs.watch` (FSEvents on macOS) and should work elsewhere,
-  but only macOS is tested. `akno service` is launchd-only by design.
+  `text: null` rather than implying the file is empty. This is the one op with external dependencies
+  (`pdftotext`, `tesseract`), which is why it is separate.
+- **The inbox and routing of files.** `route_threshold` is used by `remember` and works; the inbox rule is
+  configurable but nothing moves files yet.
+- **The maintenance cycle** (`dream`, `observe`, `reflect`), including §8's thorough offline conflict pass.
+- **Attachments on `write`.** The `documents` field is accepted by the schema and ignored, because storing one
+  content-addressed needs the same extraction path as `ingest`.
+## Platform
+
+**macOS only, on purpose — not a gap.** There is no plan for Linux or Windows.
+
+The engine leans on things macOS gives: FSEvents through recursive `fs.watch`, which reports renames as renames;
+the dataless-file flag, because a notes folder lives in iCloud Drive or Dropbox more often than not; launchd for
+`akno service`; and reconciliation on wake, because a closed laptop is exactly when the folder gets edited on
+another device. A port would not be a build-matrix entry, it would be a second watcher with its own
+correctness argument, and one tested watcher is worth more than two hopeful ones.
+
+`@akno/core` and the `akno` CLI declare `"os": ["darwin"]`.
+
+**`@akno/client` stays portable, and that is the useful part.** It has no native dependencies, so a Linux
+container reaching a macOS host over the loopback HTTP door is a supported shape — the knowledge base and the
+index never enter the sandbox, which is also what keeps the single-writer property intact.
 
 ## Repo layout
 
@@ -272,7 +286,7 @@ Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`
 
 ```bash
 pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — 143 tests, no models required
+pnpm test          # vitest — 210 tests, no models required
 pnpm lint          # oxlint
 pnpm knip          # dead exports and unused dependencies
 pnpm bench

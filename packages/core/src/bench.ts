@@ -106,7 +106,9 @@ export async function runBench(akno: Akno, options: BenchOptions = {}): Promise<
       run: () =>
         (options.lexical ?? akno).recall({ query: nextQuery(), mode: 'lookup', budget: 4000, limit: 5 }),
       skip: () =>
-        options.lexical ? emptyIndex() : 'needs a models-off handle; a configured model makes this not lexical',
+        options.lexical
+          ? emptyIndex()
+          : 'needs a models-off handle; a configured model makes this not lexical',
     },
     {
       name: 'point lookup by slug',

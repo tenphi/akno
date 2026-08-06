@@ -43,13 +43,49 @@ function withNegations(
   return out;
 }
 
+/**
+ * Rewrites `--name value` into `--name=value` for declared string options.
+ *
+ * Node's `parseArgs` refuses a value that starts with `-`, calling it ambiguous —
+ * which makes `--append "- Rent: 1111 EUR"` an error. A Markdown list item is the
+ * most ordinary thing anyone appends to a knowledge base, so the parser has to
+ * cope with it rather than the user having to know about `=`.
+ */
+function attachValues(argv: string[], declared: NonNullable<ParseArgsConfig['options']>): string[] {
+  const isDeclared = (token: string): boolean => {
+    if (!token.startsWith('--')) return false;
+    const name = token.slice(2).split('=')[0]!;
+    return name in declared || name.startsWith('no-');
+  };
+
+  const out: string[] = [];
+  for (let i = 0; i < argv.length; i++) {
+    const token = argv[i]!;
+    const name = token.startsWith('--') ? token.slice(2) : null;
+    const option = name && !name.includes('=') ? declared[name] : undefined;
+
+    if (option?.type === 'string' && i + 1 < argv.length) {
+      const next = argv[i + 1]!;
+      // Only claim the next token if it is not itself a flag. A string option
+      // missing its value should still be reported as missing.
+      if (!isDeclared(next)) {
+        out.push(`${token}=${next}`);
+        i++;
+        continue;
+      }
+    }
+    out.push(token);
+  }
+  return out;
+}
+
 export function parse<T = Record<string, unknown>>(
   argv: string[],
   options: NonNullable<ParseArgsConfig['options']> = {},
 ): Parsed<T> {
   const declared: NonNullable<ParseArgsConfig['options']> = { ...GLOBAL_OPTIONS, ...options };
   const result = parseArgs({
-    args: argv,
+    args: attachValues(argv, declared),
     options: withNegations(declared),
     allowPositionals: true,
     // A typo should say so rather than being silently ignored, which with a

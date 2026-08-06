@@ -12,13 +12,26 @@ import { doctor, type DoctorReport } from './doctor.ts';
 import { effectiveRule, matchRules } from './rules/compile.ts';
 import { looksLikeLedger } from './reserved.ts';
 import type { AknoContext } from './context.ts';
+import { Journal, type ChangeSummary } from './write/journal.ts';
+import { Gate, type ProposalRow } from './write/gate.ts';
 import { recall } from './ops/recall.ts';
 import { read } from './ops/read.ts';
 import { list } from './ops/list.ts';
 import { timeline } from './ops/timeline.ts';
 import { context as contextOp } from './ops/context.ts';
+import { write as writeOp } from './ops/write.ts';
+import { remember as rememberOp } from './ops/remember.ts';
+import { forget as forgetOp } from './ops/forget.ts';
+import { undo as undoOp } from './ops/undo.ts';
+import { move as moveOp } from './ops/move.ts';
 
 export interface OpenOptions extends LoadOptions {
+  /**
+   * §5. Who is asking. `user` is never gated — a person who makes a folder has
+   * made it. Defaults to `agent`, because the safe assumption about an unlabelled
+   * caller is that it is one.
+   */
+  actor?: 'user' | 'agent' | 'akno';
   /** Take the write handle. False for a second process that only reads (§16). */
   writable?: boolean;
   /** Start the FSEvents watcher and the periodic sweep. Off for one-shot commands. */
@@ -36,6 +49,18 @@ export interface Akno extends AknoOps {
   doctor(options?: { probeModels?: boolean }): Promise<DoctorReport>;
   /** Explain which rule governs a path, and why (§5). */
   rules(slug: string): { effective: Record<string, unknown>; candidates: { glob: string; source: string }[] };
+  /** Recent changes, newest first. What `undo` takes an id from. */
+  changes(limit?: number): ChangeSummary[];
+  /** Gated proposals waiting on the user (§5). */
+  proposals(): ProposalRow[];
+  /**
+   * §5. The user resolves a gate. Approving **completes the write**, because the
+   * pending content was held with the proposal — a caller should not have to
+   * remember and repeat what it already sent.
+   */
+  approve(proposalId: string): Promise<{ subject: string; write?: OpResult<'write'> }>;
+  /** A declined proposal is remembered, so the agent stops re-asking (§5). */
+  decline(proposalId: string): Promise<{ subject: string }>;
   /** Force a full reconcile — what a host calls on wake. */
   reconcile(): Promise<void>;
   /** Call any op by name, validating input against the registry. The door path. */
@@ -89,6 +114,10 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     store,
     models,
     assembler: new Assembler(config, store),
+    indexer,
+    journal: new Journal(store, config.aknoPath, config.trashDir),
+    gate: new Gate(store, config),
+    actor: options.actor ?? 'agent',
     writable,
     lockHeldBy,
   };
@@ -109,6 +138,11 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     list,
     timeline,
     context: contextOp,
+    write: writeOp,
+    remember: rememberOp,
+    forget: forgetOp,
+    undo: undoOp,
+    move: moveOp,
   };
 
   async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {
@@ -176,6 +210,33 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
         effective: effectiveRule(slug, config.rules) as Record<string, unknown>,
         candidates: match.candidates.map((rule) => ({ glob: rule.glob, source: rule.source })),
       };
+    },
+
+    changes: (limit) => ctx.journal.list(limit),
+
+    proposals: () => ctx.gate.pending(),
+
+    async approve(proposalId: string): Promise<{ subject: string; write?: OpResult<'write'> }> {
+      const proposal = ctx.gate.get(proposalId);
+      if (!proposal) throw new AknoError('not_found', `no proposal with id ${proposalId}`);
+      if (proposal.status !== 'pending') {
+        throw new AknoError('invalid', `${proposalId} was already ${proposal.status}`);
+      }
+
+      // Replayed as the *user*, which is what makes approval work: the gate that
+      // stopped the agent does not apply to the person answering it.
+      const payload = JSON.parse(proposal.payload) as OpInput<'write'>;
+      const asUser: AknoContext = { ...ctx, actor: 'user' };
+      const result = await writeOp(asUser, payload);
+      ctx.gate.resolve(proposalId, 'approved', result.change_id);
+      return { subject: proposal.subject, write: result };
+    },
+
+    async decline(proposalId: string): Promise<{ subject: string }> {
+      const proposal = ctx.gate.get(proposalId);
+      if (!proposal) throw new AknoError('not_found', `no proposal with id ${proposalId}`);
+      ctx.gate.resolve(proposalId, 'declined');
+      return { subject: proposal.subject };
     },
 
     async reconcile(): Promise<void> {

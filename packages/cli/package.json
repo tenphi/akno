@@ -16,5 +16,11 @@
     "@akno/protocol": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "catalog:"
+  },
+  "os": [
+    "darwin"
+  ],
+  "engines": {
+    "node": ">=22.18"
   }
 }
