@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { AknoContext } from './context.ts';
 import { looksLikeLedger } from './reserved.ts';
+import { extractionCapabilities } from './ingest/extract.ts';
 
 /**
  * §14, §6. What's present, what's degraded, and **what that costs.** The last
@@ -53,6 +54,8 @@ export interface DoctorReport {
     vectorMs: number | null;
   };
   models: RoleReport[];
+  /** §11's extraction path. A missing capability must be visible, not surprising. */
+  extraction: { swift: boolean; textutil: boolean; note: string | null };
   reserved: { path: string; state: 'ok' | 'missing' | 'occupied'; note?: string }[];
   warnings: string[];
 }
@@ -146,6 +149,9 @@ export async function doctor(
     models.push(report);
   }
 
+  // ── Extraction ───────────────────────────────────────────────────────────
+  const extraction = await extractionCapabilities();
+
   // ── Reserved paths ───────────────────────────────────────────────────────
   // §4: if a reserved path already exists and isn't what Akno expects, it is
   // left completely alone. Warn, point at the config key, refuse to adopt it.
@@ -179,10 +185,12 @@ export async function doctor(
   }
   if (counts.documents > counts.documentsExtracted) {
     warnings.push(
-      `${counts.documents - counts.documentsExtracted} attachments are registered but not extracted. ` +
-        'Text extraction and OCR arrive with the ingest op; until then their contents are not searchable.',
+      `${counts.documents - counts.documentsExtracted} attachments are registered but not extracted, so ` +
+        'their contents are not searchable. They predate ingest, or arrived by hand — re-add one with ' +
+        '`akno ingest <path>` to extract it.',
     );
   }
+  if (extraction.note) warnings.push(extraction.note);
   if (counts.brokenLinks > 0) {
     warnings.push(`${counts.brokenLinks} wikilinks point at pages that do not exist.`);
   }
@@ -217,6 +225,7 @@ export async function doctor(
       vectorMs: vectorMs === null ? null : round(vectorMs),
     },
     models,
+    extraction,
     reserved,
     warnings,
   };

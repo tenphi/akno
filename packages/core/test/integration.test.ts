@@ -358,15 +358,17 @@ describe('context', () => {
   });
 });
 
-describe('ops that are not implemented', () => {
-  it('refuses `ingest` by name, and says why', async () => {
-    // Its schema is final and it is advertised over every door, so a caller can
-    // discover it today. Extraction and OCR are what is missing, not the contract.
-    await expect(mem.ingest({ path: '/tmp/x.pdf' })).rejects.toThrow(/not implemented/i);
+describe('input validation', () => {
+  it('rejects an ingest with neither a path nor a url', async () => {
+    await expect(mem.ingest({})).rejects.toThrow(/invalid/i);
   });
 
-  it('validates input against the final schema before refusing', async () => {
-    await expect(mem.ingest({})).rejects.toThrow(/invalid/i);
+  it('reports a missing file rather than throwing something opaque', async () => {
+    await expect(mem.ingest({ path: '/tmp/definitely-not-here.pdf' })).rejects.toThrow(/no file at/);
+  });
+
+  it('refuses a URL by name — that part is genuinely not built', async () => {
+    await expect(mem.ingest({ url: 'https://example.com/x.pdf' })).rejects.toThrow(/not implemented/i);
   });
 
   it('validates a write input before doing anything', async () => {

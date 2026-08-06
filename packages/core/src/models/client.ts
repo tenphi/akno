@@ -33,8 +33,25 @@ export interface ChatMessage {
   content: string;
 }
 
+/** An image handed to a vision model, with the mime type the endpoint needs. */
+export interface ImagePart {
+  data: Buffer;
+  mime: string;
+}
+
+/**
+ * Newer OpenAI models reject `max_tokens` and require `max_completion_tokens`;
+ * older endpoints and every local llama-server accept only the former. Rather than
+ * a config key nobody understands, the client tries one, notices the specific
+ * complaint, and remembers the answer for the rest of the process.
+ */
+type TokenParam = 'max_tokens' | 'max_completion_tokens';
+const UNSUPPORTED_MAX_TOKENS = /unsupported parameter.*max_tokens|use 'max_completion_tokens'/i;
+
 export class ModelClient {
   readonly #role: ResolvedModelRole;
+  /** Learned on first rejection, then reused. Per client, so per role. */
+  #tokenParam: TokenParam = 'max_tokens';
 
   constructor(role: ResolvedModelRole) {
     this.#role = role;
@@ -175,22 +192,45 @@ export class ModelClient {
 
   async chat(
     messages: ChatMessage[],
-    options: { json?: boolean; maxTokens?: number; temperature?: number; timeoutMs?: number } = {},
+    options: {
+      json?: boolean;
+      maxTokens?: number;
+      temperature?: number;
+      timeoutMs?: number;
+      /** Attached to the last user message as image parts. */
+      images?: ImagePart[];
+    } = {},
   ): Promise<ModelOutcome<string>> {
-    const body: Record<string, unknown> = {
-      model: this.#role.id,
-      messages,
-      max_tokens: options.maxTokens ?? this.#role.maxOutputTokens ?? 1024,
-      temperature: options.temperature ?? 0,
+    const build = (tokenParam: TokenParam): Record<string, unknown> => {
+      const body: Record<string, unknown> = {
+        model: this.#role.id,
+        messages: options.images?.length ? withImages(messages, options.images) : messages,
+        [tokenParam]: options.maxTokens ?? this.#role.maxOutputTokens ?? 1024,
+      };
+      // Some reasoning models reject a non-default temperature outright, and the
+      // value buys nothing here — every prompt in this codebase wants determinism.
+      if (tokenParam === 'max_tokens') body.temperature = options.temperature ?? 0;
+      // A small model free-forms its way out of a JSON contract given the chance.
+      if (options.json) body.response_format = { type: 'json_object' };
+      return body;
     };
-    // A 3B model free-forms its way out of a JSON contract given the chance.
-    if (options.json) body.response_format = { type: 'json_object' };
 
-    const result = await this.post<{ choices: { message?: { content?: string } }[] }>(
+    let result = await this.post<{ choices: { message?: { content?: string } }[] }>(
       '/chat/completions',
-      body,
+      build(this.#tokenParam),
       options.timeoutMs,
     );
+
+    // One retry on the one error that has a known, mechanical fix.
+    if (!result.ok && this.#tokenParam === 'max_tokens' && UNSUPPORTED_MAX_TOKENS.test(result.error ?? '')) {
+      this.#tokenParam = 'max_completion_tokens';
+      result = await this.post<{ choices: { message?: { content?: string } }[] }>(
+        '/chat/completions',
+        build(this.#tokenParam),
+        options.timeoutMs,
+      );
+    }
+
     if (!result.ok || !result.value) return { ...result, value: null };
     const content = result.value.choices?.[0]?.message?.content;
     if (typeof content !== 'string') {
@@ -241,7 +281,11 @@ export class ModelClient {
         latencyMs: result.latencyMs,
       };
     }
-    const result = await this.chat([{ role: 'user', content: 'ok' }], { maxTokens: 1 });
+    // Not 1 token. A reasoning model spends its budget on reasoning before emitting
+    // anything, so a 1-token probe comes back as "output limit reached" and the role
+    // reads as dead when it is perfectly healthy. 64 is still trivially cheap and
+    // only ever runs on `doctor`.
+    const result = await this.chat([{ role: 'user', content: 'Reply with: ok' }], { maxTokens: 64 });
     return {
       ok: result.ok,
       value: result.ok ? result.latencyMs : null,
@@ -268,6 +312,39 @@ function degradedReasonFor(role: ResolvedModelRole['role'], failure: ModelFailur
     default:
       return unconfigured ? 'no_chat_model' : 'expansion_failed';
   }
+}
+
+/**
+ * Rewrites the last user message into the multipart form a vision endpoint wants.
+ * Images go after the text, because a model reads the instruction first and every
+ * prompt here tells it what to do with what follows.
+ */
+function withImages(messages: ChatMessage[], images: ImagePart[]): unknown[] {
+  const out: unknown[] = messages.map((message) => ({ ...message }));
+  for (let i = out.length - 1; i >= 0; i--) {
+    const message = out[i] as ChatMessage;
+    if (message.role !== 'user') continue;
+    out[i] = {
+      role: 'user',
+      content: [
+        { type: 'text', text: message.content },
+        ...images.map((image) => ({
+          type: 'image_url',
+          image_url: { url: `data:${image.mime};base64,${image.data.toString('base64')}` },
+        })),
+      ],
+    };
+    return out;
+  }
+  // No user message to attach to: send the images as one.
+  out.push({
+    role: 'user',
+    content: images.map((image) => ({
+      type: 'image_url',
+      image_url: { url: `data:${image.mime};base64,${image.data.toString('base64')}` },
+    })),
+  });
+  return out;
 }
 
 function decodeBase64Floats(input: string): Float32Array {

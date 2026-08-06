@@ -64,14 +64,19 @@ export class Assembler {
 
   assemble(options: AssembleOptions): Assembled {
     // Group by page, keeping each page's best-scoring chunk as its representative.
-    const byPage = new Map<string, { score: number; hits: ChunkHit[] }>();
+    const byPage = new Map<string, { score: number; hits: ChunkHit[]; relevance?: number }>();
     for (const hit of options.hits) {
       const entry = byPage.get(hit.pageId);
       if (entry) {
         entry.hits.push(hit);
         entry.score = Math.max(entry.score, hit.score);
+        if (hit.relevance !== undefined) entry.relevance = Math.max(entry.relevance ?? 0, hit.relevance);
       } else {
-        byPage.set(hit.pageId, { score: hit.score, hits: [hit] });
+        byPage.set(hit.pageId, {
+          score: hit.score,
+          hits: [hit],
+          ...(hit.relevance !== undefined ? { relevance: hit.relevance } : {}),
+        });
       }
     }
 
@@ -98,6 +103,7 @@ export class Assembler {
         continue;
       }
       const card = this.buildCard(entry.page, entry.hits, entry.ranked, options);
+      if (entry.relevance !== undefined) card.relevance = round(entry.relevance);
       const cost = estimateTokens(card);
       if (budgetUsed + cost > options.budget && cards.length > 0) {
         dropped++;
@@ -226,9 +232,11 @@ export class Assembler {
         const text = allLines[n - 1];
         if (text === undefined) continue;
         const trimmed = text.trim();
-        // Blank lines and bare headings cost budget and carry nothing a reader
-        // needs; the breadcrumb already says where they are.
-        if (trimmed.length === 0 || /^#{1,6}\s/.test(trimmed) || /^<!--/.test(trimmed)) continue;
+        // Blank lines, bare headings, markers and image embeds cost budget and carry
+        // nothing a reader can cite; the breadcrumb already says where they are.
+        if (trimmed.length === 0) continue;
+        if (/^#{1,6}\s/.test(trimmed) || /^<!--/.test(trimmed)) continue;
+        if (/^!\[\[[^\]]+\]\]$/.test(trimmed) || /^!\[[^\]]*\]\([^)]+\)$/.test(trimmed)) continue;
         seen.add(n);
         out.push({ n, text });
       }

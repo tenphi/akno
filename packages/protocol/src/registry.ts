@@ -158,7 +158,7 @@ export const OPS = {
     kind: 'write',
     input: IngestInput,
     output: IngestOutput,
-    implemented: false,
+    implemented: true,
     description:
       'Pull a file, folder or URL into memory. Akno extracts the text, OCRs it if there is no text layer, ' +
       'names it from its contents, summarizes it, and routes it to a folder. You never run an extraction tool.',

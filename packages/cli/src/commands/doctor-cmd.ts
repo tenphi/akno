@@ -76,6 +76,17 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       }
     }
 
+    heading('Extraction');
+    kv([
+      [
+        'PDF and images',
+        report.extraction.swift
+          ? 'PDFKit text layer, Vision OCR (macOS frameworks)'
+          : 'unavailable — the Swift helper could not be built',
+      ],
+      ['Office formats', report.extraction.textutil ? 'textutil' : 'unavailable'],
+    ]);
+
     heading('Reserved paths');
     for (const entry of report.reserved) {
       const state =

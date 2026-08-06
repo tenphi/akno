@@ -75,6 +75,15 @@ export const Card = z.object({
   breadcrumb: z.string().optional(),
   updated: z.string().optional(),
   score: z.number(),
+  /**
+   * An **absolute** relevance in 0..1, when one is available: a cross-encoder's
+   * judgement, or cosine similarity from the embedding arm. Absent on a lexical-only
+   * search, where nothing produces a comparable number.
+   *
+   * `score` ranks within one result set and cannot be compared to a fixed threshold —
+   * the best hit of a bad set still ranks first. This is the field to threshold on.
+   */
+  relevance: z.number().min(0).max(1).optional(),
   lines: z.array(Line),
   superseded: z.array(SupersededClaim).optional(),
   links: z.array(z.string()).optional(),

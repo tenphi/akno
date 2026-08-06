@@ -34,6 +34,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched: [input.query],
       budget_used: 0,
       mode,
+      scores: 'relative',
       note: 'the index holds no chunks yet — run `akno index`',
     };
   }
@@ -50,7 +51,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       part,
       mode,
       ctx.models.chat,
-      ctx.config.recall.expansion,
+      input.expand ?? ctx.config.recall.expansion,
       ctx.config.recall.expansionTimeoutMs,
     );
     allQueries.push(...expansion.queries);
@@ -68,6 +69,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
+      scores: 'relative',
       note: 'the filter matched no pages',
     };
   }
@@ -90,6 +92,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
+      scores: 'relative',
       note: err instanceof Error ? err.message : String(err),
     };
   }
@@ -120,8 +123,12 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   }
 
   // Fused ranks only mean something relative to each other, so put them on a
-  // readable scale when a cross-encoder did not supply an absolute one.
+  // readable scale when a cross-encoder did not supply an absolute one. `relevance`
+  // survives this untouched — it is the field a caller may threshold.
   if (!reranked) hits = normalizeScores(hits);
+  const scores: 'absolute' | 'relative' = hits.some((hit) => hit.relevance !== undefined)
+    ? 'absolute'
+    : 'relative';
 
   const assembled = ctx.assembler.assemble({
     hits,
@@ -154,6 +161,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched,
       budget_used: 0,
       mode,
+      scores,
       ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
       note:
         reasons.length > 0
@@ -169,6 +177,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     searched,
     budget_used: assembled.budgetUsed,
     mode,
+    scores,
     ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
   };
 }

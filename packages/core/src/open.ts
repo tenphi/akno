@@ -24,6 +24,7 @@ import { remember as rememberOp } from './ops/remember.ts';
 import { forget as forgetOp } from './ops/forget.ts';
 import { undo as undoOp } from './ops/undo.ts';
 import { move as moveOp } from './ops/move.ts';
+import { ingest as ingestOp } from './ops/ingest.ts';
 
 export interface OpenOptions extends LoadOptions {
   /**
@@ -143,6 +144,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     forget: forgetOp,
     undo: undoOp,
     move: moveOp,
+    ingest: ingestOp,
   };
 
   async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {

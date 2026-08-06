@@ -114,6 +114,13 @@ const ServerDoc = z.object({
   mcp_allow: z.array(z.string()).optional(),
 });
 
+const IngestDoc = z.object({
+  max_file_mb: z.number().positive().optional(),
+  max_ocr_pages: z.number().int().positive().optional(),
+  name_confidence: z.number().min(0).max(1).optional(),
+  blocked_extensions: z.array(z.string()).optional(),
+});
+
 export const ConfigDoc = z.object({
   akno_path: z.string().nullable().optional(),
   state_dir: z.string().optional(),
@@ -133,6 +140,7 @@ export const ConfigDoc = z.object({
   recall: RecallDoc.optional(),
   watch: WatchDoc.optional(),
   server: ServerDoc.optional(),
+  ingest: IngestDoc.optional(),
   trash_retention_days: z.number().int().nonnegative().optional(),
   folders: z.record(z.string(), FolderRuleDoc).optional(),
 });
@@ -228,6 +236,13 @@ export interface AknoConfig {
   };
   watch: { enabled: boolean; debounceMs: number; sweepIntervalMs: number; verifyIntervalMs: number };
   server: { socket: string; http: string | null; mcpAllow: string[] };
+  ingest: {
+    maxFileBytes: number;
+    maxOcrPages: number;
+    /** Below this, a document keeps its name and gets no page (§11). */
+    nameConfidence: number;
+    blockedExtensions: string[];
+  };
   trashRetentionDays: number;
   rules: FolderRule[];
   /** Files the config was assembled from, lowest precedence first. */

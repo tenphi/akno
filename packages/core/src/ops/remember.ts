@@ -143,10 +143,23 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
  * above `route_threshold` wins and the write proceeds; below that it becomes a
  * proposal listing the candidates** rather than a guess.
  *
- * §19 is candid that 0.5 is a placeholder and cannot be tuned by intuition,
- * because the failure it guards against — a fact quietly landing on a plausible
- * wrong page — is invisible until someone reads it back months later. The
- * mechanism is here; only the number moves.
+ * §19 is candid that 0.5 is a placeholder and cannot be tuned by intuition, because
+ * the failure it guards against is invisible until someone reads it back months
+ * later. The mechanism is here; only the number moves.
+ */
+/**
+ * §8 step 2 / §11. Routing thresholds **`relevance`, never `score`.**
+ *
+ * `score` orders one result set: the best hit is 1.0 whether it is a perfect match or
+ * the least bad of a bad batch. Thresholding it meant every document found a home and
+ * §11's "a document with no home stays put" could never fire — routing looked like it
+ * worked and was in fact unconditional.
+ *
+ * `relevance` is absolute when a cross-encoder or the embedding arm supplied one. With
+ * neither — a lexical-only search — there is no number to compare, so routing refuses
+ * and asks. §19 says the failure this guards against, a fact quietly landing on a
+ * plausible wrong page, is invisible until someone reads it back months later; a
+ * guess is worse than a question.
  */
 async function route(
   ctx: AknoContext,
@@ -159,21 +172,22 @@ async function route(
     // Summaries only: routing is a decision about *which page*, and line windows
     // are budget spent on text nobody reads here.
     depth: 'summary',
+    // The query is the claim itself; a model rewriting it cannot improve the match.
+    expand: false,
   });
 
-  const best = result.cards[0];
   const nearest = result.cards.slice(0, 4).map((card) => card.slug);
-  if (!best) return { slug: null, score: 0, nearest };
 
   // Never route into a `reference` page: it is somebody else's words, and §5 is
-  // explicit that only claims become facts. Appending a claim to evidence would
-  // make the class boundary meaningless.
-  const writable = result.cards.find((card) => card.class === 'full');
-  if (!writable) return { slug: null, score: best.score, nearest };
+  // explicit that only claims become facts. Appending a claim to evidence would make
+  // the class boundary meaningless.
+  const writable = result.cards.find((card) => card.class === 'full' && card.relevance !== undefined);
+  if (!writable) return { slug: null, score: 0, nearest };
 
-  return writable.score >= ctx.config.routeThreshold
-    ? { slug: writable.slug, score: writable.score, nearest }
-    : { slug: null, score: writable.score, nearest };
+  const relevance = writable.relevance!;
+  return relevance >= ctx.config.routeThreshold
+    ? { slug: writable.slug, score: relevance, nearest }
+    : { slug: null, score: relevance, nearest };
 }
 
 function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: string[]): ApprovalRequest {

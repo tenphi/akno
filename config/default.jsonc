@@ -202,6 +202,40 @@
     "mcp_allow": ["recall", "read", "list", "timeline", "context"]
   },
 
+  // ─── Ingest (§11) ─────────────────────────────────────────────────────────
+  "ingest": {
+    "max_file_mb": 25,
+    // Pages OCR'd before stopping. A 200-page scan need not be fully searchable to
+    // be findable, and the ingest report says how many were read. Measured on this
+    // hardware: ~0.6s per page through the Vision framework.
+    "max_ocr_pages": 12,
+    // §11's second guard: below this, the file keeps its name, gets no page, and is
+    // reported — rather than being given a confident wrong name. Renaming is the one
+    // destructive thing ingest does, so the bias is toward not doing it.
+    "name_confidence": 0.55,
+    // Executables and installers. Not a security boundary — Akno never runs what
+    // it ingests — but a `.dmg` filed as a memory is a mistake worth refusing.
+    "blocked_extensions": [
+      "exe",
+      "dll",
+      "so",
+      "dylib",
+      "app",
+      "pkg",
+      "dmg",
+      "msi",
+      "bat",
+      "cmd",
+      "com",
+      "scr",
+      "jar",
+      "sh",
+      "bash",
+      "zsh",
+      "ps1"
+    ]
+  },
+
   // How long a deleted page or document is recoverable from trash.
   "trash_retention_days": 30,
 

@@ -14,7 +14,8 @@
   },
   "files": [
     "dist",
-    "config"
+    "config",
+    "swift"
   ],
   "dependencies": {
     "@akno/protocol": "workspace:*",

@@ -96,6 +96,13 @@ Changes here need more care than the line count suggests.
 - **Compare like with like.** Inline conflict detection runs the *same* extractor over the page and over the
   incoming text. Joining a structurally-extracted attribute against a model-assigned one silently never matches,
   which is how `- Nights: 5` landed on top of `- Nights: 3` with no conflict reported.
+- **Threshold `relevance`, never `score`.** `score` orders one result set — the best hit is 1.0 whether it is a
+  perfect match or the least bad of a bad batch — so thresholding it made routing unconditional and §11's "a
+  document with no home stays put" impossible to reach. `relevance` is absolute when a cross-encoder or the
+  embedding arm supplied one, and absent otherwise, which is when routing must refuse and ask.
+- **Never report where text came from inaccurately.** A vision model's *description* of a photograph is not a
+  transcription of text in it, and a PDF's own text layer is not OCR. `text_from` distinguishes them because
+  presenting them identically is a false claim about provenance — the exact sin §2 exists to prevent.
 
 ## Tests
 
@@ -123,6 +130,27 @@ Changes here need more care than the line count suggests.
   different majors of zod produce schemas that look interchangeable and are not.
 - **`minimumReleaseAge: 4320`** (three days). A brand-new release will not resolve; that is deliberate, and it
   has already blocked one same-day publish during development.
+
+## The Swift extractor
+
+`packages/core/swift/extract.swift` is a real Swift file, compiled on demand into
+`~/Library/Caches/akno/bin/` and keyed by a hash of its source, so editing it recompiles on the next run.
+
+- **Do not add `-O`.** Every expensive thing happens inside Vision and PDFKit; optimizing the glue costs 23 of
+  the 29 seconds and buys nothing measurable.
+- **The cache is not in `state_dir`.** The binary is an artifact of Akno, identical for every knowledge base,
+  and `Caches` is the directory macOS may reclaim — correct for something rebuildable in six seconds.
+- **It prints JSON on stdout.** Never prose: the caller must not have to parse English to find out whether OCR
+  ran.
+- **If it cannot be built, extraction degrades** — plain text and Office formats still work, images fall back to
+  the vision model if one is configured, and `doctor` says what is missing.
+
+Test it directly while iterating:
+
+```bash
+swiftc -o /tmp/akno-extract packages/core/swift/extract.swift
+/tmp/akno-extract pdf some.pdf --force-ocr | python3 -m json.tool
+```
 
 ## Style
 

@@ -14,6 +14,7 @@ import { serveCommand, serviceCommand } from './commands/serve-cmd.ts';
 import { contextCommand } from './commands/context-cmd.ts';
 import { rememberCommand, writeCommand } from './commands/write-cmd.ts';
 import { approveCommand, forgetCommand, moveCommand, undoCommand } from './commands/mutate-cmd.ts';
+import { ingestCommand } from './commands/ingest-cmd.ts';
 
 const VERSION = '0.1.0';
 
@@ -33,7 +34,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     undo <change_id>     Reverse a change. \`--list\` shows recent ones.
     move <from> <to>     Relocate a page with its documents.
     approve / decline    Resolve a gated proposal. \`--list\` shows pending.
-    ingest               ${style.grey('not implemented — needs extraction and OCR')}
+    ingest <path>        Extract, OCR, name, summarize and route a file.
 
   ${style.bold('Admin')}
     index                Reconcile the index against the knowledge base.
@@ -67,6 +68,7 @@ const COMMANDS: Record<string, Command> = {
   forget: forgetCommand,
   undo: undoCommand,
   move: moveCommand,
+  ingest: ingestCommand,
   approve: approveCommand,
   decline: (argv: string[]) => approveCommand(argv, true),
   index: indexCommand,

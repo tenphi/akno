@@ -9,10 +9,9 @@ or any editor, with no import step and no proprietary store.
 Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
 event and link from the Markdown.
 
-> **Status: read and write both work.** Indexing, watching, retrieval, and the write path — `write`,
-> `remember`, `forget`, `undo`, `move`, plus gating and approval — are implemented and tested against a real
-> 223-page knowledge base. `ingest` still returns `not_implemented`, because extraction and OCR are not built;
-> see [What is not built yet](#what-is-not-built-yet).
+> **Status: all ten ops work.** Indexing, watching, retrieval, the write path, and `ingest` with extraction and
+> OCR are implemented and tested against a real 223-page knowledge base. What remains is the maintenance cycle
+> and the inbox — see [What is not built yet](#what-is-not-built-yet).
 
 ---
 
@@ -240,15 +239,53 @@ build time, recall accuracy and a second structure to keep in sync, to save mill
 Named honestly, because a README that implies more than exists is the same failure mode Akno is built to
 prevent:
 
-- **`ingest`, extraction and OCR.** Attachments are discovered and attached to their page, and `doctor` reports
-  how many are un-extracted. Nothing reads inside a PDF yet, so `read({document})` returns `degraded` with
-  `text: null` rather than implying the file is empty. This is the one op with external dependencies
-  (`pdftotext`, `tesseract`), which is why it is separate.
-- **The inbox and routing of files.** `route_threshold` is used by `remember` and works; the inbox rule is
-  configurable but nothing moves files yet.
+- **The inbox.** `ingest` files what you hand it, but nothing watches a drop folder yet, so `route: true` on
+  `inbox/**` does nothing. Attachments that predate ingest are discovered and attached to their page but not
+  extracted; `doctor` says how many.
 - **The maintenance cycle** (`dream`, `observe`, `reflect`), including §8's thorough offline conflict pass.
-- **Attachments on `write`.** The `documents` field is accepted by the schema and ignored, because storing one
-  content-addressed needs the same extraction path as `ingest`.
+- **Ingesting a URL or a folder.** `ingest` takes one local file; both other forms return `not_implemented`.
+- **Attachments on `write`.** The `documents` field is accepted by the schema and ignored — use `ingest`.
+
+## Documents
+
+`akno ingest <path>` does what §17 lists as three separate prompt instructions — run extraction and OCR, give
+`IMG_4821.HEIC` a name that means something, decide where a dropped file belongs — as one call that happens
+every time.
+
+**Extraction uses what macOS already has.** PDFKit reads a text layer; the Vision framework does OCR. A ~200-line
+Swift helper is compiled on first use (about 6 seconds) and cached in `~/Library/Caches`. Measured on Apple
+Silicon:
+
+|                                            |                                                     |
+| ------------------------------------------ | --------------------------------------------------- |
+| PDF text layer, 9 pages                    | 0.12 s                                              |
+| Receipt photo, OCR                         | 1.4 s at 0.99 mean confidence                       |
+| 4-page bill, forced OCR                    | 2.4 s, recovering 99.5% of what its text layer held |
+| Whole `ingest`: OCR + name + route + index | ~8 s                                                |
+
+The alternative was `brew install poppler tesseract`, which makes a memory layer's first run depend on two
+unrelated projects being installed and on their CLI flags not changing. Since Akno is macOS-only on purpose,
+using the platform's own frameworks is the honest choice rather than a shortcut — and Vision is both faster and
+more accurate than tesseract.
+
+Office formats go through `textutil`, which also ships with macOS. `models.vision` is optional and only reached
+when OCR finds _no_ text in an image — a photo rather than a document.
+
+**Three things `ingest` refuses to do:**
+
+- **Rename a file whose name already says something.** `2024-lease-agreement.pdf` is kept; `IMG_4821.HEIC` is
+  not. Renaming is the one destructive act here, and a name someone chose carries intent no model can
+  reconstruct.
+- **Name a file it could not read.** Below `ingest.name_confidence` the file keeps its name, gets no page, and is
+  reported. A confident wrong name is worse than none.
+- **File a document it cannot place.** No destination clears `route_threshold` → the file stays where it is with
+  a proposal. An inbox with three things in it is a to-do list; a misfiled document is a lost one.
+
+Stored files are content-addressed as `<page-basename>-<sha8>.<ext>`, so they are unique by construction and
+re-ingesting the same bytes is a no-op that tells you where they already live. Every page records **where its
+text came from** — a text layer, OCR with its confidence, or a vision model's _description_ — because those are
+different claims and reporting them identically would be a false one.
+
 ## Platform
 
 **macOS only, on purpose — not a gap.** There is no plan for Linux or Windows.
@@ -286,7 +323,7 @@ Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`
 
 ```bash
 pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — 210 tests, no models required
+pnpm test          # vitest — 250 tests, no models required
 pnpm lint          # oxlint
 pnpm knip          # dead exports and unused dependencies
 pnpm bench

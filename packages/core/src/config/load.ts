@@ -200,6 +200,31 @@ function mergeDoc<T>(base: T, overlay: T): T {
   return out as T;
 }
 
+/**
+ * Executables and installers. Not a security boundary — Akno never runs what it
+ * ingests — but a knowledge base is a place for documents, and a `.dmg` filed as a
+ * memory is a mistake worth refusing rather than indexing.
+ */
+const DEFAULT_BLOCKED = [
+  'exe',
+  'dll',
+  'so',
+  'dylib',
+  'app',
+  'pkg',
+  'dmg',
+  'msi',
+  'bat',
+  'cmd',
+  'com',
+  'scr',
+  'jar',
+  'sh',
+  'bash',
+  'zsh',
+  'ps1',
+];
+
 // ─── Resolution ─────────────────────────────────────────────────────────────
 
 function resolveSecret(ref: SecretRef | null | undefined, env: NodeJS.ProcessEnv): string | null {
@@ -372,6 +397,14 @@ function resolve(
       socket: doc.server?.socket ?? 'akno.sock',
       http: doc.server?.http ?? null,
       mcpAllow: doc.server?.mcp_allow ?? ['recall', 'read', 'list', 'timeline', 'context'],
+    },
+    ingest: {
+      maxFileBytes: Math.round((doc.ingest?.max_file_mb ?? 25) * 1_048_576),
+      maxOcrPages: doc.ingest?.max_ocr_pages ?? 12,
+      nameConfidence: doc.ingest?.name_confidence ?? 0.55,
+      blockedExtensions: (doc.ingest?.blocked_extensions ?? DEFAULT_BLOCKED).map((extension: string) =>
+        extension.replace(/^\./, '').toLowerCase(),
+      ),
     },
     trashRetentionDays: doc.trash_retention_days ?? 30,
     rules,

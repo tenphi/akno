@@ -107,6 +107,13 @@ export const IngestOutput = ResultEnvelope.extend({
   summary: z.string().optional(),
   page_count: z.number().int().nonnegative().optional(),
   ocr: z.boolean().optional(),
+  /**
+   * Where the text actually came from. `ocr` alone cannot say: a vision model's
+   * *description* of a photo is not a transcription of it, and reporting the two the
+   * same way is a false claim about provenance — the thing §2's cite-or-stay-quiet
+   * exists to prevent.
+   */
+  text_from: z.enum(['text-layer', 'ocr', 'plain', 'textutil', 'vision', 'none']).optional(),
   /** Set when a rename fired: the original name added nothing the content did
    *  not already say. A good name is left alone (§11). */
   renamed_from: z.string().optional(),

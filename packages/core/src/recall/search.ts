@@ -8,6 +8,12 @@ export interface ChunkHit {
   score: number;
   /** Which arms found it. Used by fusion to merge duplicates across arms. */
   from: ('vector' | 'lexical')[];
+  /**
+   * An absolute 0..1 relevance, when an arm produced one: cosine from the vector arm,
+   * replaced by the cross-encoder's judgement when reranking runs. Undefined after a
+   * lexical-only search, because bm25 has no absolute interpretation.
+   */
+  relevance?: number;
 }
 
 export interface SearchOptions {
@@ -138,7 +144,15 @@ function vectorSearch(
       const row = pageOf.get(hit.chunkId) as { page_id: string } | undefined;
       if (!row) continue;
       if (pageIds && !pageIds.has(row.page_id)) continue;
-      mapped.push({ chunkId: hit.chunkId, pageId: row.page_id, score: hit.score, from: ['vector'] });
+      mapped.push({
+        chunkId: hit.chunkId,
+        pageId: row.page_id,
+        score: hit.score,
+        from: ['vector'],
+        // Cosine is already an absolute similarity, so it survives fusion as the
+        // answer to "is this actually a good match?" — which the fused rank is not.
+        relevance: Math.max(0, Math.min(1, hit.score)),
+      });
     }
     perVector.push(mapped);
   }
@@ -169,6 +183,9 @@ function fuse(lists: ChunkHit[][]): ChunkHit[] {
       if (existing) {
         existing.score += contribution;
         for (const arm of hit.from) if (!existing.from.includes(arm)) existing.from.push(arm);
+        if (hit.relevance !== undefined) {
+          existing.relevance = Math.max(existing.relevance ?? 0, hit.relevance);
+        }
       } else {
         merged.set(hit.chunkId, { ...hit, score: contribution, from: [...hit.from] });
       }
@@ -263,7 +280,9 @@ export async function rerankHits(
     const hit = candidates[entry.index];
     // A logit through a sigmoid is a relevance in (0, 1) — comparable across
     // queries, and readable as a score rather than as a model internal.
-    if (hit) reordered.push({ ...hit, score: sigmoid(entry.score) });
+    // The cross-encoder saw the query and the passage together, so its judgement
+    // replaces cosine as the absolute signal rather than merging with it.
+    if (hit) reordered.push({ ...hit, score: sigmoid(entry.score), relevance: sigmoid(entry.score) });
   }
   reordered.sort((a, b) => b.score - a.score);
 

@@ -14,6 +14,12 @@ export const RecallInput = z.object({
    *  Passing `include: ['reference']` with `depth: 'full'` overrides the cap —
    *  class is a relevance policy, not access control (§5). */
   include: z.array(PageClass).optional(),
+  /**
+   * Skip query expansion for this call. Worth it when the query is already the text
+   * you want to match — routing a document by its own summary, say — where a model
+   * rewriting it costs a round trip and buys nothing.
+   */
+  expand: z.boolean().optional(),
   filter: SlugFilter.optional(),
   since: DatePrefix.optional(),
   until: DatePrefix.optional(),
@@ -26,6 +32,16 @@ export const RecallOutput = ResultEnvelope.extend({
    *  proof — an agent can say "not recorded" because the layer showed its work. */
   searched: z.array(z.string()),
   budget_used: z.number().int().nonnegative(),
+  /**
+   * Whether `score` means anything on its own.
+   *
+   * `absolute` — a cross-encoder or the embedding arm supplied a real 0..1 relevance,
+   * and `relevance` is set on every card. Safe to threshold.
+   * `relative` — scores only order this result set. The top hit is 1.0 whether it is
+   * a perfect match or the least bad of a bad batch, so thresholding it is a mistake:
+   * every query appears to succeed.
+   */
+  scores: z.enum(['absolute', 'relative']),
   /**
    * §9. `question` mode only. Which concepts from the question the results
    * actually cover. Deterministic — did the key terms appear in what came back —
