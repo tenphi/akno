@@ -18,7 +18,25 @@ import { ERROR_CODES } from './errors.ts';
  * unavailable whenever the service is running. It used to be unavailable, and the nightly
  * cycle would have failed every night with "another process holds the write handle".
  */
-export const COMMAND_NAMES = ['index', 'inbox', 'dream'] as const;
+/**
+ * Not ops. The ops are what an agent calls *about memory*; these are what an operator asks of the
+ * *process* — reconcile the tree, file the inbox, run the cycle — plus the four that answer a gate
+ * or the journal.
+ *
+ * `approve`, `decline`, `changes` and `proposals` are here for the same reason the first three are:
+ * exactly one process may write, so with a service running they are reachable through it or not at
+ * all. They are deliberately absent from the op registry — an agent does not get to approve its own
+ * gated proposal, and putting them on the op surface would hand it exactly that.
+ */
+export const COMMAND_NAMES = [
+  'index',
+  'inbox',
+  'dream',
+  'approve',
+  'decline',
+  'changes',
+  'proposals',
+] as const;
 export type CommandName = (typeof COMMAND_NAMES)[number];
 
 export function isCommandName(value: string): value is CommandName {
@@ -31,6 +49,20 @@ export const WireRequest = z.object({
   op: z.string(),
   kind: z.enum(['op', 'command']).optional(),
   input: z.unknown().optional(),
+  /**
+   * Who this call speaks for. Absent means the service's own actor, which is `agent`.
+   *
+   * On the socket and the loopback HTTP door the caller is trusted to say — filesystem permissions
+   * and loopback are the authentication, and a caller that can open either could write anything it
+   * liked regardless. The gate is not a defence against that caller; it is a policy about *whose*
+   * request this is, and only the caller knows. A host mediating for an agent (Luna) and a person at
+   * a terminal both need to say "this one is the user speaking" — otherwise approving a gated
+   * proposal is impossible through the very door the service is meant to be reached by.
+   *
+   * The MCP door never sets it. That door faces the agent itself, which does not get to claim to be
+   * the user, and is why `server.mcp_allow` exists on it and not here.
+   */
+  actor: z.enum(['user', 'agent', 'akno']).optional(),
 });
 export type WireRequest = z.infer<typeof WireRequest>;
 

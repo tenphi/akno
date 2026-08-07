@@ -44,11 +44,17 @@ export interface LoadOptions {
  *   3. `config/local.jsonc`         gitignored dev overlay for this checkout
  *   4. `AKNO_*` environment       for containers and CI
  *
+ * Secrets are the one thing no config layer holds. A config file names the variable that carries a
+ * credential, never the credential, so it stays safe to read, diff and paste. The variables
+ * themselves come from the environment, or from a gitignored `.env` beside the config — loaded
+ * here rather than by a launcher, because a service started by launchd inherits almost nothing and
+ * "put it in .env" has to be true for the person who read that in `.env.example`.
+ *
  * Rules are a fifth, narrower layer: `<akno_path>/akno.json` wins over all
  * of the above for `folders`, so rules can travel with the notes.
  */
 export function loadConfig(options: LoadOptions = {}): AknoConfig {
-  const env = options.env ?? process.env;
+  const env = { ...dotEnv(), ...(options.env ?? process.env) };
   // A developer's `config/local.jsonc` must not be able to perturb a CI run or a
   // test. `AKNO_ISOLATED=1` restricts the stack to committed defaults plus env.
   const isolated = options.isolated ?? isTruthy(env.AKNO_ISOLATED ?? '');
@@ -179,6 +185,42 @@ function envOverlay(env: NodeJS.ProcessEnv): ConfigDoc {
     doc.models = { ...doc.models, expansion: { id: env.AKNO_EXPANSION_MODEL } };
   }
   return doc;
+}
+
+/**
+ * `.env` beside the config, parsed as `KEY=value` lines. The real environment wins over it, so a
+ * one-off `AKNO_OPENAI_API_KEY=… akno doctor` still overrides the file.
+ *
+ * No dependency and no expansion: this file holds credentials, and a parser that resolved `$OTHER`
+ * or ran command substitution would be reading shell syntax it is not a shell for.
+ */
+function dotEnv(): NodeJS.ProcessEnv {
+  const root = findRepoRoot();
+  if (!root) return {};
+  let raw: string;
+  try {
+    raw = fs.readFileSync(path.join(root, '.env'), 'utf8');
+  } catch {
+    return {};
+  }
+
+  const out: NodeJS.ProcessEnv = {};
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0 || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq <= 0) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if (
+      value.length >= 2 &&
+      ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (key.length > 0) out[key] = value;
+  }
+  return out;
 }
 
 function isTruthy(value: string): boolean {

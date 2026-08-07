@@ -122,7 +122,28 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
       return akno.inbox(options);
     case 'dream':
       return akno.dream(options);
+    case 'approve':
+      return akno.approve(idFrom(input, 'proposal_id'));
+    case 'decline':
+      return akno.decline(idFrom(input, 'proposal_id'));
+    case 'changes':
+      return akno.changes(limitFrom(input));
+    case 'proposals':
+      return akno.proposals();
   }
+}
+
+function idFrom(input: unknown, key: string): string {
+  const value = (input as Record<string, unknown> | null)?.[key];
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new AknoError('invalid', `${key} is required`);
+  }
+  return value;
+}
+
+function limitFrom(input: unknown): number {
+  const value = (input as { limit?: unknown } | null)?.limit;
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 20;
 }
 
 async function handle(
@@ -164,7 +185,14 @@ async function handle(
     if (options.allow && !options.allow.includes(request.op)) {
       throw new AknoError('forbidden', `${request.op} is not allowed on this door`);
     }
-    const result = await akno.call(request.op, request.input as never);
+    // Honoured because this door is trusted: filesystem permissions are its authentication, and
+    // without it a host mediating for an agent could never answer a gated proposal on the owner's
+    // behalf — the gate would be unanswerable through the door the service is reached by.
+    const result = await akno.call(
+      request.op,
+      request.input as never,
+      request.actor ? { actor: request.actor } : {},
+    );
     options.log?.(`${request.op} ${(performance.now() - started).toFixed(1)}ms`);
     socket.write(encodeLine({ id: request.id, ok: true, result }));
   } catch (err) {

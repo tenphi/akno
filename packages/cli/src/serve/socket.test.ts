@@ -67,9 +67,18 @@ describe('the socket door', () => {
       expect(client.hello.writable).toBe(true);
       expect(client.hello.ops).toContain('recall');
       expect(client.hello.ops).toContain('write');
-      // Maintenance is advertised separately: the ten ops are what an agent calls about
-      // memory; these are operator commands about the process.
-      expect(client.hello.commands).toEqual(['index', 'inbox', 'dream']);
+      // Advertised separately from the ops: the ops are what an agent calls about memory, these are
+      // what an operator asks of the process — including the four that answer a gate or read the
+      // journal, which are deliberately *not* ops so an agent cannot approve its own proposal.
+      expect(client.hello.commands).toEqual([
+        'index',
+        'inbox',
+        'dream',
+        'approve',
+        'decline',
+        'changes',
+        'proposals',
+      ]);
     } finally {
       await client.close();
     }

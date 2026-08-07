@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { open } from '@akno/core';
+
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, statusLabel, style, truncate } from '../output.ts';
+import { resolveOps } from '../ops-handle.ts';
 
 const WRITE_HELP = `akno write [options]
 
@@ -86,13 +87,13 @@ export async function writeCommand(argv: string[]): Promise<number> {
         ? await fsp.readFile(values.patch, 'utf8').catch(() => values.patch!)
         : undefined;
 
-  const mem = await open({
-    ...openOptionsFrom(values),
+  const handle = await resolveOps(values, openOptionsFrom(values), {
+    write: true,
     ...(values.actor === 'user' || values.actor === 'agent' ? { actor: values.actor } : {}),
   });
 
   try {
-    const result = await mem.write({
+    const result = await handle.ops.write({
       ...(values.slug ? { slug: values.slug } : {}),
       ...(values.content !== undefined ? { content: values.content } : {}),
       ...(values.append !== undefined ? { append: values.append } : {}),
@@ -115,7 +116,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
 
     return printWriteOutcome(result);
   } finally {
-    await mem.close();
+    await handle.close();
   }
 }
 
@@ -235,13 +236,13 @@ export async function rememberCommand(argv: string[]): Promise<number> {
   }
 
   const text = positionals[0] === '-' ? await readStdin() : positionals.join(' ');
-  const mem = await open({
-    ...openOptionsFrom(values),
+  const handle = await resolveOps(values, openOptionsFrom(values), {
+    write: true,
     ...(values.actor === 'user' || values.actor === 'agent' ? { actor: values.actor } : {}),
   });
 
   try {
-    const result = await mem.remember({
+    const result = await handle.ops.remember({
       text,
       ...(values['dry-run'] ? { dry_run: true } : {}),
     });
@@ -286,6 +287,6 @@ export async function rememberCommand(argv: string[]): Promise<number> {
 
     return (result.approvals?.length ?? 0) > 0 ? 2 : 0;
   } finally {
-    await mem.close();
+    await handle.close();
   }
 }

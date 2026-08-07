@@ -86,8 +86,12 @@ async function route(
       throw new AknoError('forbidden', `${op} is not allowed on this door`);
     }
     const input = await readJson(request);
+    // A header rather than a field in the body: `actor` is about the caller, not the op, and putting
+    // it in the JSON would collide the day an op wants a field of that name.
+    const declared = request.headers['x-akno-actor'];
+    const actor = declared === 'user' || declared === 'agent' || declared === 'akno' ? declared : undefined;
     const started = performance.now();
-    const result = await akno.call(op, input as never);
+    const result = await akno.call(op, input as never, actor ? { actor } : {});
     options.log?.(`${op} ${(performance.now() - started).toFixed(1)}ms`);
     send(response, 200, { ok: true, result });
   } catch (err) {

@@ -1,7 +1,7 @@
-import { open } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, statusLabel, style, truncate } from '../output.ts';
 import { printWriteOutcome } from './write-cmd.ts';
+import { resolveOps, runMaintenance } from '../ops-handle.ts';
 
 const FORGET_HELP = `akno forget <--fact <id> | --slug <slug> | --document <id>>
 
@@ -28,12 +28,12 @@ export async function forgetCommand(argv: string[]): Promise<number> {
     return values.help ? 0 : 1;
   }
 
-  const mem = await open({
-    ...openOptionsFrom(values),
+  const handle = await resolveOps(values, openOptionsFrom(values), {
+    write: true,
     ...(values.actor === 'user' || values.actor === 'agent' ? { actor: values.actor } : {}),
   });
   try {
-    const result = await mem.forget({
+    const result = await handle.ops.forget({
       ...(values.fact ? { fact: values.fact } : {}),
       ...(values.slug ? { slug: values.slug } : {}),
       ...(values.document ? { document: values.document } : {}),
@@ -53,7 +53,7 @@ export async function forgetCommand(argv: string[]): Promise<number> {
     line(`\n  ${style.grey(`reverse with`)} ${style.bold(`akno undo ${result.change_id}`)}`);
     return 0;
   } finally {
-    await mem.close();
+    await handle.close();
   }
 }
 
@@ -78,10 +78,18 @@ export async function undoCommand(argv: string[]): Promise<number> {
     return values.help ? 0 : 1;
   }
 
-  const mem = await open({ ...openOptionsFrom(values), writable: !values.list });
-  try {
-    if (values.list) {
-      const changes = mem.changes(values.limit ? Number(values.limit) : 20);
+  if (values.list) {
+    // `changes` is not an op — an agent has no business reading the journal — so it travels on the
+    // command channel, which is also how it reaches a running service instead of failing beside it.
+    const changes = await runMaintenance(
+      'changes',
+      { limit: values.limit ? Number(values.limit) : 20 },
+      values,
+      openOptionsFrom(values),
+      async (akno) => akno.changes(values.limit ? Number(values.limit) : 20),
+      { writable: false },
+    );
+    {
       if (values.json) {
         json(changes);
         return 0;
@@ -100,8 +108,11 @@ export async function undoCommand(argv: string[]): Promise<number> {
       }
       return 0;
     }
+  }
 
-    const result = await mem.undo({ change_id: positionals[0]! });
+  const handle = await resolveOps(values, openOptionsFrom(values), { write: true });
+  try {
+    const result = await handle.ops.undo({ change_id: positionals[0]! });
     if (values.json) {
       json(result);
       return 0;
@@ -111,7 +122,7 @@ export async function undoCommand(argv: string[]): Promise<number> {
     for (const file of result.removed ?? []) line(`  ${style.yellow('removed ')}  ${file}`);
     return 0;
   } finally {
-    await mem.close();
+    await handle.close();
   }
 }
 
@@ -134,12 +145,12 @@ export async function moveCommand(argv: string[]): Promise<number> {
     return values.help ? 0 : 1;
   }
 
-  const mem = await open({
-    ...openOptionsFrom(values),
+  const handle = await resolveOps(values, openOptionsFrom(values), {
+    write: true,
     ...(values.actor === 'user' || values.actor === 'agent' ? { actor: values.actor } : {}),
   });
   try {
-    const result = await mem.move({ from: positionals[0]!, to: positionals[1]! });
+    const result = await handle.ops.move({ from: positionals[0]!, to: positionals[1]! });
     if (values.json) {
       json(result);
       return result.outcome === 'ok' ? 0 : 2;
@@ -155,7 +166,7 @@ export async function moveCommand(argv: string[]): Promise<number> {
     if (result.note) line(style.grey(`\n  ${result.note}`));
     return 0;
   } finally {
-    await mem.close();
+    await handle.close();
   }
 }
 
@@ -181,12 +192,19 @@ export async function approveCommand(argv: string[], decline = false): Promise<n
     return values.help ? 0 : 1;
   }
 
-  // Approving is the user speaking, by definition — it is the answer to a gate
-  // that only exists for agents.
-  const mem = await open({ ...openOptionsFrom(values), actor: 'user', writable: !values.list });
-  try {
-    if (values.list) {
-      const pending = mem.proposals();
+  // Approving is the user speaking, by definition — it is the answer to a gate that only exists for
+  // agents. It travels on the command channel rather than the op surface for the same reason: an
+  // agent that could call `approve` could wave through its own gated proposal.
+  if (values.list) {
+    const pending = await runMaintenance(
+      'proposals',
+      {},
+      values,
+      openOptionsFrom(values),
+      async (akno) => akno.proposals(),
+      { writable: false },
+    );
+    {
       if (values.json) {
         json(pending);
         return 0;
@@ -203,9 +221,17 @@ export async function approveCommand(argv: string[], decline = false): Promise<n
       }
       return 0;
     }
+  }
 
+  {
     if (decline) {
-      const result = await mem.decline(positionals[0]!);
+      const result = await runMaintenance(
+        'decline',
+        { proposal_id: positionals[0]! },
+        values,
+        openOptionsFrom(values),
+        async (akno) => akno.decline(positionals[0]!),
+      );
       if (values.json) {
         json(result);
         return 0;
@@ -217,7 +243,13 @@ export async function approveCommand(argv: string[], decline = false): Promise<n
       return 0;
     }
 
-    const result = await mem.approve(positionals[0]!);
+    const result = await runMaintenance(
+      'approve',
+      { proposal_id: positionals[0]! },
+      values,
+      openOptionsFrom(values),
+      async (akno) => akno.approve(positionals[0]!),
+    );
     if (values.json) {
       json(result);
       return 0;
@@ -227,7 +259,5 @@ export async function approveCommand(argv: string[], decline = false): Promise<n
     // same way `akno write` would.
     if (result.write) return printWriteOutcome(result.write);
     return 0;
-  } finally {
-    await mem.close();
   }
 }

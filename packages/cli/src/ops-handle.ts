@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { connect, defaultSocketPath } from '@akno/client';
 import { loadConfig, open, type Akno } from '@akno/core';
-import type { AknoOps, OpInput, OpName, OpResult } from '@akno/protocol';
+import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@akno/protocol';
 import { style } from './output.ts';
 
 export interface OpsHandle {
@@ -25,16 +25,27 @@ export interface OpsHandle {
  *
  * Falling back rather than failing also means the CLI works before the user has
  * ever run `akno serve`, which is the first thing they will try.
+ *
+ * **Writes route the same way, and must.** They used to call `open()` directly, which meant every
+ * one of them failed `read_only` whenever the service was running — the arrangement the docs
+ * recommend. `akno remember` from a terminal, on a machine set up as documented, could not write.
  */
 export async function resolveOps(
   values: { connect?: boolean; json?: boolean },
   openOptions: { aknoPath?: string; stateDir?: string },
+  options: { write?: boolean; actor?: 'user' | 'agent' | 'akno' } = {},
 ): Promise<OpsHandle> {
   const socketPath = socketFor(openOptions);
 
   if (values.connect || fs.existsSync(socketPath)) {
     try {
-      const client = await connect({ socket: socketPath });
+      const client = await connect({
+        socket: socketPath,
+        // Stated per connection, because the alternative is a write from a person at a terminal
+        // being gated as though an agent had asked — and a gated proposal being unanswerable
+        // through the door the service is meant to be reached by.
+        ...(options.actor ? { actor: options.actor } : {}),
+      });
       return {
         ops: client,
         akno: null,
@@ -51,9 +62,14 @@ export async function resolveOps(
     }
   }
 
-  // Read-only: a one-shot read must never take the write handle out from under a
-  // service that is about to start, and it does not need it.
-  const akno = await open({ ...openOptions, writable: false });
+  // A read takes no write handle: a one-shot must never pull it out from under a service that is
+  // about to start, and it does not need it. A write has no choice — with no service there is
+  // nobody else to do it.
+  const akno = await open({
+    ...openOptions,
+    writable: options.write === true,
+    ...(options.actor ? { actor: options.actor } : {}),
+  });
   return {
     ops: akno,
     akno,
@@ -81,11 +97,12 @@ function socketFor(openOptions: { aknoPath?: string; stateDir?: string }): strin
  * exited, and `inbox` reported an empty inbox it had never been able to read.
  */
 export async function runMaintenance<T>(
-  command: 'index' | 'inbox' | 'dream',
+  command: CommandName,
   input: Record<string, unknown>,
   values: { connect?: boolean; json?: boolean },
   openOptions: { aknoPath?: string; stateDir?: string },
   inProcess: (akno: Akno) => Promise<T>,
+  options: { writable?: boolean } = {},
 ): Promise<T> {
   const socketPath = socketFor(openOptions);
 
@@ -110,7 +127,9 @@ export async function runMaintenance<T>(
     }
   }
 
-  const akno = await open(openOptions);
+  // `proposals` and `changes` only read; taking the write handle for them would block a service
+  // from starting while somebody lists their pending approvals.
+  const akno = await open({ ...openOptions, ...(options.writable === false ? { writable: false } : {}) });
   try {
     return await inProcess(akno);
   } finally {

@@ -33,11 +33,24 @@ export interface ConnectOptions {
   timeoutMs?: number;
   /** Fail rather than warn when the server's protocol version differs. */
   strictVersion?: boolean;
+  /**
+   * Who this connection speaks for. Default `agent`, which is what the gate assumes.
+   *
+   * A host that mediates between a person and an agent needs both, and can say so per call. The
+   * distinction is not cosmetic: `user` is never gated, so a proposal the agent could not write is
+   * answered by passing `actor: 'user'` on the replay — the mechanism `akno approve` uses.
+   */
+  actor?: 'user' | 'agent' | 'akno';
 }
 
 export interface AknoClient extends AknoOps {
   readonly hello: HelloMessage;
-  call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>>;
+  /** `actor` overrides the connection's default for this one call. */
+  call<N extends OpName>(
+    op: N,
+    input: OpInput<N>,
+    options?: { actor?: 'user' | 'agent' | 'akno' },
+  ): Promise<OpResult<N>>;
   /**
    * Ask the writer to do maintenance: `index`, `inbox`, `dream`.
    *
@@ -138,13 +151,26 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
   );
   assertVersion(resolved, options);
 
-  async function send(op: string, input: unknown, kind: 'op' | 'command'): Promise<unknown> {
+  async function send(
+    op: string,
+    input: unknown,
+    kind: 'op' | 'command',
+    actor?: 'user' | 'agent' | 'akno',
+  ): Promise<unknown> {
     if (closed) throw new AknoError('unavailable', 'the connection is closed');
     const id = nextId++;
     const promise = new Promise<unknown>((resolve, reject) => {
       pending.set(id, { resolve, reject });
     });
-    socket.write(encodeLine(kind === 'command' ? { id, op, kind, input } : { id, op, input }));
+    socket.write(
+      encodeLine({
+        id,
+        op,
+        ...(kind === 'command' ? { kind } : {}),
+        input,
+        ...(actor ? { actor } : {}),
+      }),
+    );
     // A command is maintenance: reconciling a large tree or running the cycle takes minutes,
     // where an op that slow has already failed at its job.
     const deadline = kind === 'command' ? Math.max(timeoutMs, 15 * 60_000) : timeoutMs;
@@ -155,8 +181,12 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
     );
   }
 
-  async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {
-    return (await send(op, input, 'op')) as OpResult<N>;
+  async function call<N extends OpName>(
+    op: N,
+    input: OpInput<N>,
+    callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
+  ): Promise<OpResult<N>> {
+    return (await send(op, input, 'op', callOptions.actor ?? options.actor)) as OpResult<N>;
   }
 
   async function command(name: string, input?: unknown): Promise<unknown> {
@@ -202,13 +232,21 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
   const hello = Hello.parse(await response.json());
   assertVersion(hello, options);
 
-  async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {
+  async function call<N extends OpName>(
+    op: N,
+    input: OpInput<N>,
+    callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
+  ): Promise<OpResult<N>> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const actor = callOptions.actor ?? options.actor;
     try {
       const result = await fetch(`${base}/op/${op}`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(actor ? { 'x-akno-actor': actor } : {}),
+        },
         body: JSON.stringify(input ?? {}),
         signal: controller.signal,
       });

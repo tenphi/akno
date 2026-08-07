@@ -1,6 +1,6 @@
-import { open } from '@akno/core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, statusLabel, style, truncate } from '../output.ts';
+import { resolveOps } from '../ops-handle.ts';
 
 const INGEST_HELP = `akno ingest <path | url> [options]
 
@@ -47,14 +47,14 @@ export async function ingestCommand(argv: string[]): Promise<number> {
     return values.help ? 0 : 1;
   }
 
-  const mem = await open({
-    ...openOptionsFrom(values),
+  const handle = await resolveOps(values, openOptionsFrom(values), {
+    write: true,
     ...(values.actor === 'user' || values.actor === 'agent' ? { actor: values.actor } : {}),
   });
 
   try {
     const target = positionals[0]!;
-    const result = await mem.ingest({
+    const result = await handle.ops.ingest({
       // A URL and a path are told apart here rather than by the op, so `./https-notes`
       // stays a path and does not become a fetch.
       ...(/^https?:\/\//i.test(target) ? { url: target } : { path: target }),
@@ -138,7 +138,7 @@ export async function ingestCommand(argv: string[]): Promise<number> {
     line(`\n  ${style.grey('reverse with')} ${style.bold(`akno undo ${result.change_id}`)}`);
     return 0;
   } finally {
-    await mem.close();
+    await handle.close();
   }
 }
 

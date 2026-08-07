@@ -87,7 +87,15 @@ export interface Akno extends AknoOps {
   /** Force a full reconcile — what a host calls on wake. */
   reconcile(): Promise<void>;
   /** Call any op by name, validating input against the registry. The door path. */
-  call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>>;
+  /**
+   * Dispatch by name. `actor` overrides who the call speaks for, which the gate reads and the
+   * journal records; omitted, it is the actor this handle was opened with.
+   */
+  call<N extends OpName>(
+    op: N,
+    input: OpInput<N>,
+    options?: { actor?: 'user' | 'agent' | 'akno' },
+  ): Promise<OpResult<N>>;
   close(): Promise<void>;
 }
 
@@ -205,7 +213,11 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     ingest: ingestOp,
   };
 
-  async function call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> {
+  async function call<N extends OpName>(
+    op: N,
+    input: OpInput<N>,
+    callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
+  ): Promise<OpResult<N>> {
     const definition = OPS[op];
     if (!definition) throw new AknoError('invalid', `unknown op: ${String(op)}`);
 
@@ -236,7 +248,12 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       );
     }
 
-    return implementation(ctx, parsed.data);
+    // One call, one actor. The gate reads it, and the journal records it for undo attribution, so
+    // shadowing the context here is the whole mechanism — the same one `approve` uses to replay a
+    // proposal as the person who answered it.
+    const forCall =
+      callOptions.actor && callOptions.actor !== ctx.actor ? { ...ctx, actor: callOptions.actor } : ctx;
+    return implementation(forCall, parsed.data);
   }
 
   const akno: Akno = {
