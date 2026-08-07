@@ -35,7 +35,7 @@ export interface CrossPageConflict {
   claims: ConflictClaim[];
   /**
    * A model's judgement, when one ran. `unverified` is honest and common: the pass reports
-   * structural candidates whether or not a chat model was available to judge them.
+   * structural candidates whether or not a model was available to judge them.
    */
   verdict: 'real' | 'not_a_conflict' | 'unverified';
   /** Which claim the model thinks is current, when it had an opinion. */
@@ -58,7 +58,7 @@ interface FactRow {
  * where two pages carry values that disagree.
  *
  * No model call. That matters for the same reason it matters inline — the pass has to be
- * runnable on a machine with no chat model, and a candidate list is useful on its own.
+ * runnable on a machine with no model at all, and a candidate list is useful on its own.
  */
 export function findCrossPageConflicts(ctx: AknoContext, maxPairs: number): CrossPageConflict[] {
   const rows = ctx.store.db
@@ -142,7 +142,7 @@ When you cannot tell, answer false. A false alarm wastes someone's afternoon loo
 that was never there.`;
 
 /**
- * Asks the chat model whether each candidate really is a contradiction.
+ * Asks the derive model whether each candidate really is a contradiction.
  *
  * This belongs here rather than inline, because correctness that requires a model call per
  * write belongs in the background. A verdict of `unverified` is left on anything
@@ -153,7 +153,7 @@ export async function verifyConflicts(
   ctx: AknoContext,
   candidates: CrossPageConflict[],
 ): Promise<{ conflicts: CrossPageConflict[]; warnings: string[] }> {
-  if (!ctx.models.chat.available || candidates.length === 0) {
+  if (!ctx.models.derive.available || candidates.length === 0) {
     return { conflicts: candidates, warnings: [] };
   }
 
@@ -164,7 +164,7 @@ export async function verifyConflicts(
     const listed = candidate.claims
       .map((claim) => `- [${claim.slug}] ${claim.claim} (recorded ${claim.seen})`)
       .join('\n');
-    const result = await ctx.models.chat.chat(
+    const result = await ctx.models.derive.chat(
       [
         { role: 'system', content: VERIFY },
         { role: 'user', content: `Subject: ${candidate.subject} / ${candidate.attribute}\n\n${listed}` },

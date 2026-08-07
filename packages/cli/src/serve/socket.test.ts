@@ -41,7 +41,12 @@ beforeEach(async () => {
       akno_path: root,
       state_dir: stateDir,
       providers: {},
-      models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+      models: {
+        embedding: { id: null },
+        reranker: { id: null, enabled: false },
+        derive: { id: null },
+        expansion: { id: null },
+      },
     },
   });
   await mem.index({});

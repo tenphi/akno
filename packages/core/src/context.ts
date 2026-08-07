@@ -14,7 +14,10 @@ export interface AknoContext {
   models: {
     embedding: ModelClient;
     reranker: ModelClient;
-    chat: ModelClient;
+    /** Quality work off the hot path: facts, summaries, naming, remember, the cycle. */
+    derive: ModelClient;
+    /** The recall path only, where latency is felt on every question. */
+    expansion: ModelClient;
     vision: ModelClient;
   };
   assembler: Assembler;

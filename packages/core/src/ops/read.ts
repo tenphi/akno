@@ -204,7 +204,10 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
 
   return {
     status: text === null ? 'degraded' : 'ok',
-    ...(text === null ? { degraded: ['no_chat_model' as const] } : {}),
+    // Extraction is a built-in reader, not a model call — so a file nothing could be read
+    // from is its own kind of degraded, and pointing at a model would send someone to
+    // configure one that would not have helped.
+    ...(text === null ? { degraded: ['no_document_text' as const] } : {}),
     ...(notes.length > 0 ? { note: notes.join('. ') } : {}),
     document: {
       id: row.id,

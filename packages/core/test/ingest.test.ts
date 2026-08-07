@@ -7,7 +7,7 @@ import { open, type Akno } from '../src/index.ts';
 
 /**
  * Ingest, end to end. Extraction is real — the macOS Swift helper actually runs, over a
- * PDF built in the test — while naming runs against a stub chat endpoint, because
+ * PDF built in the test — while naming runs against a stub model endpoint, because
  * every assertion here is about what `ingest` *does* with a given name, and a live
  * model cannot be scripted into returning the case you need.
  *
@@ -154,7 +154,8 @@ beforeEach(async () => {
       models: {
         embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
         reranker: { id: null, enabled: false },
-        chat: { provider: 'stub', id: 'stub-chat' },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
       },
     },
   });
@@ -380,7 +381,8 @@ describe('provenance', () => {
         models: {
           embedding: { id: null },
           reranker: { id: null, enabled: false },
-          chat: { provider: 'stub', id: 'stub-chat' },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
           vision: { provider: 'stub', id: 'stub-vision', enabled: true },
         },
       },
@@ -438,7 +440,8 @@ describe('routing and gating', () => {
         models: {
           embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
           reranker: { id: null, enabled: false },
-          chat: { provider: 'stub', id: 'stub-chat' },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
         },
       },
     });
@@ -637,7 +640,7 @@ describe('the inbox', () => {
 
   it('does not let the namer overrule a refusal', async () => {
     // The regression this guards, found on a real knowledge base: below the threshold,
-    // routing fell through to whatever folder the chat model had suggested. The
+    // routing fell through to whatever folder the model had suggested. The
     // best-scoring folder was `receipts/` at 0.383 against a threshold of 0.5 — the
     // refusal was right — and the fallback then filed a water bill into an employment
     // folder, overriding the refusal with a signal weaker than the rejected one.
@@ -707,7 +710,8 @@ describe('the inbox', () => {
         models: {
           embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
           reranker: { id: null, enabled: false },
-          chat: { provider: 'stub', id: 'stub-chat' },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
         },
         folders: { 'dropbox/**': { ingest: 'auto', route: true } },
       },

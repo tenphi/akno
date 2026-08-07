@@ -10,6 +10,7 @@ import { findCrossPageConflicts, verifyConflicts, type CrossPageConflict } from 
 import { housekeeping, type Housekeeping } from './housekeeping.ts';
 import { ModelClient } from '../models/client.ts';
 import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
+import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 
 /**
  * The maintenance cycle: three tiers, each with a configurable mission.
@@ -65,6 +66,8 @@ export interface DreamReport {
   adoptChangeId: string | null;
   warnings: string[];
   durationMs: number;
+  /** Where the run was written down, when `maintenance.log_changes` is on. */
+  logPath?: string;
 }
 
 export interface DreamOptions {
@@ -76,12 +79,12 @@ export interface DreamOptions {
 
 export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promise<DreamReport> {
   const started = performance.now();
-  // The tiers run unattended and are worth a better model than per-turn work needs — measured:
+  // The tiers run unattended and are worth a better model than indexing needs — measured:
   // the same observe pass over one knowledge base produced 15 candidates worth about four with a
   // local 3B, and 8 candidates with no guard violations at all with a strong one. When
   // `maintenance.model` is set, the whole cycle uses it and nothing else does.
   const cycle: AknoContext = ctx.config.maintenance.model
-    ? { ...ctx, models: { ...ctx.models, chat: new ModelClient(ctx.config.maintenance.model) } }
+    ? { ...ctx, models: { ...ctx.models, derive: new ModelClient(ctx.config.maintenance.model) } }
     : ctx;
   const report: DreamReport = {
     phases: [],
@@ -96,10 +99,14 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     durationMs: 0,
   };
 
+  // Collected whether or not anything reads it, because the phases are where the information
+  // is and threading it out conditionally is how a debugging flag ends up logging half a run.
+  const applied: AppliedChange[] = [];
+
   const wanted = options.phase ? [options.phase] : DREAM_PHASES;
   for (const phase of wanted) {
     const phaseStarted = performance.now();
-    const skipped = await runPhase(cycle, phase, options, report);
+    const skipped = await runPhase(cycle, phase, options, report, applied);
     report.phases.push({
       phase,
       ran: skipped === null,
@@ -109,6 +116,11 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   }
 
   report.durationMs = Math.round(performance.now() - started);
+
+  if (ctx.config.maintenance.logChanges) {
+    const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });
+    if (logPath) report.logPath = logPath;
+  }
   return report;
 }
 
@@ -117,14 +129,15 @@ async function runPhase(
   phase: DreamPhase,
   options: DreamOptions,
   report: DreamReport,
+  applied: AppliedChange[],
 ): Promise<string | null> {
   switch (phase) {
     case 'observe': {
       if (!ctx.config.maintenance.observe.enabled) return 'disabled in config';
-      if (!ctx.models.chat.available) {
-        return `no chat model: ${ctx.models.chat.unavailableReason ?? 'unavailable'}`;
+      if (!ctx.models.derive.available) {
+        return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await observePhase(ctx, options, report);
+      await observePhase(ctx, options, report, applied);
       return null;
     }
     case 'reflect': {
@@ -134,10 +147,10 @@ async function runPhase(
       if (!ctx.config.maintenance.reflect.enabled) {
         return 'off by default — enable it once the knowledge base has the volume for it';
       }
-      if (!ctx.models.chat.available) {
-        return `no chat model: ${ctx.models.chat.unavailableReason ?? 'unavailable'}`;
+      if (!ctx.models.derive.available) {
+        return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await reflectPhase(ctx, options, report);
+      await reflectPhase(ctx, options, report, applied);
       return null;
     }
     case 'adopt': {
@@ -147,6 +160,7 @@ async function runPhase(
         dryRun: options.dryRun ?? false,
       });
       report.adopted = result.adopted;
+      applied.push(...result.files.map((file) => asApplied('adopt', file)));
       if (result.files.length > 0) {
         // Its own change, separate from observe's: adopting a document is a mechanical write
         // from what the file says, and undoing it should not also undo a night's inferences.
@@ -212,7 +226,12 @@ interface SubjectGroup {
  * - **Never self-feeding.** An observation is not admissible evidence for another observation.
  *   No inference cascades.
  */
-async function observePhase(ctx: AknoContext, options: DreamOptions, report: DreamReport): Promise<void> {
+async function observePhase(
+  ctx: AknoContext,
+  options: DreamOptions,
+  report: DreamReport,
+  applied: AppliedChange[],
+): Promise<void> {
   const groups = subjectGroups(ctx, ctx.config.maintenance.observe.maxSubjects);
   if (groups.length === 0) return;
 
@@ -225,7 +244,7 @@ async function observePhase(ctx: AknoContext, options: DreamOptions, report: Dre
       // looking at: "price, in shopping" is a question; "price" on its own is a word.
       subject: group.folder === '.' ? group.subject : `${group.subject}, in ${group.folder}`,
       facts: group.facts,
-      chat: ctx.models.chat,
+      model: ctx.models.derive,
       mission: ctx.config.maintenance.observe.mission,
       minEvidence: ctx.config.maintenance.observe.minEvidence,
     });
@@ -244,7 +263,10 @@ async function observePhase(ctx: AknoContext, options: DreamOptions, report: Dre
         options.dryRun ?? false,
       );
       written.push(outcome.written);
-      if (outcome.file) files.push(outcome.file);
+      if (outcome.file) {
+        files.push(outcome.file);
+        applied.push(asApplied('observe', outcome.file));
+      }
     }
   }
 
@@ -448,7 +470,12 @@ function slugify(subject: string): string {
  * invent a second set of guardrails — the same evidence floor, the same refusal to hedge, the
  * same append-only writing.
  */
-async function reflectPhase(ctx: AknoContext, options: DreamOptions, report: DreamReport): Promise<void> {
+async function reflectPhase(
+  ctx: AknoContext,
+  options: DreamOptions,
+  report: DreamReport,
+  applied: AppliedChange[],
+): Promise<void> {
   const rows = ctx.store.db
     .prepare(
       `SELECT slug, summary FROM pages
@@ -468,7 +495,7 @@ async function reflectPhase(ctx: AknoContext, options: DreamOptions, report: Dre
   const result = await runObserveMission({
     subject: 'decision principles',
     facts: rows.map((row) => ({ claim: row.summary, slug: row.slug })),
-    chat: ctx.models.chat,
+    model: ctx.models.derive,
     mission:
       ctx.config.maintenance.reflect.mission ??
       'State durable decision principles and long-term tendencies, not individual patterns.',
@@ -491,7 +518,10 @@ async function reflectPhase(ctx: AknoContext, options: DreamOptions, report: Dre
       options.dryRun ?? false,
     );
     report.observations.push(outcome.written);
-    if (outcome.file) files.push(outcome.file);
+    if (outcome.file) {
+      files.push(outcome.file);
+      applied.push(asApplied('reflect', outcome.file));
+    }
   }
 
   if (files.length === 0) return;
@@ -502,6 +532,16 @@ async function reflectPhase(ctx: AknoContext, options: DreamOptions, report: Dre
     files,
   });
   await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+}
+
+/** A journal entry, as the log wants it: which phase, and what the write added. */
+function asApplied(phase: DreamPhase, file: ChangeFile): AppliedChange {
+  return {
+    phase,
+    relPath: file.relPath,
+    action: file.action,
+    added: file.after === null ? [] : addedLines(file.before, file.after),
+  };
 }
 
 /** Guard for the CLI: a phase name that is not one. */

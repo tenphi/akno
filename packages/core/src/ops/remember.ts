@@ -29,17 +29,17 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     };
   }
 
-  const retained = await runRetain(input.text, ctx.models.chat, {
+  const retained = await runRetain(input.text, ctx.models.derive, {
     today: new Date().toISOString().slice(0, 10),
     ...(ctx.config.maintenance.retain.mission ? { mission: ctx.config.maintenance.retain.mission } : {}),
   });
 
   if (retained.error) {
-    // No chat model means no `remember`. Saying so is the whole contract —
+    // No derive model means no `remember`. Saying so is the whole contract —
     // silently keeping nothing would look identical to "nothing was worth keeping".
     return {
       status: 'degraded',
-      degraded: [ctx.models.chat.degradedReason({})],
+      degraded: [ctx.models.derive.degradedReason({})],
       outcome: 'noop',
       note: `the retain mission could not run: ${retained.error}`,
     };

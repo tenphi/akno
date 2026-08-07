@@ -174,7 +174,10 @@ function envOverlay(env: NodeJS.ProcessEnv): ConfigDoc {
   if (env.AKNO_EMBEDDING_MODEL) {
     doc.models = { ...doc.models, embedding: { id: env.AKNO_EMBEDDING_MODEL } };
   }
-  if (env.AKNO_CHAT_MODEL) doc.models = { ...doc.models, chat: { id: env.AKNO_CHAT_MODEL } };
+  if (env.AKNO_DERIVE_MODEL) doc.models = { ...doc.models, derive: { id: env.AKNO_DERIVE_MODEL } };
+  if (env.AKNO_EXPANSION_MODEL) {
+    doc.models = { ...doc.models, expansion: { id: env.AKNO_EXPANSION_MODEL } };
+  }
   return doc;
 }
 
@@ -368,7 +371,11 @@ function resolve(
     models: {
       embedding: resolveRole('embedding', doc.models?.embedding, providers, 60_000),
       reranker: resolveRole('reranker', doc.models?.reranker, providers, 30_000),
-      chat: resolveRole('chat', doc.models?.chat, providers, 120_000),
+      derive: resolveRole('derive', doc.models?.derive, providers, 120_000),
+      // A shorter default ceiling than derive's two minutes, because this one is on the recall
+      // path. `recall.expansion_timeout_ms` is the deadline that actually governs a call; this
+      // is the backstop for a model that accepts the connection and then goes quiet.
+      expansion: resolveRole('expansion', doc.models?.expansion, providers, 30_000),
       vision: resolveRole('vision', doc.models?.vision, providers, 120_000),
     },
     index: {
@@ -416,14 +423,17 @@ function resolve(
     maintenance: {
       // Resolved through the same path as any role, so a typo in the provider name fails the
       // same way and `doctor` can probe it like the rest.
-      model: doc.maintenance?.model ? resolveRole('chat', doc.maintenance.model, providers, 120_000) : null,
+      model: doc.maintenance?.model
+        ? resolveRole('maintenance', doc.maintenance.model, providers, 120_000)
+        : null,
+      logChanges: doc.maintenance?.log_changes ?? false,
       retain: {
         enabled: doc.maintenance?.retain?.enabled ?? true,
         mission: doc.maintenance?.retain?.mission ?? null,
       },
       observe: {
         // Off by default, from measurement rather than caution. On a real 223-page knowledge
-        // base with a local 3B chat model, a run produced 18 candidate patterns of which about
+        // base with a local 3B model, a run produced 18 candidate patterns of which about
         // three were worth keeping — and every one of them would have been recalled later as
         // truth. The guardrails hold; what they cannot do is make a small model insightful.
         // Enable it with a model you have seen produce patterns worth having.

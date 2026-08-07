@@ -101,15 +101,15 @@ export interface ObserveInput {
   subject: string;
   /** Facts as shown to the model: the claim and the page it came from. */
   facts: { claim: string; slug: string }[];
-  chat: ModelClient;
+  model: ModelClient;
   mission?: string | null;
   minEvidence: number;
 }
 
 export async function runObserveMission(input: ObserveInput): Promise<ObserveMissionResult> {
   const empty: ObserveMissionResult = { observations: [], error: null, rejected: [] };
-  if (!input.chat.available) {
-    return { ...empty, error: input.chat.unavailableReason ?? 'chat model unavailable' };
+  if (!input.model.available) {
+    return { ...empty, error: input.model.unavailableReason ?? 'the model is unavailable' };
   }
 
   const allowed = new Set(input.facts.map((fact) => fact.slug));
@@ -120,7 +120,7 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
   const system = input.mission ? `${SYSTEM}\n\nAdditional emphasis: ${input.mission}` : SYSTEM;
   const listed = input.facts.map((fact) => `- [${fact.slug}] ${fact.claim}`).join('\n');
 
-  const result = await input.chat.chat(
+  const result = await input.model.chat(
     [
       { role: 'system', content: system },
       { role: 'user', content: `Subject: ${input.subject}\n\nFacts:\n${listed}` },

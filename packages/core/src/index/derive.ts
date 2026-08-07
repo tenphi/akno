@@ -58,12 +58,12 @@ const SUMMARY_ONLY = `Summarize a personal knowledge base page. Reply with JSON 
  */
 export async function derivePage(
   page: ParsedPage,
-  chat: ModelClient,
+  model: ModelClient,
   options: { summaries: boolean; facts: boolean },
 ): Promise<DerivedPage> {
   const empty: DerivedPage = { summary: null, keywords: [], facts: [], error: null };
   if (!options.summaries && !options.facts) return empty;
-  if (!chat.available) return { ...empty, error: chat.unavailableReason ?? 'chat model unavailable' };
+  if (!model.available) return { ...empty, error: model.unavailableReason ?? 'derive model unavailable' };
 
   // Only text above the reference fence is mined. Below it is somebody else's
   // words, and a fact extractor asserting things from a contract or an email is
@@ -72,7 +72,7 @@ export async function derivePage(
   if (mineable.length === 0) return empty;
 
   const numbered = mineable.map(({ line, text }) => `${line}: ${text}`).join('\n');
-  const result = await chat.chat(
+  const result = await model.chat(
     [
       { role: 'system', content: SYSTEM },
       { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
@@ -92,7 +92,7 @@ export async function derivePage(
     // A long page can defeat a small model's JSON even with the repair pass. A
     // summary is the more valuable half — it is what recall shows on every card —
     // so ask for that alone rather than losing the page entirely.
-    const retry = await chat.chat(
+    const retry = await model.chat(
       [
         { role: 'system', content: SUMMARY_ONLY },
         { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
@@ -107,7 +107,7 @@ export async function derivePage(
       keywords: options.summaries ? cleanKeywords(retried.keywords) : [],
       facts: [],
       error: null,
-      partial: 'facts were not derived — the page is too long for the chat model to answer in JSON',
+      partial: 'facts were not derived — the page is too long for the model to answer in JSON',
     };
   }
 
@@ -346,16 +346,17 @@ what is there. Do not guess at what is missing.`;
  */
 export async function summarizeDocument(
   text: string,
-  chat: ModelClient,
+  model: ModelClient,
 ): Promise<{ summary: string | null; error: string | null }> {
-  if (!chat.available) return { summary: null, error: chat.unavailableReason ?? 'chat model unavailable' };
+  if (!model.available)
+    return { summary: null, error: model.unavailableReason ?? 'derive model unavailable' };
 
   // Enough to say what a document is without paying for a 40-page contract: the opening
   // pages of a document are where it identifies itself. A second, shorter attempt follows a
   // reply a small model could not keep as JSON — the same trade `derivePage` makes, and the
   // difference between a document with a summary and one without.
   for (const chars of [6000, 2000]) {
-    const result = await chat.chat(
+    const result = await model.chat(
       [
         { role: 'system', content: DOCUMENT_SUMMARY },
         { role: 'user', content: text.slice(0, chars) },
@@ -370,5 +371,5 @@ export async function summarizeDocument(
 
   // Reported rather than passed over: a document with no summary is a document that only
   // full-text search can find, and the caller should know which ones those are.
-  return { summary: null, error: 'the chat model did not return a usable summary' };
+  return { summary: null, error: 'the model did not return a usable summary' };
 }

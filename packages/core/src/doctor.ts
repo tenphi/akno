@@ -128,7 +128,10 @@ export async function doctor(
       'lexical search only — no semantic matching, and question-mode hypothetical expansion is inert',
     reranker:
       'hybrid score ordering instead of cross-encoder reranking; recall still works, ordering is coarser',
-    chat: 'no summaries, keywords, fact derivation, query expansion, remember or observations — recall still works',
+    derive:
+      'no summaries, keywords, fact derivation, remember, ingest naming or observations — recall still works',
+    expansion:
+      'recall searches the words you typed and nothing more: no synonyms, no hypothetical answer for a question',
     vision:
       'photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals',
   };
@@ -163,7 +166,7 @@ export async function doctor(
     const resolved = ctx.config.maintenance.model;
     const client = new ModelClient(resolved);
     const report: RoleReport = {
-      role: 'chat (maintenance)',
+      role: 'derive (maintenance)',
       configured: resolved.id !== null,
       available: client.available,
       model: resolved.id,

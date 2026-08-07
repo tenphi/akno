@@ -8,7 +8,7 @@ import { parseJsonLoose, type ModelClient } from '../models/client.ts';
  * can search, because the filename is indexed and contributes only noise.
  *
  * Akno already has the text. Once it has that, naming is nearly free: **one call to
- * the small chat model over the extracted text returns title, slug, summary, type and
+ * the derive model over the extracted text returns title, slug, summary, type and
  * a suggested folder together.** Not five calls — the model is reading the document
  * once either way.
  *
@@ -72,7 +72,7 @@ export interface NameOptions {
   originalName: string;
   /** Folders that exist, so the suggestion is a real place and not an invention. */
   folders: string[];
-  chat: ModelClient;
+  derive: ModelClient;
 }
 
 export async function nameDocument(options: NameOptions): Promise<NamedDocument> {
@@ -86,8 +86,8 @@ export async function nameDocument(options: NameOptions): Promise<NamedDocument>
     error: null,
   };
 
-  if (!options.chat.available) {
-    return { ...empty, error: options.chat.unavailableReason ?? 'chat model unavailable' };
+  if (!options.derive.available) {
+    return { ...empty, error: options.derive.unavailableReason ?? 'derive model unavailable' };
   }
   if (options.text.trim().length < 20) {
     return { ...empty, error: 'too little text to name the document from' };
@@ -98,7 +98,7 @@ export async function nameDocument(options: NameOptions): Promise<NamedDocument>
   const excerpt = options.text.slice(0, 6000);
   const folders = options.folders.slice(0, 60).join(', ');
 
-  const result = await options.chat.chat(
+  const result = await options.derive.chat(
     [
       { role: 'system', content: SYSTEM },
       {

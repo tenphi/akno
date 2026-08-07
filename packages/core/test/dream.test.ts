@@ -8,7 +8,7 @@ import { open, type Akno } from '../src/index.ts';
 /**
  * The maintenance cycle, end to end over a real knowledge base on disk.
  *
- * The chat model is a stub, because every case here is about what the *cycle* does with a
+ * The model is a stub, because every case here is about what the *cycle* does with a
  * given answer — the guardrails, the append-only writing, the re-run safety — and a live
  * model cannot be scripted into returning the answer each case needs. All fixtures are
  * invented (see AGENTS.md).
@@ -159,7 +159,8 @@ async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
       models: {
         embedding: { id: null },
         reranker: { id: null, enabled: false },
-        chat: { provider: 'stub', id: 'stub-chat' },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
       },
       // Observe ships off (see config/default.jsonc); these tests are about what it does when
       // a knowledge base turns it on.
@@ -470,14 +471,14 @@ describe('the cycle', () => {
     expect(byPhase.get('reflect')?.skipped).toMatch(/off by default/);
   });
 
-  it('says which phase could not run when the chat model is missing', async () => {
+  it('says which phase could not run when the cycle has no model', async () => {
     await mem.close();
-    mem = await openMem({ providers: {}, models: { chat: { id: null } } });
+    mem = await openMem({ providers: {}, models: { derive: { id: null } } });
 
     const report = await mem.dream({});
     const observe = report.phases.find((phase) => phase.phase === 'observe');
     expect(observe?.ran).toBe(false);
-    expect(observe?.skipped).toMatch(/no chat model/);
+    expect(observe?.skipped).toMatch(/no model for the cycle/);
     // The phases that need no model still run: degrade, never fail.
     expect(report.phases.find((phase) => phase.phase === 'housekeeping')?.ran).toBe(true);
   });
@@ -495,7 +496,8 @@ describe('the cycle', () => {
         models: {
           embedding: { id: null },
           reranker: { id: null, enabled: false },
-          chat: { provider: 'stub', id: 'stub-chat' },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
         },
       },
     });
@@ -511,7 +513,7 @@ describe('the cycle', () => {
 
 describe('observe when a knowledge base has not asked for it', () => {
   it('is off, and says so rather than looking like a quiet night', async () => {
-    // Off by default from measurement: on a real base with a small chat model, most of what it
+    // Off by default from measurement: on a real base with a small model, most of what it
     // produced was not worth keeping, and all of it would have been recalled later as truth.
     await mem.close();
     mem = await openMem({ maintenance: { observe: { enabled: false } } });
@@ -623,5 +625,71 @@ describe('adopt', () => {
     await mem.undo({ change_id: report.adoptChangeId! });
     expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
     expect(fs.existsSync(path.join(root, 'household/lease scan.txt'))).toBe(true);
+  });
+});
+
+/**
+ * The run log is off unless a knowledge base asks for it, and what it is *for* is the part the
+ * journal cannot answer: not "a page appeared", but which pattern a guard refused and why.
+ */
+describe('the run log', () => {
+  it('writes nothing at all by default', async () => {
+    server.reply(OBSERVED);
+    const report = await mem.dream({ phase: 'observe' });
+    expect(report.observations).toHaveLength(1);
+    expect(report.logPath).toBeUndefined();
+    expect(fs.existsSync(path.join(stateDir, 'logs/dream.jsonl'))).toBe(false);
+  });
+
+  it('records what it applied, and what a guardrail refused', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { observe: { enabled: true }, log_changes: true } });
+    await mem.index({});
+
+    // One admissible observation and one the hedge guard must refuse, so the record has to
+    // carry both halves — a log that only shows the writes explains nothing.
+    server.reply({
+      observations: [
+        { pattern: PATTERN, evidence: ['home/appliances', 'home/laundry'], confidence: 0.8 },
+        {
+          pattern: 'The household might perhaps prefer weekends.',
+          evidence: ['home/appliances', 'home/laundry'],
+          confidence: 0.7,
+        },
+      ],
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+    expect(report.logPath).toBe(path.join(stateDir, 'logs/dream.jsonl'));
+
+    const lines = fs.readFileSync(report.logPath!, 'utf8').trim().split('\n');
+    expect(lines).toHaveLength(1);
+    const record = JSON.parse(lines[0]!);
+
+    expect(record.applied).toHaveLength(1);
+    expect(record.applied[0].phase).toBe('observe');
+    expect(record.applied[0].relPath).toMatch(/^observations\//);
+    // The lines the write added, so the record shows the text without a second lookup.
+    expect(record.applied[0].added.join('\n')).toContain(PATTERN);
+    expect(record.changeIds).toEqual([report.changeId]);
+    expect(record.rejected.map((entry: { reason: string }) => entry.reason)).toContain('hedged language');
+    expect(record.dryRun).toBe(false);
+
+    // A second run appends rather than replacing: the point is the history.
+    await mem.dream({ phase: 'observe' });
+    expect(fs.readFileSync(report.logPath!, 'utf8').trim().split('\n')).toHaveLength(2);
+  });
+
+  it('records a dry run as one, so a review of what *would* happen is possible', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { observe: { enabled: true }, log_changes: true } });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe', dryRun: true });
+    const record = JSON.parse(fs.readFileSync(report.logPath!, 'utf8').trim());
+    expect(record.dryRun).toBe(true);
+    expect(record.applied).toEqual([]);
+    expect(record.observations[0].pattern).toBe(PATTERN);
   });
 });

@@ -150,11 +150,12 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   const models = {
     embedding: new ModelClient(config.models.embedding),
     reranker: new ModelClient(config.models.reranker),
-    chat: new ModelClient(config.models.chat),
+    derive: new ModelClient(config.models.derive),
+    expansion: new ModelClient(config.models.expansion),
     vision: new ModelClient(config.models.vision),
   };
 
-  const indexer = new Indexer(config, store, { embedding: models.embedding, chat: models.chat });
+  const indexer = new Indexer(config, store, { embedding: models.embedding, derive: models.derive });
   const ctx: AknoContext = {
     config,
     store,

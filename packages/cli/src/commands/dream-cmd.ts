@@ -151,6 +151,10 @@ function printDream(report: DreamReport, dryRun: boolean): number {
     for (const warning of report.warnings.slice(0, 10)) line(`  ${style.yellow('·')} ${warning}`);
   }
 
+  // Said out loud rather than left to be discovered: the flag that turns this on is the one
+  // that puts a record of private inferences on disk, and a run should say where it went.
+  if (report.logPath) line(`\n  ${style.grey('this run was written to')} ${report.logPath}`);
+
   for (const [what, id] of [
     ['the observations', report.changeId],
     ['the pages it wrote for documents', report.adoptChangeId],

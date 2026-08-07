@@ -192,7 +192,7 @@ export async function ingestFile(
           text: extraction.text,
           originalName: file.originalName,
           folders: existingFolders(ctx),
-          chat: ctx.models.chat,
+          derive: ctx.models.derive,
         })
       : null;
 
@@ -404,7 +404,7 @@ async function route(
 
   // Nothing cleared. The suggestion does **not** get to overrule that.
   //
-  // It used to: below the threshold, routing fell through to whatever folder the chat
+  // It used to: below the threshold, routing fell through to whatever folder the
   // model had named. On a real knowledge base that filed a water bill into an employment
   // folder — `receipts/` was the top-scoring folder at 0.383 against a threshold of 0.5,
   // the refusal was correct, and the fallback then overrode it with a signal weaker than

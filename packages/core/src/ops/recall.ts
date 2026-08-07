@@ -50,7 +50,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     const expansion = await expandQuery(
       part,
       mode,
-      ctx.models.chat,
+      ctx.models.expansion,
       input.expand ?? ctx.config.recall.expansion,
       ctx.config.recall.expansionTimeoutMs,
     );

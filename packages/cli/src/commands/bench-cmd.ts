@@ -41,7 +41,12 @@ export async function benchCommand(argv: string[]): Promise<number> {
       writable: false,
       overrides: {
         providers: {},
-        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+        models: {
+          embedding: { id: null },
+          reranker: { id: null, enabled: false },
+          derive: { id: null },
+          expansion: { id: null },
+        },
       },
     });
   } catch {

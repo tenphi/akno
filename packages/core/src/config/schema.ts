@@ -36,7 +36,14 @@ const RerankerRoleDoc = z.object({
   top_k: z.number().int().positive().optional(),
   max_chars: z.number().int().positive().optional(),
 });
-const ChatRoleDoc = z.object({
+/**
+ * The shape shared by the two roles that generate text. They differ in what they are *for*,
+ * not in how they are configured: `derive` does the work whose quality shows up in the
+ * knowledge base and can take its time, `expansion` sits on the recall path where a second
+ * of latency is felt on every question. Pointing both at one model is a valid answer; so is
+ * pointing `derive` at a 12B and `expansion` at a 3B, which is what a laptop wants.
+ */
+const TextRoleDoc = z.object({
   ...modelRoleBase,
   max_output_tokens: z.number().int().positive().optional(),
   concurrency: z.number().int().positive().optional(),
@@ -46,7 +53,8 @@ const VisionRoleDoc = z.object({ ...modelRoleBase });
 const ModelsDoc = z.object({
   embedding: EmbeddingRoleDoc.optional(),
   reranker: RerankerRoleDoc.optional(),
-  chat: ChatRoleDoc.optional(),
+  derive: TextRoleDoc.optional(),
+  expansion: TextRoleDoc.optional(),
   vision: VisionRoleDoc.optional(),
 });
 
@@ -135,15 +143,24 @@ const TierDoc = z.object({
 
 const MaintenanceDoc = z.object({
   /**
-   * The chat model the cycle uses, when it should not be the one per-turn work uses.
+   * The model the cycle uses, when it should not be the one indexing uses.
    *
-   * Not a fifth model role — it is the same `chat` capability, pointed somewhere else
+   * Not a role of its own — it is the same capability as `derive`, pointed somewhere else
    * for the one caller that runs unattended. Measured on a real base: the observe tier's output
    * is almost entirely a function of the model behind it, and a knowledge base wanting a strong
    * model once a night should not thereby send every recall expansion to a paid API.
    */
   // Nullable so the committed default can name the key while leaving it unset.
-  model: ChatRoleDoc.nullable().optional(),
+  model: TextRoleDoc.nullable().optional(),
+  /**
+   * Write every run down: what was applied, what a guard refused, what was skipped and why.
+   *
+   * Off by default and deliberately so — a log of inferences drawn from private notes is a
+   * second copy of the sensitive part, sitting outside the notes. It is genuinely useful while
+   * you are deciding whether to trust the cycle, which is why it exists; it is the owner's
+   * decision to make, which is why it is not the default.
+   */
+  log_changes: z.boolean().optional(),
   retain: TierDoc.optional(),
   observe: TierDoc.extend({
     /** Distinct source pages an observation needs. The floor is two. */
@@ -162,7 +179,7 @@ const MaintenanceDoc = z.object({
   conflicts: z
     .object({
       enabled: z.boolean().optional(),
-      /** Ask the chat model whether a candidate pair really conflicts. */
+      /** Ask a model whether a candidate pair really conflicts. */
       verify: z.boolean().optional(),
       max_pairs: z.number().int().positive().optional(),
     })
@@ -207,7 +224,12 @@ export interface ResolvedProvider {
 }
 
 export interface ResolvedModelRole {
-  role: 'embedding' | 'reranker' | 'chat' | 'vision';
+  /**
+   * `maintenance` is the same capability as `derive`, named apart only so that a failure at
+   * 03:00 says which model failed — "derive endpoint returned 401" sends someone to look at
+   * the local model that was working fine.
+   */
+  role: 'embedding' | 'reranker' | 'derive' | 'expansion' | 'vision' | 'maintenance';
   provider: ResolvedProvider | null;
   id: string | null;
   /** True once the role resolved to something usable. */
@@ -261,7 +283,8 @@ export interface AknoConfig {
   models: {
     embedding: ResolvedModelRole;
     reranker: ResolvedModelRole;
-    chat: ResolvedModelRole;
+    derive: ResolvedModelRole;
+    expansion: ResolvedModelRole;
     vision: ResolvedModelRole;
   };
   index: {
@@ -293,8 +316,10 @@ export interface AknoConfig {
     blockedExtensions: string[];
   };
   maintenance: {
-    /** Null when the cycle uses the `chat` role, which is the default. */
+    /** Null when the cycle uses the `derive` role, which is the default. */
     model: ResolvedModelRole | null;
+    /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */
+    logChanges: boolean;
     retain: { enabled: boolean; mission: string | null };
     observe: {
       enabled: boolean;

@@ -116,12 +116,16 @@ export type Card = z.infer<typeof Card>;
 export const DegradedReason = z.enum([
   'no_embedding_model',
   'no_reranker',
-  'no_chat_model',
+  'no_derive_model',
+  'no_expansion_model',
   'embedding_failed',
   'rerank_failed',
+  'derive_failed',
   'expansion_failed',
   'no_vector_index',
   'partial_index',
+  /** The file yielded no text — nothing to read back, and no model involved either way. */
+  'no_document_text',
 ]);
 export type DegradedReason = z.infer<typeof DegradedReason>;
 

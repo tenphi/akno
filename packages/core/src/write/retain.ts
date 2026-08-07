@@ -60,16 +60,16 @@ export interface RetainResult {
 
 export async function runRetain(
   text: string,
-  chat: ModelClient,
+  model: ModelClient,
   options: { mission?: string; today: string } = { today: new Date().toISOString().slice(0, 10) },
 ): Promise<RetainResult> {
   const empty: RetainResult = { candidates: [], events: [], error: null };
-  if (!chat.available) return { ...empty, error: chat.unavailableReason ?? 'chat model unavailable' };
+  if (!model.available) return { ...empty, error: model.unavailableReason ?? 'derive model unavailable' };
 
   // Additive, never replacing.
   const system = options.mission ? `${SYSTEM}\n\nAdditional emphasis: ${options.mission}` : SYSTEM;
 
-  const result = await chat.chat(
+  const result = await model.chat(
     [
       { role: 'system', content: system },
       { role: 'user', content: `Today is ${options.today}.\n\n${text}` },

@@ -58,8 +58,8 @@ Three things follow from that picture:
 **1. The Markdown is the truth.** If Akno and your folder disagree, your folder wins. Delete the whole index
 and run `akno index` — every chunk, embedding, summary, fact, event and link comes back from the files.
 
-**2. Missing pieces degrade, they do not fail.** No embedding model? Search still works, lexically. No chat
-model? Recall still works, without summaries. Akno tells you what it lost instead of pretending.
+**2. Missing pieces degrade, they do not fail.** No embedding model? Search still works, lexically. No model for
+summaries? Recall still works, without them. Akno tells you what it lost instead of pretending.
 
 Everything below is an application of those two.
 
@@ -111,8 +111,8 @@ flowchart TD
 | Notice attachments  | Records PDFs, images and Office files, and which page owns each.                              | no             |
 | Read documents      | PDF text layer, or OCR for scans. Per page of the document.                                   | no (macOS)     |
 | Embed               | Turns each chunk into a vector for semantic search.                                           | embedding      |
-| Derive              | One call per page: a summary, keywords, and the durable claims on it.                         | chat           |
-| Summarize documents | One summary per document, so a card can say what a PDF is.                                    | chat           |
+| Derive              | One call per page: a summary, keywords, and the durable claims on it.                         | derive         |
+| Summarize documents | One summary per document, so a card can say what a PDF is.                                    | derive         |
 
 The first three passes are the reason indexing feels instant on the second run. Nothing is re-read unless its
 bytes moved.
@@ -645,6 +645,28 @@ useful. Which is why the cycle can use a different model from everything else:
 
 Read the first run with `--dry-run` before letting it write.
 
+### Keeping a record of what it did
+
+`akno undo <change-id>` reverses a night's work, and the index keeps the bytes of every change — so what a run
+_wrote_ is always recoverable. What is not recorded by default is the reasoning: which pattern a guard refused
+and why, which phase was skipped, what it deliberately left alone. Turn that on and every run appends one JSON
+object to `<state_dir>/logs/dream.jsonl`:
+
+```jsonc
+"maintenance": {
+  "log_changes": true
+}
+```
+
+```bash
+# every suggestion a guardrail refused, over every run so far
+jq -r '.rejected[] | "\(.reason): \(.pattern)"' ~/.akno/logs/dream.jsonl
+```
+
+It is off by default on purpose. A log of inferences drawn from your notes is a second copy of the private part,
+sitting outside your notes — worth having while you decide whether to trust the cycle, and your decision to
+make. `--dry-run` writes a record too, marked as one, so you can review a night that never touched a file.
+
 ### Why the conflict phase never fixes anything
 
 It reports. On that same knowledge base it found five candidate contradictions and the model correctly cleared
@@ -720,7 +742,8 @@ Index
 Models
   embedding  ok 68ms
   reranker   ok 60ms
-  chat       ok 81ms
+  derive     ok 81ms
+  expansion  ok 44ms
   vision     unavailable
     without it: photos with no text yield no page; OCR still covers scans and screenshots
 
@@ -776,12 +799,17 @@ your GPU was busy.
 
 Nothing breaks. Things get simpler, and Akno says which.
 
-| Missing   | What still works                                       | What you lose                                     |
-| --------- | ------------------------------------------------------ | ------------------------------------------------- |
-| Embedding | keyword search with stemming, all reading, all writing | semantic matching; question-mode hypotheticals    |
-| Reranker  | everything                                             | the final precise ordering of results             |
-| Chat      | search, reading, writing, `ingest` of readable files   | summaries, keywords, facts, `remember`, `observe` |
-| Vision    | everything, including OCR of scans and screenshots     | a description of a photo that contains no text    |
+| Missing   | What still works                                       | What you lose                                      |
+| --------- | ------------------------------------------------------ | -------------------------------------------------- |
+| Embedding | keyword search with stemming, all reading, all writing | semantic matching; question-mode hypotheticals     |
+| Reranker  | everything                                             | the final precise ordering of results              |
+| Derive    | search, reading, writing, `ingest` of readable files   | summaries, keywords, facts, `remember`, `observe`  |
+| Expansion | everything                                             | synonyms and related words — your exact words only |
+| Vision    | everything, including OCR of scans and screenshots     | a description of a photo that contains no text     |
+
+The two text roles are separate because one is allowed to be slow. **Derive** runs while indexing, on arrival and
+at night, and what it writes stays in your notes — a bigger model earns its keep. **Expansion** runs inside a
+recall you are waiting for, so it wants a fast one. One model can serve both; two is usually better.
 
 With no models at all, Akno is still a fast, addressable, line-citing search over your notes.
 

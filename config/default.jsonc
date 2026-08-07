@@ -120,14 +120,35 @@
       "max_chars": 800,
       "timeout_ms": 30000
     },
-    // Without it: no summaries, no keywords, no fact derivation, no query
-    // expansion, no `remember`, no observations. Recall still works.
-    "chat": {
+    // The quality role: page summaries, keywords, fact derivation, `remember`,
+    // naming an arrival, and every maintenance tier. None of it is on the recall
+    // path, so this one is allowed to be slow and good.
+    //
+    // Without it: no summaries, no keywords, no fact derivation, no `remember`,
+    // no naming, no observations. Recall still works.
+    "derive": {
+      "provider": "local",
+      "id": null,
+      "max_output_tokens": 1024,
+      // Pages derived at once during a sweep. Raise it for a bigger endpoint;
+      // a single local server usually does no better than 2.
+      "concurrency": 2,
+      "timeout_ms": 120000
+    },
+    // The latency role: query expansion, and nothing else. It runs on every
+    // recall that asks for it, so a small fast model is the right answer here
+    // even when `derive` points at something much stronger. Pointing both at one
+    // model is fine too.
+    //
+    // Without it: recall searches the words you typed and nothing more.
+    "expansion": {
       "provider": "local",
       "id": null,
       "max_output_tokens": 1024,
       "concurrency": 2,
-      "timeout_ms": 120000
+      // A backstop, not the deadline — `recall.expansion_timeout_ms` governs a
+      // call. This one only catches an endpoint that accepts and goes quiet.
+      "timeout_ms": 30000
     },
     // Off by default. OCR covers scans and screenshots, which is most arrivals.
     "vision": {
@@ -169,7 +190,7 @@
     // Query expansion — off means the query is searched verbatim.
     "expansion": true,
     // Expansion is optional, so it gets its own short deadline rather than the
-    // chat role's. A recall that waits two minutes for an optional model call has
+    // role's ceiling. A recall that waits two minutes for an optional model call has
     // failed at its job; past this it degrades and searches the query verbatim.
     "expansion_timeout_ms": 4000,
     // Multiplied into the final score at assembly, not at search.
@@ -201,8 +222,8 @@
   // inference engine honest lives in the fixed part, and a replaceable prompt is
   // how they all get lost at once.
   "maintenance": {
-    // The chat model the cycle uses, when it should not be the one per-turn work
-    // uses. Not a fifth role — the same `chat` capability, pointed somewhere
+    // The model the cycle uses, when it should not be the one indexing uses.
+    // Not a role of its own — the same capability as `derive`, pointed somewhere
     // else for the one caller that runs unattended.
     //
     // This is worth setting. Measured on a real 223-page base: the observe tier
@@ -215,6 +236,15 @@
     "model": null,
     // Retain is the `remember` op, available per-turn — the tier that needs
     // to be fresh does not wait for a timer. `dream` does not re-run it.
+    // Write every run down — what was applied, what a guardrail refused, what was
+    // skipped and why — to <state_dir>/logs/dream.jsonl, one JSON object per run.
+    //
+    // Off by default on purpose. A log of inferences drawn from private notes is a
+    // second copy of the sensitive part, kept outside the notes. It is genuinely
+    // useful while you are deciding whether to trust the cycle; that is a decision
+    // for whoever owns the notes, not for a default.
+    "log_changes": false,
+
     "retain": {
       "enabled": true,
       "mission": null
@@ -224,7 +254,7 @@
     // only: a changed pattern gets a new dated line and nothing is deleted.
     //
     // Off by default from measurement, not caution. On a real 223-page knowledge
-    // base with a local 3B chat model, one run produced 18 candidate patterns of
+    // base with a local 3B model, one run produced 18 candidate patterns of
     // which about three were worth keeping — and every one of them would have
     // been recalled later as truth. The guardrails hold; what they cannot do is
     // make a small model insightful. Turn this on with a model you have watched
@@ -261,7 +291,7 @@
     // is being written. It reports; it never rewrites a claim.
     "conflicts": {
       "enabled": true,
-      // Ask the chat model whether a candidate pair really conflicts. Off leaves
+      // Ask a model whether a candidate pair really conflicts. Off leaves
       // every candidate reported as `unverified`, which is honest and cheaper.
       "verify": true,
       "max_pairs": 40

@@ -103,9 +103,9 @@ interface FileRow {
 export class Indexer {
   readonly #config: AknoConfig;
   readonly #store: Store;
-  readonly #models: { embedding: ModelClient; chat: ModelClient };
+  readonly #models: { embedding: ModelClient; derive: ModelClient };
 
-  constructor(config: AknoConfig, store: Store, models: { embedding: ModelClient; chat: ModelClient }) {
+  constructor(config: AknoConfig, store: Store, models: { embedding: ModelClient; derive: ModelClient }) {
     this.#config = config;
     this.#store = store;
     this.#models = models;
@@ -890,7 +890,7 @@ export class Indexer {
    * bytes on disk to change.
    */
   private async summarizeDocuments(report: IndexReport, progress: (p: IndexProgress) => void): Promise<void> {
-    if (!this.#models.chat.available) return;
+    if (!this.#models.derive.available) return;
 
     const groups = this.#store.db
       .prepare(
@@ -918,7 +918,7 @@ export class Indexer {
         .join('\n\n');
       if (text.length === 0) continue;
 
-      const summarized = await summarizeDocument(text, this.#models.chat);
+      const summarized = await summarizeDocument(text, this.#models.derive);
       if (summarized.summary) {
         this.#store.transaction(() => {
           for (const part of parts) write.run(summarized.summary, part.id);
@@ -1035,7 +1035,7 @@ export class Indexer {
     const wantSummaries = this.#config.index.summaries;
     const wantFacts = this.#config.index.facts;
     if (!wantSummaries && !wantFacts) return;
-    if (!this.#models.chat.available) return;
+    if (!this.#models.derive.available) return;
     if (scope && scope.size === 0) return;
 
     // No eligibility list — every `full` page is a candidate. A `reference`
@@ -1060,7 +1060,7 @@ export class Indexer {
     if (pending.length === 0) return;
 
     progress({ phase: 'derive', done: 0, total: pending.length });
-    const concurrency = Math.max(1, this.#config.models.chat.concurrency ?? 2);
+    const concurrency = Math.max(1, this.#config.models.derive.concurrency ?? 2);
     let done = 0;
 
     await mapWithConcurrency(pending, concurrency, async (row) => {
@@ -1068,7 +1068,7 @@ export class Indexer {
         const content = await fsp.readFile(path.join(this.#config.aknoPath, row.rel_path), 'utf8');
         const page = parsePage(row.rel_path, content);
         const isReference = row.class === 'reference';
-        const derived = await derivePage(page, this.#models.chat, {
+        const derived = await derivePage(page, this.#models.derive, {
           summaries: wantSummaries,
           // A reference page is evidence. Only claims become facts.
           facts: wantFacts && !isReference,

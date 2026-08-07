@@ -104,7 +104,7 @@ export interface Expansion {
 export async function expandQuery(
   query: string,
   mode: RecallMode,
-  chat: ModelClient,
+  model: ModelClient,
   enabled: boolean,
   timeoutMs: number,
 ): Promise<Expansion> {
@@ -117,25 +117,25 @@ export async function expandQuery(
   };
 
   if (!enabled) return base;
-  if (!chat.available) {
-    return { ...base, degraded: chat.degradedReason({}), note: chat.unavailableReason };
+  if (!model.available) {
+    return { ...base, degraded: model.degradedReason({}), note: model.unavailableReason };
   }
 
   const instruction =
     mode === 'question' ? QUESTION_PROMPT : mode === 'explore' ? EXPLORE_PROMPT : LOOKUP_PROMPT;
 
-  const result = await chat.chat(
+  const result = await model.chat(
     [
       { role: 'system', content: instruction },
       { role: 'user', content: query },
     ],
-    // Its own deadline, not the chat role's: a busy or cold endpoint must cost a
+    // Its own deadline, not the role's ceiling: a busy or cold endpoint must cost a
     // weaker search, never a hung one.
     { json: true, maxTokens: 400, timeoutMs },
   );
 
   if (!result.ok || !result.value) {
-    return { ...base, degraded: chat.degradedReason(result), note: result.error ?? null };
+    return { ...base, degraded: model.degradedReason(result), note: result.error ?? null };
   }
 
   const parsed = parseJsonLoose<{
@@ -269,7 +269,7 @@ const STOPWORDS = new Set([
 ]);
 
 /**
- * Fallback concept extraction when there is no chat model: content words, with a
+ * Fallback concept extraction when there is no expansion model: content words, with a
  * simple bigram pass so "car insurance" survives as one concept rather than two.
  * Crude, but the coverage guarantee should not depend on a model being present.
  */

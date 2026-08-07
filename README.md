@@ -102,21 +102,28 @@ whose class actually moved — a rule edit that silently did nothing was one of 
 
 ## Models
 
-Four roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint; one local server
+Five roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint; one local server
 can host all of them.
 
-| Role       | Without it                                                                                          |
-| ---------- | --------------------------------------------------------------------------------------------------- |
-| Embedding  | lexical search only — no semantic matching, and question-mode hypothetical expansion is inert       |
-| Reranker   | hybrid score ordering instead of cross-encoder reranking; ordering is coarser                       |
-| Small chat | no summaries, keywords, fact derivation, query expansion, `remember` or observations — recall works |
-| Vision     | photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals   |
+| Role      | Without it                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------- |
+| Embedding | lexical search only — no semantic matching, and question-mode hypothetical expansion is inert     |
+| Reranker  | hybrid score ordering instead of cross-encoder reranking; ordering is coarser                     |
+| Derive    | no summaries, keywords, fact derivation, `remember`, naming an arrival, observations              |
+| Expansion | recall searches the words you typed and nothing more                                              |
+| Vision    | photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals |
+
+**`derive` and `expansion` are split because their constraints are opposite.** Derive runs off the hot path —
+during indexing, on arrival, at night — and what it produces ends up in the notes, so it is allowed to be slow
+and good. Expansion runs on every recall that asks for it, where a second of latency is felt in the answer.
+Pointing both at one model is a perfectly good answer; pointing `derive` at a 12B and `expansion` at a 3B is
+what a laptop wants, and it is what `config/local.example.jsonc` shows.
 
 `akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Model latency
 and index latency are reported separately, because a memory system that feels slow after idling is almost never
 suffering from its storage engine.
 
-The maintenance cycle can point at a different chat model than per-turn work uses — see
+The maintenance cycle can point at a different model than indexing uses — see
 [The maintenance cycle](#the-maintenance-cycle) for why that turned out to matter more than any other setting.
 
 There is no model downloading or serving in this repo. Models are configuration, pointed at an endpoint you run.
@@ -300,7 +307,7 @@ Routing scores candidate folders by relevance and refuses below the threshold, a
 load-bearing. Two bugs found on real data: a query built from the document's summary _plus 400 characters of its
 text_ collapsed the spread across folders from 0.49 to 0.014 — everything at 0.98, so nothing could fail the
 threshold and the winner was noise. And below the threshold, routing used to fall through to whatever folder the
-chat model suggested, overriding a correct refusal with a weaker signal. A water bill reached `travel/2026`
+model suggested, overriding a correct refusal with a weaker signal. A water bill reached `travel/2026`
 twice before both were fixed.
 
 ### A document's own text is indexed as the document
@@ -391,7 +398,7 @@ checked against what the model was actually shown, `full` pages only, no observa
 another, no hedged language, nothing about a person's private life, and nothing that describes the records
 rather than what they record. The same pass over the same knowledge base:
 
-| Chat model         | Candidates | Refused by a guard | Worth keeping |
+| Cycle model        | Candidates | Refused by a guard | Worth keeping |
 | ------------------ | ---------- | ------------------ | ------------- |
 | local 3B           | 15         | 18                 | about four    |
 | a strong API model | 8          | **0**              | most of them  |
@@ -445,7 +452,8 @@ Where the model time goes, measured by removing one stage at a time:
 The reranker dominates, and its cost is per _candidate_, not per character — truncating candidates from 4,000
 chars to 800 changed neither latency nor a single result, while dropping `top_k` from 40 to 20 saved 400 ms and
 changed which pages came back. So `top_k` stays at 40 and `config/default.jsonc` records the trade. Set
-`recall.expansion: false` or point the chat role at something faster if you would rather have the latency.
+`recall.expansion: false` or point the `expansion` role at something faster if you would rather have the
+latency — that split is exactly what the role is for.
 
 A restart does not re-index — it **stats**. Only files whose mtime or size moved get hashed. mtime is a fast
 path, not a correctness guarantee, so a full hash sweep runs on the periodic backstop and on `index --verify`.
@@ -459,9 +467,15 @@ Named plainly, because a README that implies more than exists is the same failur
 prevent. Both of these are decisions with a measurement behind them, not gaps:
 
 - **`observe`** — the tier that infers patterns and writes them as prose. Its guardrails hold; the quality of
-  what survives them is the chat model's, and on a small local model most of it was not worth keeping.
+  what survives them is the model's, and on a small local model most of it was not worth keeping.
 - **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
   one coincidence.
+
+- **`maintenance.log_changes`** — a full record of every cycle run appended to
+  `<state_dir>/logs/dream.jsonl`: what it applied with the lines it added, what a guardrail refused and which
+  guard refused it, what was skipped and why. It is the fastest way to decide whether to trust the cycle, and
+  it is off by default because a log of inferences drawn from private notes is a second copy of the sensitive
+  part, kept outside the notes. That is the owner's call, not a default.
 
 Everything else is on: extraction for every attachment including the ones that predate Akno, `adopt`, the
 cross-page conflict pass, and the housekeeping report.

@@ -8,7 +8,7 @@ import { open, type Akno } from '../src/index.ts';
  * Facts are pointers into Markdown, so their lifecycle is decided by what
  * happened to the *line*, not by what a model said this time.
  *
- * These run against a stub chat endpoint rather than a real model: the question is
+ * These run against a stub endpoint rather than a real model: the question is
  * whether the indexer draws the right conclusion from a given derivation, which is
  * exactly what a live model makes impossible to assert.
  */
@@ -63,7 +63,8 @@ async function openMem(): Promise<Akno> {
         // No embedding: these tests are about fact lifecycle, not retrieval.
         embedding: { id: null },
         reranker: { id: null, enabled: false },
-        chat: { provider: 'stub', id: 'stub-chat' },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
       },
     },
   });

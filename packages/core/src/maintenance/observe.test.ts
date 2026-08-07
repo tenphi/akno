@@ -10,13 +10,13 @@ import { ModelClient } from '../models/client.ts';
  */
 
 /**
- * A chat client whose reply is scripted. The transport is not what these tests are about —
+ * A model client whose reply is scripted. The transport is not what these tests are about —
  * the guards run over whatever comes back, and a live model cannot be made to return the
  * hedge or the invented citation each case needs.
  */
 function stubChat(reply: unknown): ModelClient {
   const client = new ModelClient({
-    role: 'chat',
+    role: 'derive',
     provider: { name: 'stub', baseUrl: 'http://127.0.0.1:0/v1', apiKey: null, headers: {} },
     id: 'stub',
     enabled: true,
@@ -48,7 +48,7 @@ describe('the observe mission', () => {
   it('keeps an observation that cites two different pages', async () => {
     const result = await runObserveMission({
       ...base,
-      chat: stubChat({
+      model: stubChat({
         observations: [
           {
             pattern: 'Household appliances are serviced roughly every three months.',
@@ -67,7 +67,7 @@ describe('the observe mission', () => {
     // An invented citation is worse than no observation: it looks checkable.
     const result = await runObserveMission({
       ...base,
-      chat: stubChat({
+      model: stubChat({
         observations: [
           {
             pattern: 'Household appliances are serviced roughly every three months.',
@@ -83,7 +83,7 @@ describe('the observe mission', () => {
   it('refuses an observation resting on one page', async () => {
     const result = await runObserveMission({
       ...base,
-      chat: stubChat({
+      model: stubChat({
         observations: [
           { pattern: 'Appliances are serviced in spring.', evidence: ['home/appliances', 'home/appliances'] },
         ],
@@ -102,7 +102,7 @@ describe('the observe mission', () => {
     ]) {
       const result = await runObserveMission({
         ...base,
-        chat: stubChat({ observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'] }] }),
+        model: stubChat({ observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'] }] }),
       });
       expect(result.observations, pattern).toEqual([]);
       expect(result.rejected[0]?.reason, pattern).toBe('hedged language');
@@ -113,7 +113,7 @@ describe('the observe mission', () => {
     // Never restate the facts. The tier exists for what is true *across* them.
     const result = await runObserveMission({
       ...base,
-      chat: stubChat({
+      model: stubChat({
         observations: [
           {
             pattern: 'The dishwasher was repaired in March 2026.',
@@ -129,7 +129,7 @@ describe('the observe mission', () => {
   it('does not call the model when there is nothing to observe across', async () => {
     // One page agreeing with itself is not a pattern, and the call would only be rejected.
     let called = false;
-    const chat = withReply(stubChat({}), () => {
+    const model = withReply(stubChat({}), () => {
       called = true;
       return { ok: true, value: '{}', error: null };
     });
@@ -138,7 +138,7 @@ describe('the observe mission', () => {
       subject: 'one page',
       facts: [{ claim: 'A single claim.', slug: 'home/only' }],
       minEvidence: 2,
-      chat,
+      model,
     });
     expect(called).toBe(false);
     expect(result.observations).toEqual([]);
@@ -146,20 +146,20 @@ describe('the observe mission', () => {
   });
 
   it('reports a mission that could not run rather than returning nothing quietly', async () => {
-    const chat = withReply(stubChat({}), () => ({ ok: false, value: null, error: 'chat timed out' }));
-    const result = await runObserveMission({ ...base, chat });
+    const model = withReply(stubChat({}), () => ({ ok: false, value: null, error: 'chat timed out' }));
+    const result = await runObserveMission({ ...base, model });
     expect(result.error).toBe('chat timed out');
   });
 
   it('appends a mission to the fixed prompt instead of replacing it', async () => {
     // A replaceable prompt is how every guard above gets lost.
     let system = '';
-    const chat = withReply(stubChat({}), (messages) => {
+    const model = withReply(stubChat({}), (messages) => {
       system = messages.find((message) => message.role === 'system')!.content;
       return { ok: true, value: '{"observations":[]}', error: null };
     });
 
-    await runObserveMission({ ...base, chat, mission: 'Focus on maintenance intervals.' });
+    await runObserveMission({ ...base, model, mission: 'Focus on maintenance intervals.' });
     expect(system).toContain('Never hedge');
     expect(system).toContain('Focus on maintenance intervals.');
   });
@@ -178,7 +178,7 @@ describe('the observe mission, on ground that is out of bounds', () => {
     ]) {
       const result = await runObserveMission({
         ...base,
-        chat: stubChat({ observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'] }] }),
+        model: stubChat({ observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'] }] }),
       });
       expect(result.observations, pattern).toEqual([]);
       expect(result.rejected[0]?.reason, pattern).toMatch(/private life/);
@@ -193,7 +193,7 @@ describe('the observe mission, on ground that is out of bounds', () => {
     ]) {
       const result = await runObserveMission({
         ...base,
-        chat: stubChat({ observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'] }] }),
+        model: stubChat({ observations: [{ pattern, evidence: ['home/appliances', 'home/laundry'] }] }),
       });
       expect(result.observations, pattern).toEqual([]);
       expect(result.rejected[0]?.reason, pattern).toMatch(/describes the records/);
@@ -204,7 +204,7 @@ describe('the observe mission, on ground that is out of bounds', () => {
     // The guards must not swallow the tier's actual purpose.
     const result = await runObserveMission({
       ...base,
-      chat: stubChat({
+      model: stubChat({
         observations: [
           {
             pattern: 'Appliances are serviced before winter rather than after a failure.',

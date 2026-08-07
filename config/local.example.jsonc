@@ -12,15 +12,15 @@
   // Your knowledge base. Required — there is no sensible default for this.
   "akno_path": "~/Notes",
 
-  // One OpenAI-compatible endpoint can serve all three roles. A local
+  // One OpenAI-compatible endpoint can serve every role. A local
   // llama-server / LM Studio / Ollama router takes no auth, so no key is needed.
   "providers": {
     "local": {
       "base_url": "http://127.0.0.1:8080/v1",
       "api_key": null
     }
-    // A hosted provider, if you want a stronger chat model for summaries and
-    // fact derivation. The key lives in .env under this name.
+    // A hosted provider, if you want a stronger model for summaries, fact
+    // derivation, or the nightly cycle. The key lives in .env under this name.
     // "openai": {
     //   "base_url": "https://api.openai.com/v1",
     //   "api_key": { "env": "AKNO_OPENAI_API_KEY" }
@@ -42,7 +42,15 @@
       "id": "bge-reranker-v2-m3",
       "enabled": true
     },
-    "chat": {
+    // Summaries, facts, `remember`, naming, and the nightly cycle. Off the recall
+    // path, so the bigger model belongs here.
+    "derive": {
+      "provider": "local",
+      "id": "gemma-4-12b-it"
+    },
+    // Query expansion only — on the recall path, so keep it fast. Setting it to
+    // the same id as `derive` is fine if you only run one model.
+    "expansion": {
       "provider": "local",
       "id": "llama-3.2-3b-instruct"
     }

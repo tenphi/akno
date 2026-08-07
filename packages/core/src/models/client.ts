@@ -309,8 +309,10 @@ function degradedReasonFor(role: ResolvedModelRole['role'], failure: ModelFailur
       return unconfigured ? 'no_embedding_model' : 'embedding_failed';
     case 'reranker':
       return unconfigured ? 'no_reranker' : 'rerank_failed';
+    case 'expansion':
+      return unconfigured ? 'no_expansion_model' : 'expansion_failed';
     default:
-      return unconfigured ? 'no_chat_model' : 'expansion_failed';
+      return unconfigured ? 'no_derive_model' : 'derive_failed';
   }
 }
 

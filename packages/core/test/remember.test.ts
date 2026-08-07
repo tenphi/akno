@@ -72,7 +72,8 @@ async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
       models: {
         embedding: { id: null },
         reranker: { id: null, enabled: false },
-        chat: { provider: 'stub', id: 'stub-chat' },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
       },
       ...overrides,
     },

@@ -8,7 +8,7 @@ import { open, type Akno } from '../src/index.ts';
  * End-to-end over a real knowledge base on disk, with **no models configured**.
  * That is deliberate: the rule is degrade, never fail, and the most important thing
  * to prove is that a knowledge base with no embedding model, no reranker and no
- * chat model still indexes, still searches, and still says what it lost.
+ * model still indexes, still searches, and still says what it lost.
  */
 
 const KB = {
@@ -151,7 +151,8 @@ beforeAll(async () => {
       models: {
         embedding: { id: null },
         reranker: { id: null, enabled: false },
-        chat: { id: null },
+        derive: { id: null },
+        expansion: { id: null },
       },
       folders: {
         'reference/**': { class: 'reference' },
@@ -443,7 +444,12 @@ describe('rebuilding the index', () => {
         akno_path: root,
         state_dir: stateDir,
         providers: {},
-        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+        models: {
+          embedding: { id: null },
+          reranker: { id: null, enabled: false },
+          derive: { id: null },
+          expansion: { id: null },
+        },
         folders: { 'reference/**': { class: 'reference' }, 'templates/**': { class: 'excluded' } },
       },
     });
@@ -487,7 +493,12 @@ describe('reserved paths', () => {
         state_dir: scratchState,
         create_reserved_paths: createReserved,
         providers: {},
-        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+        models: {
+          embedding: { id: null },
+          reranker: { id: null, enabled: false },
+          derive: { id: null },
+          expansion: { id: null },
+        },
       },
     });
 
@@ -544,7 +555,12 @@ describe('changing a rule', () => {
         akno_path: scratch,
         state_dir: scratchState,
         providers: {},
-        models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+        models: {
+          embedding: { id: null },
+          reranker: { id: null, enabled: false },
+          derive: { id: null },
+          expansion: { id: null },
+        },
         folders,
       },
     });

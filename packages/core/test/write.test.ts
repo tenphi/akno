@@ -46,7 +46,12 @@ async function openAs(actor: 'user' | 'agent'): Promise<Akno> {
       akno_path: root,
       state_dir: stateDir,
       providers: {},
-      models: { embedding: { id: null }, reranker: { id: null, enabled: false }, chat: { id: null } },
+      models: {
+        embedding: { id: null },
+        reranker: { id: null, enabled: false },
+        derive: { id: null },
+        expansion: { id: null },
+      },
     },
   });
 }
@@ -169,10 +174,10 @@ describe('conflict detection', () => {
     await mem.close();
   });
 
-  it('works with no chat model at all — that is what "cheap" means', async () => {
+  it('works with no model at all — that is what "cheap" means', async () => {
     const mem = await openAs('agent');
     const health = await mem.doctor({ probeModels: false });
-    expect(health.models.find((role) => role.role === 'chat')?.available).toBe(false);
+    expect(health.models.find((role) => role.role === 'derive')?.available).toBe(false);
     expect((await mem.write({ slug: 'home/lease', append: '- Rent: 2222 EUR' })).outcome).toBe('conflict');
     await mem.close();
   });
@@ -486,15 +491,15 @@ describe('move', () => {
   });
 });
 
-describe('remember without a chat model', () => {
+describe('remember without a derive model', () => {
   it('reports degraded rather than silently keeping nothing', async () => {
-    // No chat model means no `remember`. "Nothing was kept" and "the curator
+    // No derive model means no `remember`. "Nothing was kept" and "the curator
     // could not run" are different answers and must not look the same.
     const mem = await openAs('agent');
     const result = await mem.remember({ text: 'The rent went up to 2222 EUR.' });
     expect(result.status).toBe('degraded');
     expect(result.outcome).toBe('noop');
-    expect(result.degraded).toContain('no_chat_model');
+    expect(result.degraded).toContain('no_derive_model');
     await mem.close();
   });
 });
