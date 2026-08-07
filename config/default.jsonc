@@ -129,7 +129,13 @@
     "derive": {
       "provider": "local",
       "id": null,
-      "max_output_tokens": 1024,
+      // A ceiling on this role, and the *lower* of it and what a task asks for is what gets sent.
+      // 2400 because that is what a full page derivation needs to answer in JSON — a summary,
+      // keywords, and every durable claim on the page. Lower it and long pages start returning
+      // truncated JSON, which costs their facts (the summary is recovered on its own). Every
+      // cheaper caller already asks for less and is unaffected: 700 for an observation, 500 to name
+      // an arrival, 200 for a conflict verdict.
+      "max_output_tokens": 2400,
       // Pages derived at once during a sweep. Raise it for a bigger endpoint;
       // a single local server usually does no better than 2.
       "concurrency": 2,
@@ -144,6 +150,7 @@
     "expansion": {
       "provider": "local",
       "id": null,
+      // Expansion asks for 400; this only has to be above it.
       "max_output_tokens": 1024,
       "concurrency": 2,
       // A backstop, not the deadline — `recall.expansion_timeout_ms` governs a

@@ -205,7 +205,7 @@ export class ModelClient {
       const body: Record<string, unknown> = {
         model: this.#role.id,
         messages: options.images?.length ? withImages(messages, options.images) : messages,
-        [tokenParam]: options.maxTokens ?? this.#role.maxOutputTokens ?? 1024,
+        [tokenParam]: tokenCeiling(options.maxTokens, this.#role.maxOutputTokens),
       };
       // Some reasoning models reject a non-default temperature outright, and the
       // value buys nothing here — every prompt in this codebase wants determinism.
@@ -302,6 +302,26 @@ export class ModelClient {
  * result is weaker but the knowledge base is intact; everything else means a
  * configured model did not answer, which an operator needs to see.
  */
+/**
+ * The lower of the two ceilings, not one or the other.
+ *
+ * They mean different things and both are limits. The call's value is what *this task* can possibly
+ * need — 64 for a ping, 200 for a conflict verdict, 2400 for a full page derivation. The role's is
+ * what *this deployment* is willing to be asked for. Honouring only the call made
+ * `max_output_tokens` decorative for the biggest thing that should respect it; honouring only the
+ * role would hand a 2400-token budget to a call that needs 200.
+ *
+ * A role configured below what a task needs truncates that task, which is the honest consequence of
+ * configuring it that way — and the reason the committed default is set by what derivation's JSON
+ * needs rather than by a round number.
+ */
+function tokenCeiling(perCall: number | undefined, perRole: number | undefined): number {
+  const limits = [perCall, perRole].filter(
+    (limit): limit is number => typeof limit === 'number' && Number.isFinite(limit) && limit > 0,
+  );
+  return limits.length > 0 ? Math.min(...limits) : 1024;
+}
+
 function degradedReasonFor(role: ResolvedModelRole['role'], failure: ModelFailure): DegradedReason {
   const unconfigured = failure === 'unavailable';
   switch (role) {

@@ -80,18 +80,32 @@ export async function derivePage(
     { json: true, maxTokens: 2400 },
   );
 
-  if (!result.ok || !result.value) return { ...empty, error: result.error ?? 'derivation failed' };
-
-  const parsed = parseJsonLoose<{
-    summary?: unknown;
-    keywords?: unknown;
-    facts?: unknown;
-  }>(result.value);
+  const parsed =
+    result.ok && result.value
+      ? parseJsonLoose<{
+          summary?: unknown;
+          keywords?: unknown;
+          facts?: unknown;
+        }>(result.value)
+      : null;
 
   if (!parsed) {
-    // A long page can defeat a small model's JSON even with the repair pass. A
-    // summary is the more valuable half — it is what recall shows on every card —
-    // so ask for that alone rather than losing the page entirely.
+    // A summary is the more valuable half — it is what recall shows on every card — so ask for
+    // that alone rather than losing the page entirely.
+    //
+    // **Reached by a failed call as well as an unparseable one.** It used to be unparseable-only,
+    // which meant a timeout lost the summary too — and a timeout is the likelier failure of the
+    // two on a local model, because the full request asks for a summary, keywords *and* every fact
+    // on the page at 2400 tokens, where this one asks for a summary at 400. Measured on a real
+    // 222-page base: six pages timed out and every one of them was left with no summary at all,
+    // which is precisely the outcome this fallback exists to prevent.
+    //
+    // Not attempted when the endpoint is simply not there: a second identical failure per page
+    // buys nothing and doubles the cost of a sweep that is already failing.
+    if (result.reason === 'unavailable') {
+      return { ...empty, error: result.error ?? 'derivation failed' };
+    }
+
     const retry = await model.chat(
       [
         { role: 'system', content: SUMMARY_ONLY },
@@ -101,13 +115,22 @@ export async function derivePage(
     );
     const retried =
       retry.ok && retry.value ? parseJsonLoose<{ summary?: unknown; keywords?: unknown }>(retry.value) : null;
-    if (!retried) return { ...empty, error: 'derivation returned unparseable JSON' };
+    if (!retried) {
+      // Report the *original* failure. "unparseable JSON" would be a lie about a timeout, and this
+      // string is what `index` prints as a warning for someone to act on.
+      return { ...empty, error: result.error ?? 'derivation returned unparseable JSON' };
+    }
     return {
       summary: options.summaries ? cleanSummary(retried.summary) : null,
       keywords: options.summaries ? cleanKeywords(retried.keywords) : [],
       facts: [],
       error: null,
-      partial: 'facts were not derived — the page is too long for the model to answer in JSON',
+      // Says which of the two happened, because the fixes differ: a timeout wants a longer
+      // deadline or a faster model, unparseable output wants a shorter page.
+      partial:
+        result.reason === 'timeout'
+          ? 'facts were not derived — the full derivation timed out; the summary was recovered on its own'
+          : 'facts were not derived — the page is too long for the model to answer in JSON',
     };
   }
 
