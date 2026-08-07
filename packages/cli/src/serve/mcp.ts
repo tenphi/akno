@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { AknoError, MCP_SERVER_NAME, OPS, type OpName } from '@akno/protocol';
-import type { Akno } from '@akno/core';
+import type { OpInput, OpResult } from '@akno/protocol';
 
 /**
  * The stdio MCP door, for third-party agents that speak it:
@@ -14,7 +14,9 @@ import type { Akno } from '@akno/core';
  * needs no second code path.
  */
 export async function serveMcp(
-  akno: Akno,
+  // Ops, not an `Akno`: this door is equally happy in front of an in-process index or of a
+  // socket connection to the service that holds the write handle. Nothing here needs more.
+  akno: { call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> },
   options: { allow?: string[]; log?: (message: string) => void } = {},
 ): Promise<{ close(): Promise<void> }> {
   const server = new McpServer(

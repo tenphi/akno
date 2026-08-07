@@ -1,11 +1,16 @@
 import fs from 'node:fs';
 import { connect, defaultSocketPath } from '@akno/client';
 import { loadConfig, open, type Akno } from '@akno/core';
-import type { AknoOps } from '@akno/protocol';
+import type { AknoOps, OpInput, OpName, OpResult } from '@akno/protocol';
 import { style } from './output.ts';
 
 export interface OpsHandle {
-  ops: AknoOps;
+  /**
+   * The named ops, plus the dynamic `call` both sides implement — a door that dispatches by
+   * name (MCP, HTTP) needs it, and dropping it here would force such a door to re-resolve the
+   * service itself and duplicate the fallback rules.
+   */
+  ops: AknoOps & { call<N extends OpName>(op: N, input: OpInput<N>): Promise<OpResult<N>> };
   /** Set when the ops run in-process, for commands that need more than the ops. */
   akno: Akno | null;
   via: 'socket' | 'in-process';

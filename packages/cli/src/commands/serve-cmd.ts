@@ -6,6 +6,7 @@ import { heading, kv, line, ms, style, warn } from '../output.ts';
 import { serveSocket } from '../serve/socket.ts';
 import { serveHttp } from '../serve/http.ts';
 import { serveMcp } from '../serve/mcp.ts';
+import { resolveOps } from '../ops-handle.ts';
 import { AknoError } from '@akno/protocol';
 
 const SERVE_HELP = `akno serve [options]
@@ -52,6 +53,18 @@ export async function serveCommand(argv: string[]): Promise<number> {
     const stamp = new Date().toISOString().slice(11, 19);
     process.stderr.write(`${style.grey(stamp)} ${message}\n`);
   };
+
+  // A second door in front of the service that already holds the write handle, rather than a
+  // second Akno. Opening the index here would give this process a read-only handle — the MCP
+  // tools would all be present and every write would fail, which is the worst of both. The
+  // service owns the index, the watcher and the models; this is stdio translated onto its socket.
+  //
+  // Only for `--mcp`: the socket door *is* the service, so serving it this way would be a
+  // process forwarding to itself.
+  if (isMcp) {
+    const forwarded = await serveMcpThroughService(values, log);
+    if (forwarded !== null) return forwarded;
+  }
 
   const mem = await open({
     ...openOptionsFrom(values),
@@ -130,7 +143,7 @@ export async function serveCommand(argv: string[]): Promise<number> {
     // `KeepAlive` under launchd means the service outlives every host that
     // talks to it, which is the whole point of running it separately. Shutting
     // down cleanly is what makes a restart cost 3ms instead of a WAL replay.
-    await waitForShutdown(log);
+    await waitForShutdown(log, { onStdinEnd: isMcp });
     return 0;
   } finally {
     for (const close of closers) await close().catch(() => {});
@@ -138,7 +151,42 @@ export async function serveCommand(argv: string[]): Promise<number> {
   }
 }
 
-function waitForShutdown(log: (message: string) => void): Promise<void> {
+/**
+ * Serves MCP over an existing service, or returns null when there is none to serve over.
+ *
+ * `--connect` turns "there is no service" into an error instead, for a host that would rather
+ * fail loudly at spawn than quietly get a second Akno it did not ask for.
+ */
+async function serveMcpThroughService(
+  values: { connect?: boolean; allow?: string; aknoPath?: string; stateDir?: string },
+  log: (message: string) => void,
+): Promise<number | null> {
+  const handle = await resolveOps({ ...values, json: true }, openOptionsFrom(values));
+  if (handle.via !== 'socket') {
+    await handle.close();
+    return null;
+  }
+
+  // The service's own `mcp_allow` cannot be read through the socket, so an explicit `--allow`
+  // is the only narrowing available here. Saying so beats a door that is quietly wider than
+  // the operator believes: the socket door they connected to has its own allow list, and this
+  // one inherits nothing from it.
+  const allow = values.allow?.split(',').map((op) => op.trim());
+  const server = await serveMcp(handle.ops, { ...(allow ? { allow } : {}), log });
+  log(`MCP ready over stdio — ${allow ? `${allow.length} ops` : 'all ops'}, through the running service`);
+  try {
+    await waitForShutdown(log, { onStdinEnd: true });
+    return 0;
+  } finally {
+    await server.close();
+    await handle.close();
+  }
+}
+
+function waitForShutdown(
+  log: (message: string) => void,
+  options: { onStdinEnd?: boolean } = {},
+): Promise<void> {
   return new Promise<void>((resolve) => {
     let done = false;
     const finish = (signal: string): void => {
@@ -151,6 +199,14 @@ function waitForShutdown(log: (message: string) => void): Promise<void> {
     process.once('SIGTERM', () => finish('SIGTERM'));
     // launchd sends SIGHUP on a `launchctl kickstart -k`.
     process.once('SIGHUP', () => finish('SIGHUP'));
+    // An MCP server is a child of the agent that spawned it, and stdio is the whole
+    // relationship: when that pipe closes the client is gone and there is nobody left to serve.
+    // Waiting for a signal instead leaves a process per spawn holding a socket connection.
+    if (options.onStdinEnd) {
+      process.stdin.once('end', () => finish('stdin closed'));
+      process.stdin.once('close', () => finish('stdin closed'));
+      process.stdin.resume();
+    }
   });
 }
 
