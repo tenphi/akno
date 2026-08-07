@@ -12,7 +12,7 @@ import { ModelClient } from '../models/client.ts';
 import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
 
 /**
- * §13. The maintenance cycle: three tiers, each with a configurable mission.
+ * The maintenance cycle: three tiers, each with a configurable mission.
  *
  * ```
  * retain    Keep only long-term facts, decisions, preferences, proven experience.
@@ -22,9 +22,9 @@ import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
  * reflect   Build behavioural models, decision principles, long-term strategy.
  * ```
  *
- * `retain` is not run from here: §13 says it is available **per-turn**, as the `remember` op,
- * "so the tier that needs to be fresh does not wait for a timer". A cycle that also re-ran it
- * would be curating a conversation nobody is having.
+ * `retain` is not run from here. It is available **per-turn**, as the `remember` op, so the
+ * tier that needs to be fresh does not wait for a timer; a cycle that also re-ran it would be
+ * curating a conversation nobody is having.
  *
  * **Phases are independent and each is safe to re-run.** That is a real constraint, not a
  * nicety — a maintenance pass is the one thing that runs unattended, so a second run must not
@@ -54,9 +54,9 @@ export interface PhaseReport {
 export interface DreamReport {
   phases: PhaseReport[];
   observations: ObservationWritten[];
-  /** Candidates a guardrail refused, with the guard that refused them (§13). */
+  /** Candidates a guardrail refused, with the guard that refused them. */
   rejected: { pattern: string; reason: string }[];
-  /** Documents given a page of their own (§11), and any that were left alone. */
+  /** Documents given a page of their own, and any that were left alone. */
   adopted: AdoptedDocument[];
   conflicts: CrossPageConflict[];
   housekeeping: Housekeeping | null;
@@ -76,7 +76,7 @@ export interface DreamOptions {
 
 export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promise<DreamReport> {
   const started = performance.now();
-  // §13's tiers run unattended and are worth a better model than per-turn work needs — measured:
+  // The tiers run unattended and are worth a better model than per-turn work needs — measured:
   // the same observe pass over one knowledge base produced 15 candidates worth about four with a
   // local 3B, and 8 candidates with no guard violations at all with a strong one. When
   // `maintenance.model` is set, the whole cycle uses it and nothing else does.
@@ -128,11 +128,11 @@ async function runPhase(
       return null;
     }
     case 'reflect': {
-      // §13: reflect ships as an extension point, off by default. At a few hundred pages a
+      // Reflect ships as an extension point, off by default. At a few hundred pages a
       // "pattern" is one coincidence away from noise, so the default is not a placeholder —
       // it is the recommendation.
       if (!ctx.config.maintenance.reflect.enabled) {
-        return 'off by default (§13) — enable it once the knowledge base has the volume';
+        return 'off by default — enable it once the knowledge base has the volume for it';
       }
       if (!ctx.models.chat.available) {
         return `no chat model: ${ctx.models.chat.unavailableReason ?? 'unavailable'}`;
@@ -202,7 +202,7 @@ interface SubjectGroup {
 }
 
 /**
- * §13's second tier, and the only phase that writes.
+ * The second tier, and the phase that writes the most.
  *
  * The guards that need the knowledge base rather than the text are applied here, before the
  * model sees anything:
@@ -252,7 +252,7 @@ async function observePhase(ctx: AknoContext, options: DreamOptions, report: Dre
   if (files.length === 0) return;
 
   // One change for the whole phase: undoing a night's observations is one decision, not
-  // fourteen. §10's ledger is untouched — an inference is not something that happened.
+  // fourteen. The timeline ledger is untouched — an inference is not something that happened.
   report.changeId = ctx.journal.record({
     actor: 'agent',
     op: 'write',
@@ -286,9 +286,9 @@ function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
         WHERE f.valid_to IS NULL
           AND f.subject IS NOT NULL
           AND f.confidence >= 0.5
-          -- §5: only claims. A reference page is evidence someone else wrote.
+          -- Only claims. A reference page is evidence someone else wrote.
           AND p.class = 'full'
-          -- §13: never self-feeding. An observation is not evidence for another observation.
+          -- Never self-feeding. An observation is not evidence for another observation.
           AND p.slug != ?
           AND p.slug NOT LIKE ?
         ORDER BY p.updated_at DESC`,
@@ -326,7 +326,7 @@ function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
 }
 
 /**
- * §13: **refine, never overwrite** — a changed pattern gets a new dated line. **Add and
+ * **Refine, never overwrite** — a changed pattern gets a new dated line. **Add and
  * refine, never delete** — a curator that can delete loses things nobody watched it delete.
  *
  * So the page is only ever appended to, and an observation already on it is left exactly as it
@@ -352,7 +352,7 @@ async function writeObservation(
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  // Deliberately not `- **YYYY-MM-DD** |`, which §10 reads as a timeline event anywhere it
+  // Deliberately not `- **YYYY-MM-DD** |`, which is read as a timeline event anywhere it
   // appears. An inferred pattern is not something that happened on a date.
   const line = `- ${today} — ${observation.pattern} ${citation(observation.evidence)}`;
 
@@ -383,7 +383,7 @@ async function writeObservation(
 }
 
 /**
- * §4: `derived` and `evidence` are the two keys Akno writes on `observations/` pages it
+ * `derived` and `evidence` are the two keys Akno writes on `observations/` pages it
  * authors. They are what makes an inference identifiable as one after the fact — by a reader,
  * by recall's ranking, and by the guard that refuses to feed observations back in.
  */
@@ -415,7 +415,7 @@ function mergeEvidence(current: string, evidence: string[]): string {
   if (missing.length === 0) return current;
 
   // Appended under the existing `evidence:` key, or added as one. Every other frontmatter key
-  // is left byte for byte — §4's promise holds for pages Akno authors too.
+  // is left byte for byte: that promise holds for pages Akno authors too.
   const added = missing.map((slug) => `  - ${slug}`).join('\n');
   const nextFront = /^evidence:/m.test(front)
     ? front.replace(/^(evidence:(?:\n\s*-\s*\S+)*)/m, `$1\n${added}`)
@@ -440,7 +440,7 @@ function slugify(subject: string): string {
 // ─── Reflect ────────────────────────────────────────────────────────────────
 
 /**
- * §13's third tier — **off by default**, and shipped as an extension point rather than a
+ * The third tier — **off by default**, and shipped as an extension point rather than a
  * finished tier because at a few hundred pages a "pattern" is one coincidence away from noise.
  *
  * The plumbing is real: enabling it runs the observe writer over the tier above, so principles

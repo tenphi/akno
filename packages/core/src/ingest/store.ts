@@ -5,7 +5,7 @@ import type { Extraction } from './extract.ts';
 import type { ChangeFile } from '../write/journal.ts';
 
 /**
- * §11. Where a stored document actually goes, and how it gets recorded.
+ * Where a stored document actually goes, and how it gets recorded.
  *
  * **Stored files are content-addressed**: `<page-basename>-<sha8>.<ext>`. That is worth
  * more than it looks — naming a file after its page forces a whole family of rules
@@ -37,7 +37,7 @@ export interface StoreOptions {
   /**
    * Move rather than copy.
    *
-   * §11: **the inbox is the only place Akno moves files.** A file dropped straight
+   * **The inbox is the only place Akno moves files.** A file dropped straight
    * into `documents/` was put there on purpose; Akno will name it, page it and index
    * it, but never relocate it. An external file handed to `ingest` is copied, so the
    * caller still has what they passed.
@@ -79,9 +79,9 @@ export async function storeDocument(options: StoreOptions): Promise<StoredDocume
 /**
  * Writes the extraction into the `documents` row the indexer created.
  *
- * The full text lives here rather than in the page body, which is what makes §11's
- * promise true — a stored PDF is searchable by its own content — without turning a
- * 40-page contract into a 40-page Markdown file.
+ * The full text lives here rather than in the page body, which is what makes a stored PDF
+ * searchable by its own content without turning a 40-page contract into a 40-page Markdown
+ * file.
  */
 export function recordDocument(options: {
   ctx: AknoContext;
@@ -112,12 +112,12 @@ export function recordDocument(options: {
 }
 
 /**
- * §11. Where a document's provenance is stated in the page itself.
+ * Where a document's provenance is stated in the page itself.
  *
  * A reader deciding whether to trust a number should know whether it was typed, read
  * off a scan, or *described by a model that looked at a picture*. The last is not the
  * document's own text at all, and presenting the three identically would be a false
- * claim about where the words came from — §2's cite-or-stay-quiet, applied to files.
+ * claim about where the words came from: cite or stay quiet, applied to files.
  */
 export function provenanceLines(extraction: Extraction): string[] {
   const out: string[] = [];

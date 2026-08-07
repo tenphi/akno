@@ -5,7 +5,7 @@ import { effectiveRule } from '../rules/compile.ts';
 import { ingestFile } from '../ops/ingest.ts';
 
 /**
- * §11. **The inbox: a folder where you drop anything and it files itself.**
+ * **The inbox: a folder where you drop anything and it files itself.**
  *
  * ```jsonc
  * "inbox/**": { "ingest": "auto", "route": true }
@@ -37,7 +37,7 @@ export interface InboxResult {
 }
 
 /**
- * Folders that behave as an inbox: the reserved `inbox/` (§4), plus any folder whose rule
+ * Folders that behave as an inbox: the reserved `inbox/`, plus any folder whose rule
  * carries `route: true`.
  *
  * The reserved one is always included, not used as a fallback. Akno *creates* it on
@@ -93,7 +93,7 @@ export async function processInbox(
       const relPath = `${folder}/${name}`;
       if (options.only && !options.only.includes(relPath)) continue;
 
-      // A page written *about* an inbox item, and the README §4 puts there, are not
+      // A page written *about* an inbox item, and the README startup puts there, are not
       // arrivals to be filed.
       if (ctx.config.pageExtensions.includes(path.extname(name).toLowerCase())) {
         result.skipped.push({ source: relPath, reason: 'a Markdown page, not a dropped document' });

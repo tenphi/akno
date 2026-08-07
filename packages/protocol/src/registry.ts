@@ -19,7 +19,7 @@ import {
 } from './ops/mutate.ts';
 
 /**
- * §16. The library is the product: one op registry, one schema per op, three
+ * The library is the product: one op registry, one schema per op, three
  * transports over it — so the doors cannot drift into different behaviour.
  * Everything a door needs to exist is in this table and nowhere else.
  */

@@ -40,8 +40,8 @@ describe('withId', () => {
   it('splices id in without disturbing any other key', () => {
     const content = "---\ntitle: Ada\ndate: '2026-05-26T00:00:00.000Z'\ntags:\n  - family\n---\n\nbody\n";
     const updated = withId(content, '01JQZ4T7K2E9ABCD');
-    // Every original byte is still there, in order — that is the guarantee §4
-    // makes about frontmatter keys Akno does not own.
+    // Every original byte is still there, in order — that is the guarantee about
+    // frontmatter keys Akno does not own.
     expect(updated).toContain("date: '2026-05-26T00:00:00.000Z'");
     expect(updated).toContain('tags:\n  - family');
     expect(updated).toContain('id: 01JQZ4T7K2E9ABCD\ntitle: Ada');

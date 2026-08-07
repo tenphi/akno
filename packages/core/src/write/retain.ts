@@ -1,15 +1,15 @@
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**
- * §13. **Retain: keep only long-term facts, decisions, preferences, proven
+ * **Retain: keep only long-term facts, decisions, preferences, proven
  * experience.**
  *
- * §13 is also explicit that **retain writes prose, not atomic facts** — it is a
+ * **Retain writes prose, not atomic facts** — it is a
  * page-level curator that edits the right page, and facts are derived beneath it.
  * So a candidate here is a sentence someone would actually write on a page, not a
  * triple.
  *
- * §13's guardrail about missions applies: a mission string appends emphasis to a
+ * The guardrail about missions applies: a mission string appends emphasis to a
  * fixed system prompt and never replaces it. A replaceable prompt is how every
  * guard gets lost.
  */
@@ -66,7 +66,7 @@ export async function runRetain(
   const empty: RetainResult = { candidates: [], events: [], error: null };
   if (!chat.available) return { ...empty, error: chat.unavailableReason ?? 'chat model unavailable' };
 
-  // Additive, never replacing (§13).
+  // Additive, never replacing.
   const system = options.mission ? `${SYSTEM}\n\nAdditional emphasis: ${options.mission}` : SYSTEM;
 
   const result = await chat.chat(
@@ -89,11 +89,11 @@ export async function runRetain(
 }
 
 /**
- * §13's mission says to drop speculation, and a 3B model does not reliably obey a
+ * The mission says to drop speculation, and a 3B model does not reliably obey a
  * prompt that says so — observed keeping "travel insurance should be considered"
  * from a source that read "I should probably look into travel insurance at some
  * point". A prompt is a suggestion; this is the layer, which is the whole argument
- * of §17.
+ * of putting the logic in the layer.
  *
  * Mirrors the hedge list the fact deriver scores on, applied to the candidate
  * itself. A dropped candidate costs nothing — `remember` is not the only way to

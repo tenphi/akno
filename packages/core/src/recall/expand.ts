@@ -2,7 +2,7 @@ import type { DegradedReason, RecallMode } from '@akno/protocol';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**
- * §9. Looking something up and answering a question are not the same retrieval
+ * Looking something up and answering a question are not the same retrieval
  * problem, and they want different expansion. But they must not be different
  * **ops** — every extra op is another chance for an agent to pick the wrong one,
  * and an agent is not reliably able to tell which situation it is in.
@@ -95,7 +95,7 @@ export interface Expansion {
 }
 
 /**
- * §9. **A question does not embed near its answer.** "when does the car
+ * **A question does not embed near its answer.** "when does the car
  * insurance renew?" is lexically and semantically closer to other questions than
  * to the line `Renews: 2026-11-04`. So Akno generates a hypothetical answer
  * sentence and embeds *that* alongside the question. The synthetic sentence
@@ -271,7 +271,7 @@ const STOPWORDS = new Set([
 /**
  * Fallback concept extraction when there is no chat model: content words, with a
  * simple bigram pass so "car insurance" survives as one concept rather than two.
- * Crude, but §9's coverage guarantee should not depend on a model being present.
+ * Crude, but the coverage guarantee should not depend on a model being present.
  */
 export function extractConcepts(query: string): string[] {
   const words = query
@@ -292,7 +292,7 @@ export function extractConcepts(query: string): string[] {
 }
 
 /**
- * Multi-part questions are split and searched separately, then merged (§9).
+ * Multi-part questions are split and searched separately, then merged.
  * A conjunction between two clauses that each carry a content word is the signal.
  */
 export function splitMultiPart(query: string): string[] {

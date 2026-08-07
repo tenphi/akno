@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 /**
- * §11. Scanning a passport gives you `passport.pdf` and `passport-2.pdf`. They are not two
+ * Scanning a passport gives you `passport.pdf` and `passport-2.pdf`. They are not two
  * documents — they are one document someone's scanner cut in half.
  *
  * Treating them separately produces two pages, two summaries and two half-answers, and

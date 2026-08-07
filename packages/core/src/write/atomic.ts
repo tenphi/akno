@@ -17,7 +17,7 @@ import type { Store } from '../store/db.ts';
  *
  * **Self-aware.** The resulting hash, size and mtime are recorded in `files`
  * immediately, so the watcher recognises Akno's own write and does not schedule
- * a re-index of a page it already has. §12 makes that promise about the `id`
+ * a re-index of a page it already has. That promise about the `id`
  * write; it has to hold for every write or the watcher chases its own tail.
  */
 

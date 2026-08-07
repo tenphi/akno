@@ -6,11 +6,11 @@ import { recall } from './recall.ts';
 import { write } from './write.ts';
 
 /**
- * §8. Hand over a transcript or notes; Akno runs the retain mission with its own
+ * Hand over a transcript or notes; Akno runs the retain mission with its own
  * model and produces the writes itself. **The answer for a host that does not want
  * to build a curator** — an agent that wants control uses `write` and ignores this.
  *
- * The steps are §8's, in order: retain mission → route by recall → conflict check →
+ * The steps, in order: retain mission → route by recall → conflict check →
  * edit the file → journal → the indexer follows. `remember` never writes a fact.
  * It writes a *sentence into a file*, and facts appear afterwards because facts are
  * derived from sentences.
@@ -18,7 +18,7 @@ import { write } from './write.ts';
 export async function remember(ctx: AknoContext, rawInput: unknown): Promise<RememberOutput> {
   const input = RememberInput.parse(rawInput);
 
-  // §13 calls retain a tier with a mission and an on/off switch like the others. Honouring
+  // Retain is a tier with a mission and an on/off switch like the others. Honouring
   // both here is what makes that config real: a `mission` nothing reads is a promise the file
   // makes and the code breaks.
   if (!ctx.config.maintenance.retain.enabled) {
@@ -35,7 +35,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   });
 
   if (retained.error) {
-    // §14: no chat model means no `remember`. Saying so is the whole contract —
+    // No chat model means no `remember`. Saying so is the whole contract —
     // silently keeping nothing would look identical to "nothing was worth keeping".
     return {
       status: 'degraded',
@@ -86,7 +86,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
 
   for (const entry of routed) {
     if (entry.slug === null) {
-      // §8: below the threshold it becomes a `requires_approval` proposal listing
+      // Below the threshold it becomes a `requires_approval` proposal listing
       // the candidates rather than a guess. A fact quietly landing on a plausible
       // wrong page is invisible until someone reads it back months later.
       approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest));
@@ -113,7 +113,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     }
   }
 
-  // §10 step 3: the retain mission emits events alongside facts, and this is what
+  // The retain mission emits events alongside facts, and this is what
   // makes the timeline maintain itself — nobody has to notice a sentence was an
   // event.
   for (const event of retained.events) {
@@ -151,27 +151,27 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
 // ─── Routing ────────────────────────────────────────────────────────────────
 
 /**
- * §8 step 2. An internal `recall` finds where a claim belongs. **Best score at or
+ * An internal `recall` finds where a claim belongs. **Best score at or
  * above `route_threshold` wins and the write proceeds; below that it becomes a
  * proposal listing the candidates** rather than a guess.
  *
- * §19 is candid that 0.5 is a placeholder and cannot be tuned by intuition, because
+ * 0.5 is a placeholder and cannot be tuned by intuition, because
  * the failure it guards against is invisible until someone reads it back months
  * later. The mechanism is here; only the number moves.
  */
 /**
- * §8 step 2 / §11. Routing thresholds **`relevance`, never `score`.**
+ * Routing thresholds **`relevance`, never `score`.**
  *
  * `score` orders one result set: the best hit is 1.0 whether it is a perfect match or
  * the least bad of a bad batch. Thresholding it meant every document found a home and
- * §11's "a document with no home stays put" could never fire — routing looked like it
+ * "A document with no home stays put" could never fire — routing looked like it
  * worked and was in fact unconditional.
  *
  * `relevance` is absolute when a cross-encoder or the embedding arm supplied one. With
  * neither — a lexical-only search — there is no number to compare, so routing refuses
- * and asks. §19 says the failure this guards against, a fact quietly landing on a
- * plausible wrong page, is invisible until someone reads it back months later; a
- * guess is worse than a question.
+ * and asks. The failure this guards against — a fact quietly landing on a plausible wrong
+ * page — is invisible until someone reads it back months later, and a guess is worse than a
+ * question.
  */
 async function route(
   ctx: AknoContext,
@@ -190,7 +190,7 @@ async function route(
 
   const nearest = result.cards.slice(0, 4).map((card) => card.slug);
 
-  // Never route into a `reference` page: it is somebody else's words, and §5 is
+  // Never route into a `reference` page: it is somebody else's words, and the rule is
   // explicit that only claims become facts. Appending a claim to evidence would make
   // the class boundary meaningless.
   const writable = result.cards.find((card) => card.class === 'full' && card.relevance !== undefined);

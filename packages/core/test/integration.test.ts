@@ -6,7 +6,7 @@ import { open, type Akno } from '../src/index.ts';
 
 /**
  * End-to-end over a real knowledge base on disk, with **no models configured**.
- * That is deliberate: §2 says degrade, never fail, and the most important thing
+ * That is deliberate: the rule is degrade, never fail, and the most important thing
  * to prove is that a knowledge base with no embedding model, no reranker and no
  * chat model still indexes, still searches, and still says what it lost.
  */
@@ -210,7 +210,7 @@ describe('recall without any model', () => {
   it('finds a page lexically and reports why it is degraded', async () => {
     const result = await mem.recall({ query: 'dishwasher Zephyr warranty', mode: 'lookup' });
     expect(result.status).toBe('degraded');
-    // §9: absence — and weakness — has a *reason*, not a silent empty result.
+    // Absence — and weakness — has a *reason*, not a silent empty result.
     expect(result.degraded).toContain('no_embedding_model');
     expect(result.cards.map((card) => card.slug)).toContain('home/appliances');
   });
@@ -392,7 +392,7 @@ describe('reconciling a hand edit', () => {
     expect(report.pagesRenamed).toBe(1);
 
     const after = await mem.read({ slug: 'nested/other/renamed' });
-    // §12: the id survives, which is what keeps facts and journal history attached.
+    // The id survives, which is what keeps facts and journal history attached.
     expect(after.page!.id).toBe(pageId);
     await expect(mem.read({ slug: 'nested/deep/note' })).rejects.toThrow(/no page/);
   });
@@ -450,7 +450,7 @@ describe('rebuilding the index', () => {
     await mem.index({});
 
     const after = await mem.doctor({ probeModels: false });
-    // §2: `rm akno.db && akno index` reproduces every chunk, event and link.
+    // `rm akno.db && akno index` reproduces every chunk, event and link.
     expect(after.counts.pages).toBe(before.counts.pages);
     expect(after.counts.chunks).toBe(before.counts.chunks);
     expect(after.counts.events).toBe(before.counts.events);
@@ -459,7 +459,7 @@ describe('rebuilding the index', () => {
 });
 
 /**
- * §4. Akno owns what a handful of paths *mean*, and the rule for all of them is
+ * Akno owns what a handful of paths *mean*, and the rule for all of them is
  * the same: if one already exists and isn't what Akno expects, leave it
  * completely alone. Warn, point at the config key, refuse to start.
  */
@@ -526,7 +526,7 @@ describe('reserved paths', () => {
 });
 
 /**
- * §5, §6. A rule is config, not content — so changing one has to reach pages whose files
+ * A rule is config, not content — so changing one has to reach pages whose files
  * have not been touched since. Without that, adding `class: excluded` to a folder and
  * re-indexing reports "everything unchanged" and leaves those pages indexed, searchable
  * and asserted as facts: the config silently doing nothing.
@@ -580,7 +580,7 @@ describe('changing a rule', () => {
 
     const listed = await handle.list({});
     expect(listed.pages?.map((page) => page.slug) ?? []).not.toContain('logs/monday');
-    // §4: a class the page declares in its own frontmatter outranks any rule, so this one
+    // A class the page declares in its own frontmatter outranks any rule, so this one
     // is not the rule's to move.
     const declared = await handle.read({ slug: 'logs/declared' });
     expect(declared.page?.class).toBe('full');
@@ -598,14 +598,14 @@ describe('changing a rule', () => {
     const page = await handle.read({ slug: 'logs/monday' });
     expect(page.page?.class).toBe('reference');
     // Reference pages are still searchable — the class governs what recall pulls in
-    // unprompted, not whether the text is indexed (§5).
+    // unprompted, not whether the text is indexed.
     const found = await handle.recall({ query: 'transcript talking', mode: 'lookup' });
     expect(found.cards.map((card) => card.slug)).toContain('logs/monday');
     await handle.close();
   });
 
   it('reads rules from the knowledge base without indexing the file that holds them', async () => {
-    // §4. `akno.json` lives inside the notes, and rules travel with them — but the file
+    // `akno.json` lives inside the notes, and rules travel with them — but the file
     // is Akno's own configuration, not memory. It was being registered as an attachment
     // of the root, which is how a taxonomy ends up reported by `doctor` as a document whose
     // contents could not be extracted.

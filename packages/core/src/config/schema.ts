@@ -50,18 +50,18 @@ const ModelsDoc = z.object({
   vision: VisionRoleDoc.optional(),
 });
 
-/** §5. One rule per glob. Most specific wins; `akno rules <path>` explains why. */
+/** One rule per glob. Most specific wins; `akno rules <path>` explains why. */
 export const FolderRuleDoc = z.object({
   class: PageClass.optional(),
   type: z.string().optional(),
   /** `page | document | file | auto | ignore` — behaviour differs by folder, so
-   *  it is declared once rather than classified per arrival (§11). */
+   *  it is declared once rather than classified per arrival. */
   ingest: z.enum(['page', 'document', 'file', 'auto', 'ignore']).optional(),
   /** Multiplied into the score at assembly. Demotes without hiding. */
   rank: z.number().min(0).max(2).optional(),
-  /** Makes a folder an inbox: arrivals are routed out of it (§11). */
+  /** Makes a folder an inbox: arrivals are routed out of it. */
   route: z.boolean().optional(),
-  /** Enforced structure, reported by `doctor` rather than silently applied (§5). */
+  /** Enforced structure, reported by `doctor` rather than silently applied. */
   max_depth: z.number().int().positive().optional(),
   slug_pattern: z.string().optional(),
 });
@@ -122,7 +122,7 @@ const IngestDoc = z.object({
 });
 
 /**
- * §13. A **mission** appends emphasis to a fixed system prompt and never replaces it. That
+ * A **mission** appends emphasis to a fixed system prompt and never replaces it. That
  * is a guardrail, not a convenience: every rule that keeps an inference engine honest lives
  * in the fixed part, and a replaceable prompt is how they all get lost at once.
  */
@@ -137,7 +137,7 @@ const MaintenanceDoc = z.object({
   /**
    * The chat model the cycle uses, when it should not be the one per-turn work uses.
    *
-   * Not a fifth role in §14's sense — it is the same `chat` capability, pointed somewhere else
+   * Not a fifth model role — it is the same `chat` capability, pointed somewhere else
    * for the one caller that runs unattended. Measured on a real base: the observe tier's output
    * is almost entirely a function of the model behind it, and a knowledge base wanting a strong
    * model once a night should not thereby send every recall expansion to a paid API.
@@ -146,7 +146,7 @@ const MaintenanceDoc = z.object({
   model: ChatRoleDoc.nullable().optional(),
   retain: TierDoc.optional(),
   observe: TierDoc.extend({
-    /** Distinct source pages an observation needs. §13's floor is two. */
+    /** Distinct source pages an observation needs. The floor is two. */
     min_evidence: z.number().int().min(2).optional(),
     /** Subjects looked at per run, most recently touched first. */
     max_subjects: z.number().int().positive().optional(),
@@ -288,7 +288,7 @@ export interface AknoConfig {
   ingest: {
     maxFileBytes: number;
     maxOcrPages: number;
-    /** Below this, a document keeps its name and gets no page (§11). */
+    /** Below this, a document keeps its name and gets no page. */
     nameConfidence: number;
     blockedExtensions: string[];
   };
@@ -302,7 +302,7 @@ export interface AknoConfig {
       minEvidence: number;
       maxSubjects: number;
     };
-    /** §13: ships as an extension point, off by default. */
+    /** Ships as an extension point, off by default. */
     reflect: { enabled: boolean; mission: string | null };
     adopt: { enabled: boolean; maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; maxPairs: number };

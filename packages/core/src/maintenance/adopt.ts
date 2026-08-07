@@ -8,7 +8,7 @@ import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 
 /**
- * §11. A page for a document that has none, written beside the file.
+ * A page for a document that has none, written beside the file.
  *
  * An attachment nobody's page points at is extracted like any other — its text is read on
  * arrival — and then has nowhere to be returned from, because recall returns page cards. It
@@ -27,13 +27,13 @@ import type { ChangeFile } from '../write/journal.ts';
  * - **Capped per run.** A folder of 500 unowned PDFs should not become 500 pages overnight
  *   before anyone has seen the first one; the cap makes the first night's report arrive while
  *   it is still small enough to read — and `--dry-run` shows it without writing.
- * - **The file is never touched.** §11 is explicit that only the inbox moves files. Nothing
+ * - **The file is never touched.** Only the inbox moves files, ever. Nothing
  *   here renames, moves, or rewrites a byte of the document.
  */
 
 export interface AdoptedDocument {
   slug: string;
-  /** The files the page now owns — parts of one document share a page (§11). */
+  /** The files the page now owns — parts of one document share a page. */
   files: string[];
   action: 'created' | 'skipped';
   reason?: string;
@@ -120,7 +120,7 @@ export async function adoptOrphans(
 
 /**
  * Unowned documents with text, grouped so parts of one document get one page — the whole point
- * of §11's grouping, and the difference between one passport page and thirteen.
+ * of grouping parts at all, and the difference between one passport page and thirteen.
  *
  * Documents with no readable text are left out: a page whose body is a filename helps nobody,
  * and `doctor` already reports them as unreadable.
@@ -148,7 +148,7 @@ function orphanGroups(ctx: AknoContext): OrphanGroup[] {
 /**
  * The same shape `ingest` writes: what the document is, then a pointer to it. Nothing is
  * inferred here that the document does not say about itself, and the file's own text stays
- * indexed against the document rather than copied into the page (§6).
+ * indexed against the document rather than copied into the page.
  */
 function composeDocumentPage(ctx: AknoContext, group: OrphanGroup): string {
   const first = group.parts[0]!;

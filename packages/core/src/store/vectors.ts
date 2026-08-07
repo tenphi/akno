@@ -8,7 +8,7 @@ interface VectorHit {
 }
 
 /**
- * §6. **Ship brute force, no ANN index.** Below ~20,000 chunks an approximate
+ * **Ship brute force, no ANN index.** Below ~20,000 chunks an approximate
  * index is strictly worse — it costs build time, recall accuracy and a second
  * structure to keep in sync, to save single-digit milliseconds nobody will
  * notice. `vec0` without an ANN index *is* exact brute force with SIMD, which is
@@ -20,7 +20,7 @@ export interface VectorIndex {
   upsert(chunkId: number, embedding: Float32Array): void;
   remove(chunkId: number): void;
   removeForPage(pageId: string): void;
-  /** `restrictTo` is the candidate pre-filter from §6 step 1: score only the
+  /** `restrictTo` is the candidate pre-filter: score only the
    *  FTS candidate set instead of every vector. Empty/undefined scans all. */
   search(query: Float32Array, k: number, restrictTo?: Set<number>): VectorHit[];
   count(): number;
@@ -190,7 +190,7 @@ export function openVectorIndex(db: Database, dimensions: number, vecLoaded: boo
 
 /**
  * Dimensions are recorded so a model swap triggers a re-index instead of
- * silently corrupting the index (§14). Returns true when the caller must
+ * silently corrupting the index. Returns true when the caller must
  * re-embed everything.
  */
 export function reconcileDimensions(db: Database, dimensions: number, vecLoaded: boolean): boolean {

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ResultEnvelope } from '../common.ts';
 
 /**
- * §10. There is no `add_event` op, and nothing about line syntax reaches a
+ * There is no `add_event` op, and nothing about line syntax reaches a
  * prompt. The caller hands over a date and a summary; Akno formats and files
  * the ledger line.
  */
@@ -15,7 +15,7 @@ export type EventInput = z.infer<typeof EventInput>;
 export const DocumentInput = z.object({
   /** Path on disk to attach. Stored content-addressed as
    *  `<page-basename>-<sha8>.<ext>`, so files are unique by construction and
-   *  `label` is a description rather than a disambiguator (§11). */
+   *  `label` is a description rather than a disambiguator. */
   path: z.string(),
   label: z.string().optional(),
 });
@@ -24,7 +24,7 @@ export type DocumentInput = z.infer<typeof DocumentInput>;
 /**
  * Create, append, patch or replace a page. Carries documents, events, tags and
  * links. A write with only an `event` and no slug appends a ledger line with no
- * link — still a real line in a real file, addressable as `timeline:47` (§10).
+ * link — still a real line in a real file, addressable as `timeline:47`.
  */
 export const WriteInput = z
   .object({
@@ -62,7 +62,7 @@ export const WriteTarget = z.object({
 });
 export type WriteTarget = z.infer<typeof WriteTarget>;
 
-/** §8. A conflict is two live claims on one attribute, surfaced *before* the write. */
+/** A conflict is two live claims on one attribute, surfaced *before* the write. */
 export const ConflictReport = z.object({
   slug: z.string(),
   line: z.number().int().positive(),
@@ -74,7 +74,7 @@ export const ConflictReport = z.object({
 });
 export type ConflictReport = z.infer<typeof ConflictReport>;
 
-/** §5. A declined proposal is remembered, so the agent stops re-asking. */
+/** A declined proposal is remembered, so the agent stops re-asking. */
 export const ApprovalRequest = z.object({
   proposal_id: z.string(),
   reason: z.string(),
@@ -86,11 +86,11 @@ export type ApprovalRequest = z.infer<typeof ApprovalRequest>;
 export const WriteOutput = ResultEnvelope.extend({
   /** Distinguishes a committed write from one waiting on the user. */
   outcome: z.enum(['ok', 'requires_approval', 'conflict', 'noop']),
-  /** Durable — `undo` takes an id that outlives the session (§17). */
+  /** Durable — `undo` takes an id that outlives the session. */
   change_id: z.string().optional(),
   wrote: z.array(WriteTarget).optional(),
   facts: z.object({ retired: z.number().int(), added: z.number().int() }).optional(),
-  /** Attachments stored by this write, content-addressed and extracted (§11). */
+  /** Attachments stored by this write, content-addressed and extracted. */
   documents: z
     .array(z.object({ id: z.string(), rel_path: z.string(), text_from: z.string().optional() }))
     .optional(),

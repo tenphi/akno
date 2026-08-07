@@ -127,7 +127,7 @@ export async function serveCommand(argv: string[]): Promise<number> {
       log(`HTTP ready on ${server.address}`);
     }
 
-    // §16. `KeepAlive` under launchd means the service outlives every host that
+    // `KeepAlive` under launchd means the service outlives every host that
     // talks to it, which is the whole point of running it separately. Shutting
     // down cleanly is what makes a restart cost 3ms instead of a WAL replay.
     await waitForShutdown(log);
@@ -160,8 +160,8 @@ const SERVICE_HELP = `akno service <install | uninstall | status> [options]
 
     dev.akno        KeepAlive — the index, watcher and models in one process, which
                       is why it outlives every host that talks to it.
-    dev.akno.dream  Nightly — the maintenance cycle (§13). Observe runs on a
-                      schedule, and this is that schedule.
+    dev.akno.dream  Nightly — the maintenance cycle. Observe runs on a schedule,
+                      and this is that schedule.
 
   --http <addr>       Serve loopback HTTP as well as the socket.
   --dream-hour <0-23> When the nightly cycle runs. Default 3.
@@ -258,7 +258,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   line(style.grey(`run: launchctl bootstrap gui/$(id -u) ${plistPath}`));
 
   if (values.dream) {
-    // §13: observe runs on a schedule. A second agent rather than a timer inside `serve`,
+    // Observe runs on a schedule. A second agent rather than a timer inside `serve`,
     // because the cycle is a *pass* with an exit code and a log — something a person can run
     // by hand, read the output of, and undo — not a background thread nobody can address.
     fs.writeFileSync(

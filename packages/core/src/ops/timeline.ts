@@ -2,7 +2,7 @@ import { TimelineInput, type TimelineOutput } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 
 /**
- * §10. When things happened. Reading is always filtered — a ledger spans years.
+ * When things happened. Reading is always filtered — a ledger spans years.
  *
  * Dated lines are indexed from **any** page, not just the ledger, so "when did we
  * sign the lease" finds a date written on the lease page, and someone typing

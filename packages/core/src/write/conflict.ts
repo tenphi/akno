@@ -3,7 +3,7 @@ import type { ConflictReport } from '@akno/protocol';
 import type { Store } from '../store/db.ts';
 
 /**
- * §8. **Cheap inline, thorough offline.**
+ * **Cheap inline, thorough offline.**
  *
  * On every write: compare only against facts on the target page, flag only when
  * two claims share a subject and attribute but differ in value, and bias toward
@@ -14,8 +14,8 @@ import type { Store } from '../store/db.ts';
  * **When uncertain, write — do not block.** A false block costs a turn; a false
  * pass costs a duplicate, and the maintenance cycle finds duplicates later.
  *
- * Deliberately no model call. §8: correctness that requires a model call per write
- * belongs in the background, not in the turn.
+ * Deliberately no model call: correctness that requires one per write belongs in the
+ * background, not in the turn.
  */
 
 /** `- **Premium:** €33/month`, `Premium: €33/month`, `| Premium | €33 |`. */
@@ -74,7 +74,7 @@ function normalizeAttribute(raw: string): string {
  * only for values that already contain a number or a decisive word, so this is
  * about "€33 vs €33/month" (same) against "€33 vs €47" (different).
  *
- * Exported for the thorough pass (§8), which joins facts across the whole knowledge base and
+ * Exported for the thorough pass, which joins facts across the whole knowledge base and
  * has to decide "differ" exactly the way the inline check does. Two answers to that question
  * would mean the cycle reporting conflicts a write would have allowed, or missing ones it
  * would have blocked.
@@ -86,12 +86,12 @@ export function valuesConflict(existing: string, incoming: string): boolean {
 
   const leftNumbers = numbersIn(existing);
   const rightNumbers = numbersIn(incoming);
-  // Both carry numbers: the numbers decide. This is the case §8 says to bias
-  // toward, and it is the only one where "differ" is unambiguous.
+  // Both carry numbers: the numbers decide. This is the case to bias toward, and the only
+  // one where "differ" is unambiguous.
   if (leftNumbers.length > 0 && rightNumbers.length > 0) {
     return leftNumbers.join(',') !== rightNumbers.join(',');
   }
-  // Only one side has a number, or neither does. §8: when uncertain, write.
+  // Only one side has a number, or neither does. When uncertain, write.
   return false;
 }
 
@@ -131,7 +131,7 @@ export interface ConflictOptions {
  * the same thing never join.
  *
  * Comparing the page's own lines against the incoming lines also means conflict
- * detection **works with no chat model at all** — which is what §8 means by cheap.
+ * detection **works with no chat model at all**, which is what makes it cheap.
  */
 export function detectConflict(options: ConflictOptions): ConflictReport | null {
   const incoming = extractCandidates(options.incoming, 1);
@@ -140,7 +140,7 @@ export function detectConflict(options: ConflictOptions): ConflictReport | null 
   const existing = extractCandidates(options.body, options.bodyStartLine);
   if (existing.length === 0) return null;
 
-  // §7: a low-confidence fact is never used for conflict detection, where a shaky
+  // A low-confidence fact is never used for conflict detection, where a shaky
   // claim would fight a solid one. Lines the deriver was unsure about are excluded
   // by line number — the one thing the facts table is genuinely authoritative on.
   const shaky = new Set(

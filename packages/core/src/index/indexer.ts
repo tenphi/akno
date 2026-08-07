@@ -23,7 +23,7 @@ import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 
 export interface IndexOptions {
-  /** Hash every file instead of trusting mtime+size. The correctness path (§6). */
+  /** Hash every file instead of trusting mtime+size. The correctness path. */
   verify?: boolean;
   /** Skip the model-backed passes. Structure indexes in milliseconds without them. */
   structuralOnly?: boolean;
@@ -71,7 +71,7 @@ export interface IndexReport {
   chunksEmbedded: number;
   pagesDerived: number;
   documentsLinked: number;
-  /** Attachments whose text was read this pass (§11: extraction on arrival, always). */
+  /** Attachments whose text was read this pass — extraction happens on arrival, always. */
   documentsExtracted: number;
   /** Documents given a summary this pass — one per document, not one per file. */
   documentsSummarized: number;
@@ -93,7 +93,7 @@ interface FileRow {
 }
 
 /**
- * §6, §12. Reconciles the index against the knowledge base. Both directions are
+ * Reconciles the index against the knowledge base. Both directions are
  * first class: the user restructures everything on a Sunday afternoon and this
  * reconciles, without ever asking them to go through Akno.
  *
@@ -156,7 +156,7 @@ export class Indexer {
 
     // ── Stat fast path ─────────────────────────────────────────────────────
     // mtime is a fast path, not a correctness guarantee — sync clients and
-    // restored backups can preserve it across a real content change. §6 puts the
+    // restored backups can preserve it across a real content change. The
     // full hash sweep on `--verify` and the periodic backstop, not every start.
     const changed: ScannedFile[] = [];
     for (const file of files) {
@@ -235,7 +235,7 @@ export class Indexer {
     // Scoped to the pages this pass touched when the caller named files. Without
     // that scope, a single `write` into a knowledge base with an embedding backlog
     // blocks on the *whole* backlog — 223 pages of model calls to save one line.
-    // §8 says the indexer follows the write; it does not say it catches up on
+    // The indexer follows the write; that does not mean it catches up on
     // everything else first.
     if (!options.structuralOnly) {
       const scoped = options.modelPaths ?? options.only;
@@ -262,7 +262,7 @@ export class Indexer {
    * the same breath: a page that just became `reference` was fact-mined under the old
    * rule, and those facts assert claims the rules now say it never made.
    *
-   * A class declared in frontmatter wins over any rule (§4), so such a page cannot be
+   * A class declared in frontmatter wins over any rule, so such a page cannot be
    * moved by a rule edit and is left alone.
    */
   private reclassify(report: IndexReport): Set<string> {
@@ -300,7 +300,7 @@ export class Indexer {
     }
 
     if (moved.size > 0) {
-      // §2, default to visible: a pass that quietly re-indexed a third of the knowledge
+      // Default to visible: a pass that quietly re-indexed a third of the knowledge
       // base because a rule changed should say so.
       report.warnings.push(
         `the rules changed since the last pass: ${moved.size} page(s) changed class and were re-indexed`,
@@ -358,7 +358,7 @@ export class Indexer {
   // ─── Rename following ─────────────────────────────────────────────────────
 
   /**
-   * §12. Rename `people/ada.md` to `people/ada-marlow.md` in a file manager
+   * Rename `people/ada.md` to `people/ada-marlow.md` in a file manager
    * and content hashing sees a delete plus a create. Facts, journal entries and
    * inbound links all point at a slug that no longer exists.
    *
@@ -458,7 +458,7 @@ export class Indexer {
     report.chunksWritten += effectiveChunks.length;
     report.eventsIndexed += page.events.length;
 
-    // The single write Akno ever makes into a page, and only when asked (§12).
+    // The single write Akno ever makes into a page, and only when asked.
     if (this.#config.writeIds && !page.frontmatterId) {
       await this.writeIdIntoPage(file, content, pageId, report);
     }
@@ -519,7 +519,7 @@ export class Indexer {
       await fsp.writeFile(file.absPath, updated, 'utf8');
       const stat = await fsp.stat(file.absPath, { bigint: true });
       // Record the hash of our own write, so adding an `id` never re-triggers
-      // indexing on the next sweep (§12).
+      // indexing on the next sweep.
       this.recordFile(
         { ...file, size: Number(stat.size), mtimeNs: String(stat.mtimeNs), sha256: sha256(updated) },
         pageId,
@@ -569,7 +569,7 @@ export class Indexer {
 
   private replaceChunks(pageId: string, chunks: Chunk[]): void {
     // Only the page's *body* chunks. Its documents' chunks come from the files beside it,
-    // are invalidated by those files' hashes (§6), and would otherwise be destroyed by
+    // are invalidated by those files' hashes, and would otherwise be destroyed by
     // every edit to the page and rebuilt only on the next extraction pass.
     this.deleteChunkRows(BODY_CHUNKS_FOR_PAGE, pageId);
 
@@ -618,7 +618,7 @@ export class Indexer {
     );
     for (const event of page.events) {
       // Duplicates collapse on (date, target, summary), so an event that exists
-      // both in the ledger and on its page counts once (§10).
+      // both in the ledger and on its page counts once.
       const target = event.targetSlug ?? (isLedger(page.slug, this.#config) ? null : page.slug);
       insert.run(
         eventId(event.date, target, event.summary),
@@ -673,7 +673,7 @@ export class Indexer {
   // ─── Attachments ──────────────────────────────────────────────────────────
 
   /**
-   * §11. Extraction, OCR and naming land with `ingest`. What this cut does is
+   * Extraction, OCR and naming land with `ingest`. What this cut does is
    * *notice* attachments and attach them to their page, so a card can say "this
    * page has a 9-page PDF" and `doctor` can report how many are un-extracted.
    * Recording them now also means the write path inherits a populated table
@@ -681,7 +681,7 @@ export class Indexer {
    */
   private registerAttachment(file: ScannedFile, report: IndexReport): void {
     // Parts of one document resolve ownership through the group, so `passport-2.pdf` lands
-    // on the page that owns `passport.pdf` rather than nowhere at all (§11).
+    // on the page that owns `passport.pdf` rather than nowhere at all.
     const group = documentPart(file.relPath, {
       // Asked of the disk rather than of `files`, so the answer does not depend on which of
       // the two parts this pass happened to reach first.
@@ -718,7 +718,7 @@ export class Indexer {
 
   /**
    * Two ways an attachment belongs to a page. The content-addressed shape
-   * `<page-basename>-<8 hex>.<ext>` is the one Akno creates (§11). A plain
+   * `<page-basename>-<8 hex>.<ext>` is the one Akno creates. A plain
    * `passport.pdf` beside `passport.md` is the one people already have, and
    * refusing to recognise it would make the feature useless on an existing
    * knowledge base.
@@ -778,12 +778,12 @@ export class Indexer {
   }
 
   /**
-   * §11. **Extraction happens on arrival, always** — and this is what makes that true for
+   * **Extraction happens on arrival, always** — and this is what makes that true for
    * attachments Akno did not place itself: a PDF someone dropped into `documents/` by
    * hand, or one that predates Akno entirely. Their text is read, chunked, and indexed
    * against the document, so the file is searchable by its own content.
    *
-   * §6 puts the invalidation rule on the *file* hash, which is why `extracted_sha` exists:
+   * The invalidation rule is the *file* hash, which is why `extracted_sha` exists:
    * re-extract when the bytes change, and never otherwise. Extraction is local — PDFKit,
    * Vision, `textutil` — so a backlog costs seconds, not model calls.
    *
@@ -880,12 +880,12 @@ export class Indexer {
   }
 
   /**
-   * §11. A stored document has "extracted text, a summary, embeddings" of its own — one
+   * A stored document has extracted text, a summary and embeddings of its own — one
    * summary per *document*, so a passport split into two files does not get two
    * half-summaries describing halves of one thing.
    *
    * Kept separate from extraction because the two are invalidated by different things:
-   * extraction by the file's hash (§6), a summary by not having one. A model that was down,
+   * extraction by the file's hash, a summary by not having one. A model that was down,
    * or that failed to answer in JSON, is retried on the next pass instead of waiting for the
    * bytes on disk to change.
    */
@@ -932,7 +932,7 @@ export class Indexer {
   }
 
   /**
-   * A document's chunks are `reference` in the §5 sense: evidence, quoted in a capped
+   * A document's chunks are `reference`: evidence, quoted in a capped
    * window, never mined for facts. A contract is not the household asserting its terms.
    */
   private replaceDocumentChunks(
@@ -1038,7 +1038,7 @@ export class Indexer {
     if (!this.#models.chat.available) return;
     if (scope && scope.size === 0) return;
 
-    // §7: no eligibility list — every `full` page is a candidate. A `reference`
+    // No eligibility list — every `full` page is a candidate. A `reference`
     // page is summarized but never fact-mined; `derivePage` enforces that by
     // reading only above the fence, and a fully-reference page has no mineable
     // region at all.
@@ -1070,7 +1070,7 @@ export class Indexer {
         const isReference = row.class === 'reference';
         const derived = await derivePage(page, this.#models.chat, {
           summaries: wantSummaries,
-          // A reference page is evidence. Only claims become facts (§5).
+          // A reference page is evidence. Only claims become facts.
           facts: wantFacts && !isReference,
         });
 
@@ -1095,7 +1095,7 @@ export class Indexer {
   }
 
   /**
-   * §7. Supersession is structural: a fact whose source line is gone or changed
+   * Supersession is structural: a fact whose source line is gone or changed
    * gets `valid_to` set rather than being deleted, so recall can return it *as
    * superseded* — "was €28 until June" — instead of as a second competing current
    * answer.
@@ -1106,7 +1106,7 @@ export class Indexer {
    * - Its source line is byte-identical and the deriver merely phrased the claim
    *   differently → not a supersession at all. Delete it.
    *
-   * Conflating the two invents history. §8 already notes that a fresh derivation
+   * Conflating the two invents history. A fresh derivation
    * may phrase a claim differently, so retiring on id alone would make every
    * `--rederive` flood recall with "was X until today" for values that never
    * changed — and an invented historical claim is worse than none, because a

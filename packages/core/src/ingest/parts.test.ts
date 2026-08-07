@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { documentPart } from './parts.ts';
 
 /**
- * §11. A scanner that cut one passport into `passport.pdf` and `passport-2.pdf` has not
+ * A scanner that cut one passport into `passport.pdf` and `passport-2.pdf` has not
  * produced two documents. The rule that recognises this has to be narrow: the cost of a
  * wrong guess is two unrelated documents welded into one, with one summary describing
  * neither.

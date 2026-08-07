@@ -3,7 +3,7 @@ import { parseJsonLoose } from '../models/client.ts';
 import { valuesConflict } from '../write/conflict.ts';
 
 /**
- * §8. **Cheap inline, thorough offline.** This is the thorough half.
+ * **Cheap inline, thorough offline.** This is the thorough half.
  *
  * Inline detection compares the incoming text against the target page's own lines. That is
  * what makes it affordable on every write, and it is also exactly what it cannot see: two
@@ -11,11 +11,11 @@ import { valuesConflict } from '../write/conflict.ts';
  * right now. Nobody is blocked by that, and nobody notices it either.
  *
  * So this pass joins **facts across the whole knowledge base** on subject and attribute —
- * the two fields the deriver assigns — and reports pairs whose values disagree. It reports;
- * it never writes. §13 says the cycle *reports* what inline checking missed, and a
- * maintenance process that silently rewrites claims is the one thing worse than a duplicate.
+ * the two fields the deriver assigns — and reports pairs whose values disagree. It reports; it
+ * never writes. Reporting what inline checking missed is the whole job, and a maintenance
+ * process that silently rewrites claims is the one thing worse than a duplicate.
  *
- * `full` pages only (§5): a `reference` page is somebody else's words, and a contract
+ * `full` pages only: a `reference` page is somebody else's words, and a contract
  * disagreeing with a household's notes is not a contradiction in the household's memory.
  */
 
@@ -70,7 +70,7 @@ export function findCrossPageConflicts(ctx: AknoContext, maxPairs: number): Cros
           AND f.subject IS NOT NULL
           AND f.attribute IS NOT NULL
           AND f.value IS NOT NULL
-          -- §7: a shaky claim must not fight a solid one, the same floor inline uses.
+          -- A shaky claim must not fight a solid one; the same floor inline uses.
           AND f.confidence >= 0.5
         ORDER BY p.slug, f.line_start`,
     )
@@ -144,8 +144,8 @@ that was never there.`;
 /**
  * Asks the chat model whether each candidate really is a contradiction.
  *
- * §8 puts this here rather than inline: "correctness that requires a model call per write
- * belongs in the background, not in the turn." A verdict of `unverified` is left on anything
+ * This belongs here rather than inline, because correctness that requires a model call per
+ * write belongs in the background. A verdict of `unverified` is left on anything
  * the model could not judge, because dropping those would turn "we did not check" into "we
  * checked and it was fine".
  */

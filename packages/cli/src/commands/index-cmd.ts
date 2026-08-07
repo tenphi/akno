@@ -41,7 +41,7 @@ export async function indexCommand(argv: string[]): Promise<number> {
     const config = loadConfig(openOptionsFrom(values));
     const fs = await import('node:fs');
     // Deleting the index costs one re-index and no data. That property is the
-    // design (§6) — so `--rebuild` is allowed to be this blunt.
+    // design — so `--rebuild` is allowed to be this blunt.
     for (const suffix of ['', '-wal', '-shm']) {
       fs.rmSync(`${config.dbPath}${suffix}`, { force: true });
     }

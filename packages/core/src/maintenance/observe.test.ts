@@ -3,7 +3,7 @@ import { runObserveMission } from './observe.ts';
 import { ModelClient } from '../models/client.ts';
 
 /**
- * §13's guardrails, tested where they live. An observations writer is an inference engine,
+ * The guardrails, tested where they live. An observations writer is an inference engine,
  * and in a prose knowledge base a bad write is recalled later *as truth* — so every guard
  * here is enforced in code rather than asked for in the prompt, and these tests are what
  * stops a prompt edit from quietly removing one.
@@ -110,7 +110,7 @@ describe('the observe mission', () => {
   });
 
   it('refuses to restate a fact', async () => {
-    // §13: never restate the facts. The tier exists for what is true *across* them.
+    // Never restate the facts. The tier exists for what is true *across* them.
     const result = await runObserveMission({
       ...base,
       chat: stubChat({
@@ -152,7 +152,7 @@ describe('the observe mission', () => {
   });
 
   it('appends a mission to the fixed prompt instead of replacing it', async () => {
-    // §13: a replaceable prompt is how every guard above gets lost.
+    // A replaceable prompt is how every guard above gets lost.
     let system = '';
     const chat = withReply(stubChat({}), (messages) => {
       system = messages.find((message) => message.role === 'system')!.content;
@@ -165,11 +165,11 @@ describe('the observe mission', () => {
   });
 });
 
-describe('the observe mission, on ground §13 puts out of bounds', () => {
+describe('the observe mission, on ground that is out of bounds', () => {
   it('refuses an inference about a person’s private life', async () => {
     // The first is the *shape* of what a real run actually wrote with the prompt rule already
     // in place — a relationship inferred from two people's pages — rebuilt from the invented
-    // vocabulary in AGENTS.md. The others are the neighbouring categories §13 names.
+    // vocabulary in AGENTS.md. The others are the neighbouring forbidden categories.
     for (const pattern of [
       'Bo Winters lives with a wife.',
       'The household is wealthy relative to its neighbours.',

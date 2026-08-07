@@ -2,7 +2,7 @@ import path from 'node:path';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**
- * §11. **Files arrive with useless names.** `IMG_4821.HEIC`. `Scan 2026-08-06 at
+ * **Files arrive with useless names.** `IMG_4821.HEIC`. `Scan 2026-08-06 at
  * 14.22.pdf`. `document(3).pdf`. A camera or a scanner named these, and the name says
  * nothing about what is inside — six months later nobody can find them, and neither
  * can search, because the filename is indexed and contributes only noise.
@@ -124,7 +124,7 @@ export async function nameDocument(options: NameOptions): Promise<NamedDocument>
     summary: cleanText(parsed.summary, 400) ?? '',
     type: cleanType(parsed.type),
     // Only a folder that actually exists. A model inventing `invoices/` and Akno
-    // creating it is exactly the gated action §5 exists to prevent.
+    // creating it is exactly the action the gate exists to prevent.
     suggestedFolder: suggested && options.folders.includes(suggested) ? suggested : null,
     confidence: clampConfidence(parsed.confidence),
     error: null,
@@ -181,7 +181,7 @@ export function cleanSlug(value: unknown): string | null {
 }
 
 /**
- * §11. Renaming only fires when the filename adds nothing the content does not
+ * Renaming only fires when the filename adds nothing the content does not
  * already say — camera and scanner patterns, bare hashes and UUIDs, `document(3)`, or
  * a name with no words in it beyond a date.
  *
@@ -235,7 +235,7 @@ export function nameIsUseless(originalName: string): boolean {
 }
 
 /**
- * §11's second guard depends on this number being meaningful, so an absent or
+ * The second naming guard depends on this number being meaningful, so an absent or
  * nonsense value reads as **no** confidence rather than as full confidence. A model
  * that forgets the field must not thereby get permission to rename.
  */

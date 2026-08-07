@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 
 /**
- * §13, end to end over a real knowledge base on disk.
+ * The maintenance cycle, end to end over a real knowledge base on disk.
  *
  * The chat model is a stub, because every case here is about what the *cycle* does with a
  * given answer — the guardrails, the append-only writing, the re-run safety — and a live
@@ -80,7 +80,7 @@ async function startStubChat(): Promise<StubServer> {
 }
 
 /**
- * The deriver is shown numbered lines and must cite one it was given (§7), so the stub finds
+ * The deriver is shown numbered lines and must cite one it was given, so the stub finds
  * a real line for each fact rather than guessing a number.
  */
 function derive(user: string, byPage: Record<string, DerivedFact[]>): unknown {
@@ -211,12 +211,12 @@ describe('observe', () => {
     expect(report.observations[0]!.slug).toBe('observations/home-appliance-servicing');
 
     const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
-    // §4: `derived` and `evidence` are the two keys Akno writes on pages it authors. They
+    // `derived` and `evidence` are the two keys Akno writes on pages it authors. They
     // are what makes an inference identifiable as one afterwards.
     expect(page).toContain('derived: true');
     expect(page).toContain('- home/appliances');
     expect(page).toContain(PATTERN);
-    // Not `- **YYYY-MM-DD** |`, which §10 reads as a timeline event anywhere it appears: an
+    // Not `- **YYYY-MM-DD** |`, which is read as a timeline event anywhere it appears: an
     // inferred pattern is not something that happened on a date.
     expect(page).not.toMatch(/- \*\*\d{4}-\d{2}-\d{2}\*\* \|/);
     const timeline = await mem.timeline({ limit: 50 });
@@ -234,7 +234,7 @@ describe('observe', () => {
   });
 
   it('refines by appending, and never deletes what is there', async () => {
-    // §13: a changed pattern gets a new dated line. A curator that can delete loses things
+    // A changed pattern gets a new dated line. A curator that can delete loses things
     // nobody watched it delete.
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
@@ -257,7 +257,7 @@ describe('observe', () => {
   });
 
   it('never uses a reference page as evidence', async () => {
-    // §5, §13: a reference page is somebody else's words. A pattern inferred from a manual is
+    // A reference page is somebody else's words. A pattern inferred from a manual is
     // exactly the failure this tier must not have.
     server.facts({
       ...SERVICING,
@@ -289,7 +289,7 @@ describe('observe', () => {
   });
 
   it('never feeds an observation back into itself', async () => {
-    // §13: an observation is not admissible evidence for another observation. No cascades.
+    // An observation is not admissible evidence for another observation. No cascades.
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
 
@@ -383,7 +383,7 @@ describe('the thorough conflict pass', () => {
 
   it('ignores a reference page disagreeing with a claim', async () => {
     // A manual disagreeing with the household's notes is not a contradiction in the
-    // household's memory (§5).
+    // household's memory.
     server.facts({
       'home/appliances': DISAGREEING['home/appliances'],
       'notes/manual': [
@@ -464,7 +464,7 @@ describe('the cycle', () => {
     expect(byPhase.get('observe')?.ran).toBe(true);
     expect(byPhase.get('conflicts')?.ran).toBe(true);
     expect(byPhase.get('housekeeping')?.ran).toBe(true);
-    // §13: reflect ships off by default, and a skipped phase says so rather than looking like
+    // Reflect ships off by default, and a skipped phase says so rather than looking like
     // a phase that found nothing.
     expect(byPhase.get('reflect')?.ran).toBe(false);
     expect(byPhase.get('reflect')?.skipped).toMatch(/off by default/);
@@ -478,7 +478,7 @@ describe('the cycle', () => {
     const observe = report.phases.find((phase) => phase.phase === 'observe');
     expect(observe?.ran).toBe(false);
     expect(observe?.skipped).toMatch(/no chat model/);
-    // The phases that need no model still run — §2: degrade, never fail.
+    // The phases that need no model still run: degrade, never fail.
     expect(report.phases.find((phase) => phase.phase === 'housekeeping')?.ran).toBe(true);
   });
 
@@ -524,7 +524,7 @@ describe('observe when a knowledge base has not asked for it', () => {
 });
 
 /**
- * §11. An attachment nobody's page points at is extracted like any other and then has nowhere
+ * An attachment nobody's page points at is extracted like any other and then has nowhere
  * to be returned from, because recall returns page cards. `adopt` gives it the page `ingest`
  * would have given it — an orphan is an arrival nobody ran `ingest` on.
  */
@@ -548,7 +548,7 @@ describe('adopt', () => {
     // asked to name. The embed is what makes the ownership hold on the next pass.
     expect(page).toContain('title: Lease scan');
     expect(page).toContain('![[lease scan.txt]]');
-    // The file itself is untouched: §11 is explicit that only the inbox moves files.
+    // The file itself is untouched: only the inbox moves files, ever.
     expect(fs.existsSync(path.join(root, 'household/lease scan.txt'))).toBe(true);
 
     // The point of the phase, not just that a page appeared.

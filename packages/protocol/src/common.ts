@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 /**
- * §5. Not everything in a knowledge base is knowledge. `full` pages are claims;
+ * Not everything in a knowledge base is knowledge. `full` pages are claims;
  * `reference` pages are evidence. Only claims become facts.
  */
 export const PageClass = z.enum(['full', 'reference', 'excluded']);
 export type PageClass = z.infer<typeof PageClass>;
 
 /**
- * §9. One op, three expansion modes — because looking something up and
+ * One op, three expansion modes — because looking something up and
  * answering a question are different retrieval problems, but must not be
  * different ops. Inferred from the query unless passed explicitly.
  */
@@ -20,7 +20,7 @@ export const Depth = z.enum(['summary', 'lines', 'full']);
 export type Depth = z.infer<typeof Depth>;
 
 /**
- * §9. Absence has a reason. Three distinct outcomes, never one silent empty
+ * Absence has a reason. Three distinct outcomes, never one silent empty
  * result: `empty` proved nothing matched, `degraded` means a model was missing
  * and the search was weaker, `unavailable` means the index could not be read.
  */
@@ -31,7 +31,7 @@ export type ResultStatus = z.infer<typeof ResultStatus>;
  * Every line Akno returns carries the file and line it came from. `confidence`
  * is present when a fact was derived from this line — how sure the deriver is
  * that the line states a well-formed durable claim, not how sure it is the claim
- * is true (§7).
+ * is true.
  */
 export const Line = z.object({
   n: z.number().int().positive(),
@@ -41,7 +41,7 @@ export const Line = z.object({
 export type Line = z.infer<typeof Line>;
 
 /**
- * §7. A replaced value comes back labelled, not as a second competing current
+ * A replaced value comes back labelled, not as a second competing current
  * answer. Two live readings of one attribute is the most common way a prose
  * knowledge base starts lying.
  */
@@ -60,17 +60,17 @@ export const DocumentRef = z.object({
   pages: z.number().int().nonnegative().optional(),
   /**
    * Files this document is made of, when more than one — `passport.pdf` plus
-   * `passport-2.pdf` is one document in two files (§11). `pages` and `matched_page` both
+   * `passport-2.pdf` is one document in two files. `pages` and `matched_page` both
    * count through the whole of it, so a page number is one a reader can look up.
    */
   parts: z.number().int().positive().optional(),
   matched_page: z.number().int().positive().optional(),
-  /** What the document is, in a sentence — §11 gives a stored document a summary of its own. */
+  /** What the document is, in a sentence. A stored document has a summary of its own. */
   summary: z.string().optional(),
   /**
    * The matching text from inside the document, capped by `recall.reference_quote_lines`.
    *
-   * A document is evidence, not a claim (§5), so it comes back as a quote window rather
+   * A document is evidence, not a claim, so it comes back as a quote window rather
    * than in full — and as a quote attributed to the document and its page, never as a line
    * citation on the Markdown page, which has no such line.
    */
@@ -79,7 +79,7 @@ export const DocumentRef = z.object({
 export type DocumentRef = z.infer<typeof DocumentRef>;
 
 /**
- * §9. Recall returns page cards, not chunks — a chunk boundary is an indexing
+ * Recall returns page cards, not chunks — a chunk boundary is an indexing
  * artifact and means nothing to a reader.
  */
 export const Card = z.object({
@@ -104,14 +104,14 @@ export const Card = z.object({
   superseded: z.array(SupersededClaim).optional(),
   links: z.array(z.string()).optional(),
   documents: z.array(DocumentRef).optional(),
-  /** Set when the class capped what this card could contribute (§9). */
+  /** Set when the class capped what this card could contribute. */
   truncated: z.boolean().optional(),
 });
 export type Card = z.infer<typeof Card>;
 
 /**
  * Named, machine-readable reasons a result is `degraded`. A rule that quietly
- * excludes half a knowledge base is worse than no rule (§2: default to visible).
+ * excludes half a knowledge base is worse than no rule — default to visible.
  */
 export const DegradedReason = z.enum([
   'no_embedding_model',

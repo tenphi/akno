@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { routingQuery } from './ingest.ts';
 
 /**
- * §11. Routing scores candidate folders against `route_threshold`, and the query it uses
+ * Routing scores candidate folders against `route_threshold`, and the query it uses
  * decides whether that threshold means anything.
  *
  * Measured on a 223-page knowledge base: appending 400 characters of the document's own

@@ -5,7 +5,7 @@ import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
 import { hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.ts';
 
 /**
- * §9. The retrieval op. Expand → hybrid search → rerank → assemble → fit a
+ * The retrieval op. Expand → hybrid search → rerank → assemble → fit a
  * budget. `mode` selects the expansion strategy and is inferred from the query
  * by default.
  *
@@ -39,7 +39,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     };
   }
 
-  // Multi-part questions are split and searched separately, then merged (§9).
+  // Multi-part questions are split and searched separately, then merged.
   const parts = mode === 'question' ? splitMultiPart(input.query) : [input.query];
 
   const allQueries: string[] = [];
@@ -134,7 +134,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     hits,
     mode,
     depth,
-    // §9. A lookup wants deep line windows around what matched; a question wants
+    // A lookup wants deep line windows around what matched; a question wants
     // tight ones across more cards, because the answer is usually one line and
     // the surrounding paragraph is budget spent on nothing.
     lineWindow:

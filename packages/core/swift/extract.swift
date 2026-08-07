@@ -1,6 +1,6 @@
 // Akno's text extractor, built on what macOS already has.
 //
-// §11 promises extraction on arrival, always — text layer first, OCR for scans. The
+// Extraction happens on arrival, always — text layer first, OCR for scans. The
 // usual way to get that is `brew install poppler tesseract`, which makes a memory
 // layer's first-run experience depend on two unrelated projects being installed and
 // on their CLI flags not changing.
@@ -21,7 +21,7 @@ import ImageIO
 
 /// One page's worth of text, so a citation can name the page it came from.
 ///
-/// §11 says a card points at the page, the document, **and the page number within it**.
+/// A card points at the page, the document, **and the page number within it**.
 /// One joined blob cannot support that last part, and a quote from page 9 of a contract
 /// attributed to no page is a citation a reader cannot check.
 struct Section: Encodable {
@@ -169,7 +169,7 @@ case "pdf":
     }
     let pageCount = document.pageCount
 
-    // Text layer first. §11's order is not arbitrary: a real text layer is exact,
+    // Text layer first, and that order is not arbitrary: a real text layer is exact,
     // while OCR of the same page is a guess that happens to be usually right.
     if !forceOcr, let layer = document.string {
         let trimmed = layer.trimmingCharacters(in: .whitespacesAndNewlines)

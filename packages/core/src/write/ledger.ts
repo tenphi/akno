@@ -1,5 +1,5 @@
 /**
- * §10. The event ledger.
+ * The event ledger.
  *
  * **The ledger is a source file, not a rendered view.** Generating it from the
  * events index would always be tidy and correctly sorted, and it is rejected: a
@@ -11,7 +11,7 @@
  * made can be lost, and a hand-written line is indexed exactly like a generated
  * one. Automatic upkeep without the destructive part.
  *
- * Nothing about this line syntax ever reaches a prompt (§10: there is no
+ * Nothing about this line syntax ever reaches a prompt: there is no
  * `add_event` op). A caller hands over `{date, summary}`.
  */
 
@@ -53,7 +53,7 @@ export function insertEvent(content: string, event: LedgerEvent): LedgerInsert {
   const year = event.date.slice(0, 4);
 
   // Already present, byte for byte: appending it twice is not append-only upkeep,
-  // it is duplication. §10 collapses duplicates in the index; this avoids making
+  // it is duplication. The index collapses duplicates; this avoids making
   // one in the file.
   const existing = lines.indexOf(line);
   if (existing !== -1) return { content, line: existing + 1 };
@@ -81,7 +81,7 @@ export function insertEvent(content: string, event: LedgerEvent): LedgerInsert {
     // way nobody notices until they read it.
     //
     // Still pure insertion: an unparseable line a human wrote is stepped over,
-    // never moved, so §10's "never rewrites or reorders" holds.
+    // never moved, so "never rewrites or reorders" holds.
     for (let i = at; i < blockEnd; i++) {
       const existingDate = EVENT_DATE.exec(lines[i]!)?.[1];
       if (existingDate && existingDate < event.date) {
@@ -119,7 +119,7 @@ function nextHeadingIndex(lines: string[], from: number): number {
 }
 
 /**
- * The header a ledger gets when a write has to create it. §4 creates this on
+ * The header a ledger gets when a write has to create it. Startup creates this on
  * startup only when asked; an event write creates it because the caller asked for
  * an event and there is nowhere else to put it.
  */

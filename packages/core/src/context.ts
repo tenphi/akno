@@ -23,12 +23,12 @@ export interface AknoContext {
   journal: Journal;
   gate: Gate;
   /**
-   * §5. **The user is never gated; only agents are.** Which one is asking is a
+   * **The user is never gated; only agents are.** Which one is asking is a
    * property of the caller, not of the op — so it lives here rather than in every
    * write's input, where a caller could simply claim to be the user.
    */
   actor: 'user' | 'agent' | 'akno';
-  /** False when another process holds the write handle (§16). */
+  /** False when another process holds the write handle. */
   writable: boolean;
   lockHeldBy: number | null;
   /**

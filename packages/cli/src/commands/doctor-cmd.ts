@@ -54,7 +54,7 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       ['exclusion rules', report.counts.excludedRules],
     ]);
 
-    // §6: the whole argument for separating these is that they are separated.
+    // Reported apart because they are unrelated; conflating them hides which is slow.
     heading('Latency — index only, no model in the path');
     kv([
       ['point lookup', ms(report.index.openMs)],

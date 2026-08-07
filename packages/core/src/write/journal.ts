@@ -6,13 +6,13 @@ import { newPrefixedId } from '../store/ids.ts';
 import { restoreFile, type WriteResult } from './atomic.ts';
 
 /**
- * §8, §16. **The journal is the only irreplaceable table.** Everything else is
+ * **The journal is the only irreplaceable table.** Everything else is
  * derived from the Markdown and rebuilt by `akno index`; this holds the previous
  * bytes, and there is nowhere else to get them.
  *
  * It records content, not pointers — so `undo` still works after
  * `rm akno.db && akno index` has thrown away every fact id the change might
- * otherwise have referenced (§8 makes exactly this point about fact ids).
+ * otherwise have referenced — which is why a fact id is never stored here.
  *
  * The unit is a **change**, not a file. One `write` can touch a page, the event
  * ledger and an attachment; `undo` reverses all of them or none, because a page
@@ -165,7 +165,7 @@ export class Journal {
   }
 
   /**
-   * Moves a file into `trash/<change>/` and returns the snapshot path. §8:
+   * Moves a file into `trash/<change>/` and returns the snapshot path:
    * `forget({slug})` moves a whole page to trash and stays undoable for the
    * retention window — deleting outright would make "reversible" a lie.
    */

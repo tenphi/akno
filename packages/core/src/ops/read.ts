@@ -4,7 +4,7 @@ import { AknoError, ReadInput, type PageClass, type ReadOutput } from '@akno/pro
 import type { AknoContext } from '../context.ts';
 
 /**
- * §5. `read({slug})` returns the full body of a `reference` page every time.
+ * `read({slug})` returns the full body of a `reference` page every time.
  * The class governs only what recall pulls in unprompted — **this is a relevance
  * policy, not access control.**
  */
@@ -156,7 +156,7 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
 
   if (!row) throw new AknoError('not_found', `no document with id ${documentId}`);
 
-  // §11. A document someone's scanner cut into `passport.pdf` and `passport-2.pdf` is one
+  // A document someone's scanner cut into `passport.pdf` and `passport-2.pdf` is one
   // document, so reading any part returns the whole of it: the text of every part in order,
   // the total page count, and the other parts' paths. Asking for a passport and getting
   // half of it, with nothing saying so, is the failure this avoids.

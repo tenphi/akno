@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { extractConcepts, inferMode, splitMultiPart } from './expand.ts';
 
 /**
- * §9. Mode inference is a default, and getting it wrong costs relevance, never
+ * Mode inference is a default, and getting it wrong costs relevance, never
  * correctness — but it should still be right on the shapes real queries take.
  */
 describe('inferMode', () => {

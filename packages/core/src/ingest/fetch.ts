@@ -4,7 +4,7 @@ import path from 'node:path';
 import { AknoError } from '@akno/protocol';
 
 /**
- * §11. `ingest` pulls documents from "a file, a folder, a URL". This is the URL.
+ * `ingest` pulls documents from a file, a folder, or a URL. This is the URL.
  *
  * Downloading is the one thing `ingest` does that reaches outside the machine, so the
  * limits are deliberate rather than defensive-by-habit:
@@ -17,8 +17,8 @@ import { AknoError } from '@akno/protocol';
  * - **The size cap applies to what arrives, not to what the server claims.** A
  *   `Content-Length` is a promise, and the stream is what actually lands on disk.
  * - **The filename comes from the response, then the URL, then the content type.** A
- *   URL path is often `/download` or `/`, which says nothing — and §11 is explicit that
- *   a name adding nothing is exactly what naming-from-content replaces.
+ *   URL path is often `/download` or `/`, which says nothing — and a name adding nothing is
+ *   exactly what naming-from-content replaces.
  */
 
 export interface Fetched {
@@ -122,8 +122,8 @@ function parseUrl(raw: string): URL {
 
 /**
  * `Content-Disposition`, then the URL's last path segment, then an extension guessed
- * from the content type. Every one of these can be useless, which is fine: §11 renames
- * from content anyway, and a useless name is what triggers that.
+ * from the content type. Every one of these can be useless, which is fine: the page is named
+ * from the content anyway, and a useless name is what triggers the rename.
  */
 function filenameFor(response: Response, url: URL, contentType: string | null): string {
   const disposition = response.headers.get('content-disposition');
@@ -154,7 +154,7 @@ function filenameFor(response: Response, url: URL, contentType: string | null): 
 /**
  * A server chooses these bytes, so they are untrusted input on their way to becoming a
  * filename: separators and control characters are dropped. Spaces survive, because a
- * filename with spaces is ordinary and the rename in §11 handles presentation anyway.
+ * filename with spaces is ordinary and the rename handles presentation anyway.
  */
 function sanitize(name: string): string {
   return [...name]

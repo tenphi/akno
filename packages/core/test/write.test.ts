@@ -5,12 +5,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 
 /**
- * §8, §5, §10. The write path end to end, on a real knowledge base on disk, with
+ * The write path end to end, on a real knowledge base on disk, with
  * **no models configured**.
  *
  * That last part is the interesting constraint: gating, conflict detection, the
  * ledger, the journal and undo must all work with the whole model stack absent.
- * §8 says inline conflict detection is cheap and structural precisely so it does not
+ * Inline conflict detection is cheap and structural precisely so it does not
  * need a model, and the first implementation failed that — it joined a structural
  * attribute against a model-assigned one and silently never matched.
  */
@@ -154,7 +154,7 @@ describe('write', () => {
 });
 
 /**
- * §8. Bias toward numbers, dates and identifiers, where conflicts are real and
+ * Bias toward numbers, dates and identifiers, where conflicts are real and
  * detectable. **When uncertain, write — do not block.**
  */
 describe('conflict detection', () => {
@@ -212,7 +212,7 @@ describe('conflict detection', () => {
     await mem.close();
   });
 
-  it('does not flag free prose — §8: when uncertain, write', async () => {
+  it('does not flag free prose — when uncertain, write', async () => {
     const mem = await openAs('agent');
     const result = await mem.write({
       slug: 'home/lease',
@@ -223,7 +223,7 @@ describe('conflict detection', () => {
   });
 });
 
-/** §5. New folders are gated for agents. The user is never gated. */
+/** New folders are gated for agents. The user is never gated. */
 describe('gating', () => {
   it('gates a new top-level folder for an agent', async () => {
     const mem = await openAs('agent');
@@ -285,7 +285,7 @@ describe('gating', () => {
   });
 });
 
-/** §10. Page and ledger line land in one change. */
+/** Page and ledger line land in one change. */
 describe('events', () => {
   it('writes a page and its ledger line in one change', async () => {
     const mem = await openAs('agent');
@@ -322,7 +322,7 @@ describe('events', () => {
   });
 });
 
-/** §8. Both operate on Markdown. Neither touches a fact directly. */
+/** Both operate on Markdown. Neither touches a fact directly. */
 describe('forget', () => {
   it('trashes a page and keeps it recoverable', async () => {
     const mem = await openAs('agent');
@@ -426,7 +426,7 @@ describe('undo', () => {
   });
 
   it('survives a full rebuild of every other table', async () => {
-    // §2: only the journal is irreplaceable. It records the previous bytes, not a
+    // Only the journal is irreplaceable. It records the previous bytes, not a
     // pointer to them, so undo works after the index is thrown away.
     const mem = await openAs('agent');
     const before = read('home/lease.md');
@@ -488,7 +488,7 @@ describe('move', () => {
 
 describe('remember without a chat model', () => {
   it('reports degraded rather than silently keeping nothing', async () => {
-    // §14: no chat model means no `remember`. "Nothing was kept" and "the curator
+    // No chat model means no `remember`. "Nothing was kept" and "the curator
     // could not run" are different answers and must not look the same.
     const mem = await openAs('agent');
     const result = await mem.remember({ text: 'The rent went up to 2222 EUR.' });

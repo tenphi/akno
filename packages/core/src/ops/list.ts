@@ -4,8 +4,8 @@ import { matchRules } from '../rules/compile.ts';
 
 /**
  * Browse structure rather than search it. The point of this op is that an agent
- * that knows what folders exist stops guessing slugs — §17's "choose a slug and
- * avoid duplicate pages" is much easier when the structure is legible.
+ * that knows what folders exist stops guessing slugs: choosing one and avoiding a duplicate
+ * page is much easier when the structure is legible.
  */
 export async function list(ctx: AknoContext, rawInput: unknown): Promise<ListOutput> {
   const input = ListInput.parse(rawInput);
@@ -110,9 +110,8 @@ function listFolders(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>
     .sort()
     .slice(0, input.limit ?? 200)
     .map((folderPath) => {
-      // Reporting which rule governs a folder is what makes §2's "default to
-      // visible" true for structure: a rule that quietly excludes half a
-      // knowledge base is worse than no rule.
+      // Reporting which rule governs a folder is what makes "default to visible" true for
+      // structure: a rule that quietly excludes half a knowledge base is worse than no rule.
       const match = matchRules(`${folderPath}/x`, ctx.config.rules);
       return {
         path: folderPath,

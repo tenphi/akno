@@ -24,13 +24,13 @@ export const PageBody = z.object({
   tags: z.array(z.string()),
   class: PageClass,
   /** Every frontmatter key Akno found, preserved as read. Your own fields are
-   *  passed through untouched (§4). */
+   *  passed through untouched. */
   frontmatter: z.record(z.string(), z.unknown()),
   summary: z.string().nullable(),
   keywords: z.array(z.string()).optional(),
   /** Numbered so a citation survives being quoted out of context. */
   lines: z.array(Line),
-  /** Line at which `<!-- reference -->` switches the page's class mid-body (§5). */
+  /** Line at which `<!-- reference -->` switches the page's class mid-body. */
   reference_fence_line: z.number().int().positive().nullable().optional(),
   links: z.array(z.string()),
   backlinks: z.array(z.string()),
@@ -51,7 +51,7 @@ export const DocumentBody = z.object({
   label: z.string().nullable(),
   page_count: z.number().int().nonnegative().nullable(),
   ocr: z.boolean(),
-  /** Extracted text. Present because extraction happens on arrival, always (§11). */
+  /** Extracted text. Present because extraction happens on arrival, always. */
   text: z.string().nullable(),
   bytes: z.number().int().nonnegative().optional(),
 });

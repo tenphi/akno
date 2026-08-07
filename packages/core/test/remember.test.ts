@@ -6,8 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 
 /**
- * §8, §13. `remember` *is* the retain tier, available per-turn. §13 gives that tier a mission
- * and an on/off switch like the others, and these tests are what make the config real rather
+ * `remember` *is* the retain tier, available per-turn. That tier has a mission and an on/off
+ * switch like the others, and these tests are what make the config real rather
  * than decorative — a `mission` key nothing reads is the same class of bug as a folder rule
  * that never reaches the index.
  */
@@ -101,7 +101,7 @@ afterEach(async () => {
 
 describe('the retain tier’s config', () => {
   it('appends its mission to the fixed prompt rather than replacing it', async () => {
-    // §13: a mission appends emphasis and never replaces the prompt, because every rule that
+    // A mission appends emphasis and never replaces the prompt, because every rule that
     // keeps the tier honest lives in the fixed part.
     const mem = await openMem({ maintenance: { retain: { mission: 'Prefer amounts and dates.' } } });
     try {

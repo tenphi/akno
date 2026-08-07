@@ -19,12 +19,12 @@ export interface ChunkHit {
 export interface SearchOptions {
   /** Queries for the lexical arm. */
   queries: string[];
-  /** Texts for the vector arm — in question mode, hypothetical answers (§9). */
+  /** Texts for the vector arm — in question mode, hypothetical answers. */
   vectorTexts: string[];
   candidatesPerArm: number;
   /** Restrict to these page ids. Used by filters and by `context` pinning. */
   pageIds?: Set<string>;
-  /** Above this many vectors, restrict the vector arm to lexical candidates (§6). */
+  /** Above this many vectors, restrict the vector arm to lexical candidates. */
   prefilterAbove?: number;
 }
 
@@ -36,11 +36,11 @@ export interface SearchResult {
 }
 
 /**
- * §9. Pipeline: query expansion → vector + FTS5 hybrid → rerank → group hits by
+ * Pipeline: query expansion → vector + FTS5 hybrid → rerank → group hits by
  * page → build cards → fill budget. This module is the middle: two arms, fused.
  *
  * FTS5 does not care about size — it is sub-millisecond at 2,000 chunks and at
- * 100,000. The vector arm is brute force by decision (§6), which is exact and
+ * 100,000. The vector arm is brute force by decision, which is exact and
  * fast enough an order of magnitude past the knowledge base this is built for.
  */
 export async function hybridSearch(
@@ -57,7 +57,7 @@ export async function hybridSearch(
   if (embedding.available) {
     const embedded = await embedding.embed(options.vectorTexts);
     if (embedded.ok && embedded.value) {
-      // §6 step 1: candidate pre-filtering. Scoring only the lexical candidate
+      // Candidate pre-filtering. Scoring only the lexical candidate
       // set instead of every vector raises the ceiling several-fold for free —
       // but it cannot help a purely semantic query with no lexical overlap, so it
       // is a fallback for a knowledge base past the brute-force threshold, not
@@ -218,7 +218,7 @@ export function toMatchExpression(query: string): string | null {
 }
 
 /**
- * §14. Without a reranker, hybrid score ordering stands. With one, the top
+ * Without a reranker, hybrid score ordering stands. With one, the top
  * candidates are re-scored against the original query — which is where a
  * cross-encoder earns its cost, since it sees the query and the passage together.
  *

@@ -2,11 +2,11 @@ import type { DegradedReason } from '@akno/protocol';
 import type { ResolvedModelRole } from '../config/schema.ts';
 
 /**
- * §14. Any OpenAI-compatible endpoint, per role. One local server can host all
+ * Any OpenAI-compatible endpoint, per role. One local server can host all
  * three. Nothing here knows about a specific provider — a role is a base URL, an
  * optional key, and a model id.
  *
- * Every method resolves rather than throws on a model failure, because §2 says
+ * Every method resolves rather than throws on a model failure, because the rule is
  * degrade, never fail: the caller needs to know it got nothing *and why*, so it
  * can report `degraded` instead of pretending the knowledge base is empty.
  */
@@ -246,7 +246,7 @@ export class ModelClient {
   }
 
   /**
-   * §6. Model warmth dominates everything else — a cold embedding server costs
+   * Model warmth dominates everything else — a cold embedding server costs
    * seconds, three orders of magnitude more than the entire database path. This
    * is what `serve` pings to keep the endpoint from going cold, and what
    * `doctor` measures so model latency is never confused with index latency.

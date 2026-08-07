@@ -10,7 +10,7 @@ import type { ImagePart, ModelClient } from '../models/client.ts';
 const run = promisify(execFile);
 
 /**
- * §11. **Extraction happens on arrival, always** — text layer first, OCR for scans,
+ * **Extraction happens on arrival, always** — text layer first, OCR for scans,
  * converters for Office formats. No caller ever runs an extraction tool, and a
  * stored PDF is searchable by its own content.
  *
@@ -41,7 +41,7 @@ export interface Extraction {
   /**
    * The same text page by page, when the format has pages.
    *
-   * §11 says a card points at the page, the document, **and the page number within it**.
+   * A card points at the page, the document, **and the page number within it**.
    * That last part needs the text kept per page: a quote from page 9 of a contract with no
    * page attached is a citation a reader cannot check. Absent for formats with no pages —
    * a `.txt` file has none, and inventing "page 1" would be a claim, not a fact.
@@ -88,7 +88,7 @@ export interface ExtractOptions {
   absPath: string;
   /** Pages OCR'd before stopping. A 200-page scan need not be fully searchable to be findable. */
   maxOcrPages: number;
-  /** Used when OCR finds no text in an image — a photo rather than a document (§14). */
+  /** Used when OCR finds no text in an image — a photo rather than a document. */
   vision?: ModelClient;
   maxBytes: number;
 }
@@ -176,7 +176,7 @@ async function image(options: ExtractOptions): Promise<Extraction> {
     };
   }
 
-  // §14. **Photos with no text yield no page; OCR still covers scans and
+  // **Photos with no text yield no page; OCR still covers scans and
   // screenshots, which is most of what arrives.** With a vision model configured, a
   // photo can still be described — but that is a different claim about the file, so
   // it is labelled `via: 'vision'` and never confused with OCR of real text.

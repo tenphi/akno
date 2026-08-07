@@ -121,8 +121,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
 
 /**
  * `conflict` and `requires_approval` are not failures — they are the layer doing
- * its job, and §17's whole argument is that they must reach the caller as
- * distinguishable results. Exit code 2 marks "needs a human", separate from 1.
+ * its job, and they must reach the caller as distinguishable results. Exit code 2 marks "needs a human", separate from 1.
  */
 export function printWriteOutcome(result: {
   outcome: string;

@@ -34,7 +34,7 @@ export const FolderStub = z.object({
   /** Total including subfolders — the useful number when deciding where to look. */
   pages_deep: z.number().int().nonnegative(),
   folders: z.number().int().nonnegative(),
-  /** The rule that governs this folder, and where it came from (§5). */
+  /** The rule that governs this folder, and where it came from. */
   rule: z.object({ class: PageClass.optional(), source: z.string() }).optional(),
 });
 export type FolderStub = z.infer<typeof FolderStub>;

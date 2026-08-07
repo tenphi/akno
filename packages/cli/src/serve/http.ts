@@ -8,7 +8,7 @@ export interface HttpServer {
 }
 
 /**
- * §16. For agents in containers or on another host: Akno runs on the host and
+ * For agents in containers or on another host: Akno runs on the host and
  * the agent reaches it over the network, so the knowledge base and the index never
  * need to be mounted into a sandbox — which also keeps the single-writer property
  * that makes WAL concurrency safe.

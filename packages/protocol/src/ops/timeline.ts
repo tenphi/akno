@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { DatePrefix, ResultEnvelope } from '../common.ts';
 
-/** Reading is always filtered — a ledger spans years (§10). */
+/** Reading is always filtered — a ledger spans years. */
 export const TimelineInput = z.object({
   since: DatePrefix.optional(),
   until: DatePrefix.optional(),
@@ -21,7 +21,7 @@ export const Event = z.object({
   slug: z.string().nullable(),
   /** Where the line lives — `timeline` for the ledger, otherwise the page it was
    *  written on. Dated lines are indexed from any page, so someone typing events
-   *  into their own daily notes gets them for free (§10). */
+   *  into their own daily notes gets them for free. */
   source: z.string(),
   line: z.number().int().positive().nullable(),
 });

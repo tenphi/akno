@@ -3,7 +3,7 @@ import { sha256 } from '../store/ids.ts';
 import type { ParsedPage } from '../kb/page.ts';
 
 /**
- * §6, §7. Deriving structure from text already in the knowledge base — facts,
+ * Deriving structure from text already in the knowledge base — facts,
  * summaries, keywords — is a pure function of the Markdown. Akno does it
  * alone; it never needs an extraction cycle from the agent.
  */
@@ -54,7 +54,7 @@ const SUMMARY_ONLY = `Summarize a personal knowledge base page. Reply with JSON 
 /**
  * One call per page returning summary, keywords and facts together — the model
  * is reading the page once either way, so three calls would be three times the
- * cost for the same tokens read (the same argument §11 makes for naming files).
+ * cost for the same tokens read (the same argument that makes naming a file nearly free).
  */
 export async function derivePage(
   page: ParsedPage,
@@ -67,7 +67,7 @@ export async function derivePage(
 
   // Only text above the reference fence is mined. Below it is somebody else's
   // words, and a fact extractor asserting things from a contract or an email is
-  // the failure §5 exists to prevent.
+  // the failure page classes exist to prevent.
   const mineable = mineableLines(page);
   if (mineable.length === 0) return empty;
 
@@ -126,8 +126,8 @@ export async function derivePage(
  * line before hashing it.
  *
  * This is what tells "the sentence that made this claim is gone" apart from "this
- * derivation did not repeat it" — the first is a supersession, the second is not, and §7
- * hangs the difference between retiring a fact and deleting it on exactly that. Answered
+ * derivation did not repeat it" — the first is a supersession, the second is not, and the
+ * difference between retiring a fact and deleting it hangs on exactly that. Answered
  * from the page rather than from the incoming facts, because a derivation that returns
  * nothing at all says nothing about whether the page still says what it said.
  */
@@ -174,8 +174,8 @@ function cleanKeywords(value: unknown): string[] {
 }
 
 /**
- * A hallucinated line number is the one failure mode that would break §2's "no
- * hidden storage" guarantee — a fact whose source line does not say what the
+ * A hallucinated line number is the one failure mode that would break the no-hidden-storage
+ * guarantee — a fact whose source line does not say what the
  * fact says can never be re-derived or invalidated correctly. So every fact is
  * dropped unless its line exists in what the model was actually shown.
  */
@@ -248,11 +248,11 @@ const HEDGES = [
 ];
 
 /**
- * §7, §19. Confidence answers one narrow question: how sure is the deriver that
+ * Confidence answers one narrow question: how sure is the deriver that
  * this line states a well-formed, *durable* claim? Not whether the claim is
  * true.
  *
- * §19 flags how confidence should be produced as an open question, and notes
+ * How confidence should be produced is genuinely open, and it is worth noting
  * that a model self-reporting certainty is famously badly calibrated. So this is
  * built from cheap structural signals instead — hedge words, a resolvable
  * subject, whether the line is a complete statement, whether it carries a value
@@ -278,7 +278,7 @@ export function scoreConfidence(
   // base gives that someone meant to record a value.
   if (/^\s*[-*]\s*\*?\*?[A-Z][^:]{1,40}:?\*?\*?\s*[:|]\s*\S/.test(sourceText)) score += 0.14;
   // A number, date, currency or identifier — where conflicts are real and
-  // detectable (§8), and where a wrong value actually costs something.
+  // detectable, and where a wrong value actually costs something.
   if (/\d/.test(sourceText)) score += 0.08;
   if (
     /\d{4}-\d{2}-\d{2}|[€$£]\s?\d|\b\d+(?:[.,]\d+)?\s?(?:%|eur|usd|gbp|kg|km|months?|years?)\b/i.test(
@@ -297,7 +297,7 @@ export function scoreConfidence(
   // A very short source line rarely stands on its own.
   if (sourceText.trim().length < 12) score -= 0.15;
 
-  // §7 asks whether the line states a **well-formed** durable claim, and a claim
+  // The question is whether the line states a **well-formed** durable claim, and a claim
   // that is not a sentence cannot be one however well-formed its source is. This
   // matters more than it looks: a markdown table row (`| UTILITIES | 2 | ... |`)
   // and a bold-key line (`- **Warranty:** five years`) both trip every
@@ -338,7 +338,7 @@ The text may be OCR output with errors in it, and may be only the first pages of
 what is there. Do not guess at what is missing.`;
 
 /**
- * §11. A stored document has "extracted text, a summary, embeddings" of its own.
+ * A stored document has extracted text, a summary and embeddings of its own.
  *
  * One summary per *document*, not per file: a passport split into `passport.pdf` and
  * `passport-2.pdf` is one thing, and two half-summaries describe neither. The caller joins

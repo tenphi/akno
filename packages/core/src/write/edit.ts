@@ -3,7 +3,7 @@ import { parseFrontmatter } from '../kb/frontmatter.ts';
 
 /**
  * The four ways `write` can change a body, and the rule they all obey: **never
- * touch the frontmatter.** §4 promises every key except `id` is preserved byte for
+ * touch the frontmatter.** Every key except `id` is preserved byte for
  * byte, so every edit here operates on the body and splices it back under the
  * original head.
  */

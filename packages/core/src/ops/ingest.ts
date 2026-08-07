@@ -15,15 +15,15 @@ import { recall } from './recall.ts';
 import { normalizeSlug } from './write.ts';
 
 /**
- * §11. Pull documents into memory — **a file, a folder, a URL** — and for each:
+ * Pull documents into memory — **a file, a folder, a URL** — and for each:
  * extract, OCR, name, summarize, and route.
  *
- * `ingest` is the op that earns the most from living in the layer. §17's list of things
- * usually asked of a model includes "run text extraction and OCR on documents", "give
- * `IMG_4821.HEIC` a name that means something", and "decide where a dropped file
- * belongs" — three prompt instructions replaced by one call that happens every time.
+ * `ingest` is the op that earns the most from living in the layer. "Run text extraction and
+ * OCR on documents", "give `IMG_4821.HEIC` a name that means something" and "decide where a
+ * dropped file belongs" are three things usually asked of a model in a prompt, replaced here
+ * by one call that happens every time.
  *
- * Order follows §11: extract first, because everything else depends on having the text;
+ * The order matters: extract first, because everything else depends on having the text;
  * then name from the content; then route; then gate. A file whose text cannot be read is
  * never given a confident name, and one whose destination is unclear is left where it is
  * rather than filed confidently into the wrong place.
@@ -124,7 +124,7 @@ async function ingestFolder(
     status: 'ok',
     outcome: landed > 0 ? 'ok' : 'skipped',
     batch,
-    // §2: default to visible. A silent cap reads as "that was all of them".
+    // Default to visible. A silent cap reads as "that was all of them".
     note:
       notLookedAt > 0
         ? `${landed} of ${Math.min(entries.length, limit)} filed; ${notLookedAt} more were not looked at (--limit)`
@@ -138,7 +138,7 @@ export interface FileSource {
   source: string;
   originalName: string;
   /**
-   * §11: **the inbox is the only place Akno moves files.** A file dropped straight
+   * **The inbox is the only place Akno moves files.** A file dropped straight
    * into `documents/` was put there on purpose; Akno will name it, page it and index
    * it, but never relocate it. An external file handed to `ingest` is copied, so the
    * caller still has what they passed.
@@ -158,7 +158,7 @@ export async function ingestFile(
   }
 
   // ── Dedupe ──────────────────────────────────────────────────────────────
-  // §11: re-ingesting a document is a no-op that returns where it already lives.
+  // Re-ingesting a document is a no-op that returns where it already lives.
   const sha = await hashFile(file.source);
   const existing = ctx.store.db
     .prepare(
@@ -198,7 +198,7 @@ export async function ingestFile(
 
   const confident = named !== null && named.confidence >= ctx.config.ingest.nameConfidence;
   if (!confident) {
-    // §11's second guard. A photo of a garden or a corrupt scan keeps its name, gets no
+    // The second guard. A photo of a garden or a corrupt scan keeps its name, gets no
     // page, and is flagged rather than given a confident wrong one. Skipping is a
     // *result*, not a failure — the caller is told exactly which guard fired.
     return {
@@ -220,7 +220,7 @@ export async function ingestFile(
   // ── Route ───────────────────────────────────────────────────────────────
   const destination = await route(ctx, input, named);
   if (destination.kind === 'unrouted') {
-    // §11: an unrouted file sits visibly where you dropped it, rather than being filed
+    // An unrouted file sits visibly where you dropped it, rather than being filed
     // confidently into the wrong place, where you would never look for it. An inbox with
     // three things in it is a to-do list; a misfiled document is a lost one.
     return {
@@ -238,7 +238,7 @@ export async function ingestFile(
   const folder = destination.folder;
   const pageSlug = normalizeSlug(folder ? `${folder}/${named.slug}` : named.slug);
 
-  // §11: **ingestion behaviour is a rule, not a heuristic**, because the right answer
+  // **Ingestion behaviour is a rule, not a heuristic**, because the right answer
   // genuinely differs by folder — a research paper you want mined, a contract you do not.
   // Declaring it once per folder is cheaper and more predictable than classifying every
   // arrival with a model.
@@ -251,7 +251,7 @@ export async function ingestFile(
     };
   }
 
-  // A new folder is gated exactly as a `write` into it would be (§5).
+  // A new folder is gated exactly as a `write` into it would be.
   const gated = ctx.gate.check(pageSlug, ctx.actor, { path: file.source, folder });
   if (!gated.allowed) {
     return {
@@ -336,7 +336,7 @@ type Destination =
   | { kind: 'unrouted'; nearest: string[]; related: string[] };
 
 /**
- * §11. **Routing is a folder decision, not a page-level one** — Akno picks *where a
+ * **Routing is a folder decision, not a page-level one** — Akno picks *where a
  * document belongs*, not what it is called relative to its neighbours. It never invents a
  * new folder to route into; a document with no home clears no threshold and stays put.
  *
@@ -391,7 +391,7 @@ async function route(
       : [...new Set(result.cards.map((card) => card.slug.split('/')[0]!))].slice(0, 5);
 
   // Folders the *evidence* supports. Everything below is chosen from this set and never
-  // from outside it, which is the whole content of §11's threshold.
+  // from outside it, which is the whole content of the threshold.
   const clears = ranked.filter(([, relevance]) => relevance >= ctx.config.routeThreshold);
 
   if (clears.length > 0) {
@@ -408,7 +408,7 @@ async function route(
   // model had named. On a real knowledge base that filed a water bill into an employment
   // folder — `receipts/` was the top-scoring folder at 0.383 against a threshold of 0.5,
   // the refusal was correct, and the fallback then overrode it with a signal weaker than
-  // the one that had just been rejected. §11 offers exactly two outcomes here, and
+  // the one that had just been rejected. There are exactly two outcomes here, and
   // "somewhere plausible" is not one of them: a misfiled document is a lost one.
   return { kind: 'unrouted', nearest, related };
 }
@@ -455,10 +455,10 @@ function proposeDestination(
  * A short writeup and a pointer to the file — **not** the file's text.
  *
  * The extracted text used to be pasted in below a `<!-- reference -->` fence, and it was a
- * copy: §6 invalidates document text on the *file* hash, which a page body cannot honour,
+ * copy: document text is invalidated by the *file* hash, which a page body cannot honour,
  * and indexing the same words twice made every match inside a document arrive as two hits
  * against one budget. The text is indexed against the document instead, where a hit can
- * name the page within the PDF that produced it (§11). What the reader gets here is what a
+ * name the page within the PDF that produced it. What the reader gets here is what a
  * person would have written: what it is, and where the thing itself lives.
  */
 function composePage(options: {
@@ -471,8 +471,8 @@ function composePage(options: {
   const { named, extraction } = options;
   const front = [`title: ${titleCase(named.title)}`];
   if (named.type) front.push(`type: ${named.type}`);
-  // Frontmatter, not prose: a URL is machine-readable provenance, and §4 preserves every
-  // key Akno does not own, so adding one of its own here is safe.
+  // Frontmatter, not prose: a URL is machine-readable provenance, and every key Akno does
+  // not own is preserved untouched, so adding one of its own here is safe.
   if (options.sourceUrl) front.push(`source_url: ${options.sourceUrl}`);
 
   const facts = provenanceLines(extraction);

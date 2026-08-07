@@ -7,7 +7,7 @@ import { writeFileAtomic } from '../write/atomic.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 
 /**
- * §8. **This is the honest version of forgetting.**
+ * **This is the honest version of forgetting.**
  *
  * Retracting a fact removes *the sentence that produced it*. Expiring a database
  * row while the sentence stays in the file means the assistant "forgets" and then
@@ -51,7 +51,7 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
   }
   // The hash is what makes this safe: if the line has been edited since the fact
   // was derived, removing "line 11" would delete whatever now occupies line 11.
-  // §7's no-drift guarantee cuts both ways — it also protects a delete.
+  // The no-drift guarantee cuts both ways — it also protects a delete.
   if (sha256Line(target) !== fact.source_line_hash) {
     throw new AknoError(
       'conflict',

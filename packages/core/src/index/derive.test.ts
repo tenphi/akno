@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { scoreConfidence } from './derive.ts';
 
 /**
- * §7, §19. Confidence answers one narrow question: how sure is the deriver that
+ * Confidence answers one narrow question: how sure is the deriver that
  * this line states a well-formed, *durable* claim? Not whether the claim is true.
  *
- * §19 leaves how to produce it open, and notes that a model self-reporting
- * certainty is famously badly calibrated — so this is structural, and these tests
- * are the calibration.
+ * How to produce it is left open, and a model self-reporting certainty is famously badly
+ * calibrated — so this is structural, and these tests are the calibration.
  */
 describe('scoreConfidence', () => {
   it('scores a flat statement of a value high', () => {
@@ -78,7 +77,7 @@ describe('scoreConfidence', () => {
   });
 
   /**
-   * §19 leaves confidence open and asks for measurement against a labelled set.
+   * Confidence is open, and wants measurement against a labelled set.
    * These are the shapes that survived the first calibration pass over a real
    * knowledge base and were still scoring high while carrying no subject.
    */

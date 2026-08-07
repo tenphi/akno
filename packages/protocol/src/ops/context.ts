@@ -3,7 +3,7 @@ import { Card, RecallMode, ResultEnvelope } from '../common.ts';
 import { Event } from './timeline.ts';
 
 /**
- * §9. One budget, one assembly. `context` composes the whole pre-turn bundle —
+ * One budget, one assembly. `context` composes the whole pre-turn bundle —
  * pinned pages, recent timeline, structure tree, and this turn's recall —
  * against a single budget. Separate injections with separate budgets overrun
  * together. Normally called by the host, not by the agent.
@@ -30,7 +30,7 @@ export const ContextOutput = ResultEnvelope.extend({
   coverage: z.record(z.string(), z.boolean()).optional(),
   budget_used: z.number().int().nonnegative(),
   /** What was dropped to fit, and how much of it. A silent trim reads as
-   *  "that's everything" when it wasn't (§2: default to visible). */
+   *  "that's everything" when it wasn't — default to visible. */
   dropped: z
     .object({
       cards: z.number().int().nonnegative(),

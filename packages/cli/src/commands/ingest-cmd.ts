@@ -101,7 +101,7 @@ export async function ingestCommand(argv: string[]): Promise<number> {
     }
 
     if (result.outcome === 'skipped') {
-      // Not a failure. §11's guards firing is the layer working, and the caller needs
+      // Not a failure. A guard firing is the layer working, and the caller needs
       // to know which one so it can decide whether to help.
       line(`${statusLabel(result.status)} ${style.yellow('left where it is')}`);
       line(`  ${result.note}`);

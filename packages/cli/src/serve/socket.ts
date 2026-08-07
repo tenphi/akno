@@ -22,7 +22,7 @@ export interface SocketServer {
 }
 
 /**
- * §16. The default door: no port, filesystem permissions are the auth, and it is
+ * The default door: no port, filesystem permissions are the auth, and it is
  * the fastest. Newline-delimited JSON over a unix socket, framed by the protocol
  * package so this file and the client cannot disagree about the wire.
  */
@@ -144,7 +144,7 @@ async function handle(
   const started = performance.now();
   try {
     if (request.kind === 'command') {
-      // §16: exactly one process holds the write handle, so maintenance that writes has to be
+      // Exactly one process holds the write handle, so maintenance that writes has to be
       // reachable *through* the service rather than racing it.
       if (!isCommandName(request.op)) {
         throw new AknoError('invalid', `unknown command: ${request.op}`);
@@ -158,7 +158,7 @@ async function handle(
     if (!isOpName(request.op)) {
       throw new AknoError('invalid', `unknown op: ${request.op}`);
     }
-    // §16. Trust is a parameter, not a property of the transport: the same code
+    // Trust is a parameter, not a property of the transport: the same code
     // runs with different permissions, so an MCP caller can be denied `forget`
     // without a second code path that grows its own bugs.
     if (options.allow && !options.allow.includes(request.op)) {

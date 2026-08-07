@@ -5,17 +5,17 @@ import { ERROR_CODES } from './errors.ts';
  * Newline-delimited JSON, one object per line, over a unix socket or an HTTP
  * body. Deliberately boring: the measured cost of a socket round trip is 18µs
  * against a recall budget of 300ms, so there is nothing here worth optimizing
- * and every reason to keep it debuggable with `nc` (§16).
+ * and every reason to keep it debuggable with `nc`.
  */
 
 /**
  * The maintenance work a *host* asks the writer to do: reconcile the index, file what is in
  * the inbox, run the cycle.
  *
- * Not ops, deliberately — §15's ten are what an agent calls about memory, and these are
- * operator commands about the process. They travel the same wire for one reason: §16 makes
- * exactly one process the writer, so anything that writes has to be reachable *through* it or
- * be unavailable whenever the service is running. It used to be unavailable, and the nightly
+ * Not ops, deliberately — the ten ops are what an agent calls about memory, and these are
+ * operator commands about the process. They travel the same wire for one reason: exactly one
+ * process may write, so anything that writes has to be reachable *through* it or be
+ * unavailable whenever the service is running. It used to be unavailable, and the nightly
  * cycle would have failed every night with "another process holds the write handle".
  */
 export const COMMAND_NAMES = ['index', 'inbox', 'dream'] as const;
@@ -55,7 +55,7 @@ export const Hello = z.object({
   hello: z.literal('akno'),
   protocol: z.number().int(),
   version: z.string(),
-  /** Read-only means another process holds the write handle (§16). */
+  /** Read-only means another process holds the write handle. */
   writable: z.boolean(),
   akno_path: z.string(),
   ops: z.array(z.string()),

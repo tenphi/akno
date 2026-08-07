@@ -14,7 +14,7 @@ import {
 } from './schema.ts';
 
 /**
- * §4. The rules file that travels with the notes. Named here rather than inline because
+ * The rules file that travels with the notes. Named here rather than inline because
  * the indexer has to know to skip it: it lives *inside* the knowledge base but is Akno's
  * own configuration, and indexing it files the taxonomy as a memory object.
  */
@@ -36,8 +36,8 @@ export interface LoadOptions {
 }
 
 /**
- * §5, and the repo's gitignore strategy. Config is assembled from four layers,
- * lowest precedence first:
+ * Config is assembled from four layers, lowest precedence first — which is also what the
+ * repo's gitignore strategy is built around:
  *
  *   1. `config/default.jsonc`       committed, machine-independent, every key
  *   2. `~/.akno/config.json`      the installed machine's own config
@@ -263,7 +263,7 @@ function resolveProviders(
 }
 
 /**
- * A role resolves to usable, or to a *stated reason* it is not. §2: degrade,
+ * A role resolves to usable, or to a *stated reason* it is not. Degrade,
  * never fail — but never degrade silently either. Every reason string here shows
  * up in `akno doctor` and in the `degraded` array on a result.
  */
@@ -331,7 +331,7 @@ function resolve(
   const providers = resolveProviders(doc.providers, env);
 
   // Rules found in the knowledge base win over machine config, so they can be
-  // versioned with the notes and survive a move to another machine (§5).
+  // versioned with the notes and survive a move to another machine.
   const kbRulesPath = path.join(aknoPath, KB_RULES_FILE);
   const kbRules = readJsoncFile<{ folders?: Record<string, unknown>; gate?: string }>(kbRulesPath);
   const rules = compileRules([
@@ -429,13 +429,13 @@ function resolve(
         // Enable it with a model you have seen produce patterns worth having.
         enabled: doc.maintenance?.observe?.enabled ?? false,
         mission: doc.maintenance?.observe?.mission ?? null,
-        // §13's floor, and the schema refuses to go below it: one page agreeing with
+        // The floor, and the schema refuses to go below it: one page agreeing with
         // itself is not a pattern.
         minEvidence: Math.max(2, doc.maintenance?.observe?.min_evidence ?? 2),
         maxSubjects: doc.maintenance?.observe?.max_subjects ?? 40,
       },
       reflect: {
-        // §13: at a few hundred pages a "pattern" is one coincidence away from noise.
+        // At a few hundred pages a "pattern" is one coincidence away from noise.
         enabled: doc.maintenance?.reflect?.enabled ?? false,
         mission: doc.maintenance?.reflect?.mission ?? null,
       },

@@ -2,16 +2,16 @@ import { performance } from 'node:perf_hooks';
 import type { Akno } from './open.ts';
 
 /**
- * §6. **Benchmarks are part of the project.** Numbers rot, and the row that
+ * **Benchmarks are part of the project.** Numbers rot, and the row that
  * matters most is the last one: "was fine, then wasn't" should be a test, not a
  * memory.
  *
  * Two rules learned by running this against a real knowledge base and getting a
  * useless answer:
  *
- * **1. Model latency and index latency are separate measurements.** §6's whole
- * argument is that a memory system which feels slow is almost never suffering from
- * its storage engine, and `doctor` already reports the two apart. A bench that
+ * **1. Model latency and index latency are separate measurements.** A memory system which
+ * feels slow is almost never suffering from its storage engine, and `doctor` already reports
+ * the two apart. A bench that
  * adds a 2-second local 3B model call to a 20ms budget and prints FAIL has
  * measured somebody's GPU, not this code, and will be ignored within a week. So
  * index-path budgets are **asserted** and model-path timings are **reported**.
@@ -88,7 +88,7 @@ export async function runBench(akno: Akno, options: BenchOptions = {}): Promise<
 
   const cases: BenchCase[] = [
     {
-      // §6: "cold open + first query, warm models" — but with the model stack out
+      // A cold open plus the first query — but with the model stack out
       // of the path, because this budget is about the database and the assembly.
       name: 'first query, index path only',
       budgetMs: 50,
@@ -128,8 +128,7 @@ export async function runBench(akno: Akno, options: BenchOptions = {}): Promise<
       run: () => akno.timeline({ since: '2026-01', limit: 100 }),
     },
     {
-      // The stat sweep with no model work: §6's claim that a restart is not a
-      // re-index. Needs the write handle, and says so when it does not have one.
+      // The stat sweep with no model work: the claim that a restart is not a re-index. Needs the write handle, and says so when it does not have one.
       name: 'restart -> serving again, nothing changed',
       budgetMs: 50,
       iterations: Math.min(iterations, 5),

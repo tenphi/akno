@@ -2,7 +2,7 @@ import type { ParsedPage } from '../kb/page.ts';
 
 export interface Chunk {
   ord: number;
-  /** 'full' or 'reference' — a chunk below the fence is evidence, never mined (§5). */
+  /** 'full' or 'reference' — a chunk below the fence is evidence, never mined. */
   kind: 'full' | 'reference';
   /** `Car insurance 2026 › Policy`. Prepended to the embedded text and shown as
    *  a breadcrumb on the card, because a heading is the author saying where a
@@ -27,7 +27,7 @@ interface Section {
 }
 
 /**
- * §6. Chunks follow the document's own structure:
+ * Chunks follow the document's own structure:
  *
  *   1. Split at `##`. One section, one chunk.
  *   2. A section over the size cap splits at `###`.
@@ -282,7 +282,7 @@ export function applyReferenceFence(chunks: Chunk[], fenceLine: number | null): 
 }
 
 /**
- * The heading path is prepended to the embedded text (§6). Without it a chunk
+ * The heading path is prepended to the embedded text. Without it a chunk
  * reading "Premium: €33/month" embeds with no idea what it is the premium *of*.
  */
 export function embeddingText(chunk: Chunk): string {
@@ -298,7 +298,7 @@ export interface DocumentChunk {
 }
 
 /**
- * §11. Chunks a document's extracted text so a PDF is searchable by its own content and a
+ * Chunks a document's extracted text so a PDF is searchable by its own content and a
  * hit can name the page it is on.
  *
  * Page boundaries are honoured before size: a chunk that straddles two pages cannot be

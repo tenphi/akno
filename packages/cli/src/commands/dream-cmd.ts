@@ -80,7 +80,7 @@ function printDream(report: DreamReport, dryRun: boolean): number {
   }
 
   if (report.rejected.length > 0) {
-    // §13's guardrails firing is the tier working. Silence here would make a prompt edit
+    // A guardrail firing is the tier working. Silence here would make a prompt edit
     // that removed one indistinguishable from a quiet night.
     heading(`${report.rejected.length} refused by a guardrail`);
     for (const entry of report.rejected.slice(0, 10)) {

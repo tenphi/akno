@@ -2,7 +2,7 @@ import { UndoInput, type UndoOutput } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 
 /**
- * §17. **Remember which change to revert** is normally asked of the model. Here
+ * **Remember which change to revert** is normally asked of the model. Here
  * the journal does it: `undo` takes an id that outlives the session, the process,
  * and a full rebuild of every other table.
  */

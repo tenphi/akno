@@ -16,7 +16,7 @@ import {
 } from '@akno/protocol';
 
 /**
- * §16. `@akno/client` has the **identical interface** to the library — same
+ * `@akno/client` has the **identical interface** to the library — same
  * ops, same schemas, generated from the same registry. Swapping `open()` for
  * `connect()` is the only difference between embedding and connecting, so the
  * decision is reversible and nothing above the call site knows which is in use.
@@ -41,10 +41,9 @@ export interface AknoClient extends AknoOps {
   /**
    * Ask the writer to do maintenance: `index`, `inbox`, `dream`.
    *
-   * Not an op — §15's ten are what an agent calls about memory, and these are operator
-   * commands about the process. They exist here because §16 makes exactly one process the
-   * writer: with a service running, work that writes is either reachable through it or not
-   * reachable at all.
+   * Not an op — the ten ops are what an agent calls about memory, and these are operator
+   * commands about the process. They exist here because exactly one process may write: with a
+   * service running, work that writes is either reachable through it or not reachable at all.
    */
   command(name: string, input?: unknown): Promise<unknown>;
   close(): Promise<void>;
@@ -182,7 +181,7 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
 // ─── Loopback HTTP ──────────────────────────────────────────────────────────
 
 /**
- * §16. The HTTP door matters for containerized agents: Akno runs on the host
+ * The HTTP door matters for containerized agents: Akno runs on the host
  * and the agent reaches it over the network, so the knowledge base and the index
  * never need to be mounted into a sandbox — which also keeps the single-writer
  * property that makes WAL concurrency safe.
@@ -248,7 +247,7 @@ function bindOps(call: <N extends OpName>(op: N, input: OpInput<N>) => Promise<O
 
 /**
  * A version handshake on connect, with the client refusing a server it cannot
- * speak to rather than failing subtly later (§16).
+ * speak to rather than failing subtly later.
  */
 function assertVersion(hello: HelloMessage, options: ConnectOptions): void {
   if (hello.protocol === PROTOCOL_VERSION) return;

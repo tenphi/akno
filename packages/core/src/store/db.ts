@@ -9,7 +9,7 @@ import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vector
 export interface StoreOptions {
   dbPath: string;
   embeddingDimensions: number;
-  /** Open without taking the write lock. A second process gets this (§16). */
+  /** Open without taking the write lock. A second process gets this. */
   readOnly?: boolean;
 }
 
@@ -27,7 +27,7 @@ export interface Store {
 }
 
 /**
- * §6. There is no engine cold start — opening a SQLite file is half a
+ * There is no engine cold start — opening a SQLite file is half a
  * millisecond regardless of size, because there is no VM to boot and no server
  * to connect to. What *is* expensive is spawning a process per operation (33ms
  * vs 0.04ms for a long-lived handle), which is why `akno serve` exists and why
@@ -73,7 +73,7 @@ export function openStore(options: StoreOptions): Store {
     sqliteVec.load(db);
     vecLoaded = true;
   } catch {
-    // §2: degrade, never fail. Cosine moves to JS; memory stays available.
+    // Degrade, never fail. Cosine moves to JS; memory stays available.
     vecLoaded = false;
   }
 
@@ -128,7 +128,7 @@ function migrate(db: Database.Database): void {
 }
 
 /**
- * §16. Exactly one process may hold the write handle. A second process that
+ * Exactly one process may hold the write handle. A second process that
  * finds a live lock opens read-only and *says so*, rather than racing. This is
  * not paranoia: the library being importable makes it genuinely easy to end up
  * with a daemon and a script both reconciling the same directory, and WAL

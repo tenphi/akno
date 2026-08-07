@@ -4,7 +4,7 @@ import { AknoError, MCP_SERVER_NAME, OPS, type OpName } from '@akno/protocol';
 import type { Akno } from '@akno/core';
 
 /**
- * §16. The stdio MCP door, for third-party agents that speak it:
+ * The stdio MCP door, for third-party agents that speak it:
  *
  *   { "mcpServers": { "memory": { "command": "akno", "args": ["serve", "--mcp"] } } }
  *

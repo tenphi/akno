@@ -32,8 +32,8 @@ export async function inboxCommand(argv: string[]): Promise<number> {
   }
 
   const input = values.limit ? { limit: Number(values.limit) } : {};
-  // Through the service when one is running: filing a document writes, and §16 allows exactly
-  // one writer. The user running this by hand is the user, so a new folder is not gated.
+  // Through the service when one is running: filing a document writes, and exactly one
+  // process may write. The user running this by hand is the user, so a new folder is not gated.
   const result = await runMaintenance('inbox', input, values, openOptionsFrom(values), (mem) =>
     mem.inbox(input),
   );

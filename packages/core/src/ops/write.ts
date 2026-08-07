@@ -13,7 +13,7 @@ import { writeFileAtomic } from '../write/atomic.ts';
 import type { Extraction } from '../ingest/extract.ts';
 
 /**
- * §8, §10. Create, append, patch or replace a page — and the only thing that
+ * Create, append, patch or replace a page — and the only thing that
  * actually happens on disk is that Markdown changes. There is no fact store to
  * insert into: facts appear afterwards because the indexer re-derives them from
  * the sentences that are now there.
@@ -28,7 +28,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   const actor = ctx.actor;
 
   // An event with no slug is a real case, not a degenerate one: plenty of things
-  // happen that will never have a page (§10). It goes straight to the ledger.
+  // happen that will never have a page. It goes straight to the ledger.
   if (!input.slug && !input.propose_slug && input.event) {
     return writeEventOnly(ctx, input.event, input.dry_run ?? false);
   }
@@ -117,7 +117,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     ...(edited.firstChangedLine ? { line: edited.firstChangedLine } : {}),
   });
 
-  // §11's storage rules, reached through `write` rather than `ingest`: content-addressed
+  // The same storage rules, reached through `write` rather than `ingest`: content-addressed
   // off the page basename, extracted on arrival, embedded in the page. The difference is
   // only who chose the destination — here the caller did, so nothing is routed or named.
   const attached: PendingAttachment[] = [];
@@ -152,7 +152,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     if (embedded) files[0] = embedded;
   }
 
-  // The ledger line and the page land in one change, so §10's promise holds:
+  // The ledger line and the page land in one change, so the promise holds:
   // there is no way to get a ledger line whose detail page was never written.
   if (input.event) {
     const ledger = await appendToLedger(ctx, { ...input.event, slug });
@@ -168,7 +168,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   });
 
   // ── Index ───────────────────────────────────────────────────────────────
-  // The indexer follows exactly as it would for a hand edit (§8 step 6): line
+  // The indexer follows exactly as it would for a hand edit: line
   // hashes moved, so old facts retire and new ones are derived from the new lines.
   //
   // It must run *before* anything records the new hash in `files`. Recording first
@@ -204,9 +204,9 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
  * Adds `![[file]]` embeds for attachments the page does not already reference, and records
  * each one's provenance beside it.
  *
- * The document's *text* is not written here. It is indexed against the document, where §6
- * can invalidate it on the file's hash and a hit can name the page within the file that
- * produced it (§11). Pasting it into the body as well made the same words arrive twice
+ * The document's *text* is not written here. It is indexed against the document, where the
+ * file's hash can invalidate it and a hit can name the page within the file that produced
+ * it. Pasting it into the body as well made the same words arrive twice
  * against one recall budget, and put a copy in the user's Markdown that no file change
  * could ever correct.
  *
@@ -278,7 +278,7 @@ async function writeEventOnly(
     outcome: 'ok',
     change_id: changeId,
     // Addressable as `timeline:47`, so it obeys the same provenance rule as
-    // everything else — the ledger is a page like any other (§10).
+    // everything else — the ledger is a page like any other.
     wrote: [{ slug: ledgerSlug(ctx), line: ledger.line, action: 'event' }],
   };
 }

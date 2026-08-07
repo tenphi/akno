@@ -3,7 +3,7 @@ import { ResultEnvelope } from '../common.ts';
 import { ApprovalRequest, WriteTarget } from './write.ts';
 
 /**
- * §8. Hand over a transcript or notes; Akno runs the retain mission with its
+ * Hand over a transcript or notes; Akno runs the retain mission with its
  * own model and produces the writes itself. The answer for a host that does not
  * want to build a curator. An agent that wants control uses `write`.
  */
@@ -31,7 +31,7 @@ export const RememberOutput = ResultEnvelope.extend({
 export type RememberOutput = z.infer<typeof RememberOutput>;
 
 /**
- * §8. All three forms operate on Markdown. Retracting a fact removes the
+ * All three forms operate on Markdown. Retracting a fact removes the
  * sentence that produced it — expiring a row while the sentence stays in the
  * file means the assistant "forgets" and reads it again tomorrow.
  */
@@ -91,7 +91,7 @@ export const MoveOutput = ResultEnvelope.extend({
 export type MoveOutput = z.infer<typeof MoveOutput>;
 
 /**
- * §11. Pull documents into memory: extract, OCR, name, summarize, and route.
+ * Pull documents into memory: extract, OCR, name, summarize, and route.
  * Extraction happens on arrival, always — no caller ever runs an extraction tool.
  */
 export const IngestInput = z
@@ -103,7 +103,7 @@ export const IngestInput = z
     /** Destination folder. Omit to let routing decide. */
     folder: z.string().optional(),
     /**
-     * Move the file instead of copying it. §11: the inbox is the only place Akno
+     * Move the file instead of copying it. The inbox is the only place Akno
      * moves files, and it sets this by rule — a file dropped straight into
      * `documents/` was put there on purpose.
      */
@@ -127,12 +127,12 @@ export const IngestOutput = ResultEnvelope.extend({
   /**
    * Where the text actually came from. `ocr` alone cannot say: a vision model's
    * *description* of a photo is not a transcription of it, and reporting the two the
-   * same way is a false claim about provenance — the thing §2's cite-or-stay-quiet
-   * exists to prevent.
+   * same way is a false claim about provenance, which cite-or-stay-quiet exists to
+   * prevent.
    */
   text_from: z.enum(['text-layer', 'ocr', 'plain', 'textutil', 'vision', 'none']).optional(),
   /** Set when a rename fired: the original name added nothing the content did
-   *  not already say. A good name is left alone (§11). */
+   *  not already say. A good name is left alone. */
   renamed_from: z.string().optional(),
   related: z.array(z.string()).optional(),
   approval: ApprovalRequest.optional(),

@@ -13,11 +13,11 @@ export interface AssembleOptions {
   depth: Depth;
   limit: number;
   budget: number;
-  /** Body lines per card. §9 gives lookup deep windows and question tight ones. */
+  /** Body lines per card: lookup gets deep windows, question gets tight ones. */
   lineWindow: number;
   /** Concepts the query asked about. Terms are matched against what came back. */
   concepts: string[];
-  /** `include: ['reference'], depth: 'full'` lifts the reference quote cap (§5). */
+  /** `include: ['reference'], depth: 'full'` lifts the reference quote cap. */
   include: PageClass[] | null;
 }
 
@@ -50,7 +50,7 @@ interface FactRow {
 }
 
 /**
- * §9. Recall returns page cards — not chunks. A chunk boundary is an indexing
+ * Recall returns page cards — not chunks. A chunk boundary is an indexing
  * artifact and means nothing to a reader.
  */
 export class Assembler {
@@ -90,7 +90,7 @@ export class Assembler {
       .filter((entry) => !options.include || options.include.includes(entry.page.class))
       .sort((a, b) => b.ranked - a.ranked);
 
-    // §9: one budget, one assembly — whole cards first. A half-card whose lines
+    // One budget, one assembly — whole cards first. A half-card whose lines
     // were trimmed to fit is exactly the "disconnected fragment" the layer exists
     // to stop producing.
     const cards: Card[] = [];
@@ -122,7 +122,7 @@ export class Assembler {
   }
 
   /**
-   * §9. Ranking policy lives in the layer: `full` pages outrank narrative
+   * Ranking policy lives in the layer: `full` pages outrank narrative
    * history, which outranks derived observations. A folder rule can set `rank` to
    * adjust it. Class applies at **assembly**, not at search — `reference` pages
    * compete for relevance on equal terms, then come back capped.
@@ -151,7 +151,7 @@ export class Assembler {
 
     // A hit inside an attachment is not a line of the Markdown page. Keeping the two apart
     // is what stops `readLines` from citing line 14 of a page because page 14 of a PDF
-    // matched — §2's cite-or-stay-quiet: a citation pointing at the wrong line is worse
+    // matched. Cite or stay quiet: a citation pointing at the wrong line is worse
     // than no citation.
     const bodyHits = hits.filter((hit) => !meta.get(hit.chunkId)?.document_id);
     const documentHits = hits.filter((hit) => meta.get(hit.chunkId)?.document_id);
@@ -160,7 +160,7 @@ export class Assembler {
     const isReference = page.class === 'reference' || chunk?.kind === 'reference';
     const wantsFullReference = options.depth === 'full' && options.include?.includes('reference');
 
-    // §5. Ten matching emails cost ten summaries, not ten threads.
+    // Ten matching emails cost ten summaries, not ten threads.
     const maxLines =
       options.depth === 'summary'
         ? 0
@@ -203,7 +203,7 @@ export class Assembler {
   /**
    * Reads the matching lines from the file rather than from the chunk text, so a
    * line's number is the number it actually has on disk. A citation that points
-   * at the wrong line is worse than no citation — §2: cite or stay quiet.
+   * at the wrong line is worse than no citation: cite or stay quiet.
    */
   private readLines(page: PageRow, hits: ChunkHit[], maxLines: number, depth: Depth): Line[] {
     let content: string;
@@ -268,7 +268,7 @@ export class Assembler {
   /**
    * The page's attachments, with the matching text quoted from any that matched.
    *
-   * §11: the card points at the page, the document, **and the page number within it**. That
+   * The card points at the page, the document, **and the page number within it**. That
    * is the whole reason document text is chunked per page — a quote from page 9 of a
    * contract attributed to nothing is a citation a reader cannot check.
    *
@@ -312,7 +312,7 @@ export class Assembler {
       if (row) rows.unshift(row);
     }
 
-    // §11. Parts of one document are one document. Collapsed onto part one, with the pages
+    // Parts of one document are one document. Collapsed onto part one, with the pages
     // summed, so a card says "the passport, 14 pages" rather than listing three files whose
     // page numbers each restart at 1.
     const groups = new Map<string, DocumentRow[]>();
@@ -371,7 +371,7 @@ export class Assembler {
 }
 
 /**
- * §7. Facts are never returned to the agent on their own. They arrive attached to
+ * Facts are never returned to the agent on their own. They arrive attached to
  * the page card they belong to, so a claim is always seen in its context — here,
  * as the confidence on the line the fact was derived from.
  */
@@ -390,7 +390,7 @@ function supersededFor(facts: FactRow[]): SupersededClaim[] {
 }
 
 /**
- * §9. Deterministic — did the key terms of the expanded query actually appear in
+ * Deterministic — did the key terms of the expanded query actually appear in
  * what was returned — **not** a model judging whether the answer is there. Cheap,
  * honest, and it closes the most common hallucination path there is: a page ranks
  * first because it matches half the question, the agent reads it, and confidently
@@ -473,7 +473,7 @@ interface DocumentRow {
 }
 
 /**
- * §5. A reference region comes back as **a capped quote window**, and a document is
+ * A reference region comes back as **a capped quote window**, and a document is
  * reference by nature. Capped in lines rather than characters so the same knob that
  * governs a fenced region governs this, and so a quote never ends mid-word.
  */

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 
 /**
- * §11, end to end. Extraction is real — the macOS Swift helper actually runs, over a
+ * Ingest, end to end. Extraction is real — the macOS Swift helper actually runs, over a
  * PDF built in the test — while naming runs against a stub chat endpoint, because
  * every assertion here is about what `ingest` *does* with a given name, and a live
  * model cannot be scripted into returning the case you need.
@@ -178,7 +178,7 @@ describe('extraction', () => {
     const source = drop('document(3).pdf', makePdf('Warranty certificate for the Zephyr QX-100 dishwasher.'));
     const result = await mem.ingest({ path: source, folder: 'home' });
     expect(result.outcome).toBe('ok');
-    // §11's order: text layer first. A real layer is exact; OCR of the same page is a
+    // The order: text layer first. A real layer is exact; OCR of the same page is a
     // guess that happens to be usually right.
     expect(result.ocr).toBe(false);
     expect(result.page_count).toBe(1);
@@ -225,7 +225,7 @@ describe('naming', () => {
   });
 
   it('leaves a good name alone', async () => {
-    // §11: a name someone chose carries intent no model can reconstruct.
+    // A name someone chose carries intent no model can reconstruct.
     const source = drop('zephyr-warranty-2026.pdf', makePdf('Warranty certificate for the Zephyr QX-100.'));
     const result = await mem.ingest({ path: source, folder: 'home' });
     expect(result.renamed_from).toBeUndefined();
@@ -263,7 +263,7 @@ describe('storage', () => {
   it('content-addresses the stored file off its page basename', async () => {
     const source = drop('IMG_4825.pdf', makePdf('Warranty certificate for the Zephyr QX-100.'));
     const result = await mem.ingest({ path: source, folder: 'home' });
-    // §11: `<page-basename>-<sha8>.<ext>`. Unique by construction, so several files
+    // `<page-basename>-<sha8>.<ext>`. Unique by construction, so several files
     // can sit on one page and `label` is a description rather than a disambiguator.
     expect(result.rel_path).toMatch(/^home\/warranty-zephyr-qx100-2026-03-[0-9a-f]{8}\.pdf$/);
     expect(fs.existsSync(path.join(root, result.rel_path!))).toBe(true);
@@ -286,13 +286,13 @@ describe('storage', () => {
     expect(page).toContain(NAMED.summary);
     expect(page).toContain(`![[${path.basename(result.rel_path!)}]]`);
     // What a person would have written: what it is, and where the thing itself lives. The
-    // document's own text is indexed against the document (§6 invalidates it on the file
-    // hash, which a page body cannot honour), so it is not copied in here.
+    // document's own text is indexed against the document, invalidated by the file hash —
+    // which a page body cannot honour — so it is not copied in here.
     expect(page).not.toContain('Warranty certificate for the Zephyr QX-100.');
   });
 
   it('makes the extracted text searchable through the index', async () => {
-    // §11: a stored PDF is searchable by its own content, not just by prose someone
+    // A stored PDF is searchable by its own content, not just by prose someone
     // typed about it.
     await mem.ingest({
       path: drop('IMG_4828.pdf', makePdf('Serial number QX100-8842 registered under a five-year plan.')),
@@ -336,7 +336,7 @@ describe('storage', () => {
 });
 
 /**
- * §2's cite-or-stay-quiet, applied to provenance. A vision model's *description* of a
+ * Cite or stay quiet, applied to provenance. A vision model's *description* of a
  * photograph is not a transcription of text found in it, and reporting the two the same
  * way is a false claim about where the words came from. The first version printed
  * "text from: the text layer" for a model-described image.
@@ -404,7 +404,7 @@ describe('provenance', () => {
 
 describe('routing and gating', () => {
   it('leaves a file where it is when nothing scores high enough', async () => {
-    // §11: an unrouted file sits visibly where you dropped it. An inbox with three
+    // An unrouted file sits visibly where you dropped it. An inbox with three
     // things in it is a to-do list; a misfiled document is a lost one.
     server.reply(UNPLACEABLE);
     const result = await mem.ingest({
@@ -453,7 +453,7 @@ describe('routing and gating', () => {
 });
 
 /**
- * §11. `ingest` pulls from "a file, a folder, a URL". The folder walk is one level deep
+ * `ingest` pulls from a file, a folder, or a URL. The folder walk is one level deep
  * on purpose — a recursive pass over a folder pointed at by mistake is a thousand model
  * calls and a knowledge base full of pages nobody asked for.
  */
@@ -606,7 +606,7 @@ describe('a URL', () => {
 });
 
 describe('the inbox', () => {
-  /** Drops a file into the knowledge base's own inbox folder, where §11 says it files itself. */
+  /** Drops a file into the knowledge base's own inbox folder, where it files itself. */
   function dropInInbox(name: string, content: Buffer | string): string {
     const absPath = path.join(root, 'inbox', name);
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
@@ -656,7 +656,7 @@ describe('the inbox', () => {
   });
 
   it('leaves an unroutable file in the inbox with a proposal', async () => {
-    // §11: below the threshold it stays in the inbox. An inbox with three things in it is
+    // Below the threshold it stays in the inbox. An inbox with three things in it is
     // a to-do list; a misfiled document is a lost one.
     server.reply(UNPLACEABLE);
     const source = dropInInbox('unclear.pdf', makePdf('An annual water statement for the property.'));
@@ -683,7 +683,7 @@ describe('the inbox', () => {
   });
 
   it('does not treat a Markdown page in the inbox as an arrival', async () => {
-    // §4 puts a README there, and someone may well write a note about what they dropped.
+    // Startup puts a README there, and someone may well write a note about what they dropped.
     dropInInbox('README.md', '# Inbox\n\nDrop anything here.\n');
     const result = await mem.inbox();
     expect(result.filed).toEqual([]);
@@ -718,7 +718,7 @@ describe('the inbox', () => {
       fs.writeFileSync(path.join(root, 'dropbox/thing.pdf'), makePdf('Warranty for the Zephyr QX-100.'));
 
       // Both are walked: declaring `dropbox/` must not quietly stop `inbox/` from being an
-      // inbox, since §4 creates it with a README promising exactly this behaviour.
+      // inbox, since startup creates it with a README promising exactly this behaviour.
       fs.mkdirSync(path.join(root, 'inbox'), { recursive: true });
       fs.writeFileSync(path.join(root, 'inbox/note.md'), '# A note\n');
 
@@ -766,7 +766,7 @@ describe('attachments on write', () => {
   });
 
   it('makes the attached text searchable by its own content', async () => {
-    // §11's promise, and the reason the text goes into the body: search reads chunks, and
+    // The promise, and the reason the text is indexed at all: search reads chunks, and
     // chunks come from Markdown. Text kept only in the `documents` row is unreachable.
     const source = drop('policy.txt', 'The Meridian bicycle policy excludes theft from an unlocked shed.');
     await mem.write({
@@ -871,7 +871,7 @@ describe('attachments on write', () => {
 });
 
 /**
- * §11. A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document in
+ * A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document in
  * two files. Two documents would mean two pages, two summaries, two half-answers — and a
  * "page 2" that is really page 5 of the passport.
  */

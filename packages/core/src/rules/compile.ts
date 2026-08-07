@@ -1,7 +1,7 @@
 import { FolderRuleDoc, type FolderRule } from '../config/schema.ts';
 
 /**
- * §5. Rules are glob-scoped and **most-specific-wins**. Specificity is derived
+ * Rules are glob-scoped and **most-specific-wins**. Specificity is derived
  * from the shape of the glob, not from declaration order — so reordering the
  * config file can never change which rule applies, and two files' rules can be
  * merged without one accidentally shadowing the other by position.

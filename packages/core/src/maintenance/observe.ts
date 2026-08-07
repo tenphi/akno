@@ -1,11 +1,11 @@
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**
- * §13. **Observe: combine repeated facts into stable patterns and habits. Never restate the
+ * **Observe: combine repeated facts into stable patterns and habits. Never restate the
  * facts.**
  *
  * This tier is an inference engine writing prose into a knowledge base, and in a prose
- * knowledge base a bad write is recalled later **as truth**. So §13's guardrails are
+ * knowledge base a bad write is recalled later **as truth**. So the guardrails are
  * enforced here in code, not asked for in the prompt:
  *
  * - **Evidence or nothing.** At least `min_evidence` distinct source pages, and every slug
@@ -15,8 +15,8 @@ import { parseJsonLoose, type ModelClient } from '../models/client.ts';
  *   reads as an assertion three months later, when nobody remembers it was a guess.
  * - **Never restate the facts.** A line that repeats a source line adds nothing and costs a
  *   recall slot; the point of the tier is the pattern *across* facts.
- * - **Nothing about a person's health, relationships, finances, beliefs or character.** §13's
- *   own example of what this tier must not do. The prompt says it too, and a real run wrote
+ * - **Nothing about a person's health, relationships, finances, beliefs or character.** The
+ *   canonical example of what this tier must not do. The prompt says it too, and a real run wrote
  *   "X lives with a wife" anyway — which is why it is a guard and not only an instruction.
  * - **Nothing about the records themselves.** "Each location is described by a street address"
  *   is an observation about a knowledge base, not about a life, and it is what a model reaches
@@ -68,12 +68,12 @@ export interface ObserveMissionResult {
 }
 
 /**
- * §13's forbidden ground, as a guard rather than an instruction. A real run produced "X lives
+ * The forbidden ground, as a guard rather than an instruction. A real run produced "X lives
  * with a wife" from two people's pages with the prompt rule in place: an inference about a
  * relationship, written as prose, recalled later as truth.
  *
  * Deliberately narrow. It cannot catch every sensitive inference, and its job is not to — it is
- * to make the *categories §13 names* impossible to write, so a miss is a gap and never a
+ * to make the *named categories* impossible to write, so a miss is a gap and never a
  * licence.
  */
 const SENSITIVE =
@@ -149,7 +149,7 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
     }
 
     if (SENSITIVE.test(pattern)) {
-      rejected.push({ pattern, reason: "§13 forbids inferring about a person's private life" });
+      rejected.push({ pattern, reason: "inferring about a person's private life is out of bounds" });
       continue;
     }
 
@@ -195,13 +195,13 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
   // Not a token saving: given a subject with nothing much in common, a model produces three
   // variations on the same weak idea — a real run wrote three separate "Italian cities are
   // often located…" lines for one folder. Keeping the strongest makes a thin subject cost one
-  // line instead of three, and §13's own advice is fewer and better.
+  // line instead of three, and the advice for this tier is fewer and better.
   observations.sort((a, b) => b.confidence - a.confidence);
   return { observations: observations.slice(0, 1), error: null, rejected };
 }
 
 /**
- * §13: **never restate the facts.** Judged by word overlap against each source claim rather
+ * **Never restate the facts.** Judged by word overlap against each source claim rather
  * than by asking the model, because "did you just reword one of these" is exactly the
  * question a model that rewrote one will answer wrongly.
  */

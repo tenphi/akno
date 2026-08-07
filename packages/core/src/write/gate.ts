@@ -4,7 +4,7 @@ import type { AknoConfig } from '../config/schema.ts';
 import { newPrefixedId } from '../store/ids.ts';
 
 /**
- * §5. **New folders are gated for agents. The user is never gated.**
+ * **New folders are gated for agents. The user is never gated.**
  *
  * `gate: "top-level"` (the default) asks about a new top-level folder and lets
  * subfolders of an existing one through. The asymmetry is the point: `medical/`
@@ -43,7 +43,7 @@ export class Gate {
    *
    * A **declined** proposal for the same subject is remembered and returned
    * again rather than re-asked, which is the difference between a gate and a
-   * nag: §5 is explicit that an agent must stop asking for a folder the user has
+   * nag: an agent must stop asking for a folder the user has
    * already refused.
    */
   check(slug: string, actor: string, payload: unknown): GateDecision {
@@ -131,7 +131,7 @@ export class Gate {
   }
 
   /**
-   * §5. Where this could go instead, so the agent has something concrete to
+   * Where this could go instead, so the agent has something concrete to
    * offer the user rather than "somewhere else". Existing folders whose name
    * shares a word with the slug, then the busiest top-level folders.
    */

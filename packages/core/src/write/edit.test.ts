@@ -16,7 +16,7 @@ const PAGE = [
 
 describe('applyEdit', () => {
   it('never touches the frontmatter', () => {
-    // §4: every key except `id` is preserved byte for byte. A body edit that
+    // Every key except `id` is preserved byte for byte. A body edit that
     // reflowed a quoted timestamp would break that quietly.
     for (const edit of [
       { kind: 'content', content: 'new body' },

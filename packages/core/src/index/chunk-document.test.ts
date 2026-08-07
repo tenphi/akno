@@ -4,7 +4,7 @@ import { chunkDocument } from './chunk.ts';
 const OPTIONS = { targetChars: 1200, maxChars: 4000 };
 
 /**
- * §11. A document is searchable by its own content, and a hit can name the page within the
+ * A document is searchable by its own content, and a hit can name the page within the
  * document it came from. Both of those are properties of how the text is cut.
  */
 describe('chunkDocument', () => {

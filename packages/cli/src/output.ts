@@ -54,7 +54,7 @@ export function kv(entries: [string, string | number | null | undefined][], inde
 }
 
 /**
- * §9. A status is not decoration — `empty` and `unavailable` mean different things
+ * A status is not decoration — `empty` and `unavailable` mean different things
  * to the caller, and the colour is there so a human scanning output does not have
  * to read the word to notice which one happened.
  */

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 
 /**
- * §7, §8. Facts are pointers into Markdown, so their lifecycle is decided by what
+ * Facts are pointers into Markdown, so their lifecycle is decided by what
  * happened to the *line*, not by what a model said this time.
  *
  * These run against a stub chat endpoint rather than a real model: the question is
@@ -110,7 +110,7 @@ describe('fact lifecycle', () => {
   });
 
   /**
-   * The regression this guards. §8 notes a fresh derivation may phrase a claim
+   * The regression this guards: a fresh derivation may phrase a claim
    * differently. Retiring on id alone made every re-derive flood recall with
    * "was X until today" for values that never changed — and an invented
    * historical claim is worse than none, because a reader cannot tell it from a
@@ -181,7 +181,7 @@ describe('fact lifecycle', () => {
   });
 
   it('refuses a fact pointing at a line the model was never shown', async () => {
-    // §2's no-hidden-storage guarantee: a fact whose source line does not say
+    // The no-hidden-storage guarantee: a fact whose source line does not say
     // what the fact says can never be correctly re-derived or invalidated.
     server.setFacts([
       { line: 7, claim: 'The rent is 1111 EUR per month.' },

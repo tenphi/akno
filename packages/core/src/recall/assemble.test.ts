@@ -15,7 +15,7 @@ function card(overrides: Partial<Card> = {}): Card {
 }
 
 /**
- * §9. Coverage closes the most common hallucination path there is: a page ranks
+ * Coverage closes the most common hallucination path there is: a page ranks
  * first because it matches half the question, the agent reads it, and confidently
  * invents the other half.
  */
@@ -30,7 +30,7 @@ describe('computeCoverage', () => {
   });
 
   it('is the difference between answering and inventing', () => {
-    // The exact §9 example: the policy is found, the renewal date is not. An
+    // The canonical example: the policy is found, the renewal date is not. An
     // agent reading this can say "I found the policy but it doesn't give a date".
     const coverage = computeCoverage(
       ['renewal date'],

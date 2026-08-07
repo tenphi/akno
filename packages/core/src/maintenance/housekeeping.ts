@@ -2,14 +2,14 @@ import type { AknoContext } from '../context.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
 
 /**
- * §13. The cycle "reports broken links, orphaned documents, and pages that have drifted from
- * their folder's rules".
+ * The cycle reports broken links, orphaned documents, and pages that have drifted from their
+ * folder's rules.
  *
  * All three are reports, never repairs. A broken link is often a page someone means to write;
  * an orphaned document may be a file they keep deliberately; a page that breaks its folder's
- * naming convention is still their page. §13 gives this tier no mandate to change any of
- * them, and a maintenance process that tidies a knowledge base behind its owner's back is
- * how trust in the whole layer goes.
+ * naming convention is still their page. This tier has no mandate to change any of them, and
+ * a maintenance process that tidies a knowledge base behind its owner's back is how trust in
+ * the whole layer goes.
  */
 
 export interface BrokenLink {
@@ -54,7 +54,7 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
 
   const brokenTotal = count(ctx, "SELECT count(*) AS c FROM links WHERE broken = 1 AND kind != 'embed'");
 
-  // §11: a document with no page has nowhere to be returned, since recall returns page cards.
+  // A document with no page has nowhere to be returned, since recall returns page cards.
   // Reported here with the fix, rather than left to be noticed by its absence from results.
   const orphanRows = ctx.store.db
     .prepare(
@@ -93,7 +93,7 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
  * Only the checks a rule can be wrong about *in fact* — a declared type that contradicts the
  * folder's, a slug the folder's pattern rejects, nesting past `max_depth`. Class is
  * deliberately absent: a page declaring its own `class` in frontmatter **outranks** the rule
- * (§4), so that is the user overriding a default, not drift.
+ * so that is the user overriding a default, not drift.
  */
 function findDrift(ctx: AknoContext): RuleDrift[] {
   const pages = ctx.store.db

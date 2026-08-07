@@ -82,7 +82,7 @@ describe('applyReferenceFence', () => {
 
     expect(above.length).toBeGreaterThan(0);
     expect(below.length).toBeGreaterThan(0);
-    // Above the fence: claims. Below: evidence. Only claims become facts (§5).
+    // Above the fence: claims. Below: evidence. Only claims become facts.
     expect(above.every((chunk) => chunk.kind === 'full')).toBe(true);
     expect(below.every((chunk) => chunk.kind === 'reference')).toBe(true);
   });
@@ -109,7 +109,7 @@ describe('embeddingText', () => {
 });
 
 /**
- * §6 step 2, which the first implementation skipped entirely — it went straight
+ * The second splitting step, which the first implementation skipped entirely — it went straight
  * from `##` sections to paragraph splitting. The cost was not size but
  * *breadcrumbs*: an oversized section became several anonymous slices of the same
  * heading, when the author had already said where the topics start.

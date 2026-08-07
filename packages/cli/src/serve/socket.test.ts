@@ -7,7 +7,7 @@ import { open, type Akno } from '@akno/core';
 import { serveSocket } from './socket.ts';
 
 /**
- * §16. **The library is the product**: one op registry, three transports over it, so the doors
+ * **The library is the product**: one op registry, three transports over it, so the doors
  * cannot drift into different behaviour. This is the socket — the default door, where
  * filesystem permissions are the auth.
  *
@@ -62,7 +62,7 @@ describe('the socket door', () => {
       expect(client.hello.writable).toBe(true);
       expect(client.hello.ops).toContain('recall');
       expect(client.hello.ops).toContain('write');
-      // Maintenance is advertised separately: §15's ten ops are what an agent calls about
+      // Maintenance is advertised separately: the ten ops are what an agent calls about
       // memory; these are operator commands about the process.
       expect(client.hello.commands).toEqual(['index', 'inbox', 'dream']);
     } finally {
@@ -112,7 +112,7 @@ describe('the socket door', () => {
   });
 
   it('refuses an op the door was not given', async () => {
-    // §16: trust is a parameter, not a property of the transport — the same code with different
+    // Trust is a parameter, not a property of the transport — the same code with different
     // permissions, rather than a second code path that grows its own bugs.
     const restricted = await serveSocket(mem, path.join(stateDir, 'read-only.sock'), {
       allow: ['recall', 'read'],

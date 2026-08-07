@@ -4,7 +4,7 @@ import { Card, DatePrefix, Depth, PageClass, RecallMode, ResultEnvelope, SlugFil
 export const RecallInput = z.object({
   query: z.string().min(1),
   /** Inferred from the query when absent. Passing it explicitly always wins, and
-   *  getting it wrong costs relevance, never correctness (§9). */
+   *  getting it wrong costs relevance, never correctness. */
   mode: RecallMode.optional(),
   depth: Depth.optional(),
   limit: z.number().int().positive().max(100).optional(),
@@ -12,7 +12,7 @@ export const RecallInput = z.object({
   budget: z.number().int().positive().optional(),
   /** `reference` pages compete for relevance on equal terms and come back capped.
    *  Passing `include: ['reference']` with `depth: 'full'` overrides the cap —
-   *  class is a relevance policy, not access control (§5). */
+   *  class is a relevance policy, not access control. */
   include: z.array(PageClass).optional(),
   /**
    * Skip query expansion for this call. Worth it when the query is already the text
@@ -43,7 +43,7 @@ export const RecallOutput = ResultEnvelope.extend({
    */
   scores: z.enum(['absolute', 'relative']),
   /**
-   * §9. `question` mode only. Which concepts from the question the results
+   * `question` mode only. Which concepts from the question the results
    * actually cover. Deterministic — did the key terms appear in what came back —
    * not a model judging whether the answer is there. Closes the most common
    * hallucination path: a page ranks first because it matches half the question,

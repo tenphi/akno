@@ -81,7 +81,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
 }
 
 /**
- * §9. The output deliberately foregrounds the three things a reader needs and a
+ * The output deliberately foregrounds the three things a reader needs and a
  * pile of ranked chunks cannot give: the status, the coverage, and a line address
  * on every quoted line.
  */

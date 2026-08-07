@@ -4,7 +4,7 @@ import { parseFrontmatter, readString, readTags, type Frontmatter } from './fron
 import { sha256 } from '../store/ids.ts';
 
 /**
- * §4. Reserved markers inside a page. This is the complete list — everything
+ * Reserved markers inside a page. This is the complete list — everything
  * else in a body is prose Akno does not interpret.
  */
 const REFERENCE_FENCE = /^<!--\s*reference\s*-->\s*$/i;
@@ -12,7 +12,7 @@ const REFERENCE_FENCE = /^<!--\s*reference\s*-->\s*$/i;
 const EVENT_LINE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|\s*(.+?)\s*$/;
 const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
 const MARKDOWN_LINK = /\[[^\]]*\]\(([^)\s]+\.md)(?:#[^)]*)?\)/g;
-/** `<page-basename>-<8 hex>.<ext>` is read as an attachment of that page (§11). */
+/** `<page-basename>-<8 hex>.<ext>` is read as an attachment of that page. */
 export const ATTACHMENT_NAME = /^(.+)-([0-9a-f]{8})\.([A-Za-z0-9]+)$/;
 
 interface ParsedEvent {
@@ -55,7 +55,7 @@ export interface ParsedPage {
   bodyLine: number;
   bodyHash: string;
   /**
-   * §5. Where `<!-- reference -->` switches the page's class mid-body. Above the
+   * Where `<!-- reference -->` switches the page's class mid-body. Above the
    * fence: normal, mined, quotable in full. Below: indexed for search, never
    * mined, never returned whole. Null when the page has no fence.
    */
@@ -223,7 +223,7 @@ function dedupeLinks(links: ParsedLink[]): ParsedLink[] {
 }
 
 /**
- * §5. Resolution order, most specific first: **page frontmatter → rules file →
+ * Resolution order, most specific first: **page frontmatter → rules file →
  * provenance → default.** `akno rules <path>` prints which one won and why.
  */
 export interface ClassResolution {
@@ -241,7 +241,7 @@ export function resolveClass(
   if (page.declaredClass) return { class: page.declaredClass, source: 'frontmatter' };
   if (rule?.class) return { class: rule.class, source: 'rule', via: rule.glob };
   // Provenance: pages the observe tier authored are inferences, not authored
-  // claims, and must never be admissible evidence for another observation (§13).
+  // claims, and must never be admissible evidence for another observation.
   if (page.slug === observationsPath || page.slug.startsWith(`${observationsPath}/`)) {
     return { class: 'full', source: 'provenance' };
   }

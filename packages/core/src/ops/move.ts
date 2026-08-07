@@ -8,7 +8,7 @@ import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from './write.ts';
 
 /**
- * §15. Relocate a page with its documents, rewriting embeds and **reporting**
+ * Relocate a page with its documents, rewriting embeds and **reporting**
  * inbound links.
  *
  * The asymmetry between rewriting and reporting is deliberate:
@@ -17,11 +17,11 @@ import { normalizeSlug } from './write.ts';
  *   renamed those files and leaving them would break the page Akno just moved.
  * - Links *into* the page from elsewhere are reported, never rewritten. Editing
  *   half a dozen other people's pages as a side effect of moving one is a much
- *   bigger action than the caller asked for, and §12 already treats inbound links
+ *   bigger action than the caller asked for, and inbound links are already treated
  *   that now point nowhere as something to report.
  *
  * Identity survives regardless: the page keeps its `id`, so facts, events and
- * journal history stay attached (§12).
+ * journal history stay attached.
  */
 export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOutput> {
   const input = MoveInput.parse(rawInput);
@@ -55,7 +55,7 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   const toRelPath = `${to}.md`;
 
   // ── Attachments first ───────────────────────────────────────────────────
-  // Content-addressed names are derived from the page basename (§11), so a move
+  // Content-addressed names are derived from the page basename, so a move
   // renames them too. Doing these before the page means a crash leaves the page
   // still pointing at files that exist.
   const documents = ctx.store.db
@@ -109,7 +109,7 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
 
   ctx.store.transaction(() => {
     // Follow the id rather than retiring it — the same rule the watcher uses for a
-    // hand rename (§12).
+    // hand rename.
     ctx.store.db.prepare('UPDATE pages SET slug = ?, rel_path = ? WHERE id = ?').run(to, toRelPath, page.id);
     ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(page.rel_path);
     for (const document of documents) {

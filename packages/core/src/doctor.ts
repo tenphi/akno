@@ -7,13 +7,13 @@ import { readOnlyExplanation } from './open.ts';
 import { ModelClient } from './models/client.ts';
 
 /**
- * §14, §6. What's present, what's degraded, and **what that costs.** The last
+ * What's present, what's degraded, and **what that costs.** The last
  * part is the one that matters: "no reranker" means nothing to a reader, and
  * "hybrid score ordering instead of cross-encoder reranking" means something.
  *
- * Model latency and index latency are reported separately, because §6's whole
- * argument is that a memory system which feels slow after idling is almost never
- * suffering from its storage engine — and conflating the two hides that.
+ * Model latency and index latency are reported separately, because a memory system which
+ * feels slow after idling is almost never suffering from its storage engine — and conflating
+ * the two hides that.
  */
 
 export interface RoleReport {
@@ -45,7 +45,7 @@ export interface DoctorReport {
     events: number;
     documents: number;
     documentsExtracted: number;
-    /** Extracted, but owned by no page — so nothing recall can return (§9). */
+    /** Extracted, but owned by no page — so nothing recall can return. */
     documentsUnsearchable: number;
     links: number;
     brokenLinks: number;
@@ -59,7 +59,7 @@ export interface DoctorReport {
     vectorMs: number | null;
   };
   models: RoleReport[];
-  /** §11's extraction path. A missing capability must be visible, not surprising. */
+  /** The extraction path. A missing capability must be visible, not surprising. */
   extraction: { swift: boolean; textutil: boolean; note: string | null };
   reserved: { path: string; state: 'ok' | 'missing' | 'occupied'; note?: string }[];
   warnings: string[];
@@ -187,7 +187,7 @@ export async function doctor(
   const extraction = await extractionCapabilities();
 
   // ── Reserved paths ───────────────────────────────────────────────────────
-  // §4: if a reserved path already exists and isn't what Akno expects, it is
+  // If a reserved path already exists and isn't what Akno expects, it is
   // left completely alone. Warn, point at the config key, refuse to adopt it.
   const reserved: DoctorReport['reserved'] = [];
   const timelineAbs = path.join(ctx.config.aknoPath, ctx.config.paths.timeline);

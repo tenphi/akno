@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { formatEventLine, insertEvent, newLedger } from './ledger.ts';
 
 /**
- * §10. The ledger is a **source file, not a rendered view**: generating it would
+ * The ledger is a **source file, not a rendered view**: generating it would
  * always be tidy and would silently discard hand edits. So every one of these
  * asserts the same thing from a different angle — nothing already in the file moves.
  */

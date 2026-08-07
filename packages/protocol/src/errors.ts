@@ -1,7 +1,7 @@
 /**
  * Failure is a *result*, not an exception, everywhere a caller could reasonably
  * continue. `recall` distinguishing "nothing matched" from "the index is
- * unavailable" is the whole point of §9 — an agent can honestly say "not
+ * unavailable" is the whole point — an agent can honestly say "not
  * recorded" only when the layer proved it.
  */
 export const ERROR_CODES = [

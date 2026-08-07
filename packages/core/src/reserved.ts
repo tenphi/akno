@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 /**
- * §4. Reserved paths. Almost everything in a knowledge base is the user's; this
+ * Reserved paths. Almost everything in a knowledge base is the user's; this
  * is the whole list of what is not, and the rule that governs all of it is the
  * same: **if a reserved path already exists and isn't what Akno expects, leave
  * it completely alone.**

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cleanSlug, nameIsUseless, unslug } from './name.ts';
 
 /**
- * §11. **A good name is left alone.** Renaming is the one destructive thing ingest
+ * **A good name is left alone.** Renaming is the one destructive thing ingest
  * does — a name someone chose carries intent no model can reconstruct — so the bias
  * is deliberately toward keeping, and every pattern here has to earn its place.
  */

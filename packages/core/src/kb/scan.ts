@@ -15,7 +15,7 @@ export interface ScannedFile {
   /** Present only once the file has actually been hashed. */
   sha256?: string;
   /**
-   * §16. A knowledge base inside iCloud Drive or Dropbox with storage
+   * A knowledge base inside iCloud Drive or Dropbox with storage
    * optimization on will have evicted files that look present but read as
    * placeholders. Indexing a zero-byte stand-in as though the document were
    * empty is worse than skipping it and saying so.
@@ -32,7 +32,7 @@ export interface ScanOptions {
 
 /**
  * Walks the knowledge base and stats every file. Deliberately does not hash:
- * §6's fast path is that a restart *stats* rather than re-indexing, and only
+ * The fast path is that a restart *stats* rather than re-indexing, and only
  * files whose mtime or size moved get hashed.
  */
 export async function scanTree(options: ScanOptions): Promise<ScannedFile[]> {
@@ -98,7 +98,7 @@ async function walk(
       mtimeNs: String(stat.mtimeNs),
       kind: isPage ? 'page' : 'attachment',
     };
-    // §16. A file that reports a size but occupies no blocks is the classic
+    // A file that reports a size but occupies no blocks is the classic
     // dataless signature: iCloud or Dropbox has evicted the contents and left a
     // placeholder that reads as empty.
     if (size > 0 && stat.blocks === 0n) file.dataless = true;

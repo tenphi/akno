@@ -13,7 +13,7 @@ export interface OpsHandle {
 }
 
 /**
- * §6, §16. Spawning a process per memory call costs 33ms against 0.04ms for a
+ * Spawning a process per memory call costs 33ms against 0.04ms for a
  * long-lived handle — an 800× difference, none of it the database. So a read
  * command prefers a running service and only falls back to in-process, where the
  * 33ms does not matter because there is nothing else in the process anyway.
@@ -67,7 +67,7 @@ function socketFor(openOptions: { aknoPath?: string; stateDir?: string }): strin
 }
 
 /**
- * §16. Runs maintenance — `index`, `inbox`, `dream` — through the running service when there
+ * Runs maintenance — `index`, `inbox`, `dream` — through the running service when there
  * is one, and in-process when there is not.
  *
  * Exactly one process may hold the write handle, so with a service running these have to go

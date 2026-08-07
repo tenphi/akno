@@ -6,15 +6,14 @@ import type { Indexer, IndexReport } from '../index/indexer.ts';
 export interface WatcherEvents {
   onIndexed?: (report: IndexReport, changed: string[]) => void;
   /**
-   * Files that appeared or changed, after they have been indexed. §11's inbox hangs off
-   * this: a dropped file has to be *acted on*, not merely noticed.
+   * Files that appeared or changed, after they have been indexed. The inbox hangs off this: a dropped file has to be *acted on*, not merely noticed.
    */
   onArrival?: (changed: string[]) => Promise<void>;
   onError?: (error: Error) => void;
 }
 
 /**
- * §16. **FSEvents, not polling.** Node's recursive `fs.watch` uses FSEvents on
+ * **FSEvents, not polling.** Node's recursive `fs.watch` uses FSEvents on
  * macOS: native, cheap, and it reports renames as renames.
  *
  * But FSEvents coalesces under load and can drop events after a sleep/wake or a
@@ -89,7 +88,7 @@ export class Watcher {
   }
 
   /**
-   * §16. The service reconciles on wake — the gap where a laptop was closed is
+   * The service reconciles on wake — the gap where a laptop was closed is
    * exactly when the folder gets edited on another device. A host that knows about
    * sleep/wake calls this; the periodic sweep covers the case where nothing does.
    */

@@ -35,12 +35,12 @@ export interface AknoWatchEvents extends WatcherEvents {
 
 export interface OpenOptions extends LoadOptions {
   /**
-   * §5. Who is asking. `user` is never gated — a person who makes a folder has
+   * Who is asking. `user` is never gated — a person who makes a folder has
    * made it. Defaults to `agent`, because the safe assumption about an unlabelled
    * caller is that it is one.
    */
   actor?: 'user' | 'agent' | 'akno';
-  /** Take the write handle. False for a second process that only reads (§16). */
+  /** Take the write handle. False for a second process that only reads. */
   writable?: boolean;
   /** Start the FSEvents watcher and the periodic sweep. Off for one-shot commands. */
   watch?: boolean;
@@ -55,29 +55,29 @@ export interface Akno extends AknoOps {
   /** Reconcile the index against the knowledge base. */
   index(options?: IndexOptions): Promise<IndexReport>;
   doctor(options?: { probeModels?: boolean }): Promise<DoctorReport>;
-  /** Explain which rule governs a path, and why (§5). */
+  /** Explain which rule governs a path, and why. */
   rules(slug: string): { effective: Record<string, unknown>; candidates: { glob: string; source: string }[] };
   /** Recent changes, newest first. What `undo` takes an id from. */
   changes(limit?: number): ChangeSummary[];
-  /** Gated proposals waiting on the user (§5). */
+  /** Gated proposals waiting on the user. */
   proposals(): ProposalRow[];
   /**
-   * §5. The user resolves a gate. Approving **completes the write**, because the
+   * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
    * remember and repeat what it already sent.
    */
   approve(proposalId: string): Promise<{ subject: string; write?: OpResult<'write'> }>;
-  /** A declined proposal is remembered, so the agent stops re-asking (§5). */
+  /** A declined proposal is remembered, so the agent stops re-asking. */
   decline(proposalId: string): Promise<{ subject: string }>;
   /**
-   * §11. Process whatever is sitting in an inbox folder: extract, name, route, and move
+   * Process whatever is sitting in an inbox folder: extract, name, route, and move
    * what finds a home. Safe to call repeatedly — a file that could not be routed stays
    * put and is reconsidered next time, which is what makes an inbox a to-do list rather
    * than a queue that loses things.
    */
   inbox(options?: { limit?: number }): Promise<InboxResult>;
   /**
-   * §13. The maintenance cycle: observe, reflect, the thorough conflict pass, and the
+   * The maintenance cycle: observe, reflect, adopt, the thorough conflict pass, and the
    * housekeeping report. Phases are independent and each is safe to re-run.
    *
    * Needs the write handle, because `observe` writes pages — and one process at a time, for
@@ -113,7 +113,7 @@ export function readOnlyExplanation(
 }
 
 /**
- * §16. **The library is the product.** One op registry, one schema per op, three
+ * **The library is the product.** One op registry, one schema per op, three
  * transports over it — so the doors cannot drift into different behaviour.
  *
  *   import { open } from '@akno/core';
@@ -175,7 +175,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   if (options.watch && writable && config.watch.enabled) {
     watcher = new Watcher(config, indexer, {
       ...(options.watchEvents ?? {}),
-      // §11: dropping a file in the inbox is the whole interface. Indexing it where it
+      // Dropping a file in the inbox is the whole interface. Indexing it where it
       // landed would leave it sitting there forever, which is the one thing an inbox
       // must not do.
       onArrival: async (changed) => {
@@ -334,7 +334,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 }
 
 /**
- * §4. On startup Akno creates `timeline.md` (with a header and the current
+ * On startup Akno creates `timeline.md` (with a header and the current
  * year) and `inbox/` (with a short README) **if they are missing** — and only
  * when the user has opted in. Nothing else is created ahead of need.
  *
@@ -344,7 +344,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 function ensureReservedPaths(config: AknoConfig): void {
   const timelineAbs = path.join(config.aknoPath, config.paths.timeline);
 
-  // §4 is emphatic here: if a reserved path already exists and isn't what Akno
+  // The rule here is absolute: if a reserved path already exists and isn't what Akno
   // expects — a `timeline.md` that is somebody's project plan — Akno warns,
   // points at the config key, and **refuses to start** rather than adopting a file
   // the user meant something else by. Silently treating it as a ledger would start

@@ -1,5 +1,5 @@
 /**
- * §6. One SQLite file. Deleting it costs one re-index and no data — that
+ * One SQLite file. Deleting it costs one re-index and no data — that
  * property is the design, and it is why nothing here is a source of truth.
  * Only the journal is irreplaceable, which is why it is the one table that
  * records content rather than pointing at it.
@@ -15,7 +15,7 @@ export const MIGRATIONS: string[] = [
     value TEXT NOT NULL
   );
 
-  -- Identity lives here rather than in the page (§12, sidecar mode). 'slug' is
+  -- Identity lives here rather than in the page, in sidecar mode. 'slug' is
   -- derived from the path and changes on a rename; 'id' never does.
   CREATE TABLE pages (
     id                    TEXT PRIMARY KEY,
@@ -45,7 +45,7 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX pages_type     ON pages(type);
   CREATE INDEX pages_updated  ON pages(updated_at DESC);
 
-  -- The stat fast path (§6). mtime+size decide whether to hash at all; sha256 is
+  -- The stat fast path. mtime+size decide whether to hash at all; sha256 is
   -- the correctness path that catches a sync client preserving mtime.
   CREATE TABLE files (
     rel_path    TEXT PRIMARY KEY,
@@ -63,7 +63,7 @@ export const MIGRATIONS: string[] = [
     page_id       TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
     ord           INTEGER NOT NULL,
     -- 'full' or 'reference' — a page can switch class mid-body at the
-    -- <!-- reference --> fence, so class is a property of the chunk (§5).
+    -- <!-- reference --> fence, so class is a property of the chunk.
     kind          TEXT NOT NULL DEFAULT 'full',
     heading_path  TEXT NOT NULL DEFAULT '',
     text          TEXT NOT NULL,
@@ -86,7 +86,7 @@ export const MIGRATIONS: string[] = [
     tokenize='porter unicode61 remove_diacritics 2'
   );
 
-  -- §7. A fact is a pointer into Markdown, not a record beside it. Edit the
+  -- A fact is a pointer into Markdown, not a record beside it. Edit the
   -- line, the hash breaks, the fact is re-derived. Delete the line, it is gone.
   CREATE TABLE facts (
     id                TEXT PRIMARY KEY,
@@ -101,7 +101,7 @@ export const MIGRATIONS: string[] = [
     confidence        REAL NOT NULL DEFAULT 0.5,
     valid_from        TEXT,
     -- Set when a value is replaced. A superseded fact is returned *as*
-    -- superseded, never as a second competing current answer (§7).
+    -- superseded, never as a second competing current answer.
     valid_to          TEXT,
     first_seen        TEXT NOT NULL,
     last_seen         TEXT NOT NULL
@@ -111,7 +111,7 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX facts_live    ON facts(valid_to);
 
   -- Dated lines are indexed from any page, not just the ledger, so events typed
-  -- into someone's own daily notes are found for free (§10).
+  -- into someone's own daily notes are found for free.
   CREATE TABLE events (
     id           TEXT PRIMARY KEY,
     date         TEXT NOT NULL,
@@ -137,7 +137,7 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX links_from ON links(from_page);
   CREATE INDEX links_to   ON links(to_slug);
 
-  -- §11. A stored document is a memory object with its own row: bytes on disk
+  -- A stored document is a memory object with its own row: bytes on disk
   -- beside its page, plus extracted text, so a PDF is searchable by its content.
   CREATE TABLE documents (
     id          TEXT PRIMARY KEY,
@@ -157,7 +157,7 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX documents_sha  ON documents(sha256);
 
   -- The one irreplaceable table: it records the previous bytes, not a pointer to
-  -- them, so undo survives a full rebuild of everything else (§8).
+  -- them, so undo survives a full rebuild of everything else.
   CREATE TABLE journal (
     id             TEXT PRIMARY KEY,
     at             TEXT NOT NULL,
@@ -172,7 +172,7 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX journal_at ON journal(at DESC);
 
-  -- §5. A declined proposal is remembered, so an agent stops re-asking for the
+  -- A declined proposal is remembered, so an agent stops re-asking for the
   -- same folder.
   CREATE TABLE proposals (
     id        TEXT PRIMARY KEY,
@@ -213,7 +213,7 @@ export const MIGRATIONS: string[] = [
 
   -- One row per file the change touched, in application order. 'before' holds the
   -- previous bytes rather than a pointer to them, which is why undo survives a
-  -- full rebuild of every other table (§2: only the journal is irreplaceable).
+  -- full rebuild of every other table: only the journal is irreplaceable.
   CREATE TABLE change_files (
     change_id  TEXT NOT NULL REFERENCES changes(id) ON DELETE CASCADE,
     ord        INTEGER NOT NULL,
@@ -227,7 +227,7 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX change_files_path ON change_files(rel_path);
 
-  -- §5. A declined proposal is remembered, so an agent stops re-asking for the
+  -- A declined proposal is remembered, so an agent stops re-asking for the
   -- same folder. The pending content is held here, so approving completes the
   -- write rather than asking the caller to repeat it.
   DROP TABLE IF EXISTS proposals;
@@ -252,9 +252,9 @@ export const MIGRATIONS: string[] = [
 
   // ── 3. A document's own text, indexed as the document ──────────────────────
   //
-  // §11: a stored PDF is searchable by its own content, and the card points at the page,
-  // the document, and *the page number within it*. §6 lists document text as derived from
-  // the attachment and invalidated when the file hash changes — which is only true if the
+  // A stored PDF is searchable by its own content, and the card points at the page, the
+  // document, and *the page number within it*. Document text is derived from the attachment
+  // and invalidated when the file hash changes — which is only true if the
   // text is indexed against the document rather than pasted into someone's Markdown.
   //
   // Document chunks live in `chunks` on purpose: FTS, the vector table and rank fusion all
@@ -268,7 +268,7 @@ export const MIGRATIONS: string[] = [
   ALTER TABLE chunks ADD COLUMN doc_page INTEGER;
   CREATE INDEX chunks_document ON chunks(document_id, ord);
 
-  -- The file hash the current text was extracted from. §6's invalidation rule, written
+  -- The file hash the current text was extracted from. The invalidation rule, written
   -- down: text is re-extracted when this stops matching the file.
   ALTER TABLE documents ADD COLUMN extracted_sha TEXT;
   `,
@@ -292,7 +292,7 @@ export const MIGRATIONS: string[] = [
 /**
  * The vector table is created separately: its dimension is fixed at creation
  * and comes from the configured embedding model. Changing models triggers a
- * re-embed rather than silently corrupting the index (§14).
+ * re-embed rather than silently corrupting the index.
  */
 export function vectorTableDdl(dimensions: number): string {
   return `CREATE VIRTUAL TABLE vec_chunks USING vec0(
@@ -303,7 +303,7 @@ export function vectorTableDdl(dimensions: number): string {
 
 /**
  * Fallback when the sqlite-vec extension cannot be loaded on this platform.
- * Cosine is computed in JS. Slower, but memory stays available — §2: degrade,
+ * Cosine is computed in JS. Slower, but memory stays available: degrade,
  * never fail.
  */
 export const VECTOR_FALLBACK_DDL = `

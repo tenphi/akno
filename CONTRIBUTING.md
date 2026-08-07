@@ -202,11 +202,6 @@ changed; a comment earns its place by recording the reasoning that is not visibl
 mode being avoided, the alternative that was rejected, the measurement behind a constant. A comment restating
 the line above it is noise.
 
-Comments in the source cite `§N` — sections of the design document Akno was built from, which is not part of
-this repository. Read them as provenance, not as a pointer you are expected to follow: the claim beside the
-citation always states itself in full, because a comment that only works with another document open is a
-comment that does not work. New code does not need to add them.
-
 ## Never use real data in tests
 
 See [AGENTS.md](AGENTS.md). Short version: every name, number and body of text in a tracked file must be

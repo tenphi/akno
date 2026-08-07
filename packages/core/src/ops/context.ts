@@ -7,12 +7,12 @@ import { timeline } from './timeline.ts';
 import { list } from './list.ts';
 
 /**
- * §9. **One budget, one assembly.** `context` composes the whole pre-turn bundle
+ * **One budget, one assembly.** `context` composes the whole pre-turn bundle
  * — pinned pages, recent timeline, structure tree, and this turn's recall —
  * against a single budget. Separate injections with separate budgets overrun
  * together.
  *
- * §15 shows why this matters: with the bundle assembled, a turn like "when does
+ * Why this matters: with the bundle assembled, a turn like "when does
  * the car insurance renew?" costs **zero tool calls**, and the assistant cannot
  * invent the date because every line it was handed says which file and which line
  * it came from.
@@ -114,7 +114,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     searched,
     ...(coverage ? { coverage } : {}),
     budget_used: budgetUsed,
-    // §2: default to visible. A silent trim reads as "that's everything".
+    // Default to visible. A silent trim reads as "that's everything".
     ...(anyDropped ? { dropped: { cards: droppedCards, events: droppedEvents } } : {}),
   };
 }

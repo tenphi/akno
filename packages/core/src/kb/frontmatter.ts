@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
 /**
- * §4. Akno *reads* several frontmatter keys and *writes* exactly one (`id`).
+ * Akno *reads* several frontmatter keys and *writes* exactly one (`id`).
  * Every other key is preserved byte for byte and ignored.
  *
  * That guarantee is why this module never round-trips through the YAML
