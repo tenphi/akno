@@ -122,8 +122,13 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
       return akno.inbox(options);
     case 'dream':
       return akno.dream(options);
-    case 'approve':
-      return akno.approve(idFrom(input, 'proposal_id'));
+    case 'approve': {
+      const slug = (input as { slug?: unknown } | null)?.slug;
+      return akno.approve(
+        idFrom(input, 'proposal_id'),
+        typeof slug === 'string' && slug.length > 0 ? { slug } : {},
+      );
+    }
     case 'decline':
       return akno.decline(idFrom(input, 'proposal_id'));
     case 'changes':

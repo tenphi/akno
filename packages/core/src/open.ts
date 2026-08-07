@@ -66,7 +66,17 @@ export interface Akno extends AknoOps {
    * pending content was held with the proposal — a caller should not have to
    * remember and repeat what it already sent.
    */
-  approve(proposalId: string): Promise<{ subject: string; write?: OpResult<'write'> }>;
+  /**
+   * Answer a gated proposal, replaying the held write as the user.
+   *
+   * `slug` is the destination, and a `route` proposal has none of its own — it exists precisely
+   * because nothing scored high enough to pick one, so approving it without saying where is not a
+   * decision anybody can act on.
+   */
+  approve(
+    proposalId: string,
+    options?: { slug?: string },
+  ): Promise<{ subject: string; write?: OpResult<'write'> }>;
   /** A declined proposal is remembered, so the agent stops re-asking. */
   decline(proposalId: string): Promise<{ subject: string }>;
   /**
@@ -299,7 +309,10 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     proposals: () => ctx.gate.pending(),
 
-    async approve(proposalId: string): Promise<{ subject: string; write?: OpResult<'write'> }> {
+    async approve(
+      proposalId: string,
+      answer: { slug?: string } = {},
+    ): Promise<{ subject: string; write?: OpResult<'write'> }> {
       const proposal = ctx.gate.get(proposalId);
       if (!proposal) throw new AknoError('not_found', `no proposal with id ${proposalId}`);
       if (proposal.status !== 'pending') {
@@ -308,7 +321,22 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
       // Replayed as the *user*, which is what makes approval work: the gate that
       // stopped the agent does not apply to the person answering it.
-      const payload = JSON.parse(proposal.payload) as OpInput<'write'>;
+      const held = JSON.parse(proposal.payload) as OpInput<'write'>;
+      const payload: OpInput<'write'> = answer.slug ? { ...held, slug: answer.slug } : held;
+
+      // A `route` proposal holds a claim and no destination — that *is* the question it asks. Left
+      // unanswered the replay fails deep inside `write` with "requires a slug", which reads as a bug
+      // in the approval rather than a missing answer, so it is refused here with the fix in the
+      // message. The nearest pages travel on the proposal for exactly this choice.
+      if (!payload.slug && !payload.propose_slug && !payload.event) {
+        const nearest = JSON.parse(proposal.nearest) as string[];
+        const candidates = nearest.length > 0 ? ` Nearest: ${nearest.join(', ')}.` : '';
+        throw new AknoError(
+          'invalid',
+          `${proposalId} has no destination — approve it with a page to write to.${candidates}`,
+        );
+      }
+
       const asUser: AknoContext = { ...ctx, actor: 'user' };
       const result = await writeOp(asUser, payload);
       ctx.gate.resolve(proposalId, 'approved', result.change_id);

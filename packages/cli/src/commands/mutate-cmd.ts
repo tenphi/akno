@@ -170,12 +170,18 @@ export async function moveCommand(argv: string[]): Promise<number> {
   }
 }
 
-const APPROVE_HELP = `akno approve <proposal_id>
+const APPROVE_HELP = `akno approve <proposal_id> [--slug <page>]
 akno approve --list
 akno decline <proposal_id>
 
   Resolve a gated proposal. Approving applies the write that was held with it, so
   the caller does not have to repeat it.
+
+  --slug <page>   Where to write it. Required for a \`route\` proposal, which exists
+                  because nothing scored high enough to choose a page — "approved"
+                  with no destination is not an answer to that question. \`--list\`
+                  shows the nearest candidates; naming a page that does not exist
+                  yet creates it, which is often the right answer.
 
   A declined proposal is remembered: an agent that asks for the same folder again
   gets the refusal back instead of a second question.
@@ -183,8 +189,9 @@ akno decline <proposal_id>
   --json`;
 
 export async function approveCommand(argv: string[], decline = false): Promise<number> {
-  const { values, positionals } = parse<{ list: boolean }>(argv, {
+  const { values, positionals } = parse<{ list: boolean; slug?: string }>(argv, {
     list: { type: 'boolean', default: false },
+    slug: { type: 'string' },
   });
 
   if (values.help || (!values.list && positionals.length === 0)) {
@@ -245,10 +252,10 @@ export async function approveCommand(argv: string[], decline = false): Promise<n
 
     const result = await runMaintenance(
       'approve',
-      { proposal_id: positionals[0]! },
+      { proposal_id: positionals[0]!, ...(values.slug ? { slug: values.slug } : {}) },
       values,
       openOptionsFrom(values),
-      async (akno) => akno.approve(positionals[0]!),
+      async (akno) => akno.approve(positionals[0]!, values.slug ? { slug: values.slug } : {}),
     );
     if (values.json) {
       json(result);

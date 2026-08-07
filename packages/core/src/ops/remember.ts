@@ -210,12 +210,18 @@ async function route(
     expand: false,
   });
 
-  const nearest = result.cards.slice(0, 4).map((card) => card.slug);
-
   // Never route into a `reference` page: it is somebody else's words, and the rule is
   // explicit that only claims become facts. Appending a claim to evidence would make
   // the class boundary meaningless.
-  const writable = result.cards.find((card) => card.class === 'full' && card.relevance !== undefined);
+  const candidates = result.cards.filter((card) => card.class === 'full');
+
+  // Suggestions are drawn from the same set, not from every card. Offering a `reference` page as
+  // somewhere a claim "could go instead" proposes a destination this very function would refuse —
+  // observed live: a rent figure was offered four dispute pages, all of them evidence, and the
+  // agent read the list as the intended home and told the user it would be filed there.
+  const nearest = candidates.slice(0, 4).map((card) => card.slug);
+
+  const writable = candidates.find((card) => card.relevance !== undefined);
   if (!writable) return { slug: null, score: 0, nearest };
 
   const relevance = writable.relevance!;
@@ -234,7 +240,9 @@ function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: 
     .run(
       id,
       new Date().toISOString(),
-      `no page scored above ${ctx.config.routeThreshold} for "${candidate.subject}"`,
+      nearest.length > 0
+        ? `no page scored above ${ctx.config.routeThreshold} for "${candidate.subject}"`
+        : `no page exists that could hold "${candidate.subject}" — every near match is reference material`,
       candidate.subject,
       JSON.stringify({ append: candidate.text }),
       JSON.stringify(nearest),
@@ -242,7 +250,10 @@ function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: 
 
   return {
     proposal_id: id,
-    reason: `nothing scored above ${ctx.config.routeThreshold} for "${candidate.subject}" — ask where this goes`,
+    reason:
+      nearest.length > 0
+        ? `nothing scored above ${ctx.config.routeThreshold} for "${candidate.subject}" — ask where this goes`
+        : `no page could hold "${candidate.subject}" — every near match is reference material, so this needs a new page`,
     nearest,
   };
 }

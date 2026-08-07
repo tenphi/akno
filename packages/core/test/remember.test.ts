@@ -214,3 +214,69 @@ describe('a caller-supplied mission', () => {
     }
   });
 });
+
+/**
+ * A held claim has to be answerable, and answering it means naming a page.
+ *
+ * A `route` proposal exists precisely because nothing scored high enough to choose one, so its
+ * payload carries the claim and no destination. Approving it used to replay that payload straight
+ * into `write`, which rejected it with "requires a slug" — so the proposal was unanswerable through
+ * every door, and an agent telling the user "this needs your approval" was pointing at nothing.
+ */
+describe('answering a held proposal', () => {
+  it('refuses an approval with no destination, and says what is missing', async () => {
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: 'The bicycle key lives with the concierge.' });
+      expect(result.outcome).toBe('requires_approval');
+      const proposal = result.approvals![0]!.proposal_id;
+
+      await expect(mem.approve(proposal)).rejects.toThrow(/no destination — approve it with a page/);
+      // Still pending: a refused approval must not consume the proposal.
+      expect(mem.proposals().map((row) => row.id)).toContain(proposal);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('writes the held claim to the page the owner names, creating it when new', async () => {
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: 'The bicycle key lives with the concierge.' });
+      const proposal = result.approvals![0]!.proposal_id;
+
+      const approved = await mem.approve(proposal, { slug: 'home/bicycle-storage' });
+      expect(approved.write?.outcome).toBe('ok');
+      expect(approved.write?.wrote?.[0]?.slug).toBe('home/bicycle-storage');
+
+      const body = fs.readFileSync(path.join(root, 'home/bicycle-storage.md'), 'utf8');
+      // The stub's retained claim, whatever the input text was. Once, not twice: a
+      // create-from-append writes it as the body and nothing else.
+      expect(body.match(/The rent is 1234 EUR per month\./g)).toHaveLength(1);
+      expect(mem.proposals().map((row) => row.id)).not.toContain(proposal);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('offers only pages that could actually receive the claim', async () => {
+    // `nearest` used to be drawn from every card, including `reference` pages — which routing then
+    // refuses to write to. Suggesting one proposes a destination the system would reject, and an
+    // agent reading the list announced it as the intended home.
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'evidence/landlord-letter.md'),
+      '---\ntitle: Landlord letter\n---\n\n# Landlord letter\n\n- The rent for the apartment is under dispute\n',
+      'utf8',
+    );
+    const mem = await openMem({ folders: { 'evidence/**': { class: 'reference' } } });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The rent is disputed at the apartment.' });
+      const nearest = result.approvals?.[0]?.nearest ?? [];
+      expect(nearest).not.toContain('evidence/landlord-letter');
+    } finally {
+      await mem.close();
+    }
+  });
+});
