@@ -20,9 +20,13 @@ export async function serveMcp(
   const server = new McpServer(
     { name: MCP_SERVER_NAME, version: '0.1.0' },
     {
+      // Named "memory" and described as memory, deliberately. A model reasons better about a
+      // faculty it has than about a product it has been integrated with, and the brand is not
+      // a fact it can use: what it needs is that recall is where knowledge of this user lives,
+      // and what the status fields mean.
       instructions:
-        'Akno is a memory layer over a Markdown knowledge base. Retrieve with `recall` before ' +
-        'answering anything about the user, their history, or their files — its results carry file ' +
+        'This is the user’s long-term memory, stored as a Markdown knowledge base. Retrieve with ' +
+        '`recall` before answering anything about the user, their history, or their files — its results carry file ' +
         'and line addresses, so a claim you take from them can be cited and a claim you cannot find ' +
         'in them should not be made. Read `status` on every result: "empty" means the knowledge base ' +
         'genuinely has nothing and you may say so; "degraded" means part of the search stack was ' +

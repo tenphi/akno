@@ -139,3 +139,78 @@ describe('the retain tier’s config', () => {
     }
   });
 });
+
+/**
+ * The digest is Akno's job; *what to notice in this text* is the caller's. The mission is how
+ * that line is drawn, and the guarantee worth a test is that it stays a line: emphasis added to
+ * the standing rules, never a replacement for them.
+ */
+describe('a caller-supplied mission', () => {
+  it('reaches the model as emphasis on top of the standing rules', async () => {
+    const mem = await openMem();
+    server.forget();
+    try {
+      await mem.remember({
+        text: 'Forwarded from Brannoch: the membership number is 88-4120.',
+        mission: 'Attribute forwarded content to its original author, not the forwarder.',
+      });
+      const system = server.lastSystem();
+      // The caller's words are there...
+      expect(system).toContain('Attribute forwarded content to its original author');
+      // ...and so are the rules it must not have replaced.
+      expect(system).toContain('Prose, not triples');
+      expect(system).toContain('Additional emphasis');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('lets the call override the install-wide mission, being the more specific of the two', async () => {
+    // Config states a standing policy; a call states what is true of this text. The narrower
+    // claim wins, or a host could never say "this one is a forward".
+    const mem = await openMem({ maintenance: { retain: { mission: 'Prefer household logistics.' } } });
+    server.forget();
+    try {
+      await mem.remember({ text: 'Anything at all.', mission: 'Only medical history.' });
+      const system = server.lastSystem();
+      expect(system).toContain('Only medical history.');
+      expect(system).not.toContain('Prefer household logistics.');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('runs the digest on the cycle’s model when one is configured', async () => {
+    // Retain is a maintenance tier, and the tier's output is mostly a function of its model. An
+    // install that pointed the nightly cycle at a strong model should not have to say so twice.
+    const cycle = await startStubChat();
+    const mem = await open({
+      aknoPath: root,
+      stateDir,
+      isolated: true,
+      actor: 'user',
+      overrides: {
+        akno_path: root,
+        state_dir: stateDir,
+        providers: { stub: { base_url: server.url }, cycle: { base_url: cycle.url } },
+        models: {
+          embedding: { id: null },
+          reranker: { id: null, enabled: false },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
+        },
+        maintenance: { model: { provider: 'cycle', id: 'cycle-model' } },
+      },
+    });
+    server.forget();
+    try {
+      await mem.remember({ text: 'The rent went up to 1234 EUR from September.' });
+      expect(cycle.lastSystem()).toContain('Prose, not triples');
+      // And the derive model was not asked to do the cycle's work.
+      expect(server.lastSystem()).not.toContain('Prose, not triples');
+    } finally {
+      await mem.close();
+      await cycle.close();
+    }
+  });
+});

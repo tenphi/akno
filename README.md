@@ -141,7 +141,7 @@ the pre-turn bundle, normally called by the host rather than by the agent.
 | `timeline` | When things happened — by range, subject, or match.                                                                                                              |
 | `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
 | `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
-| `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes.                                                                                  |
+| `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. `mission` adds emphasis for this text.                                           |
 | `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
 | `undo`     | Reverse a change by id.                                                                                                                                          |
 | `move`     | Relocate a page with its documents.                                                                                                                              |

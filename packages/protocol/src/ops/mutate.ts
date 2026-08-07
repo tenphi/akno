@@ -11,6 +11,18 @@ export const RememberInput = z.object({
   text: z.string().min(1),
   /** Free-form provenance note, e.g. `telegram:2026-08-06`. */
   source: z.string().optional(),
+  /**
+   * What to pay attention to in *this* text — attribution for a forwarded message, a channel whose
+   * content is mostly logistics, a subject the caller knows matters.
+   *
+   * **Emphasis, never replacement.** It is appended to the standing retain rules rather than
+   * substituted for them, which is the same guarantee the config missions give: every rule that keeps
+   * this from keeping the wrong things lives in the fixed part, and a caller-supplied prompt that
+   * replaced it would lose all of them at once. A caller that wants full control uses `write`.
+   *
+   * Falls back to `maintenance.retain.mission` when omitted, so an install-wide policy still applies.
+   */
+  mission: z.string().max(2000).optional(),
   /** Report the candidate writes without touching disk. */
   dry_run: z.boolean().optional(),
 });

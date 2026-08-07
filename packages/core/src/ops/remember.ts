@@ -1,5 +1,6 @@
 import { RememberInput, type ApprovalRequest, type RememberOutput, type WriteTarget } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
+import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { recall } from './recall.ts';
@@ -14,6 +15,19 @@ import { write } from './write.ts';
  * edit the file → journal → the indexer follows. `remember` never writes a fact.
  * It writes a *sentence into a file*, and facts appear afterwards because facts are
  * derived from sentences.
+ *
+ * **Two things the caller controls, and one it does not.** It supplies the text and,
+ * optionally, a `mission` — what to pay attention to in this particular text, which is the
+ * knowledge only the caller has: that a message was forwarded and belongs on somebody else's
+ * page, that a channel is mostly logistics, that a subject matters today. What it cannot
+ * supply is a replacement for the standing rules; the mission is appended to them. A host
+ * that wants to decide phrasing and placement itself has `write` for exactly that.
+ *
+ * **Retain runs on the cycle's model when one is configured.** It is a maintenance tier, and
+ * the tier's output is largely a function of the model behind it — the same measurement that
+ * put `maintenance.model` there in the first place. A knowledge base pointing the nightly
+ * cycle at a strong model wants its conversation digests to use it too, and would not expect
+ * to configure that twice.
  */
 export async function remember(ctx: AknoContext, rawInput: unknown): Promise<RememberOutput> {
   const input = RememberInput.parse(rawInput);
@@ -29,17 +43,25 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     };
   }
 
-  const retained = await runRetain(input.text, ctx.models.derive, {
+  const curator = ctx.config.maintenance.model
+    ? new ModelClient(ctx.config.maintenance.model)
+    : ctx.models.derive;
+
+  // The caller's mission wins over the install's, because it is the more specific of the two:
+  // config states a standing policy, a call states what is true of this text.
+  const mission = input.mission ?? ctx.config.maintenance.retain.mission;
+
+  const retained = await runRetain(input.text, curator, {
     today: new Date().toISOString().slice(0, 10),
-    ...(ctx.config.maintenance.retain.mission ? { mission: ctx.config.maintenance.retain.mission } : {}),
+    ...(mission ? { mission } : {}),
   });
 
   if (retained.error) {
-    // No derive model means no `remember`. Saying so is the whole contract —
+    // No model means no `remember`. Saying so is the whole contract —
     // silently keeping nothing would look identical to "nothing was worth keeping".
     return {
       status: 'degraded',
-      degraded: [ctx.models.derive.degradedReason({})],
+      degraded: [curator.degradedReason({})],
       outcome: 'noop',
       note: `the retain mission could not run: ${retained.error}`,
     };

@@ -366,6 +366,28 @@ What it does, in order:
 Where it was not confident enough about the destination, it says so instead of guessing. `--dry-run` shows the
 whole plan without writing.
 
+### Telling it what to notice in _this_ text
+
+A host handing over a conversation often knows something about it that the text does not say: that a message was
+forwarded and its facts belong on somebody else's page, that a channel is mostly logistics, that today's subject
+is medical. That travels with the call:
+
+```jsonc
+{
+  "text": "Forwarded from Brannoch: my membership number is 88-4120.",
+  "source": "telegram:2026-08-07",
+  "mission": "Attribute forwarded content to its original author, not the forwarder.",
+}
+```
+
+It is **emphasis, not a replacement**. Your words are appended to the standing rules about what lasts, never
+substituted for them — otherwise one careless instruction would discard every guardrail at once. A caller that
+wants to decide the phrasing and the page itself should use `write`, which is exactly that.
+
+Omit it and `maintenance.retain.mission` applies instead, so an install-wide policy still holds. The digest also
+runs on `maintenance.model` when one is set: it is a maintenance tier, and an install that pointed the nightly
+cycle at a strong model should not have to say so twice.
+
 ---
 
 ## `forget`, `undo`, `move` — taking things back

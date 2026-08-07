@@ -122,8 +122,9 @@ export const OPS = {
     output: RememberOutput,
     implemented: true,
     description:
-      'Hand over a transcript or notes and let Akno decide what is worth keeping and where it goes. Use ' +
-      'this instead of write when you do not want to choose slugs or phrasing yourself.',
+      'Hand over a transcript or notes and let memory decide what is worth keeping and where it goes. Use ' +
+      'this instead of write when you do not want to choose slugs or phrasing yourself. Pass `mission` to say ' +
+      'what to pay attention to in this particular text; the standing rules about what lasts still apply.',
   }),
   forget: op({
     name: 'forget',
@@ -160,8 +161,8 @@ export const OPS = {
     output: IngestOutput,
     implemented: true,
     description:
-      'Pull a file, folder or URL into memory. Akno extracts the text, OCRs it if there is no text layer, ' +
-      'names it from its contents, summarizes it, and routes it to a folder. You never run an extraction tool.',
+      'Pull a file, folder or URL into memory. The text is extracted for you, OCRed if there is no text layer, ' +
+      'named from its contents, summarized, and routed to a folder. You never run an extraction tool.',
   }),
 } as const;
 
