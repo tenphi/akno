@@ -14,6 +14,9 @@ event and link from the Markdown.
 > against a real 223-page knowledge base. Two parts ship switched **off** for reasons measured on that base
 > rather than guessed: see [The maintenance cycle](#the-maintenance-cycle).
 
+**New here?** [HOW-IT-WORKS.md](HOW-IT-WORKS.md) walks through every command and every background process in
+plain language, with examples and diagrams. This README is the argument for why it is built this way.
+
 ---
 
 ## Why

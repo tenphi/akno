@@ -40,14 +40,14 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     inbox                File whatever was dropped in an inbox folder.
 
   ${style.bold('Admin')}
-    dream                The maintenance cycle: observe, conflicts, housekeeping.
+    dream                The maintenance cycle: observe, adopt, conflicts, housekeeping.
     index                Reconcile the index against the knowledge base.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd agent.
     doctor               What's present, what's degraded, and what that costs.
     rules [path]         Which rule governs a path, and why.
     config               Resolved config and where it came from, secrets redacted.
-    bench                Assert the spec's performance budgets.
+    bench                Check the performance budgets.
 
   ${style.bold('Global flags')}
     --akno-path <p>    Knowledge base for this invocation.
@@ -57,7 +57,8 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     -h, --help           Help for any command.
 
   ${style.grey('Point Akno at your notes in config/local.jsonc — copy config/local.example.jsonc.')}
-  ${style.grey('Start with: akno index && akno doctor')}`;
+  ${style.grey('Start with: akno index && akno doctor')}
+  ${style.grey('How each command works, with examples: HOW-IT-WORKS.md')}`;
 
 type Command = (argv: string[]) => Promise<number>;
 

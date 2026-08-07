@@ -251,7 +251,10 @@ export async function rememberCommand(argv: string[]): Promise<number> {
       return 0;
     }
 
-    line(`${statusLabel(result.status)} ${style.grey(result.outcome)}`);
+    // The outcome only when it says something the status does not: a successful remember
+    // printed "ok ok", which reads like a bug because it is one.
+    const outcome = result.outcome === 'ok' ? '' : ` ${style.grey(result.outcome)}`;
+    line(`${statusLabel(result.status)}${outcome}`);
     if (result.note) line(style.grey(`  ${result.note}`));
 
     if (result.considered?.length) {
