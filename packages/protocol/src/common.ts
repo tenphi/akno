@@ -37,6 +37,17 @@ export const Line = z.object({
   n: z.number().int().positive(),
   text: z.string(),
   confidence: z.number().min(0).max(1).optional(),
+  /**
+   * The live fact this line produced, when it produced one — the handle `forget`
+   * takes to retract it.
+   *
+   * Without this, `forget({fact})` was documented and unreachable: it is the op's
+   * primary form, and no read path returned an id to give it. Retracting therefore
+   * meant deleting a whole page, which is a much larger claim than "this one
+   * sentence is wrong". It rides on the line because that is exactly what forget
+   * removes — the sentence, not a database row that would be re-derived tomorrow.
+   */
+  fact: z.string().optional(),
 });
 export type Line = z.infer<typeof Line>;
 

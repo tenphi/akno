@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { AknoError, ReadInput, type PageClass, type ReadOutput } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 
@@ -64,14 +65,10 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
     .filter((line) => line.text.length > 0 || line.n === from);
 
   const facts = ctx.store.db
-    .prepare('SELECT claim, line_start, confidence, valid_to FROM facts WHERE page_id = ?')
-    .all(row.id) as { claim: string; line_start: number; confidence: number; valid_to: string | null }[];
+    .prepare(`SELECT ${LINE_FACT_COLUMNS} FROM facts WHERE page_id = ?`)
+    .all(row.id) as (LineFact & { claim: string })[];
 
-  const withConfidence = lines.map((line) => {
-    const live = facts.filter((fact) => fact.line_start === line.n && fact.valid_to === null);
-    if (live.length === 0) return line;
-    return { ...line, confidence: live.reduce((a, b) => (b.confidence > a.confidence ? b : a)).confidence };
-  });
+  const withConfidence = annotateLines(lines, facts);
 
   const links = ctx.store.db
     .prepare('SELECT DISTINCT to_slug, broken FROM links WHERE from_page = ?')

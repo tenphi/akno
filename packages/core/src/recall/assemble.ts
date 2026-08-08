@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import type { Card, Depth, Line, PageClass, RecallMode, SupersededClaim } from '@akno/protocol';
 import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
@@ -42,12 +43,7 @@ interface PageRow {
   updated_at: string | null;
 }
 
-interface FactRow {
-  claim: string;
-  line_start: number;
-  confidence: number;
-  valid_to: string | null;
-}
+type FactRow = LineFact & { claim: string };
 
 /**
  * Recall returns page cards — not chunks. A chunk boundary is an indexing
@@ -180,7 +176,7 @@ export class Assembler {
       class: page.class,
       summary: page.summary,
       score: round(score),
-      lines: lines.map((line) => attachConfidence(line, facts)),
+      lines: annotateLines(lines, facts),
     };
 
     if (chunk?.heading_path) card.breadcrumb = chunk.heading_path;
@@ -252,7 +248,7 @@ export class Assembler {
 
   private factsFor(pageId: string): FactRow[] {
     return this.#store.db
-      .prepare('SELECT claim, line_start, confidence, valid_to FROM facts WHERE page_id = ?')
+      .prepare(`SELECT ${LINE_FACT_COLUMNS} FROM facts WHERE page_id = ?`)
       .all(pageId) as FactRow[];
   }
 
@@ -375,13 +371,6 @@ export class Assembler {
  * the page card they belong to, so a claim is always seen in its context — here,
  * as the confidence on the line the fact was derived from.
  */
-function attachConfidence(line: Line, facts: FactRow[]): Line {
-  const live = facts.filter((fact) => fact.line_start === line.n && fact.valid_to === null);
-  if (live.length === 0) return line;
-  const best = live.reduce((a, b) => (b.confidence > a.confidence ? b : a));
-  return { ...line, confidence: best.confidence };
-}
-
 function supersededFor(facts: FactRow[]): SupersededClaim[] {
   return facts
     .filter((fact) => fact.valid_to !== null)

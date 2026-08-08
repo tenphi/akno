@@ -37,7 +37,7 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
 
   if (!fact) {
     throw new AknoError('not_found', `no fact with id ${factId}`, {
-      hint: 'fact ids change when a page is re-derived from scratch — recall the page again',
+      hint: 'fact ids change when a page is re-derived from scratch — recall or read the page again and take the id from the line',
     });
   }
 
