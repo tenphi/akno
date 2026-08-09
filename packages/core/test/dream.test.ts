@@ -199,6 +199,90 @@ const OBSERVED = {
   ],
 };
 
+describe('reflect', () => {
+  /**
+   * The tier reads the folder it writes into, which is how `principles` came to list itself as its
+   * own evidence on a real knowledge base. A conclusion offered as its own support reads, later, as
+   * a conclusion with support.
+   */
+  async function withTwoObservations(): Promise<Akno> {
+    await mem.close();
+    for (const [name, body] of [
+      ['travel-lunch', 'Travel itineraries treat lunch as a scheduled part of the day.'],
+      ['banking-review-period', 'Banking review periods cover the full calendar month.'],
+      // Three, not two: reflect sits a tier further from the evidence and asks for more of it.
+      ['home-servicing', 'Household appliances are serviced on a regular cadence.'],
+    ] as const) {
+      fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
+      fs.writeFileSync(
+        path.join(root, `observations/${name}.md`),
+        `---\ntitle: ${name}\nderived: true\n---\n\n- 2026-08-08 — ${body}\n`,
+        'utf8',
+      );
+    }
+    mem = await openMem({ maintenance: { observe: { enabled: true }, reflect: { enabled: true } } });
+    await mem.index({});
+    return mem;
+  }
+
+  it('is told the principles it already wrote', async () => {
+    // Same bug as observe's, one tier up: this appends to a single page every night from
+    // observations that rarely change, so without its own previous answers it restates them.
+    await withTwoObservations();
+    server.reply({
+      observations: [
+        {
+          pattern: 'Recurring activities are managed through explicit structures.',
+          evidence: [
+            'observations/travel-lunch',
+            'observations/banking-review-period',
+            'observations/home-servicing',
+          ],
+          confidence: 0.9,
+        },
+      ],
+    });
+    await mem.dream({ phase: 'reflect' });
+
+    server.reply({ observations: [] });
+    await mem.dream({ phase: 'reflect' });
+    const shown = server.lastObserveInput();
+    expect(shown).toContain('Already recorded for this subject');
+    expect(shown).toContain('Recurring activities are managed through explicit structures.');
+  });
+
+  it('does not read, or cite, the page it writes', async () => {
+    await withTwoObservations();
+
+    server.reply({
+      observations: [
+        {
+          pattern: 'Recurring activities are managed through explicit structures.',
+          evidence: [
+            'observations/travel-lunch',
+            'observations/banking-review-period',
+            'observations/home-servicing',
+            'observations/principles',
+          ],
+          confidence: 0.9,
+        },
+      ],
+    });
+    await mem.dream({ phase: 'reflect' });
+
+    const page = fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8');
+    expect(page).toContain('Recurring activities are managed through explicit structures.');
+    // Cited by the model anyway — the writer drops it, so neither the frontmatter nor the line
+    // points the page at itself.
+    expect(page).not.toContain('observations/principles');
+
+    // And it is not offered as a source on the next run either.
+    server.reply({ observations: [] });
+    await mem.dream({ phase: 'reflect' });
+    expect(server.lastObserveInput()).not.toContain('observations/principles');
+  });
+});
+
 describe('observe', () => {
   it('writes a page with its evidence, marked as derived', async () => {
     server.reply(OBSERVED);

@@ -439,6 +439,18 @@ async function writeObservation(
   const absPath = path.join(ctx.config.aknoPath, relPath);
   const existing = await fsp.readFile(absPath, 'utf8').catch(() => null);
 
+  // A page is never evidence for itself, whichever caller got here. `reflect` reads the folder it
+  // writes into, so it found `principles` among its own sources and cited it — and a claim offered
+  // as its own support reads, later, as a claim with support.
+  const evidence = observation.evidence.filter((cited) => normalizeSlug(cited) !== slug);
+  if (evidence.length === 0) {
+    return {
+      written: { slug, pattern: observation.pattern, evidence: [], action: 'unchanged' },
+      file: null,
+    };
+  }
+  observation = { ...observation, evidence };
+
   if (existing !== null && existing.includes(observation.pattern)) {
     return {
       written: { slug, pattern: observation.pattern, evidence: observation.evidence, action: 'unchanged' },
@@ -543,19 +555,27 @@ function slugify(subject: string): string {
  * invent a second set of guardrails — the same evidence floor, the same refusal to hedge, the
  * same append-only writing.
  */
+/** The one page `reflect` writes, and the one page it must not read. */
+const PRINCIPLES_SLUG = 'principles';
+
 async function reflectPhase(
   ctx: AknoContext,
   options: DreamOptions,
   report: DreamReport,
   applied: AppliedChange[],
 ): Promise<void> {
+  // The page this phase writes to is under `observations/` like everything it reads, so without
+  // excluding it the tier feeds on its own output: from the second night onwards `principles` has a
+  // summary, is selected as a source, and is cited as evidence for the principle it already
+  // contains. A conclusion that is its own evidence is not a conclusion.
+  const target = observationSlug(ctx, PRINCIPLES_SLUG);
   const rows = ctx.store.db
     .prepare(
       `SELECT slug, summary FROM pages
-        WHERE (slug = ? OR slug LIKE ?) AND summary IS NOT NULL
+        WHERE (slug = ? OR slug LIKE ?) AND slug != ? AND summary IS NOT NULL
         ORDER BY updated_at DESC LIMIT 40`,
     )
-    .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`) as {
+    .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`, target) as {
     slug: string;
     summary: string;
   }[];
@@ -574,6 +594,9 @@ async function reflectPhase(
       'State durable decision principles and long-term tendencies, not individual patterns.',
     // A tier further from the evidence needs more of it.
     minEvidence: Math.max(3, ctx.config.maintenance.observe.minEvidence),
+    // This tier appends to one page every night from observations that rarely change, so without
+    // its own previous answers it restates them — the same way `observe` did, one tier up.
+    existing: (await allObservations(ctx)).get(target) ?? [],
   });
 
   if (result.error) {
@@ -586,7 +609,7 @@ async function reflectPhase(
   for (const observation of result.observations) {
     const outcome = await writeObservation(
       ctx,
-      { title: 'Principles', slug: 'principles' },
+      { title: 'Principles', slug: PRINCIPLES_SLUG },
       observation,
       options.dryRun ?? false,
     );
