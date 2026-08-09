@@ -129,8 +129,29 @@ export interface ObserveInput {
    * and appends it again in different words — the page grows forever and says one thing. The
    * string check that used to be the only guard cannot catch it: "declined in each successive
    * period" and "declined in each recorded period" are the same observation and different strings.
+   *
+   * These go in the prompt as well as the guard: they are the few lines most likely to be repeated,
+   * and they are few enough to show.
    */
   existing?: string[];
+  /**
+   * Every other observation already written, on any page.
+   *
+   * A guard only — showing a model two hundred unrelated observations is noise, and the ones worth
+   * putting in front of it are already in `existing`. Subjects overlap more than the grouping
+   * suggests: "the Bunq account nets positive across the recorded periods" and "recorded periods
+   * end with a positive net result" landed on two different pages saying one thing.
+   */
+  otherObservations?: string[];
+  /**
+   * Every other live fact in the knowledge base.
+   *
+   * `facts` is what this subject's group was built from, so restating one of those was already
+   * caught. This covers the rest: a claim recorded under one subject and handed back as an
+   * "observation" under another is still a fact the knowledge base already holds, and writing it
+   * twice makes one source look like two agreeing.
+   */
+  knownFacts?: string[];
 }
 
 export async function runObserveMission(input: ObserveInput): Promise<ObserveMissionResult> {
@@ -209,6 +230,14 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
       continue;
     }
 
+    // The same thing said on somebody else's page. Grouping is by folder and subject, so two
+    // groups can reach one conclusion from overlapping facts and each write it to its own page —
+    // where neither looks like a duplicate, because neither page contains the other.
+    if ((input.otherObservations ?? []).some((line) => nearlyTheSame(line, pattern))) {
+      rejected.push({ pattern, reason: 'already recorded on another observation page' });
+      continue;
+    }
+
     // Only slugs the model was actually shown. Anything else is invention, and an invented
     // citation is worse than no observation because it looks checkable.
     const evidence = [
@@ -227,7 +256,7 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
       continue;
     }
 
-    if (restatesAFact(pattern, input.facts)) {
+    if (restatesAFact(pattern, input.facts.map((fact) => fact.claim).concat(input.knownFacts ?? []))) {
       rejected.push({ pattern, reason: 'restates a fact rather than observing across them' });
       continue;
     }
@@ -251,12 +280,12 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
  * than by asking the model, because "did you just reword one of these" is exactly the
  * question a model that rewrote one will answer wrongly.
  */
-function restatesAFact(pattern: string, facts: { claim: string }[]): boolean {
+function restatesAFact(pattern: string, claims: string[]): boolean {
   const patternWords = contentWords(pattern);
   if (patternWords.size === 0) return true;
 
-  for (const fact of facts) {
-    const factWords = contentWords(fact.claim);
+  for (const claim of claims) {
+    const factWords = contentWords(claim);
     if (factWords.size === 0) continue;
     let shared = 0;
     for (const word of patternWords) if (factWords.has(word)) shared++;

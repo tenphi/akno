@@ -260,3 +260,77 @@ describe('one fact wearing a pattern’s clothes', () => {
     expect(result.observations).toHaveLength(1);
   });
 });
+
+describe('the same observation twice, in two places', () => {
+  const facts = [
+    { claim: 'The Bunq account netted 412 EUR in June.', slug: 'banking/2026-06' },
+    { claim: 'The Bunq account netted 380 EUR in July.', slug: 'banking/2026-07' },
+  ];
+
+  it('rejects a pattern already written on another page', async () => {
+    // Grouping is by folder and subject, so two groups reach one conclusion from overlapping facts
+    // and each writes it to its own page — where neither looks like a duplicate, because neither
+    // page contains the other. A real run put "the Bunq account nets positive across the recorded
+    // periods" and "recorded periods end with a positive net result" on two pages.
+    const result = await runObserveMission({
+      subject: 'net',
+      facts,
+      model: stubChat({
+        observations: [
+          {
+            pattern: 'Recorded periods consistently end with a positive net result overall.',
+            evidence: ['banking/2026-06', 'banking/2026-07'],
+            confidence: 0.9,
+          },
+        ],
+      }),
+      minEvidence: 2,
+      otherObservations: ['Recorded periods consistently end with a positive net result overall.'],
+    });
+    expect(result.observations).toHaveLength(0);
+    expect(result.rejected[0]!.reason).toBe('already recorded on another observation page');
+  });
+
+  it('rejects a claim the knowledge base already holds as a fact, from any subject', async () => {
+    // `facts` is what this group was built from; a claim recorded under a different subject and
+    // handed back as an observation is still something the knowledge base already says, and
+    // writing it twice makes one source look like two agreeing.
+    const result = await runObserveMission({
+      subject: 'net',
+      facts,
+      model: stubChat({
+        observations: [
+          {
+            pattern: 'The annual banking review runs from January through December.',
+            evidence: ['banking/2026-06', 'banking/2026-07'],
+            confidence: 0.9,
+          },
+        ],
+      }),
+      minEvidence: 2,
+      knownFacts: ['The annual banking review runs from January through December.'],
+    });
+    expect(result.observations).toHaveLength(0);
+    expect(result.rejected[0]!.reason).toBe('restates a fact rather than observing across them');
+  });
+
+  it('lets through a pattern that is neither', async () => {
+    const result = await runObserveMission({
+      subject: 'net',
+      facts,
+      model: stubChat({
+        observations: [
+          {
+            pattern: 'Monthly banking results are settled through a single account rather than several.',
+            evidence: ['banking/2026-06', 'banking/2026-07'],
+            confidence: 0.9,
+          },
+        ],
+      }),
+      minEvidence: 2,
+      otherObservations: ['Recorded periods consistently end with a positive net result overall.'],
+      knownFacts: ['The annual banking review runs from January through December.'],
+    });
+    expect(result.observations).toHaveLength(1);
+  });
+});

@@ -238,6 +238,11 @@ async function observePhase(
   const written: ObservationWritten[] = [];
   const files: ChangeFile[] = [];
 
+  // Gathered once for the whole phase, not per group: fifteen groups reading the same two things
+  // fifteen times is the same answer at fifteen times the cost.
+  const knownFacts = liveFactClaims(ctx);
+  const observationsBySlug = await allObservations(ctx);
+
   for (const group of groups) {
     const result = await runObserveMission({
       // The folder travels with the subject so the model knows what kind of thing it is
@@ -250,7 +255,14 @@ async function observePhase(
       // What last night already concluded about this subject. The facts rarely change between one
       // night and the next, so without this the same insight comes back reworded every night and
       // the page accumulates paraphrases of one sentence.
-      existing: await existingObservations(ctx, group.slug),
+      existing: observationsBySlug.get(observationSlug(ctx, group.slug)) ?? [],
+      // Everything already observed elsewhere, plus anything written earlier in this same run —
+      // two groups can reach one conclusion from overlapping facts, and each would otherwise write
+      // it to its own page where neither looks like a duplicate.
+      otherObservations: [...observationsBySlug].flatMap(([slug, lines]) =>
+        slug === observationSlug(ctx, group.slug) ? [] : lines,
+      ),
+      knownFacts,
     });
 
     if (result.error) {
@@ -267,6 +279,10 @@ async function observePhase(
         options.dryRun ?? false,
       );
       written.push(outcome.written);
+      // So a later group in this same run sees it. Without this, cross-page duplicates are caught
+      // only from the second night onwards — the night they are created, they both go through.
+      const slug = observationSlug(ctx, group.slug);
+      observationsBySlug.set(slug, [...(observationsBySlug.get(slug) ?? []), observation.pattern]);
       if (outcome.file) {
         files.push(outcome.file);
         applied.push(asApplied('observe', outcome.file));
@@ -359,27 +375,57 @@ function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
  * is. That is also what makes the phase safe to re-run: a second pass over unchanged facts
  * reports `unchanged` and writes nothing.
  */
-/**
- * The patterns already on this subject's observation page.
- *
- * Read from the file rather than the index because the index is a reading of the file and this
- * runs inside the same cycle that writes it.
- */
-async function existingObservations(ctx: AknoContext, pageSlug: string): Promise<string[]> {
-  const slug = normalizeSlug(`${ctx.config.paths.observations}/${pageSlug}`);
-  const body = await fsp.readFile(path.join(ctx.config.aknoPath, `${slug}.md`), 'utf8').catch(() => null);
-  if (body === null) return [];
+/** Where a subject's observations live. */
+function observationSlug(ctx: AknoContext, pageSlug: string): string {
+  return normalizeSlug(`${ctx.config.paths.observations}/${pageSlug}`);
+}
 
-  return body
-    .split('\n')
-    .filter((line) => /^- \d{4}-\d{2}-\d{2} — /.test(line))
-    .map((line) =>
-      line
-        .replace(/^- \d{4}-\d{2}-\d{2} — /, '')
-        .replace(/\s*\[\[[^\]]*\]\]/g, '')
-        .trim(),
-    )
-    .filter(Boolean);
+/**
+ * Every observation already written, by page.
+ *
+ * Read from the files rather than the index because the index is a reading of the files and this
+ * runs inside the same cycle that writes them.
+ */
+async function allObservations(ctx: AknoContext): Promise<Map<string, string[]>> {
+  const root = path.join(ctx.config.aknoPath, ctx.config.paths.observations);
+  const bySlug = new Map<string, string[]>();
+
+  const entries = await fsp.readdir(root, { withFileTypes: true, recursive: true }).catch(() => []);
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    const abs = path.join(entry.parentPath ?? root, entry.name);
+    const body = await fsp.readFile(abs, 'utf8').catch(() => null);
+    if (body === null) continue;
+
+    const lines = body
+      .split('\n')
+      .filter((line) => /^- \d{4}-\d{2}-\d{2} — /.test(line))
+      .map((line) =>
+        line
+          .replace(/^- \d{4}-\d{2}-\d{2} — /, '')
+          .replace(/\s*\[\[[^\]]*\]\]/g, '')
+          .trim(),
+      )
+      .filter(Boolean);
+    if (lines.length === 0) continue;
+
+    const relative = path.relative(ctx.config.aknoPath, abs).replace(/\.md$/, '');
+    bySlug.set(normalizeSlug(relative), lines);
+  }
+  return bySlug;
+}
+
+/**
+ * Every live claim in the knowledge base, so an "observation" cannot be one of them handed back.
+ *
+ * Superseded claims are left out: their sentence has already been replaced, and an observation is
+ * not a repeat of something the knowledge base no longer says.
+ */
+function liveFactClaims(ctx: AknoContext): string[] {
+  const rows = ctx.store.db.prepare('SELECT claim FROM facts WHERE valid_to IS NULL').all() as {
+    claim: string;
+  }[];
+  return rows.map((row) => row.claim);
 }
 
 async function writeObservation(
