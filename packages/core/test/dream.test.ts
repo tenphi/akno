@@ -251,6 +251,35 @@ describe('reflect', () => {
     expect(shown).toContain('Recurring activities are managed through explicit structures.');
   });
 
+  it('refuses a principle that is only an observation, or a fact, repeated', async () => {
+    // A tier above the observations has to say something they do not. Its sources here are page
+    // *summaries*, so neither the observation lines nor the knowledge base's own facts are
+    // otherwise compared against.
+    await withTwoObservations();
+
+    for (const pattern of [
+      'Travel itineraries treat lunch as a scheduled part of the day.',
+      'The dishwasher was repaired in March 2026.',
+    ]) {
+      server.reply({
+        observations: [
+          {
+            pattern,
+            evidence: [
+              'observations/travel-lunch',
+              'observations/banking-review-period',
+              'observations/home-servicing',
+            ],
+            confidence: 0.9,
+          },
+        ],
+      });
+      const report = await mem.dream({ phase: 'reflect' });
+      expect(report.observations, pattern).toHaveLength(0);
+      expect(fs.existsSync(path.join(root, 'observations/principles.md')), pattern).toBe(false);
+    }
+  });
+
   it('does not read, or cite, the page it writes', async () => {
     await withTwoObservations();
 

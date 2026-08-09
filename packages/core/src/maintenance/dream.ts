@@ -569,6 +569,7 @@ async function reflectPhase(
   // summary, is selected as a source, and is cited as evidence for the principle it already
   // contains. A conclusion that is its own evidence is not a conclusion.
   const target = observationSlug(ctx, PRINCIPLES_SLUG);
+  const observations = await allObservations(ctx);
   const rows = ctx.store.db
     .prepare(
       `SELECT slug, summary FROM pages
@@ -596,7 +597,13 @@ async function reflectPhase(
     minEvidence: Math.max(3, ctx.config.maintenance.observe.minEvidence),
     // This tier appends to one page every night from observations that rarely change, so without
     // its own previous answers it restates them — the same way `observe` did, one tier up.
-    existing: (await allObservations(ctx)).get(target) ?? [],
+    existing: observations.get(target) ?? [],
+    // A principle that is one of the observation lines verbatim is not a tier above them. Its
+    // sources here are page *summaries*, so the lines themselves are not otherwise checked.
+    otherObservations: [...observations].flatMap(([slug, lines]) => (slug === target ? [] : lines)),
+    // Nor a raw claim promoted to a principle. `facts` for this phase is the observations, so
+    // without this the knowledge base's own facts are the one thing it is not compared against.
+    knownFacts: liveFactClaims(ctx),
   });
 
   if (result.error) {
