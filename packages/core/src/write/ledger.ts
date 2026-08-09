@@ -14,6 +14,15 @@
  * Nothing about this line syntax ever reaches a prompt: there is no
  * `add_event` op). A caller hands over `{date, summary}`.
  */
+import { saysTheSame } from '../kb/words.ts';
+
+/** The summary out of a formatted event line, without the date marker or the citation. */
+function summaryOf(line: string): string {
+  return line
+    .replace(EVENT_DATE, '')
+    .replace(/\[\[[^\]]*\]\]/g, '')
+    .trim();
+}
 
 export interface LedgerEvent {
   date: string;
@@ -57,6 +66,21 @@ export function insertEvent(content: string, event: LedgerEvent): LedgerInsert {
   // one in the file.
   const existing = lines.indexOf(line);
   if (existing !== -1) return { content, line: existing + 1 };
+
+  // Already present in different words. Two callers describing one day's event will not agree on
+  // the wording — `They watched "Wicked: For Good"` and `The user watched "Wicked: For Good"` are
+  // one event and two strings, and the byte comparison above sees only the strings.
+  //
+  // Scoped to the date, which is what makes it safe: a ledger is full of events that resemble each
+  // other across days — a weekly delivery, a monthly payment — and those are genuinely separate
+  // things that happened. Two similar summaries on *one* day are almost always one thing described
+  // twice.
+  const sameDay = lines.findIndex((text) => {
+    const date = EVENT_DATE.exec(text)?.[1];
+    if (date !== event.date) return false;
+    return saysTheSame(summaryOf(text), event.summary);
+  });
+  if (sameDay !== -1) return { content, line: sameDay + 1 };
 
   const headings = lines
     .map((text, index) => ({ text, index, year: /^##\s+(\d{4})\s*$/.exec(text)?.[1] }))

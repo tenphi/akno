@@ -1,4 +1,5 @@
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
+import { contentWords } from '../kb/words.ts';
 
 /**
  * **Observe: combine repeated facts into stable patterns and habits. Never restate the
@@ -294,54 +295,6 @@ function restatesAFact(pattern: string, claims: string[]): boolean {
     if (shared / patternWords.size >= 0.8) return true;
   }
   return false;
-}
-
-const STOPWORDS = new Set([
-  'the',
-  'a',
-  'an',
-  'and',
-  'or',
-  'of',
-  'to',
-  'in',
-  'on',
-  'at',
-  'for',
-  'with',
-  'is',
-  'are',
-  'was',
-  'were',
-  'be',
-  'been',
-  'has',
-  'have',
-  'had',
-  'this',
-  'that',
-  'these',
-  'those',
-  'it',
-  'its',
-  'as',
-  'by',
-  'from',
-  'usually',
-  'often',
-  'always',
-  'each',
-  'every',
-]);
-
-function contentWords(text: string): Set<string> {
-  return new Set(
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .split(/\s+/)
-      .filter((word) => word.length > 2 && !STOPWORDS.has(word)),
-  );
 }
 
 function clamp(value: number): number {

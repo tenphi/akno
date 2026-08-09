@@ -115,3 +115,52 @@ describe('formatEventLine', () => {
     );
   });
 });
+
+describe('one day, one event, however it is worded', () => {
+  const ledger = [
+    '# Timeline',
+    '',
+    '## 2026',
+    '',
+    '- **2026-08-08** | They watched "Wicked: For Good" in the evening.',
+    '',
+  ].join('\n');
+
+  it('does not add the same event again in different words', () => {
+    // Exactly what happened: two `remember` calls over one message, a minute apart, each phrasing
+    // the day's event its own way. Byte comparison saw two strings; the ledger gained two lines for
+    // one evening.
+    const result = insertEvent(ledger, {
+      date: '2026-08-08',
+      summary: 'The user watched "Wicked: For Good" in the evening.',
+    });
+    expect(result.content).toBe(ledger);
+    expect(result.line).toBe(5);
+  });
+
+  it('still adds a genuinely different event on the same day', () => {
+    const result = insertEvent(ledger, { date: '2026-08-08', summary: 'The boiler was serviced.' });
+    expect(result.content).toContain('The boiler was serviced.');
+    expect(result.content).toContain('Wicked: For Good');
+  });
+
+  it('does not collapse the same event on two different days', () => {
+    // A ledger is full of things that recur — a weekly delivery, a monthly payment. Those are
+    // separate events, and only the date tells them apart.
+    const result = insertEvent(ledger, {
+      date: '2026-08-09',
+      summary: 'They watched "Wicked: For Good" in the evening.',
+    });
+    expect(result.content).toContain('2026-08-09');
+    expect(result.content.match(/Wicked/g)).toHaveLength(2);
+  });
+
+  it('ignores the citation when comparing', () => {
+    const cited = insertEvent(ledger, {
+      date: '2026-08-08',
+      summary: 'They watched "Wicked: For Good" in the evening.',
+      slug: 'media/wicked',
+    });
+    expect(cited.content).toBe(ledger);
+  });
+});

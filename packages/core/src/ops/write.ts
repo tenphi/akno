@@ -156,7 +156,9 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   // there is no way to get a ledger line whose detail page was never written.
   if (input.event) {
     const ledger = await appendToLedger(ctx, { ...input.event, slug });
-    files.push(ledger.file);
+    // No file when the day already has this event: the page part of this change still stands, and
+    // the caller is still told which ledger line the event is on — the existing one.
+    if (ledger.file) files.push(ledger.file);
     wrote.push({ slug: ledgerSlug(ctx), line: ledger.line, action: 'event' });
   }
 
@@ -264,6 +266,18 @@ async function writeEventOnly(
   }
 
   const ledger = await appendToLedger(ctx, event);
+
+  // The day already has this event. Journalling anyway would put a change in `undo --list` that
+  // reverses nothing, and tell the caller something was kept when the ledger is exactly as it was.
+  if (!ledger.file) {
+    return {
+      status: 'ok',
+      outcome: 'noop',
+      note: 'the ledger already records this event for that date',
+      wrote: [{ slug: ledgerSlug(ctx), line: ledger.line, action: 'event' }],
+    };
+  }
+
   const changeId = ctx.journal.record({
     actor: ctx.actor,
     op: 'write',
@@ -286,7 +300,7 @@ async function writeEventOnly(
 async function appendToLedger(
   ctx: AknoContext,
   event: { date: string; summary: string; slug?: string },
-): Promise<{ file: ChangeFile; line: number }> {
+): Promise<{ file: ChangeFile | null; line: number }> {
   const relPath = ctx.config.paths.timeline;
   const absPath = path.join(ctx.config.aknoPath, relPath);
 
@@ -299,6 +313,11 @@ async function appendToLedger(
   }
 
   const inserted = insertEvent(current, event);
+  // Nothing to write: the day already has this event, in these words or in others. Rewriting the
+  // file with its own bytes would journal a change that added nothing — `undo --list` would offer
+  // to reverse an event that was never appended, and the caller would be told it had been kept.
+  if (inserted.content === current) return { file: null, line: inserted.line };
+
   const result = await writeFileAtomic(ctx.config.aknoPath, relPath, inserted.content);
   return { file: fileEntry(result), line: inserted.line };
 }
