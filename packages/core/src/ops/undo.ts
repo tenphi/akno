@@ -22,7 +22,11 @@ export async function undo(ctx: AknoContext, rawInput: unknown): Promise<UndoOut
   // a whole-tree walk can conclude a file is gone. Model work stays scoped to what
   // the undo actually touched — reversing one line must not re-derive the whole
   // knowledge base.
-  await ctx.indexer.run({ modelPaths: reversed.restored });
+  await ctx.indexer.run({ modelPaths: [] });
+  // Same reasoning as `write`: the files are back, which is what undo promised. Re-reading them for
+  // summaries and facts is work nobody is waiting on, and awaiting it put a cold deriver inside an
+  // undo — which then timed out, on an undo that had already succeeded.
+  ctx.derive.schedule(reversed.restored);
 
   return {
     status: 'ok',

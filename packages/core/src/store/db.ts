@@ -146,10 +146,28 @@ export interface WriteLock {
   release(): void;
 }
 
-export function acquireWriteLock(lockPath: string): WriteLock {
+/**
+ * Take the write handle, waiting briefly for a handover.
+ *
+ * `waitMs` exists because of how a restart actually goes: the supervisor starts the new process
+ * while the old one is still closing its database and unlinking its lock. Checking once, at that
+ * instant, is how a service comes up read-only — and it then stays that way for its whole life,
+ * failing every write with the pid of a process that has since exited. Observed on a real install:
+ * hours of `remember` calls refused by a daemon deferring to a ghost.
+ *
+ * A few seconds covers the handover and costs nothing when the lock is free, which is the normal
+ * case. It does not paper over a genuine second Akno — that one is still running when the wait
+ * runs out, and is still refused.
+ */
+export function acquireWriteLock(lockPath: string, waitMs = 0): WriteLock {
   fs.mkdirSync(path.dirname(lockPath), { recursive: true });
 
-  const existing = readLockPid(lockPath);
+  const deadline = Date.now() + waitMs;
+  let existing = readLockPid(lockPath);
+  while (existing !== null && existing !== process.pid && isProcessAlive(existing) && Date.now() < deadline) {
+    sleep(100);
+    existing = readLockPid(lockPath);
+  }
   if (existing !== null && existing !== process.pid && isProcessAlive(existing)) {
     return { acquired: false, heldByPid: existing, failure: 'held', release: () => {} };
   }
@@ -174,6 +192,11 @@ export function acquireWriteLock(lockPath: string): WriteLock {
   };
 
   return { acquired: true, heldByPid: process.pid, release };
+}
+
+/** Blocking, deliberately: this runs before anything is open and there is nothing to yield to. */
+function sleep(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
 function readLockPid(lockPath: string): number | null {

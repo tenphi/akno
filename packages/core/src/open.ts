@@ -4,6 +4,7 @@ import { AknoError, OPS, type AknoOps, type OpName, type OpInput, type OpResult 
 import { loadConfig, type LoadOptions } from './config/load.ts';
 import type { AknoConfig } from './config/schema.ts';
 import { acquireWriteLock, openStore, type WriteLock } from './store/db.ts';
+import { DeferredDerive } from './index/defer.ts';
 import { ModelClient } from './models/client.ts';
 import { Assembler } from './recall/assemble.ts';
 import { Indexer, type IndexOptions, type IndexReport } from './index/indexer.ts';
@@ -42,6 +43,15 @@ export interface OpenOptions extends LoadOptions {
   actor?: 'user' | 'agent' | 'akno';
   /** Take the write handle. False for a second process that only reads. */
   writable?: boolean;
+  /**
+   * How long to wait for the write handle if another process still holds it.
+   *
+   * For a long-running service, whose start is usually a restart: the supervisor launches the
+   * replacement while the outgoing process is still closing, and checking once at that instant is
+   * how a daemon comes up read-only and stays that way for its whole life. One-shot commands leave
+   * it at zero — they should say so immediately rather than hang.
+   */
+  writeLockWaitMs?: number;
   /** Start the FSEvents watcher and the periodic sweep. Off for one-shot commands. */
   watch?: boolean;
   watchEvents?: AknoWatchEvents;
@@ -154,7 +164,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   let lockHeldBy: number | null = null;
   let readOnlyReason: AknoContext['readOnlyReason'] = writable ? null : 'requested';
   if (writable) {
-    lock = acquireWriteLock(config.lockPath);
+    lock = acquireWriteLock(config.lockPath, options.writeLockWaitMs ?? 0);
     if (!lock.acquired) {
       writable = false;
       lockHeldBy = lock.heldByPid;
@@ -174,10 +184,16 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   };
 
   const indexer = new Indexer(config, store, { embedding: models.embedding, derive: models.derive });
+  const deferredDerive = new DeferredDerive(indexer, (err) => {
+    // After the caller has gone, so there is nobody to throw at. A lost derivation costs a summary
+    // and some facts until the next pass over the page; it never costs the write.
+    options.watchEvents?.onError?.(err instanceof Error ? err : new Error(String(err)));
+  });
   const ctx: AknoContext = {
     config,
     store,
     models,
+    derive: deferredDerive,
     assembler: new Assembler(config, store),
     indexer,
     journal: new Journal(store, config.aknoPath, config.trashDir),
@@ -370,6 +386,8 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     },
 
     async close(): Promise<void> {
+      // A one-shot command would otherwise exit with its own write still underived.
+      await deferredDerive.flush();
       await watcher?.stop();
       store.close();
       lock?.release();

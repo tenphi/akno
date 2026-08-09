@@ -68,6 +68,10 @@ export async function serveCommand(argv: string[]): Promise<number> {
 
   const mem = await open({
     ...openOptionsFrom(values),
+    // A service start is nearly always a restart, and the outgoing process is usually still closing
+    // its database when this one opens. Without a wait, the replacement comes up read-only and stays
+    // that way — refusing every write for its whole life, naming a pid that has already exited.
+    writeLockWaitMs: 10_000,
     watch: values.watch,
     watchEvents: {
       onIndexed: (report, changed) => {
@@ -90,6 +94,12 @@ export async function serveCommand(argv: string[]): Promise<number> {
       `pid ${mem.lockHeldBy} holds the write handle. This instance is read-only: it will serve ` +
         'reads but will not index or watch. Do not run two Aknos against one knowledge base.',
     );
+    // Read-only is decided once, when the database is opened, and the connection itself is opened
+    // that way — so a service that lost the race cannot promote itself in place. It can notice that
+    // the holder is gone and stand down, which under a supervisor means coming straight back with
+    // the handle. Without that, losing a restart race by a second costs every write until somebody
+    // notices, which on this install was hours of refusals naming a pid that had long exited.
+    watchForAReleasedHandle(mem.lockHeldBy, log);
   }
 
   const allow = values.allow
@@ -405,4 +415,32 @@ function escapeXml(value: string): string {
         return '&quot;';
     }
   });
+}
+
+/**
+ * Wait for the process holding the write handle to exit, then stand down so a supervisor can
+ * restart this one with the handle.
+ *
+ * Exit code 0 on purpose: nothing failed. Under launchd's `KeepAlive` the replacement is up in a
+ * second, and under no supervisor at all the operator gets a line saying exactly what happened and
+ * what to do.
+ */
+function watchForAReleasedHandle(heldBy: number | null, log: (message: string) => void): void {
+  if (heldBy === null) return;
+  const timer = setInterval(() => {
+    if (isAlive(heldBy)) return;
+    clearInterval(timer);
+    log(`pid ${heldBy} has exited and the write handle is free — restarting to take it`);
+    process.exit(0);
+  }, 15_000);
+  timer.unref();
+}
+
+function isAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return (err as NodeJS.ErrnoException).code === 'EPERM';
+  }
 }

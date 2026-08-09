@@ -73,7 +73,10 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
   // The indexer re-derives, and the fact is gone because its source is gone. It
   // records the file itself, so nothing may pre-record the hash — that would make
   // the stat fast path skip the very page whose facts have to be re-derived.
-  await ctx.indexer.run({ only: [fact.rel_path] });
+  await ctx.indexer.run({ only: [fact.rel_path], modelPaths: [] });
+  // The sentence is gone from the file, which is what was asked. Re-deriving what the page says now
+  // is the deriver's business, not the caller's.
+  ctx.derive.schedule([fact.rel_path]);
 
   return {
     status: 'ok',

@@ -177,7 +177,15 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   // makes the stat fast path conclude the file is unchanged and skip it — the page
   // lands on disk and never reaches the index, which is the worst of both worlds.
   // The indexer records the file itself as part of indexing it.
-  const report = await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+  //
+  // Structure now, meaning now — the page is searchable by its own text, its links resolve, its
+  // documents exist. What is deferred is only the *reading* of it: summary, keywords, the claims a
+  // deriver finds in the sentences. Awaiting that put a cold local model, a minute to load, inside
+  // every write, and the tool calling it gave up at sixty seconds while the write itself had
+  // already landed.
+  const paths = files.map((file) => file.relPath);
+  const report = await ctx.indexer.run({ only: paths, modelPaths: [] });
+  ctx.derive.schedule(paths);
 
   // After indexing: the `documents` rows exist now, so the extraction can be recorded
   // against them. The row keeps the *whole* text — the body carries a capped excerpt, and
@@ -285,7 +293,10 @@ async function writeEventOnly(
     files: [ledger.file],
   });
 
-  await ctx.indexer.run({ only: [ledger.file.relPath] });
+  await ctx.indexer.run({ only: [ledger.file.relPath], modelPaths: [] });
+  // The ledger's events are parsed structurally, above — this is for the summary and any claims in
+  // the prose around them, which nobody is waiting on.
+  ctx.derive.schedule([ledger.file.relPath]);
 
   return {
     status: 'ok',

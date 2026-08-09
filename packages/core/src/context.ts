@@ -4,6 +4,7 @@ import type { Store } from './store/db.ts';
 import type { ModelClient } from './models/client.ts';
 import type { Assembler } from './recall/assemble.ts';
 import type { Indexer } from './index/indexer.ts';
+import type { DeferredDerive } from './index/defer.ts';
 import type { Journal } from './write/journal.ts';
 import type { Gate } from './write/gate.ts';
 
@@ -23,6 +24,14 @@ export interface AknoContext {
   assembler: Assembler;
   /** The write path needs it to reconcile immediately after its own write. */
   indexer: Indexer;
+  /**
+   * Model-backed indexing of pages a write just changed, run after the answer goes out.
+   *
+   * A write is done when the Markdown is on disk; deriving facts from it is a reading of a file
+   * that is already correct. Awaiting that put a cold local deriver — a minute to load — inside
+   * every `remember`, past the timeout of the tool calling it.
+   */
+  derive: DeferredDerive;
   journal: Journal;
   gate: Gate;
   /**
