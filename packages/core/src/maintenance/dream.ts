@@ -247,6 +247,10 @@ async function observePhase(
       model: ctx.models.derive,
       mission: ctx.config.maintenance.observe.mission,
       minEvidence: ctx.config.maintenance.observe.minEvidence,
+      // What last night already concluded about this subject. The facts rarely change between one
+      // night and the next, so without this the same insight comes back reworded every night and
+      // the page accumulates paraphrases of one sentence.
+      existing: await existingObservations(ctx, group.slug),
     });
 
     if (result.error) {
@@ -355,6 +359,29 @@ function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
  * is. That is also what makes the phase safe to re-run: a second pass over unchanged facts
  * reports `unchanged` and writes nothing.
  */
+/**
+ * The patterns already on this subject's observation page.
+ *
+ * Read from the file rather than the index because the index is a reading of the file and this
+ * runs inside the same cycle that writes it.
+ */
+async function existingObservations(ctx: AknoContext, pageSlug: string): Promise<string[]> {
+  const slug = normalizeSlug(`${ctx.config.paths.observations}/${pageSlug}`);
+  const body = await fsp.readFile(path.join(ctx.config.aknoPath, `${slug}.md`), 'utf8').catch(() => null);
+  if (body === null) return [];
+
+  return body
+    .split('\n')
+    .filter((line) => /^- \d{4}-\d{2}-\d{2} — /.test(line))
+    .map((line) =>
+      line
+        .replace(/^- \d{4}-\d{2}-\d{2} — /, '')
+        .replace(/\s*\[\[[^\]]*\]\]/g, '')
+        .trim(),
+    )
+    .filter(Boolean);
+}
+
 async function writeObservation(
   ctx: AknoContext,
   page: { title: string; slug: string },

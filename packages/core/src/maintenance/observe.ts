@@ -52,7 +52,10 @@ Hard rules:
   practices and preferences only.
 - State the pattern, not the reasoning, and never mention "the facts" or "the pages".
 - Fewer, better. An empty list is the correct answer for facts that share only a subject, and is much
-  better than a vague pattern nobody can act on.`;
+  better than a vague pattern nobody can act on.
+- You may be shown patterns already recorded for this subject. Never repeat one, and never reword one.
+  Report only what those lines do not already say. If they cover it, return an empty list — that is the
+  expected answer on most nights, because the facts rarely change between one night and the next.`;
 
 export interface ObservationCandidate {
   pattern: string;
@@ -87,6 +90,21 @@ const ABOUT_THE_RECORDS =
   /\b(each (entry|page|record|item|location|line)|every (entry|page|record|item)|is (described|recorded|listed|documented|stored)|these (pages|records|entries|notes)|the (pages|records|entries|dataset|data))\b/i;
 
 /**
+ * "The records consistently say X" — a single fact with a preamble bolted on.
+ *
+ * Real runs produced "Employment documents consistently record the employee's date of birth as 3
+ * March 1911" and "Employment records consistently identify Vulpine Mutual B.V. as the employer".
+ * Neither is a pattern across facts; each is one fact, restated, with the agreement of the sources
+ * offered as if it were the insight. The first also copies a personal identifier onto a derived page
+ * that nobody asked for it to be on.
+ *
+ * `ABOUT_THE_RECORDS` misses these because the sentence is grammatically about the subject — it is
+ * the *documents* that do the identifying — so the shape has to be matched directly.
+ */
+const RECORDS_SAY =
+  /\b(records?|documents?|entries|files?|statements?|pages?)\b[^.]{0,40}\b(consistently|always|all|repeatedly)?\s*\b(record|records|identify|identifies|show|shows|list|lists|state|states|confirm|confirms|indicate|indicates)\b/i;
+
+/**
  * A template rather than a claim. A real run produced "Italian cities are often located at Via
  * [number] [street name] [zip code]" — a description of how an address is written, dressed as a
  * fact about cities.
@@ -104,6 +122,15 @@ export interface ObserveInput {
   model: ModelClient;
   mission?: string | null;
   minEvidence: number;
+  /**
+   * Patterns already written for this subject on a previous night.
+   *
+   * Without these the cycle re-derives the same insight from the same unchanged facts every night
+   * and appends it again in different words — the page grows forever and says one thing. The
+   * string check that used to be the only guard cannot catch it: "declined in each successive
+   * period" and "declined in each recorded period" are the same observation and different strings.
+   */
+  existing?: string[];
 }
 
 export async function runObserveMission(input: ObserveInput): Promise<ObserveMissionResult> {
@@ -119,11 +146,16 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
 
   const system = input.mission ? `${SYSTEM}\n\nAdditional emphasis: ${input.mission}` : SYSTEM;
   const listed = input.facts.map((fact) => `- [${fact.slug}] ${fact.claim}`).join('\n');
+  const known = (input.existing ?? []).slice(0, 20);
+  const alreadyRecorded =
+    known.length > 0
+      ? `\n\nAlready recorded for this subject — do not repeat or reword:\n${known.map((line) => `- ${line}`).join('\n')}`
+      : '';
 
   const result = await input.model.chat(
     [
       { role: 'system', content: system },
-      { role: 'user', content: `Subject: ${input.subject}\n\nFacts:\n${listed}` },
+      { role: 'user', content: `Subject: ${input.subject}\n\nFacts:\n${listed}${alreadyRecorded}` },
     ],
     { json: true, maxTokens: 700 },
   );
@@ -158,8 +190,22 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
       continue;
     }
 
+    if (RECORDS_SAY.test(pattern)) {
+      rejected.push({ pattern, reason: 'one fact restated as "the records consistently say it"' });
+      continue;
+    }
+
     if (TEMPLATE.test(pattern)) {
       rejected.push({ pattern, reason: 'a template with placeholders, not a claim' });
+      continue;
+    }
+
+    // The model was asked not to repeat itself; this is what happens when it does anyway. Only
+    // catches near-identical wording — real rewrites share too few words for any threshold that
+    // would not also merge genuinely different observations, which is why the prompt does the work
+    // and this only backstops it.
+    if (known.some((line) => nearlyTheSame(line, pattern))) {
+      rejected.push({ pattern, reason: 'already recorded for this subject' });
       continue;
     }
 
@@ -272,4 +318,32 @@ function contentWords(text: string): Set<string> {
 function clamp(value: number): number {
   if (!Number.isFinite(value)) return 0.6;
   return Math.min(1, Math.max(0, value));
+}
+
+/**
+ * Two patterns that differ only in wording.
+ *
+ * Content words only, compared as a set — "Total spending declined in each successive period" and
+ * "…in each recorded period" differ by one word out of nine and are plainly the same observation.
+ * The bar is high on purpose: on a page scoped to one subject, every line is about that subject, so
+ * a loose threshold would merge two real patterns about it. Anything a genuine rewrite gets past is
+ * the prompt's job, not this one's.
+ */
+function nearlyTheSame(a: string, b: string): boolean {
+  const words = (text: string) =>
+    new Set(
+      text
+        .toLowerCase()
+        .replace(/\[\[[^\]]*\]\]/g, ' ')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((word) => word.length > 3),
+    );
+  const left = words(a);
+  const right = words(b);
+  if (left.size === 0 || right.size === 0) return false;
+
+  let shared = 0;
+  for (const word of right) if (left.has(word)) shared += 1;
+  return shared / new Set([...left, ...right]).size >= 0.75;
 }

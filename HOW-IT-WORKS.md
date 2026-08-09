@@ -11,6 +11,7 @@ pointed at a folder of notes and explains what actually happens when you run thi
 
 - [The shape of it](#the-shape-of-it)
 - [Two rules that explain the rest](#two-rules-that-explain-the-rest)
+- [Which model does what](#which-model-does-what)
 - [`akno index` — reading your folder](#akno-index--reading-your-folder)
 - [`akno recall` — asking a question](#akno-recall--asking-a-question)
 - [`read`, `list`, `timeline` — looking things up directly](#read-list-timeline--looking-things-up-directly)
@@ -62,6 +63,38 @@ and run `akno index` — every chunk, embedding, summary, fact, event and link c
 summaries? Recall still works, without them. Akno tells you what it lost instead of pretending.
 
 Everything below is an application of those two.
+
+---
+
+## Which model does what
+
+Akno uses five model roles. Most operations use none of them.
+
+| Role          | Runs during                               | How it is called                                            |
+| ------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| **embedding** | `index`, and the meaning half of `recall` | once per chunk when indexing; once per query when searching |
+| **reranker**  | `recall`                                  | once per search, over the top candidates only               |
+| **expansion** | `recall`                                  | once per search, before the search runs                     |
+| **derive**    | `index`, `ingest`, `remember`, `dream`    | once per page, and once per document                        |
+| **vision**    | `ingest` and `write --attach`             | once per image that has no text in it                       |
+
+Two of these are on the path you wait for and three are not, which is the whole reason they are separate
+settings:
+
+- **`expansion` and `reranker` run inside a search you are waiting for.** Point them at something fast. Their
+  output is thrown away after the answer.
+- **`derive` runs while indexing, on arrival, and at night, and what it writes stays in your notes.** A slower,
+  better model earns its keep here. One model can serve both roles; two is usually better.
+
+**`maintenance.model` overrides `derive`, for the two jobs where the writing is the point:** `remember`, which
+decides what is worth keeping and where it goes, and the whole nightly cycle. Set it and the rest of the system
+is unaffected. Leave it unset and both fall back to `derive`.
+
+Everything else — `read`, `list`, `timeline`, `write`, `forget`, `undo`, `move`, `approve` — runs no model at
+all. They are database and file operations. What follows a write is not: changing a page re-indexes it, so
+`derive` sees it again.
+
+Nothing here is required. See [What happens when a model is missing](#what-happens-when-a-model-is-missing).
 
 ---
 
@@ -171,14 +204,19 @@ Akno says so rather than letting an agent fill the gap.
 
 ```mermaid
 flowchart LR
-    q["your words"] --> expand["1. Expand<br/>synonyms, or a hypothetical answer"]
-    expand --> lex["2a. Keyword search"]
-    expand --> vec["2b. Meaning search"]
-    lex --> fuse["3. Merge both rankings"]
+    q["your words"] --> expand["1. Expand<br/>expansion model"]
+    expand --> lex["2a. Keyword search<br/>no model"]
+    expand --> vec["2b. Meaning search<br/>embedding model"]
+    lex --> fuse["3. Merge both rankings<br/>no model"]
     vec --> fuse
-    fuse --> rerank["4. Re-rank the top candidates"]
-    rerank --> cards["5. Build cards and fit the budget"]
+    fuse --> rerank["4. Re-rank the top<br/>reranker model"]
+    rerank --> cards["5. Build cards, fit the budget<br/>no model"]
 ```
+
+Three model calls at most, and each one is optional. Without the expansion model your exact words are searched
+for; without the embedding model the meaning half drops out and keyword search carries the answer; without the
+reranker the merged ranking is the final one. The result says which of these happened rather than quietly
+returning less.
 
 Step 1 is different depending on what you asked, which is what `mode` selects:
 
@@ -326,6 +364,10 @@ that thought otherwise would block half your writes. The slower, thorough check 
 
 `write` is for when you know the page and the wording. `remember` is for when you do not.
 
+**Which model:** `maintenance.model` if you set one, otherwise `derive`. It is one call to decide what in the
+text is worth keeping, then a `recall` to find where each claim belongs — so a `remember` costs a derive-class
+call plus a search, not a call per claim.
+
 ```bash
 akno remember "Decision: switching the internet plan to Blackwater Fibre at 39 EUR a month from 1 October."
 ```
@@ -459,6 +501,10 @@ repeated. You are never gated yourself: `--actor user` writes wherever you say.
 
 Hand Akno a file and it does the whole job: read the text, name it from what is inside, summarize it, decide
 where it goes, and index it.
+
+**Which model:** `derive`, once, to name and summarize the document. Getting the text out is not a model job —
+a PDF's text layer is read directly and a scan is OCRed locally. `vision` is called only for an image that
+turns out to have no text in it at all, to describe what it shows.
 
 ```bash
 akno ingest ~/Downloads/policy.pdf
@@ -611,6 +657,10 @@ Anything still unlinked gets a page of its own from the nightly cycle.
 
 Slow work that should not happen while you are waiting: noticing patterns, finding contradictions, tidying
 reports. Five phases, each independent and safe to run twice.
+
+**Which model:** `maintenance.model` for the whole cycle if set, otherwise `derive`. `adopt` and `housekeeping`
+are mostly bookkeeping; `observe`, `reflect` and `conflicts` are the phases that actually spend calls, and they
+run at 3am precisely so a slow model costs you nothing.
 
 ```bash
 akno dream              # every enabled phase
@@ -862,29 +912,31 @@ Akno has never heard of.
 
 ## Every command, one table
 
-| Command               | In one line                                               | Writes to your folder? |
-| --------------------- | --------------------------------------------------------- | ---------------------- |
-| `recall <query>`      | Search, and get lines with addresses                      | no                     |
-| `read <slug>`         | One page or document, in full                             | no                     |
-| `list`                | Browse folders, pages, or an outline                      | no                     |
-| `timeline`            | What happened, filtered by date, subject or text          | no                     |
-| `context <query>`     | The whole pre-turn bundle against one budget              | no                     |
-| `write`               | Create, append, patch or replace a page                   | **yes**                |
-| `remember <text>`     | Keep what matters from some notes, in the right place     | **yes**                |
-| `forget`              | Retract a fact, or trash a page or document               | **yes**                |
-| `undo <id>`           | Reverse any change                                        | **yes**                |
-| `move <from> <to>`    | Relocate a page with its documents                        | **yes**                |
-| `approve` / `decline` | Resolve something an agent asked permission for           | **yes** on approve     |
-| `ingest <path\|url>`  | Read a file, name it, file it                             | **yes**                |
-| `inbox`               | Process whatever was dropped in an inbox folder           | **yes**                |
-| `dream`               | The nightly cycle                                         | only `observe`/`adopt` |
-| `index`               | Reconcile the index with your folder                      | no                     |
-| `serve`               | Run as a service, with all three doors                    | no                     |
-| `service`             | Install or remove the background agents                   | no                     |
-| `doctor`              | What works, what does not, and what that costs            | no                     |
-| `rules [path]`        | Which rule governs a path, and why                        | no                     |
-| `config`              | The settings actually in effect, and where they came from | no                     |
-| `bench`               | Check the performance budgets                             | no                     |
+| Command               | In one line                                               | Writes to your folder? | Models                              |
+| --------------------- | --------------------------------------------------------- | ---------------------- | ----------------------------------- |
+| `recall <query>`      | Search, and get lines with addresses                      | no                     | expansion, embedding, reranker      |
+| `read <slug>`         | One page or document, in full                             | no                     | —                                   |
+| `list`                | Browse folders, pages, or an outline                      | no                     | —                                   |
+| `timeline`            | What happened, filtered by date, subject or text          | no                     | —                                   |
+| `context <query>`     | The whole pre-turn bundle against one budget              | no                     | same as `recall`                    |
+| `write`               | Create, append, patch or replace a page                   | **yes**                | vision, only for `--attach`         |
+| `remember <text>`     | Keep what matters from some notes, in the right place     | **yes**                | maintenance or derive, + recall     |
+| `forget`              | Retract a fact, or trash a page or document               | **yes**                | —                                   |
+| `undo <id>`           | Reverse any change                                        | **yes**                | —                                   |
+| `move <from> <to>`    | Relocate a page with its documents                        | **yes**                | —                                   |
+| `approve` / `decline` | Resolve something an agent asked permission for           | **yes** on approve     | whatever the held call needed       |
+| `ingest <path\|url>`  | Read a file, name it, file it                             | **yes**                | derive; vision for text-less images |
+| `inbox`               | Process whatever was dropped in an inbox folder           | **yes**                | same as `ingest`, per file          |
+| `dream`               | The nightly cycle                                         | only `observe`/`adopt` | maintenance or derive               |
+| `index`               | Reconcile the index with your folder                      | no                     | embedding, derive                   |
+| `serve`               | Run as a service, with all three doors                    | no                     | —                                   |
+| `service`             | Install or remove the background agents                   | no                     | —                                   |
+| `doctor`              | What works, what does not, and what that costs            | no                     | pings each configured one           |
+| `rules [path]`        | Which rule governs a path, and why                        | no                     | —                                   |
+| `config`              | The settings actually in effect, and where they came from | no                     | —                                   |
+| `bench`               | Check the performance budgets                             | no                     | embedding, expansion, reranker      |
+
+Anything writing to your folder also re-indexes what it touched, so `derive` sees the changed page again.
 
 Add `--help` to any of them for the full flag list, and `--json` to any of them to get a machine-readable
 version of the same answer.

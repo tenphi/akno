@@ -230,8 +230,52 @@ describe('observe', () => {
     const first = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
 
     const second = await mem.dream({ phase: 'observe' });
-    expect(second.observations[0]!.action).toBe('unchanged');
     expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toBe(first);
+    // Turned back by the guard, with the reason, rather than written and then reported as
+    // unchanged. A repeat means the model was told what it had already recorded and said it again.
+    expect(second.observations).toHaveLength(0);
+    expect(second.rejected.some((entry) => entry.reason === 'already recorded for this subject')).toBe(true);
+  });
+
+  it('tells the model what it already recorded for this subject', async () => {
+    // The load-bearing half of the fix. On a real knowledge base nine of fifteen observation pages
+    // gained a second line the next night, each a paraphrase of the first from facts that had not
+    // changed. No string comparison catches that — "declined in each successive period" and
+    // "declined in each recorded period" are the same observation and share almost no rare words —
+    // so the model has to be shown its own previous answers and told not to repeat them.
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+
+    server.reply({ observations: [] });
+    await mem.dream({ phase: 'observe' });
+
+    const shown = server.lastObserveInput();
+    expect(shown).toContain('Already recorded for this subject');
+    expect(shown).toContain(PATTERN);
+    // The citation is stripped: it is noise to the model and it is not part of the claim.
+    expect(shown).not.toContain('[[home/appliances]]');
+  });
+
+  it('turns back a repeat that is only reworded', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const first = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+
+    // One word different, which is what the exact-string check let through every night.
+    server.reply({
+      observations: [
+        {
+          pattern: 'Household appliances are serviced roughly every three weeks.',
+          evidence: ['home/appliances', 'home/laundry'],
+          confidence: 0.8,
+        },
+      ],
+    });
+    const second = await mem.dream({ phase: 'observe' });
+
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toBe(first);
+    expect(second.observations).toHaveLength(0);
+    expect(second.rejected.some((entry) => entry.reason === 'already recorded for this subject')).toBe(true);
   });
 
   it('refines by appending, and never deletes what is there', async () => {

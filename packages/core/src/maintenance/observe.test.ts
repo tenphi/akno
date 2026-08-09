@@ -216,3 +216,47 @@ describe('the observe mission, on ground that is out of bounds', () => {
     expect(result.observations).toHaveLength(1);
   });
 });
+
+describe('one fact wearing a pattern’s clothes', () => {
+  // Both of these were written to a real knowledge base. Neither is a pattern across facts: each is
+  // a single fact with "the records agree" bolted on the front, and the first copies a personal
+  // identifier onto a derived page for no benefit at all.
+  it.each([
+    'Employment documents consistently record the employee’s date of birth as 3 March 1911.',
+    'Employment records consistently identify Vulpine Mutual B.V. as the employer.',
+    'Bank statements show the account balance as positive.',
+  ])('rejects %s', async (pattern) => {
+    const result = await runObserveMission({
+      subject: 'employer',
+      facts: [
+        { claim: 'a', slug: 'one/page' },
+        { claim: 'b', slug: 'two/page' },
+      ],
+      model: stubChat({ observations: [{ pattern, evidence: ['one/page', 'two/page'], confidence: 0.9 }] }),
+      minEvidence: 2,
+    });
+    expect(result.observations).toHaveLength(0);
+    expect(result.rejected[0]!.reason).toMatch(/restated|describes the records/);
+  });
+
+  it('still allows a real pattern that happens to mention what was done', async () => {
+    const result = await runObserveMission({
+      subject: 'servicing',
+      facts: [
+        { claim: 'a', slug: 'one/page' },
+        { claim: 'b', slug: 'two/page' },
+      ],
+      model: stubChat({
+        observations: [
+          {
+            pattern: 'Household appliances are serviced roughly every three months.',
+            evidence: ['one/page', 'two/page'],
+            confidence: 0.9,
+          },
+        ],
+      }),
+      minEvidence: 2,
+    });
+    expect(result.observations).toHaveLength(1);
+  });
+});
