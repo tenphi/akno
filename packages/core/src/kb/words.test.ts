@@ -25,7 +25,12 @@ describe('saying the same thing in different words', () => {
   });
 
   it('ignores citations, which are addresses rather than content', () => {
-    expect(saysTheSame('Booked the ferry. [[travel/2026]]', 'Booked the ferry.')).toBe(true);
+    expect(
+      saysTheSame(
+        'Booked the overnight ferry to Harlingen. [[travel/2026]]',
+        'Booked the overnight ferry to Harlingen.',
+      ),
+    ).toBe(true);
   });
 
   it('refuses to call two empty sentences equal', () => {

@@ -85,18 +85,25 @@ export function contentWords(text: string): Set<string> {
 }
 
 /**
- * Whether two sentences say the same thing, by shared subject matter.
+ * Whether two sentences are about the same thing.
  *
- * Symmetric overlap, so neither being longer wins. The threshold is high on purpose: callers use
- * this to suppress a write, and suppressing a genuinely new line is worse than keeping a near
- * duplicate — one loses something the user said, the other is untidy.
+ * **Containment, not symmetric overlap.** The second telling of an event is rarely the first one
+ * reworded — it is usually the first one *plus something*: "They watched Wicked: For Good in the
+ * evening" and "Watched Wicked: For Good and rated it 8 out of 10" are one evening, and they share
+ * three quarters of the shorter sentence while sharing only half of the two combined. Symmetric
+ * overlap therefore misses exactly the case that matters, and lowering its threshold far enough to
+ * catch it would also merge "the flight departed" with "the flight landed".
+ *
+ * The floor on the shorter sentence is what keeps that safe: two three-word summaries can share
+ * two words by accident, and without a minimum there is not enough sentence to be sure with.
  */
 export function saysTheSame(a: string, b: string, threshold = 0.7): boolean {
   const left = contentWords(a);
   const right = contentWords(b);
-  if (left.size === 0 || right.size === 0) return false;
+  const smaller = Math.min(left.size, right.size);
+  if (smaller < 3) return false;
 
   let shared = 0;
   for (const word of right) if (left.has(word)) shared += 1;
-  return shared / new Set([...left, ...right]).size >= threshold;
+  return shared / smaller >= threshold;
 }
