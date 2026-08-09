@@ -668,13 +668,38 @@ akno dream --dry-run    # show what it would write, write nothing
 akno dream --phase conflicts
 ```
 
-| Phase          | Writes?       | What it does                                                                    |
-| -------------- | ------------- | ------------------------------------------------------------------------------- |
-| `observe`      | appends lines | Notices patterns across repeated facts. **Off by default.**                     |
-| `reflect`      | appends lines | Builds principles on top of observations. **Off by default.**                   |
-| `adopt`        | creates pages | Gives a document with no page a page, so its text can be found at all.          |
-| `conflicts`    | never         | Finds two pages that state different values for the same thing.                 |
-| `housekeeping` | never         | Broken links, unlinked documents, pages that drifted from their folder's rules. |
+| Phase          | Writes?       | What it does                                                                        |
+| -------------- | ------------- | ----------------------------------------------------------------------------------- |
+| `observe`      | appends lines | Notices patterns across repeated facts. **Off by default.**                         |
+| `reflect`      | appends lines | Builds principles on top of observations. **Off by default.**                       |
+| `adopt`        | creates pages | Gives a document with no page a page, so its text can be found at all.              |
+| `conflicts`    | never         | Finds two pages that state different values for the same thing.                     |
+| `repair`       | edits pages   | Acts on the two above: repoints links, retires replaced claims. **Off by default.** |
+| `housekeeping` | never         | Broken links, unlinked documents, pages that drifted from their folder's rules.     |
+
+`conflicts` and `housekeeping` only ever report, which is the safe default and, run nightly for a
+year, a to-do list nobody reads. `repair` is the phase that acts on them, and it is off by default
+because it is the only one that edits pages you wrote:
+
+- **Broken links** are repointed, never removed. A link is a pointer, not a claim — moving it changes
+  no assertion, it restores an address you meant. The target is matched on the tokens of the whole
+  slug, path included, so `personal/residence-permit-ada-marlow` finds
+  `ada-marlow/residence-permit` (every word survives, only its position moved) while
+  `bo-winters/spare-travel-passport` does **not** match a page called
+  `ada-marlow/passport` (one word in five, and somebody else's document). Where several pages
+  could be meant, the maintenance model chooses — from that list only, never a page of its own
+  invention.
+- **A conflict's stale side** is rewritten into the past tense, never deleted. The sentence stays on
+  the page, which is what makes it read as superseded rather than disappear — a fact marked stale
+  only in the index is live again the next time its page is read. Every number in the original must
+  survive the rewrite or it is refused: changing a tense is tidying, changing a value is a model
+  deciding what your rent is.
+- **Everything it will not touch is reported with the reason.** A repair tier that skips silently is
+  indistinguishable from a broken one.
+
+One journalled change per night, so `akno undo` takes the whole run, and a ceiling per run so a
+bad night is a small bad night. Try it with `--dry-run` first: on the knowledge base this was built
+against, the dry run is what caught the passport case above.
 
 ```
 Dream — 1.3s
