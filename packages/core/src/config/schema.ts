@@ -176,6 +176,24 @@ const MaintenanceDoc = z.object({
       max_pages: z.number().int().positive().optional(),
     })
     .optional(),
+  /**
+   * Acting on what the cycle finds, rather than only reporting it.
+   *
+   * Off by default and deliberately so: the other tiers describe, this one changes files while
+   * nobody is watching. Both halves are journalled as one change per night, so a run you disagree
+   * with is one `undo` away.
+   */
+  repair: z
+    .object({
+      enabled: z.boolean().optional(),
+      /** Repoint `[[links]]` whose target moved or was renamed. */
+      links: z.boolean().optional(),
+      /** Rewrite the stale side of a real conflict into the past tense. Never deletes. */
+      conflicts: z.boolean().optional(),
+      /** Ceiling per run, so a bad night is a small bad night. */
+      max_changes: z.number().int().positive().optional(),
+    })
+    .optional(),
   conflicts: z
     .object({
       enabled: z.boolean().optional(),
@@ -331,6 +349,7 @@ export interface AknoConfig {
     reflect: { enabled: boolean; mission: string | null };
     adopt: { enabled: boolean; maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; maxPairs: number };
+    repair: { enabled: boolean; links: boolean; conflicts: boolean; maxChanges: number };
   };
   trashRetentionDays: number;
   rules: FolderRule[];

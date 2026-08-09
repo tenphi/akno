@@ -6,6 +6,14 @@ import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
+import {
+  actionable,
+  candidatesFor,
+  chooseTargetForTesting as chooseTarget,
+  preservesValues,
+  rewriteAsHistoryForTesting as rewriteAsHistory,
+  type RepairResult,
+} from './repair.ts';
 import { findCrossPageConflicts, verifyConflicts, type CrossPageConflict } from './conflicts.ts';
 import { housekeeping, type Housekeeping } from './housekeeping.ts';
 import { ModelClient } from '../models/client.ts';
@@ -33,9 +41,17 @@ import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
  * every phase reports rather than repairs unless writing is the phase's entire purpose.
  */
 
-export type DreamPhase = 'observe' | 'reflect' | 'adopt' | 'conflicts' | 'housekeeping';
+export type DreamPhase = 'observe' | 'reflect' | 'adopt' | 'conflicts' | 'repair' | 'housekeeping';
 
-export const DREAM_PHASES: DreamPhase[] = ['observe', 'reflect', 'adopt', 'conflicts', 'housekeeping'];
+// `repair` runs after `conflicts`, because it acts on what that phase judged.
+export const DREAM_PHASES: DreamPhase[] = [
+  'observe',
+  'reflect',
+  'adopt',
+  'conflicts',
+  'repair',
+  'housekeeping',
+];
 
 export interface ObservationWritten {
   slug: string;
@@ -60,6 +76,10 @@ export interface DreamReport {
   /** Documents given a page of their own, and any that were left alone. */
   adopted: AdoptedDocument[];
   conflicts: CrossPageConflict[];
+  /** What the repair phase changed, and what it refused to. */
+  repaired: RepairResult | null;
+  /** Its own change, kept apart from the others: one night's repairs undo together. */
+  repairChangeId: string | null;
   housekeeping: Housekeeping | null;
   changeId: string | null;
   /** The `adopt` phase's change, kept apart from observe's. */
@@ -92,6 +112,8 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     rejected: [],
     adopted: [],
     conflicts: [],
+    repaired: null,
+    repairChangeId: null,
     housekeeping: null,
     changeId: null,
     adoptChangeId: null,
@@ -197,6 +219,10 @@ async function runPhase(
       }
       return null;
     }
+    case 'repair': {
+      if (!ctx.config.maintenance.repair.enabled) return 'disabled in config';
+      return repairPhase(ctx, options, report, applied);
+    }
     case 'housekeeping': {
       report.housekeeping = housekeeping(ctx);
       return null;
@@ -226,6 +252,195 @@ interface SubjectGroup {
  * - **Never self-feeding.** An observation is not admissible evidence for another observation.
  *   No inference cascades.
  */
+/**
+ * Repoint every `[[link]]` on a page that resolves to the same target.
+ *
+ * Matched the way the indexer resolved it — case and separators normalized — because the file holds
+ * what the author typed and the index holds what it meant. An alias (`[[target|shown]]`) keeps its
+ * shown text: the address was broken, not the words around it.
+ */
+function replaceLink(text: string, brokenTarget: string, newTarget: string): string {
+  const wanted = brokenTarget.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return text.replace(/\[\[([^\]|]+)(\|[^\]]*)?\]\]/g, (whole, target: string, alias?: string) => {
+    const seen = target.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return seen === wanted ? `[[${newTarget}${alias ?? ''}]]` : whole;
+  });
+}
+
+/**
+ * Apply what the cycle found: repoint links whose page moved, and retire claims a newer one replaced.
+ *
+ * The two halves share a change so one night's repairs undo together, and share a ceiling so a run
+ * that goes wrong goes wrong in a bounded way. Everything it refuses is reported with the reason —
+ * a repair tier that silently skips things is indistinguishable from one that is broken.
+ */
+async function repairPhase(
+  ctx: AknoContext,
+  options: DreamOptions,
+  report: DreamReport,
+  applied: AppliedChange[],
+): Promise<string | null> {
+  const settings = ctx.config.maintenance.repair;
+  const result: RepairResult = { links: [], claims: [], declined: [] };
+  // Edits are collected per file and written once: two links repaired on one page is one rewrite,
+  // and interleaving reads and writes of the same file is how an edit gets lost.
+  const edits = new Map<string, { relPath: string; before: string; after: string }>();
+
+  const budget = () => result.links.length + result.claims.length < settings.maxChanges;
+
+  const load = async (slug: string): Promise<{ relPath: string; text: string } | null> => {
+    const row = ctx.store.db.prepare('SELECT rel_path FROM pages WHERE slug = ?').get(slug) as
+      { rel_path: string } | undefined;
+    if (!row) return null;
+    const held = edits.get(slug);
+    if (held) return { relPath: held.relPath, text: held.after };
+    const text = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
+    return text === null ? null : { relPath: row.rel_path, text };
+  };
+
+  const stage = (slug: string, relPath: string, before: string, after: string): void => {
+    const held = edits.get(slug);
+    edits.set(slug, { relPath, before: held?.before ?? before, after });
+  };
+
+  if (settings.links) {
+    const slugs = (ctx.store.db.prepare('SELECT slug FROM pages').all() as { slug: string }[]).map(
+      (r) => r.slug,
+    );
+    const broken = ctx.store.db
+      .prepare(
+        `SELECT DISTINCT p.slug AS from_slug, l.to_slug FROM links l
+           JOIN pages p ON p.id = l.from_page
+          WHERE l.broken = 1`,
+      )
+      .all() as { from_slug: string; to_slug: string }[];
+
+    for (const link of broken) {
+      if (!budget()) break;
+      const candidates = candidatesFor(link.to_slug, slugs);
+      if (candidates.length === 0) {
+        result.declined.push({ what: `[[${link.to_slug}]]`, reason: 'no page it could have meant' });
+        continue;
+      }
+
+      // One candidate needs no model: there is only one page it could have been. Several is exactly
+      // the judgement call a model is for — constrained to the list, so it can choose but not invent.
+      const target =
+        candidates.length === 1 ? candidates[0]! : await chooseTarget(ctx, link.to_slug, candidates);
+      if (!target) {
+        result.declined.push({
+          what: `[[${link.to_slug}]]`,
+          reason: `${candidates.length} candidates, none clearly right`,
+        });
+        continue;
+      }
+
+      const page = await load(link.from_slug);
+      if (!page) continue;
+      // The stored target is normalized; what is on the page is what the author typed —
+      // `[[Family/Travel/2026/…]]` against a slug that lost its capitals. Rewriting only exact
+      // matches left those as "not on the page", which is true and useless.
+      const next = replaceLink(page.text, link.to_slug, target);
+      if (next === page.text) {
+        result.declined.push({
+          what: `[[${link.to_slug}]]`,
+          reason: 'the link text is not on the page as written',
+        });
+        continue;
+      }
+      stage(link.from_slug, page.relPath, page.text, next);
+      result.links.push({
+        from: link.from_slug,
+        brokenTarget: link.to_slug,
+        newTarget: target,
+        how: candidates.length === 1 ? 'unique' : 'model',
+      });
+    }
+  }
+
+  if (settings.conflicts) {
+    for (const conflict of actionable(report.conflicts)) {
+      if (!budget()) break;
+      // `likelyCurrent` is the *slug* the model judged current, not the claim text.
+      const onCurrentPage = conflict.claims.filter((claim) => claim.slug === conflict.likelyCurrent);
+      const stale = conflict.claims.filter((claim) => claim.slug !== conflict.likelyCurrent);
+      // Two claims on the page called current means the model named a page, not a sentence, and
+      // there is no way to tell which of them replaced the other.
+      if (onCurrentPage.length !== 1 || stale.length === 0) {
+        result.declined.push({
+          what: `${conflict.subject} / ${conflict.attribute}`,
+          reason: 'which claim is current is ambiguous',
+        });
+        continue;
+      }
+      const current = onCurrentPage[0]!;
+
+      for (const claim of stale) {
+        if (!budget()) break;
+        const page = await load(claim.slug);
+        if (!page) continue;
+
+        const lines = page.text.split('\n');
+        const before = lines[claim.line - 1];
+        // The line moved since it was indexed. Rewriting by line number alone would edit whatever is
+        // there now, which is how a repair becomes damage.
+        if (before === undefined || !before.includes(claim.value)) {
+          result.declined.push({
+            what: `${claim.slug}:${claim.line}`,
+            reason: 'the line has changed since it was read',
+          });
+          continue;
+        }
+
+        const rewritten = await rewriteAsHistory(ctx, before, current.claim);
+        if (!rewritten) {
+          result.declined.push({
+            what: `${claim.slug}:${claim.line}`,
+            reason: 'no rewrite that kept the claim intact',
+          });
+          continue;
+        }
+        if (!preservesValues(before, rewritten)) {
+          result.declined.push({
+            what: `${claim.slug}:${claim.line}`,
+            reason: 'the rewrite changed a value',
+          });
+          continue;
+        }
+
+        lines[claim.line - 1] = rewritten;
+        stage(claim.slug, page.relPath, page.text, lines.join('\n'));
+        result.claims.push({
+          slug: claim.slug,
+          line: claim.line,
+          before,
+          after: rewritten,
+          supersededBy: `${current.slug}:${current.line}`,
+        });
+      }
+    }
+  }
+
+  report.repaired = result;
+  if (edits.size === 0 || options.dryRun) return null;
+
+  const files: ChangeFile[] = [];
+  for (const edit of edits.values()) {
+    const written = await writeFileAtomic(ctx.config.aknoPath, edit.relPath, edit.after);
+    files.push({ relPath: edit.relPath, action: 'modified', before: edit.before, after: written.after });
+  }
+
+  report.repairChangeId = ctx.journal.record({
+    actor: 'agent',
+    op: 'write',
+    summary: `repair: ${result.links.length} link(s), ${result.claims.length} claim(s)`,
+    files,
+  });
+  for (const file of files) applied.push(asApplied('repair', file));
+  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+  return null;
+}
+
 async function observePhase(
   ctx: AknoContext,
   options: DreamOptions,

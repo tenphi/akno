@@ -500,6 +500,12 @@ function resolve(
         verify: doc.maintenance?.conflicts?.verify ?? true,
         maxPairs: doc.maintenance?.conflicts?.max_pairs ?? 40,
       },
+      repair: {
+        enabled: doc.maintenance?.repair?.enabled ?? false,
+        links: doc.maintenance?.repair?.links ?? true,
+        conflicts: doc.maintenance?.repair?.conflicts ?? true,
+        maxChanges: doc.maintenance?.repair?.max_changes ?? 25,
+      },
     },
     trashRetentionDays: doc.trash_retention_days ?? 30,
     rules,

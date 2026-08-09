@@ -312,6 +312,69 @@ describe('reflect', () => {
   });
 });
 
+describe('repair', () => {
+  /**
+   * The only tier that changes files on its own. What is asserted here is that it repairs the link
+   * it can be sure of, leaves the one it cannot, and puts the whole night behind a single undo.
+   */
+  async function withBrokenLinks(): Promise<void> {
+    await mem.close();
+    fs.writeFileSync(
+      path.join(root, 'home/appliances.md'),
+      '---\ntitle: Appliances\n---\n\nSee [[Boiler]] and [[nothing-like-this-exists]].\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'home/boiler.md'),
+      '---\ntitle: Boiler\n---\n\nServiced yearly.\n',
+      'utf8',
+    );
+    mem = await openMem({ maintenance: { observe: { enabled: true }, repair: { enabled: true } } });
+    await mem.index({});
+  }
+
+  it('repoints a link whose page is unmistakable, and leaves the rest', async () => {
+    await withBrokenLinks();
+    const report = await mem.dream({ phase: 'repair' });
+
+    const page = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
+    expect(page).toContain('[[home/boiler]]');
+    // Nothing could have been meant by the other, so it stays exactly as written rather than being
+    // pointed somewhere plausible-looking.
+    expect(page).toContain('[[nothing-like-this-exists]]');
+
+    expect(report.repaired!.links).toHaveLength(1);
+    expect(report.repaired!.links[0]!.how).toBe('unique');
+    expect(report.repaired!.declined.some((entry) => entry.reason.includes('no page'))).toBe(true);
+  });
+
+  it('puts one night of repairs behind one undo', async () => {
+    await withBrokenLinks();
+    const report = await mem.dream({ phase: 'repair' });
+    expect(report.repairChangeId).toBeTruthy();
+
+    await mem.undo({ change_id: report.repairChangeId! });
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toContain('[[Boiler]]');
+  });
+
+  it('changes nothing on a dry run', async () => {
+    await withBrokenLinks();
+    const before = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
+    const report = await mem.dream({ phase: 'repair', dryRun: true });
+
+    expect(report.repaired!.links).toHaveLength(1);
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
+    expect(report.repairChangeId).toBeNull();
+  });
+
+  it('does nothing at all until it is switched on', async () => {
+    // It edits files while nobody is watching, so it ships off.
+    const report = await mem.dream({ phase: 'repair' });
+    expect(report.phases[0]!.skipped).toBe('disabled in config');
+    expect(report.repaired).toBeNull();
+  });
+});
+
 describe('observe', () => {
   it('writes a page with its evidence, marked as derived', async () => {
     server.reply(OBSERVED);

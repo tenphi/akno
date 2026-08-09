@@ -123,6 +123,40 @@ function printDream(report: DreamReport, dryRun: boolean): number {
     }
   }
 
+  if (report.repaired) {
+    const fixed = report.repaired;
+    if (fixed.links.length > 0 || fixed.claims.length > 0) {
+      heading(`Repaired — ${fixed.links.length} link(s), ${fixed.claims.length} claim(s)`);
+      for (const link of fixed.links) {
+        line(
+          `  ${style.grey(link.from)}  [[${link.brokenTarget}]] ${style.green('→')} [[${link.newTarget}]]` +
+            (link.how === 'model' ? style.grey('  (chosen from several)') : ''),
+        );
+      }
+      for (const claim of fixed.claims) {
+        // Both sides, because this rewrote a sentence in the owner's own notes.
+        line(
+          `  ${style.grey(`${claim.slug}:${claim.line}`)}  superseded by ${style.grey(claim.supersededBy)}`,
+        );
+        line(`    ${style.red('was')}  ${truncate(claim.before, 72)}`);
+        line(`    ${style.green('now')}  ${truncate(claim.after, 72)}`);
+      }
+      if (report.repairChangeId) {
+        line(
+          `\n  ${style.grey('all of it undoes together:')} ${style.bold(`akno undo ${report.repairChangeId}`)}`,
+        );
+      }
+    }
+    if (fixed.declined.length > 0) {
+      // What it would not touch, and why. A repair tier that skips silently looks like a broken one.
+      heading(`${fixed.declined.length} left alone`);
+      for (const entry of fixed.declined.slice(0, 10)) {
+        line(`  ${style.grey(truncate(entry.what, 60))}  ${entry.reason}`);
+      }
+      if (fixed.declined.length > 10) line(`  ${style.grey(`… and ${fixed.declined.length - 10} more`)}`);
+    }
+  }
+
   if (report.housekeeping) {
     const house = report.housekeeping;
     heading('Housekeeping');
