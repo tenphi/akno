@@ -319,13 +319,16 @@ describe('repair', () => {
    */
   async function withBrokenLinks(): Promise<void> {
     await mem.close();
+    // The boiler page moved into a subfolder; the links on `appliances` still point where it was.
     fs.writeFileSync(
       path.join(root, 'home/appliances.md'),
-      '---\ntitle: Appliances\n---\n\nSee [[Boiler]] and [[nothing-like-this-exists]].\n',
+      '---\ntitle: Appliances\n---\n\nSee [[Boiler]] and [[nothing-like-this-exists]].\n' +
+        'Also [the boiler](boiler.md) and [the web](https://example.com/boiler).\n',
       'utf8',
     );
+    fs.mkdirSync(path.join(root, 'home/heating'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'home/boiler.md'),
+      path.join(root, 'home/heating/boiler.md'),
       '---\ntitle: Boiler\n---\n\nServiced yearly.\n',
       'utf8',
     );
@@ -338,13 +341,18 @@ describe('repair', () => {
     const report = await mem.dream({ phase: 'repair' });
 
     const page = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
-    expect(page).toContain('[[home/boiler]]');
+    expect(page).toContain('[[home/heating/boiler]]');
     // Nothing could have been meant by the other, so it stays exactly as written rather than being
     // pointed somewhere plausible-looking.
     expect(page).toContain('[[nothing-like-this-exists]]');
 
-    expect(report.repaired!.links).toHaveLength(1);
-    expect(report.repaired!.links[0]!.how).toBe('unique');
+    // Two thirds of a real knowledge base's broken links are markdown, not wikilinks, and their
+    // target is a path relative to the page — so the replacement is recomputed, not pasted.
+    expect(page).toContain('[the boiler](heating/boiler.md)');
+    // An external URL is not a page reference and is never touched.
+    expect(page).toContain('https://example.com/boiler');
+
+    expect(report.repaired!.links.map((entry) => entry.how)).toEqual(['unique', 'unique']);
     expect(report.repaired!.declined.some((entry) => entry.reason.includes('no page'))).toBe(true);
   });
 
@@ -362,7 +370,7 @@ describe('repair', () => {
     const before = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
     const report = await mem.dream({ phase: 'repair', dryRun: true });
 
-    expect(report.repaired!.links).toHaveLength(1);
+    expect(report.repaired!.links).toHaveLength(2);
     expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
     expect(report.repairChangeId).toBeNull();
   });

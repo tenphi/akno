@@ -5,6 +5,7 @@ import { AknoError } from '@akno/protocol';
 import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
+import { normalizeLinkTarget } from '../kb/page.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import {
   actionable,
@@ -43,7 +44,17 @@ import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 
 export type DreamPhase = 'observe' | 'reflect' | 'adopt' | 'conflicts' | 'repair' | 'housekeeping';
 
-// `repair` runs after `conflicts`, because it acts on what that phase judged.
+/**
+ * Order matters twice.
+ *
+ * `repair` runs **after `conflicts`**, because it acts on what that phase judged — without a verdict
+ * there is nothing it may touch.
+ *
+ * It runs **before `housekeeping`**, so the report at the end of a run describes the knowledge base
+ * as it now is. The other way round you would read "48 broken links" and "9 repaired" in one report
+ * and have to subtract. `housekeeping` is not repair's work queue either: its lists are capped for
+ * readability, so a phase that consumed them would silently stop at twenty.
+ */
 export const DREAM_PHASES: DreamPhase[] = [
   'observe',
   'reflect',
@@ -259,12 +270,46 @@ interface SubjectGroup {
  * what the author typed and the index holds what it meant. An alias (`[[target|shown]]`) keeps its
  * shown text: the address was broken, not the words around it.
  */
-function replaceLink(text: string, brokenTarget: string, newTarget: string): string {
-  const wanted = brokenTarget.toLowerCase().replace(/[^a-z0-9]/g, '');
-  return text.replace(/\[\[([^\]|]+)(\|[^\]]*)?\]\]/g, (whole, target: string, alias?: string) => {
-    const seen = target.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return seen === wanted ? `[[${newTarget}${alias ?? ''}]]` : whole;
+function replaceLink(text: string, from: string, brokenTarget: string, newTarget: string): string {
+  const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const wanted = key(brokenTarget);
+
+  const wikilinks = text.replace(/\[\[([^\]|]+)(\|[^\]]*)?\]\]/g, (whole, target: string, alias?: string) =>
+    key(target) === wanted ? `[[${newTarget}${alias ?? ''}]]` : whole,
+  );
+
+  // Markdown links too — `[Tasty](tasty.md)`. Two thirds of this knowledge base's broken links are
+  // written that way, and a repairer that only knew wikilinks declined every one of them as "not on
+  // the page", which was true and unhelpful.
+  //
+  // Their target is a path relative to the page holding it, so the replacement has to be recomputed
+  // from where that page sits — writing the slug in verbatim would produce a link that resolves
+  // somewhere else entirely.
+  const folder = from.includes('/') ? from.slice(0, from.lastIndexOf('/')) : '';
+  return wikilinks.replace(/\]\(([^)\s]+)\)/g, (whole, target: string) => {
+    if (/^[a-z]+:/i.test(target) || target.startsWith('#')) return whole;
+    // Resolved by the indexer's own function, not a copy of it. A copy joined the page's folder
+    // onto every target, where the real rule leaves a path containing a slash alone — so a link
+    // written from the knowledge base root resolved to a slug that existed nowhere, and was
+    // declined as "not on the page" on a page it was plainly on.
+    if (key(normalizeLinkTarget(target, from)) !== wanted) return whole;
+
+    // Written back the way it was written: a target relative to its page stays relative, one
+    // written from the root stays written from the root. Rewriting the style as well as the
+    // address makes a diff nobody asked for.
+    const wasFolderRelative = target.startsWith('../') || target.startsWith('./') || !target.includes('/');
+    return `](${wasFolderRelative ? relativeTo(folder, newTarget) : newTarget}.md)`;
   });
+}
+
+/** The path to write for `target` on a page living in `folder`. */
+function relativeTo(folder: string, target: string): string {
+  const from = folder ? folder.split('/') : [];
+  const to = target.split('/');
+  let shared = 0;
+  while (shared < from.length && shared < to.length && from[shared] === to[shared]) shared += 1;
+  const up = Array.from({ length: from.length - shared }, () => '..');
+  return [...up, ...to.slice(shared)].join('/');
 }
 
 /**
@@ -307,11 +352,15 @@ async function repairPhase(
     const slugs = (ctx.store.db.prepare('SELECT slug FROM pages').all() as { slug: string }[]).map(
       (r) => r.slug,
     );
+    // The same definition `housekeeping` reports on, embeds excluded — an embed is a file, not a
+    // page reference, and repointing one at a page would be nonsense. The indexer never marks them
+    // broken today, so this changes nothing now and stops the two phases disagreeing later about
+    // what "a broken link" is.
     const broken = ctx.store.db
       .prepare(
         `SELECT DISTINCT p.slug AS from_slug, l.to_slug FROM links l
            JOIN pages p ON p.id = l.from_page
-          WHERE l.broken = 1`,
+          WHERE l.broken = 1 AND l.kind != 'embed'`,
       )
       .all() as { from_slug: string; to_slug: string }[];
 
@@ -340,7 +389,7 @@ async function repairPhase(
       // The stored target is normalized; what is on the page is what the author typed —
       // `[[Family/Travel/2026/…]]` against a slug that lost its capitals. Rewriting only exact
       // matches left those as "not on the page", which is true and useless.
-      const next = replaceLink(page.text, link.to_slug, target);
+      const next = replaceLink(page.text, link.from_slug, link.to_slug, target);
       if (next === page.text) {
         result.declined.push({
           what: `[[${link.to_slug}]]`,

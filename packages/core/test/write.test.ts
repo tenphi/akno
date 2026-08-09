@@ -503,3 +503,22 @@ describe('remember without a derive model', () => {
     await mem.close();
   });
 });
+
+describe('a link stops being broken when its page appears', () => {
+  it('re-resolves links on a scoped index, not only a full one', async () => {
+    // Every `write` re-indexes scoped, and link resolution used to be skipped on that path — so a
+    // page created to satisfy a link left the link marked broken until the next full pass. The file
+    // was right and the index disagreed with it.
+    // As the user: an agent creating a new top-level folder is gated, and this test is about links.
+    const mem = await openAs('user');
+    await mem.write({ slug: 'notes/hub', content: 'See [[notes/spoke]].' });
+    let hub = await mem.read({ slug: 'notes/hub' });
+    expect(hub.page!.broken_links).toContain('notes/spoke');
+
+    await mem.write({ slug: 'notes/spoke', content: 'Here.' });
+
+    hub = await mem.read({ slug: 'notes/hub' });
+    expect(hub.page!.broken_links ?? []).not.toContain('notes/spoke');
+    expect(hub.page!.links).toContain('notes/spoke');
+  });
+});

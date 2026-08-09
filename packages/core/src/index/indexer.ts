@@ -229,7 +229,13 @@ export class Indexer {
     }
 
     // Broken-link resolution needs every page present, so it runs last.
-    if (!options.only) this.resolveLinks();
+    //
+    // On a scoped pass too, which it did not used to be. A scoped pass is what every `write` runs,
+    // so creating the page a link pointed at left that link marked broken until the next full index
+    // — the file was right and the index disagreed with it, which is the one thing the index may
+    // not do. It is a single UPDATE over a table with one row per link; scoping it would save
+    // nothing worth the inconsistency.
+    this.resolveLinks();
 
     // ── Model-backed passes ────────────────────────────────────────────────
     // Scoped to the pages this pass touched when the caller named files. Without
