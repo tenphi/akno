@@ -199,7 +199,9 @@ The trip was planned for April 10–12, 2001. [[guides/blackwater-bay]]
       action: 'updated',
       temporal: { source: 'inferred', state: 'past', until: '2001-04-12', archival: true },
     });
-    expect(fs.readFileSync(path.join(root, `${eventSlug}.md`), 'utf8')).toContain('until: "2001-04-12"');
+    const markedBody = fs.readFileSync(path.join(root, `${eventSlug}.md`), 'utf8');
+    expect(markedBody).toContain('until: "2001-04-12"');
+    expect(markedBody).toContain('---\n\n# Blackwater Bay gathering');
     expect(server.userMessages().some((message) => message.includes('Temporal state: past'))).toBe(true);
 
     expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
@@ -301,7 +303,7 @@ async function startStub(): Promise<typeof server> {
       const content = system.includes('verify an automatic Markdown rewrite')
         ? JSON.stringify({ ok: true, issues: [] })
         : echoDraft
-          ? JSON.stringify({ body: currentBody(user), temporal: false })
+          ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
           : JSON.stringify({
               body:
                 '# Ada Marlow\n\n## Details\n\n' +

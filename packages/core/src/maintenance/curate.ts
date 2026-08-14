@@ -158,7 +158,7 @@ a plan happened merely because its date passed, and reject restructuring with no
 post-event knowledge.`;
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-const CURATE_FINGERPRINT_VERSION = 4;
+const CURATE_FINGERPRINT_VERSION = 5;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -316,8 +316,12 @@ export async function curatePages(
       continue;
     }
 
+    const archivalNoop = archival && archiveMeaningKey(body) === archiveMeaningKey(nextBody);
+    if (archivalNoop) nextBody = body;
+
     const maySplit =
       !metadataOnly &&
+      !archivalNoop &&
       row.dream_management === 'synthesize' &&
       Buffer.byteLength(before) >= settings.splitAfterBytes;
     const splits = maySplit
@@ -350,9 +354,10 @@ export async function curatePages(
       continue;
     }
 
-    const verified = metadataOnly
-      ? { ok: true, issues: [], cacheable: true }
-      : await verifyDraft(ctx, row, body, nextBody, splits, evidence, conflicts, temporal, clock, archival);
+    const verified =
+      metadataOnly || archivalNoop
+        ? { ok: true, issues: [], cacheable: true }
+        : await verifyDraft(ctx, row, body, nextBody, splits, evidence, conflicts, temporal, clock, archival);
     if (!verified.ok) {
       result.pages.push({
         slug: row.slug,
@@ -679,6 +684,16 @@ function missingValueContexts(body: string, values: string[]): string[] {
     );
   }
   return contexts;
+}
+
+/** Blank-line cleanup is useful hygiene, but it is not a substantive post-event discovery. */
+function archiveMeaningKey(body: string): string {
+  return body
+    .replaceAll('\r\n', '\n')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => line.length > 0)
+    .join('\n');
 }
 
 interface LinkTargets {
