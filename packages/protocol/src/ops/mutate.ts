@@ -42,7 +42,16 @@ export const RememberOutput = ResultEnvelope.extend({
   requires_folder: z.array(FolderRequired).optional(),
   /** What the retain mission decided was worth keeping, and what it dropped. */
   considered: z
-    .array(z.object({ claim: z.string(), kept: z.boolean(), slug: z.string().nullable(), score: z.number() }))
+    .array(
+      z.object({
+        claim: z.string(),
+        kept: z.boolean(),
+        slug: z.string().nullable(),
+        score: z.number(),
+        /** True only when this candidate's write actually reached disk. */
+        written: z.boolean(),
+      }),
+    )
     .optional(),
 });
 export type RememberOutput = z.infer<typeof RememberOutput>;

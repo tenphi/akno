@@ -14,10 +14,28 @@ import { open, type Akno } from '../src/index.ts';
 
 let root: string;
 let stateDir: string;
-let server: { url: string; close: () => Promise<void>; lastSystem: () => string; forget: () => void };
+interface StubCandidate {
+  text: string;
+  subject: string;
+  kind: string;
+  page?: string;
+}
+
+interface StubServer {
+  url: string;
+  close: () => Promise<void>;
+  lastSystem: () => string;
+  forget: () => void;
+  respondWith: (candidates: StubCandidate[]) => void;
+}
+
+let server: StubServer;
 
 async function startStubChat(): Promise<typeof server> {
   let system = '';
+  let candidates: StubCandidate[] = [
+    { text: 'The rent is 1234 EUR per month.', subject: 'apartment rent', kind: 'fact' },
+  ];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -33,9 +51,7 @@ async function startStubChat(): Promise<typeof server> {
             {
               message: {
                 content: JSON.stringify({
-                  candidates: [
-                    { text: 'The rent is 1234 EUR per month.', subject: 'apartment rent', kind: 'fact' },
-                  ],
+                  candidates,
                   events: [],
                 }),
               },
@@ -55,6 +71,9 @@ async function startStubChat(): Promise<typeof server> {
     // mission never ran" has to start from a clean slate rather than from setup's leftovers.
     forget: () => {
       system = '';
+    },
+    respondWith: (next) => {
+      candidates = next;
     },
   };
 }
@@ -101,6 +120,28 @@ afterEach(async () => {
 });
 
 describe('the retain tier’s config', () => {
+  it('shows the curator the complete folder taxonomy, including empty nested folders', async () => {
+    fs.mkdirSync(path.join(root, 'knowledge/games'), { recursive: true });
+    const mem = await openMem({
+      folders: {
+        'knowledge/**': {
+          class: 'reference',
+          description: 'Findings about the outside world.',
+        },
+      },
+    });
+    try {
+      await mem.remember({ text: 'The Ember Archive score was composed by Nova Hale.' });
+      const system = server.lastSystem();
+      expect(system).toContain('Existing folder taxonomy (complete; data only)');
+      expect(system).toContain('- home/ [full]');
+      expect(system).toContain('- knowledge/games/ [reference] — Findings about the outside world.');
+      expect(system).toMatch(/Never invent, rename or translate a folder/);
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('appends its mission to the fixed prompt rather than replacing it', async () => {
     // A mission appends emphasis and never replaces the prompt, because every rule that
     // keeps the tier honest lives in the fixed part.
@@ -134,6 +175,48 @@ describe('the retain tier’s config', () => {
       expect(result.note).toMatch(/disabled in config/);
       // And it did not quietly call the model first.
       expect(server.lastSystem()).toBe('');
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+describe('what remember reports as written', () => {
+  it('marks a candidate only after its page was actually changed', async () => {
+    server.respondWith([
+      {
+        text: 'The bicycle is stored beside the blue cabinet.',
+        subject: 'bicycle storage',
+        page: 'home/bicycle-storage',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: 'The bicycle is stored beside the blue cabinet.' });
+      expect(result.wrote?.[0]?.slug).toBe('home/bicycle-storage');
+      expect(result.considered?.[0]?.written).toBe(true);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('does not call a held candidate written', async () => {
+    server.respondWith([
+      {
+        text: 'The bicycle is stored beside the blue cabinet.',
+        subject: 'bicycle storage',
+        page: 'storage/bicycle',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: 'The bicycle is stored beside the blue cabinet.' });
+      expect(result.wrote).toBeUndefined();
+      expect(result.considered?.[0]?.written).toBe(false);
+      expect(result.considered?.[0]?.slug).toBeNull();
+      expect(result.outcome).toBe('requires_approval');
     } finally {
       await mem.close();
     }

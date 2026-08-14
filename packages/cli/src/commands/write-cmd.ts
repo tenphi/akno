@@ -284,7 +284,11 @@ export async function rememberCommand(argv: string[]): Promise<number> {
     if (result.considered?.length) {
       heading('Considered');
       for (const entry of result.considered) {
-        const mark = entry.kept ? style.green('keep') : style.yellow('ask ');
+        const mark = entry.written
+          ? style.green('wrote')
+          : entry.kept
+            ? style.yellow('held')
+            : style.yellow('ask ');
         const where = entry.slug
           ? `${entry.slug} ${style.grey(`(${entry.score})`)}`
           : style.grey('no page scored high enough');

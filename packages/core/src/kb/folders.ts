@@ -1,8 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import type { PageClass } from '@akno/protocol';
 import type { AknoConfig } from '../config/schema.ts';
+import type { Store } from '../store/db.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { isReserved } from '../reserved.ts';
+
+export interface FolderCatalogEntry {
+  path: string;
+  class: PageClass;
+  description?: string;
+}
 
 /**
  * Physical folders in the knowledge base, including ones that contain no pages.
@@ -54,4 +62,46 @@ export function physicalFolderExists(config: AknoConfig, folder: string): boolea
   } catch {
     return false;
   }
+}
+
+/**
+ * Every visible folder a curator may choose as a page's parent.
+ *
+ * The catalog deliberately combines three sources. The page index supplies folders with content,
+ * the filesystem supplies empty folders the user made by hand, and rules supply declared folders
+ * that have not received their first page yet. Leaving out any one of them teaches a curator to
+ * invent a parallel taxonomy for exactly the folders whose purpose was stated most explicitly.
+ */
+export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEntry[] {
+  const paths = new Set(physicalFolders(config, { depth: Number.MAX_SAFE_INTEGER }));
+  const rows = store.db.prepare("SELECT slug FROM pages WHERE class != 'excluded' ORDER BY slug").all() as {
+    slug: string;
+  }[];
+
+  for (const { slug } of rows) {
+    const segments = slug.split('/');
+    for (let depth = 1; depth < segments.length; depth++) {
+      paths.add(segments.slice(0, depth).join('/'));
+    }
+  }
+
+  for (const rule of config.rules) {
+    const folderPath = rule.glob.replace(/\/\*+$/, '');
+    if (folderPath.length > 0 && !folderPath.includes('*')) paths.add(folderPath);
+  }
+
+  return [...paths]
+    .filter((folderPath) => {
+      if (isReserved(folderPath, config)) return false;
+      return effectiveRule(`${folderPath}/x`, config.rules).class !== 'excluded';
+    })
+    .sort()
+    .map((folderPath) => {
+      const rule = effectiveRule(`${folderPath}/x`, config.rules);
+      return {
+        path: folderPath,
+        class: rule.class ?? 'full',
+        ...(rule.description ? { description: rule.description } : {}),
+      };
+    });
 }

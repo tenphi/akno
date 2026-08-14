@@ -70,8 +70,8 @@ describe('what survives the retain guards', () => {
  * filesystem, so it is cleaned rather than trusted.
  */
 describe('the suggested page', () => {
-  const pageFor = (raw: unknown): string | undefined =>
-    cleanCandidates([candidate('The rent is 1450 EUR per month.', { page: raw })])[0]?.page;
+  const pageFor = (raw: unknown, folders?: string[]): string | undefined =>
+    cleanCandidates([candidate('The rent is 1450 EUR per month.', { page: raw })], { folders })[0]?.page;
 
   it('takes a well-formed slug as given', () => {
     expect(pageFor('household/rent')).toBe('household/rent');
@@ -96,5 +96,12 @@ describe('the suggested page', () => {
   it('drops a suggestion that cleans down to nothing', () => {
     expect(pageFor('///')).toBeUndefined();
     expect(pageFor('!!!')).toBeUndefined();
+  });
+
+  it('accepts only an exact existing folder when the taxonomy is supplied', () => {
+    const folders = ['home', 'knowledge/games'];
+    expect(pageFor('knowledge/games/ember-archive', folders)).toBe('knowledge/games/ember-archive');
+    expect(pageFor('games/ember-archive', folders)).toBeUndefined();
+    expect(pageFor('knowledge/games/rpg/ember-archive', folders)).toBeUndefined();
   });
 });

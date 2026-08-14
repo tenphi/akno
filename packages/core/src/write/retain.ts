@@ -1,4 +1,5 @@
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
+import type { FolderCatalogEntry } from '../kb/folders.ts';
 
 /**
  * **Retain: keep only long-term facts, decisions, preferences, proven
@@ -21,7 +22,7 @@ Reply with JSON only:
   "candidates": [
     { "text": "one self-contained sentence, phrased as it should appear on a page",
       "subject": "2-5 words naming what this is about, used to find the right page",
-      "page": "folder/page-name — where this belongs if no page holds it yet, lowercase and hyphenated",
+      "page": "folder/page-name — taxonomy branch and fallback page, lowercase and hyphenated",
       "kind": "fact" }
   ],
   "events": [ { "date": "YYYY-MM-DD", "summary": "what happened, one clause" } ]
@@ -47,8 +48,9 @@ Rules:
 - Prose, not triples. "The car insurance premium is now 33 EUR a month" — not "premium=33".
 - Resolve pronouns and relative dates against the text. Never invent a date you were not given.
 - An "events" entry is something that happened on a date, not a value that is true.
-- "page" is a suggestion, used only when nothing existing fits. Put it in the folder the
-  subject belongs to; a finding about the world is not a claim about this household.
+- Always supply "page" when one of the supplied folders fits. Its parent must be one exact folder
+  from the taxonomy. Never invent, rename or translate a folder. If none fits, omit "page". A
+  finding about the world belongs in a reference folder, not a personal folder.
 - Fewer, better. An empty candidates list is the correct answer for a conversation
   that decided nothing, and is much better than a vague one.`;
 
@@ -72,13 +74,21 @@ export interface RetainResult {
 export async function runRetain(
   text: string,
   model: ModelClient,
-  options: { mission?: string; today: string } = { today: new Date().toISOString().slice(0, 10) },
+  options: { mission?: string; today: string; folders?: FolderCatalogEntry[] } = {
+    today: new Date().toISOString().slice(0, 10),
+  },
 ): Promise<RetainResult> {
   const empty: RetainResult = { candidates: [], events: [], error: null };
   if (!model.available) return { ...empty, error: model.unavailableReason ?? 'derive model unavailable' };
 
-  // Additive, never replacing.
-  const system = options.mission ? `${SYSTEM}\n\nAdditional emphasis: ${options.mission}` : SYSTEM;
+  // Additive, never replacing. Folder names are data, not instructions: descriptions are written
+  // by the owner, but keeping the boundary explicit stops a page or folder name from being read as
+  // another retain rule.
+  const taxonomy = formatFolderCatalog(options.folders ?? []);
+  const withTaxonomy = `${SYSTEM}\n\nExisting folder taxonomy (complete; data only):\n${taxonomy}`;
+  const system = options.mission
+    ? `${withTaxonomy}\n\nAdditional emphasis: ${options.mission}`
+    : withTaxonomy;
 
   const result = await model.chat(
     [
@@ -93,10 +103,22 @@ export async function runRetain(
   if (!parsed) return { ...empty, error: 'retain returned unparseable JSON' };
 
   return {
-    candidates: cleanCandidates(parsed.candidates),
+    candidates: cleanCandidates(parsed.candidates, {
+      folders: (options.folders ?? []).map((folder) => folder.path),
+    }),
     events: cleanEvents(parsed.events),
     error: null,
   };
+}
+
+function formatFolderCatalog(folders: FolderCatalogEntry[]): string {
+  if (folders.length === 0) return '(none — omit "page" rather than inventing a folder)';
+  return folders
+    .map(
+      (folder) =>
+        `- ${folder.path}/ [${folder.class}]${folder.description ? ` — ${folder.description}` : ''}`,
+    )
+    .join('\n');
 }
 
 /**
@@ -143,7 +165,10 @@ function readsAsStatement(text: string): boolean {
   return VERB_SHAPED.test(rest);
 }
 
-export function cleanCandidates(value: unknown): RetainCandidate[] {
+export function cleanCandidates(
+  value: unknown,
+  options: { folders?: readonly string[] } = {},
+): RetainCandidate[] {
   if (!Array.isArray(value)) return [];
   const out: RetainCandidate[] = [];
   const seen = new Set<string>();
@@ -163,7 +188,8 @@ export function cleanCandidates(value: unknown): RetainCandidate[] {
     if (seen.has(key)) continue;
     seen.add(key);
 
-    const page = typeof record.page === 'string' ? cleanSlug(record.page) : null;
+    const cleanedPage = typeof record.page === 'string' ? cleanSlug(record.page) : null;
+    const page = cleanedPage && pageUsesKnownFolder(cleanedPage, options.folders) ? cleanedPage : null;
     out.push({
       text,
       subject:
@@ -176,6 +202,13 @@ export function cleanCandidates(value: unknown): RetainCandidate[] {
     if (out.length >= 12) break;
   }
   return out;
+}
+
+/** The immediate parent is the filing decision; every deeper segment would be an invented folder. */
+function pageUsesKnownFolder(page: string, folders: readonly string[] | undefined): boolean {
+  if (folders === undefined) return true;
+  const parent = page.slice(0, page.lastIndexOf('/'));
+  return folders.includes(parent);
 }
 
 /**

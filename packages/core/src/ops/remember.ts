@@ -10,6 +10,7 @@ import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
+import { folderCatalog } from '../kb/folders.ts';
 import { recall } from './recall.ts';
 import { write } from './write.ts';
 
@@ -57,10 +58,12 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   // The caller's mission wins over the install's, because it is the more specific of the two:
   // config states a standing policy, a call states what is true of this text.
   const mission = input.mission ?? ctx.config.maintenance.retain.mission;
+  const catalog = folderCatalog(ctx.config, ctx.store);
 
   const retained = await runRetain(input.text, curator, {
     today: new Date().toISOString().slice(0, 10),
     ...(mission ? { mission } : {}),
+    folders: catalog,
   });
 
   if (retained.error) {
@@ -99,6 +102,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     kept: entry.slug !== null || entry.candidate.page !== undefined,
     slug: entry.slug ?? entry.candidate.page ?? null,
     score: Math.round(entry.score * 1000) / 1000,
+    written: false,
   }));
 
   if (input.dry_run) {
@@ -117,7 +121,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   const changeIds: string[] = [];
   let added = 0;
 
-  for (const entry of routed) {
+  for (const [index, entry] of routed.entries()) {
     // Nothing existing holds this. **A page is created rather than a question filed** —
     // `remember` had no create path at all, so a claim with no home became a proposal, and a
     // proposal is a page nobody writes. It fell hardest on findings about the world: their
@@ -139,6 +143,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
         : { slug: target, append: entry.candidate.text },
     );
     if (result.outcome === 'ok') {
+      considered[index]!.written = true;
       wrote.push(...(result.wrote ?? []));
       if (result.change_id) changeIds.push(result.change_id);
       added += result.facts?.added ?? 0;
@@ -285,7 +290,10 @@ async function route(
   // prose the event parser cannot see. The destination that scores highest is not always a
   // destination.
   const candidates = result.cards.filter(
-    (card) => card.class === 'full' && !isReserved(card.slug, ctx.config),
+    (card) =>
+      card.class === 'full' &&
+      !isReserved(card.slug, ctx.config) &&
+      isInsideSuggestedFolder(card.slug, candidate.page),
   );
 
   // Suggestions are drawn from the same set, not from every card. Offering a `reference` page as
@@ -302,6 +310,21 @@ async function route(
     ? { slug: writable.slug, score: relevance, nearest }
     : { slug: null, score: relevance, nearest };
 }
+
+/**
+ * The retain model chooses the taxonomy branch from the complete folder catalog; recall chooses a
+ * page inside that branch. Letting recall cross the branch boundary turns topical similarity into
+ * ownership — a general music finding can otherwise land on a person's repertoire page.
+ */
+function isInsideSuggestedFolder(slug: string, suggestedPage: string | undefined): boolean {
+  // No taxonomy choice means no automatic destination. The retain prompt asks for one whenever
+  // an existing folder fits; omission is uncertainty, and uncertainty should become a proposal.
+  if (!suggestedPage) return false;
+  const folder = suggestedPage.slice(0, suggestedPage.lastIndexOf('/'));
+  return slug.startsWith(`${folder}/`);
+}
+
+export { isInsideSuggestedFolder as isInsideSuggestedFolderForTesting };
 
 function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: string[]): ApprovalRequest {
   const id = newPrefixedId('prop');

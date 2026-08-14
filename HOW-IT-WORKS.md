@@ -402,8 +402,10 @@ Wrote
 What it does, in order:
 
 1. Reads your text and keeps only what lasts — decisions, values, dates, preferences. Chatter, speculation and
-   anything true only today are dropped.
-2. Searches your notes for where each claim belongs.
+   anything true only today are dropped. The curator receives the complete visible folder taxonomy, including
+   empty and newly declared folders, and may only suggest a page beneath one of those folders.
+2. Searches your notes for where each claim belongs, within the folder the curator selected. A topical match in
+   another taxonomy branch cannot override that filing decision.
 3. Checks for conflicts, exactly as `write` would.
 4. Appends **prose** to the right page — not a row in a table. Facts get derived from that sentence afterwards.
 5. Puts anything dated on the timeline as well, in the same undoable change.
@@ -485,7 +487,7 @@ a `research/` folder, and while the question waited the note was lost. Worse, an
 request may be declined learns to append to whatever page already exists instead — which is how claims land on
 the pages of unrelated subjects.
 
-So **nothing waits on you any more.** What is refused is not the folder but the *silence*: a write into an
+So **nothing waits on you any more.** What is refused is not the folder but the _silence_: a write into an
 undeclared folder comes back asking for a sentence.
 
 ```
@@ -502,7 +504,7 @@ akno folder conversations --description "Chat transcripts: what was said." --cla
 ```
 
 The description is the point of the step. It is returned by `list` and carried in the pre-turn bundle, so it is
-what the *next* caller reads before filing a page — and `research/` versus `household/` is not self-explanatory
+what the _next_ caller reads before filing a page — and `research/` versus `household/` is not self-explanatory
 to anyone who has not been told that one holds findings about the world and the other holds claims about this
 household. `--class reference` is the other load-bearing choice: only claims become facts, so a folder of
 transcripts or legal texts declared `full` gets mined for assertions nobody made.
