@@ -20,6 +20,8 @@ import { housekeeping, type Housekeeping } from './housekeeping.ts';
 import { ModelClient } from '../models/client.ts';
 import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
 import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
+import { curatePages, type CuratedPage } from './curate.ts';
+export type { CuratedPage } from './curate.ts';
 
 /**
  * The maintenance cycle: three tiers, each with a configurable mission.
@@ -42,7 +44,7 @@ import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
  * every phase reports rather than repairs unless writing is the phase's entire purpose.
  */
 
-export type DreamPhase = 'observe' | 'reflect' | 'adopt' | 'conflicts' | 'repair' | 'housekeeping';
+export type DreamPhase = 'observe' | 'reflect' | 'curate' | 'adopt' | 'conflicts' | 'repair' | 'housekeeping';
 
 /**
  * Order matters twice.
@@ -58,6 +60,7 @@ export type DreamPhase = 'observe' | 'reflect' | 'adopt' | 'conflicts' | 'repair
 export const DREAM_PHASES: DreamPhase[] = [
   'observe',
   'reflect',
+  'curate',
   'adopt',
   'conflicts',
   'repair',
@@ -82,6 +85,7 @@ export interface PhaseReport {
 export interface DreamReport {
   phases: PhaseReport[];
   observations: ObservationWritten[];
+  curated: CuratedPage[];
   /** Candidates a guardrail refused, with the guard that refused them. */
   rejected: { pattern: string; reason: string }[];
   /** Documents given a page of their own, and any that were left alone. */
@@ -95,6 +99,7 @@ export interface DreamReport {
   changeId: string | null;
   /** The `adopt` phase's change, kept apart from observe's. */
   adoptChangeId: string | null;
+  curateChangeId: string | null;
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
@@ -120,6 +125,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   const report: DreamReport = {
     phases: [],
     observations: [],
+    curated: [],
     rejected: [],
     adopted: [],
     conflicts: [],
@@ -128,6 +134,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     housekeeping: null,
     changeId: null,
     adoptChangeId: null,
+    curateChangeId: null,
     warnings: [],
     durationMs: 0,
   };
@@ -184,6 +191,20 @@ async function runPhase(
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
       await reflectPhase(ctx, options, report, applied);
+      return null;
+    }
+    case 'curate': {
+      if (!ctx.config.maintenance.curate.enabled) return 'disabled in config';
+      if (!ctx.models.derive.available) {
+        return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
+      }
+      const result = await curatePages(ctx, {
+        dryRun: (options.dryRun ?? false) || !ctx.config.maintenance.curate.write,
+      });
+      report.curated = result.pages;
+      report.curateChangeId = result.changeId;
+      report.warnings.push(...result.warnings);
+      applied.push(...result.files.map((file) => asApplied('curate', file)));
       return null;
     }
     case 'adopt': {
@@ -258,7 +279,7 @@ interface SubjectGroup {
  * The guards that need the knowledge base rather than the text are applied here, before the
  * model sees anything:
  *
- * - **`full` pages only.** A `reference` page is somebody else's words. "Maria prefers X"
+ * - **Knowledge pages only.** A source page is somebody else's words. "Maria prefers X"
  *   inferred from a marketing email she was cc'd on is exactly the failure this must not have.
  * - **Never self-feeding.** An observation is not admissible evidence for another observation.
  *   No inference cascades.
@@ -569,7 +590,7 @@ async function observePhase(
 }
 
 /**
- * Live facts from `full`, non-observation pages, grouped by **folder and subject**.
+ * Live facts from knowledge, non-observation pages, grouped by **folder and subject**.
  *
  * Not by subject alone, which is what the first version did and what a real knowledge base
  * immediately exposed. A small deriver writes the *attribute* into `subject` — "price",
@@ -592,8 +613,8 @@ function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
         WHERE f.valid_to IS NULL
           AND f.subject IS NOT NULL
           AND f.confidence >= 0.5
-          -- Only claims. A reference page is evidence someone else wrote.
-          AND p.class = 'full'
+          -- Only canonical claims. A source page is evidence someone else wrote.
+          AND p.role = 'knowledge'
           -- Never self-feeding. An observation is not evidence for another observation.
           AND p.slug != ?
           AND p.slug NOT LIKE ?

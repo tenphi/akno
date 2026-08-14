@@ -325,6 +325,36 @@ export const MIGRATIONS: string[] = [
   `
   ALTER TABLE change_files ADD COLUMN moved_to TEXT;
   `,
+
+  // ── 7. Independent page role and automatic-management policy ─────────────
+  //
+  // `class` coupled recall shape, fact eligibility and edit authority. Role now says what
+  // the page contributes; management says what automatic curators may do. The index is
+  // disposable, but migrating it in place keeps a redeploy from requiring a cold rebuild.
+  `
+  DROP INDEX IF EXISTS pages_class;
+  ALTER TABLE pages RENAME COLUMN class TO role;
+  ALTER TABLE pages RENAME COLUMN reference_fence_line TO source_fence_line;
+  UPDATE pages SET role = CASE role
+    WHEN 'full' THEN 'knowledge'
+    WHEN 'reference' THEN 'source'
+    WHEN 'excluded' THEN 'ignored'
+    ELSE role
+  END;
+  CREATE INDEX pages_role ON pages(role);
+
+  ALTER TABLE pages ADD COLUMN remember_management TEXT NOT NULL DEFAULT 'deny';
+  ALTER TABLE pages ADD COLUMN dream_management TEXT NOT NULL DEFAULT 'none';
+  ALTER TABLE pages ADD COLUMN about TEXT NOT NULL DEFAULT '[]';
+  ALTER TABLE pages ADD COLUMN aliases TEXT NOT NULL DEFAULT '[]';
+
+  UPDATE chunks SET kind = CASE kind WHEN 'full' THEN 'knowledge' WHEN 'reference' THEN 'source' ELSE kind END;
+
+  -- Managed content carries this stable id in Markdown. Facts derived from a reworded or moved
+  -- unit can follow it instead of manufacturing a supersession on the night it was formatted.
+  ALTER TABLE facts ADD COLUMN item_id TEXT;
+  CREATE INDEX facts_item ON facts(item_id);
+  `,
 ];
 
 /**

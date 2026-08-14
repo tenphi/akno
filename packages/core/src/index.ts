@@ -20,6 +20,7 @@ export {
   type DreamOptions,
   type DreamPhase,
   type DreamReport,
+  type CuratedPage,
   type ObservationWritten,
   type PhaseReport,
 } from './maintenance/dream.ts';
@@ -42,7 +43,7 @@ export {
   type ErrorCode,
   type Line,
   type OpName,
-  type PageClass,
+  type PageRole,
   type RecallMode,
   type ResultStatus,
 } from '@akno/protocol';

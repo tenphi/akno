@@ -10,18 +10,24 @@ import { looksLikeRendition, renditionBody, renditionPathFor, renditionWanted } 
 import { writeFileAtomic } from '../write/atomic.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { hashFile, mapWithConcurrency, scanTree, type ScannedFile } from '../kb/scan.ts';
-import { ATTACHMENT_NAME, parsePage, resolveClass, type ParsedPage } from '../kb/page.ts';
+import {
+  ATTACHMENT_NAME,
+  parsePage,
+  resolvePagePolicy,
+  type ParsedPage,
+  type ResolvedPagePolicy,
+} from '../kb/page.ts';
 import { withId } from '../kb/frontmatter.ts';
 import {
-  applyReferenceFence,
+  applySourceFence,
   chunkDocument,
   chunkPage,
   embeddingText,
   type Chunk,
   type DocumentChunk,
 } from './chunk.ts';
-import { bodyLineHashes, derivePage, summarizeDocument, type DerivedFact } from './derive.ts';
-import { eventId, factId, newPageId, sha256 } from '../store/ids.ts';
+import { bodyItemIds, bodyLineHashes, derivePage, summarizeDocument, type DerivedFact } from './derive.ts';
+import { eventId, factId, managedFactId, newPageId, sha256 } from '../store/ids.ts';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 
@@ -92,7 +98,7 @@ export interface IndexReport {
   renditionsWritten: number;
   eventsIndexed: number;
   factsDerived: number;
-  excluded: number;
+  ignored: number;
   /** Non-fatal problems worth reporting rather than throwing. `doctor` prints these. */
   warnings: string[];
   durationMs: number;
@@ -147,7 +153,7 @@ export class Indexer {
       renditionsWritten: 0,
       eventsIndexed: 0,
       factsDerived: 0,
-      excluded: 0,
+      ignored: 0,
       warnings: [],
       durationMs: 0,
     };
@@ -166,7 +172,7 @@ export class Indexer {
     const known = this.knownFiles();
 
     // ── Rule changes ───────────────────────────────────────────────────────
-    // A rule edit is not a file edit. Without this, adding `class: excluded` to a folder
+    // A rule edit is not a file edit. Without this, assigning `role: ignored` to a folder
     // and re-indexing reports "223 pages unchanged" and leaves those pages indexed,
     // searchable and asserted as facts — the config silently doing nothing, which is
     // exactly the failure Akno exists to avoid. A `--only` pass sees a fraction of the
@@ -299,40 +305,34 @@ export class Indexer {
   }
 
   /**
-   * Pages whose class moved because the *rules* moved, not because the file did.
+   * Pages whose policy may have moved because the *rules* moved, not because the file did.
    *
    * The resolved rules are fingerprinted in `meta`. While the fingerprint holds this is
    * one query that finds nothing; when it moves, every page is re-resolved and the ones
-   * that changed class are handed back to be re-indexed. Their derivations are dropped in
-   * the same breath: a page that just became `reference` was fact-mined under the old
+   * are handed back to be re-indexed. Their derivations are dropped in the same breath:
+   * a page that just became `source` was fact-mined under the old
    * rule, and those facts assert claims the rules now say it never made.
    *
-   * A class declared in frontmatter wins over any rule, so such a page cannot be
-   * moved by a rule edit and is left alone.
+   * Re-indexing all pages on the rare rule change is deliberate: rules also supply
+   * management and about metadata, so comparing only role would leave policy stale.
    */
   private reclassify(report: IndexReport): Set<string> {
     const fingerprint = sha256(JSON.stringify(this.#config.rules));
     if (this.#store.meta(RULES_FINGERPRINT) === fingerprint) return new Set();
 
-    const rows = this.#store.db.prepare('SELECT id, slug, rel_path, class, frontmatter FROM pages').all() as {
+    const rows = this.#store.db.prepare('SELECT id, rel_path FROM pages').all() as {
       id: string;
-      slug: string;
       rel_path: string;
-      class: string;
-      frontmatter: string;
     }[];
 
     const moved = new Set<string>();
     const clearDerived = this.#store.db.prepare('UPDATE pages SET derived_hash = NULL WHERE id = ?');
     for (const row of rows) {
-      const declared = declaredClassOf(row.frontmatter);
-      if (declared) continue;
-      if (this.classFor(row.slug) === row.class) continue;
       moved.add(row.rel_path);
       clearDerived.run(row.id);
     }
 
-    // A page the rules excluded has no `pages` row at all — that is what excluded means.
+    // An ignored page has no `pages` row at all — that is what ignored means.
     // Walking only `pages` would therefore make exclusion a one-way door: deleting the
     // rule would leave the file recorded, unchanged on disk, and permanently invisible.
     const dropped = this.#store.db
@@ -340,7 +340,7 @@ export class Indexer {
       .all() as { rel_path: string }[];
     for (const row of dropped) {
       const slug = row.rel_path.replace(/\.(md|markdown)$/i, '');
-      if (this.classFor(slug) === 'excluded') continue;
+      if (this.policyFor(slug).role === 'ignored') continue;
       moved.add(row.rel_path);
     }
 
@@ -348,7 +348,7 @@ export class Indexer {
       // Default to visible: a pass that quietly re-indexed a third of the knowledge
       // base because a rule changed should say so.
       report.warnings.push(
-        `the rules changed since the last pass: ${moved.size} page(s) changed class and were re-indexed`,
+        `the rules changed since the last pass: ${moved.size} page policy/policies were re-indexed`,
       );
     }
     this.#store.setMeta(RULES_FINGERPRINT, fingerprint);
@@ -397,10 +397,14 @@ export class Indexer {
     return [...this.#config.ignore, KB_RULES_FILE];
   }
 
-  /** The class the current rules give a slug, ignoring what the page itself declares. */
-  private classFor(slug: string): string {
+  /** The policy current rules give a slug, ignoring page-local declarations. */
+  private policyFor(slug: string): ResolvedPagePolicy {
     const rule = effectiveRule(slug, this.#config.rules);
-    return resolveClass({ slug, declaredClass: null }, rule, this.#config.paths.observations).class;
+    return resolvePagePolicy(
+      { slug, declaredRole: null, declaredManagement: {}, about: [], aliases: [] },
+      rule,
+      this.#config.paths.observations,
+    );
   }
 
   // ─── Files table ──────────────────────────────────────────────────────────
@@ -493,36 +497,34 @@ export class Indexer {
     const content = await fsp.readFile(file.absPath, 'utf8');
     const page = parsePage(file.relPath, content);
     const rule = effectiveRule(page.slug, this.#config.rules);
-    const resolved = resolveClass(page, { ...rule, glob: rule.glob }, this.#config.paths.observations);
+    const resolved = resolvePagePolicy(page, { ...rule, glob: rule.glob }, this.#config.paths.observations);
 
-    if (resolved.class === 'excluded') {
-      // An excluded page must leave nothing behind, including from a pass that
+    if (resolved.role === 'ignored') {
+      // An ignored page must leave nothing behind, including from a pass that
       // ran before the rule existed.
       const existing = this.pageIdForPath(file.relPath);
       if (existing) this.removePage(existing);
       this.recordFile(file, null);
-      report.excluded++;
+      report.ignored++;
       return;
     }
 
     const pageId = this.resolvePageId(page, file);
-    const chunks = applyReferenceFence(
+    const chunks = applySourceFence(
       chunkPage(page, {
         targetChars: this.#config.index.chunkTargetChars,
         maxChars: this.#config.index.chunkMaxChars,
         overlapChars: this.#config.index.chunkOverlapChars,
       }),
-      page.referenceFenceLine,
+      page.sourceFenceLine,
     );
 
-    // A `reference` page is evidence from top to bottom, fence or no fence.
+    // A `source` page is evidence from top to bottom, fence or no fence.
     const effectiveChunks =
-      resolved.class === 'reference'
-        ? chunks.map((chunk) => ({ ...chunk, kind: 'reference' as const }))
-        : chunks;
+      resolved.role === 'source' ? chunks.map((chunk) => ({ ...chunk, kind: 'source' as const })) : chunks;
 
     this.#store.transaction(() => {
-      this.upsertPage(pageId, page, resolved.class, file);
+      this.upsertPage(pageId, page, resolved, file);
       this.replaceChunks(pageId, effectiveChunks);
       this.replaceEvents(pageId, page);
       this.replaceLinks(pageId, page);
@@ -604,21 +606,25 @@ export class Indexer {
     }
   }
 
-  private upsertPage(pageId: string, page: ParsedPage, pageClass: string, file: ScannedFile): void {
+  private upsertPage(pageId: string, page: ParsedPage, policy: ResolvedPagePolicy, file: ScannedFile): void {
     const existing = this.#store.db.prepare('SELECT created_at FROM pages WHERE id = ?').get(pageId) as
       { created_at: string | null } | undefined;
 
     this.#store.db
       .prepare(
         `INSERT INTO pages(
-           id, slug, rel_path, title, type, tags, class, frontmatter, body_hash,
-           reference_fence_line, body_line, line_count, bytes, created_at, updated_at, indexed_at
-         ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           id, slug, rel_path, title, type, tags, role, remember_management, dream_management,
+           about, aliases, frontmatter, body_hash, source_fence_line, body_line, line_count,
+           bytes, created_at, updated_at, indexed_at
+         ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            slug = excluded.slug, rel_path = excluded.rel_path, title = excluded.title,
-           type = excluded.type, tags = excluded.tags, class = excluded.class,
+           type = excluded.type, tags = excluded.tags, role = excluded.role,
+           remember_management = excluded.remember_management,
+           dream_management = excluded.dream_management,
+           about = excluded.about, aliases = excluded.aliases,
            frontmatter = excluded.frontmatter, body_hash = excluded.body_hash,
-           reference_fence_line = excluded.reference_fence_line, body_line = excluded.body_line,
+           source_fence_line = excluded.source_fence_line, body_line = excluded.body_line,
            line_count = excluded.line_count, bytes = excluded.bytes,
            updated_at = excluded.updated_at, indexed_at = excluded.indexed_at`,
       )
@@ -629,10 +635,14 @@ export class Indexer {
         page.title,
         page.type,
         JSON.stringify(page.tags),
-        pageClass,
+        policy.role,
+        policy.remember,
+        policy.dream,
+        JSON.stringify(policy.about),
+        JSON.stringify(page.aliases),
         JSON.stringify(page.frontmatter.data),
         page.bodyHash,
-        page.referenceFenceLine,
+        page.sourceFenceLine,
         page.bodyLine,
         page.lines.length,
         file.size,
@@ -1278,7 +1288,7 @@ export class Indexer {
   }
 
   /**
-   * A document's chunks are `reference`: evidence, quoted in a capped
+   * A document's chunks are `source`: evidence, quoted in a capped
    * window, never mined for facts. A contract is not the household asserting its terms.
    */
   private replaceDocumentChunks(
@@ -1292,7 +1302,7 @@ export class Indexer {
     const insert = this.#store.db.prepare(
       `INSERT INTO chunks(page_id, document_id, doc_page, ord, kind, heading_path, text,
                           line_start, line_end, embedded)
-       VALUES(?, ?, ?, ?, 'reference', '', ?, 0, 0, 0)`,
+       VALUES(?, ?, ?, ?, 'source', '', ?, 0, 0, 0)`,
     );
     const insertFts = this.#store.db.prepare(
       'INSERT INTO chunks_fts(rowid, text, heading_path) VALUES(?, ?, ?)',
@@ -1339,7 +1349,7 @@ export class Indexer {
       const texts = batch.map((chunk) =>
         embeddingText({
           ord: 0,
-          kind: 'full',
+          kind: 'knowledge',
           headingPath: chunk.heading_path,
           text: chunk.text,
           lineStart: 0,
@@ -1384,15 +1394,13 @@ export class Indexer {
     if (!this.#models.derive.available) return;
     if (scope && scope.size === 0) return;
 
-    // No eligibility list — every `full` page is a candidate. A `reference`
-    // page is summarized but never fact-mined; `derivePage` enforces that by
-    // reading only above the fence, and a fully-reference page has no mineable
-    // region at all.
+    // Every indexed page may be summarized, but only canonical knowledge pages
+    // assert facts. Source and inference pages remain retrievable evidence.
     const scopeClause = scope ? ` AND id IN (${[...scope].map(() => '?').join(',')})` : '';
     const pending = this.#store.db
       .prepare(
-        `SELECT id, slug, rel_path, body_hash, class FROM pages
-          WHERE class != 'excluded' AND (? = 1 OR derived_hash IS NULL OR derived_hash != body_hash)
+        `SELECT id, slug, rel_path, body_hash, role FROM pages
+          WHERE role != 'ignored' AND (? = 1 OR derived_hash IS NULL OR derived_hash != body_hash)
           ${scopeClause}
           ORDER BY updated_at DESC`,
       )
@@ -1401,7 +1409,7 @@ export class Indexer {
       slug: string;
       rel_path: string;
       body_hash: string;
-      class: string;
+      role: string;
     }[];
     if (pending.length === 0) return;
 
@@ -1413,11 +1421,9 @@ export class Indexer {
       try {
         const content = await fsp.readFile(path.join(this.#config.aknoPath, row.rel_path), 'utf8');
         const page = parsePage(row.rel_path, content);
-        const isReference = row.class === 'reference';
         const derived = await derivePage(page, this.#models.derive, {
           summaries: wantSummaries,
-          // A reference page is evidence. Only claims become facts.
-          facts: wantFacts && !isReference,
+          facts: wantFacts && row.role === 'knowledge',
         });
 
         if (derived.error) {
@@ -1428,7 +1434,7 @@ export class Indexer {
             this.#store.db
               .prepare('UPDATE pages SET summary = ?, keywords = ?, derived_hash = ? WHERE id = ?')
               .run(derived.summary, JSON.stringify(derived.keywords), row.body_hash, row.id);
-            this.replaceFacts(row.id, derived.facts, bodyLineHashes(page));
+            this.replaceFacts(row.id, derived.facts, bodyLineHashes(page), bodyItemIds(page));
           });
           report.pagesDerived++;
           report.factsDerived += derived.facts.length;
@@ -1460,30 +1466,40 @@ export class Indexer {
    *
    * `presentLines` therefore comes from **the page**, not from the incoming facts. Read
    * from the facts, an empty derivation looks like every source line vanishing at once, so
-   * a page that merely became `reference` — or one where a small model returned no facts
+   * a page that merely became `source` — or one where a small model returned no facts
    * this time — retired its whole history as superseded on lines nobody had touched.
    */
-  private replaceFacts(pageId: string, facts: DerivedFact[], presentLines: Set<string>): void {
+  private replaceFacts(
+    pageId: string,
+    facts: DerivedFact[],
+    presentLines: Set<string>,
+    presentItems: Set<string>,
+  ): void {
     const now = nowIso();
     const today = now.slice(0, 10);
 
     const existing = this.#store.db
-      .prepare('SELECT id, source_line_hash FROM facts WHERE page_id = ?')
-      .all(pageId) as { id: string; source_line_hash: string }[];
-    const incomingIds = new Set(facts.map((fact) => factId(pageId, fact.sourceLineHash, fact.claim)));
+      .prepare('SELECT id, source_line_hash, item_id FROM facts WHERE page_id = ?')
+      .all(pageId) as { id: string; source_line_hash: string; item_id: string | null }[];
+    const idFor = (fact: DerivedFact): string =>
+      fact.itemId ? managedFactId(fact.itemId) : factId(pageId, fact.sourceLineHash, fact.claim);
+    const incomingIds = new Set(facts.map(idFor));
 
     const insert = this.#store.db.prepare(
       `INSERT INTO facts(id, page_id, claim, subject, attribute, value, line_start, line_end,
-                         source_line_hash, confidence, valid_from, valid_to, first_seen, last_seen)
-       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
+                         source_line_hash, item_id, confidence, valid_from, valid_to, first_seen, last_seen)
+       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
+         page_id = excluded.page_id, claim = excluded.claim, subject = excluded.subject,
+         attribute = excluded.attribute, value = excluded.value,
          line_start = excluded.line_start, line_end = excluded.line_end,
+         source_line_hash = excluded.source_line_hash, item_id = excluded.item_id,
          confidence = excluded.confidence, last_seen = excluded.last_seen, valid_to = NULL`,
     );
 
     for (const fact of facts) {
       insert.run(
-        factId(pageId, fact.sourceLineHash, fact.claim),
+        idFor(fact),
         pageId,
         fact.claim,
         fact.subject,
@@ -1492,6 +1508,7 @@ export class Indexer {
         fact.line,
         fact.line,
         fact.sourceLineHash,
+        fact.itemId,
         fact.confidence,
         today,
         now,
@@ -1503,7 +1520,8 @@ export class Indexer {
     const drop = this.#store.db.prepare('DELETE FROM facts WHERE id = ?');
     for (const row of existing) {
       if (incomingIds.has(row.id)) continue;
-      if (presentLines.has(row.source_line_hash)) drop.run(row.id);
+      if ((row.item_id && presentItems.has(row.item_id)) || presentLines.has(row.source_line_hash))
+        drop.run(row.id);
       else retire.run(today, row.id);
     }
   }
@@ -1559,21 +1577,6 @@ const RULES_FINGERPRINT = 'rules_fingerprint';
 
 /** The same, for the settings that decide which documents get a `.txt` beside them. */
 const RENDITION_FINGERPRINT = 'rendition_fingerprint';
-
-/**
- * The class a page declares in its own frontmatter, if any. Read from the stored
- * frontmatter rather than the file, because this runs over every page on a rule change
- * and re-reading the tree to answer "did anything move" would cost more than the move.
- */
-function declaredClassOf(frontmatter: string): string | null {
-  try {
-    const parsed = JSON.parse(frontmatter) as { class?: unknown };
-    const declared = typeof parsed.class === 'string' ? parsed.class : null;
-    return declared === 'full' || declared === 'reference' || declared === 'excluded' ? declared : null;
-  } catch {
-    return null;
-  }
-}
 
 interface DocumentPartRow {
   id: string;

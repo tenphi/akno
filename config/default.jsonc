@@ -197,9 +197,9 @@
     "candidates_per_arm": 60,
     // Lines of body returned per card in lookup mode.
     "line_window": 6,
-    // Hard cap on what a `reference` page contributes unprompted. A guess, not a
+    // Hard cap on what a `source` page contributes unprompted. A guess, not a
     // measurement.
-    "reference_quote_lines": 6,
+    "source_quote_lines": 6,
     // Query expansion — off means the query is searched verbatim.
     "expansion": true,
     // Expansion is optional, so it gets its own short deadline rather than the
@@ -208,9 +208,9 @@
     "expansion_timeout_ms": 4000,
     // Multiplied into the final score at assembly, not at search.
     "rank": {
-      "full": 1,
-      "reference": 0.85,
-      "observation": 0.6
+      "knowledge": 1,
+      "source": 0.85,
+      "inference": 0.6
     }
   },
 
@@ -227,8 +227,8 @@
   },
 
   // ─── The maintenance cycle ────────────────────────────────────────────────
-  // Three tiers: retain → observe → reflect. `akno dream` runs the cycle;
-  // phases are independent and each is safe to re-run.
+  // Retain runs per turn; observe, reflect and curate run in `akno dream`.
+  // Phases are independent and each is safe to re-run.
   //
   // A **mission** appends emphasis to a fixed system prompt and never replaces
   // it. That is a guardrail, not a convenience: every rule that keeps an
@@ -287,6 +287,20 @@
     "reflect": {
       "enabled": false,
       "mission": null
+    },
+    // Page-owned curation. Only knowledge pages with an explicit frontmatter
+    // `akno.management.dream` of `hygiene` or `synthesize` are candidates.
+    // The draft is checked by a second model pass and deterministic guards.
+    // Enabling the phase still previews: `write` is a separate trust switch.
+    "curate": {
+      "enabled": false,
+      "write": false,
+      "verify": true,
+      "max_pages": 8,
+      "max_splits": 3,
+      "max_children_per_page": 2,
+      "split_after_bytes": 16384,
+      "split_section_bytes": 8192
     },
     // Give a document that no page owns a page of its own, beside the file, from
     // the summary extraction already produced. Without this its text is indexed
@@ -374,8 +388,8 @@
 
   // ─── Rules ────────────────────────────────────────────────────────────────
   // Glob-scoped, most-specific-wins. Empty by default: Akno ships no folder
-  // taxonomy. A knowledge base with no rules at all works — every page is
-  // `full`. Rules at `<akno_path>/akno.json` win over these, so they can
+  // taxonomy. A knowledge base with no rules at all works — every page has the
+  // `knowledge` role. Rules at `<akno_path>/akno.json` win over these, so they can
   // travel with the notes.
   //
   // `route: true` is what turns a folder into an inbox: files dropped there are

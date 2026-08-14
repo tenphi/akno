@@ -10,7 +10,7 @@ const LIST_HELP = `akno list [options]
   --folder <path>     Scope to a folder.
   --type <t>          Filter pages by frontmatter type.
   --tag <t>           Filter pages by tag.
-  --class <c>         full | reference | excluded
+  --role <r>          knowledge | source | inference | ignored
   --order <o>         recent | slug | size
   --depth <n>         Tree depth.
   --limit <n>
@@ -22,7 +22,7 @@ export async function listCommand(argv: string[]): Promise<number> {
     folder?: string;
     type?: string;
     tag?: string;
-    class?: string;
+    role?: string;
     order?: string;
     depth?: string;
     limit?: string;
@@ -31,7 +31,7 @@ export async function listCommand(argv: string[]): Promise<number> {
     folder: { type: 'string' },
     type: { type: 'string' },
     tag: { type: 'string' },
-    class: { type: 'string' },
+    role: { type: 'string' },
     order: { type: 'string' },
     depth: { type: 'string' },
     limit: { type: 'string' },
@@ -49,7 +49,7 @@ export async function listCommand(argv: string[]): Promise<number> {
       ...(values.folder ? { folder: values.folder } : {}),
       ...(values.type ? { type: values.type } : {}),
       ...(values.tag ? { tag: values.tag } : {}),
-      ...(values.class ? { class: values.class as 'full' | 'reference' | 'excluded' } : {}),
+      ...(values.role ? { role: values.role as 'knowledge' | 'source' | 'inference' | 'ignored' } : {}),
       ...(values.order ? { order: values.order as 'recent' | 'slug' | 'size' } : {}),
       ...(values.depth ? { depth: Number(values.depth) } : {}),
       ...(values.limit ? { limit: Number(values.limit) } : {}),
@@ -69,7 +69,7 @@ export async function listCommand(argv: string[]): Promise<number> {
       heading(`${result.total} folder${result.total === 1 ? '' : 's'}`);
       const width = Math.max(8, ...result.folders.map((f) => f.path.length));
       for (const folder of result.folders) {
-        const rule = folder.rule ? style.grey(`  ${folder.rule.class ?? ''} ← ${folder.rule.source}`) : '';
+        const rule = folder.rule ? style.grey(`  ${folder.rule.role ?? ''} ← ${folder.rule.source}`) : '';
         line(
           `  ${folder.path.padEnd(width)}  ${style.grey(`${folder.pages_deep} pages`)}` +
             `${folder.folders > 0 ? style.grey(`, ${folder.folders} folders`) : ''}${rule}`,
@@ -85,7 +85,7 @@ export async function listCommand(argv: string[]): Promise<number> {
     const width = Math.max(8, ...pages.map((p) => p.slug.length));
     for (const page of pages) {
       line(
-        `  ${page.slug.padEnd(width)}  ${style.grey(page.class.padEnd(9))}` +
+        `  ${page.slug.padEnd(width)}  ${style.grey(page.role.padEnd(9))}` +
           `${style.grey((page.updated ?? '').padEnd(11))}${truncate(page.summary ?? page.title, 70)}`,
       );
     }

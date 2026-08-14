@@ -18,7 +18,8 @@ const entry = {
   glob: 'research/**',
   rule: {
     description: 'Findings about the world, not claims about this household.',
-    class: 'reference' as const,
+    role: 'source' as const,
+    remember: 'deny' as const,
   },
 };
 
@@ -36,7 +37,7 @@ describe('adding a folder rule', () => {
       '  // Rules for this knowledge base.',
       '  "folders": {',
       '    // Chat transcripts: what was *said*, including options dropped.',
-      '    "conversations/**": { "class": "reference" }',
+      '    "conversations/**": { "role": "source" }',
       '  }',
       '}',
       '',
@@ -45,24 +46,18 @@ describe('adding a folder rule', () => {
     const after = addFolderRule(before, entry);
     expect(after).toContain('// Rules for this knowledge base.');
     expect(after).toContain('// Chat transcripts: what was *said*, including options dropped.');
-    expect(after).toContain('"conversations/**": { "class": "reference" }');
+    expect(after).toContain('"conversations/**": { "role": "source" }');
     expect(parse(after).folders).toHaveProperty(['research/**']);
   });
 
   it('adds the comma the previous rule was missing', () => {
-    const after = addFolderRule(
-      '{\n  "folders": {\n    "wiki/**": { "class": "reference" }\n  }\n}\n',
-      entry,
-    );
-    expect(after).toContain('"wiki/**": { "class": "reference" },');
+    const after = addFolderRule('{\n  "folders": {\n    "wiki/**": { "role": "source" }\n  }\n}\n', entry);
+    expect(after).toContain('"wiki/**": { "role": "source" },');
     expect(parse(after).folders).toHaveProperty(['wiki/**']);
   });
 
   it('does not add a second comma when the block already ends in one', () => {
-    const after = addFolderRule(
-      '{\n  "folders": {\n    "wiki/**": { "class": "reference" },\n  }\n}\n',
-      entry,
-    );
+    const after = addFolderRule('{\n  "folders": {\n    "wiki/**": { "role": "source" },\n  }\n}\n', entry);
     expect(after).not.toContain(',,');
     expect(parse(after).folders).toHaveProperty(['research/**']);
   });
@@ -73,7 +68,7 @@ describe('adding a folder rule', () => {
     const before = [
       '{',
       '  "folders": {',
-      '    "wiki/**": { "class": "reference" }',
+      '    "wiki/**": { "role": "source" }',
       '    // Everything above is evidence, never mined for facts. Do not add a } here.',
       '  }',
       '}',
@@ -82,7 +77,7 @@ describe('adding a folder rule', () => {
 
     const after = addFolderRule(before, entry);
     const lines = after.split('\n');
-    expect(lines[2]).toBe('    "wiki/**": { "class": "reference" },');
+    expect(lines[2]).toBe('    "wiki/**": { "role": "source" },');
     expect(lines[3]).toBe('    // Everything above is evidence, never mined for facts. Do not add a } here.');
     expect(parse(after).folders).toHaveProperty(['research/**']);
   });
@@ -101,7 +96,7 @@ describe('adding a folder rule', () => {
   it('creates a commented file when there is none yet', () => {
     const after = addFolderRule(null, entry);
     expect(after).toContain('// Rules for this knowledge base.');
-    expect(after).toContain('reference  indexed and searchable');
+    expect(after).toContain('source     searchable evidence');
     expect(Object.keys(parse(after).folders!)).toEqual(['research/**']);
   });
 
@@ -110,7 +105,7 @@ describe('adding a folder rule', () => {
       '{',
       '  "maintenance": { "observe": { "folders": { "ignored": true } } },',
       '  "folders": {',
-      '    "wiki/**": { "class": "reference" }',
+      '    "wiki/**": { "role": "source" }',
       '  }',
       '}',
       '',

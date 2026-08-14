@@ -76,7 +76,7 @@ export async function indexCommand(argv: string[]): Promise<number> {
       ['pages unchanged', report.pagesUnchanged],
       ['pages renamed', report.pagesRenamed > 0 ? report.pagesRenamed : '-'],
       ['pages removed', report.pagesRemoved > 0 ? report.pagesRemoved : '-'],
-      ['excluded by rule', report.excluded > 0 ? report.excluded : '-'],
+      ['ignored by role', report.ignored > 0 ? report.ignored : '-'],
       ['chunks written', report.chunksWritten],
       ['chunks embedded', report.chunksEmbedded],
       ['pages summarized', report.pagesDerived],

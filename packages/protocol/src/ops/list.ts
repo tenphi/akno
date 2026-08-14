@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { PageClass, ResultEnvelope } from '../common.ts';
+import { PageRole, ResultEnvelope } from '../common.ts';
 
-/** Browse structure: folders, or pages by type / tag / class / recency. */
+/** Browse structure: folders, or pages by type / tag / role / recency. */
 export const ListInput = z.object({
   folder: z.string().optional(),
   type: z.string().optional(),
   tag: z.string().optional(),
-  class: PageClass.optional(),
+  role: PageRole.optional(),
   /** `folders` walks the tree one level; `pages` lists page stubs. */
   kind: z.enum(['folders', 'pages', 'tree']).optional(),
   order: z.enum(['recent', 'slug', 'size']).optional(),
@@ -20,7 +20,7 @@ export const PageStub = z.object({
   slug: z.string(),
   title: z.string(),
   type: z.string().nullable(),
-  class: PageClass,
+  role: PageRole,
   tags: z.array(z.string()).optional(),
   summary: z.string().nullable().optional(),
   updated: z.string().optional(),
@@ -37,7 +37,8 @@ export const FolderStub = z.object({
   /** The rule that governs this folder, and where it came from. */
   rule: z
     .object({
-      class: PageClass.optional(),
+      role: PageRole.optional(),
+      remember: z.enum(['deny', 'integrate']).optional(),
       /**
        * What belongs in this folder, as its rule states it. This is the field that lets a
        * caller choose a destination by reading rather than by guessing from a name: `research`

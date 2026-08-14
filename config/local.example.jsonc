@@ -60,12 +60,18 @@
   // which wins over both config files. Glob-scoped, most-specific-wins.
   // `akno rules <path>` prints which rule won and why.
   "folders": {
-    // "reference/**": { "class": "reference", "ingest": "document" },
-    // "conversations/**": { "class": "reference", "rank": 0.5 },
-    // "templates/**": { "class": "excluded" },
+    // "sources/**": { "role": "source", "remember": "deny", "ingest": "document" },
+    // "conversations/**": { "role": "source", "remember": "deny", "rank": 0.5 },
+    // "templates/**": { "role": "ignored", "remember": "deny" },
     //
     // An inbox: drop anything here and it files itself. `route: true` is what makes
     // it one, and it is the only place Akno moves files.
     // "inbox/**": { "ingest": "auto", "route": true }
+  },
+
+  // Curate only considers pages that explicitly opt in through their own frontmatter.
+  // Leave `write` false while reviewing previews from `akno dream --phase curate`.
+  "maintenance": {
+    "curate": { "enabled": false, "write": false, "verify": true }
   }
 }

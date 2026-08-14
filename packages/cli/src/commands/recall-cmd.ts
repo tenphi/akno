@@ -13,8 +13,8 @@ const RECALL_HELP = `akno recall <query> [options]
   --depth <d>         summary | lines | full
   --limit <n>         Maximum cards.
   --budget <n>        Token budget for the whole response.
-  --include <c,...>   Page classes to include, e.g. reference. With --depth full
-                      this lifts the reference quote cap.
+  --include <r,...>   Page roles to include, e.g. source. With --depth full
+                      this lifts the source quote cap.
   --folder <path>     Restrict to a folder.
   --type <t>          Restrict to a frontmatter type.
   --tag <t,...>       Restrict to pages carrying all of these tags.
@@ -63,7 +63,11 @@ export async function recallCommand(argv: string[]): Promise<number> {
       ...(values.limit ? { limit: Number(values.limit) } : {}),
       ...(values.budget ? { budget: Number(values.budget) } : {}),
       ...(values.include
-        ? { include: values.include.split(',').map((c) => c.trim()) as ('full' | 'reference' | 'excluded')[] }
+        ? {
+            include: values.include.split(',').map((c) => c.trim()) as (
+              'knowledge' | 'source' | 'inference' | 'ignored'
+            )[],
+          }
         : {}),
       ...(Object.keys(filter).length > 0 ? { filter } : {}),
     });
@@ -121,14 +125,14 @@ function printRecall(result: {
   }
 
   for (const card of result.cards) {
-    heading(`${card.slug} ${style.grey(`(${card.class}, ${card.score.toFixed(3)})`)}`);
+    heading(`${card.slug} ${style.grey(`(${card.role}, ${card.score.toFixed(3)})`)}`);
     if (card.breadcrumb) line(`  ${style.cyan(card.breadcrumb)}`);
     if (card.summary) line(`  ${truncate(card.summary, 150)}`);
     for (const bodyLine of card.lines) {
       const confidence = bodyLine.confidence !== undefined ? style.grey(` ~${bodyLine.confidence}`) : '';
       line(`  ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 110)}${confidence}`);
     }
-    if (card.truncated) line(style.grey('  … quote window capped (reference page)'));
+    if (card.truncated) line(style.grey('  … quote window capped (source page)'));
     for (const entry of card.superseded ?? []) {
       line(style.yellow(`  superseded: ${truncate(entry.claim, 90)} (until ${entry.valid_to})`));
     }

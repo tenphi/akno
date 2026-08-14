@@ -1,4 +1,4 @@
-import { RecallInput, type DegradedReason, type PageClass, type RecallOutput } from '@akno/protocol';
+import { RecallInput, type DegradedReason, type PageRole, type RecallOutput } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 import { indexDegradation } from '../context.ts';
 import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
@@ -144,7 +144,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     limit,
     budget,
     concepts: dedupe(allConcepts),
-    include: (input.include as PageClass[] | undefined) ?? null,
+    include: (input.include as PageRole[] | undefined) ?? null,
   });
 
   for (const reason of indexDegradation(ctx.store)) degraded.add(reason);
@@ -186,7 +186,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
 function resolveFilter(ctx: AknoContext, input: ReturnType<typeof RecallInput.parse>): Set<string> | null {
   const filter = input.filter;
   const hasFilter = Boolean(
-    filter?.folder || filter?.type || filter?.tags?.length || filter?.class || input.since || input.until,
+    filter?.folder || filter?.type || filter?.tags?.length || filter?.role || input.since || input.until,
   );
   if (!hasFilter) return null;
 
@@ -201,9 +201,9 @@ function resolveFilter(ctx: AknoContext, input: ReturnType<typeof RecallInput.pa
     clauses.push('type = ?');
     params.push(filter.type);
   }
-  if (filter?.class) {
-    clauses.push('class = ?');
-    params.push(filter.class);
+  if (filter?.role) {
+    clauses.push('role = ?');
+    params.push(filter.role);
   }
   if (input.since) {
     clauses.push('updated_at >= ?');

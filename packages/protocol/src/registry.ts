@@ -70,7 +70,7 @@ export const OPS = {
     implemented: true,
     description:
       'Read one exact thing: a page by slug or id, with its links and backlinks, or a document by id with ' +
-      'its extracted text. Returns the full body regardless of page class — recall caps what a reference ' +
+      'its extracted text. Returns the full body regardless of page role — recall caps what a source ' +
       'page contributes unprompted, but read never does.',
   }),
   list: op({
@@ -81,7 +81,7 @@ export const OPS = {
     implemented: true,
     description:
       'Browse structure rather than search it: folders and their page counts, a tree outline, or pages ' +
-      'filtered by type, tag, class or recency. Use this to find out what exists before guessing a slug.',
+      'filtered by type, tag, role or recency. Use this to find out what exists before guessing a slug.',
   }),
   timeline: op({
     name: 'timeline',
@@ -126,7 +126,7 @@ export const OPS = {
     implemented: true,
     description:
       'Declare a folder and what belongs in it, before writing the first page there. Never gated — nothing ' +
-      'here waits on the user. Say what the folder is for in `description`, and set `class` to "reference" ' +
+      'here waits on the user. Say what the folder is for in `description`, and set `role` to "source" ' +
       'when it holds evidence rather than claims (transcripts, articles, research, legal texts), because only ' +
       'claims become facts. Returns "noop" when the folder is already declared.',
   }),

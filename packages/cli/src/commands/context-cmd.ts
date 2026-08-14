@@ -84,7 +84,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
       if (cards.length === 0) continue;
       heading(label);
       for (const card of cards) {
-        line(`  ${style.bold(card.slug)} ${style.grey(`(${card.class})`)}`);
+        line(`  ${style.bold(card.slug)} ${style.grey(`(${card.role})`)}`);
         if (card.summary) line(`    ${truncate(card.summary, 100)}`);
         for (const bodyLine of card.lines.slice(0, 6)) {
           line(`    ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}`);

@@ -128,7 +128,8 @@ describe('the token ceiling', () => {
       );
       return server.calls[0]!;
     } finally {
-      await new Promise<void>((resolve) => instance.close(() => resolve()));
+      instance.close();
+      instance.closeAllConnections();
     }
   }
 

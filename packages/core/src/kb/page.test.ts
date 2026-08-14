@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeLinkTarget, parsePage, resolveClass } from './page.ts';
+import { normalizeLinkTarget, parsePage, resolvePagePolicy, resolveRole } from './page.ts';
 import { parseFrontmatter, withId } from './frontmatter.ts';
 
 describe('parseFrontmatter', () => {
@@ -73,7 +73,7 @@ describe('parsePage', () => {
     '',
     '- **2026-06-14** | Premium went up at renewal. [[finance/accounts]]',
     '',
-    '<!-- reference -->',
+    '<!-- source -->',
     '',
     'POLICY SCHEDULE ...',
     '',
@@ -91,10 +91,10 @@ describe('parsePage', () => {
     expect(page.tags).toEqual(['finance', 'car']);
   });
 
-  it('finds the reference fence at its absolute line number', () => {
+  it('finds the source fence at its absolute line number', () => {
     // Body starts at line 6; the fence is the 9th body line.
-    expect(page.referenceFenceLine).toBe(14);
-    expect(content.split('\n')[page.referenceFenceLine! - 1]).toBe('<!-- reference -->');
+    expect(page.sourceFenceLine).toBe(14);
+    expect(content.split('\n')[page.sourceFenceLine! - 1]).toBe('<!-- source -->');
   });
 
   it('extracts the event with its date, link and line', () => {
@@ -142,30 +142,72 @@ describe('normalizeLinkTarget', () => {
   });
 });
 
-describe('resolveClass', () => {
+describe('resolveRole', () => {
   it('lets page frontmatter win over a rule', () => {
-    const resolved = resolveClass(
-      { declaredClass: 'full', slug: 'reference/law' },
-      { class: 'reference', glob: 'reference/**' },
+    const resolved = resolveRole(
+      { declaredRole: 'knowledge', slug: 'sources/law' },
+      { role: 'source', glob: 'sources/**' },
       'observations',
     );
-    expect(resolved).toEqual({ class: 'full', source: 'frontmatter' });
+    expect(resolved).toEqual({ role: 'knowledge', source: 'frontmatter' });
   });
 
   it('uses the rule when frontmatter is silent, and says which glob won', () => {
-    const resolved = resolveClass(
-      { declaredClass: null, slug: 'reference/law' },
-      { class: 'reference', glob: 'reference/**' },
+    const resolved = resolveRole(
+      { declaredRole: null, slug: 'sources/law' },
+      { role: 'source', glob: 'sources/**' },
       'observations',
     );
-    expect(resolved).toEqual({ class: 'reference', source: 'rule', via: 'reference/**' });
+    expect(resolved).toEqual({ role: 'source', source: 'rule', via: 'sources/**' });
   });
 
-  it('defaults to full', () => {
-    expect(resolveClass({ declaredClass: null, slug: 'home/lease' }, null, 'observations')).toEqual({
-      class: 'full',
+  it('defaults to knowledge', () => {
+    expect(resolveRole({ declaredRole: null, slug: 'home/lease' }, null, 'observations')).toEqual({
+      role: 'knowledge',
       source: 'default',
     });
+  });
+});
+
+describe('page management metadata', () => {
+  it('keeps role and automatic authority independent and removes self metadata', () => {
+    const page = parsePage(
+      'people/ada-marlow.md',
+      `---
+title: Ada Marlow
+akno:
+  role: knowledge
+  management:
+    remember: deny
+    dream: synthesize
+  about: [people/ada-marlow]
+  aliases: [Ada Marlow, ada-marlow, A. Marlow]
+---
+
+# Ada Marlow
+`,
+    );
+    const policy = resolvePagePolicy(page, null, 'observations');
+    expect(policy).toMatchObject({ role: 'knowledge', remember: 'deny', dream: 'synthesize', about: [] });
+    expect(policy.aliases).toEqual(['A. Marlow']);
+  });
+
+  it('filters redundant Unicode aliases without collapsing distinct ones', () => {
+    const parsed = parsePage(
+      'concepts/blue-comet.md',
+      '---\ntitle: Синяя Комета\nakno:\n  aliases: [Синяя Комета, Комета]\n---\n\n# Синяя Комета\n',
+    );
+    expect(parsed.aliases).toEqual(['Комета']);
+  });
+
+  it('inherits about from a folder without making a canonical page about itself', () => {
+    const page = parsePage('ada-marlow/projects/zephyr.md', '# Zephyr\n');
+    const policy = resolvePagePolicy(
+      page,
+      { about: ['people/ada-marlow'], glob: 'ada-marlow/**' },
+      'observations',
+    );
+    expect(policy.about).toEqual(['people/ada-marlow']);
   });
 });
 

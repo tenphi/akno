@@ -92,12 +92,12 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
  *
  * Only the checks a rule can be wrong about *in fact* — a declared type that contradicts the
  * folder's, a slug the folder's pattern rejects, nesting past `max_depth`. Class is
- * deliberately absent: a page declaring its own `class` in frontmatter **outranks** the rule
+ * deliberately absent: a page declaring its own `role` in frontmatter **outranks** the rule
  * so that is the user overriding a default, not drift.
  */
 function findDrift(ctx: AknoContext): RuleDrift[] {
   const pages = ctx.store.db
-    .prepare("SELECT slug, type FROM pages WHERE class != 'excluded' ORDER BY slug")
+    .prepare("SELECT slug, type FROM pages WHERE role != 'ignored' ORDER BY slug")
     .all() as { slug: string; type: string | null }[];
 
   const out: RuleDrift[] = [];

@@ -6,7 +6,7 @@ function card(overrides: Partial<Card> = {}): Card {
   return {
     slug: 'documents/car-insurance-2026',
     title: 'Car insurance 2026',
-    class: 'full',
+    role: 'knowledge',
     summary: 'Vulpine Mutual policy for the household car.',
     score: 0.9,
     lines: [],

@@ -10,9 +10,16 @@ import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
-import { folderCatalog } from '../kb/folders.ts';
+import { folderCatalog, physicalFolderExists } from '../kb/folders.ts';
+import { parsePage } from '../kb/page.ts';
+import { detectConflict } from '../write/conflict.ts';
+import { fileEntry, type ChangeFile } from '../write/journal.ts';
+import { writeFileAtomic } from '../write/atomic.ts';
+import { placeManagedItems, type ManagedItem } from '../write/placement.ts';
 import { recall } from './recall.ts';
-import { write } from './write.ts';
+import { appendToLedger } from './write.ts';
+import fsp from 'node:fs/promises';
+import path from 'node:path';
 
 /**
  * Hand over a transcript or notes; Akno runs the retain mission with its own
@@ -114,67 +121,132 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     };
   }
 
-  // ── Write ───────────────────────────────────────────────────────────────
+  // ── Place and write ─────────────────────────────────────────────────────
+  // One group per target means one placement-model call per page and one journal entry for the
+  // whole remember operation. A turn that keeps three related facts is one undoable decision.
   const wrote: WriteTarget[] = [];
   const approvals: ApprovalRequest[] = [];
   const foldersNeeded: FolderRequired[] = [];
-  const changeIds: string[] = [];
-  let added = 0;
+  const groups = new Map<string, { entries: { index: number; candidate: RetainCandidate }[] }>();
 
   for (const [index, entry] of routed.entries()) {
-    // Nothing existing holds this. **A page is created rather than a question filed** —
-    // `remember` had no create path at all, so a claim with no home became a proposal, and a
-    // proposal is a page nobody writes. It fell hardest on findings about the world: their
-    // natural folders are `reference` class, routing refuses those on principle, and every
-    // finding therefore arrived at the one outcome that stores nothing.
     const target = entry.slug ?? entry.candidate.page ?? null;
-    const creating = entry.slug === null;
     if (target === null) {
-      // No destination and no suggestion. This is the one case still worth a question: the
-      // curator could not even name where it would go.
       approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest));
       continue;
     }
-
-    const result = await write(
-      ctx,
-      creating
-        ? { slug: target, content: entry.candidate.text, title: titleFor(entry.candidate) }
-        : { slug: target, append: entry.candidate.text },
-    );
-    if (result.outcome === 'ok') {
-      considered[index]!.written = true;
-      wrote.push(...(result.wrote ?? []));
-      if (result.change_id) changeIds.push(result.change_id);
-      added += result.facts?.added ?? 0;
-    } else if (result.requires_folder) {
-      // The caller declares the folder and calls again. Nothing is filed for a user to
-      // answer, because there is nothing here a user could usefully answer.
-      foldersNeeded.push(result.requires_folder);
-    } else if (result.approval) {
-      approvals.push(result.approval);
-    } else if (result.conflict) {
-      // A conflict from `remember` is not something to resolve unilaterally: the
-      // caller has a user to ask, and this op has no mandate to overwrite a value.
-      approvals.push({
-        proposal_id: recordConflictProposal(ctx, target, entry.candidate, result.conflict.existing),
-        reason:
-          `'${target}' already claims something different: ${result.conflict.existing}. ` +
-          'Ask which is current.',
-        nearest: [target],
-      });
-    }
+    const group = groups.get(target) ?? { entries: [] };
+    group.entries.push({ index, candidate: entry.candidate });
+    groups.set(target, group);
   }
 
-  // The retain mission emits events alongside facts, and this is what
-  // makes the timeline maintain itself — nobody has to notice a sentence was an
-  // event.
-  for (const event of retained.events) {
-    const result = await write(ctx, { event });
-    if (result.outcome === 'ok') {
-      wrote.push(...(result.wrote ?? []));
-      if (result.change_id) changeIds.push(result.change_id);
+  const pending: { slug: string; relPath: string; content: string; existed: boolean; indexes: number[] }[] =
+    [];
+  for (const [slug, group] of groups) {
+    const row = ctx.store.db
+      .prepare('SELECT id, rel_path, role, remember_management FROM pages WHERE slug = ?')
+      .get(slug) as { id: string; rel_path: string; role: string; remember_management: string } | undefined;
+
+    if (row && (row.role !== 'knowledge' || row.remember_management !== 'integrate')) {
+      for (const entry of group.entries) approvals.push(proposeUnrouted(ctx, entry.candidate, []));
+      continue;
     }
+
+    const parent = slug.slice(0, slug.lastIndexOf('/'));
+    if (!row && !physicalFolderExists(ctx.config, parent)) {
+      foldersNeeded.push({
+        folder: parent,
+        nearest: catalog
+          .filter((folder) => folder.eligible)
+          .map((folder) => folder.path)
+          .slice(0, 8),
+      });
+      continue;
+    }
+
+    const relPath = row?.rel_path ?? `${slug}.md`;
+    const current = row
+      ? await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8')
+      : newManagedPage(titleFor(group.entries[0]!.candidate));
+    const accepted: { index: number; candidate: RetainCandidate }[] = [];
+    for (const entry of group.entries) {
+      if (row) {
+        const page = parsePage(relPath, current);
+        const conflict = detectConflict({
+          store: ctx.store,
+          pageId: row.id,
+          slug,
+          body: page.body,
+          bodyStartLine: page.bodyLine,
+          incoming: entry.candidate.text,
+        });
+        if (conflict) {
+          approvals.push({
+            proposal_id: recordConflictProposal(ctx, slug, entry.candidate, conflict.existing),
+            reason: `'${slug}' already claims something different: ${conflict.existing}. Ask which is current.`,
+            nearest: [slug],
+          });
+          continue;
+        }
+      }
+      accepted.push(entry);
+    }
+    if (accepted.length === 0) continue;
+
+    const items: ManagedItem[] = accepted.map(({ candidate }) => ({
+      id: newPrefixedId('itm'),
+      text: candidate.text,
+      source: input.source ?? 'remember',
+      origin: candidate.origin ?? 'unknown',
+    }));
+    const placed = await placeManagedItems(current, items, curator);
+    // Placement failure is recoverable and visible in Markdown: no claim is lost, and the next
+    // curate pass has an explicit `## Unsorted` inbox to integrate.
+    pending.push({
+      slug,
+      relPath,
+      content: placed.content,
+      existed: Boolean(row),
+      indexes: accepted.map((entry) => entry.index),
+    });
+  }
+
+  const files: ChangeFile[] = [];
+  for (const page of pending) {
+    const result = await writeFileAtomic(ctx.config.aknoPath, page.relPath, page.content);
+    files.push(fileEntry(result));
+    page.indexes.forEach((index) => {
+      considered[index]!.written = true;
+    });
+    wrote.push({ slug: page.slug, action: page.existed ? 'appended' : 'created' });
+  }
+
+  for (const event of retained.events) {
+    const ledger = await appendToLedger(ctx, event);
+    if (ledger.file) files.push(ledger.file);
+    wrote.push({
+      slug: ctx.config.paths.timeline.replace(/\.(md|markdown)$/i, ''),
+      line: ledger.line,
+      action: 'event',
+    });
+  }
+
+  const changeId =
+    files.length > 0
+      ? ctx.journal.record({
+          actor: ctx.actor,
+          op: 'remember',
+          summary: `remembered ${considered.filter((entry) => entry.written).length} item(s)`,
+          files,
+        })
+      : null;
+
+  let added = 0;
+  if (files.length > 0) {
+    const paths = [...new Set(files.map((file) => file.relPath))];
+    const report = await ctx.indexer.run({ only: paths, modelPaths: [] });
+    ctx.derive.schedule(paths);
+    added = report.factsDerived;
   }
 
   // Deduplicated: three findings bound for the same new folder are one thing to do, not three.
@@ -210,7 +282,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   return {
     status: 'ok',
     outcome: outcome ?? 'ok',
-    ...(changeIds[0] ? { change_id: changeIds[0] } : {}),
+    ...(changeId ? { change_id: changeId } : {}),
     wrote,
     facts: { retired: 0, added },
     considered,
@@ -231,6 +303,10 @@ function titleFor(candidate: RetainCandidate): string {
   return subject.charAt(0).toUpperCase() + subject.slice(1);
 }
 
+function newManagedPage(title: string): string {
+  return `---\ntitle: ${JSON.stringify(title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# ${title}\n`;
+}
+
 // ─── Routing ────────────────────────────────────────────────────────────────
 
 /**
@@ -242,8 +318,8 @@ function titleFor(candidate: RetainCandidate): string {
  * that only thickens. Below the threshold used to mean a proposal — a question for the user
  * about where a claim goes — and a proposal is a page nobody writes. It fell hardest on
  * exactly the material a knowledge base most needs new pages for: a finding about the world
- * belongs in `research/` or `wiki/`, those folders are `reference` class, routing refuses
- * reference pages on principle, and so every finding reached the one outcome that stores
+ * belongs in `research/` or `wiki/`, those folders have the `source` role, routing refuses
+ * source pages on principle, and so every finding reached the one outcome that stores
  * nothing. Creating is the honest answer to "nothing here holds this".
  *
  * 0.5 is a placeholder and cannot be tuned by intuition, because the failure it guards against
@@ -279,9 +355,9 @@ async function route(
     expand: false,
   });
 
-  // Never route into a `reference` page: it is somebody else's words, and the rule is
+  // Never route into a source page: it is somebody else's words, and the rule is
   // explicit that only claims become facts. Appending a claim to evidence would make
-  // the class boundary meaningless.
+  // the role boundary meaningless.
   //
   // And never into a reserved path. The ledger is the one that bites: it is a plain `full`
   // page, so nothing above disqualified it, and a ledger that already records events about a
@@ -291,12 +367,12 @@ async function route(
   // destination.
   const candidates = result.cards.filter(
     (card) =>
-      card.class === 'full' &&
+      card.role === 'knowledge' &&
       !isReserved(card.slug, ctx.config) &&
       isInsideSuggestedFolder(card.slug, candidate.page),
   );
 
-  // Suggestions are drawn from the same set, not from every card. Offering a `reference` page as
+  // Suggestions are drawn from the same set, not from every card. Offering a source page as
   // somewhere a claim "could go instead" proposes a destination this very function would refuse —
   // observed live: a rent figure was offered four dispute pages, all of them evidence, and the
   // agent read the list as the intended home and told the user it would be filed there.
@@ -338,7 +414,7 @@ function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: 
       new Date().toISOString(),
       nearest.length > 0
         ? `no page scored above ${ctx.config.routeThreshold} for "${candidate.subject}"`
-        : `no page exists that could hold "${candidate.subject}" — every near match is reference material`,
+        : `no page exists that could hold "${candidate.subject}" — every near match is source material`,
       candidate.subject,
       JSON.stringify({ append: candidate.text }),
       JSON.stringify(nearest),
@@ -349,7 +425,7 @@ function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: 
     reason:
       nearest.length > 0
         ? `nothing scored above ${ctx.config.routeThreshold} for "${candidate.subject}" — ask where this goes`
-        : `no page could hold "${candidate.subject}" — every near match is reference material, so this needs a new page`,
+        : `no page could hold "${candidate.subject}" — every near match is source material, so this needs a new page`,
     nearest,
   };
 }

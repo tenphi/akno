@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Card, DatePrefix, Depth, PageClass, RecallMode, ResultEnvelope, SlugFilter } from '../common.ts';
+import { Card, DatePrefix, Depth, PageRole, RecallMode, ResultEnvelope, SlugFilter } from '../common.ts';
 
 export const RecallInput = z.object({
   query: z.string().min(1),
@@ -10,10 +10,10 @@ export const RecallInput = z.object({
   limit: z.number().int().positive().max(100).optional(),
   /** Token budget for the assembled response. Whole cards are filled first. */
   budget: z.number().int().positive().optional(),
-  /** `reference` pages compete for relevance on equal terms and come back capped.
-   *  Passing `include: ['reference']` with `depth: 'full'` overrides the cap —
-   *  class is a relevance policy, not access control. */
-  include: z.array(PageClass).optional(),
+  /** `source` pages compete for relevance on equal terms and come back capped.
+   *  Passing `include: ['source']` with `depth: 'full'` overrides the cap —
+   *  role is a relevance policy, not access control. */
+  include: z.array(PageRole).optional(),
   /**
    * Skip query expansion for this call. Worth it when the query is already the text
    * you want to match — routing a document by its own summary, say — where a model

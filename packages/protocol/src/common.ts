@@ -1,11 +1,23 @@
 import { z } from 'zod';
 
 /**
- * Not everything in a knowledge base is knowledge. `full` pages are claims;
- * `reference` pages are evidence. Only claims become facts.
+ * What a page contributes to memory. This is deliberately separate from who may
+ * edit it: a canonical page can be owner-maintained or fully synthesized, while
+ * a source page remains evidence either way.
  */
-export const PageClass = z.enum(['full', 'reference', 'excluded']);
-export type PageClass = z.infer<typeof PageClass>;
+export const PageRole = z.enum(['knowledge', 'source', 'inference', 'ignored']);
+export type PageRole = z.infer<typeof PageRole>;
+
+/** Automatic write authority carried by a page's `akno` frontmatter block. */
+export const RememberManagement = z.enum(['deny', 'integrate']);
+export type RememberManagement = z.infer<typeof RememberManagement>;
+export const DreamManagement = z.enum(['none', 'hygiene', 'synthesize']);
+export type DreamManagement = z.infer<typeof DreamManagement>;
+export const PageManagement = z.object({
+  remember: RememberManagement.optional(),
+  dream: DreamManagement.optional(),
+});
+export type PageManagement = z.infer<typeof PageManagement>;
 
 /**
  * One op, three expansion modes — because looking something up and
@@ -79,7 +91,7 @@ export const DocumentRef = z.object({
   /** What the document is, in a sentence. A stored document has a summary of its own. */
   summary: z.string().optional(),
   /**
-   * The matching text from inside the document, capped by `recall.reference_quote_lines`.
+   * The matching text from inside the document, capped by `recall.source_quote_lines`.
    *
    * A document is evidence, not a claim, so it comes back as a quote window rather
    * than in full — and as a quote attributed to the document and its page, never as a line
@@ -96,7 +108,7 @@ export type DocumentRef = z.infer<typeof DocumentRef>;
 export const Card = z.object({
   slug: z.string(),
   title: z.string(),
-  class: PageClass,
+  role: PageRole,
   summary: z.string().nullable(),
   /** `Car insurance 2026 › Policy` — the heading path of the best-matching chunk. */
   breadcrumb: z.string().optional(),
@@ -115,7 +127,7 @@ export const Card = z.object({
   superseded: z.array(SupersededClaim).optional(),
   links: z.array(z.string()).optional(),
   documents: z.array(DocumentRef).optional(),
-  /** Set when the class capped what this card could contribute. */
+  /** Set when the role capped what this card could contribute. */
   truncated: z.boolean().optional(),
 });
 export type Card = z.infer<typeof Card>;
@@ -153,7 +165,7 @@ export const SlugFilter = z.object({
   folder: z.string().optional(),
   type: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  class: PageClass.optional(),
+  role: PageRole.optional(),
 });
 export type SlugFilter = z.infer<typeof SlugFilter>;
 

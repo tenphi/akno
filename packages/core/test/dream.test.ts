@@ -68,7 +68,10 @@ async function startStubChat(): Promise<StubServer> {
   const { port } = instance.address() as { port: number };
   return {
     url: `http://127.0.0.1:${port}/v1`,
-    close: () => new Promise<void>((resolve) => instance.close(() => resolve())),
+    close: async () => {
+      instance.close();
+      instance.closeAllConnections();
+    },
     reply: (value) => {
       scripted = value;
     },
@@ -115,7 +118,7 @@ const PAGES: Record<string, string> = {
     '---\ntitle: Laundry\n---\n\n# Laundry\n\nThe washing machine was serviced in June 2026.\n',
   'home/kitchen.md': '---\ntitle: Kitchen\n---\n\n# Kitchen\n\nThe oven was serviced in September 2026.\n',
   'notes/manual.md':
-    '---\ntitle: Manual\nclass: reference\n---\n\n# Manual\n\nService the appliance every 6 months.\n',
+    '---\ntitle: Manual\nakno:\n  role: source\n---\n\n# Manual\n\nService the appliance every 6 months.\n',
 };
 
 /** The default derivation: one fact per page, all about the same subject. */

@@ -1,6 +1,6 @@
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
-import type { ParsedPage } from '../kb/page.ts';
+import { aknoItemId, type ParsedPage } from '../kb/page.ts';
 
 /**
  * Deriving structure from text already in the knowledge base — facts,
@@ -15,6 +15,7 @@ export interface DerivedFact {
   value: string | null;
   line: number;
   sourceLineHash: string;
+  itemId: string | null;
   confidence: number;
 }
 
@@ -65,7 +66,7 @@ export async function derivePage(
   if (!options.summaries && !options.facts) return empty;
   if (!model.available) return { ...empty, error: model.unavailableReason ?? 'derive model unavailable' };
 
-  // Only text above the reference fence is mined. Below it is somebody else's
+  // Only text above the source fence is mined. Below it is somebody else's
   // words, and a fact extractor asserting things from a contract or an email is
   // the failure page classes exist to prevent.
   const mineable = mineableLines(page);
@@ -134,7 +135,7 @@ export async function derivePage(
     };
   }
 
-  const byLine = new Map(mineable.map((entry) => [entry.line, entry.text]));
+  const byLine = new Map(mineable.map((entry) => [entry.line, { text: entry.text, itemId: entry.itemId }]));
 
   return {
     summary: options.summaries ? cleanSummary(parsed.summary) : null,
@@ -163,16 +164,28 @@ export function bodyLineHashes(page: ParsedPage): Set<string> {
   return out;
 }
 
+export function bodyItemIds(page: ParsedPage): Set<string> {
+  return new Set(page.lines.map(aknoItemId).filter((id): id is string => id !== null));
+}
+
 /** Lines eligible for fact mining: above the fence, non-blank, not a heading. */
-function mineableLines(page: ParsedPage): { line: number; text: string }[] {
-  const out: { line: number; text: string }[] = [];
-  const fence = page.referenceFenceLine;
+function mineableLines(page: ParsedPage): { line: number; text: string; itemId: string | null }[] {
+  const out: { line: number; text: string; itemId: string | null }[] = [];
+  const fence = page.sourceFenceLine;
+  let pendingItem: string | null = null;
   for (let i = 0; i < page.lines.length; i++) {
     const line = page.bodyLine + i;
     if (fence !== null && line >= fence) break;
     const text = page.lines[i]!.trim();
     if (text.length === 0) continue;
-    out.push({ line, text });
+    const marker = aknoItemId(text);
+    if (marker) {
+      pendingItem = marker;
+      continue;
+    }
+    if (/^#{1,6}\s+/.test(text) || /^<!--.*-->$/.test(text)) continue;
+    out.push({ line, text, itemId: pendingItem });
+    pendingItem = null;
   }
   return out;
 }
@@ -202,7 +215,10 @@ function cleanKeywords(value: unknown): string[] {
  * fact says can never be re-derived or invalidated correctly. So every fact is
  * dropped unless its line exists in what the model was actually shown.
  */
-function cleanFacts(value: unknown, byLine: Map<number, string>): DerivedFact[] {
+function cleanFacts(
+  value: unknown,
+  byLine: Map<number, { text: string; itemId: string | null }>,
+): DerivedFact[] {
   if (!Array.isArray(value)) return [];
   const out: DerivedFact[] = [];
   const seen = new Set<string>();
@@ -211,8 +227,8 @@ function cleanFacts(value: unknown, byLine: Map<number, string>): DerivedFact[] 
     if (typeof entry !== 'object' || entry === null) continue;
     const record = entry as Record<string, unknown>;
     const line = Number(record.line);
-    const sourceText = byLine.get(line);
-    if (!Number.isInteger(line) || sourceText === undefined) continue;
+    const source = byLine.get(line);
+    if (!Number.isInteger(line) || source === undefined) continue;
 
     const claim = typeof record.claim === 'string' ? record.claim.trim().replace(/\s+/g, ' ') : '';
     if (claim.length < 3 || claim.length > 500) continue;
@@ -227,8 +243,9 @@ function cleanFacts(value: unknown, byLine: Map<number, string>): DerivedFact[] 
       attribute: optionalString(record.attribute),
       value: optionalString(record.value),
       line,
-      sourceLineHash: sha256(sourceText),
-      confidence: scoreConfidence(sourceText, claim, record),
+      sourceLineHash: sha256(source.text),
+      itemId: source.itemId,
+      confidence: scoreConfidence(source.text, claim, record),
     });
     if (out.length >= 60) break;
   }

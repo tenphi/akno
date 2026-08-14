@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ResultEnvelope } from '../common.ts';
+import { PageRole, RememberManagement, ResultEnvelope } from '../common.ts';
 
 /**
  * **Declare a folder before writing into it.**
@@ -24,12 +24,13 @@ export const FolderInput = z.object({
    * makes the folder self-explanatory later.
    */
   description: z.string().min(1).max(500),
-  /**
-   * `full` (the default) for claims, `reference` for evidence, `excluded` for what should not
-   * be indexed. Only claims become facts, so this is the load-bearing choice: a folder of
-   * transcripts or articles declared `full` will be mined for assertions nobody made.
-   */
-  class: z.enum(['full', 'reference', 'excluded']).optional(),
+  /** `knowledge` for canonical claims, `source` for quoted evidence, `inference` for
+   * model conclusions, and `ignored` for material outside memory. */
+  role: PageRole.optional(),
+  /** Whether `remember` may place canonical claims in pages in this folder. */
+  remember: RememberManagement.optional(),
+  /** Canonical entities pages in this folder are about. */
+  about: z.array(z.string()).optional(),
   /** Default `type` for pages here, when the folder has one. */
   type: z.string().optional(),
   ingest: z.enum(['page', 'document', 'file', 'auto', 'ignore']).optional(),

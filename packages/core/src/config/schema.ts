@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PageClass } from '@akno/protocol';
+import { PageRole, RememberManagement } from '@akno/protocol';
 
 /**
  * The config document as it appears on disk. Every field is optional here —
@@ -71,7 +71,11 @@ export const FolderRuleDoc = z.object({
    * from a transcript ends up filed as a defence strategy.
    */
   description: z.string().max(500).optional(),
-  class: PageClass.optional(),
+  role: PageRole.optional(),
+  /** Whether the conversational curator may place claims in this folder. */
+  remember: RememberManagement.optional(),
+  /** Canonical entity pages the folder's pages concern. */
+  about: z.array(z.string().min(1)).optional(),
   type: z.string().optional(),
   /** `page | document | file | auto | ignore` — behaviour differs by folder, so
    *  it is declared once rather than classified per arrival. */
@@ -108,14 +112,14 @@ const RecallDoc = z.object({
   default_limit: z.number().int().positive().optional(),
   candidates_per_arm: z.number().int().positive().optional(),
   line_window: z.number().int().positive().optional(),
-  reference_quote_lines: z.number().int().positive().optional(),
+  source_quote_lines: z.number().int().positive().optional(),
   expansion: z.boolean().optional(),
   expansion_timeout_ms: z.number().int().positive().optional(),
   rank: z
     .object({
-      full: z.number().min(0).optional(),
-      reference: z.number().min(0).optional(),
-      observation: z.number().min(0).optional(),
+      knowledge: z.number().min(0).optional(),
+      source: z.number().min(0).optional(),
+      inference: z.number().min(0).optional(),
     })
     .optional(),
 });
@@ -182,6 +186,19 @@ const MaintenanceDoc = z.object({
     max_subjects: z.number().int().positive().optional(),
   }).optional(),
   reflect: TierDoc.optional(),
+  curate: z
+    .object({
+      enabled: z.boolean().optional(),
+      /** Explicit write switch; enabled curate may still run as a scheduled preview. */
+      write: z.boolean().optional(),
+      verify: z.boolean().optional(),
+      max_pages: z.number().int().positive().optional(),
+      max_splits: z.number().int().nonnegative().optional(),
+      max_children_per_page: z.number().int().positive().optional(),
+      split_after_bytes: z.number().int().positive().optional(),
+      split_section_bytes: z.number().int().positive().optional(),
+    })
+    .optional(),
   adopt: z
     .object({
       enabled: z.boolean().optional(),
@@ -332,10 +349,10 @@ export interface AknoConfig {
     defaultLimit: number;
     candidatesPerArm: number;
     lineWindow: number;
-    referenceQuoteLines: number;
+    sourceQuoteLines: number;
     expansion: boolean;
     expansionTimeoutMs: number;
-    rank: { full: number; reference: number; observation: number };
+    rank: { knowledge: number; source: number; inference: number };
   };
   watch: { enabled: boolean; debounceMs: number; sweepIntervalMs: number; verifyIntervalMs: number };
   server: { socket: string; http: string | null; mcpAllow: string[] };
@@ -364,6 +381,16 @@ export interface AknoConfig {
     };
     /** Ships as an extension point, off by default. */
     reflect: { enabled: boolean; mission: string | null };
+    curate: {
+      enabled: boolean;
+      write: boolean;
+      verify: boolean;
+      maxPages: number;
+      maxSplits: number;
+      maxChildrenPerPage: number;
+      splitAfterBytes: number;
+      splitSectionBytes: number;
+    };
     adopt: { enabled: boolean; maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; maxPairs: number };
     repair: { enabled: boolean; links: boolean; conflicts: boolean; maxChanges: number };

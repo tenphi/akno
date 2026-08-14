@@ -92,7 +92,7 @@ export function matchRules(slug: string, rules: FolderRule[]): RuleMatch {
 
 /**
  * The effective rule for a slug: fields are taken from the most specific rule
- * that declares them, so `documents/**: {class}` and `**: {rank}` compose
+ * that declares them, so `documents/**: {role}` and `**: {rank}` compose
  * instead of one erasing the other.
  */
 export function effectiveRule(slug: string, rules: FolderRule[]): Partial<FolderRule> {

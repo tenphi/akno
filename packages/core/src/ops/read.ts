@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
-import { AknoError, ReadInput, type PageClass, type ReadOutput } from '@akno/protocol';
+import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 
 /**
- * `read({slug})` returns the full body of a `reference` page every time.
- * The class governs only what recall pulls in unprompted — **this is a relevance
+ * `read({slug})` returns the full body of a `source` page every time.
+ * The role governs only what recall pulls in unprompted — **this is a relevance
  * policy, not access control.**
  */
 export async function read(ctx: AknoContext, rawInput: unknown): Promise<ReadOutput> {
@@ -22,11 +22,15 @@ interface PageRow {
   title: string;
   type: string | null;
   tags: string;
-  class: PageClass;
+  role: PageRole;
+  remember_management: 'deny' | 'integrate';
+  dream_management: 'none' | 'hygiene' | 'synthesize';
+  about: string;
+  aliases: string;
   frontmatter: string;
   summary: string | null;
   keywords: string | null;
-  reference_fence_line: number | null;
+  source_fence_line: number | null;
   bytes: number;
   updated_at: string | null;
 }
@@ -99,12 +103,15 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
       title: row.title,
       type: row.type,
       tags: JSON.parse(row.tags) as string[],
-      class: row.class,
+      role: row.role,
+      management: { remember: row.remember_management, dream: row.dream_management },
+      about: JSON.parse(row.about) as string[],
+      aliases: JSON.parse(row.aliases) as string[],
       frontmatter: JSON.parse(row.frontmatter) as Record<string, unknown>,
       summary: row.summary,
       ...(row.keywords ? { keywords: JSON.parse(row.keywords) as string[] } : {}),
       lines: withConfidence,
-      reference_fence_line: row.reference_fence_line,
+      source_fence_line: row.source_fence_line,
       links: links.filter((link) => link.broken === 0).map((link) => link.to_slug),
       backlinks: backlinks.map((link) => link.slug),
       ...(links.some((l) => l.broken === 1)
@@ -265,8 +272,9 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
   };
 }
 
-const SELECT_PAGE = `SELECT id, slug, rel_path, title, type, tags, class, frontmatter, summary,
-                            keywords, reference_fence_line, bytes, updated_at
+const SELECT_PAGE = `SELECT id, slug, rel_path, title, type, tags, role, remember_management,
+                            dream_management, about, aliases, frontmatter, summary,
+                            keywords, source_fence_line, bytes, updated_at
                        FROM pages`;
 
 /** Cheap prefix and substring match. Good enough to catch a typo or a wrong folder. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parsePage } from '../kb/page.ts';
-import { applyReferenceFence, chunkPage, embeddingText } from './chunk.ts';
+import { applySourceFence, chunkPage, embeddingText } from './chunk.ts';
 
 const options = { targetChars: 300, maxChars: 600, overlapChars: 40 };
 
@@ -60,14 +60,14 @@ describe('chunkPage', () => {
   });
 });
 
-describe('applyReferenceFence', () => {
-  it('marks everything at or below the fence as reference', () => {
+describe('applySourceFence', () => {
+  it('marks everything at or below the fence as source', () => {
     const content = [
       '# Car insurance',
       '',
       'Vulpine Mutual, 33/month.',
       '',
-      '<!-- reference -->',
+      '<!-- source -->',
       '',
       '## Policy schedule',
       '',
@@ -75,22 +75,22 @@ describe('applyReferenceFence', () => {
       '',
     ].join('\n');
     const page = parsePage('car.md', content);
-    const chunks = applyReferenceFence(chunkPage(page, options), page.referenceFenceLine);
+    const chunks = applySourceFence(chunkPage(page, options), page.sourceFenceLine);
 
-    const above = chunks.filter((chunk) => chunk.lineStart < page.referenceFenceLine!);
-    const below = chunks.filter((chunk) => chunk.lineStart >= page.referenceFenceLine!);
+    const above = chunks.filter((chunk) => chunk.lineStart < page.sourceFenceLine!);
+    const below = chunks.filter((chunk) => chunk.lineStart >= page.sourceFenceLine!);
 
     expect(above.length).toBeGreaterThan(0);
     expect(below.length).toBeGreaterThan(0);
     // Above the fence: claims. Below: evidence. Only claims become facts.
-    expect(above.every((chunk) => chunk.kind === 'full')).toBe(true);
-    expect(below.every((chunk) => chunk.kind === 'reference')).toBe(true);
+    expect(above.every((chunk) => chunk.kind === 'knowledge')).toBe(true);
+    expect(below.every((chunk) => chunk.kind === 'source')).toBe(true);
   });
 
-  it('leaves a page with no fence entirely full', () => {
+  it('leaves a page with no fence entirely knowledge', () => {
     const page = parsePage('a.md', '# A\n\nbody\n');
-    const chunks = applyReferenceFence(chunkPage(page, options), null);
-    expect(chunks.every((chunk) => chunk.kind === 'full')).toBe(true);
+    const chunks = applySourceFence(chunkPage(page, options), null);
+    expect(chunks.every((chunk) => chunk.kind === 'knowledge')).toBe(true);
   });
 });
 
@@ -98,7 +98,7 @@ describe('embeddingText', () => {
   it('prepends the heading path, so a bare value knows what it belongs to', () => {
     const text = embeddingText({
       ord: 0,
-      kind: 'full',
+      kind: 'knowledge',
       headingPath: 'Car insurance 2026 › Policy',
       text: 'Premium: 33/month',
       lineStart: 1,

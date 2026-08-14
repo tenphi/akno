@@ -23,6 +23,7 @@ Reply with JSON only:
     { "text": "one self-contained sentence, phrased as it should appear on a page",
       "subject": "2-5 words naming what this is about, used to find the right page",
       "page": "folder/page-name — taxonomy branch and fallback page, lowercase and hyphenated",
+      "origin": "user or assistant — whose statement established the claim",
       "kind": "fact" }
   ],
   "events": [ { "date": "YYYY-MM-DD", "summary": "what happened, one clause" } ]
@@ -48,9 +49,10 @@ Rules:
 - Prose, not triples. "The car insurance premium is now 33 EUR a month" — not "premium=33".
 - Resolve pronouns and relative dates against the text. Never invent a date you were not given.
 - An "events" entry is something that happened on a date, not a value that is true.
-- Always supply "page" when one of the supplied folders fits. Its parent must be one exact folder
-  from the taxonomy. Never invent, rename or translate a folder. If none fits, omit "page". A
-  finding about the world belongs in a reference folder, not a personal folder.
+- Always supply "page" when one of the supplied folders marked eligible=true fits. Its parent must
+  be one exact eligible folder from the taxonomy. Never invent, rename or translate a folder. If
+  none fits, omit "page". A finding established by the assistant is canonical knowledge with
+  assistant provenance; it still belongs in the subject's taxonomy branch, not a personal page.
 - Fewer, better. An empty candidates list is the correct answer for a conversation
   that decided nothing, and is much better than a vague one.`;
 
@@ -63,6 +65,7 @@ export interface RetainCandidate {
    * nothing — which is the case `remember` used to have no answer for at all.
    */
   page?: string;
+  origin?: 'user' | 'assistant';
 }
 
 export interface RetainResult {
@@ -104,7 +107,7 @@ export async function runRetain(
 
   return {
     candidates: cleanCandidates(parsed.candidates, {
-      folders: (options.folders ?? []).map((folder) => folder.path),
+      folders: (options.folders ?? []).filter((folder) => folder.eligible).map((folder) => folder.path),
     }),
     events: cleanEvents(parsed.events),
     error: null,
@@ -116,7 +119,7 @@ function formatFolderCatalog(folders: FolderCatalogEntry[]): string {
   return folders
     .map(
       (folder) =>
-        `- ${folder.path}/ [${folder.class}]${folder.description ? ` — ${folder.description}` : ''}`,
+        `- ${folder.path}/ [role=${folder.role}; remember=${folder.remember}; eligible=${folder.eligible}]${folder.description ? ` — ${folder.description}` : ''}`,
     )
     .join('\n');
 }
@@ -197,6 +200,7 @@ export function cleanCandidates(
           ? record.subject.trim()
           : text.slice(0, 60),
       kind: typeof record.kind === 'string' ? record.kind : 'fact',
+      ...(record.origin === 'user' || record.origin === 'assistant' ? { origin: record.origin } : {}),
       ...(page ? { page } : {}),
     });
     if (out.length >= 12) break;

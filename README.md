@@ -98,7 +98,8 @@ configuration and never indexed as a note.
 
 Changing a rule takes effect on the next `akno index`, including for pages nobody has touched since. The
 resolved rules are fingerprinted, so a pass that would otherwise report "223 unchanged" re-examines the pages
-whose class actually moved — a rule edit that silently did nothing was one of the first bugs found here.
+whose role or management policy actually moved — a rule edit that silently did nothing was one of the first
+bugs found here.
 
 ## Models
 
@@ -133,20 +134,20 @@ There is no model downloading or serving in this repo. Models are configuration,
 Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one. Plus `context`,
 the pre-turn bundle, normally called by the host rather than by the agent.
 
-| Op         | What it does                                                                                                                                                     |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `recall`   | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query. |
-| `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                      |
-| `list`     | Browse structure: folders, pages by type/tag/class/recency, or a tree outline.                                                                                   |
-| `timeline` | When things happened — by range, subject, or match.                                                                                                              |
-| `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
-| `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
-| `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                             |
-| `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. `mission` adds emphasis for this text.                                           |
-| `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
-| `undo`     | Reverse a change by id.                                                                                                                                          |
-| `move`     | Relocate a page with its documents.                                                                                                                              |
-| `ingest`   | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                   |
+| Op         | What it does                                                                                                                                                         |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `recall`   | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query.     |
+| `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                          |
+| `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |
+| `timeline` | When things happened — by range, subject, or match.                                                                                                                  |
+| `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                                  |
+| `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                                  |
+| `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                                |
+| `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. It sees the complete folder taxonomy and only writes into existing eligible folders. |
+| `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                                  |
+| `undo`     | Reverse a change by id.                                                                                                                                              |
+| `move`     | Relocate a page with its documents.                                                                                                                                  |
+| `ingest`   | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                       |
 
 Every op is advertised over every door from one registry, with its schema, so a caller discovers what exists
 rather than being told in prose.
@@ -213,25 +214,46 @@ text is indexed against the document and `read({document})` returns all of it. A
 same document rather than a second one, so it costs no extra summary and returns no second hit; one you have
 edited by hand is left alone, and one you delete stays deleted.
 
-## Page classes
+## Page roles and management
 
 Not everything in a knowledge base is knowledge. A lot of it is **evidence**: contract text, emails, statutes,
 transcripts. You want it stored and findable. You do not want a fact extractor asserting things from it, or
 eleven pages of contract text landing in a retrieval budget.
 
-| Class              | Indexed | `recall` returns                                        | Fact-mined |
-| ------------------ | ------- | ------------------------------------------------------- | ---------- |
-| `full` _(default)_ | yes     | summary + matching lines; whole body on `depth: "full"` | yes        |
-| `reference`        | yes     | summary + a capped quote window                         | **no**     |
-| `excluded`         | no      | nothing                                                 | no         |
+| Role                    | Indexed | `recall` returns                                        | Fact-mined |
+| ----------------------- | ------- | ------------------------------------------------------- | ---------- |
+| `knowledge` _(default)_ | yes     | summary + matching lines; whole body on `depth: "full"` | yes        |
+| `source`                | yes     | summary + a capped quote window                         | **no**     |
+| `inference`             | yes     | matching derived interpretation, ranked below knowledge | no         |
+| `ignored`               | no      | nothing                                                 | no         |
 
-> Reference pages are evidence. Full pages are claims. Only claims become facts.
+> Source pages are evidence. Knowledge pages are claims. Only claims become facts.
 
-A page can switch class mid-body at a `<!-- reference -->` fence: above it, normal and mined; below, indexed for
-search but never mined and never returned whole.
+A knowledge page can switch to evidence mid-body at a `<!-- source -->` fence: above it, canonical and mined;
+below it, indexed for search but never mined and never returned whole.
 
-This is a **relevance policy, not access control** — `read({slug})` returns the full body of a `reference` page
-every time, and `recall({ include: ['reference'], depth: 'full' })` lifts the cap.
+Role is a **relevance policy, not access control** — `read({slug})` returns the full body of a `source` page
+every time, and `recall({ include: ['source'], depth: 'full' })` lifts the cap.
+
+Automatic write authority is a separate dimension. `remember: integrate|deny` controls whether retained
+knowledge may be placed on a page; page frontmatter overrides folder policy, which overrides role defaults.
+`dream: none|hygiene|synthesize` is deliberately page-only and controls unattended maintenance: hygiene may
+make conservative formatting and local-language repairs, while synthesis may rewrite and reorganize a
+canonical page, accumulate linked evidence, preserve unresolved conflicts, and split oversized coherent
+sections beneath the canonical slug.
+
+```yaml
+akno:
+  role: knowledge
+  management:
+    remember: integrate
+    dream: synthesize
+  about:
+    - people/ada-marlow
+```
+
+`about` names the entities a page contributes evidence about. A canonical entity page does not point at
+itself, and aliases equal to its title, slug, or basename are discarded as redundant.
 
 ## Documents
 
@@ -373,20 +395,26 @@ Nothing is routed or named, because the caller already decided both.
 
 ## The maintenance cycle
 
-`akno dream` runs five phases. They are independent, and each is safe to re-run.
+`akno dream` runs seven phases. They are independent, and each is safe to re-run.
 
-| Phase          | Writes?   | What it does                                                                                                |
-| -------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
-| `observe`      | appends   | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default. |
-| `reflect`      | appends   | Decision principles built on the tier above. Off by default.                                                |
-| `adopt`        | new pages | A page for a document that has none, beside the file — so its text can be returned at all.                  |
-| `conflicts`    | no        | Facts on **different** pages stating different values for one thing — which inline checking cannot see.     |
-| `housekeeping` | no        | Broken links, orphaned documents, pages that have drifted from their folder's rules.                        |
+| Phase          | Writes?       | What it does                                                                                                              |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `observe`      | appends       | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.               |
+| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                              |
+| `curate`       | preview/write | Hygiene or full synthesis only for pages that explicitly opt in. Draft, verifier and deterministic guards must all agree. |
+| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                |
+| `conflicts`    | no            | Facts on **different** pages stating different values for one thing — which inline checking cannot see.                   |
+| `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                       |
+| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                      |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Each
 phase's writes are their own `akno undo`, so reversing a night's inferences does not also reverse the pages
 that made documents searchable. The rest report, because a maintenance process that tidies a knowledge base
 behind its owner's back is worse than the mess it fixes.
+
+Curate has two switches on purpose: `enabled` includes it in scheduled runs, while `write` grants authority to
+apply accepted drafts. With `write: false`, scheduled runs remain previews. Stable item markers and provenance
+survive rewrites and moves, and a split keeps the canonical `page.md` while adding children under `page/`.
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
 how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.

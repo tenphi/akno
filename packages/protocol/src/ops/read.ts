@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DocumentRef, Line, PageClass, ResultEnvelope, SupersededClaim } from '../common.ts';
+import { DocumentRef, Line, PageManagement, PageRole, ResultEnvelope, SupersededClaim } from '../common.ts';
 
 /** One exact thing: a page by slug or id, or a document by id, path or filename. */
 export const ReadInput = z
@@ -26,7 +26,10 @@ export const PageBody = z.object({
   title: z.string(),
   type: z.string().nullable(),
   tags: z.array(z.string()),
-  class: PageClass,
+  role: PageRole,
+  management: PageManagement.optional(),
+  about: z.array(z.string()).optional(),
+  aliases: z.array(z.string()).optional(),
   /** Every frontmatter key Akno found, preserved as read. Your own fields are
    *  passed through untouched. */
   frontmatter: z.record(z.string(), z.unknown()),
@@ -34,8 +37,8 @@ export const PageBody = z.object({
   keywords: z.array(z.string()).optional(),
   /** Numbered so a citation survives being quoted out of context. */
   lines: z.array(Line),
-  /** Line at which `<!-- reference -->` switches the page's class mid-body. */
-  reference_fence_line: z.number().int().positive().nullable().optional(),
+  /** Line at which `<!-- source -->` switches a knowledge page to source material. */
+  source_fence_line: z.number().int().positive().nullable().optional(),
   links: z.array(z.string()),
   backlinks: z.array(z.string()),
   broken_links: z.array(z.string()).optional(),

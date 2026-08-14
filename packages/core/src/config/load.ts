@@ -434,13 +434,13 @@ function resolve(
       defaultLimit: doc.recall?.default_limit ?? 8,
       candidatesPerArm: doc.recall?.candidates_per_arm ?? 60,
       lineWindow: doc.recall?.line_window ?? 6,
-      referenceQuoteLines: doc.recall?.reference_quote_lines ?? 6,
+      sourceQuoteLines: doc.recall?.source_quote_lines ?? 6,
       expansion: doc.recall?.expansion ?? true,
       expansionTimeoutMs: doc.recall?.expansion_timeout_ms ?? 4000,
       rank: {
-        full: doc.recall?.rank?.full ?? 1,
-        reference: doc.recall?.rank?.reference ?? 0.85,
-        observation: doc.recall?.rank?.observation ?? 0.6,
+        knowledge: doc.recall?.rank?.knowledge ?? 1,
+        source: doc.recall?.rank?.source ?? 0.85,
+        inference: doc.recall?.rank?.inference ?? 0.6,
       },
     },
     watch: {
@@ -492,6 +492,16 @@ function resolve(
         // At a few hundred pages a "pattern" is one coincidence away from noise.
         enabled: doc.maintenance?.reflect?.enabled ?? false,
         mission: doc.maintenance?.reflect?.mission ?? null,
+      },
+      curate: {
+        enabled: doc.maintenance?.curate?.enabled ?? false,
+        write: doc.maintenance?.curate?.write ?? false,
+        verify: doc.maintenance?.curate?.verify ?? true,
+        maxPages: doc.maintenance?.curate?.max_pages ?? 8,
+        maxSplits: doc.maintenance?.curate?.max_splits ?? 3,
+        maxChildrenPerPage: doc.maintenance?.curate?.max_children_per_page ?? 2,
+        splitAfterBytes: doc.maintenance?.curate?.split_after_bytes ?? 16_384,
+        splitSectionBytes: doc.maintenance?.curate?.split_section_bytes ?? 8_192,
       },
       adopt: {
         enabled: doc.maintenance?.adopt?.enabled ?? true,

@@ -125,7 +125,7 @@ function cardFromPage(page: NonNullable<Awaited<ReturnType<typeof read>>['page']
   return {
     slug: page.slug,
     title: page.title,
-    class: page.class,
+    role: page.role,
     summary: page.summary,
     score: 1,
     lines: page.lines.filter((line) => line.text.trim().length > 0),

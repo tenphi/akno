@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { PageClass } from '@akno/protocol';
+import type { PageRole, RememberManagement } from '@akno/protocol';
 import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
 import { effectiveRule } from '../rules/compile.ts';
@@ -8,7 +8,9 @@ import { isReserved } from '../reserved.ts';
 
 export interface FolderCatalogEntry {
   path: string;
-  class: PageClass;
+  role: PageRole;
+  remember: RememberManagement;
+  eligible: boolean;
   description?: string;
 }
 
@@ -46,7 +48,7 @@ export function physicalFolders(
       const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
       if (ignored.has(entry.name) || ignored.has(rel)) continue;
       if (isReserved(rel, config)) continue;
-      if (effectiveRule(`${rel}/x`, config.rules).class === 'excluded') continue;
+      if (effectiveRule(`${rel}/x`, config.rules).role === 'ignored') continue;
       out.push(rel);
       walk(rel, depth + 1);
     }
@@ -56,7 +58,7 @@ export function physicalFolders(
 /** True when the user has already made this folder on disk, even if it is empty. */
 export function physicalFolderExists(config: AknoConfig, folder: string): boolean {
   if (isReserved(folder, config)) return false;
-  if (effectiveRule(`${folder}/x`, config.rules).class === 'excluded') return false;
+  if (effectiveRule(`${folder}/x`, config.rules).role === 'ignored') return false;
   try {
     return fs.statSync(path.join(config.aknoPath, folder)).isDirectory();
   } catch {
@@ -74,7 +76,7 @@ export function physicalFolderExists(config: AknoConfig, folder: string): boolea
  */
 export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEntry[] {
   const paths = new Set(physicalFolders(config, { depth: Number.MAX_SAFE_INTEGER }));
-  const rows = store.db.prepare("SELECT slug FROM pages WHERE class != 'excluded' ORDER BY slug").all() as {
+  const rows = store.db.prepare("SELECT slug FROM pages WHERE role != 'ignored' ORDER BY slug").all() as {
     slug: string;
   }[];
 
@@ -93,14 +95,18 @@ export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEn
   return [...paths]
     .filter((folderPath) => {
       if (isReserved(folderPath, config)) return false;
-      return effectiveRule(`${folderPath}/x`, config.rules).class !== 'excluded';
+      return effectiveRule(`${folderPath}/x`, config.rules).role !== 'ignored';
     })
     .sort()
     .map((folderPath) => {
       const rule = effectiveRule(`${folderPath}/x`, config.rules);
+      const role = rule.role ?? 'knowledge';
+      const remember = rule.remember ?? (role === 'knowledge' ? 'integrate' : 'deny');
       return {
         path: folderPath,
-        class: rule.class ?? 'full',
+        role,
+        remember,
+        eligible: role !== 'ignored' && remember === 'integrate',
         ...(rule.description ? { description: rule.description } : {}),
       };
     });

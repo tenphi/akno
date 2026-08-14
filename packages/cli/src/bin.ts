@@ -43,7 +43,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     inbox                File whatever was dropped in an inbox folder.
 
   ${style.bold('Admin')}
-    dream                The maintenance cycle: observe, adopt, conflicts, housekeeping.
+    dream                The maintenance cycle: observe, curate, adopt, conflicts, housekeeping.
     index                Reconcile the index against the knowledge base.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd agent.

@@ -513,7 +513,7 @@ function existingFolders(ctx: AknoContext): string[] {
     if (
       folder &&
       !folder.includes('*') &&
-      effectiveRule(`${folder}/x`, ctx.config.rules).class !== 'excluded'
+      effectiveRule(`${folder}/x`, ctx.config.rules).role !== 'ignored'
     ) {
       folders.add(folder);
     }

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { PageClass } from '@akno/protocol';
+import type { DreamManagement, PageRole, RememberManagement } from '@akno/protocol';
 import { parseFrontmatter, readString, readTags, type Frontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
@@ -7,7 +7,13 @@ import { sha256 } from '../store/ids.ts';
  * Reserved markers inside a page. This is the complete list — everything
  * else in a body is prose Akno does not interpret.
  */
-const REFERENCE_FENCE = /^<!--\s*reference\s*-->\s*$/i;
+const SOURCE_FENCE = /^<!--\s*source\s*-->\s*$/i;
+export const AKNO_ITEM = /^\s*<!--\s*akno:item\s+(.+?)\s*-->\s*$/i;
+export function aknoItemId(line: string): string | null {
+  const match = AKNO_ITEM.exec(line);
+  const id = match?.[1]?.trim().split(/\s+/)[0] ?? null;
+  return id && /^[A-Za-z0-9_-]{4,80}$/.test(id) ? id : null;
+}
 /** `- **2026-06-02** | Renewed the apartment lease. [[home/lease]]` */
 const EVENT_LINE = /^\s*[-*]\s+\*\*(\d{4}-\d{2}-\d{2})\*\*\s*\|\s*(.+?)\s*$/;
 const WIKILINK = /\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g;
@@ -44,7 +50,10 @@ export interface ParsedPage {
   type: string | null;
   tags: string[];
   /** Declared in frontmatter. Rules and defaults fill in when absent. */
-  declaredClass: PageClass | null;
+  declaredRole: PageRole | null;
+  declaredManagement: { remember?: RememberManagement; dream?: DreamManagement };
+  about: string[];
+  aliases: string[];
   /** The whole file, unchanged. */
   content: string;
   /** Body only, after the frontmatter. */
@@ -55,11 +64,11 @@ export interface ParsedPage {
   bodyLine: number;
   bodyHash: string;
   /**
-   * Where `<!-- reference -->` switches the page's class mid-body. Above the
-   * fence: normal, mined, quotable in full. Below: indexed for search, never
+   * Where `<!-- source -->` switches a knowledge page to source material. Above the
+   * fence: canonical, mined, quotable in full. Below: indexed for search, never
    * mined, never returned whole. Null when the page has no fence.
    */
-  referenceFenceLine: number | null;
+  sourceFenceLine: number | null;
   events: ParsedEvent[];
   links: ParsedLink[];
   frontmatterId: string | null;
@@ -72,7 +81,7 @@ export function parsePage(relPath: string, content: string): ParsedPage {
   const bodyLine = frontmatter.bodyLine;
   const slug = relPathToSlug(relPath);
 
-  let referenceFenceLine: number | null = null;
+  let sourceFenceLine: number | null = null;
   const events: ParsedEvent[] = [];
   const links: ParsedLink[] = [];
 
@@ -80,8 +89,8 @@ export function parsePage(relPath: string, content: string): ParsedPage {
     const raw = lines[i]!;
     const absoluteLine = bodyLine + i;
 
-    if (referenceFenceLine === null && REFERENCE_FENCE.test(raw)) {
-      referenceFenceLine = absoluteLine;
+    if (sourceFenceLine === null && SOURCE_FENCE.test(raw)) {
+      sourceFenceLine = absoluteLine;
     }
 
     const event = EVENT_LINE.exec(raw);
@@ -116,28 +125,80 @@ export function parsePage(relPath: string, content: string): ParsedPage {
     }
   }
 
-  const declared = readString(frontmatter.data, 'class');
-  const declaredClass =
-    declared === 'full' || declared === 'reference' || declared === 'excluded' ? declared : null;
+  const akno = readAknoData(frontmatter.data);
+  const declaredRole = readPageRole(akno.role);
+  const title = readString(frontmatter.data, 'title') ?? deriveTitle(lines, relPath);
+  const rawAbout = readStringArray(akno.about);
+  const rawAliases = readStringArray(akno.aliases);
+  const identityKeys = new Set([title, slug, slug.split('/').pop() ?? slug].map(identityKey));
 
   return {
     slug,
     relPath,
     frontmatter,
-    title: readString(frontmatter.data, 'title') ?? deriveTitle(lines, relPath),
+    title,
     type: readString(frontmatter.data, 'type'),
     tags: readTags(frontmatter.data),
-    declaredClass,
+    declaredRole,
+    declaredManagement: readManagement(akno.management),
+    about: rawAbout.filter((entry) => normalizeLinkTarget(entry) !== slug),
+    aliases: rawAliases.filter((entry) => !identityKeys.has(identityKey(entry))),
     content,
     body,
     lines,
     bodyLine,
     bodyHash: sha256(body),
-    referenceFenceLine,
+    sourceFenceLine,
     events: dedupeEvents(events),
     links: dedupeLinks(links),
     frontmatterId: readString(frontmatter.data, 'id'),
   };
+}
+
+function readAknoData(data: Record<string, unknown>): Record<string, unknown> {
+  const value = data.akno;
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function readPageRole(value: unknown): PageRole | null {
+  return value === 'knowledge' || value === 'source' || value === 'inference' || value === 'ignored'
+    ? value
+    : null;
+}
+
+function readManagement(value: unknown): { remember?: RememberManagement; dream?: DreamManagement } {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const record = value as Record<string, unknown>;
+  const remember = record.remember === 'deny' || record.remember === 'integrate' ? record.remember : null;
+  const dream =
+    record.dream === 'none' || record.dream === 'hygiene' || record.dream === 'synthesize'
+      ? record.dream
+      : null;
+  return {
+    ...(remember ? { remember } : {}),
+    ...(dream ? { dream } : {}),
+  };
+}
+
+function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return [
+    ...new Set(
+      value
+        .filter((entry): entry is string => typeof entry === 'string')
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+function identityKey(value: string): string {
+  return value
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
 /**
@@ -226,26 +287,57 @@ function dedupeLinks(links: ParsedLink[]): ParsedLink[] {
  * Resolution order, most specific first: **page frontmatter → rules file →
  * provenance → default.** `akno rules <path>` prints which one won and why.
  */
-export interface ClassResolution {
-  class: PageClass;
+export interface RoleResolution {
+  role: PageRole;
   source: 'frontmatter' | 'rule' | 'provenance' | 'default';
   /** The glob, when a rule won. */
   via?: string;
 }
 
-export function resolveClass(
-  page: Pick<ParsedPage, 'declaredClass' | 'slug'>,
-  rule: { class?: PageClass; glob?: string } | null,
+export function resolveRole(
+  page: Pick<ParsedPage, 'declaredRole' | 'slug'>,
+  rule: { role?: PageRole; glob?: string } | null,
   observationsPath: string,
-): ClassResolution {
-  if (page.declaredClass) return { class: page.declaredClass, source: 'frontmatter' };
-  if (rule?.class) return { class: rule.class, source: 'rule', via: rule.glob };
+): RoleResolution {
+  if (page.declaredRole) return { role: page.declaredRole, source: 'frontmatter' };
+  if (rule?.role) return { role: rule.role, source: 'rule', via: rule.glob };
   // Provenance: pages the observe tier authored are inferences, not authored
   // claims, and must never be admissible evidence for another observation.
   if (page.slug === observationsPath || page.slug.startsWith(`${observationsPath}/`)) {
-    return { class: 'full', source: 'provenance' };
+    return { role: 'inference', source: 'provenance' };
   }
-  return { class: 'full', source: 'default' };
+  return { role: 'knowledge', source: 'default' };
+}
+
+export interface ResolvedPagePolicy {
+  role: PageRole;
+  remember: RememberManagement;
+  dream: DreamManagement;
+  about: string[];
+  aliases: string[];
+}
+
+export function resolvePagePolicy(
+  page: Pick<ParsedPage, 'declaredRole' | 'declaredManagement' | 'about' | 'aliases' | 'slug'>,
+  rule: {
+    role?: PageRole;
+    remember?: RememberManagement;
+    about?: string[];
+    glob?: string;
+  } | null,
+  observationsPath: string,
+): ResolvedPagePolicy {
+  const role = resolveRole(page, rule, observationsPath).role;
+  return {
+    role,
+    remember:
+      page.declaredManagement.remember ?? rule?.remember ?? (role === 'knowledge' ? 'integrate' : 'deny'),
+    // Whole-page automatic authority must be visible on the page itself. Folder rules cannot
+    // make an existing page rewritable merely because it was moved under another path.
+    dream: page.declaredManagement.dream ?? 'none',
+    about: page.about.length > 0 ? page.about : (rule?.about ?? []).filter((slug) => slug !== page.slug),
+    aliases: page.aliases,
+  };
 }
 
 /** True for a page written by the observe tier — ranked below authored pages. */

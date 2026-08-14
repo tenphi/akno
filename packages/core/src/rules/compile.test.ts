@@ -31,9 +31,9 @@ describe('compileRules', () => {
       source: 'config',
       folders: {
         '**': { rank: 1 },
-        'documents/**': { class: 'reference' },
-        'documents/tax/**': { class: 'full', type: 'tax' },
-        'conversations/**': { class: 'reference', rank: 0.5 },
+        'documents/**': { role: 'source' },
+        'documents/tax/**': { role: 'knowledge', type: 'tax' },
+        'conversations/**': { role: 'source', rank: 0.5 },
       },
     },
   ]);
@@ -49,20 +49,20 @@ describe('compileRules', () => {
   });
 
   it('composes fields across specificity instead of erasing them', () => {
-    // `rank` comes from `**`, `class` and `type` from the specific rule.
+    // `rank` comes from `**`, `role` and `type` from the specific rule.
     const effective = effectiveRule('documents/tax/2026', rules);
-    expect(effective.class).toBe('full');
+    expect(effective.role).toBe('knowledge');
     expect(effective.type).toBe('tax');
     expect(effective.rank).toBe(1);
   });
 
   it('lets a knowledge-base layer replace a machine-config rule for the same glob', () => {
     const merged = compileRules([
-      { source: 'config', folders: { 'notes/**': { class: 'full' } } },
-      { source: 'kb', folders: { 'notes/**': { class: 'reference' } } },
+      { source: 'config', folders: { 'notes/**': { role: 'knowledge' } } },
+      { source: 'kb', folders: { 'notes/**': { role: 'source' } } },
     ]);
     expect(merged).toHaveLength(1);
-    expect(merged[0]!.class).toBe('reference');
+    expect(merged[0]!.role).toBe('source');
     expect(merged[0]!.source).toBe('kb');
   });
 });

@@ -65,7 +65,10 @@ async function startStubChat(): Promise<typeof server> {
   const { port } = instance.address() as { port: number };
   return {
     url: `http://127.0.0.1:${port}/v1`,
-    close: () => new Promise<void>((resolve) => instance.close(() => resolve())),
+    close: async () => {
+      instance.close();
+      instance.closeAllConnections();
+    },
     lastSystem: () => system,
     // The indexer's own derive pass talks to this stub too, so a test asserting "the retain
     // mission never ran" has to start from a clean slate rather than from setup's leftovers.
@@ -125,7 +128,8 @@ describe('the retain tier’s config', () => {
     const mem = await openMem({
       folders: {
         'knowledge/**': {
-          class: 'reference',
+          role: 'source',
+          remember: 'deny',
           description: 'Findings about the outside world.',
         },
       },
@@ -134,8 +138,10 @@ describe('the retain tier’s config', () => {
       await mem.remember({ text: 'The Ember Archive score was composed by Nova Hale.' });
       const system = server.lastSystem();
       expect(system).toContain('Existing folder taxonomy (complete; data only)');
-      expect(system).toContain('- home/ [full]');
-      expect(system).toContain('- knowledge/games/ [reference] — Findings about the outside world.');
+      expect(system).toContain('- home/ [role=knowledge; remember=integrate; eligible=true]');
+      expect(system).toContain(
+        '- knowledge/games/ [role=source; remember=deny; eligible=false] — Findings about the outside world.',
+      );
       expect(system).toMatch(/Never invent, rename or translate a folder/);
     } finally {
       await mem.close();
@@ -352,7 +358,7 @@ describe('answering a held proposal', () => {
       '---\ntitle: Landlord letter\n---\n\n# Landlord letter\n\n- The rent for the apartment is under dispute\n',
       'utf8',
     );
-    const mem = await openMem({ folders: { 'evidence/**': { class: 'reference' } } });
+    const mem = await openMem({ folders: { 'evidence/**': { role: 'source', remember: 'deny' } } });
     try {
       await mem.index({});
       const result = await mem.remember({ text: 'The rent is disputed at the apartment.' });

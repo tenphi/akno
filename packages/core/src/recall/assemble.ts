@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
-import type { Card, Depth, Line, PageClass, RecallMode, SupersededClaim } from '@akno/protocol';
+import type { Card, Depth, Line, PageRole, RecallMode, SupersededClaim } from '@akno/protocol';
 import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
 import { isObservation } from '../kb/page.ts';
@@ -18,8 +18,8 @@ export interface AssembleOptions {
   lineWindow: number;
   /** Concepts the query asked about. Terms are matched against what came back. */
   concepts: string[];
-  /** `include: ['reference'], depth: 'full'` lifts the reference quote cap. */
-  include: PageClass[] | null;
+  /** `include: ['source'], depth: 'full'` lifts the source quote cap. */
+  include: PageRole[] | null;
 }
 
 export interface Assembled {
@@ -36,7 +36,7 @@ interface PageRow {
   title: string;
   type: string | null;
   tags: string;
-  class: PageClass;
+  role: PageRole;
   summary: string | null;
   keywords: string | null;
   body_line: number;
@@ -83,7 +83,7 @@ export class Assembler {
         return page ? { ...entry, page, ranked: entry.score * this.rankFactor(page) } : null;
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
-      .filter((entry) => !options.include || options.include.includes(entry.page.class))
+      .filter((entry) => !options.include || options.include.includes(entry.page.role))
       .sort((a, b) => b.ranked - a.ranked);
 
     // One budget, one assembly — whole cards first. A half-card whose lines
@@ -118,24 +118,24 @@ export class Assembler {
   }
 
   /**
-   * Ranking policy lives in the layer: `full` pages outrank narrative
-   * history, which outranks derived observations. A folder rule can set `rank` to
-   * adjust it. Class applies at **assembly**, not at search — `reference` pages
+   * Ranking policy lives in the layer: knowledge pages outrank source pages,
+   * which outrank derived inferences. A folder rule can set `rank` to
+   * adjust it. Role applies at **assembly**, not at search — source pages
    * compete for relevance on equal terms, then come back capped.
    */
   private rankFactor(page: PageRow): number {
     const rule = effectiveRule(page.slug, this.#config.rules);
     if (typeof rule.rank === 'number') return rule.rank;
-    if (isObservation(page.slug, this.#config.paths.observations)) {
-      return this.#config.recall.rank.observation;
+    if (isObservation(page.slug, this.#config.paths.observations) || page.role === 'inference') {
+      return this.#config.recall.rank.inference;
     }
-    return page.class === 'reference' ? this.#config.recall.rank.reference : this.#config.recall.rank.full;
+    return page.role === 'source' ? this.#config.recall.rank.source : this.#config.recall.rank.knowledge;
   }
 
   private pageRow(pageId: string): PageRow | null {
     const row = this.#store.db
       .prepare(
-        `SELECT id, slug, rel_path, title, type, tags, class, summary, keywords, body_line, updated_at
+        `SELECT id, slug, rel_path, title, type, tags, role, summary, keywords, body_line, updated_at
            FROM pages WHERE id = ?`,
       )
       .get(pageId) as PageRow | undefined;
@@ -153,15 +153,15 @@ export class Assembler {
     const documentHits = hits.filter((hit) => meta.get(hit.chunkId)?.document_id);
 
     const chunk = meta.get((bodyHits[0] ?? hits[0]!).chunkId);
-    const isReference = page.class === 'reference' || chunk?.kind === 'reference';
-    const wantsFullReference = options.depth === 'full' && options.include?.includes('reference');
+    const isSource = page.role === 'source' || chunk?.kind === 'source';
+    const wantsFullSource = options.depth === 'full' && options.include?.includes('source');
 
     // Ten matching emails cost ten summaries, not ten threads.
     const maxLines =
       options.depth === 'summary'
         ? 0
-        : isReference && !wantsFullReference
-          ? this.#config.recall.referenceQuoteLines
+        : isSource && !wantsFullSource
+          ? this.#config.recall.sourceQuoteLines
           : options.depth === 'full'
             ? Number.POSITIVE_INFINITY
             : options.lineWindow;
@@ -173,7 +173,7 @@ export class Assembler {
     const card: Card = {
       slug: page.slug,
       title: page.title,
-      class: page.class,
+      role: page.role,
       summary: page.summary,
       score: round(score),
       lines: annotateLines(lines, facts),
@@ -191,7 +191,7 @@ export class Assembler {
     const documents = this.documentsFor(page.id, documentHits, meta, options);
     if (documents.length > 0) card.documents = documents;
 
-    if (isReference && !wantsFullReference && lines.length >= maxLines) card.truncated = true;
+    if (isSource && !wantsFullSource && lines.length >= maxLines) card.truncated = true;
 
     return card;
   }
@@ -346,7 +346,7 @@ export class Assembler {
         ...(hit?.doc_page !== null && hit?.doc_page !== undefined ? { matched_page: hit.doc_page } : {}),
         // Not quoted at `depth: "summary"`, which asks for cards without evidence windows.
         ...(hit && options.depth !== 'summary'
-          ? { quote: quoteWindow(hit.text, this.#config.recall.referenceQuoteLines) }
+          ? { quote: quoteWindow(hit.text, this.#config.recall.sourceQuoteLines) }
           : {}),
       });
     }
@@ -462,8 +462,8 @@ interface DocumentRow {
 }
 
 /**
- * A reference region comes back as **a capped quote window**, and a document is
- * reference by nature. Capped in lines rather than characters so the same knob that
+ * A source region comes back as **a capped quote window**, and a document is
+ * source by nature. Capped in lines rather than characters so the same knob that
  * governs a fenced region governs this, and so a quote never ends mid-word.
  */
 function quoteWindow(text: string, maxLines: number): string {

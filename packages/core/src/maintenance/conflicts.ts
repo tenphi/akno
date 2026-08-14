@@ -15,7 +15,7 @@ import { valuesConflict } from '../write/conflict.ts';
  * never writes. Reporting what inline checking missed is the whole job, and a maintenance
  * process that silently rewrites claims is the one thing worse than a duplicate.
  *
- * `full` pages only: a `reference` page is somebody else's words, and a contract
+ * Knowledge pages only: a source page is somebody else's words, and a contract
  * disagreeing with a household's notes is not a contradiction in the household's memory.
  */
 
@@ -66,7 +66,7 @@ export function findCrossPageConflicts(ctx: AknoContext, maxPairs: number): Cros
       `SELECT p.slug, f.line_start, f.subject, f.attribute, f.value, f.claim, f.confidence, f.first_seen
          FROM facts f JOIN pages p ON p.id = f.page_id
         WHERE f.valid_to IS NULL
-          AND p.class = 'full'
+          AND p.role = 'knowledge'
           AND f.subject IS NOT NULL
           AND f.attribute IS NOT NULL
           AND f.value IS NOT NULL

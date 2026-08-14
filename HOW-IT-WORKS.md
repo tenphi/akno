@@ -139,7 +139,7 @@ flowchart TD
 | Walk                | Lists files. Skips dotfolders, `node_modules`, anything in `ignore`.                          | no             |
 | Skip unchanged      | Compares size and modification time against last run. This is why a restart is not a rebuild. | no             |
 | Hash                | Only for files that look changed. Confirms whether the content really moved.                  | no             |
-| Parse pages         | Frontmatter, headings, `[[links]]`, dated lines, the `<!-- reference -->` fence.              | no             |
+| Parse pages         | Frontmatter, headings, `[[links]]`, dated lines, the `<!-- source -->` fence.                 | no             |
 | Chunk               | Splits a page on its own headings, ~1,200 characters per chunk.                               | no             |
 | Notice attachments  | Records PDFs, images and Office files, and which page owns each.                              | no             |
 | Read documents      | PDF text layer, or OCR for scans. Per page of the document.                                   | no (macOS)     |
@@ -192,7 +192,7 @@ documents/car-insurance-2026 (full, 0.931)
 | `mode=question`                | Akno inferred you asked a question, not a keyword lookup.                      |
 | `2 cards 1180 tokens`          | Two pages came back, and the whole answer costs about 1,180 tokens.              |
 | `coverage ✓ … ✗ …`             | Which parts of your question the results actually cover — and which they do not. |
-| `documents/car-insurance-2026` | The page. `full` is its class; `0.931` is how relevant it is.                    |
+| `documents/car-insurance-2026` | The page. `knowledge` is its role; `0.931` is how relevant it is.                |
 | `Car insurance 2026 › Policy`  | Which heading the best match sat under.                                          |
 | `…:11`                         | File and line. Open it and check.                                                |
 | `~0.94`                        | How confident the deriver is that this line states a solid durable claim.        |
@@ -236,7 +236,7 @@ and searches for _that_ — it matches the shape of the real one.
 akno recall "rent" --folder home            # only inside home/
 akno recall "invoice" --type receipt        # only pages with type: receipt
 akno recall "lease" --tag legal,home        # only pages with both tags
-akno recall "policy wording" --include reference --depth full   # include evidence pages, in full
+akno recall "policy wording" --include source --depth full      # include evidence pages, in full
 akno recall "rent" --budget 2000            # keep the answer small
 ```
 
@@ -367,9 +367,10 @@ that thought otherwise would block half your writes. The slower, thorough check 
 
 `write` is for when you know the page and the wording. `remember` is for when you do not.
 
-**Which model:** `maintenance.model` if you set one, otherwise `derive`. It is one call to decide what in the
-text is worth keeping, then a `recall` to find where each claim belongs — so a `remember` costs a derive-class
-call plus a search, not a call per claim.
+**Which model:** `maintenance.model` if you set one, otherwise `derive`. The first call sees the complete folder
+taxonomy and decides what is worth keeping and its canonical destination. Recall may bind it to an existing
+page. One final call per target page chooses the precise section; deterministic code performs the insertion and
+falls back to `## Unsorted` if placement fails. `remember` never creates a folder.
 
 ```bash
 akno remember "Decision: switching the internet plan to Blackwater Fibre at 39 EUR a month from 1 October."
@@ -500,14 +501,14 @@ undeclared folder comes back asking for a sentence.
 
 ```bash
 akno folder warranties --description "Appliance and electronics warranties, with their expiry dates."
-akno folder conversations --description "Chat transcripts: what was said." --class reference
+akno folder conversations --description "Chat transcripts: what was said." --role source --remember deny
 ```
 
 The description is the point of the step. It is returned by `list` and carried in the pre-turn bundle, so it is
 what the _next_ caller reads before filing a page — and `research/` versus `household/` is not self-explanatory
 to anyone who has not been told that one holds findings about the world and the other holds claims about this
-household. `--class reference` is the other load-bearing choice: only claims become facts, so a folder of
-transcripts or legal texts declared `full` gets mined for assertions nobody made.
+household. `--role source --remember deny` is the other load-bearing choice: only knowledge claims become
+facts, so transcripts and legal texts remain searchable evidence and cannot receive retained claims.
 
 The rule is written to `<akno_path>/akno.json` as a textual insert, so every comment already in that file
 survives and the diff is one hunk. It is in force immediately — declare and write in the same turn.
@@ -686,11 +687,11 @@ Anything still unlinked gets a page of its own from the nightly cycle.
 ## `akno dream` — the nightly cycle
 
 Slow work that should not happen while you are waiting: noticing patterns, finding contradictions, tidying
-reports. Five phases, each independent and safe to run twice.
+reports. Seven phases, each independent and safe to run twice.
 
 **Which model:** `maintenance.model` for the whole cycle if set, otherwise `derive`. `adopt` and `housekeeping`
-are mostly bookkeeping; `observe`, `reflect` and `conflicts` are the phases that actually spend calls, and they
-run at 3am precisely so a slow model costs you nothing.
+are mostly bookkeeping; `observe`, `reflect`, `curate` and verified conflicts spend calls, and they run at 3am
+precisely so a slow model costs you nothing.
 
 ```bash
 akno dream              # every enabled phase
@@ -702,10 +703,19 @@ akno dream --phase conflicts
 | -------------- | ------------- | ----------------------------------------------------------------------------------- |
 | `observe`      | appends lines | Notices patterns across repeated facts. **Off by default.**                         |
 | `reflect`      | appends lines | Builds principles on top of observations. **Off by default.**                       |
+| `curate`       | preview/edit  | Hygienizes or synthesizes only pages that explicitly authorize it.                  |
 | `adopt`        | creates pages | Gives a document with no page a page, so its text can be found at all.              |
 | `conflicts`    | never         | Finds two pages that state different values for the same thing.                     |
 | `repair`       | edits pages   | Acts on the two above: repoints links, retires replaced claims. **Off by default.** |
 | `housekeeping` | never         | Broken links, unlinked documents, pages that drifted from their folder's rules.     |
+
+Curate is page-owned policy, not a global license. `dream: hygiene` permits formatting, Markdown, minor
+language fixes and local restructuring while retaining the top-level structure and meaning. `dream:
+synthesize` permits a full rewrite of a canonical knowledge page: it may organize linked evidence, retain
+unresolved contradictions explicitly, and split oversized coherent sections beneath the canonical slug.
+Each proposal goes through a draft call, a separate verifier call, and deterministic marker/value/size guards.
+`maintenance.curate.enabled` schedules it; the separate `maintenance.curate.write` switch defaults to false,
+so initial runs are previews even without `--dry-run`.
 
 `conflicts` and `housekeeping` only ever report, which is the safe default and, run nightly for a
 year, a to-do list nobody reads. `repair` is the phase that acts on them, and it is off by default
@@ -753,7 +763,7 @@ Housekeeping
 wrote. So it is opt-in, and its rules are enforced in code rather than asked for in a prompt:
 
 - at least two **different** pages as evidence, and every page it cites is checked against what it was shown
-- claims only — never a `reference` page like a contract or an email
+- claims only — never a `source` page like a contract or an email
 - never its own output as evidence for more output
 - no hedging: "might", "seems", "possibly" are refused outright
 - nothing about anyone's health, relationships, finances, beliefs or character
@@ -860,7 +870,7 @@ Akno
   vector backend  sqlite-vec
 
 Index
-  pages            221 (122 full, 99 reference)
+  pages            221 (122 knowledge, 99 source)
   chunks           1142 (1142 embedded)
   facts            1036 live, 0 superseded
   documents        13 (13 extracted)
@@ -892,7 +902,8 @@ akno rules articles/some-page    # what governs this one path
 
 ```
 articles/some-page
-  class  reference
+  role      source
+  remember  deny
 
   matched, most specific first:
     articles/**  ~/Notes/akno.json

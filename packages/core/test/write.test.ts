@@ -284,7 +284,12 @@ describe('declaring a folder', () => {
 
   it('writes the rule into akno.json, where the taxonomy travels with the notes', async () => {
     const mem = await openAs('agent');
-    await mem.folder({ path: 'research', description: 'Findings about the world.', class: 'reference' });
+    await mem.folder({
+      path: 'research',
+      description: 'Findings about the world.',
+      role: 'source',
+      remember: 'deny',
+    });
     // Read the way Akno reads it: the file is JSONC, and it is written with comments on
     // purpose — a plain JSON.parse failing here is the format working.
     const rules = readJsoncFile<{ folders: Record<string, { description: string }> }>(

@@ -67,7 +67,9 @@ export async function folder(ctx: AknoContext, rawInput: unknown): Promise<Folde
 
   const rule = FolderRuleDoc.parse({
     description: input.description,
-    ...(input.class ? { class: input.class } : {}),
+    ...(input.role ? { role: input.role } : {}),
+    ...(input.remember ? { remember: input.remember } : {}),
+    ...(input.about ? { about: input.about } : {}),
     ...(input.type ? { type: input.type } : {}),
     ...(input.ingest ? { ingest: input.ingest } : {}),
     ...(input.rank !== undefined ? { rank: input.rank } : {}),

@@ -51,8 +51,8 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     );
   }
 
-  const existing = ctx.store.db.prepare('SELECT id, rel_path, class FROM pages WHERE slug = ?').get(slug) as
-    { id: string; rel_path: string; class: string } | undefined;
+  const existing = ctx.store.db.prepare('SELECT id, rel_path FROM pages WHERE slug = ?').get(slug) as
+    { id: string; rel_path: string } | undefined;
 
   // ── Gate ────────────────────────────────────────────────────────────────
   if (!existing) {
@@ -359,7 +359,7 @@ async function writeEventOnly(
   };
 }
 
-async function appendToLedger(
+export async function appendToLedger(
   ctx: AknoContext,
   event: { date: string; summary: string; slug?: string },
 ): Promise<{ file: ChangeFile | null; line: number }> {

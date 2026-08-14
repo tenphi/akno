@@ -11,16 +11,15 @@ const DREAM_HELP = `akno dream [options]
                    observations/ with their evidence, and never restates a fact.
     reflect        Decision principles built on observations. Off by default — at a few
                    hundred pages a "pattern" is one coincidence away from noise.
+    curate         Hygiene or full synthesis, only for pages that explicitly authorize it.
+                   Runs a draft pass, a verification pass and deterministic guards.
     adopt          A page for a document that has none, written beside the file — so its
                    text can be returned at all. Honours \`ingest: "file"\`.
     conflicts      The thorough pass inline checking cannot do: facts from different
                    pages that state different values for the same thing.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
 
-  Only observe and reflect write anything, and only ever by appending: a changed pattern
-  gets a new dated line, nothing is deleted, and the whole run is one \`undo\`. Everything
-  else is a report, because a maintenance process that tidies a knowledge base behind its
-  owner's back is worse than the mess.
+  Curate writes only when maintenance.curate.write is true; otherwise scheduled runs preview it.
 
   --phase <name>   Run one phase instead of every enabled one.
   --dry-run        Report what observe would write; touch nothing.
@@ -76,6 +75,23 @@ function printDream(report: DreamReport, dryRun: boolean): number {
       line(`  ${mark} ${entry.slug}`);
       line(`          ${truncate(entry.pattern, 96)}`);
       line(`          ${style.grey(`evidence: ${entry.evidence.join(', ')}`)}`);
+    }
+  }
+
+  if (report.curated.length > 0) {
+    heading(`${report.curated.length} page curation result(s)`);
+    for (const entry of report.curated) {
+      const mark =
+        entry.action === 'updated'
+          ? style.green('updated')
+          : entry.action === 'would-update'
+            ? style.cyan('preview')
+            : entry.action === 'rejected'
+              ? style.yellow('refused')
+              : style.grey('same');
+      line(`  ${mark} ${entry.slug}  ${style.grey(entry.mode)}`);
+      for (const issue of entry.issues) line(`          ${style.grey(issue)}`);
+      if (entry.splits.length) line(`          ${style.grey(`splits: ${entry.splits.join(', ')}`)}`);
     }
   }
 

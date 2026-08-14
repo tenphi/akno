@@ -6,7 +6,7 @@ import type { FolderRuleDoc } from './schema.ts';
  * This is the one config file Akno writes, and it is also the one config file that lives
  * inside the user's own folder — a git repo under active hand editing, full of comments
  * explaining why each rule is what it is. Parsing it and stringifying it back would produce
- * valid JSON and destroy all of that: the explanation of why `conversations/**` is reference
+ * valid JSON and destroy all of that: the explanation of why `conversations/**` has a source role
  * material is worth more than the rule it annotates, because the rule can be re-derived and
  * the reasoning cannot.
  *
@@ -31,10 +31,11 @@ const HEADER = `{
   // Rules for this knowledge base. Akno reads this file from the root of the notes,
   // so the taxonomy travels with the folder rather than living in a machine's config.
   //
-  // Three classes. \`full\` is the default and needs no entry here:
-  //   full       indexed, recall returns matching lines, mined for facts
-  //   reference  indexed and searchable, quoted in a capped window, never mined for facts
-  //   excluded   not indexed at all
+  // Roles say what a page contributes; management says what automation may do:
+  //   knowledge  canonical claims, eligible for fact derivation
+  //   source     searchable evidence, never mined for facts
+  //   inference  derived interpretation, ranked below authored knowledge
+  //   ignored    not indexed at all
   //
   // \`description\` says what belongs in the folder. It is the field a caller reads before
   // filing a page, so it is worth writing for a reader who has never seen this base.

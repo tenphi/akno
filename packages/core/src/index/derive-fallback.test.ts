@@ -46,7 +46,10 @@ async function startStub(): Promise<typeof server> {
   const { port } = instance.address() as { port: number };
   return {
     url: `http://127.0.0.1:${port}/v1`,
-    close: () => new Promise<void>((resolve) => instance.close(() => resolve())),
+    close: async () => {
+      instance.close();
+      instance.closeAllConnections();
+    },
     mode: (next) => {
       mode = next;
     },

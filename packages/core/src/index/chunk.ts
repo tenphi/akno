@@ -2,8 +2,8 @@ import type { ParsedPage } from '../kb/page.ts';
 
 export interface Chunk {
   ord: number;
-  /** 'full' or 'reference' — a chunk below the fence is evidence, never mined. */
-  kind: 'full' | 'reference';
+  /** A chunk below the source fence is evidence, never mined. */
+  kind: 'knowledge' | 'source';
   /** `Car insurance 2026 › Policy`. Prepended to the embedded text and shown as
    *  a breadcrumb on the card, because a heading is the author saying where a
    *  topic starts. */
@@ -115,7 +115,7 @@ function measure(section: Section): number {
 function toChunk(section: Section): Chunk {
   return {
     ord: 0,
-    kind: 'full',
+    kind: 'knowledge',
     headingPath: section.headings.join(' › '),
     text: section.lines.map((line) => line.text).join('\n'),
     lineStart: section.lines[0]!.line,
@@ -160,7 +160,7 @@ function splitByHeading(page: ParsedPage, depth: number): Section[] {
   const headingStack: string[] = [];
   let current: Section | null = null;
 
-  const fenceLine = page.referenceFenceLine;
+  const fenceLine = page.sourceFenceLine;
 
   for (let i = 0; i < page.lines.length; i++) {
     const text = page.lines[i]!;
@@ -189,7 +189,7 @@ function splitByHeading(page: ParsedPage, depth: number): Section[] {
     }
     current.lines.push({ text, line });
 
-    // A fence line starts a new section: the class changes, so the chunk must.
+    // A fence line starts a new section: the role changes, so the chunk must.
     if (fenceLine !== null && line === fenceLine) {
       current = { headings: compactHeadings(headingStack), lines: [], depth };
       sections.push(current);
@@ -218,7 +218,7 @@ function splitByParagraph(section: Section, options: ChunkOptions): Chunk[] {
     if (buffer.length === 0) return;
     chunks.push({
       ord: 0,
-      kind: 'full',
+      kind: 'knowledge',
       headingPath,
       text: buffer.map((l) => l.text).join('\n'),
       lineStart: buffer[0]!.line,
@@ -260,7 +260,7 @@ function splitByParagraph(section: Section, options: ChunkOptions): Chunk[] {
     if (remaining.trim().length > 0) {
       chunks.push({
         ord: 0,
-        kind: 'full',
+        kind: 'knowledge',
         headingPath,
         text: remaining,
         lineStart: buffer[0]!.line,
@@ -273,12 +273,12 @@ function splitByParagraph(section: Section, options: ChunkOptions): Chunk[] {
 }
 
 /**
- * Marks chunks below the reference fence. Done after chunking rather than during
+ * Marks chunks below the source fence. Done after chunking rather than during
  * so the fence position is the single thing that decides it.
  */
-export function applyReferenceFence(chunks: Chunk[], fenceLine: number | null): Chunk[] {
+export function applySourceFence(chunks: Chunk[], fenceLine: number | null): Chunk[] {
   if (fenceLine === null) return chunks;
-  return chunks.map((chunk) => (chunk.lineStart >= fenceLine ? { ...chunk, kind: 'reference' } : chunk));
+  return chunks.map((chunk) => (chunk.lineStart >= fenceLine ? { ...chunk, kind: 'source' } : chunk));
 }
 
 /**

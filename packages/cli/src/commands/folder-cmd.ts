@@ -11,9 +11,8 @@ const FOLDER_HELP = `akno folder <path> --description <text> [options]
   \`description\` is what the next caller reads before filing a page there.
 
   --description <text>  What belongs here. Required.
-  --class <c>           full | reference | excluded. \`reference\` for evidence —
-                        transcripts, articles, legal texts — which is searchable and
-                        quotable but never mined for facts. Default full.
+  --role <r>            knowledge | source | inference | ignored. Default knowledge.
+  --remember <m>        integrate | deny. Defaults from the role.
   --type <t>            Default page type for this folder.
   --ingest <mode>       page | document | file | auto | ignore.
   --rank <n>            0..2, multiplied into the recall score.
@@ -25,7 +24,8 @@ const FOLDER_HELP = `akno folder <path> --description <text> [options]
 export async function folderCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse<{
     description?: string;
-    class?: string;
+    role?: string;
+    remember?: string;
     type?: string;
     ingest?: string;
     rank?: string;
@@ -34,7 +34,8 @@ export async function folderCommand(argv: string[]): Promise<number> {
     'dry-run': boolean;
   }>(argv, {
     description: { type: 'string' },
-    class: { type: 'string' },
+    role: { type: 'string' },
+    remember: { type: 'string' },
     type: { type: 'string' },
     ingest: { type: 'string' },
     rank: { type: 'string' },
@@ -61,7 +62,8 @@ export async function folderCommand(argv: string[]): Promise<number> {
     const result = await handle.ops.folder({
       path: positionals[0]!,
       description: values.description,
-      ...(values.class ? { class: values.class as 'full' | 'reference' | 'excluded' } : {}),
+      ...(values.role ? { role: values.role as 'knowledge' | 'source' | 'inference' | 'ignored' } : {}),
+      ...(values.remember ? { remember: values.remember as 'integrate' | 'deny' } : {}),
       ...(values.type ? { type: values.type } : {}),
       ...(values.ingest ? { ingest: values.ingest as 'page' | 'document' | 'file' | 'auto' | 'ignore' } : {}),
       ...(values.rank !== undefined ? { rank: Number(values.rank) } : {}),

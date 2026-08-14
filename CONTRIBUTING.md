@@ -17,7 +17,7 @@ directory. If it passes, your checkout is working.
 
 Once a service is installed, `pnpm akno redeploy` is the one command that applies a change: it builds, then
 restarts `dev.akno`, then waits for the socket to come back. Both halves are needed and for different
-reasons — launchd runs the TypeScript directly, so the *service* needs the restart and not the build, while a
+reasons — launchd runs the TypeScript directly, so the _service_ needs the restart and not the build, while a
 host importing `@akno/client` reads `packages/*/dist`, so it needs the build and not the restart. Doing one
 and not the other leaves half the system on the old code, and the symptom is `unknown op`.
 
@@ -65,7 +65,7 @@ One place, then everything else follows:
    `implemented: false` until the body exists.
 3. Implement it in `packages/core/src/ops/` and wire it into the `implementations` map in `open.ts`.
 4. Add a CLI command if a human would use it.
-5. `pnpm akno redeploy`. The op registry a *host* sees is the built one, so a new op is invisible to Luna
+5. `pnpm akno redeploy`. The op registry a _host_ sees is the built one, so a new op is invisible to Luna
    until the build has run — and it fails as `unknown op`, which looks like a wiring mistake in the host
    rather than a stale artifact.
 
@@ -88,7 +88,7 @@ Changes here need more care than the line count suggests.
   fusion scores on a different scale.
 - **Never mix score scales in one array.** bm25, cosine, reciprocal rank and cross-encoder logits are four
   different units. Fuse by rank; normalize before comparing.
-- **The knowledge base is the user's.** With the defaults, an index pass must leave the *set* of files and every
+- **The knowledge base is the user's.** With the defaults, an index pass must leave the _set_ of files and every
   file's bytes unchanged. The integration suite asserts this by hashing the whole tree either side of a pass —
   which catches a file appearing as well as a file being edited. Frontmatter keys other than `id` are preserved
   byte for byte, which is why frontmatter writes splice text rather than round-tripping through a YAML
@@ -118,14 +118,14 @@ Changes here need more care than the line count suggests.
   statement missed the top eight. A long query resembles everything a little. `routingQuery` is one line and has
   a test for exactly this reason.
 - **Rules are config, and config changes have to reach the index.** A rule edit is not a file edit, so the stat
-  fast path skips every page and the pass reports "223 unchanged" while the new `class` does nothing. The
-  resolved rules are fingerprinted in `meta`; when the fingerprint moves, pages whose class moved are
-  re-indexed and their derivations dropped. Note that an excluded page has no `pages` row at all — walk `files`
-  too, or exclusion becomes a one-way door.
+  fast path skips every page and the pass reports "223 unchanged" while the new role does nothing. The
+  resolved rules are fingerprinted in `meta`; when the fingerprint moves, pages whose role or management
+  policy moved are re-indexed and their derivations dropped. Note that an ignored page has no `pages` row at
+  all — walk `files` too, or ignoring becomes a one-way door.
 - **Never infer "the source line is gone" from the absence of a fact.** Retiring vs deleting hangs on whether
   the _page_ still contains the line, so the live-line set comes from the page. Read from the incoming facts, a
-  derivation that returned nothing looks like every line vanishing at once, and a page that merely became
-  `reference` retires its whole history as superseded on lines nobody touched.
+  derivation that returned nothing looks like every line vanishing at once, and a page that merely became a
+  `source` retires its whole history as superseded on lines nobody touched.
 - **A document's text belongs to the document, not to a page body.** It is invalidated by the _file's_ hash,
   which a page body cannot honour, and indexing the same words in both places makes one match arrive twice
   against one recall budget. Document chunks live in `chunks` with a `document_id` and a `doc_page` so FTS,

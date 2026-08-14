@@ -21,7 +21,7 @@ const PAGES = {
   'timeline.md': `# Timeline\n\n## 2026\n- **2026-03-20** | Replaced the dishwasher — Zephyr. [[home/appliances]]\n`,
   'home/appliances.md': `---\ntitle: Appliances\ntags: [home]\n---\n\n# Appliances\n\n## Dishwasher\nZephyr QX-100, installed 2026-03-20, five-year warranty.\n`,
   'home/lease.md': `---\ntitle: Apartment lease\ntype: contract\n---\n\n# Apartment lease\n\n- Rent: 1111 EUR per month\n- Renews: 2027-06-02\n\nRelated: [[home/appliances]]\n`,
-  'reference/rules.md': `---\ntitle: Building rules\nclass: reference\n---\n\n# Building rules\n\nNo deliveries after 20:00. Quiet hours 22:00 to 07:00.\n`,
+  'sources/rules.md': `---\ntitle: Building rules\nakno:\n  role: source\n  management:\n    remember: deny\n---\n\n# Building rules\n\nNo deliveries after 20:00. Quiet hours 22:00 to 07:00.\n`,
 };
 
 for (const [relPath, content] of Object.entries(PAGES)) {
@@ -81,8 +81,8 @@ try {
   check('reads a page in full', page.page.lines.some((line) => line.text.includes('1111')));
   check('reports backlinks', JSON.parse(run('read', 'home/appliances')).page.backlinks.includes('home/lease'));
 
-  const reference = JSON.parse(run('read', 'reference/rules'));
-  check('read ignores class', reference.page.lines.some((line) => line.text.includes('deliveries')));
+  const source = JSON.parse(run('read', 'sources/rules'));
+  check('read returns source pages in full', source.page.lines.some((line) => line.text.includes('deliveries')));
 
   const timeline = JSON.parse(run('timeline'));
   check('timeline finds the event and its target', timeline.events[0]?.slug === 'home/appliances');

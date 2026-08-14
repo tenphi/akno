@@ -43,7 +43,10 @@ async function startStubChat(): Promise<typeof server> {
   const address = instance.address() as { port: number };
   return {
     url: `http://127.0.0.1:${address.port}/v1`,
-    close: () => new Promise<void>((resolve) => instance.close(() => resolve())),
+    close: async () => {
+      instance.close();
+      instance.closeAllConnections();
+    },
     setFacts: (next) => {
       facts = next;
     },
@@ -196,7 +199,7 @@ describe('fact lifecycle', () => {
     expect(claims[0]!.text).toContain('1111');
   });
 
-  it('does not mine below a reference fence', async () => {
+  it('does not mine below a source fence', async () => {
     fs.writeFileSync(
       path.join(root, 'contract.md'),
       [
@@ -204,7 +207,7 @@ describe('fact lifecycle', () => {
         '',
         'Signed in August.',
         '',
-        '<!-- reference -->',
+        '<!-- source -->',
         '',
         'CLAUSE 1. The tenant shall pay 1111.',
         '',

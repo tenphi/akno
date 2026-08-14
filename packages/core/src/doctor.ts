@@ -51,9 +51,9 @@ export interface DoctorReport {
     renditions: number;
     links: number;
     brokenLinks: number;
-    excludedRules: number;
+    ignoredRules: number;
   };
-  byClass: Record<string, number>;
+  byRole: Record<string, number>;
   index: {
     /** Time to open the handle and run one point lookup. Not a model number. */
     openMs: number;
@@ -97,15 +97,15 @@ export async function doctor(
     renditions: count('SELECT count(*) AS c FROM documents WHERE renders IS NOT NULL'),
     links: count('SELECT count(*) AS c FROM links'),
     brokenLinks: count('SELECT count(*) AS c FROM links WHERE broken = 1'),
-    excludedRules: ctx.config.rules.filter((rule) => rule.class === 'excluded').length,
+    ignoredRules: ctx.config.rules.filter((rule) => rule.role === 'ignored').length,
   };
 
-  const byClass: Record<string, number> = {};
-  for (const row of db.prepare('SELECT class, count(*) AS c FROM pages GROUP BY class').all() as {
-    class: string;
+  const byRole: Record<string, number> = {};
+  for (const row of db.prepare('SELECT role, count(*) AS c FROM pages GROUP BY role').all() as {
+    role: string;
     c: number;
   }[]) {
-    byClass[row.class] = row.c;
+    byRole[row.role] = row.c;
   }
 
   // ── Index latency, isolated from any model ───────────────────────────────
@@ -285,7 +285,7 @@ export async function doctor(
     readOnlyReason: ctx.readOnlyReason,
     vectorBackend: ctx.store.vectors.kind,
     counts,
-    byClass,
+    byRole,
     index: {
       openMs: round(openMs),
       lexicalMs: round(lexicalMs),

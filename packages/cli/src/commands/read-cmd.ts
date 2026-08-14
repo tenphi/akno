@@ -4,8 +4,8 @@ import { resolveOps } from '../ops-handle.ts';
 
 const READ_HELP = `akno read <slug | --id <id> | --document <id | path>> [options]
 
-  Read one exact thing. Returns the full body regardless of page class — recall
-  caps what a reference page contributes unprompted, read never does.
+  Read one exact thing. Returns the full body regardless of page role — recall
+  caps what a source page contributes unprompted, read never does.
 
   --document takes a document id, its path in the knowledge base, or its bare
   filename when only one file has that name. A stored PDF was read when it was
@@ -64,7 +64,7 @@ export async function readCommand(argv: string[]): Promise<number> {
     const page = result.page;
     if (!page) return 1;
 
-    heading(`${page.slug} ${style.grey(`(${page.class})`)}`);
+    heading(`${page.slug} ${style.grey(`(${page.role})`)}`);
     kv([
       ['id', page.id],
       ['title', page.title],
@@ -75,7 +75,7 @@ export async function readCommand(argv: string[]): Promise<number> {
       ['links', page.links.length > 0 ? page.links.join(', ') : null],
       ['backlinks', page.backlinks.length > 0 ? page.backlinks.join(', ') : null],
       ['broken links', page.broken_links?.length ? page.broken_links.join(', ') : null],
-      ['reference fence', page.reference_fence_line ?? null],
+      ['source fence', page.source_fence_line ?? null],
     ]);
 
     if (page.documents?.length) {

@@ -45,7 +45,7 @@ export async function doctorCommand(argv: string[]): Promise<number> {
 
     heading('Index');
     kv([
-      ['pages', `${report.counts.pages}${formatClasses(report.byClass)}`],
+      ['pages', `${report.counts.pages}${formatRoles(report.byRole)}`],
       ['chunks', `${report.counts.chunks} (${report.counts.chunksEmbedded} embedded)`],
       ['facts', `${report.counts.facts} live, ${report.counts.factsSuperseded} superseded`],
       ['events', report.counts.events],
@@ -55,7 +55,7 @@ export async function doctorCommand(argv: string[]): Promise<number> {
           `${report.counts.renditions > 0 ? `, ${report.counts.renditions} with text beside them` : ''})`,
       ],
       ['links', `${report.counts.links} (${report.counts.brokenLinks} broken)`],
-      ['exclusion rules', report.counts.excludedRules],
+      ['ignored rules', report.counts.ignoredRules],
     ]);
 
     // Reported apart because they are unrelated; conflating them hides which is slow.
@@ -118,8 +118,8 @@ export async function doctorCommand(argv: string[]): Promise<number> {
   }
 }
 
-function formatClasses(byClass: Record<string, number>): string {
-  const parts = Object.entries(byClass)
+function formatRoles(byRole: Record<string, number>): string {
+  const parts = Object.entries(byRole)
     .filter(([, count]) => count > 0)
     .map(([name, count]) => `${count} ${name}`);
   return parts.length > 0 ? ` (${parts.join(', ')})` : '';

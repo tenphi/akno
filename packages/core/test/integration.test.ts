@@ -79,7 +79,7 @@ title: Building rules
 
 # Building rules
 
-<!-- reference -->
+<!-- source -->
 
 HOUSE RULES OF THE ASSOCIATION
 
@@ -156,8 +156,8 @@ beforeAll(async () => {
         expansion: { id: null },
       },
       folders: {
-        'reference/**': { class: 'reference' },
-        'templates/**': { class: 'excluded' },
+        'reference/**': { role: 'source' },
+        'templates/**': { role: 'ignored' },
       },
     },
   });
@@ -176,8 +176,8 @@ describe('index', () => {
     const health = await mem.doctor({ probeModels: false });
     // 10 markdown files, one of which is under templates/**.
     expect(health.counts.pages).toBe(9);
-    expect(health.byClass.excluded).toBeUndefined();
-    expect(health.byClass.reference).toBe(1);
+    expect(health.byRole.ignored).toBeUndefined();
+    expect(health.byRole.source).toBe(1);
   });
 
   it('leaves nothing behind for an excluded page', async () => {
@@ -276,7 +276,7 @@ describe('recall without any model', () => {
       query: 'deliveries bicycles quiet hours waste lift balcony subletting',
       mode: 'lookup',
       depth: 'full',
-      include: ['reference'],
+      include: ['source'],
     });
     const card = result.cards.find((entry) => entry.slug === 'reference/building-rules');
     expect(card!.lines.length).toBeGreaterThan(6);
@@ -346,7 +346,7 @@ describe('list', () => {
   it('walks folders with deep counts and the governing rule', async () => {
     const result = await mem.list({ kind: 'folders' });
     const reference = result.folders?.find((folder) => folder.path === 'reference');
-    expect(reference?.rule?.class).toBe('reference');
+    expect(reference?.rule?.role).toBe('source');
     const nested = result.folders?.find((folder) => folder.path === 'nested');
     expect(nested?.pages_deep).toBe(1);
   });
@@ -535,7 +535,7 @@ describe('rebuilding the index', () => {
           derive: { id: null },
           expansion: { id: null },
         },
-        folders: { 'reference/**': { class: 'reference' }, 'templates/**': { class: 'excluded' } },
+        folders: { 'reference/**': { role: 'source' }, 'templates/**': { role: 'ignored' } },
       },
     });
     await mem.index({});
@@ -658,7 +658,7 @@ describe('changing a rule', () => {
     fs.writeFileSync(path.join(scratch, 'logs/monday.md'), '# Monday\n\nA long transcript of talking.\n');
     fs.writeFileSync(
       path.join(scratch, 'logs/declared.md'),
-      '---\nclass: full\n---\n\n# Declared\n\nThis page states its own class.\n',
+      '---\nakno:\n  role: knowledge\n---\n\n# Declared\n\nThis page states its own role.\n',
     );
   });
 
@@ -674,9 +674,9 @@ describe('changing a rule', () => {
     await handle.close();
 
     // Nothing on disk changed between these two passes. Only the rule did.
-    handle = await openWith({ 'logs/**': { class: 'excluded' } });
+    handle = await openWith({ 'logs/**': { role: 'ignored' } });
     report = await handle.index({});
-    expect(report.excluded).toBe(1);
+    expect(report.ignored).toBe(1);
     expect(report.warnings.some((w) => /rules changed/.test(w))).toBe(true);
 
     const listed = await handle.list({});
@@ -684,20 +684,20 @@ describe('changing a rule', () => {
     // A class the page declares in its own frontmatter outranks any rule, so this one
     // is not the rule's to move.
     const declared = await handle.read({ slug: 'logs/declared' });
-    expect(declared.page?.class).toBe('full');
+    expect(declared.page?.role).toBe('knowledge');
     await handle.close();
   });
 
   it('brings a page back when the rule stops excluding it', async () => {
-    let handle = await openWith({ 'logs/**': { class: 'excluded' } });
+    let handle = await openWith({ 'logs/**': { role: 'ignored' } });
     await handle.index({});
     await handle.close();
 
-    handle = await openWith({ 'logs/**': { class: 'reference' } });
+    handle = await openWith({ 'logs/**': { role: 'source' } });
     const report = await handle.index({});
-    expect(report.excluded).toBe(0);
+    expect(report.ignored).toBe(0);
     const page = await handle.read({ slug: 'logs/monday' });
-    expect(page.page?.class).toBe('reference');
+    expect(page.page?.role).toBe('source');
     // Reference pages are still searchable — the class governs what recall pulls in
     // unprompted, not whether the text is indexed.
     const found = await handle.recall({ query: 'transcript talking', mode: 'lookup' });
@@ -712,14 +712,14 @@ describe('changing a rule', () => {
     // contents could not be extracted.
     fs.writeFileSync(
       path.join(scratch, 'akno.json'),
-      JSON.stringify({ folders: { 'logs/**': { class: 'reference' } } }),
+      JSON.stringify({ folders: { 'logs/**': { role: 'source' } } }),
     );
 
     const handle = await openWith({});
     await handle.index({});
 
     const page = await handle.read({ slug: 'logs/monday' });
-    expect(page.page?.class).toBe('reference');
+    expect(page.page?.role).toBe('source');
 
     const report = await handle.doctor({ probeModels: false });
     expect(report.counts.documents).toBe(0);
@@ -727,11 +727,11 @@ describe('changing a rule', () => {
   });
 
   it('costs nothing when the rules have not moved', async () => {
-    let handle = await openWith({ 'logs/**': { class: 'reference' } });
+    let handle = await openWith({ 'logs/**': { role: 'source' } });
     await handle.index({});
     await handle.close();
 
-    handle = await openWith({ 'logs/**': { class: 'reference' } });
+    handle = await openWith({ 'logs/**': { role: 'source' } });
     const report = await handle.index({});
     expect(report.pagesIndexed).toBe(0);
     expect(report.pagesUnchanged).toBe(3);

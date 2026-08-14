@@ -1,4 +1,4 @@
-import { ListInput, type ListOutput, type PageClass } from '@akno/protocol';
+import { ListInput, type ListOutput, type PageRole } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 import { physicalFolders } from '../kb/folders.ts';
 import { effectiveRule, matchRules } from '../rules/compile.ts';
@@ -10,7 +10,7 @@ import { effectiveRule, matchRules } from '../rules/compile.ts';
  */
 export async function list(ctx: AknoContext, rawInput: unknown): Promise<ListOutput> {
   const input = ListInput.parse(rawInput);
-  const kind = input.kind ?? (input.folder || input.type || input.tag || input.class ? 'pages' : 'folders');
+  const kind = input.kind ?? (input.folder || input.type || input.tag || input.role ? 'pages' : 'folders');
 
   if (kind === 'tree') return listTree(ctx, input);
   if (kind === 'folders') return listFolders(ctx, input);
@@ -21,7 +21,7 @@ interface PageRow {
   slug: string;
   title: string;
   type: string | null;
-  class: PageClass;
+  role: PageRole;
   tags: string;
   summary: string | null;
   updated_at: string | null;
@@ -29,7 +29,7 @@ interface PageRow {
 }
 
 function listPages(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>): ListOutput {
-  const clauses: string[] = ["class != 'excluded'"];
+  const clauses: string[] = ["role != 'ignored'"];
   const params: unknown[] = [];
 
   if (input.folder) {
@@ -40,9 +40,9 @@ function listPages(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>):
     clauses.push('type = ?');
     params.push(input.type);
   }
-  if (input.class) {
-    clauses.push('class = ?');
-    params.push(input.class);
+  if (input.role) {
+    clauses.push('role = ?');
+    params.push(input.role);
   }
 
   const order =
@@ -51,7 +51,7 @@ function listPages(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>):
 
   const rows = ctx.store.db
     .prepare(
-      `SELECT slug, title, type, class, tags, summary, updated_at, bytes
+      `SELECT slug, title, type, role, tags, summary, updated_at, bytes
          FROM pages WHERE ${clauses.join(' AND ')} ORDER BY ${order}`,
     )
     .all(...params) as PageRow[];
@@ -69,7 +69,7 @@ function listPages(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>):
       slug: row.slug,
       title: row.title,
       type: row.type,
-      class: row.class,
+      role: row.role,
       tags: JSON.parse(row.tags) as string[],
       summary: row.summary,
       ...(row.updated_at ? { updated: row.updated_at.slice(0, 10) } : {}),
@@ -81,9 +81,9 @@ function listPages(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>):
 
 function listFolders(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>): ListOutput {
   const prefix = input.folder ? `${input.folder}/` : '';
-  const rows = ctx.store.db
-    .prepare("SELECT slug FROM pages WHERE class != 'excluded' ORDER BY slug")
-    .all() as { slug: string }[];
+  const rows = ctx.store.db.prepare("SELECT slug FROM pages WHERE role != 'ignored' ORDER BY slug").all() as {
+    slug: string;
+  }[];
 
   const direct = new Map<string, number>();
   const deep = new Map<string, number>();
@@ -141,7 +141,8 @@ function listFolders(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>
         ...(match.rule
           ? {
               rule: {
-                ...(effective.class ? { class: effective.class } : {}),
+                ...(effective.role ? { role: effective.role } : {}),
+                ...(effective.remember ? { remember: effective.remember } : {}),
                 ...(effective.description ? { description: effective.description } : {}),
                 source: `${match.rule.glob} (${match.rule.source})`,
               },
@@ -161,9 +162,9 @@ function listFolders(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>
 function listTree(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>): ListOutput {
   const maxDepth = input.depth ?? 2;
   const prefix = input.folder ? `${input.folder}/` : '';
-  const rows = ctx.store.db
-    .prepare("SELECT slug FROM pages WHERE class != 'excluded' ORDER BY slug")
-    .all() as { slug: string }[];
+  const rows = ctx.store.db.prepare("SELECT slug FROM pages WHERE role != 'ignored' ORDER BY slug").all() as {
+    slug: string;
+  }[];
 
   const counts = new Map<string, number>();
   for (const { slug } of rows) {
@@ -217,9 +218,9 @@ function listTree(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>): 
  * structure from pages alone made a freshly declared folder invisible to the very caller that
  * declared it.
  *
- * `excluded` is the exception, and not a small one: excluding a folder is a statement that it
+ * `ignored` is the exception, and not a small one: ignoring a folder is a statement that it
  * should not be in the index at all, and listing it because it happens to have a rule would
- * make the one class that means "do not look here" the one class that always appears.
+ * make the one role that means "do not look here" the one role that always appears.
  */
 function declaredFolders(ctx: AknoContext, prefix: string): string[] {
   const out: string[] = [];
@@ -227,7 +228,7 @@ function declaredFolders(ctx: AknoContext, prefix: string): string[] {
     const folderPath = rule.glob.replace(/\/\*+$/, '');
     if (folderPath.length === 0 || folderPath.includes('*')) continue;
     if (!folderPath.startsWith(prefix)) continue;
-    if (effectiveRule(`${folderPath}/x`, ctx.config.rules).class === 'excluded') continue;
+    if (effectiveRule(`${folderPath}/x`, ctx.config.rules).role === 'ignored') continue;
     out.push(folderPath);
   }
   return out;
