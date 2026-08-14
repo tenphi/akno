@@ -13,6 +13,7 @@ let server: {
   close: () => Promise<void>;
   calls: () => number;
   loseMarker: (value: boolean) => void;
+  changeNumber: (value: boolean) => void;
 };
 
 beforeEach(async () => {
@@ -78,6 +79,16 @@ describe('curate', () => {
 
     const unchangedInputs = await mem.dream({ phase: 'curate' });
     expect(unchangedInputs.curated).toEqual([]);
+    expect(server.calls()).toBe(1);
+  });
+
+  it('logs a missing value with its source context', async () => {
+    server.changeNumber(true);
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.curated[0]?.action).toBe('rejected');
+    expect(report.curated[0]?.issues).toContain('numeric/date/value tokens missing from rewrite: "111"');
+    expect(report.curated[0]?.issues.join('\n')).toContain('Ada Marlow lives at 111 Example Street.');
     expect(server.calls()).toBe(1);
   });
 
@@ -177,6 +188,7 @@ async function openMem(write: boolean): Promise<Akno> {
 async function startStub(): Promise<typeof server> {
   let calls = 0;
   let drop = false;
+  let changeNumber = false;
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -192,7 +204,7 @@ async function startStub(): Promise<typeof server> {
             body:
               '# Ada Marlow\n\n## Details\n\n' +
               (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-              'Ada Marlow lives at 111 Example Street.\n',
+              `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
           });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
@@ -210,6 +222,9 @@ async function startStub(): Promise<typeof server> {
     calls: () => calls,
     loseMarker: (value) => {
       drop = value;
+    },
+    changeNumber: (value) => {
+      changeNumber = value;
     },
   };
 }

@@ -181,8 +181,52 @@ export function preservesValues(before: string, after: string): boolean {
 
 /** The exact tokens behind `preservesValues`, for guardrail diagnostics and audit logs. */
 export function missingNumericValues(before: string, after: string): string[] {
-  const numbers = before.match(/\d[\d.,]*/g) ?? [];
-  return [...new Set(numbers.filter((value) => !after.includes(value)))];
+  const afterValues = new Set(numericValues(after).map((value) => value.canonical));
+  const missing = numericValues(before).filter((value) => !afterValues.has(value.canonical));
+  return [...new Set(missing.map((value) => value.raw))];
+}
+
+interface NumericValue {
+  raw: string;
+  canonical: string;
+}
+
+/**
+ * Values, not punctuation that happens to follow them.
+ *
+ * The old digit-and-punctuation regex included the comma in `1902,` and the full stop in `25.`. A model
+ * moving that value to the middle of a sentence was therefore treated like one deleting it.
+ * Composite dates, times and ranges are captured first so harmless separator and leading-zero
+ * changes compare semantically rather than as typography.
+ */
+function numericValues(text: string): NumericValue[] {
+  const pattern =
+    /\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}:\d{2}|\d+(?:[.,]\d+)*(?:\s*[\u2013\u2014-]\s*\d+(?:[.,]\d+)*)?/g;
+  return [...text.matchAll(pattern)].map((match) => ({
+    raw: match[0],
+    canonical: canonicalNumericValue(match[0]),
+  }));
+}
+
+function canonicalNumericValue(raw: string): string {
+  const compact = raw.replace(/\s+/g, '').replace(/[\u2013\u2014]/g, '-');
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(compact)) {
+    const [year, month, day] = compact.split(/[-/]/);
+    return `${year}-${Number(month)}-${Number(day)}`;
+  }
+  if (/^\d{1,2}:\d{2}$/.test(compact)) {
+    const [hour, minute] = compact.split(':');
+    return `${Number(hour)}:${minute}`;
+  }
+  const range = /^(.*?)-(.*)$/.exec(compact);
+  if (range) return `${canonicalNumber(range[1]!)}-${canonicalNumber(range[2]!)}`;
+  return canonicalNumber(compact);
+}
+
+function canonicalNumber(value: string): string {
+  // A comma followed by groups of exactly three digits is a thousands separator. A decimal
+  // comma remains significant, as does a decimal point.
+  return /^\d{1,3}(?:,\d{3})+$/.test(value) ? value.replaceAll(',', '') : value;
 }
 
 /** Conflicts worth acting on: judged real, with a claim the model named as current. */

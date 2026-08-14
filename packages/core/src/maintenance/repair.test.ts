@@ -78,7 +78,14 @@ describe('rewriting a claim that was replaced', () => {
   });
 
   it('reports the exact missing tokens for a guardrail log', () => {
-    expect(missingNumericValues('Built in 1640; restored in 2025.', 'Built in 1640.')).toEqual(['2025.']);
+    expect(missingNumericValues('Built in 1640; restored in 2025.', 'Built in 1640.')).toEqual(['2025']);
+  });
+
+  it('ignores punctuation and harmless numeric formatting changes', () => {
+    expect(preservesValues('Purchased in 1902, for 1,900 EUR.', 'Purchased in 1902 for 1900 EUR.')).toBe(
+      true,
+    );
+    expect(preservesValues('Open 9:00; ages 18–25.', 'Open 09:00; ages 18-25.')).toBe(true);
   });
 });
 

@@ -96,8 +96,11 @@ and linked evidence. Reply with JSON only:
 {"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}]}
 
 You may fully rewrite and restructure the body. Accumulate knowledge by subject; link to evidence and
-related pages in the sections they support instead of repeating whole source pages. Keep unresolved
-contradictions under ## Unresolved and do not choose a side without evidence. Keep every
+related pages in the sections they support instead of repeating whole source pages. Reorganize rather
+than summarize: preserve every factual detail already in the canonical body, including dates, times,
+prices, measurements, descriptions, access instructions and practical guidance. Numeric formatting and
+sentence punctuation may change, but no value may disappear. Keep unresolved contradictions under
+## Unresolved and do not choose a side without evidence. Keep every
 <!-- akno:item ... --> marker exactly once, immediately before the knowledge it identifies. The
 canonical page remains at its current slug. Suggest splits only for genuinely oversized, coherent
 sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.`;
@@ -111,7 +114,7 @@ knowledge, hides a conflict, misattributes evidence, or creates an incoherent sp
 markers are metadata, not prose, and must remain attached to their knowledge.`;
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-const CURATE_FINGERPRINT_VERSION = 1;
+const CURATE_FINGERPRINT_VERSION = 2;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -415,6 +418,7 @@ function guardRewrite(input: {
       `numeric/date/value tokens missing from rewrite: ${shown.join(', ')}` +
         (remainder > 0 ? ` (+${remainder} more)` : ''),
     );
+    issues.push(...missingValueContexts(input.before, missingValues));
   }
   if (input.mode === 'hygiene') {
     const beforeH1 = firstH1(input.before);
@@ -428,6 +432,20 @@ function guardRewrite(input: {
     issues.push('known conflicts are not preserved under an Unresolved section');
   }
   return issues;
+}
+
+function missingValueContexts(body: string, values: string[]): string[] {
+  const lines = body.split('\n');
+  const contexts: string[] = [];
+  for (const value of values.slice(0, 6)) {
+    const index = lines.findIndex((line) => line.includes(value));
+    if (index < 0) continue;
+    const source = lines[index]!.trim().replace(/\s+/g, ' ');
+    contexts.push(
+      `source body line ${index + 1} for ${JSON.stringify(value)}: ${source.length > 240 ? `${source.slice(0, 237)}...` : source}`,
+    );
+  }
+  return contexts;
 }
 
 function renderEvidence(evidence: EvidencePage[]): string[] {
