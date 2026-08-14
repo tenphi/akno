@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { linkIssuesForTesting } from '../src/maintenance/curate.ts';
 
 let root: string;
 let stateDir: string;
@@ -164,6 +165,29 @@ Ada described her work. [[people/ada-marlow]]
   });
 });
 
+describe('curation link integrity', () => {
+  it('preserves supplied targets and allows resolvable wikilinks', () => {
+    const before = '[Source](https://example.test/original)\n[[travel/rome]]\n';
+    const after = `${before}See [[people/ada-marlow]].\n`;
+    expect(linkIssuesForTesting(before, after, 'wiki/rome', ['travel/rome', 'people/ada-marlow'])).toEqual(
+      [],
+    );
+  });
+
+  it('rejects changed URLs, new relative paths and unresolved wikilinks', () => {
+    const issues = linkIssuesForTesting(
+      '[Source](https://example.test/original)\n',
+      '[Source](https://example.test/invented)\n[Trip](../../travel/rome)\n[[missing/page]]\n',
+      'wiki/sightseeings/rome/place',
+      [],
+    );
+    expect(issues.join('\n')).toMatch(/existing Markdown link target was removed or changed/);
+    expect(issues.join('\n')).toMatch(/new external URL was invented/);
+    expect(issues.join('\n')).toMatch(/new internal Markdown link target is not allowed/);
+    expect(issues.join('\n')).toMatch(/new wikilink does not resolve/);
+  });
+});
+
 async function openMem(write: boolean): Promise<Akno> {
   return open({
     aknoPath: root,
@@ -193,11 +217,17 @@ async function startStub(): Promise<typeof server> {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
     request.on('end', () => {
-      calls++;
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
         messages?: { role: string; content: string }[];
       };
       const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
+      if (
+        system.includes('Markdown page hygienist') ||
+        system.includes('synthesize one canonical') ||
+        system.includes('verify an automatic Markdown rewrite')
+      ) {
+        calls++;
+      }
       const content = system.includes('verify an automatic Markdown rewrite')
         ? JSON.stringify({ ok: true, issues: [] })
         : JSON.stringify({

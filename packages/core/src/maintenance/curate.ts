@@ -2,7 +2,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoContext } from '../context.ts';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
-import { AKNO_ITEM } from '../kb/page.ts';
+import { AKNO_ITEM, normalizeLinkTarget } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { missingNumericValues } from './repair.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
@@ -48,6 +48,7 @@ interface EvidencePage {
   role: string;
   body_hash: string;
   facts: EvidenceFact[];
+  relationship: 'about' | 'outbound' | 'backlink';
 }
 
 interface EvidenceFact {
@@ -96,11 +97,17 @@ and linked evidence. Reply with JSON only:
 {"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}]}
 
 You may fully rewrite and restructure the body. Accumulate knowledge by subject; link to evidence and
-related pages in the sections they support instead of repeating whole source pages. Reorganize rather
+related pages in the sections they support instead of repeating whole source pages. A link or backlink
+is only a relevance hint: use a linked fact only when it is directly about this canonical subject.
+Do not copy cross-cutting trip, passport, accommodation, booking or itinerary boilerplate into every
+place page. When such a page is genuinely useful, link it once without restating its general details.
+Internal page links must use [[the/exact-supplied-slug]]. Never invent a URL, relative path or slug,
+and never alter or remove an existing link target. Reorganize rather
 than summarize: preserve every factual detail already in the canonical body, including dates, times,
 prices, measurements, descriptions, access instructions and practical guidance. Numeric formatting and
-sentence punctuation may change, but no value may disappear. Keep unresolved contradictions under
-## Unresolved and do not choose a side without evidence. Keep every
+sentence punctuation may change, but no value may disappear. Use ## Unresolved only when the supplied
+conflict list contains a real unresolved conflict; do not manufacture one from compatible access rules
+or descriptions of different areas. Do not choose a side without evidence. Keep every
 <!-- akno:item ... --> marker exactly once, immediately before the knowledge it identifies. The
 canonical page remains at its current slug. Suggest splits only for genuinely oversized, coherent
 sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.`;
@@ -110,11 +117,13 @@ const VERIFY_SYSTEM = `You verify an automatic Markdown rewrite. Reply with JSON
 
 Reject a hygiene rewrite if it changes meaning, loses non-duplicate knowledge, adds facts, or makes
 more than minor structural changes. Reject a synthesis rewrite if it invents facts, loses supported
-knowledge, hides a conflict, misattributes evidence, or creates an incoherent split. Stable item
-markers are metadata, not prose, and must remain attached to their knowledge.`;
+knowledge, hides a conflict, misattributes evidence, repeats unrelated cross-cutting logistics, changes
+an existing link target, invents a URL or creates an incoherent split. A backlink is only a relevance
+hint, not evidence that every fact on that page belongs here. Stable item markers are metadata, not
+prose, and must remain attached to their knowledge.`;
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-const CURATE_FINGERPRINT_VERSION = 2;
+const CURATE_FINGERPRINT_VERSION = 3;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -131,6 +140,11 @@ export async function curatePages(
         ORDER BY updated_at DESC, slug`,
     )
     .all() as PageRow[];
+  const knownSlugs = new Set(
+    (ctx.store.db.prepare('SELECT slug FROM pages').all() as { slug: string }[]).map((row) =>
+      row.slug.toLowerCase(),
+    ),
+  );
 
   let splitBudget = settings.maxSplits;
   let attempted = 0;
@@ -208,6 +222,9 @@ export async function curatePages(
       after: nextBody,
       splits,
       conflicts,
+      pageSlug: row.slug,
+      knownSlugs,
+      allowedLinkSlugs: new Set(evidence.map((entry) => entry.slug.toLowerCase())),
     });
     if (deterministic.length > 0) {
       result.pages.push({
@@ -313,26 +330,75 @@ export async function curatePages(
 function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
   const rows = ctx.store.db
     .prepare(
-      `SELECT DISTINCT p.id, p.slug, p.summary, p.about, p.role, p.body_hash FROM pages p
+      `SELECT DISTINCT p.id, p.slug, p.summary, p.about, p.role, p.body_hash,
+          EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id) AS outbound,
+          EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?) AS backlink
+        FROM pages p
         WHERE p.id != ? AND (
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?)
           OR EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id)
           OR p.about LIKE ?
         ) ORDER BY p.slug COLLATE NOCASE LIMIT 30`,
     )
-    .all(page.id, page.id, page.id, `%${JSON.stringify(page.slug).slice(1, -1)}%`) as Omit<
+    .all(page.id, page.id, page.id, page.id, page.id, `%${JSON.stringify(page.slug).slice(1, -1)}%`) as (Omit<
     EvidencePage,
-    'facts'
-  >[];
+    'facts' | 'relationship'
+  > & { outbound: number; backlink: number })[];
   const facts = ctx.store.db.prepare(
     `SELECT claim, subject, attribute, value, item_id FROM facts
       WHERE page_id = ? AND valid_to IS NULL
       ORDER BY line_start, id LIMIT 50`,
   );
-  return rows.map((row) => ({
-    ...row,
-    facts: facts.all(row.id) as EvidenceFact[],
-  }));
+  return rows.map((row) => {
+    const relationship = pageRelationship(row, page.slug);
+    const allFacts = facts.all(row.id) as EvidenceFact[];
+    return {
+      ...row,
+      relationship,
+      facts:
+        relationship === 'about'
+          ? allFacts
+          : relationship === 'backlink'
+            ? allFacts.filter((fact) => factMentionsPage(fact, page))
+            : [],
+    };
+  });
+}
+
+function pageRelationship(
+  row: { about: string; outbound: number; backlink: number },
+  canonicalSlug: string,
+): EvidencePage['relationship'] {
+  try {
+    const about = JSON.parse(row.about) as unknown;
+    if (
+      Array.isArray(about) &&
+      about.some((entry) => typeof entry === 'string' && normalizeLinkTarget(entry) === canonicalSlug)
+    ) {
+      return 'about';
+    }
+  } catch {
+    // Indexed policy JSON is generated by Akno; malformed legacy state degrades to link relevance.
+  }
+  return row.outbound ? 'outbound' : 'backlink';
+}
+
+function factMentionsPage(fact: EvidenceFact, page: PageRow): boolean {
+  const keys = [page.title, page.slug.split('/').at(-1)?.replaceAll('-', ' ') ?? '']
+    .map(searchIdentity)
+    .filter((value) => value.length >= 4);
+  const text = searchIdentity(
+    [fact.subject, fact.attribute, fact.claim, fact.value].filter(Boolean).join(' '),
+  );
+  return keys.some((key) => text.includes(key));
+}
+
+function searchIdentity(value: string): string {
+  return value
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
 }
 
 function conflictsFor(ctx: AknoContext, pageId: string): ConflictEvidence[] {
@@ -402,6 +468,9 @@ function guardRewrite(input: {
   after: string;
   splits: SplitDraft[];
   conflicts: ConflictEvidence[];
+  pageSlug: string;
+  knownSlugs: Set<string>;
+  allowedLinkSlugs: Set<string>;
 }): string[] {
   const issues: string[] = [];
   const combined = [input.after, ...input.splits.map((split) => split.body)].join('\n');
@@ -420,6 +489,16 @@ function guardRewrite(input: {
     );
     issues.push(...missingValueContexts(input.before, missingValues));
   }
+  issues.push(
+    ...linkIssues(
+      input.before,
+      combined,
+      input.pageSlug,
+      input.splits,
+      input.knownSlugs,
+      input.allowedLinkSlugs,
+    ),
+  );
   if (input.mode === 'hygiene') {
     const beforeH1 = firstH1(input.before);
     const afterH1 = firstH1(input.after);
@@ -430,6 +509,14 @@ function guardRewrite(input: {
   }
   if (input.mode === 'synthesize' && input.conflicts.length > 0 && !/^##\s+Unresolved\s*$/im.test(combined)) {
     issues.push('known conflicts are not preserved under an Unresolved section');
+  }
+  if (
+    input.mode === 'synthesize' &&
+    input.conflicts.length === 0 &&
+    !/^##\s+Unresolved\s*$/im.test(input.before) &&
+    /^##\s+Unresolved\s*$/im.test(combined)
+  ) {
+    issues.push('an Unresolved section was added even though no unresolved conflict was supplied');
   }
   return issues;
 }
@@ -448,9 +535,82 @@ function missingValueContexts(body: string, values: string[]): string[] {
   return contexts;
 }
 
+interface LinkTargets {
+  wiki: Set<string>;
+  markdown: Set<string>;
+}
+
+function linkIssues(
+  before: string,
+  after: string,
+  pageSlug: string,
+  splits: SplitDraft[],
+  knownSlugs: Set<string>,
+  allowedLinkSlugs: Set<string>,
+): string[] {
+  const issues: string[] = [];
+  const prior = linkTargets(before, pageSlug);
+  const next = linkTargets(after, pageSlug);
+  for (const target of prior.wiki) {
+    if (!next.wiki.has(target)) issues.push(`existing wikilink target was removed or changed: [[${target}]]`);
+  }
+  for (const target of prior.markdown) {
+    if (!next.markdown.has(target))
+      issues.push(`existing Markdown link target was removed or changed: ${target}`);
+  }
+  for (const target of next.markdown) {
+    if (prior.markdown.has(target)) continue;
+    issues.push(
+      externalLink(target)
+        ? `new external URL was invented instead of supplied by evidence: ${target}`
+        : `new internal Markdown link target is not allowed; use an exact wikilink slug: ${target}`,
+    );
+  }
+  const proposed = new Set(splits.map((split) => `${pageSlug}/${split.suffix}`.toLowerCase()));
+  for (const target of next.wiki) {
+    if (prior.wiki.has(target)) continue;
+    if (!knownSlugs.has(target) && !proposed.has(target)) {
+      issues.push(`new wikilink does not resolve to an existing page or proposed split: [[${target}]]`);
+    } else if (!allowedLinkSlugs.has(target) && !proposed.has(target)) {
+      issues.push(`new wikilink target was not supplied by the evidence graph: [[${target}]]`);
+    }
+  }
+  return issues;
+}
+
+function linkTargets(body: string, pageSlug: string): LinkTargets {
+  const wiki = new Set<string>();
+  const markdown = new Set<string>();
+  for (const match of body.matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)) {
+    wiki.add(normalizeLinkTarget(match[1]!).toLowerCase());
+  }
+  for (const match of body.matchAll(/(?<!!)\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+[^)]*)?\)/g)) {
+    const target = match[1]!;
+    markdown.add(
+      externalLink(target) || target.startsWith('#') ? target : normalizeLinkTarget(target, pageSlug),
+    );
+  }
+  return { wiki, markdown };
+}
+
+function externalLink(target: string): boolean {
+  return /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(target);
+}
+
+export function linkIssuesForTesting(
+  before: string,
+  after: string,
+  pageSlug: string,
+  knownSlugs: string[],
+): string[] {
+  const known = new Set(knownSlugs.map((slug) => slug.toLowerCase()));
+  return linkIssues(before, after, pageSlug, [], known, known);
+}
+
 function renderEvidence(evidence: EvidencePage[]): string[] {
   return evidence.map((row) => {
-    const heading = `[[${row.slug}]]${row.summary ? ` — ${row.summary}` : ''}`;
+    const summary = row.relationship === 'about' && row.summary ? ` — ${row.summary}` : '';
+    const heading = `[[${row.slug}]] (${row.relationship})${summary}`;
     return row.facts.length
       ? `${heading}\n${row.facts.map((fact) => `- ${fact.claim}`).join('\n')}`
       : heading;
@@ -477,10 +637,11 @@ function curateInputHash(page: PageRow, evidence: EvidencePage[], conflicts: Con
       // Hygiene deliberately has empty arrays here: its authority is confined to this page.
       evidence: evidence.map((row) => ({
         slug: row.slug,
-        summary: row.summary,
+        summary: row.relationship === 'about' ? row.summary : null,
         about: row.about,
         role: row.role,
         bodyHash: row.body_hash,
+        relationship: row.relationship,
         facts: row.facts,
       })),
       conflicts,
