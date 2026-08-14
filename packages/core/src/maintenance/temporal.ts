@@ -89,12 +89,14 @@ export function inferTemporalMetadata(input: TemporalInferenceInput): TemporalMe
   const structured = isoRange(dates);
   if (structured) return withTimezone(structured, timezone);
 
-  const slugRange = rangeFromSlug(input.slug);
-  if (slugRange) return withTimezone(slugRange, timezone);
-
   const text = `${input.title}\n${input.body.slice(0, 12_000)}`;
   const proseRange = rangeNearEventLanguage(text);
-  return proseRange ? withTimezone(proseRange, timezone) : null;
+  if (proseRange) return withTimezone(proseRange, timezone);
+
+  // Filenames are useful structure but can outlive a changed itinerary. Page-authored dates
+  // therefore outrank the slug, which is the safe fallback rather than the authority.
+  const slugRange = rangeFromSlug(input.slug);
+  return slugRange ? withTimezone(slugRange, timezone) : null;
 }
 
 /** Date candidates are passed to the model, which may select one but may not invent another. */

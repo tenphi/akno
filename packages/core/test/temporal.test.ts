@@ -41,6 +41,17 @@ describe('temporal event metadata', () => {
     });
   });
 
+  it('prefers an explicit event range in the page over a stale date-range slug', () => {
+    expect(
+      inferTemporalMetadata({
+        slug: 'events/2031-06-03-04-blackwater-bay',
+        title: 'Blackwater Bay trip',
+        frontmatter: {},
+        body: 'Dates: June 3 – June 12, 2031.',
+      }),
+    ).toMatchObject({ start: '2031-06-03', until: '2031-06-12' });
+  });
+
   it('accepts a prose range only when nearby language identifies a bounded event', () => {
     expect(
       inferTemporalMetadata({
