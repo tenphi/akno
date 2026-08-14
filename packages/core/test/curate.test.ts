@@ -15,6 +15,8 @@ let server: {
   calls: () => number;
   loseMarker: (value: boolean) => void;
   changeNumber: (value: boolean) => void;
+  echoDraft: (value: boolean) => void;
+  userMessages: () => string[];
 };
 
 beforeEach(async () => {
@@ -163,6 +165,70 @@ Ada described her work. [[people/ada-marlow]]
     expect(current.curated).toEqual([]);
     expect(server.calls()).toBe(callsAfterApply);
   });
+
+  it('marks a bounded event, archives it once, and ignores weak later link churn', async () => {
+    const eventSlug = 'events/2001-04-10-12-blackwater-bay';
+    fs.mkdirSync(path.join(root, 'events'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'guides'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, `${eventSlug}.md`),
+      `---
+title: Blackwater Bay gathering
+akno:
+  management:
+    dream: synthesize
+---
+
+# Blackwater Bay gathering
+
+The trip was planned for April 10–12, 2001. [[guides/blackwater-bay]]
+`,
+    );
+    fs.writeFileSync(
+      path.join(root, 'guides/blackwater-bay.md'),
+      '# Blackwater Bay guide\n\nBring a coat.\n',
+    );
+    server.echoDraft(true);
+    await mem.close();
+    mem = await openMem(true);
+    await mem.index({ structuralOnly: true });
+
+    const first = await mem.dream({ phase: 'curate' });
+    const marked = first.curated.find((entry) => entry.slug === eventSlug);
+    expect(marked).toMatchObject({
+      action: 'updated',
+      temporal: { source: 'inferred', state: 'past', until: '2001-04-12', archival: true },
+    });
+    expect(fs.readFileSync(path.join(root, `${eventSlug}.md`), 'utf8')).toContain('until: "2001-04-12"');
+    expect(server.userMessages().some((message) => message.includes('Temporal state: past'))).toBe(true);
+
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+
+    fs.appendFileSync(path.join(root, 'guides/blackwater-bay.md'), '\nThe ferry terminal moved.\n');
+    await mem.index({ structuralOnly: true });
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'evidence/harbor-diary.md'),
+      `---
+title: Harbor diary
+akno:
+  role: source
+  about:
+    - ${eventSlug}
+---
+
+The gathering ended with a confirmed ferry ride.
+`,
+    );
+    await mem.index({ structuralOnly: true });
+    const reconsidered = await mem.dream({ phase: 'curate' });
+    expect(reconsidered.curated.find((entry) => entry.slug === eventSlug)).toMatchObject({
+      action: 'unchanged',
+      temporal: { source: 'declared', state: 'past', archival: true },
+    });
+  });
 });
 
 describe('curation link integrity', () => {
@@ -213,6 +279,8 @@ async function startStub(): Promise<typeof server> {
   let calls = 0;
   let drop = false;
   let changeNumber = false;
+  let echoDraft = false;
+  const userMessages: string[] = [];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -221,6 +289,8 @@ async function startStub(): Promise<typeof server> {
         messages?: { role: string; content: string }[];
       };
       const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
+      const user = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      userMessages.push(user);
       if (
         system.includes('Markdown page hygienist') ||
         system.includes('synthesize one canonical') ||
@@ -230,12 +300,14 @@ async function startStub(): Promise<typeof server> {
       }
       const content = system.includes('verify an automatic Markdown rewrite')
         ? JSON.stringify({ ok: true, issues: [] })
-        : JSON.stringify({
-            body:
-              '# Ada Marlow\n\n## Details\n\n' +
-              (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-              `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-          });
+        : echoDraft
+          ? JSON.stringify({ body: currentBody(user), temporal: false })
+          : JSON.stringify({
+              body:
+                '# Ada Marlow\n\n## Details\n\n' +
+                (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+            });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -256,5 +328,20 @@ async function startStub(): Promise<typeof server> {
     changeNumber: (value) => {
       changeNumber = value;
     },
+    echoDraft: (value) => {
+      echoDraft = value;
+    },
+    userMessages: () => [...userMessages],
   };
+}
+
+function currentBody(user: string): string {
+  const marker = '\n\nCurrent body:\n';
+  const start = user.indexOf(marker);
+  if (start < 0) return '';
+  const body = user.slice(start + marker.length);
+  const cuts = ['\n\nEvidence graph:\n', '\n\nUnresolved conflicts:\n']
+    .map((suffix) => body.indexOf(suffix))
+    .filter((index) => index >= 0);
+  return cuts.length ? body.slice(0, Math.min(...cuts)) : body;
 }

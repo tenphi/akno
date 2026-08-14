@@ -196,12 +196,12 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 `timeline.md` you did not ask for.
 
 - Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to have
-  Akno add a frontmatter `id:` — the only thing it ever writes into a page you wrote — for identity that
+  Akno add a frontmatter `id:` — the only index-time write into a page you wrote — for identity that
   survives a database rebuild and a move to another machine.
 - `create_reserved_paths: false` by default, so a first run against an existing folder creates nothing.
 - If a reserved path exists and isn't what Akno expects — a `timeline.md` that is a project plan — it is left
   completely alone. `doctor` reports it and points at the config key to remap it.
-- Every frontmatter key except `id` is preserved byte for byte and ignored.
+- Every frontmatter key except Akno's own `id` and `akno` policy block is preserved byte for byte.
 
 Three operations do author files, and each is journalled and reversible with `akno undo`: `write` and
 `remember` (because you asked them to), `ingest` (a page for a document you handed over), and the maintenance
@@ -246,6 +246,29 @@ Opt-in is permission, not a nightly work order. Hygiene runs again only after th
 Synthesis also watches its linked evidence and unresolved conflicts. Accepted previews, unchanged drafts and
 rejected rewrites are fingerprinted in the disposable index; they are reconsidered only when those inputs
 change. Turning the curate write switch on re-runs an accepted preview once so it can actually be applied.
+
+Bounded event pages are time-aware. Curation first uses explicit date fields and structured event slugs, then
+lets the model select only from complete dates actually present in an ambiguous page. With writes enabled it
+adds a journalled, surgically inserted Akno-owned boundary:
+
+```yaml
+akno:
+  temporal:
+    kind: event
+    start: '2031-04-10'
+    until: '2031-04-12'
+    timezone: 'Europe/Amsterdam'
+  management:
+    dream: synthesize
+```
+
+A date-only `until` includes the whole day in the event timezone; an exact timestamp is used only when the page
+actually supplies an end time. Set `akno.temporal: false` to keep a date-heavy evergreen page out of automatic
+classification. The current timestamp and timezone are supplied to drafting and verification but do not enter
+the daily fingerprint. Crossing `until` changes the page exactly once into archival synthesis. After that,
+only a direct page edit, explicit `about` evidence, a directly relevant fact, or a targeted timeline event wakes
+it; ordinary link churn does not. The archival pass never treats a plan as something that happened merely
+because its date passed, and an event with no meaningful later knowledge is left byte-for-byte alone.
 
 ```yaml
 akno:

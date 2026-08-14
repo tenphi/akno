@@ -20,6 +20,7 @@
     "lint:fix": "oxlint --fix",
     "format": "prettier --write \"packages/**/*.ts\" \"*.{json,md}\" \"config/*.jsonc\"",
     "format:check": "prettier --check \"packages/**/*.ts\" \"*.json\" \"config/*.jsonc\"",
+    "migrate:temporal": "node scripts/migrate-temporal-policy.ts",
     "bench": "node packages/cli/src/bin.ts bench",
     "knip": "knip"
   },

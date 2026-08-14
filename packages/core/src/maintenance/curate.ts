@@ -8,6 +8,18 @@ import { missingNumericValues } from './repair.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { sha256 } from '../store/ids.ts';
+import {
+  cleanTemporalProposal,
+  inferTemporalMetadata,
+  readTemporalDeclaration,
+  temporalBoundaryCandidates,
+  temporalClock,
+  temporalPrompt,
+  temporalState,
+  withTemporalMetadata,
+  type TemporalClock,
+  type TemporalMetadata,
+} from './temporal.ts';
 
 export interface CuratedPage {
   slug: string;
@@ -15,6 +27,12 @@ export interface CuratedPage {
   action: 'would-update' | 'updated' | 'unchanged' | 'rejected';
   splits: string[];
   issues: string[];
+  temporal?: {
+    source: 'declared' | 'inferred' | 'model';
+    state: 'active' | 'past';
+    until: string;
+    archival: boolean;
+  };
 }
 
 export interface CurateResult {
@@ -48,6 +66,7 @@ interface EvidencePage {
   role: string;
   body_hash: string;
   facts: EvidenceFact[];
+  events: { date: string; summary: string }[];
   relationship: 'about' | 'outbound' | 'backlink';
 }
 
@@ -76,6 +95,7 @@ interface CurateState {
 interface Draft {
   body?: unknown;
   splits?: unknown;
+  temporal?: unknown;
 }
 
 interface SplitDraft {
@@ -94,7 +114,7 @@ knowledge it identifies. Do not add frontmatter.`;
 
 const SYNTHESIZE_SYSTEM = `You synthesize one canonical Markdown knowledge page from its current body
 and linked evidence. Reply with JSON only:
-{"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}]}
+{"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}],"temporal":false}
 
 You may fully rewrite and restructure the body. Accumulate knowledge by subject; link to evidence and
 related pages in the sections they support instead of repeating whole source pages. A link or backlink
@@ -110,7 +130,20 @@ conflict list contains a real unresolved conflict; do not manufacture one from c
 or descriptions of different areas. Do not choose a side without evidence. Keep every
 <!-- akno:item ... --> marker exactly once, immediately before the knowledge it identifies. The
 canonical page remains at its current slug. Suggest splits only for genuinely oversized, coherent
-sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.`;
+sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.
+
+When no temporal boundary is supplied but the user message lists explicit boundary candidates, set
+"temporal" to {"kind":"event","start":"date or timestamp","until":"date or timestamp","timezone":"IANA zone"}
+only when this whole page is a bounded event. Use only listed dates, omit unknown fields and use false
+for evergreen or ambiguous pages. A date means the complete local day; never invent an end-of-day time.`;
+
+const ARCHIVE_SYSTEM = `${SYNTHESIZE_SYSTEM}
+
+This page describes an event that has ended. This is an archival synthesis, not another planning pass.
+Integrate supported outcomes, later facts, direct links and resolutions, but never infer that a planned
+activity happened merely because its date passed. Preserve plans as plans unless supplied evidence confirms
+their outcome. Do not refresh operational advice or reorganize the page without a substantive archival gain.
+If no meaningful post-event knowledge is supplied, reproduce the current body byte for byte.`;
 
 const VERIFY_SYSTEM = `You verify an automatic Markdown rewrite. Reply with JSON only:
 {"ok":true,"issues":[]}
@@ -120,10 +153,12 @@ more than minor structural changes. Reject a synthesis rewrite if it invents fac
 knowledge, hides a conflict, misattributes evidence, repeats unrelated cross-cutting logistics, changes
 an existing link target, invents a URL or creates an incoherent split. A backlink is only a relevance
 hint, not evidence that every fact on that page belongs here. Stable item markers are metadata, not
-prose, and must remain attached to their knowledge.`;
+prose, and must remain attached to their knowledge. For an archival rewrite, reject any claim that
+a plan happened merely because its date passed, and reject restructuring with no substantive
+post-event knowledge.`;
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-const CURATE_FINGERPRINT_VERSION = 3;
+const CURATE_FINGERPRINT_VERSION = 4;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -145,6 +180,7 @@ export async function curatePages(
       row.slug.toLowerCase(),
     ),
   );
+  const clock = temporalClock();
 
   let splitBudget = settings.maxSplits;
   let attempted = 0;
@@ -155,16 +191,10 @@ export async function curatePages(
     after: string;
     children: { relPath: string; content: string; slug: string }[];
     inputHash: string;
+    metadataOnly: boolean;
   }[] = [];
 
   for (const row of rows) {
-    const evidence = row.dream_management === 'synthesize' ? evidenceFor(ctx, row) : [];
-    const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
-    const inputHash = curateInputHash(row, evidence, conflicts);
-    if (!curationDue(row, inputHash, options.dryRun)) continue;
-    if (attempted >= settings.maxPages) break;
-    attempted++;
-
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
@@ -174,14 +204,46 @@ export async function curatePages(
     }
     const fm = parseFrontmatter(before);
     const body = before.slice(fm.bodyOffset);
-    const prompt = row.dream_management === 'hygiene' ? HYGIENE_SYSTEM : SYNTHESIZE_SYSTEM;
+    const inferenceInput = { slug: row.slug, title: row.title, frontmatter: fm.data, body };
+    const declaration = readTemporalDeclaration(fm.data);
+    if (declaration.invalid) {
+      result.warnings.push(
+        `${row.slug}: akno.temporal is malformed; automatic temporal handling was skipped`,
+      );
+    }
+    let temporal = declaration.metadata;
+    let temporalSource: 'declared' | 'inferred' | 'model' | null = temporal ? 'declared' : null;
+    if (!temporal && !declaration.disabled && !declaration.invalid && row.dream_management === 'synthesize') {
+      temporal = inferTemporalMetadata(inferenceInput);
+      if (temporal) temporalSource = 'inferred';
+    }
+    let eventState = temporal ? temporalState(temporal, clock) : null;
+    let archival = row.dream_management === 'synthesize' && eventState === 'past';
+    const allEvidence = row.dream_management === 'synthesize' ? evidenceFor(ctx, row) : [];
+    let evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
+    const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
+    let inputHash = curateInputHash(row, evidence, conflicts, temporal, eventState);
+    if (!curationDue(row, inputHash, options.dryRun)) continue;
+    if (attempted >= settings.maxPages) break;
+    attempted++;
+
+    const candidates =
+      row.dream_management === 'synthesize' && !temporal && !declaration.disabled && !declaration.invalid
+        ? temporalBoundaryCandidates(inferenceInput)
+        : [];
+    const prompt =
+      row.dream_management === 'hygiene' ? HYGIENE_SYSTEM : archival ? ARCHIVE_SYSTEM : SYNTHESIZE_SYSTEM;
     const draftResult = await ctx.models.derive.chat(
       [
         { role: 'system', content: prompt },
         {
           role: 'user',
           content:
-            `Slug: ${row.slug}\nTitle: ${row.title}\n\nCurrent body:\n${body.slice(0, 40_000)}` +
+            `${temporalPrompt(temporal, clock)}\n\nSlug: ${row.slug}\nTitle: ${row.title}` +
+            (candidates.length
+              ? `\nTemporal boundary candidates explicitly present in this page: ${candidates.join(', ')}`
+              : '') +
+            `\n\nCurrent body:\n${body.slice(0, 40_000)}` +
             (evidence.length
               ? `\n\nEvidence graph:\n${renderEvidence(evidence).join('\n\n').slice(0, 40_000)}`
               : '') +
@@ -191,7 +253,7 @@ export async function curatePages(
       { json: true, maxTokens: 8_000 },
     );
     const parsed = draftResult.ok && draftResult.value ? parseJsonLoose<Draft>(draftResult.value) : null;
-    const nextBody = typeof parsed?.body === 'string' ? endWithNewline(parsed.body) : null;
+    let nextBody = typeof parsed?.body === 'string' ? endWithNewline(parsed.body) : null;
     if (!nextBody) {
       const issue = draftResult.error ?? 'draft was not valid JSON with a body';
       result.pages.push({
@@ -200,6 +262,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         issues: [issue],
+        ...temporalResult(temporal, temporalSource, clock, archival),
       });
       // Provider/transport failures are retryable. A successful model call that returned an
       // unusable draft is a completed rejection and should not burn another call next night.
@@ -207,8 +270,56 @@ export async function curatePages(
       continue;
     }
 
+    let metadataOnly = false;
+    if (!temporal && row.dream_management === 'synthesize' && candidates.length > 0) {
+      const proposed = cleanTemporalProposal(parsed?.temporal, candidates);
+      if (proposed.issue) {
+        result.pages.push({
+          slug: row.slug,
+          mode: row.dream_management,
+          action: 'rejected',
+          splits: [],
+          issues: [proposed.issue],
+        });
+        queueCurateState(state, row.id, inputHash, 'rejected');
+        continue;
+      }
+      if (proposed.metadata) {
+        temporal = proposed.metadata;
+        temporalSource = 'model';
+        eventState = temporalState(temporal, clock);
+        archival = eventState === 'past';
+        // The first call classified an unmarked page without the archival contract. Persist the
+        // boundary alone and let the next fingerprinted pass assess the ended event correctly.
+        if (archival) {
+          nextBody = body;
+          evidence = archivalEvidence(allEvidence);
+          inputHash = curateInputHash(row, evidence, conflicts, temporal, eventState);
+          metadataOnly = true;
+        }
+      }
+    }
+
+    const temporalBase =
+      temporal && temporalSource !== 'declared' ? withTemporalMetadata(before, temporal) : before;
+    if (temporalBase === null) {
+      const issue = 'could not add akno.temporal without reformatting existing frontmatter';
+      result.pages.push({
+        slug: row.slug,
+        mode: row.dream_management,
+        action: 'rejected',
+        splits: [],
+        issues: [issue],
+        ...temporalResult(temporal, temporalSource, clock, archival),
+      });
+      queueCurateState(state, row.id, inputHash, 'rejected');
+      continue;
+    }
+
     const maySplit =
-      row.dream_management === 'synthesize' && Buffer.byteLength(before) >= settings.splitAfterBytes;
+      !metadataOnly &&
+      row.dream_management === 'synthesize' &&
+      Buffer.byteLength(before) >= settings.splitAfterBytes;
     const splits = maySplit
       ? cleanSplits(
           parsed?.splits,
@@ -233,12 +344,15 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         issues: deterministic,
+        ...temporalResult(temporal, temporalSource, clock, archival),
       });
       queueCurateState(state, row.id, inputHash, 'rejected');
       continue;
     }
 
-    const verified = await verifyDraft(ctx, row, body, nextBody, splits, evidence, conflicts);
+    const verified = metadataOnly
+      ? { ok: true, issues: [], cacheable: true }
+      : await verifyDraft(ctx, row, body, nextBody, splits, evidence, conflicts, temporal, clock, archival);
     if (!verified.ok) {
       result.pages.push({
         slug: row.slug,
@@ -246,6 +360,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         issues: verified.issues,
+        ...temporalResult(temporal, temporalSource, clock, archival),
       });
       if (verified.cacheable) queueCurateState(state, row.id, inputHash, 'rejected');
       continue;
@@ -259,7 +374,8 @@ export async function curatePages(
         content: childPage(split, row.slug),
       };
     });
-    const after = before.slice(0, fm.bodyOffset) + nextBody;
+    const temporalFm = parseFrontmatter(temporalBase);
+    const after = temporalBase.slice(0, temporalFm.bodyOffset) + nextBody;
     if (after === before && children.length === 0) {
       result.pages.push({
         slug: row.slug,
@@ -267,11 +383,12 @@ export async function curatePages(
         action: 'unchanged',
         splits: [],
         issues: [],
+        ...temporalResult(temporal, temporalSource, clock, archival),
       });
       queueCurateState(state, row.id, inputHash, 'unchanged');
       continue;
     }
-    staged.push({ row, before, after, children, inputHash });
+    staged.push({ row, before, after, children, inputHash, metadataOnly });
     splitBudget -= children.length;
     result.pages.push({
       slug: row.slug,
@@ -279,6 +396,7 @@ export async function curatePages(
       action: options.dryRun ? 'would-update' : 'updated',
       splits: children.map((child) => child.slug),
       issues: [],
+      ...temporalResult(temporal, temporalSource, clock, archival),
     });
   }
 
@@ -315,12 +433,22 @@ export async function curatePages(
   // curator would interpret its own work as new input on the next cycle. New split children are
   // marked too, so creating one does not immediately enqueue it for another synthesis.
   for (const stage of staged) {
+    if (stage.metadataOnly) continue;
     for (const slug of [stage.row.slug, ...stage.children.map((child) => child.slug)]) {
       const refreshed = pageForSlug(ctx, slug);
       if (!refreshed) continue;
-      const evidence = refreshed.dream_management === 'synthesize' ? evidenceFor(ctx, refreshed) : [];
+      const temporal = temporalForRow(refreshed);
+      const eventState = temporal ? temporalState(temporal, clock) : null;
+      const archival = refreshed.dream_management === 'synthesize' && eventState === 'past';
+      const allEvidence = refreshed.dream_management === 'synthesize' ? evidenceFor(ctx, refreshed) : [];
+      const evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
       const conflicts = refreshed.dream_management === 'synthesize' ? conflictsFor(ctx, refreshed.id) : [];
-      queueCurateState(state, refreshed.id, curateInputHash(refreshed, evidence, conflicts), 'applied');
+      queueCurateState(
+        state,
+        refreshed.id,
+        curateInputHash(refreshed, evidence, conflicts, temporal, eventState),
+        'applied',
+      );
     }
   }
   if (options.recordState) persistCurateState(ctx, state.values());
@@ -349,12 +477,18 @@ function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
       WHERE page_id = ? AND valid_to IS NULL
       ORDER BY line_start, id LIMIT 50`,
   );
+  const events = ctx.store.db.prepare(
+    `SELECT date, summary FROM events
+      WHERE source_page = ? AND target_slug = ?
+      ORDER BY date DESC, line LIMIT 50`,
+  );
   return rows.map((row) => {
     const relationship = pageRelationship(row, page.slug);
     const allFacts = facts.all(row.id) as EvidenceFact[];
     return {
       ...row,
       relationship,
+      events: events.all(row.id, page.slug) as { date: string; summary: string }[],
       facts:
         relationship === 'about'
           ? allFacts
@@ -363,6 +497,13 @@ function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
             : [],
     };
   });
+}
+
+/** Ended events wake only for evidence that explicitly contributes to or records the event. */
+function archivalEvidence(evidence: EvidencePage[]): EvidencePage[] {
+  return evidence.filter(
+    (row) => row.relationship === 'about' || row.facts.length > 0 || row.events.length > 0,
+  );
 }
 
 function pageRelationship(
@@ -430,6 +571,9 @@ async function verifyDraft(
   splits: SplitDraft[],
   evidence: EvidencePage[],
   conflicts: ConflictEvidence[],
+  temporal: TemporalMetadata | null,
+  clock: TemporalClock,
+  archival: boolean,
 ): Promise<{ ok: boolean; issues: string[]; cacheable: boolean }> {
   const result = await ctx.models.derive.chat(
     [
@@ -443,6 +587,8 @@ async function verifyDraft(
           splits,
           evidence,
           conflicts,
+          time: temporalPrompt(temporal, clock),
+          archival,
         }).slice(0, 100_000),
       },
     ],
@@ -611,9 +757,11 @@ function renderEvidence(evidence: EvidencePage[]): string[] {
   return evidence.map((row) => {
     const summary = row.relationship === 'about' && row.summary ? ` — ${row.summary}` : '';
     const heading = `[[${row.slug}]] (${row.relationship})${summary}`;
-    return row.facts.length
-      ? `${heading}\n${row.facts.map((fact) => `- ${fact.claim}`).join('\n')}`
-      : heading;
+    const details = [
+      ...row.facts.map((fact) => `- ${fact.claim}`),
+      ...row.events.map((event) => `- ${event.date}: ${event.summary}`),
+    ];
+    return details.length ? `${heading}\n${details.join('\n')}` : heading;
   });
 }
 
@@ -621,7 +769,41 @@ function renderConflicts(conflicts: ConflictEvidence[]): string[] {
   return conflicts.map((row) => `${row.subject} / ${row.attribute}: ${row.claim} [[${row.slug}]]`);
 }
 
-function curateInputHash(page: PageRow, evidence: EvidencePage[], conflicts: ConflictEvidence[]): string {
+function temporalForRow(page: PageRow): TemporalMetadata | null {
+  try {
+    const frontmatter = JSON.parse(page.frontmatter) as unknown;
+    if (!frontmatter || typeof frontmatter !== 'object' || Array.isArray(frontmatter)) return null;
+    return readTemporalDeclaration(frontmatter as Record<string, unknown>).metadata;
+  } catch {
+    return null;
+  }
+}
+
+function temporalResult(
+  metadata: TemporalMetadata | null,
+  source: 'declared' | 'inferred' | 'model' | null,
+  clock: TemporalClock,
+  archival: boolean,
+): Pick<CuratedPage, 'temporal'> | Record<string, never> {
+  return metadata && source
+    ? {
+        temporal: {
+          source,
+          state: temporalState(metadata, clock),
+          until: metadata.until,
+          archival,
+        },
+      }
+    : {};
+}
+
+function curateInputHash(
+  page: PageRow,
+  evidence: EvidencePage[],
+  conflicts: ConflictEvidence[],
+  temporal: TemporalMetadata | null,
+  eventState: 'active' | 'past' | null,
+): string {
   return sha256(
     JSON.stringify({
       version: CURATE_FINGERPRINT_VERSION,
@@ -643,8 +825,13 @@ function curateInputHash(page: PageRow, evidence: EvidencePage[], conflicts: Con
         bodyHash: row.body_hash,
         relationship: row.relationship,
         facts: row.facts,
+        events: row.events,
       })),
       conflicts,
+      temporal,
+      // Unlike the current date, this changes only once for a bounded event. It schedules one
+      // archival assessment without making every page stale every day.
+      eventState,
     }),
   );
 }

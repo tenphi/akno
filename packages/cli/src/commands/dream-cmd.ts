@@ -90,6 +90,14 @@ function printDream(report: DreamReport, dryRun: boolean): number {
               ? style.yellow('refused')
               : style.grey('same');
       line(`  ${mark} ${entry.slug}  ${style.grey(entry.mode)}`);
+      if (entry.temporal) {
+        line(
+          `          ${style.grey(
+            `${entry.temporal.state} event until ${entry.temporal.until}` +
+              `${entry.temporal.archival ? ' · archival' : ''} · ${entry.temporal.source}`,
+          )}`,
+        );
+      }
       for (const issue of entry.issues) line(`          ${style.grey(issue)}`);
       if (entry.splits.length) line(`          ${style.grey(`splits: ${entry.splits.join(', ')}`)}`);
     }
