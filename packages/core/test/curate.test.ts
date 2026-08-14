@@ -77,7 +77,7 @@ describe('curate', () => {
     expect(server.calls()).toBe(1);
   });
 
-  it('reconsiders hygiene only after the page changes', async () => {
+  it('reconsiders hygiene after body or frontmatter changes', async () => {
     await mem.dream({ phase: 'curate' });
     expect(server.calls()).toBe(2);
 
@@ -88,6 +88,12 @@ describe('curate', () => {
     expect(report.curated).toHaveLength(1);
     expect(report.curated[0]?.slug).toBe('people/ada-marlow');
     expect(server.calls()).toBe(4);
+
+    const page = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(page, fs.readFileSync(page, 'utf8').replace('title: Ada Marlow', 'title: Ada profile'));
+    await mem.index({ structuralOnly: true });
+    expect((await mem.dream({ phase: 'curate' })).curated).toHaveLength(1);
+    expect(server.calls()).toBe(6);
   });
 
   it('reconsiders synthesis when linked evidence changes', async () => {

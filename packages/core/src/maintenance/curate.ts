@@ -32,6 +32,7 @@ interface PageRow {
   role: string;
   dream_management: 'hygiene' | 'synthesize';
   about: string;
+  frontmatter: string;
   body_hash: string;
   curate_input_hash: string | null;
   curate_status: CurateStatus | null;
@@ -120,7 +121,7 @@ export async function curatePages(
   const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [] };
   const rows = ctx.store.db
     .prepare(
-      `SELECT id, slug, rel_path, title, role, dream_management, about, body_hash,
+      `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, body_hash,
               curate_input_hash, curate_status
          FROM pages
         WHERE dream_management IN ('hygiene', 'synthesize') AND role = 'knowledge'
@@ -445,6 +446,7 @@ function curateInputHash(page: PageRow, evidence: EvidencePage[], conflicts: Con
         role: page.role,
         mode: page.dream_management,
         about: page.about,
+        frontmatter: page.frontmatter,
         bodyHash: page.body_hash,
       },
       // Hygiene deliberately has empty arrays here: its authority is confined to this page.
@@ -493,7 +495,7 @@ function pageForSlug(ctx: AknoContext, slug: string): PageRow | null {
   return (
     (ctx.store.db
       .prepare(
-        `SELECT id, slug, rel_path, title, role, dream_management, about, body_hash,
+        `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, body_hash,
                 curate_input_hash, curate_status
            FROM pages WHERE slug = ? AND role = 'knowledge'
              AND dream_management IN ('hygiene', 'synthesize')`,
