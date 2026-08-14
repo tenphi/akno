@@ -124,6 +124,24 @@ export async function ingestCommand(argv: string[]): Promise<number> {
       return 2;
     }
 
+    if (result.outcome === 'requires_folder' && result.requires_folder) {
+      // A different problem from the one above, and worth saying so: there is a destination
+      // in mind, it just has not been described yet. Nobody is waiting to approve it.
+      const required = result.requires_folder;
+      heading(style.yellow(`'${required.folder}' is not declared — the file stays where it is`));
+      kv([
+        ['what it is', truncate(result.summary ?? '', 90) || null],
+        ['pages', result.page_count ?? null],
+        ['text from', describeSource(result.text_from)],
+      ]);
+      if (required.nearest.length > 0) {
+        line(`  ${style.grey('could go instead')}  ${required.nearest.join(', ')}`);
+      }
+      line(`\n  ${style.grey('say what belongs there, then ingest again:')}`);
+      line(`  ${style.bold(`akno folder ${required.folder} --description "…"`)}`);
+      return 2;
+    }
+
     line(`${statusLabel(result.status)} ${style.grey(`change ${result.change_id}`)}`);
     kv([
       ['page', result.slug],

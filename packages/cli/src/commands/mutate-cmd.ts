@@ -156,7 +156,7 @@ export async function moveCommand(argv: string[]): Promise<number> {
       return result.outcome === 'ok' ? 0 : 2;
     }
 
-    if (result.outcome === 'requires_approval') return printWriteOutcome(result);
+    if (result.outcome === 'requires_folder') return printWriteOutcome(result);
 
     line(`${statusLabel(result.status)} ${style.grey(`change ${result.change_id}`)}`);
     for (const file of result.moved ?? []) line(`  ${style.green('moved')}  ${file}`);

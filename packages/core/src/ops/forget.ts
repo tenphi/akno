@@ -156,12 +156,26 @@ async function forgetDocument(ctx: AknoContext, documentId: string): Promise<For
 
   const token = newPrefixedId('trash');
   const snapshot = await ctx.journal.trash(document.rel_path, token);
+  const files: ChangeFile[] = [
+    { relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot },
+  ];
+
+  // The text file beside a document is that document in another format. Leaving it behind
+  // would leave the whole of a forgotten contract sitting in the folder, still readable and
+  // still returned by a search of the files themselves.
+  const renditions = ctx.store.db
+    .prepare('SELECT rel_path FROM documents WHERE renders = ?')
+    .all(document.rel_path) as { rel_path: string }[];
+  for (const rendition of renditions) {
+    const held = await ctx.journal.trash(rendition.rel_path, token);
+    files.push({ relPath: rendition.rel_path, action: 'deleted', before: null, after: null, snapshot: held });
+  }
 
   const changeId = ctx.journal.record({
     actor: ctx.actor,
     op: 'forget',
     summary: `trashed document ${document.rel_path}`,
-    files: [{ relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot }],
+    files,
   });
 
   // Same reasoning as above: the reconciler removes both rows once it sees the file

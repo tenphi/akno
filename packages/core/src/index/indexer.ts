@@ -3,8 +3,11 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoConfig } from '../config/schema.ts';
 import { KB_RULES_FILE } from '../config/load.ts';
-import { extract } from '../ingest/extract.ts';
-import { documentPart } from '../ingest/parts.ts';
+import { ledgerSlug } from '../reserved.ts';
+import { extract, legacyVia, type Extraction } from '../ingest/extract.ts';
+import { documentPart, documentRendition } from '../ingest/parts.ts';
+import { looksLikeRendition, renditionBody, renditionPathFor, renditionWanted } from '../ingest/rendition.ts';
+import { writeFileAtomic } from '../write/atomic.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { hashFile, mapWithConcurrency, scanTree, type ScannedFile } from '../kb/scan.ts';
 import { ATTACHMENT_NAME, parsePage, resolveClass, type ParsedPage } from '../kb/page.ts';
@@ -54,7 +57,17 @@ export interface IndexOptions {
 }
 
 export interface IndexProgress {
-  phase: 'scan' | 'hash' | 'pages' | 'embed' | 'derive' | 'documents' | 'extract' | 'summarize' | 'done';
+  phase:
+    | 'scan'
+    | 'hash'
+    | 'pages'
+    | 'embed'
+    | 'derive'
+    | 'documents'
+    | 'extract'
+    | 'renditions'
+    | 'summarize'
+    | 'done';
   done: number;
   total: number;
   detail?: string;
@@ -75,6 +88,8 @@ export interface IndexReport {
   documentsExtracted: number;
   /** Documents given a summary this pass — one per document, not one per file. */
   documentsSummarized: number;
+  /** `<file>.txt` written beside a document this pass. Zero unless `ingest.text_rendition`. */
+  renditionsWritten: number;
   eventsIndexed: number;
   factsDerived: number;
   excluded: number;
@@ -113,6 +128,9 @@ export class Indexer {
 
   async run(options: IndexOptions = {}): Promise<IndexReport> {
     const started = performance.now();
+    // Per pass: the folder may have changed since the last one, and a stale listing would
+    // decide a rendition against files that are no longer there.
+    this.#entriesCache.clear();
     const report: IndexReport = {
       scanned: 0,
       hashed: 0,
@@ -126,6 +144,7 @@ export class Indexer {
       documentsLinked: 0,
       documentsExtracted: 0,
       documentsSummarized: 0,
+      renditionsWritten: 0,
       eventsIndexed: 0,
       factsDerived: 0,
       excluded: 0,
@@ -153,6 +172,7 @@ export class Indexer {
     // exactly the failure Akno exists to avoid. A `--only` pass sees a fraction of the
     // tree and is not the place to conclude anything about the rest of it.
     const reclassified = options.only ? new Set<string>() : this.reclassify(report);
+    if (!options.only) for (const relPath of this.pageFilesWithNoPage(report)) reclassified.add(relPath);
 
     // ── Stat fast path ─────────────────────────────────────────────────────
     // mtime is a fast path, not a correctness guarantee — sync clients and
@@ -200,13 +220,29 @@ export class Indexer {
     });
 
     // ── Deletions and renames ──────────────────────────────────────────────
-    // Only a full pass can conclude a file is gone; a `--only` pass sees a
-    // fraction of the tree by design.
-    if (!options.only) {
-      const present = new Set(files.map((file) => file.relPath));
-      const vanished = [...known.values()].filter((row) => !present.has(row.rel_path));
-      this.reconcileDeletions(vanished, needsIndex, report);
-    }
+    //
+    // A full pass may conclude a file is gone about *any* file. A scoped pass may conclude it
+    // about **the files it was handed**: the caller named those paths, and one that has a
+    // record and is not on disk has genuinely vanished.
+    //
+    // That distinction is what lets a move keep its identity. The watcher sees a folder
+    // renamed as a batch of departures and arrivals in one scoped pass, and refusing to look
+    // at the departures split the pair across passes — by the time a full pass ran, the
+    // arrival had already been indexed as a brand new page, and the vanished one could only
+    // be deleted. Twenty-seven notes moved in Obsidian lost their ids that way, and with them
+    // every fact, link and journal entry hanging off them.
+    const present = new Set(files.map((file) => file.relPath));
+    const inScope = options.only ? new Set(options.only) : null;
+    const vanished = [...known.values()].filter(
+      (row) => !present.has(row.rel_path) && (!inScope || inScope.has(row.rel_path)),
+    );
+    if (vanished.length > 0) this.reconcileDeletions(vanished, needsIndex, report);
+
+    // A rendition policy that moved has to ask again about every document it already
+    // declined, or lowering the threshold does nothing at all. Same problem as a rule
+    // change, same shape of fix.
+    this.reconsiderRenditions(report);
+    if (!options.only) this.reconcileRenditionClaims(report);
 
     // ── Pages ──────────────────────────────────────────────────────────────
     const pageFiles = needsIndex.filter((file) => file.kind === 'page');
@@ -249,6 +285,9 @@ export class Indexer {
       // Before embedding, so the chunks it produces are embedded in the same pass rather
       // than sitting unsearchable until the next one.
       await this.extractPending(report, progress, options.only ?? null);
+      // After extraction, so a document read this pass gets its text beside it in the same
+      // pass, and before embedding, because a rendition produces nothing to embed.
+      await this.writeRenditions(report, progress, options.only ?? null);
       await this.embedPending(report, progress, scope);
       await this.summarizeDocuments(report, progress);
       await this.derivePending(report, progress, options.rederive ?? false, scope);
@@ -314,6 +353,36 @@ export class Indexer {
     }
     this.#store.setMeta(RULES_FINGERPRINT, fingerprint);
     return moved;
+  }
+
+  /**
+   * Page files the index has a record of and no page for.
+   *
+   * The stat fast path asks `files` whether anything moved, so a file whose `files` row is
+   * intact is never looked at again — and that is exactly the state a reorganization can
+   * leave behind, with the `pages` row deleted underneath a `files` row that still points at
+   * it. The file is on disk, the index says "unchanged", and recall cannot return it: the
+   * folder and the index disagree, and the index is the one that must yield.
+   *
+   * `reclassify` looks for the same failure one shape over — `page_id IS NULL`, a file the
+   * rules excluded — and misses this one, where the id is set and the page it names is gone.
+   */
+  private pageFilesWithNoPage(report: IndexReport): string[] {
+    const rows = this.#store.db
+      .prepare(
+        `SELECT f.rel_path FROM files f
+          WHERE f.kind = 'page'
+            AND f.page_id IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM pages p WHERE p.id = f.page_id)`,
+      )
+      .all() as { rel_path: string }[];
+
+    if (rows.length > 0) {
+      report.warnings.push(
+        `${rows.length} page(s) were on disk with nothing indexed for them, and were re-read`,
+      );
+    }
+    return rows.map((row) => row.rel_path);
   }
 
   /**
@@ -686,25 +755,34 @@ export class Indexer {
    * rather than starting from an empty one.
    */
   private registerAttachment(file: ScannedFile, report: IndexReport): void {
+    const onDisk = (relPath: string): boolean => fs.existsSync(path.join(this.#config.aknoPath, relPath));
+
+    // A rendition is asked about first, and it settles both questions at once: `contract.pdf.txt`
+    // belongs to whatever group and page `contract.pdf` does. Asking the part rule first would
+    // give it a group of its own and make it a second document — which is the entire thing this
+    // column exists to prevent.
+    const rendition = documentRendition(file.relPath, { entries: (dir) => this.entriesOf(dir) });
+    const target = rendition?.source ?? file.relPath;
+
     // Parts of one document resolve ownership through the group, so `passport-2.pdf` lands
     // on the page that owns `passport.pdf` rather than nowhere at all.
-    const group = documentPart(file.relPath, {
+    const group = documentPart(target, {
       // Asked of the disk rather than of `files`, so the answer does not depend on which of
       // the two parts this pass happened to reach first.
-      hasPartOne: (groupKey) => fs.existsSync(path.join(this.#config.aknoPath, groupKey)),
+      hasPartOne: (groupKey) => onDisk(groupKey),
     });
-    const pageId = this.attachmentOwner(group.groupKey) ?? this.attachmentOwner(file.relPath);
+    const pageId = this.attachmentOwner(group.groupKey) ?? this.attachmentOwner(target);
     const id = `doc_${(file.sha256 ?? file.relPath).slice(0, 12)}`;
     this.#store.transaction(() => {
       this.#store.db
         .prepare(
           `INSERT INTO documents(id, page_id, rel_path, mime, sha256, label, text, summary,
-                                 page_count, ocr, bytes, indexed_at, group_key, part)
-           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?)
+                                 page_count, ocr, bytes, indexed_at, group_key, part, renders)
+           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?, ?)
            ON CONFLICT(rel_path) DO UPDATE SET
              page_id = excluded.page_id, sha256 = excluded.sha256,
              mime = excluded.mime, bytes = excluded.bytes, indexed_at = excluded.indexed_at,
-             group_key = excluded.group_key, part = excluded.part`,
+             group_key = excluded.group_key, part = excluded.part, renders = excluded.renders`,
         )
         .run(
           id,
@@ -715,11 +793,56 @@ export class Indexer {
           file.size,
           nowIso(),
           group.groupKey,
-          group.part,
+          rendition ? 1 : group.part,
+          rendition?.source ?? null,
         );
+
+      // A file that has just *become* a rendition — someone's own `pdftotext` output, indexed
+      // as a document of its own before the rule could recognise it — is still carrying its
+      // own text and chunks, and those are the duplicate hits. Drop them: the words belong to
+      // the file it renders and are indexed there.
+      if (rendition) {
+        const row = this.#store.db
+          .prepare('SELECT id FROM documents WHERE rel_path = ?')
+          .get(file.relPath) as { id: string } | undefined;
+        if (row) {
+          this.deleteChunkRows(CHUNKS_FOR_DOCUMENT, row.id);
+          this.#store.db
+            .prepare(
+              `UPDATE documents SET text = NULL, summary = NULL, page_count = NULL, ocr = 0,
+                                    extracted_sha = NULL, extract_via = NULL, confidence = NULL
+                WHERE id = ?`,
+            )
+            .run(row.id);
+        }
+      }
       this.recordFile(file, null);
     });
     if (pageId) report.documentsLinked++;
+  }
+
+  /**
+   * Filenames in one directory of the knowledge base, memoized for the pass.
+   *
+   * Recognising `contract.txt` as the text of `contract.pdf` is a question about the folder
+   * rather than about the file, and it is asked once per attachment. Reading the directory
+   * each time would turn a folder of 200 scans into 200 readdirs of the same folder.
+   */
+  #entriesCache = new Map<string, string[]>();
+
+  private entriesOf(directory: string): string[] {
+    const cached = this.#entriesCache.get(directory);
+    if (cached) return cached;
+    const absDir =
+      directory === '.' ? this.#config.aknoPath : path.join(this.#config.aknoPath, directory);
+    let entries: string[];
+    try {
+      entries = fs.readdirSync(absDir);
+    } catch {
+      entries = [];
+    }
+    this.#entriesCache.set(directory, entries);
+    return entries;
   }
 
   /**
@@ -806,7 +929,8 @@ export class Indexer {
     const stale = this.#store.db
       .prepare(
         `SELECT DISTINCT d.group_key FROM documents d
-          WHERE (
+          WHERE d.renders IS NULL
+            AND (
                   d.extracted_sha IS NULL
                OR d.extracted_sha != d.sha256
                -- Self-healing: a page removed and restored takes its document's chunks with
@@ -823,7 +947,7 @@ export class Indexer {
     // "page 5" against a document that has since become six pages longer at the front.
     const partsOf = this.#store.db.prepare(
       `SELECT id, rel_path, sha256, page_id, part FROM documents
-        WHERE group_key = ? ORDER BY part`,
+        WHERE group_key = ? AND renders IS NULL ORDER BY part`,
     );
     const groups = stale.map((row) => partsOf.all(row.group_key) as DocumentPartRow[]);
     const total = groups.reduce((sum, parts) => sum + parts.length, 0);
@@ -847,7 +971,11 @@ export class Indexer {
             this.#store.db
               .prepare(
                 `UPDATE documents
-                    SET text = ?, page_count = ?, ocr = ?, extracted_sha = ?, page_offset = ?
+                    SET text = ?, page_count = ?, ocr = ?, extracted_sha = ?, page_offset = ?,
+                        extract_via = ?, confidence = ?,
+                        -- New text means the file beside it is stale. Cleared in the same
+                        -- statement that changes the text, so the two cannot drift.
+                        rendition_sha = NULL
                   WHERE id = ?`,
               )
               .run(
@@ -858,6 +986,8 @@ export class Indexer {
                 // re-OCR'd on every pass. A changed file gets another go.
                 row.sha256,
                 offset,
+                extraction.via,
+                extraction.confidence,
                 row.id,
               );
 
@@ -886,6 +1016,213 @@ export class Indexer {
   }
 
   /**
+   * The extracted text, written beside the file it came from.
+   *
+   * Invalidated by `rendition_sha`, never by whether the file happens to be there: a steady
+   * state costs one indexed comparison per pass rather than a `stat` per document, and a
+   * rendition the user deleted stays deleted, because the folder is theirs and deleting a
+   * file in it is an instruction rather than damage to repair.
+   *
+   * A decline is recorded too — the same reason `extracted_sha` is written when nothing
+   * could be read. Without that, every photograph in the knowledge base is reconsidered on
+   * every pass forever to reach the same answer.
+   */
+  private async writeRenditions(
+    report: IndexReport,
+    progress: (p: IndexProgress) => void,
+    only: string[] | null,
+  ): Promise<void> {
+    if (!this.#config.ingest.textRendition) return;
+
+    // Qualified: this query joins `pages`, which has a `rel_path` of its own, and an
+    // unqualified one is ambiguous. Only the watcher passes a scope, so an unqualified name
+    // here fails on exactly the path a full index never takes.
+    const scopeClause = only ? ` AND d.rel_path IN (${only.map(() => '?').join(',')})` : '';
+    const pending = this.#store.db
+      .prepare(
+        `SELECT d.id, d.rel_path, d.sha256, d.text, d.page_count, d.ocr, d.extract_via, d.confidence,
+                p.slug
+           FROM documents d LEFT JOIN pages p ON p.id = d.page_id
+          WHERE d.renders IS NULL
+            AND (d.rendition_sha IS NULL OR d.rendition_sha != d.sha256)
+          ${scopeClause}`,
+      )
+      .all(...(only ?? [])) as {
+      id: string;
+      rel_path: string;
+      sha256: string;
+      text: string | null;
+      page_count: number | null;
+      ocr: number;
+      extract_via: string | null;
+      confidence: number | null;
+      slug: string | null;
+    }[];
+    if (pending.length === 0) return;
+
+    const decided = this.#store.db.prepare('UPDATE documents SET rendition_sha = ? WHERE id = ?');
+    progress({ phase: 'renditions', done: 0, total: pending.length });
+    let done = 0;
+
+    for (const row of pending) {
+      const source = {
+        relPath: row.rel_path,
+        text: row.text ?? '',
+        pageCount: row.page_count,
+        ocr: row.ocr === 1,
+        via:
+          (row.extract_via as Extraction['via'] | null) ??
+          legacyVia({ relPath: row.rel_path, ocr: row.ocr === 1, hasText: row.text !== null }),
+        confidence: row.confidence,
+      };
+      const gate = renditionWanted(source, {
+        minChars: this.#config.ingest.textRenditionMinChars,
+        ingestRule: effectiveRule(row.slug ?? row.rel_path, this.#config.rules).ingest,
+      });
+
+      if (gate.write) {
+        const relPath = renditionPathFor(row.rel_path);
+        try {
+          // The name a rendition gets has to be one that reads back as *this* document's.
+          // `scan.jpg` and `scan.pdf` in one folder both want `scan.txt`, and a file two
+          // documents claim belongs to neither.
+          const claims = documentRendition(relPath, { entries: (dir) => this.entriesOf(dir) });
+          if (claims?.source !== row.rel_path) {
+            report.warnings.push(
+              `${relPath} would not read back as the text of ${row.rel_path}` +
+                `${claims ? ` — that name belongs to ${claims.source}` : ', so it was not written'}`,
+            );
+            // Not recorded as decided. "This photo does not earn one" is an answer worth
+            // keeping; "I could not work out a name for this" is a failure, and the folder it
+            // failed against is one file away from making it answerable. Same reason a
+            // summary is retried while an unreadable file is not.
+            progress({ phase: 'renditions', done: ++done, total: pending.length, detail: row.rel_path });
+            continue;
+          }
+          if (await this.renditionIsOurs(relPath)) {
+            await writeFileAtomic(this.#config.aknoPath, relPath, renditionBody(source));
+            report.renditionsWritten++;
+          }
+          // A `.txt` somebody wrote themselves already holds this document's text under this
+          // document's name. That is the file, not a conflict — and overwriting the hand
+          // corrections in it is the one thing not to do.
+        } catch (err) {
+          report.warnings.push(`could not write ${relPath}: ${errorMessage(err)}`);
+          progress({ phase: 'renditions', done: ++done, total: pending.length, detail: row.rel_path });
+          continue;
+        }
+      }
+      decided.run(row.sha256, row.id);
+      progress({ phase: 'renditions', done: ++done, total: pending.length, detail: row.rel_path });
+    }
+  }
+
+  /**
+   * Whether Akno may write this path: only if it is free, or holds something Akno
+   * itself put there — which the file says in its own first line.
+   *
+   * Existing and being *recognised* as a rendition is not the same question. The scanner
+   * recognises `contract.pdf.txt` by its name, and a person's own file can have that name.
+   * Authorship has to be read from the contents or the check answers yes to everything.
+   */
+  private async renditionIsOurs(relPath: string): Promise<boolean> {
+    const absPath = path.join(this.#config.aknoPath, relPath);
+    const head = await fsp.readFile(absPath, 'utf8').catch(() => null);
+    if (head === null) return true;
+    return looksLikeRendition(head.slice(0, 200));
+  }
+
+  /**
+   * Whether each document still is — or has become — a rendition of another.
+   *
+   * `registerAttachment` answers that question for files the pass looked at, and the stat
+   * fast path means an unchanged file is never looked at again. So the answer would be
+   * frozen at whatever was true when the file first arrived: a `contract.txt` indexed before
+   * the rule could recognise it keeps its own chunks and goes on returning the contract's
+   * every phrase a second time, and one whose PDF has since been deleted stays a rendition
+   * of nothing. Neither file changed; what changed is what is around it.
+   *
+   * A query over `documents` rather than over the tree, so it costs one pass over a table
+   * with one row per attachment and nothing per note.
+   */
+  private reconcileRenditionClaims(report: IndexReport): void {
+    const rows = this.#store.db.prepare('SELECT id, rel_path, renders FROM documents').all() as {
+      id: string;
+      rel_path: string;
+      renders: string | null;
+    }[];
+
+    let changed = 0;
+    for (const row of rows) {
+      const verdict = documentRendition(row.rel_path, { entries: (dir) => this.entriesOf(dir) });
+      const renders = verdict?.source ?? null;
+      if (renders === row.renders) continue;
+
+      this.#store.transaction(() => {
+        this.#store.db.prepare('UPDATE documents SET renders = ? WHERE id = ?').run(renders, row.id);
+        if (renders) {
+          // Its words belong to the file it renders and are indexed there. Two copies is the
+          // duplicate this whole distinction exists to remove.
+          this.deleteChunkRows(CHUNKS_FOR_DOCUMENT, row.id);
+          this.#store.db
+            .prepare(
+              `UPDATE documents SET text = NULL, summary = NULL, page_count = NULL, ocr = 0,
+                                    extracted_sha = NULL, extract_via = NULL, confidence = NULL
+                WHERE id = ?`,
+            )
+            .run(row.id);
+        } else {
+          // No longer renders anything — the file it copied is gone. It is a document again,
+          // and `extractPending` reads it on the next pass because its hash is unrecorded.
+          this.#store.db.prepare('UPDATE documents SET extracted_sha = NULL WHERE id = ?').run(row.id);
+        }
+      });
+      changed++;
+    }
+
+    if (changed > 0) {
+      report.warnings.push(
+        `${changed} document(s) changed between being a document and being the text of one`,
+      );
+    }
+  }
+
+  /**
+   * A rendition policy that moved has to ask again about every document it declined.
+   *
+   * Same problem `reclassify` solves for rules, and for the same reason: declines are
+   * recorded so they are not recomputed, which means lowering the threshold would otherwise
+   * change nothing until the files themselves changed.
+   */
+  private reconsiderRenditions(report: IndexReport): void {
+    const fingerprint = sha256(
+      JSON.stringify({
+        enabled: this.#config.ingest.textRendition,
+        minChars: this.#config.ingest.textRenditionMinChars,
+        // Where the file goes is part of the policy, not an implementation detail: a
+        // rendition already written under a different name is not the one that would be
+        // written now. Derived from the naming itself so it cannot go stale.
+        scheme: renditionPathFor('scheme.pdf'),
+      }),
+    );
+    if (this.#store.meta(RENDITION_FINGERPRINT) === fingerprint) return;
+
+    const first = this.#store.meta(RENDITION_FINGERPRINT) === null;
+    const cleared = this.#store.db
+      .prepare(
+        'UPDATE documents SET rendition_sha = NULL WHERE renders IS NULL AND rendition_sha IS NOT NULL',
+      )
+      .run();
+    this.#store.setMeta(RENDITION_FINGERPRINT, fingerprint);
+
+    if (!first && cleared.changes > 0) {
+      report.warnings.push(
+        `the text rendition policy changed since the last pass: ${cleared.changes} document(s) were reconsidered`,
+      );
+    }
+  }
+
+  /**
    * A stored document has extracted text, a summary and embeddings of its own — one
    * summary per *document*, so a passport split into two files does not get two
    * half-summaries describing halves of one thing.
@@ -908,8 +1245,11 @@ export class Indexer {
       .all() as { group_key: string }[];
     if (groups.length === 0) return;
 
+    // Renditions excluded: one summary per document means the file holding a copy of the
+    // text is not a second thing to describe, and joining its text in would summarize the
+    // document twice over.
     const partsOf = this.#store.db.prepare(
-      'SELECT id, text FROM documents WHERE group_key = ? ORDER BY part',
+      'SELECT id, text FROM documents WHERE group_key = ? AND renders IS NULL ORDER BY part',
     );
     const write = this.#store.db.prepare('UPDATE documents SET summary = ? WHERE id = ?');
 
@@ -1172,7 +1512,7 @@ export class Indexer {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function isLedger(slug: string, config: AknoConfig): boolean {
-  return slug === config.paths.timeline.replace(/\.(md|markdown)$/i, '');
+  return slug === ledgerSlug(config);
 }
 
 function nowIso(): string {
@@ -1216,6 +1556,9 @@ function errorMessage(err: unknown): string {
 
 /** `meta` key holding the fingerprint of the rules the index was last built under. */
 const RULES_FINGERPRINT = 'rules_fingerprint';
+
+/** The same, for the settings that decide which documents get a `.txt` beside them. */
+const RENDITION_FINGERPRINT = 'rendition_fingerprint';
 
 /**
  * The class a page declares in its own frontmatter, if any. Read from the stored

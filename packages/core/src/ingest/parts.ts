@@ -25,6 +25,78 @@ import path from 'node:path';
  *   a hash, and Akno wrote it.
  */
 
+/**
+ * The other thing a second file beside a document can be.
+ *
+ * The part rule above excludes a differing extension because `passport.jpg` beside
+ * `passport.pdf` is "a second rendition of the same thing, not its second half". That
+ * category was named and then had nowhere to go. This is where it goes: `contract.pdf.txt`
+ * holds the *same* text as `contract.pdf`, in a format anything can open.
+ *
+ * The distinction is not cosmetic. Parts concatenate — `read` joins their text and page
+ * numbers run through the whole group — while a rendition must never be joined to what it
+ * renders, or a contract's every phrase comes back twice.
+ *
+ * Two spellings, because both occur. Akno writes `contract.pdf.txt`; a person who ran
+ * `pdftotext` before Akno existed wrote `contract.txt` beside `contract.pdf`, and that
+ * second one is the case that was quietly costing double hits on every phrase in the file.
+ *
+ * The rule stays as narrow as the part rule, and for the same reasons:
+ *
+ * - **Only a `.txt` is ever a rendition.** `passport.jpg` beside `passport.pdf` is two
+ *   renderings with no way to say which is the document, so neither is folded into the other.
+ * - **The source must exist, and be a format text is extracted *from*.** A `.txt` beside a
+ *   `.csv` is two text files, not a rendering of one.
+ * - **An ambiguous stem is refused.** `contract.txt` beside both `contract.pdf` and
+ *   `contract.docx` names no one document, and picking either would attach the text of one
+ *   file to a different file's name.
+ * - `.txt.txt` is refused. Whatever it is, it is not a rendering of a text file.
+ */
+export interface DocumentRendition {
+  /** The rel_path of the file this one renders. */
+  source: string;
+}
+
+export interface RenditionOptions {
+  /** Names of the files in a directory, for finding a same-stem sibling. */
+  entries: (directory: string) => string[];
+}
+
+/** Formats whose text is a copy of somebody else's, so a `.txt` of one adds nothing. */
+const PLAIN = new Set(['.txt', '.md', '.markdown', '.csv', '.tsv', '.json', '.yaml', '.yml', '.log']);
+
+export function documentRendition(relPath: string, options: RenditionOptions): DocumentRendition | null {
+  const normalized = relPath.replaceAll('\\', '/');
+  if (path.posix.extname(normalized).toLowerCase() !== '.txt') return null;
+
+  const directory = path.posix.dirname(normalized);
+  const stem = path.posix.basename(normalized.slice(0, -'.txt'.length));
+  const siblings = options.entries(directory);
+  const inDirectory = (name: string): string => (directory === '.' ? name : `${directory}/${name}`);
+
+  // Asked of the folder rather than of the name. Whether a stem "has an extension" cannot be
+  // decided by looking for a dot: `Rental Agreement … A. N. Marlow … Aug 5 2031` has four, and
+  // none of them starts an extension. Whether a file of that exact name is *there* is a fact.
+  if (siblings.includes(stem)) {
+    return isExtractable(stem) ? { source: inDirectory(stem) } : null;
+  }
+
+  // Otherwise the folder has to hold exactly one document this could be the text of.
+  const candidates = siblings.filter((name) => isExtractable(name) && withoutExtension(name) === stem).sort();
+  return candidates.length === 1 ? { source: inDirectory(candidates[0]!) } : null;
+}
+
+/** A format text is extracted *from*, rather than one that is already text. */
+function isExtractable(name: string): boolean {
+  const extension = path.posix.extname(name).toLowerCase();
+  return extension.length > 0 && !PLAIN.has(extension);
+}
+
+function withoutExtension(name: string): string {
+  const extension = path.posix.extname(name);
+  return extension ? name.slice(0, -extension.length) : name;
+}
+
 export interface DocumentPart {
   /**
    * The rel_path of part one — the group's identity, whether or not that file exists. Files

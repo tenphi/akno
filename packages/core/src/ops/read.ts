@@ -128,39 +128,83 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
   };
 }
 
-function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
-  const row = ctx.store.db
-    .prepare(
-      `SELECT d.id, d.rel_path, d.mime, d.sha256, d.label, d.text, d.page_count, d.ocr, d.bytes,
-              d.group_key, p.slug
-         FROM documents d LEFT JOIN pages p ON p.id = d.page_id WHERE d.id = ?`,
-    )
-    .get(documentId) as
-    | {
-        id: string;
-        rel_path: string;
-        mime: string | null;
-        sha256: string;
-        label: string | null;
-        text: string | null;
-        page_count: number | null;
-        ocr: number;
-        bytes: number;
-        group_key: string | null;
-        slug: string | null;
-      }
-    | undefined;
+interface DocumentRow {
+  id: string;
+  rel_path: string;
+  mime: string | null;
+  sha256: string;
+  label: string | null;
+  text: string | null;
+  page_count: number | null;
+  ocr: number;
+  bytes: number;
+  group_key: string | null;
+  renders: string | null;
+  slug: string | null;
+}
 
-  if (!row) throw new AknoError('not_found', `no document with id ${documentId}`);
+const SELECT_DOCUMENT = `SELECT d.id, d.rel_path, d.mime, d.sha256, d.label, d.text, d.page_count,
+                                d.ocr, d.bytes, d.group_key, d.renders, p.slug
+                           FROM documents d LEFT JOIN pages p ON p.id = d.page_id`;
+
+/**
+ * A document by id, by its path in the knowledge base, or by its bare filename.
+ *
+ * Someone who has just read a page is holding three handles on the same file and has no
+ * reason to prefer one: the `id` in `documents[]`, the `rel_path` beside it, and the
+ * basename inside the `![[…]]` embed in the body. The embed is the most visible of the
+ * three and used to be the only one that did not work, so the two-call route — read the
+ * page, then read its document — dead-ended on a `not_found` that said only that the id was
+ * wrong, with nothing to try next.
+ *
+ * A bare filename resolves only when exactly one file matches. Quietly picking one of two
+ * `lease.pdf`s would answer a question about one document with the text of another, which
+ * is worse than the error.
+ */
+function resolveDocument(ctx: AknoContext, handle: string): DocumentRow {
+  const exact = ctx.store.db
+    .prepare(`${SELECT_DOCUMENT} WHERE d.id = ? OR d.rel_path = ?`)
+    .get(handle, handle) as DocumentRow | undefined;
+  if (exact) return exact;
+
+  const byName = ctx.store.db
+    .prepare(`${SELECT_DOCUMENT} WHERE d.rel_path LIKE '%/' || ? LIMIT 5`)
+    .all(handle) as DocumentRow[];
+  if (byName.length === 1) return byName[0]!;
+  if (byName.length > 1) {
+    throw new AknoError('invalid', `${byName.length} documents are called ${handle} — name the path`, {
+      matches: byName.map((row) => row.rel_path),
+    });
+  }
+
+  const leaf = handle.split('/').pop() ?? handle;
+  const nearest = ctx.store.db
+    .prepare('SELECT rel_path FROM documents WHERE rel_path LIKE ? LIMIT 5')
+    .all(`%${leaf}%`) as { rel_path: string }[];
+  throw new AknoError('not_found', `no document at ${handle}`, {
+    ...(nearest.length > 0 ? { nearest: nearest.map((row) => row.rel_path) } : {}),
+  });
+}
+
+function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
+  const found = resolveDocument(ctx, documentId);
+  // Asking for the text file beside a contract is asking for the contract. It holds a copy
+  // of the same text, and answering from the copy would make which of the two you happened
+  // to name matter.
+  const row = found.renders ? resolveDocument(ctx, found.renders) : found;
 
   // A document someone's scanner cut into `passport.pdf` and `passport-2.pdf` is one
   // document, so reading any part returns the whole of it: the text of every part in order,
   // the total page count, and the other parts' paths. Asking for a passport and getting
   // half of it, with nothing saying so, is the failure this avoids.
+  //
+  // Renditions are not parts. `contract.pdf.txt` carries the same text as `contract.pdf`,
+  // so joining it in would return the contract twice and count it as a part that could not
+  // be read.
   const parts = ctx.store.db
     .prepare(
       `SELECT id, rel_path, text, page_count, ocr FROM documents
-        WHERE group_key = ? ORDER BY part`,
+        WHERE group_key = ? AND renders IS NULL ORDER BY part`,
     )
     .all(row.group_key ?? row.rel_path) as {
     id: string;

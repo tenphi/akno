@@ -60,6 +60,17 @@ const ModelsDoc = z.object({
 
 /** One rule per glob. Most specific wins; `akno rules <path>` explains why. */
 export const FolderRuleDoc = z.object({
+  /**
+   * What belongs in this folder, in a sentence, for whoever files the next page — which is
+   * usually an agent that has never seen the folder before.
+   *
+   * The rest of a rule tells Akno how to *treat* a page once it is there; this is the only
+   * field that says what should be there at all. Without it a taxonomy is a list of globs, and
+   * the knowledge that `research/` holds findings about the world while `household/` holds
+   * claims about this household lives nowhere a caller can read — which is how a rent figure
+   * from a transcript ends up filed as a defence strategy.
+   */
+  description: z.string().max(500).optional(),
   class: PageClass.optional(),
   type: z.string().optional(),
   /** `page | document | file | auto | ignore` — behaviour differs by folder, so
@@ -127,6 +138,8 @@ const IngestDoc = z.object({
   max_ocr_pages: z.number().int().positive().optional(),
   name_confidence: z.number().min(0).max(1).optional(),
   blocked_extensions: z.array(z.string()).optional(),
+  text_rendition: z.boolean().optional(),
+  text_rendition_min_chars: z.number().int().nonnegative().optional(),
 });
 
 /**
@@ -332,6 +345,10 @@ export interface AknoConfig {
     /** Below this, a document keeps its name and gets no page. */
     nameConfidence: number;
     blockedExtensions: string[];
+    /** Keep `<file>.txt` beside each document whose text is its own. Off: the folder is the user's. */
+    textRendition: boolean;
+    /** Under this many characters, the page already says everything the file does. */
+    textRenditionMinChars: number;
   };
   maintenance: {
     /** Null when the cycle uses the `derive` role, which is the default. */

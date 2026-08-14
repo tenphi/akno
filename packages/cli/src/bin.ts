@@ -8,6 +8,8 @@ import { listCommand } from './commands/list-cmd.ts';
 import { timelineCommand } from './commands/timeline-cmd.ts';
 import { doctorCommand } from './commands/doctor-cmd.ts';
 import { rulesCommand } from './commands/rules-cmd.ts';
+import { folderCommand } from './commands/folder-cmd.ts';
+import { redeployCommand } from './commands/redeploy-cmd.ts';
 import { benchCommand } from './commands/bench-cmd.ts';
 import { configCommand } from './commands/config-cmd.ts';
 import { serveCommand, serviceCommand } from './commands/serve-cmd.ts';
@@ -35,6 +37,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     forget               Retract a fact, trash a page or a document.
     undo <change_id>     Reverse a change. \`--list\` shows recent ones.
     move <from> <to>     Relocate a page with its documents.
+    folder <path>        Declare a folder and what belongs in it. Never gated.
     approve / decline    Resolve a gated proposal. \`--list\` shows pending.
     ingest <path|url>    Extract, OCR, name, summarize and route a file or folder.
     inbox                File whatever was dropped in an inbox folder.
@@ -44,6 +47,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     index                Reconcile the index against the knowledge base.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd agent.
+    redeploy             Apply local changes: build, restart the service, wait for it.
     doctor               What's present, what's degraded, and what that costs.
     rules [path]         Which rule governs a path, and why.
     config               Resolved config and where it came from, secrets redacted.
@@ -73,6 +77,7 @@ const COMMANDS: Record<string, Command> = {
   forget: forgetCommand,
   undo: undoCommand,
   move: moveCommand,
+  folder: folderCommand,
   ingest: ingestCommand,
   inbox: inboxCommand,
   dream: dreamCommand,
@@ -81,6 +86,7 @@ const COMMANDS: Record<string, Command> = {
   index: indexCommand,
   serve: serveCommand,
   service: serviceCommand,
+  redeploy: redeployCommand,
   doctor: doctorCommand,
   rules: rulesCommand,
   config: configCommand,

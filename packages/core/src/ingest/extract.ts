@@ -119,6 +119,28 @@ function none(note: string): Extraction {
   return { text: '', pageCount: null, ocr: false, confidence: null, via: 'none', note };
 }
 
+/**
+ * `via` for a row extracted before it was persisted, worked out from what *was* kept.
+ *
+ * A back-compat shim with a shelf life: the real value is written on the next extraction,
+ * and this only ever answers for `extract_via IS NULL`. It lives here because the extension
+ * sets are the classifier, and a second copy of them somewhere else would drift from the
+ * one that decides what `extract()` actually does.
+ *
+ * The one thing it cannot recover is `vision` versus `ocr` on an image, because both leave
+ * `ocr = 0`… except that they do not: OCR sets the flag and a model's description does not.
+ * That is the whole distinction, and it survived.
+ */
+export function legacyVia(row: { relPath: string; ocr: boolean; hasText: boolean }): Extraction['via'] {
+  const extension = path.extname(row.relPath).toLowerCase();
+  if (!row.hasText) return 'none';
+  if (PLAIN_EXTENSIONS.has(extension)) return 'plain';
+  if (TEXTUTIL_EXTENSIONS.has(extension)) return 'textutil';
+  if (extension === '.pdf') return row.ocr ? 'ocr' : 'text-layer';
+  if (IMAGE_EXTENSIONS.has(extension)) return row.ocr ? 'ocr' : 'vision';
+  return 'none';
+}
+
 // ─── PDF and images, via the cached Swift helper ─────────────────────────────
 
 interface SwiftResult {

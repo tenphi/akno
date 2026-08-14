@@ -102,7 +102,47 @@ are the ones that have actually broken:
   strings.
 - **Absence has three answers.** `empty`, `degraded` and `unavailable` are different results and must never be
   collapsed — an agent uses the distinction to decide whether it may say "not recorded".
-- **The knowledge base is the user's.** With `write_ids: false` Akno must leave every file byte-identical, and
-  a test asserts it.
+- **The knowledge base is the user's.** With the defaults, an index pass must leave the *set* of files and every
+  file's bytes unchanged, and a test asserts it by hashing the whole tree either side of a pass. A setting may
+  add a file — `write_ids`, `ingest.text_rendition` — but only one the user turned on, and never by default.
 - **A comment should say why**, especially where the obvious implementation is wrong. `git blame` covers what
   changed.
+
+---
+
+## Applying a change — one command
+
+```bash
+pnpm akno redeploy            # build, restart the service, wait for its socket
+pnpm akno redeploy --no-build # restart only
+pnpm akno redeploy --no-restart # build only, for a checkout with no service
+```
+
+`pnpm akno` rather than `akno`: the binary is only on `PATH` once the package is installed, and
+in a checkout it is `node packages/cli/src/bin.ts`, which that script wraps. The rest of this repo's
+docs write `akno <cmd>` because that is the installed UX.
+
+**Run it when you are done.** An agent working in this repo may redeploy on its own once the change
+is finished and verified — typecheck, lint and the suite green. It is not a destructive action: the
+service is `KeepAlive`, the index is derived and rebuilt from the Markdown, and the knowledge base is
+not touched. What is destructive is *not* doing it, because then the thing being tested is the code
+that was already running.
+
+**Both steps matter, and they are for different consumers.** This is the trap:
+
+- launchd runs `packages/cli/src/bin.ts` directly and Node strips the types, so **the service needs
+  the restart and not the build** — a source edit is live at its next start.
+- A host importing `@akno/client` imports `packages/*/dist`, so **it needs the build and not the
+  restart**. Skip the build and Luna keeps calling the previous op registry: a newly added op is
+  simply absent, and the failure reads `unknown op`, which looks like a wiring bug rather than a
+  stale artifact.
+
+Do one and not the other and half the system is on the new code.
+
+**`redeploy` waits for the socket, and that is not decoration.** `launchctl kickstart` returns when
+launchd has spawned the process, not when it is listening — the socket is created last, after the
+write lock, the store and the watcher. A command run immediately after a bare `kickstart` fails with
+"no Akno service at …", which reads like a broken deploy rather than an impatient one.
+
+A failed build restarts nothing, on purpose: restarting anyway puts the previous code back into
+service and reports success.

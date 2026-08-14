@@ -47,6 +47,8 @@ export interface DoctorReport {
     documentsExtracted: number;
     /** Extracted, but owned by no page — so nothing recall can return. */
     documentsUnsearchable: number;
+    /** `<file>.txt` written beside a document. Counted apart: they are not documents of their own. */
+    renditions: number;
     links: number;
     brokenLinks: number;
     excludedRules: number;
@@ -82,11 +84,17 @@ export async function doctor(
     facts: count('SELECT count(*) AS c FROM facts WHERE valid_to IS NULL'),
     factsSuperseded: count('SELECT count(*) AS c FROM facts WHERE valid_to IS NOT NULL'),
     events: count('SELECT count(*) AS c FROM events'),
-    documents: count('SELECT count(*) AS c FROM documents'),
-    documentsExtracted: count('SELECT count(*) AS c FROM documents WHERE text IS NOT NULL'),
-    documentsUnsearchable: count(
-      'SELECT count(*) AS c FROM documents WHERE text IS NOT NULL AND page_id IS NULL',
+    // Renditions are left out of all three. A `.txt` beside a contract is that contract in
+    // another format, not a fourteenth attachment with nothing readable in it — counting it
+    // as one would report the feature working as a knowledge base full of unreadable files.
+    documents: count('SELECT count(*) AS c FROM documents WHERE renders IS NULL'),
+    documentsExtracted: count(
+      'SELECT count(*) AS c FROM documents WHERE renders IS NULL AND text IS NOT NULL',
     ),
+    documentsUnsearchable: count(
+      'SELECT count(*) AS c FROM documents WHERE renders IS NULL AND text IS NOT NULL AND page_id IS NULL',
+    ),
+    renditions: count('SELECT count(*) AS c FROM documents WHERE renders IS NOT NULL'),
     links: count('SELECT count(*) AS c FROM links'),
     brokenLinks: count('SELECT count(*) AS c FROM links WHERE broken = 1'),
     excludedRules: ctx.config.rules.filter((rule) => rule.class === 'excluded').length,

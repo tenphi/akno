@@ -2,10 +2,14 @@ import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
 
-const READ_HELP = `akno read <slug | --id <id> | --document <id>> [options]
+const READ_HELP = `akno read <slug | --id <id> | --document <id | path>> [options]
 
   Read one exact thing. Returns the full body regardless of page class — recall
   caps what a reference page contributes unprompted, read never does.
+
+  --document takes a document id, its path in the knowledge base, or its bare
+  filename when only one file has that name. A stored PDF was read when it was
+  filed, so this costs no extraction and no OCR.
 
   --from <n> --to <n>   Line range instead of the whole body.
   --json                Machine-readable response.`;

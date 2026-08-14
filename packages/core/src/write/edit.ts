@@ -10,7 +10,7 @@ import { parseFrontmatter } from '../kb/frontmatter.ts';
 
 export type BodyEdit =
   | { kind: 'content'; content: string }
-  | { kind: 'append'; text: string }
+  | { kind: 'append'; text: string; section?: string }
   | { kind: 'patch'; patch: string }
   | { kind: 'replace'; find: string; with: string };
 
@@ -36,6 +36,7 @@ function editBody(body: string, edit: BodyEdit): string {
       return endWithNewline(edit.content);
 
     case 'append': {
+      if (edit.section !== undefined) return appendUnderHeading(body, edit.section, edit.text);
       // A blank line before the appended text, unless the body already ends in
       // one. Appending flush against the previous line silently joins two list
       // items or two paragraphs into one.
@@ -66,6 +67,77 @@ function editBody(body: string, edit: BodyEdit): string {
     case 'patch':
       return endWithNewline(applyUnifiedDiff(body, edit.patch));
   }
+}
+
+const LIST_ITEM = /^\s*(?:[-*+]\s|\d+[.)]\s)/;
+
+/**
+ * Appends at the end of a heading's section — after its last line, before the next heading at
+ * the same level or above.
+ *
+ * A page has structure and its author put it there. A claim about rent belongs under `## Rent`,
+ * and appending it to the end of the file instead puts it under whatever heading happens to be
+ * last, where a reader will attribute it to the wrong subject. That is not hypothetical: the
+ * host's tool advertised this and the schema silently dropped it, so every heading-scoped
+ * append had been landing at the bottom of the page.
+ *
+ * Absent or ambiguous is an error, matching `replace`. A caller that named a heading had one in
+ * mind, and the alternative to saying so is picking one of several and being quietly wrong.
+ */
+function appendUnderHeading(body: string, section: string, text: string): string {
+  const wanted = section
+    .trim()
+    .replace(/^#+\s*/, '')
+    .toLowerCase();
+  const lines = body.split('\n');
+
+  const matches: { index: number; level: number }[] = [];
+  lines.forEach((line, index) => {
+    const heading = /^(#{1,6})\s+(.*?)\s*$/.exec(line);
+    if (heading && heading[2]!.toLowerCase() === wanted) {
+      matches.push({ index, level: heading[1]!.length });
+    }
+  });
+
+  if (matches.length === 0) {
+    throw new AknoError('invalid', `the page has no heading called "${section}"`, { section });
+  }
+  if (matches.length > 1) {
+    throw new AknoError(
+      'invalid',
+      `"${section}" appears ${matches.length} times on this page — append without a section, or patch`,
+      { section, occurrences: matches.length },
+    );
+  }
+
+  const { index, level } = matches[0]!;
+
+  // The section runs to the next heading at the same level or shallower. A deeper one is part
+  // of this section, and stopping at it would insert above content that belongs above.
+  let end = lines.length;
+  for (let i = index + 1; i < lines.length; i++) {
+    const heading = /^(#{1,6})\s/.exec(lines[i]!);
+    if (heading && heading[1]!.length <= level) {
+      end = i;
+      break;
+    }
+  }
+
+  // Back over the blank lines that separate this section from the next, so the insertion lands
+  // against the section's own content rather than against the following heading.
+  let at = end;
+  while (at > index + 1 && lines[at - 1]!.trim() === '') at--;
+
+  // A blank line separates two paragraphs and *breaks* a list — Markdown reads a gap between
+  // items as a loose list and renders every item wrapped in a paragraph. Appending a bullet
+  // under a heading is the common case here, so the two are distinguished rather than always
+  // getting a gap.
+  const previous = lines[at - 1]!;
+  const bothListItems = LIST_ITEM.test(previous) && LIST_ITEM.test(text.trim());
+  const separator = previous.trim() === '' || bothListItems ? [] : [''];
+
+  lines.splice(at, 0, ...separator, text.trim());
+  return endWithNewline(lines.join('\n'));
 }
 
 function endWithNewline(text: string): string {

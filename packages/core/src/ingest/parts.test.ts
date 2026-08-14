@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documentPart } from './parts.ts';
+import { documentPart, documentRendition } from './parts.ts';
 
 /**
  * A scanner that cut one passport into `passport.pdf` and `passport-2.pdf` has not
@@ -91,5 +91,73 @@ describe('documentPart, guarded', () => {
       groupKey: 'scans/2026-06-20-car-rental.jpg',
       part: 12,
     });
+  });
+});
+
+/**
+ * The category the part rule names in order to exclude it: a second rendition of the same
+ * thing rather than its second half. A wrong guess here is quieter and worse than a wrong
+ * part — the document's own text would come back twice, once under each name.
+ */
+describe('documentRendition', () => {
+  const folder = (names: string[]) => () => names;
+
+  it('reads `<file>.txt` as a rendering of that file', () => {
+    expect(
+      documentRendition('household/lease.pdf.txt', { entries: folder(['lease.pdf', 'lease.pdf.txt']) }),
+    ).toEqual({ source: 'household/lease.pdf' });
+  });
+
+  it('reads a bare `.txt` beside one document as that document’s text', () => {
+    // Somebody ran `pdftotext` before Akno existed. Indexing their output as a document of
+    // its own is what returned every phrase in the contract twice.
+    expect(documentRendition('a/lease.txt', { entries: folder(['lease.pdf', 'lease.txt']) })).toEqual({
+      source: 'a/lease.pdf',
+    });
+  });
+
+  it('is not fooled by dots in a filename', () => {
+    // `Rental Agreement … A. N. Marlow … Aug 5 2031` has four dots and no extension. Deciding
+    // "does this stem already have an extension" by looking for a dot gets this wrong, and
+    // the file it names is exactly the one this was built for.
+    const name = 'Rental Agreement Blackwater Bay 12 A. N. Marlow Vulpine Mutual B. Aug 5 2031';
+    expect(documentRendition(`d/${name}.txt`, { entries: folder([`${name}.pdf`]) })).toEqual({
+      source: `d/${name}.pdf`,
+    });
+  });
+
+  it('refuses when the stem names more than one document', () => {
+    // `lease.txt` beside both a PDF and a DOCX names neither, and attaching the text of one
+    // file to another file's name is worse than leaving it alone.
+    expect(
+      documentRendition('a/lease.txt', { entries: folder(['lease.pdf', 'lease.docx', 'lease.txt']) }),
+    ).toBeNull();
+  });
+
+  it('needs the file it claims to render to exist', () => {
+    // Same guard as `hasPartOne`, for the same reason: the alternative is inventing a
+    // document out of a filename.
+    expect(documentRendition('a/lease.pdf.txt', { entries: folder(['lease.pdf.txt']) })).toBeNull();
+    expect(documentRendition('a/notes.txt', { entries: folder(['notes.txt']) })).toBeNull();
+  });
+
+  it('does not fold one text file into another', () => {
+    // Two plain-text files are two documents. Neither is an extraction of the other.
+    expect(
+      documentRendition('a/lease.txt.txt', { entries: folder(['lease.txt', 'lease.txt.txt']) }),
+    ).toBeNull();
+    expect(documentRendition('a/notes.txt', { entries: folder(['notes.csv', 'notes.txt']) })).toBeNull();
+    expect(documentRendition('a/notes.txt', { entries: folder(['notes.md', 'notes.txt']) })).toBeNull();
+  });
+
+  it('is only ever about .txt', () => {
+    // `passport.jpg` beside `passport.pdf` is two renderings with no way to say which is the
+    // document, so neither is folded into the other.
+    expect(
+      documentRendition('a/lease.pdf.md', { entries: folder(['lease.pdf', 'lease.pdf.md']) }),
+    ).toBeNull();
+    expect(
+      documentRendition('a/passport.jpg', { entries: folder(['passport.pdf', 'passport.jpg']) }),
+    ).toBeNull();
   });
 });

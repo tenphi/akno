@@ -1,22 +1,33 @@
-import type { ApprovalRequest } from '@akno/protocol';
+import type { FolderRequired } from '@akno/protocol';
 import type { Store } from '../store/db.ts';
 import type { AknoConfig } from '../config/schema.ts';
-import { newPrefixedId } from '../store/ids.ts';
+import { physicalFolderExists } from '../kb/folders.ts';
 
 /**
- * **New folders are gated for agents. The user is never gated.**
+ * **A page may not appear in a folder nobody has described.**
  *
- * `gate: "top-level"` (the default) asks about a new top-level folder and lets
- * subfolders of an existing one through. The asymmetry is the point: `medical/`
- * appearing is a decision about how the knowledge base is organised;
- * `work/projects/atlas/` appearing under an existing `work/projects/` is not.
+ * This used to be an approval: a new top-level folder became a proposal, an approval card, and
+ * a decision the owner had to make from a phone. That was the wrong question put to the wrong
+ * person. An owner cannot usefully rule on whether a research note needs a `research/` folder,
+ * and while the question waited the finding was lost. The second-order damage was worse — an
+ * agent that learns a folder request can be declined learns to append to whatever page already
+ * exists, and claims start landing on the pages of unrelated subjects.
  *
- * If the user runs `mkdir medical/` themselves, that folder exists and nothing is
- * asked. This module never sees a hand edit.
+ * So nothing here waits on a human any more. What is refused is not the folder but the
+ * *silence*: the write comes back `requires_folder`, the caller declares the folder with the
+ * `folder` op — ungated, one call, saying what belongs there — and repeats the write. The user
+ * is never asked, and no folder appears that nothing can explain.
+ *
+ * `gate: "top-level"` (the default) requires a declaration for a new top-level folder and lets
+ * subfolders of a described one through. The asymmetry is the same as it always was:
+ * `medical/` appearing is a statement about how the knowledge base is organised;
+ * `work/projects/atlas/` under an existing `work/projects/` is not.
+ *
+ * If the user makes a folder themselves, that folder exists and nothing is asked. This module
+ * never sees a hand edit.
  */
 
-export type GateDecision =
-  { allowed: true } | { allowed: false; approval: ApprovalRequest; declinedBefore: boolean };
+export type GateDecision = { allowed: true } | { allowed: false; requiresFolder: FolderRequired };
 
 export interface ProposalRow {
   id: string;
@@ -39,85 +50,32 @@ export class Gate {
   }
 
   /**
-   * Checks a slug an agent wants to create, and files a proposal if it is gated.
+   * Checks a slug an agent wants to create.
    *
-   * A **declined** proposal for the same subject is remembered and returned
-   * again rather than re-asked, which is the difference between a gate and a
-   * nag: an agent must stop asking for a folder the user has
-   * already refused.
+   * Nothing is recorded when this refuses. A proposal row existed to hold a question for the
+   * user; there is no question now, so writing one would leave `akno proposals` full of
+   * things nobody will ever answer — and an agent that re-asks after declaring the folder
+   * would collect one per attempt.
    */
-  check(slug: string, actor: string, payload: unknown): GateDecision {
+  check(slug: string, actor: string): GateDecision {
     if (actor === 'user' || this.#config.gate === 'none') return { allowed: true };
 
-    const newFolder = this.#firstUnknownFolder(slug);
+    const newFolder = this.#firstUndeclaredFolder(slug);
     if (!newFolder) return { allowed: true };
     if (this.#config.gate === 'top-level' && newFolder.includes('/')) return { allowed: true };
 
-    // Already refused: hand back the same decision instead of asking again.
-    const declined = this.#store.db
-      .prepare("SELECT * FROM proposals WHERE subject = ? AND status = 'declined' ORDER BY at DESC LIMIT 1")
-      .get(newFolder) as ProposalRow | undefined;
-    if (declined) {
-      return {
-        allowed: false,
-        declinedBefore: true,
-        approval: {
-          proposal_id: declined.id,
-          reason: `the folder '${newFolder}' was declined before — do not ask again; write somewhere that exists`,
-          nearest: JSON.parse(declined.nearest) as string[],
-        },
-      };
-    }
-
-    // Already pending for the same folder: reuse it, so ten writes to a new
-    // folder produce one thing for the user to decide rather than ten.
-    const pending = this.#store.db
-      .prepare("SELECT * FROM proposals WHERE subject = ? AND status = 'pending' ORDER BY at DESC LIMIT 1")
-      .get(newFolder) as ProposalRow | undefined;
-    if (pending) {
-      return {
-        allowed: false,
-        declinedBefore: false,
-        approval: {
-          proposal_id: pending.id,
-          reason: `already waiting on approval for the new folder '${newFolder}'`,
-          nearest: JSON.parse(pending.nearest) as string[],
-        },
-      };
-    }
-
-    const nearest = this.#nearest(slug);
-    const id = newPrefixedId('prop');
-    this.#store.db
-      .prepare(
-        `INSERT INTO proposals(id, at, kind, reason, subject, payload, nearest, status)
-         VALUES(?, ?, 'new_folder', ?, ?, ?, ?, 'pending')`,
-      )
-      .run(
-        id,
-        new Date().toISOString(),
-        `new top-level folder '${newFolder}'`,
-        newFolder,
-        JSON.stringify(payload),
-        JSON.stringify(nearest),
-      );
-
-    return {
-      allowed: false,
-      declinedBefore: false,
-      approval: {
-        proposal_id: id,
-        reason: `new ${this.#config.gate === 'all' ? '' : 'top-level '}folder '${newFolder}'`,
-        nearest,
-      },
-    };
+    return { allowed: false, requiresFolder: { folder: newFolder, nearest: this.#nearest(slug) } };
   }
 
   /**
-   * The shallowest folder in the slug's path that no indexed page lives under.
-   * Null when every folder on the way already exists.
+   * The shallowest folder on the slug's path that holds no page **and** has no rule
+   * describing it. Null when every folder on the way is one or the other.
+   *
+   * The rule half is what makes declare-then-write work in a single turn: a folder that was
+   * described a moment ago holds nothing yet, and asking the `pages` table alone would refuse
+   * the very write the declaration was made for.
    */
-  #firstUnknownFolder(slug: string): string | null {
+  #firstUndeclaredFolder(slug: string): string | null {
     const segments = slug.split('/');
     segments.pop(); // The page's own basename is not a folder.
     if (segments.length === 0) return null;
@@ -125,15 +83,24 @@ export class Gate {
     const exists = this.#store.db.prepare("SELECT 1 AS ok FROM pages WHERE slug LIKE ? || '/%' LIMIT 1");
     for (let depth = 1; depth <= segments.length; depth++) {
       const folder = segments.slice(0, depth).join('/');
-      if (!exists.get(folder)) return folder;
+      if (exists.get(folder)) continue;
+      // The page index cannot represent an empty directory. A folder the user created on disk is
+      // nevertheless an explicit taxonomy decision and must not be reported as nonexistent.
+      if (physicalFolderExists(this.#config, folder)) continue;
+      if (this.#described(folder)) continue;
+      return folder;
     }
     return null;
   }
 
+  /** True when some rule names this exact folder — `research` for a `research/**` rule. */
+  #described(folder: string): boolean {
+    return this.#config.rules.some((rule) => rule.glob.replace(/\/\*+$/, '') === folder);
+  }
+
   /**
-   * Where this could go instead, so the agent has something concrete to
-   * offer the user rather than "somewhere else". Existing folders whose name
-   * shares a word with the slug, then the busiest top-level folders.
+   * Where this could go instead, so a new folder is a choice rather than a reflex. Existing
+   * folders whose name shares a word with the slug, then the busiest top-level folders.
    */
   #nearest(slug: string): string[] {
     const words = slug

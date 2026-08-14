@@ -5,6 +5,7 @@ import { ListInput, ListOutput } from './ops/list.ts';
 import { TimelineInput, TimelineOutput } from './ops/timeline.ts';
 import { ContextInput, ContextOutput } from './ops/context.ts';
 import { WriteInput, WriteOutput } from './ops/write.ts';
+import { FolderInput, FolderOutput } from './ops/folder.ts';
 import {
   ForgetInput,
   ForgetOutput,
@@ -113,7 +114,21 @@ export const OPS = {
     description:
       'Create, append, patch or replace a page, optionally with an event, documents, tags and links. Check ' +
       '`outcome`: "conflict" means an existing line claims something different — ask the user rather than ' +
-      'overwriting; "requires_approval" means a gate blocked it and carries a proposal the user resolves.',
+      'overwriting; "requires_folder" means the folder has not been declared yet — call `folder` to say what ' +
+      'belongs in it, then repeat this write, without asking anyone. The event ledger takes events only: pass ' +
+      '`event` and let it be filed, never `append`.',
+  }),
+  folder: op({
+    name: 'folder',
+    kind: 'write',
+    input: FolderInput,
+    output: FolderOutput,
+    implemented: true,
+    description:
+      'Declare a folder and what belongs in it, before writing the first page there. Never gated — nothing ' +
+      'here waits on the user. Say what the folder is for in `description`, and set `class` to "reference" ' +
+      'when it holds evidence rather than claims (transcripts, articles, research, legal texts), because only ' +
+      'claims become facts. Returns "noop" when the folder is already declared.',
   }),
   remember: op({
     name: 'remember',

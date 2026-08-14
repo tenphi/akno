@@ -94,7 +94,11 @@ export function recordDocument(options: {
   ctx.store.db
     .prepare(
       `UPDATE documents
-          SET text = ?, summary = ?, page_count = ?, ocr = ?, label = coalesce(?, label)
+          SET text = ?, summary = ?, page_count = ?, ocr = ?, label = coalesce(?, label),
+              -- The only extraction with a vision client behind it, so this is the one
+              -- writer that can record via = vision, and the one whose provenance the
+              -- indexer must not overwrite with a guess.
+              extract_via = ?, confidence = ?, rendition_sha = NULL
         WHERE rel_path = ?`,
     )
     .run(
@@ -103,6 +107,8 @@ export function recordDocument(options: {
       extraction.pageCount,
       extraction.ocr ? 1 : 0,
       options.label ?? null,
+      extraction.via,
+      extraction.confidence,
       relPath,
     );
 

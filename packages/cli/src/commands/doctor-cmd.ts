@@ -49,7 +49,11 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       ['chunks', `${report.counts.chunks} (${report.counts.chunksEmbedded} embedded)`],
       ['facts', `${report.counts.facts} live, ${report.counts.factsSuperseded} superseded`],
       ['events', report.counts.events],
-      ['documents', `${report.counts.documents} (${report.counts.documentsExtracted} extracted)`],
+      [
+        'documents',
+        `${report.counts.documents} (${report.counts.documentsExtracted} extracted` +
+          `${report.counts.renditions > 0 ? `, ${report.counts.renditions} with text beside them` : ''})`,
+      ],
       ['links', `${report.counts.links} (${report.counts.brokenLinks} broken)`],
       ['exclusion rules', report.counts.excludedRules],
     ]);

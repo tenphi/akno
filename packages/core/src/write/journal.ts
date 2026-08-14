@@ -28,6 +28,14 @@ export interface ChangeFile {
   after: string | null;
   /** Set instead of `before` for a binary held in trash. */
   snapshot?: string;
+  /**
+   * Where a `moved` file went, when its bytes are nowhere else.
+   *
+   * A page carries its old text in `before`, so undo recreates it and deletes the copy at the
+   * new path. An attachment has no text to carry, and reversing it that way deleted the file
+   * and restored nothing. With this, the reversal is the rename it should always have been.
+   */
+  movedTo?: string;
 }
 
 export interface ChangeSummary {
@@ -68,8 +76,8 @@ export class Journal {
         .run(changeId, now, input.actor, input.op, input.summary, 'applied');
 
       const insert = this.#store.db.prepare(
-        `INSERT INTO change_files(change_id, ord, rel_path, action, before, after, snapshot)
-         VALUES(?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO change_files(change_id, ord, rel_path, action, before, after, snapshot, moved_to)
+         VALUES(?, ?, ?, ?, ?, ?, ?, ?)`,
       );
       input.files.forEach((file, index) => {
         insert.run(
@@ -80,6 +88,7 @@ export class Journal {
           file.before,
           file.after,
           file.snapshot ?? null,
+          file.movedTo ?? null,
         );
       });
     });
@@ -111,11 +120,26 @@ export class Journal {
       before: string | null;
       after: string | null;
       snapshot: string | null;
+      moved_to: string | null;
     }[];
 
     const restored: string[] = [];
     const removed: string[] = [];
     for (const file of files) {
+      if (file.moved_to) {
+        // The change was a rename, so its reversal is the rename back. Nothing was created
+        // and nothing was destroyed, which is why this case cannot go through `restoreFile`.
+        const from = path.join(this.#aknoPath, file.moved_to);
+        const target = path.join(this.#aknoPath, file.rel_path);
+        await fsp.mkdir(path.dirname(target), { recursive: true });
+        await fsp.rename(from, target).catch(async (err: NodeJS.ErrnoException) => {
+          // Already gone is not a reason to abandon the rest of the reversal — the file was
+          // moved again, or removed, since. Everything else still goes back.
+          if (err.code !== 'ENOENT') throw err;
+        });
+        restored.push(file.rel_path);
+        continue;
+      }
       if (file.snapshot) {
         // A binary: the bytes are in trash, not in the journal.
         const source = path.join(this.#trashDir, file.snapshot);

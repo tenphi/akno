@@ -35,7 +35,21 @@ export const FolderStub = z.object({
   pages_deep: z.number().int().nonnegative(),
   folders: z.number().int().nonnegative(),
   /** The rule that governs this folder, and where it came from. */
-  rule: z.object({ class: PageClass.optional(), source: z.string() }).optional(),
+  rule: z
+    .object({
+      class: PageClass.optional(),
+      /**
+       * What belongs in this folder, as its rule states it. This is the field that lets a
+       * caller choose a destination by reading rather than by guessing from a name: `research`
+       * and `household` are not self-explanatory to anyone who has not been told that one
+       * holds findings about the world and the other holds claims about this household.
+       */
+      description: z.string().optional(),
+      source: z.string(),
+    })
+    .optional(),
+  /** True when the folder is declared but holds no page yet. */
+  declared: z.boolean().optional(),
 });
 export type FolderStub = z.infer<typeof FolderStub>;
 

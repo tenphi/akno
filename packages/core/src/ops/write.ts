@@ -10,6 +10,7 @@ import { extract } from '../ingest/extract.ts';
 import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
+import { ledgerSlug } from '../reserved.ts';
 import type { Extraction } from '../ingest/extract.ts';
 
 /**
@@ -34,20 +35,37 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   }
 
   const slug = normalizeSlug(input.slug ?? input.propose_slug!);
+  if (
+    refusesLedgerProse({
+      slug,
+      ledger: ledgerSlug(ctx.config),
+      actor,
+      edit: input.content !== undefined ? 'content' : input.append !== undefined ? 'append' : null,
+    })
+  ) {
+    throw new AknoError(
+      'invalid',
+      `'${slug}' is the event ledger: it takes events, not prose. Record the event with ` +
+        '`write({ event: { date, summary }, slug })` — the line is placed under its year for you — ' +
+        'and put what is true on the page the event is about.',
+    );
+  }
+
   const existing = ctx.store.db.prepare('SELECT id, rel_path, class FROM pages WHERE slug = ?').get(slug) as
     { id: string; rel_path: string; class: string } | undefined;
 
   // ── Gate ────────────────────────────────────────────────────────────────
   if (!existing) {
-    const decision = ctx.gate.check(slug, actor, input);
+    const decision = ctx.gate.check(slug, actor);
     if (!decision.allowed) {
       return {
         status: 'ok',
-        outcome: 'requires_approval',
-        approval: decision.approval,
-        note: decision.declinedBefore
-          ? 'this folder was declined before — do not ask the user again, write somewhere that exists'
-          : 'ask the user, then apply with `akno approve <proposal_id>`',
+        outcome: 'requires_folder',
+        requires_folder: decision.requiresFolder,
+        note:
+          `'${decision.requiresFolder.folder}' has not been declared. Call \`folder\` with a ` +
+          'description of what belongs there — nobody is asked and nothing waits on approval — ' +
+          'then repeat this write. Or write into one of the folders that already exists.',
       };
     }
   }
@@ -159,7 +177,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     // No file when the day already has this event: the page part of this change still stands, and
     // the caller is still told which ledger line the event is on — the existing one.
     if (ledger.file) files.push(ledger.file);
-    wrote.push({ slug: ledgerSlug(ctx), line: ledger.line, action: 'event' });
+    wrote.push({ slug: ledgerSlug(ctx.config), line: ledger.line, action: 'event' });
   }
 
   const changeId = ctx.journal.record({
@@ -257,6 +275,39 @@ interface PendingAttachment {
   label?: string;
 }
 
+/**
+ * **The ledger takes events. It does not take prose.**
+ *
+ * `append` and `content` write at the *end of the body*, and the end of the ledger's body is
+ * below the last year heading — outside every `- **YYYY-MM-DD** |` line the event parser
+ * matches. A claim put there is not merely in the wrong place: it is in a file that will never
+ * read it back, and it is a second copy of something whose home is the page it belongs to.
+ *
+ * This is not a hypothetical. `remember` routes claims by recall, the ledger is a plain `full`
+ * page, and a ledger that already mentions a subject scores highest *for that subject* — so a
+ * claim about an ongoing complaint landed under the event list of the very page recording it.
+ * Routing now skips reserved paths, and this is the layer under it: a guard in the prompt or in
+ * the caller is a guard that the next caller does not have.
+ *
+ * `patch` and `replace` are allowed through. Both are line-targeted and cannot append at the
+ * bottom, so a line that went in wrong stays correctable — which the ledger's own append-only
+ * rule needs, since a wrong line is corrected rather than removed.
+ *
+ * `akno` is exempt: the `repair` tier rewrites link targets, and a ledger line whose page was
+ * renamed is exactly the kind of thing it exists to fix.
+ */
+export function refusesLedgerProse(input: {
+  slug: string;
+  ledger: string;
+  actor: 'user' | 'agent' | 'akno';
+  /** Which edit was asked for. `null` when the write carries only an event. */
+  edit: BodyEdit['kind'] | null;
+}): boolean {
+  if (input.actor === 'akno') return false;
+  if (input.slug !== input.ledger) return false;
+  return input.edit === 'append' || input.edit === 'content';
+}
+
 // ─── Event-only write ───────────────────────────────────────────────────────
 
 async function writeEventOnly(
@@ -268,7 +319,7 @@ async function writeEventOnly(
     return {
       status: 'ok',
       outcome: 'ok',
-      wrote: [{ slug: ledgerSlug(ctx), action: 'event' }],
+      wrote: [{ slug: ledgerSlug(ctx.config), action: 'event' }],
       note: 'dry run — nothing was written',
     };
   }
@@ -282,7 +333,7 @@ async function writeEventOnly(
       status: 'ok',
       outcome: 'noop',
       note: 'the ledger already records this event for that date',
-      wrote: [{ slug: ledgerSlug(ctx), line: ledger.line, action: 'event' }],
+      wrote: [{ slug: ledgerSlug(ctx.config), line: ledger.line, action: 'event' }],
     };
   }
 
@@ -304,7 +355,7 @@ async function writeEventOnly(
     change_id: changeId,
     // Addressable as `timeline:47`, so it obeys the same provenance rule as
     // everything else — the ledger is a page like any other.
-    wrote: [{ slug: ledgerSlug(ctx), line: ledger.line, action: 'event' }],
+    wrote: [{ slug: ledgerSlug(ctx.config), line: ledger.line, action: 'event' }],
   };
 }
 
@@ -333,15 +384,13 @@ async function appendToLedger(
   return { file: fileEntry(result), line: inserted.line };
 }
 
-function ledgerSlug(ctx: AknoContext): string {
-  return ctx.config.paths.timeline.replace(/\.(md|markdown)$/i, '');
-}
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function resolveEdit(input: ReturnType<typeof WriteInput.parse>, exists: boolean): BodyEdit {
   if (input.content !== undefined) return { kind: 'content', content: input.content };
-  if (input.append !== undefined) return { kind: 'append', text: input.append };
+  if (input.append !== undefined) {
+    return { kind: 'append', text: input.append, ...(input.section ? { section: input.section } : {}) };
+  }
   if (input.patch !== undefined) return { kind: 'patch', patch: input.patch };
   if (input.replace !== undefined) {
     return { kind: 'replace', find: input.replace.find, with: input.replace.with };

@@ -34,10 +34,13 @@ export async function rulesCommand(argv: string[]): Promise<number> {
       const width = Math.max(...rules.map((r) => r.glob.length));
       for (const rule of rules) {
         const fields = Object.entries(rule)
-          .filter(([key]) => !['glob', 'source', 'specificity'].includes(key))
+          // `description` is a sentence, not a setting. Inline it and the column alignment
+          // that makes this list scannable is gone; it gets its own line below instead.
+          .filter(([key]) => !['glob', 'source', 'specificity', 'description'].includes(key))
           .map(([key, value]) => `${key}=${String(value)}`)
           .join(' ');
         line(`  ${rule.glob.padEnd(width)}  ${fields}  ${style.grey(rule.source)}`);
+        if (rule.description) line(`  ${' '.repeat(width)}  ${style.grey(rule.description)}`);
       }
       return 0;
     }

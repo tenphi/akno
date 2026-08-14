@@ -287,6 +287,44 @@ export const MIGRATIONS: string[] = [
   ALTER TABLE documents ADD COLUMN page_offset INTEGER NOT NULL DEFAULT 0;
   CREATE INDEX documents_group ON documents(group_key, part);
   `,
+
+  // ── 5. Text renditions ─────────────────────────────────────────────────────
+  //
+  // `passport.pdf` and `passport-2.pdf` are two halves of one document. `passport.pdf.txt`
+  // is not a half of anything — it is the *same* document in a format a reader can open.
+  // Parts concatenate; a rendition does not, and treating one as the other would return
+  // every phrase in a contract twice against one budget.
+  //
+  // A rendition carries no text of its own for exactly that reason: the text is the source's
+  // and is already indexed against it. What it carries is the pointer back, so `read`,
+  // `move` and `forget` can tell the two apart with one predicate.
+  `
+  ALTER TABLE documents ADD COLUMN renders TEXT;
+
+  -- On the *source* row: the hash the rendition was last decided against. Set after a write
+  -- and after a decline, for the same reason extracted_sha is recorded when nothing could
+  -- be read — a photo that earns no rendition should not be reconsidered every pass.
+  ALTER TABLE documents ADD COLUMN rendition_sha TEXT;
+
+  -- How the text was obtained. Derived at extraction and thrown away until now, which left
+  -- everything downstream guessing: a page composed for an adopted image claimed its text
+  -- came from OCR when a model had described the picture, and the rendition gate cannot
+  -- tell those apart at all.
+  ALTER TABLE documents ADD COLUMN extract_via TEXT;
+  ALTER TABLE documents ADD COLUMN confidence REAL;
+  CREATE INDEX documents_renders ON documents(renders);
+  `,
+
+  // ── 6. Where a moved file went ─────────────────────────────────────────────
+  //
+  // A move journalled the old path as `moved` with no prior content and the new path as
+  // `created`, and undo reverses "no prior content" by deleting. For a page that works,
+  // because its bytes are in `before`. For an **attachment** it deleted the new file and then
+  // removed a path that was not there — undoing a move ate the binary. Recording the
+  // destination makes the reversal a rename, which is what the change was.
+  `
+  ALTER TABLE change_files ADD COLUMN moved_to TEXT;
+  `,
 ];
 
 /**

@@ -57,8 +57,14 @@
   // Bytes above which a page is chunked but not summarized or fact-mined.
   "max_page_bytes": 1048576,
 
-  // ─── Gating ───────────────────────────────────────────────────────────────
-  // "top-level" | "all" | "none". The user is never gated; only agents are.
+  // ─── Declaring folders ────────────────────────────────────────────────────
+  // How deep a folder must be *described* before a page can appear in it. Not an approval:
+  // nothing here reaches the user. A write into an undeclared folder comes back
+  // `requires_folder`, the caller says what belongs there with the `folder` op — ungated —
+  // and repeats the write.
+  //
+  // "top-level" | "all" | "none". A folder the user makes by hand is theirs and is never
+  // questioned; this only sees what an agent creates.
   "gate": "top-level",
   // Below this score `remember` and inbox routing propose instead of writing.
   // 0.5 is a starting default, not a measured one.
@@ -327,6 +333,19 @@
     // reported — rather than being given a confident wrong name. Renaming is the one
     // destructive thing ingest does, so the bias is toward not doing it.
     "name_confidence": 0.55,
+    // Keep the extracted text as `<file>.txt` beside the file it came from, so anything that
+    // is not Akno — a grep, an editor, a git diff, an agent with a folder and no socket —
+    // can read a scanned contract without OCRing it again. Akno itself never needs this:
+    // the text is indexed against the document and `read({document})` returns all of it.
+    //
+    // Off, because the folder is the user's and this is the only setting that would put a
+    // file next to every document on a first run. On, a rendition is recognised as the same
+    // document rather than a second one, so it costs no extra summary and returns no second
+    // hit — and one that was edited by hand is left alone rather than overwritten.
+    "text_rendition": false,
+    // Under this, the page beside the document already says everything the document does, and
+    // a second file is clutter. Roughly one chunk: below `index.chunk_target_chars`.
+    "text_rendition_min_chars": 1000,
     // Executables and installers. Not a security boundary — Akno never runs what
     // it ingests — but a `.dmg` filed as a memory is a mistake worth refusing.
     "blocked_extensions": [

@@ -39,6 +39,17 @@ export const WriteInput = z
     append: z.string().optional(),
     patch: z.string().optional(),
     replace: z.object({ find: z.string(), with: z.string() }).optional(),
+    /**
+     * Heading to append under, with `append`. The text lands at the end of that section rather
+     * than at the end of the page.
+     *
+     * Matched on the heading's own text, at any level and case-insensitively, so a caller can
+     * say `"Rent"` without knowing whether the page wrote it as `##` or `###`. A heading that
+     * is absent, or that appears more than once, is an error rather than a guess — the same
+     * rule `replace` follows, and for the same reason: the wrong guess edits a part of the page
+     * nobody was looking at.
+     */
+    section: z.string().optional(),
     event: EventInput.optional(),
     documents: z.array(DocumentInput).optional(),
     links: z.array(z.string()).optional(),
@@ -83,9 +94,24 @@ export const ApprovalRequest = z.object({
 });
 export type ApprovalRequest = z.infer<typeof ApprovalRequest>;
 
+/**
+ * The write named a folder that does not exist and has no rule.
+ *
+ * **Nothing is waiting on the user here** — this is not an approval under another name. It is
+ * the caller being asked to say what the folder is for, with `folder`, and then repeat the
+ * write. The declaration is ungated; only the silence is refused.
+ */
+export const FolderRequired = z.object({
+  /** The shallowest undeclared folder on the way to the slug. */
+  folder: z.string(),
+  /** Folders that already exist and might be the intended home, so a new one is a choice. */
+  nearest: z.array(z.string()),
+});
+export type FolderRequired = z.infer<typeof FolderRequired>;
+
 export const WriteOutput = ResultEnvelope.extend({
   /** Distinguishes a committed write from one waiting on the user. */
-  outcome: z.enum(['ok', 'requires_approval', 'conflict', 'noop']),
+  outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'conflict', 'noop']),
   /** Durable — `undo` takes an id that outlives the session. */
   change_id: z.string().optional(),
   wrote: z.array(WriteTarget).optional(),
@@ -96,5 +122,6 @@ export const WriteOutput = ResultEnvelope.extend({
     .optional(),
   conflict: ConflictReport.optional(),
   approval: ApprovalRequest.optional(),
+  requires_folder: FolderRequired.optional(),
 });
 export type WriteOutput = z.infer<typeof WriteOutput>;

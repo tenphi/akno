@@ -1,6 +1,7 @@
 import { ListInput, type ListOutput, type PageClass } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
-import { matchRules } from '../rules/compile.ts';
+import { physicalFolders } from '../kb/folders.ts';
+import { effectiveRule, matchRules } from '../rules/compile.ts';
 
 /**
  * Browse structure rather than search it. The point of this op is that an agent
@@ -106,22 +107,42 @@ function listFolders(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>
     }
   }
 
-  const folders = [...deep.keys()]
+  // A folder that has been declared but holds no page yet is still somewhere to file
+  // something — it is, in fact, the folder most likely to be the right answer, because
+  // somebody has just said what it is for. Deriving structure from pages alone made a freshly
+  // declared folder invisible to the very caller that had declared it.
+  const declared = new Set<string>();
+  for (const folderPath of declaredFolders(ctx, prefix)) {
+    if (folderPath.includes('/') && !prefix) continue;
+    if (!deep.has(folderPath)) declared.add(folderPath);
+  }
+
+  // Directories are structure even before the first page exists. The index has no row capable of
+  // representing an empty folder, so include the user's on-disk taxonomy explicitly.
+  const physical = new Set(physicalFolders(ctx.config, { under: input.folder, depth: 1 }));
+
+  const folders = [...new Set([...deep.keys(), ...declared, ...physical])]
     .sort()
     .slice(0, input.limit ?? 200)
     .map((folderPath) => {
       // Reporting which rule governs a folder is what makes "default to visible" true for
       // structure: a rule that quietly excludes half a knowledge base is worse than no rule.
+      // The fields come from `effectiveRule` and the attribution from the most specific match,
+      // so a `description` on `research/**` and a `rank` on `**` both show rather than one
+      // erasing the other.
       const match = matchRules(`${folderPath}/x`, ctx.config.rules);
+      const effective = effectiveRule(`${folderPath}/x`, ctx.config.rules);
       return {
         path: folderPath,
         pages: direct.get(folderPath) ?? 0,
         pages_deep: deep.get(folderPath) ?? 0,
         folders: subfolders.get(folderPath)?.size ?? 0,
+        ...(declared.has(folderPath) ? { declared: true } : {}),
         ...(match.rule
           ? {
               rule: {
-                ...(match.rule.class ? { class: match.rule.class } : {}),
+                ...(effective.class ? { class: effective.class } : {}),
+                ...(effective.description ? { description: effective.description } : {}),
                 source: `${match.rule.glob} (${match.rule.source})`,
               },
             }
@@ -154,14 +175,68 @@ function listTree(ctx: AknoContext, input: ReturnType<typeof ListInput.parse>): 
     }
   }
 
+  // Declared folders with nothing in them yet belong in the outline too — an agent choosing a
+  // destination should see the folder somebody just created for this, not conclude it has to
+  // invent one.
+  for (const folderPath of declaredFolders(ctx, prefix)) {
+    const key = folderPath.slice(prefix.length);
+    if (key.length === 0 || key.split('/').length > maxDepth) continue;
+    if (!counts.has(key)) counts.set(key, 0);
+  }
+
+  for (const folderPath of physicalFolders(ctx.config, { under: input.folder, depth: maxDepth })) {
+    const key = prefix ? folderPath.slice(prefix.length) : folderPath;
+    if (key.length === 0 || key.split('/').length > maxDepth) continue;
+    if (!counts.has(key)) counts.set(key, 0);
+  }
+
   const lines = [...counts.keys()].sort().map((key) => {
     const depth = key.split('/').length - 1;
     const label = key.split('/').at(-1)!;
-    return `${'  '.repeat(depth)}${label}/ (${counts.get(key)})`;
+    // The description, only at the top level and only in a clause. This outline is the whole
+    // of what a turn is told about structure, and `research/ (12)` does not say that research
+    // holds findings about the world while `household/` holds claims about this household —
+    // which is the distinction a caller gets wrong when nothing tells it.
+    const described =
+      depth === 0 ? effectiveRule(`${prefix}${key}/x`, ctx.config.rules).description : undefined;
+    const note = described ? ` — ${truncate(described, 90)}` : '';
+    return `${'  '.repeat(depth)}${label}/ (${counts.get(key)})${note}`;
   });
 
   const rootPages = rows.filter((row) => !row.slug.slice(prefix.length).includes('/')).length;
   if (rootPages > 0) lines.unshift(`${input.folder ?? '.'}: ${rootPages} pages`);
 
   return { status: 'ok', tree: lines.join('\n'), total: counts.size };
+}
+
+/**
+ * Folders named by a rule, under `prefix`, that a caller is allowed to see.
+ *
+ * A folder with a rule but no pages is still somewhere to file something — it is, in fact,
+ * the folder most likely to be right, because somebody has just said what it is for. Deriving
+ * structure from pages alone made a freshly declared folder invisible to the very caller that
+ * declared it.
+ *
+ * `excluded` is the exception, and not a small one: excluding a folder is a statement that it
+ * should not be in the index at all, and listing it because it happens to have a rule would
+ * make the one class that means "do not look here" the one class that always appears.
+ */
+function declaredFolders(ctx: AknoContext, prefix: string): string[] {
+  const out: string[] = [];
+  for (const rule of ctx.config.rules) {
+    const folderPath = rule.glob.replace(/\/\*+$/, '');
+    if (folderPath.length === 0 || folderPath.includes('*')) continue;
+    if (!folderPath.startsWith(prefix)) continue;
+    if (effectiveRule(`${folderPath}/x`, ctx.config.rules).class === 'excluded') continue;
+    out.push(folderPath);
+  }
+  return out;
+}
+
+/** Cut at a word boundary — half a word reads as a typo rather than as an elision. */
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[.,;:]$/, '')}…`;
 }

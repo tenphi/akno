@@ -21,6 +21,7 @@ Reply with JSON only:
   "candidates": [
     { "text": "one self-contained sentence, phrased as it should appear on a page",
       "subject": "2-5 words naming what this is about, used to find the right page",
+      "page": "folder/page-name — where this belongs if no page holds it yet, lowercase and hyphenated",
       "kind": "fact" }
   ],
   "events": [ { "date": "YYYY-MM-DD", "summary": "what happened, one clause" } ]
@@ -31,11 +32,14 @@ Keep:
 - Decisions, and the reason for them.
 - Stated preferences and constraints.
 - Proven experience: what was tried, what worked.
+- Findings the assistant established and stated as true: what a thing is, how it works,
+  what it costs, which options exist and how they differ. A finding is not a suggestion.
 
 Drop, always:
-- Anything true only today: what someone is doing right now, transient state.
+- Anything true only today: what someone is doing right now, transient state, and any
+  reading that expires on its own — prices, weather, availability, rates, live status.
 - Questions, speculation, plans that were not decided.
-- Pleasantries, acknowledgements, and the assistant's own suggestions.
+- Pleasantries, acknowledgements, and anything the assistant merely proposed or offered.
 - Anything already obviously recorded — do not restate.
 - Anything you inferred rather than were told. Only what the text actually says.
 
@@ -43,6 +47,8 @@ Rules:
 - Prose, not triples. "The car insurance premium is now 33 EUR a month" — not "premium=33".
 - Resolve pronouns and relative dates against the text. Never invent a date you were not given.
 - An "events" entry is something that happened on a date, not a value that is true.
+- "page" is a suggestion, used only when nothing existing fits. Put it in the folder the
+  subject belongs to; a finding about the world is not a claim about this household.
 - Fewer, better. An empty candidates list is the correct answer for a conversation
   that decided nothing, and is much better than a vague one.`;
 
@@ -50,6 +56,11 @@ export interface RetainCandidate {
   text: string;
   subject: string;
   kind: string;
+  /**
+   * Where this would go if no page holds it yet. A suggestion, used only when routing finds
+   * nothing — which is the case `remember` used to have no answer for at all.
+   */
+  page?: string;
 }
 
 export interface RetainResult {
@@ -102,11 +113,37 @@ export async function runRetain(
 const SPECULATIVE =
   /\b(should be considered|should probably|might want|could be worth|worth considering|at some point|look into|maybe|perhaps|probably|possibly|considering whether|thinking about|not sure|tbd|to be decided)\b/i;
 
-/** A candidate has to read as a statement, not a topic. */
-const HAS_VERB =
-  /\b(is|are|was|were|has|have|had|will|prefers|prefer|lives|costs|cost|expires|renews|includes|owns|uses|works|covers|holds|requires|means|pays|paid|charged|booked|signed|moved|decided|chose|switched|cancelled|replaced|bought)\b/i;
+/**
+ * A candidate has to read as a **statement, not a topic** — "hotel bill" is not something a
+ * page can say.
+ *
+ * This was a whitelist of forty verbs, and a whitelist is the wrong shape for this test. Every
+ * sentence built on a verb nobody thought of was dropped in silence: "the Vision framework
+ * OCRs a page in about 0.6 seconds" states a fact and contains no word on that list. The
+ * failure fell hardest on exactly the material this pass is worst at keeping — findings about
+ * the world, which are phrased with the vocabulary of whatever they are about, while a claim
+ * about a household reuses the same dozen verbs forever.
+ *
+ * So the test is structural instead. A statement has a subject and something predicated of it:
+ * at least two words before a verb-shaped token, and a verb-shaped token that is not the first
+ * word (an imperative is an instruction, not a claim). Copulas and auxiliaries are still named
+ * because they are irregular and no suffix rule reaches them.
+ */
+const COPULA = /\b(is|are|was|were|has|have|had|will|would|does|do|did|can|may|must|should)\b/i;
+const VERB_SHAPED = /\b\w{3,}(?:s|ed|es)\b/i;
 
-function cleanCandidates(value: unknown): RetainCandidate[] {
+function readsAsStatement(text: string): boolean {
+  const words = text.split(/\s+/);
+  if (words.length < 4) return false;
+  if (COPULA.test(text)) return true;
+
+  // Past the first word: "Book the hotel" is an instruction, and an instruction on a page is
+  // read back later as something the household decided.
+  const rest = words.slice(1).join(' ');
+  return VERB_SHAPED.test(rest);
+}
+
+export function cleanCandidates(value: unknown): RetainCandidate[] {
   if (!Array.isArray(value)) return [];
   const out: RetainCandidate[] = [];
   const seen = new Set<string>();
@@ -120,13 +157,13 @@ function cleanCandidates(value: unknown): RetainCandidate[] {
     if (text.split(/\s+/).length < 4 || text.length > 400) continue;
     // Speculation, however confidently the model phrased it.
     if (SPECULATIVE.test(text)) continue;
-    // A topic rather than a claim: "hotel bill" is not something a page can say.
-    if (!HAS_VERB.test(text)) continue;
+    if (!readsAsStatement(text)) continue;
 
     const key = text.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
 
+    const page = typeof record.page === 'string' ? cleanSlug(record.page) : null;
     out.push({
       text,
       subject:
@@ -134,10 +171,36 @@ function cleanCandidates(value: unknown): RetainCandidate[] {
           ? record.subject.trim()
           : text.slice(0, 60),
       kind: typeof record.kind === 'string' ? record.kind : 'fact',
+      ...(page ? { page } : {}),
     });
     if (out.length >= 12) break;
   }
   return out;
+}
+
+/**
+ * A model's idea of a slug, made safe to hand to `write`.
+ *
+ * Deliberately lossy rather than strict: a suggestion that cannot be cleaned into a usable
+ * slug is dropped, and routing falls back to asking. A slug is a filename, and the one thing
+ * that must not happen is a model naming a path.
+ */
+function cleanSlug(raw: string): string | null {
+  const slug = raw
+    .trim()
+    .toLowerCase()
+    .replace(/\.(md|markdown)$/i, '')
+    .replace(/[^a-z0-9/\-_ ]+/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .split('/')
+    .map((segment) => segment.replace(/^-+|-+$/g, ''))
+    .filter((segment) => segment.length > 0 && segment !== '.' && segment !== '..')
+    .join('/');
+
+  // One segment is a page at the root of the knowledge base, which is almost never what was
+  // meant and is the hardest kind of mess to tidy up later.
+  return slug.includes('/') && slug.length <= 120 ? slug : null;
 }
 
 function cleanEvents(value: unknown): { date: string; summary: string }[] {

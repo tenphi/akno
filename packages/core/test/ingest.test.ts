@@ -415,6 +415,13 @@ describe('routing and gating', () => {
     expect(result.outcome).toBe('requires_approval');
     expect(result.approval?.proposal_id).toBeTruthy();
     expect(fs.readdirSync(root).sort()).toEqual(['home']);
+
+    // Placement proposals hold an ingest source, not a page write. Answering one must replay the
+    // ingest with the chosen folder and clear the proposal.
+    const approved = await mem.approve(result.approval!.proposal_id, { slug: 'home' });
+    expect(approved.ingest?.outcome).toBe('ok');
+    expect(approved.ingest?.slug?.startsWith('home/')).toBe(true);
+    expect(mem.proposals().map((proposal) => proposal.id)).not.toContain(result.approval!.proposal_id);
   });
 
   it('honours an explicit folder without second-guessing it', async () => {
@@ -426,7 +433,7 @@ describe('routing and gating', () => {
     expect(result.slug?.startsWith('home/')).toBe(true);
   });
 
-  it('gates a new top-level folder for an agent, exactly as a write would', async () => {
+  it('asks for a declaration of a new top-level folder, exactly as a write would', async () => {
     await mem.close();
     mem = await open({
       aknoPath: root,
@@ -450,7 +457,10 @@ describe('routing and gating', () => {
       path: drop('IMG_4832.pdf', makePdf('Warranty certificate for the Zephyr QX-100.')),
       folder: 'warranties',
     });
-    expect(result.outcome).toBe('requires_approval');
+    expect(result.outcome).toBe('requires_folder');
+    expect(result.requires_folder?.folder).toBe('warranties');
+    // The file stays where it was dropped. Nobody is asked; the caller says what
+    // `warranties/` is for and ingests it again.
     expect(fs.existsSync(path.join(root, 'warranties'))).toBe(false);
   });
 });
@@ -984,5 +994,248 @@ describe('a document in several files', () => {
       expect(card?.documents?.[0]?.rel_path).toBe(`${who}/permit.pdf`);
       expect(card?.documents?.[0]?.parts).toBe(2);
     }
+  });
+});
+
+/**
+ * The text, written beside the file it came from.
+ *
+ * The point is a reader that is not Akno: the text of a stored contract has always been
+ * in the index, and has never been anywhere a `grep`, an editor or an agent holding a
+ * folder could reach it. What these assert is that putting it there costs nothing —
+ * no second document, no second summary, no second hit for the same words.
+ */
+describe('a text rendition', () => {
+  const LEASE = 'LEASE AGREEMENT. Clause one, the rent. Clause seven, deposit returned in thirty days.';
+
+  /** The same knowledge base, reopened with the feature on. */
+  async function withRenditions(ingest: Record<string, unknown> = {}): Promise<Akno> {
+    await mem.close();
+    mem = await open({
+      aknoPath: root,
+      stateDir,
+      isolated: true,
+      actor: 'user',
+      overrides: {
+        akno_path: root,
+        state_dir: stateDir,
+        providers: { stub: { base_url: server.url } },
+        models: {
+          embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
+          reranker: { id: null, enabled: false },
+          derive: { provider: 'stub', id: 'stub-derive' },
+          expansion: { provider: 'stub', id: 'stub-derive' },
+        },
+        ingest: { text_rendition: true, text_rendition_min_chars: 0, ...ingest },
+      },
+    });
+    return mem;
+  }
+
+  function page(name: string, embed: string): void {
+    fs.writeFileSync(
+      path.join(root, `home/${name}.md`),
+      `---\ntitle: ${name}\n---\n\n# ${name}\n\nA document.\n\n![[${embed}]]\n`,
+      'utf8',
+    );
+  }
+
+  it('writes the extracted text beside the file, verbatim under a header', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+
+    const report = await (await withRenditions()).index({});
+    expect(report.renditionsWritten).toBe(1);
+
+    const written = fs.readFileSync(path.join(root, 'home/lease.txt'), 'utf8');
+    // Provenance first: text read off a scan is a good guess, not a transcript, and a file
+    // that does not say which it is invites being quoted as the latter.
+    expect(written).toContain('# Extracted text of lease.pdf');
+    expect(written).toContain("read from the file's own text layer");
+    expect(written).toContain('deposit returned in thirty days');
+
+    // Byte for byte what `read` returns. Two texts for one document that can disagree is
+    // the whole failure this design exists to avoid.
+    const card = (await mem.recall({ query: 'deposit returned', mode: 'lookup' })).cards.find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    const stored = (await mem.read({ document: card!.documents![0]!.id })).document!.text!;
+    expect(written.endsWith(`${stored}\n`)).toBe(true);
+  });
+
+  it('is the same document, not a second one', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    await (await withRenditions()).index({});
+    // A second pass, so the rendition is on disk before the scan that has to classify it.
+    const second = await mem.index({});
+
+    // Not extracted, not summarized, not chunked — the text is the PDF's and is already
+    // indexed against it. Extracting it again would index the same words twice.
+    expect(second.documentsExtracted).toBe(0);
+    expect(second.documentsSummarized).toBe(0);
+
+    const health = await mem.doctor();
+    expect(health.counts.documents).toBe(1);
+    expect(health.counts.renditions).toBe(1);
+    // And not counted as an attachment with nothing readable in it, which is what a
+    // document with no text of its own would otherwise look like.
+    expect(health.counts.documentsExtracted).toBe(1);
+    expect(health.warnings.some((warning) => /no readable text/.test(warning))).toBe(false);
+  });
+
+  it('returns one hit for a phrase, not two', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    const first = await (await withRenditions()).index({});
+    const second = await mem.index({});
+    // The chunk count did not move when the rendition arrived. Every phrase in the contract
+    // returning two hits against one budget is the failure this design exists to avoid.
+    expect(second.chunksWritten).toBe(0);
+    expect(first.chunksWritten).toBeGreaterThan(0);
+
+    const found = await mem.recall({ query: 'deposit returned', mode: 'lookup' });
+    const cards = found.cards.filter((entry) => entry.slug === 'home/lease');
+    expect(cards).toHaveLength(1);
+    expect(cards[0]?.documents).toHaveLength(1);
+    expect(cards[0]?.documents?.[0]?.rel_path).toBe('home/lease.pdf');
+  });
+
+  it('reading the rendition returns the document it renders', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    await (await withRenditions()).index({});
+    await mem.index({});
+
+    // Naming the `.txt` is naming the contract. Answering from the copy would make which of
+    // the two you happened to reach for matter.
+    const read = await mem.read({ document: 'home/lease.txt' });
+    expect(read.document?.rel_path).toBe('home/lease.pdf');
+    expect(read.document?.text).toContain('deposit returned in thirty days');
+    expect(read.note).toBeUndefined();
+  });
+
+  it('adopts a text file somebody extracted themselves', async () => {
+    // The real case: `pdftotext contract.pdf > contract.txt`, run before Akno existed. It
+    // was indexed as a document of its own, so every phrase in the contract came back twice.
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    fs.writeFileSync(path.join(root, 'home/lease.txt'), `${LEASE}\n`, 'utf8');
+
+    await (await withRenditions()).index({});
+    const second = await mem.index({});
+    expect(second.documentsExtracted).toBe(0);
+
+    const health = await mem.doctor();
+    expect(health.counts.documents).toBe(1);
+    // One file, not two: Akno's rendition has the same name as theirs, so theirs *is* it.
+    expect(health.counts.renditions).toBe(1);
+    expect(fs.existsSync(path.join(root, 'home/lease.pdf.txt'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'home/lease.txt'), 'utf8')).toBe(`${LEASE}\n`);
+
+    // Its chunks are gone: the words belong to the PDF and are indexed there.
+    const found = await mem.recall({ query: 'deposit returned', mode: 'lookup' });
+    expect(found.cards.filter((entry) => entry.slug === 'home/lease')).toHaveLength(1);
+    expect((await mem.read({ document: 'home/lease.txt' })).document?.rel_path).toBe('home/lease.pdf');
+  });
+
+  it('notices a text file that became a rendition after it was indexed', async () => {
+    // The file did not change; what changed is that its PDF arrived. Nothing re-examines an
+    // unchanged file, so without a reconciliation pass it keeps its own chunks forever.
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.txt'), `${LEASE}\n`, 'utf8');
+    const alone = await (await withRenditions()).index({});
+    expect(alone.documentsExtracted).toBe(1);
+
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    const arrived = await mem.index({});
+    expect(arrived.warnings.some((warning) => /changed between being a document/.test(warning))).toBe(true);
+    // A second pass, because the `.pdf.txt` written by the first one is not on disk until
+    // after that pass has finished scanning.
+    await mem.index({});
+
+    const health = await mem.doctor();
+    expect(health.counts.documents).toBe(1);
+    expect(health.counts.renditions).toBe(1);
+    expect((await mem.read({ document: 'home/lease.txt' })).document?.rel_path).toBe('home/lease.pdf');
+  });
+
+  it('does not copy a file that is already text', async () => {
+    page('notes', 'notes.txt');
+    fs.writeFileSync(path.join(root, 'home/notes.txt'), `${LEASE}\n`, 'utf8');
+    const report = await (await withRenditions()).index({});
+    expect(report.renditionsWritten).toBe(0);
+    expect(fs.existsSync(path.join(root, 'home/notes.txt.txt'))).toBe(false);
+  });
+
+  it('writes nothing when two documents would want the same name', async () => {
+    // `scan.jpg` and `scan.pdf` in one folder both want `scan.txt`, and a file two documents
+    // claim belongs to neither of them.
+    page('scan', 'scan.pdf');
+    fs.writeFileSync(path.join(root, 'home/scan.pdf'), makePdf(LEASE));
+    fs.writeFileSync(path.join(root, 'home/scan.jpg'), makePdf(`${LEASE} A second reading of it.`));
+
+    const report = await (await withRenditions()).index({});
+    expect(report.renditionsWritten).toBe(0);
+    expect(fs.existsSync(path.join(root, 'home/scan.txt'))).toBe(false);
+    expect(report.warnings.some((warning) => /would not read back as the text of/.test(warning))).toBe(true);
+  });
+
+  it('works on a scoped pass, which is the only kind the watcher runs', async () => {
+    // The watcher indexes `{ only: [...] }`. This query joins `pages`, which has a
+    // `rel_path` column too, so an unqualified name in the scope clause fails on exactly the
+    // path a full index never takes — silently, in a log nobody reads.
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    await (await withRenditions()).index({});
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(`${LEASE} Amended.`));
+
+    const report = await mem.index({ only: ['home/lease.pdf'] });
+    expect(report.warnings).toEqual([]);
+    expect(report.renditionsWritten).toBe(1);
+    expect(fs.readFileSync(path.join(root, 'home/lease.txt'), 'utf8')).toContain('Amended.');
+  });
+
+  it('leaves a short document to the page beside it', async () => {
+    page('receipt', 'receipt.pdf');
+    fs.writeFileSync(path.join(root, 'home/receipt.pdf'), makePdf('Paid 4.20 EUR.'));
+    const report = await (await withRenditions({ text_rendition_min_chars: 1000 })).index({});
+    expect(report.renditionsWritten).toBe(0);
+    expect(fs.existsSync(path.join(root, 'home/receipt.txt'))).toBe(false);
+    // Declining is recorded, so a photograph is not reconsidered on every pass forever.
+    expect((await mem.index({})).renditionsWritten).toBe(0);
+  });
+
+  it('never overwrites one that was edited by hand', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    const target = path.join(root, 'home/lease.txt');
+    // Somebody fixed three OCR mistakes in it. Silently reverting that is not recoverable.
+    fs.writeFileSync(target, 'Corrected by hand.\n', 'utf8');
+
+    await (await withRenditions()).index({});
+    expect(fs.readFileSync(target, 'utf8')).toBe('Corrected by hand.\n');
+  });
+
+  it('writes nothing at all unless it is asked to', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    const report = await mem.index({});
+    expect(report.renditionsWritten).toBe(0);
+    expect(fs.existsSync(path.join(root, 'home/lease.txt'))).toBe(false);
+  });
+
+  it('rewrites when the file changes, and converges when it does not', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    await (await withRenditions()).index({});
+
+    const second = await mem.index({});
+    expect(second.renditionsWritten).toBe(0);
+
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf('Replaced: the rent is now 1500 EUR.'));
+    const third = await mem.index({});
+    expect(third.renditionsWritten).toBe(1);
+    expect(fs.readFileSync(path.join(root, 'home/lease.txt'), 'utf8')).toContain('1500 EUR');
   });
 });

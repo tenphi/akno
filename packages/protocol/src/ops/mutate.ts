@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ResultEnvelope } from '../common.ts';
-import { ApprovalRequest, WriteTarget } from './write.ts';
+import { ApprovalRequest, FolderRequired, WriteTarget } from './write.ts';
 
 /**
  * Hand over a transcript or notes; Akno runs the retain mission with its
@@ -29,12 +29,17 @@ export const RememberInput = z.object({
 export type RememberInput = z.infer<typeof RememberInput>;
 
 export const RememberOutput = ResultEnvelope.extend({
-  outcome: z.enum(['ok', 'requires_approval', 'noop']),
+  outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'noop']),
   change_id: z.string().optional(),
   wrote: z.array(WriteTarget).optional(),
   facts: z.object({ retired: z.number().int(), added: z.number().int() }).optional(),
-  /** Candidates that cleared the retain mission but not `route_threshold`. */
+  /** Candidates that cleared the retain mission but had nowhere to go and no name to give one. */
   approvals: z.array(ApprovalRequest).optional(),
+  /**
+   * Folders a claim wanted and that nothing has described yet. **Not an approval** — declare
+   * each with `folder` and call `remember` again; no user is waiting on this.
+   */
+  requires_folder: z.array(FolderRequired).optional(),
   /** What the retain mission decided was worth keeping, and what it dropped. */
   considered: z
     .array(z.object({ claim: z.string(), kept: z.boolean(), slug: z.string().nullable(), score: z.number() }))
@@ -93,12 +98,12 @@ export const MoveInput = z.object({
 export type MoveInput = z.infer<typeof MoveInput>;
 
 export const MoveOutput = ResultEnvelope.extend({
-  outcome: z.enum(['ok', 'requires_approval']),
+  outcome: z.enum(['ok', 'requires_folder']),
   change_id: z.string().optional(),
   moved: z.array(z.string()).optional(),
   /** Links that now point nowhere. Reported, never silently rewritten. */
   broken_inbound: z.array(z.string()).optional(),
-  approval: ApprovalRequest.optional(),
+  requires_folder: FolderRequired.optional(),
 });
 export type MoveOutput = z.infer<typeof MoveOutput>;
 
@@ -128,7 +133,7 @@ export const IngestInput = z
 export type IngestInput = z.infer<typeof IngestInput>;
 
 export const IngestOutput = ResultEnvelope.extend({
-  outcome: z.enum(['ok', 'requires_approval', 'duplicate', 'skipped']),
+  outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'duplicate', 'skipped']),
   change_id: z.string().optional(),
   document: z.string().optional(),
   slug: z.string().optional(),
@@ -147,7 +152,10 @@ export const IngestOutput = ResultEnvelope.extend({
    *  not already say. A good name is left alone. */
   renamed_from: z.string().optional(),
   related: z.array(z.string()).optional(),
+  /** A document that routed nowhere: a real question for the user about where it goes. */
   approval: ApprovalRequest.optional(),
+  /** The destination folder has not been declared: a question for the *agent*, not the user. */
+  requires_folder: FolderRequired.optional(),
   /**
    * One entry per file when a folder was ingested. The outer `outcome` is `ok` if
    * anything landed — a folder where three files filed themselves and two need a
@@ -157,7 +165,7 @@ export const IngestOutput = ResultEnvelope.extend({
     .array(
       z.object({
         source: z.string(),
-        outcome: z.enum(['ok', 'requires_approval', 'duplicate', 'skipped', 'error']),
+        outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'duplicate', 'skipped', 'error']),
         slug: z.string().optional(),
         note: z.string().optional(),
       }),

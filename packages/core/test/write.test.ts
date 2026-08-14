@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { readJsoncFile } from '../src/config/jsonc.ts';
 
 /**
  * The write path end to end, on a real knowledge base on disk, with
@@ -228,64 +229,159 @@ describe('conflict detection', () => {
   });
 });
 
-/** New folders are gated for agents. The user is never gated. */
-describe('gating', () => {
-  it('gates a new top-level folder for an agent', async () => {
+/**
+ * **A folder must be described before a page can appear in it — and describing it asks
+ * nobody.**
+ *
+ * This replaced an approval, and the difference is what these assert. Nothing files a
+ * proposal, nothing waits on the owner, and the refusal tells the caller what to do rather
+ * than who to wait for. The old arrangement taught an agent that a new folder might be
+ * declined, and an agent that believes that appends its claims to whatever page already
+ * exists instead.
+ */
+describe('declaring a folder', () => {
+  it('refuses a page in an undeclared top-level folder, and asks nobody', async () => {
     const mem = await openAs('agent');
     const result = await mem.write({ slug: 'medical/allergy-test', content: 'Clear.' });
-    expect(result.outcome).toBe('requires_approval');
-    expect(result.approval?.reason).toContain('medical');
+    expect(result.outcome).toBe('requires_folder');
+    expect(result.requires_folder?.folder).toBe('medical');
     expect(fs.existsSync(path.join(root, 'medical'))).toBe(false);
+    // No proposal row, because there is no question for a person in it.
+    expect(mem.proposals()).toHaveLength(0);
     await mem.close();
   });
 
-  it('does not gate a subfolder of a folder that exists', async () => {
+  it('says what to do next, rather than who to wait for', async () => {
+    const mem = await openAs('agent');
+    const result = await mem.write({ slug: 'medical/allergy-test', content: 'Clear.' });
+    expect(result.note).toMatch(/`folder`/);
+    // The words that would send an agent to wait for somebody. Saying "nothing waits on
+    // approval" is the opposite of them and is allowed to appear.
+    expect(result.note).not.toMatch(/ask the user|akno approve|proposal/i);
+    await mem.close();
+  });
+
+  it('lets the write through once the folder is declared, in the same session', async () => {
+    // The flow this whole change exists for: refused, declared, written — no restart, no
+    // human, no second turn.
+    const mem = await openAs('agent');
+    expect((await mem.write({ slug: 'medical/allergy-test', content: 'Clear.' })).outcome).toBe(
+      'requires_folder',
+    );
+
+    const declared = await mem.folder({
+      path: 'medical',
+      description: 'Test results, prescriptions and appointments for this household.',
+    });
+    expect(declared.outcome).toBe('ok');
+    expect(declared.glob).toBe('medical/**');
+
+    const written = await mem.write({ slug: 'medical/allergy-test', content: 'Tested clear.' });
+    expect(written.outcome).toBe('ok');
+    expect(read('medical/allergy-test.md')).toContain('Tested clear.');
+    await mem.close();
+  });
+
+  it('writes the rule into akno.json, where the taxonomy travels with the notes', async () => {
+    const mem = await openAs('agent');
+    await mem.folder({ path: 'research', description: 'Findings about the world.', class: 'reference' });
+    // Read the way Akno reads it: the file is JSONC, and it is written with comments on
+    // purpose — a plain JSON.parse failing here is the format working.
+    const rules = readJsoncFile<{ folders: Record<string, { description: string }> }>(
+      path.join(root, 'akno.json'),
+    )!;
+    expect(rules.folders['research/**']!.description).toBe('Findings about the world.');
+    await mem.close();
+  });
+
+  it('takes a second declaration of the same folder as a noop, not an error', async () => {
+    // Two agents reaching the same conclusion about where research goes is the system working.
+    const mem = await openAs('agent');
+    await mem.folder({ path: 'research', description: 'Findings about the world.' });
+    const again = await mem.folder({ path: 'research', description: 'Something else entirely.' });
+    expect(again.outcome).toBe('noop');
+    expect((again.rule as { description: string }).description).toBe('Findings about the world.');
+    await mem.close();
+  });
+
+  it('refuses to redefine one of Akno’s own paths', async () => {
+    const mem = await openAs('agent');
+    await expect(mem.folder({ path: 'timeline', description: 'Events.' })).rejects.toThrow(/own paths/);
+    await mem.close();
+  });
+
+  it('does not ask about a subfolder of a folder that exists', async () => {
     const mem = await openAs('agent');
     expect((await mem.write({ slug: 'home/utilities/water', content: 'x' })).outcome).toBe('ok');
     await mem.close();
   });
 
-  it('never gates the user', async () => {
+  it('never asks the user', async () => {
     const mem = await openAs('user');
     expect((await mem.write({ slug: 'medical/allergy-test', content: 'Clear.' })).outcome).toBe('ok');
     await mem.close();
   });
 
-  it('offers somewhere the claim could go instead', async () => {
+  it('offers folders that already exist, so a new one is a choice', async () => {
     const mem = await openAs('agent');
     const result = await mem.write({ slug: 'medical/lease-related', content: 'x' });
-    expect(result.approval!.nearest.length).toBeGreaterThan(0);
+    expect(result.requires_folder!.nearest.length).toBeGreaterThan(0);
     await mem.close();
   });
 
-  it('reuses one proposal for repeated writes to the same new folder', async () => {
-    // Ten writes into a new folder should give the user one thing to decide.
+  it('surfaces a declared but empty folder in the structure, so it can be found', async () => {
+    // Structure used to be derived from pages alone, which made a folder invisible to the
+    // caller that had just created it — and invisible is indistinguishable from absent.
     const mem = await openAs('agent');
-    const first = await mem.write({ slug: 'medical/a', content: 'x' });
-    const second = await mem.write({ slug: 'medical/b', content: 'y' });
-    expect(second.approval!.proposal_id).toBe(first.approval!.proposal_id);
-    expect(mem.proposals()).toHaveLength(1);
+    await mem.folder({ path: 'medical', description: 'Test results and appointments.' });
+    const listed = await mem.list({ kind: 'folders' });
+    const medical = listed.folders!.find((folder) => folder.path === 'medical');
+    expect(medical?.declared).toBe(true);
+    expect(medical?.rule?.description).toBe('Test results and appointments.');
     await mem.close();
   });
 
-  it('completes the held write on approval, without the caller repeating it', async () => {
+  it('surfaces and honours an empty folder the user created directly', async () => {
+    // An empty directory has no page row, but it is still an explicit taxonomy decision by the
+    // owner. Treating it as absent made agents invent a parallel folder or ask to create it again.
+    fs.mkdirSync(path.join(root, 'archives'));
+    fs.mkdirSync(path.join(root, 'home', 'records'));
     const mem = await openAs('agent');
-    const blocked = await mem.write({ slug: 'medical/allergy-test', content: 'Tested clear.' });
-    const approved = await mem.approve(blocked.approval!.proposal_id);
-    expect(approved.write?.outcome).toBe('ok');
-    expect(read('medical/allergy-test.md')).toContain('Tested clear.');
+
+    const listed = await mem.list({ kind: 'folders' });
+    expect(listed.folders?.some((folder) => folder.path === 'archives')).toBe(true);
+    const nested = await mem.list({ kind: 'folders', folder: 'home' });
+    expect(nested.folders?.some((folder) => folder.path === 'home/records')).toBe(true);
+    expect((await mem.list({ kind: 'tree', depth: 2 })).tree).toContain('records/ (0)');
+    expect(
+      (await mem.write({ slug: 'archives/first-record', content: 'The archive begins here.' })).outcome,
+    ).toBe('ok');
+    await mem.close();
+  });
+});
+
+/** The ledger is a shape, not a page you may write prose onto. */
+describe('the ledger', () => {
+  it('refuses an append, whoever is asking', async () => {
+    const mem = await openAs('agent');
+    await expect(mem.write({ slug: 'timeline', append: 'The complaint remains open.' })).rejects.toThrow(
+      /event ledger/,
+    );
+    expect(read('timeline.md')).not.toContain('The complaint remains open.');
     await mem.close();
   });
 
-  it('remembers a refusal, so the agent stops re-asking', async () => {
-    const mem = await openAs('agent');
-    const blocked = await mem.write({ slug: 'medical/a', content: 'x' });
-    await mem.decline(blocked.approval!.proposal_id);
+  it('refuses the user too — this is a shape rule, not a permission', async () => {
+    const mem = await openAs('user');
+    await expect(mem.write({ slug: 'timeline', content: '# Timeline\n' })).rejects.toThrow(/event ledger/);
+    await mem.close();
+  });
 
-    const again = await mem.write({ slug: 'medical/b', content: 'y' });
-    expect(again.outcome).toBe('requires_approval');
-    expect(again.approval!.reason).toMatch(/declined before/);
-    expect(again.note).toMatch(/do not ask the user again/);
+  it('takes the same fact as an event, placed under its year', async () => {
+    const mem = await openAs('agent');
+    const result = await mem.write({ event: { date: '2026-08-11', summary: 'The complaint stayed open.' } });
+    expect(result.outcome).toBe('ok');
+    expect(read('timeline.md')).toContain('- **2026-08-11** | The complaint stayed open.');
     await mem.close();
   });
 });
@@ -472,10 +568,13 @@ describe('move', () => {
     await mem.close();
   });
 
-  it('gates a move into a new top-level folder', async () => {
+  it('asks for a declaration before moving into an undeclared folder', async () => {
+    // Moving a page into `legal/` creates `legal/` just as surely as writing one there, so
+    // it owes the same sentence.
     const mem = await openAs('agent');
     const result = await mem.move({ from: 'home/lease', to: 'legal/lease' });
-    expect(result.outcome).toBe('requires_approval');
+    expect(result.outcome).toBe('requires_folder');
+    expect(result.requires_folder?.folder).toBe('legal');
     expect(fs.existsSync(path.join(root, 'home/lease.md'))).toBe(true);
     await mem.close();
   });
@@ -520,5 +619,92 @@ describe('a link stops being broken when its page appears', () => {
     hub = await mem.read({ slug: 'notes/hub' });
     expect(hub.page!.broken_links ?? []).not.toContain('notes/spoke');
     expect(hub.page!.links).toContain('notes/spoke');
+  });
+});
+
+/**
+ * A rendition — `<file>.txt` beside the file it renders — is a document row like any other,
+ * which is the point: `move` and `forget` find it through the page that owns it, with no
+ * second mechanism that could disagree with the first about where a file went.
+ */
+describe('a document with its text beside it', () => {
+  const HASH = '3f8c1a2b';
+  const PDF = `home/lease-${HASH}.pdf`;
+  const TXT = `home/lease-${HASH}.txt`;
+
+  beforeEach(() => {
+    fs.writeFileSync(path.join(root, PDF), Buffer.from('%PDF-1.4 not a readable one'));
+    fs.writeFileSync(
+      path.join(root, TXT),
+      `# Extracted text of lease-${HASH}.pdf\n# 1 page.\n# Written by Akno.\n\nClause seven.\n`,
+      'utf8',
+    );
+  });
+
+  it('belongs to the same page as the file it renders', async () => {
+    const mem = await openAs('agent');
+    await mem.index({});
+    const page = await mem.read({ slug: 'home/lease' });
+    // Both files listed, so somebody reading the page can see the text is already there.
+    expect(page.page?.documents?.map((entry) => entry.rel_path).sort()).toEqual([PDF, TXT]);
+    await mem.close();
+  });
+
+  it('follows the file it renders when the page moves', async () => {
+    const mem = await openAs('agent');
+    await mem.index({});
+    await mem.move({ from: 'home/lease', to: 'home/kitchen/lease' });
+
+    expect(fs.existsSync(path.join(root, `home/kitchen/lease-${HASH}.pdf`))).toBe(true);
+    // Named after the file it renders, so it lands beside it rather than keeping a stem
+    // that now names nothing.
+    expect(fs.existsSync(path.join(root, `home/kitchen/lease-${HASH}.txt`))).toBe(true);
+    expect(fs.existsSync(path.join(root, TXT))).toBe(false);
+    await mem.close();
+  });
+
+  it('goes into the trash with the document it renders', async () => {
+    const mem = await openAs('user');
+    await mem.index({});
+    const documents = (await mem.read({ slug: 'home/lease' })).page!.documents!;
+    const pdf = documents.find((entry) => entry.rel_path === PDF)!;
+
+    await mem.forget({ document: pdf.id });
+    // Leaving it behind would leave the whole of a forgotten contract in the folder, still
+    // readable and still found by anything that searches the files themselves.
+    expect(fs.existsSync(path.join(root, PDF))).toBe(false);
+    expect(fs.existsSync(path.join(root, TXT))).toBe(false);
+    await mem.close();
+  });
+
+  it('survives an undo of the move', async () => {
+    // The move journalled the old path with nothing in `before` and the new path as created,
+    // and reversing that deleted the new file and restored nothing — undoing a move ate the
+    // attachment. A page carries its text in `before`; a PDF has none to carry.
+    const mem = await openAs('agent');
+    await mem.index({});
+    const bytes = fs.readFileSync(path.join(root, PDF));
+
+    const result = await mem.move({ from: 'home/lease', to: 'home/kitchen/lease' });
+    await mem.undo({ change_id: result.change_id! });
+
+    expect(fs.existsSync(path.join(root, PDF))).toBe(true);
+    expect(fs.readFileSync(path.join(root, PDF))).toEqual(bytes);
+    expect(read(TXT)).toContain('Clause seven.');
+    expect(fs.existsSync(path.join(root, `home/kitchen/lease-${HASH}.pdf`))).toBe(false);
+    await mem.close();
+  });
+
+  it('comes back with it on undo', async () => {
+    const mem = await openAs('user');
+    await mem.index({});
+    const documents = (await mem.read({ slug: 'home/lease' })).page!.documents!;
+    const pdf = documents.find((entry) => entry.rel_path === PDF)!;
+
+    const forgotten = await mem.forget({ document: pdf.id });
+    await mem.undo({ change_id: forgotten.change_id! });
+    expect(fs.existsSync(path.join(root, PDF))).toBe(true);
+    expect(read(TXT)).toContain('Clause seven.');
+    await mem.close();
   });
 });

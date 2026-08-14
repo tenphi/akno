@@ -19,7 +19,7 @@ pointed at a folder of notes and explains what actually happens when you run thi
 - [`akno write` — changing a page safely](#akno-write--changing-a-page-safely)
 - [`akno remember` — "just keep this"](#akno-remember--just-keep-this)
 - [`forget`, `undo`, `move` — taking things back](#forget-undo-move--taking-things-back)
-- [Gates: when Akno asks first](#gates-when-akno-asks-first)
+- [Declaring a folder](#declaring-a-folder)
 - [`akno ingest` — files, folders and URLs](#akno-ingest--files-folders-and-urls)
 - [The inbox — drop it and forget it](#the-inbox--drop-it-and-forget-it)
 - [How a PDF becomes searchable](#how-a-pdf-becomes-searchable)
@@ -252,6 +252,7 @@ When you already know what you want, do not search for it.
 akno read home/lease
 akno read home/lease --from 10 --to 20
 akno read --document doc_a1b2c3d4
+akno read --document household/lease-8e7705eb.pdf   # or just `lease-8e7705eb.pdf`
 ```
 
 `read` always gives you the whole body, even for pages recall would only quote a window of. Recall is a
@@ -302,8 +303,10 @@ Write creates a page, or appends to one, or patches it. What makes it safe is th
 
 ```mermaid
 flowchart TD
-    start["akno write …"] --> gate{"New top-level folder,<br/>and an agent is asking?"}
-    gate -->|yes| propose["Stop. Return a proposal.<br/>Nothing is written."]
+    start["akno write …"] --> ledger{"Is it prose<br/>into the event ledger?"}
+    ledger -->|yes| refuse["Stop. The ledger takes events."]
+    ledger -->|no| gate{"Undeclared folder,<br/>and an agent is asking?"}
+    gate -->|yes| declare["Stop. Ask the caller to<br/>declare the folder first."]
     gate -->|no| conflict{"Does a line already claim<br/>something different?"}
     conflict -->|yes| report["Stop. Report both values<br/>and a token to override."]
     conflict -->|no| disk["Write the file"]
@@ -472,28 +475,53 @@ is a bigger action than you asked for.
 
 ---
 
-## Gates: when Akno asks first
+## Declaring a folder
 
-An agent inventing folders is how a tidy knowledge base turns into forty top-level directories. So by default
-an agent that tries to create a **new top-level folder** is stopped and has to ask.
+An agent inventing folders is how a tidy knowledge base turns into forty top-level directories. This used to
+be handled by asking you: a new top-level folder became a proposal and an approval card.
+
+That was the wrong question put to the wrong person. You cannot usefully rule on whether a research note needs
+a `research/` folder, and while the question waited the note was lost. Worse, an agent that learns a folder
+request may be declined learns to append to whatever page already exists instead — which is how claims land on
+the pages of unrelated subjects.
+
+So **nothing waits on you any more.** What is refused is not the folder but the *silence*: a write into an
+undeclared folder comes back asking for a sentence.
 
 ```
-needs approval — nothing was written
-  reason     create a new top-level folder "warranties"?
-  proposal   prop_5c1e77a2
+'warranties' is not declared — nothing was written
   could go instead  home, documents, receipts
 
-  akno approve prop_5c1e77a2   or   akno decline prop_5c1e77a2
+  say what belongs there, then repeat the write:
+  akno folder warranties --description "…"
 ```
 
 ```bash
-akno approve --list          # what is waiting
-akno approve prop_5c1e77a2   # completes the write that was held
-akno decline prop_5c1e77a2   # and Akno remembers, so the agent stops asking
+akno folder warranties --description "Appliance and electronics warranties, with their expiry dates."
+akno folder conversations --description "Chat transcripts: what was said." --class reference
 ```
 
-Approving **finishes the original write** — the content was held with the proposal, so nothing has to be
-repeated. You are never gated yourself: `--actor user` writes wherever you say.
+The description is the point of the step. It is returned by `list` and carried in the pre-turn bundle, so it is
+what the *next* caller reads before filing a page — and `research/` versus `household/` is not self-explanatory
+to anyone who has not been told that one holds findings about the world and the other holds claims about this
+household. `--class reference` is the other load-bearing choice: only claims become facts, so a folder of
+transcripts or legal texts declared `full` gets mined for assertions nobody made.
+
+The rule is written to `<akno_path>/akno.json` as a textual insert, so every comment already in that file
+survives and the diff is one hunk. It is in force immediately — declare and write in the same turn.
+
+`gate` in config still decides how deep this applies: `top-level` (the default) asks about a new top-level
+folder and lets subfolders of a described one through. A folder you create yourself is yours and is never
+questioned, and `--actor user` writes wherever you say.
+
+Proposals still exist, for the one question only you can answer: `remember` kept a claim, nothing scored high
+enough to hold it, and it could not name a page for it either.
+
+```bash
+akno approve --list          # what is waiting
+akno approve prop_5c1e77a2 --slug home/warranties
+akno decline prop_5c1e77a2
+```
 
 ---
 
@@ -929,6 +957,7 @@ Inside **your** folder, Akno only ever touches:
 - `inbox/` — only if you created it
 - `observations/` — only if you switch `observe` on
 - one frontmatter key, `id`, and only if you set `write_ids: true`
+- `<file>.txt` beside a document — only if you switch `ingest.text_rendition` on
 
 Everything else in your folder is yours. Every other frontmatter key is preserved exactly, including ones
 Akno has never heard of.
@@ -953,13 +982,16 @@ Akno has never heard of.
 | `ingest <path\|url>`  | Read a file, name it, file it                             | **yes**                | derive; vision for text-less images |
 | `inbox`               | Process whatever was dropped in an inbox folder           | **yes**                | same as `ingest`, per file          |
 | `dream`               | The nightly cycle                                         | only `observe`/`adopt` | maintenance or derive               |
-| `index`               | Reconcile the index with your folder                      | no                     | embedding, derive                   |
+| `index`               | Reconcile the index with your folder                      | only if you asked¹     | embedding, derive                   |
 | `serve`               | Run as a service, with all three doors                    | no                     | —                                   |
 | `service`             | Install or remove the background agents                   | no                     | —                                   |
 | `doctor`              | What works, what does not, and what that costs            | no                     | pings each configured one           |
 | `rules [path]`        | Which rule governs a path, and why                        | no                     | —                                   |
 | `config`              | The settings actually in effect, and where they came from | no                     | —                                   |
 | `bench`               | Check the performance budgets                             | no                     | embedding, expansion, reranker      |
+
+¹ Nothing by default. `write_ids: true` adds a frontmatter `id:`; `ingest.text_rendition: true` keeps a
+`<file>.txt` beside each document it can read. Both are off until you turn them on.
 
 Anything writing to your folder also re-indexes what it touched, so `derive` sees the changed page again.
 

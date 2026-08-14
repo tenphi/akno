@@ -141,6 +141,7 @@ the pre-turn bundle, normally called by the host rather than by the agent.
 | `timeline` | When things happened — by range, subject, or match.                                                                                                              |
 | `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                              |
 | `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                              |
+| `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                             |
 | `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. `mission` adds emphasis for this text.                                           |
 | `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                              |
 | `undo`     | Reverse a change by id.                                                                                                                                          |
@@ -204,6 +205,13 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 Three operations do author files, and each is journalled and reversible with `akno undo`: `write` and
 `remember` (because you asked them to), `ingest` (a page for a document you handed over), and the maintenance
 cycle (pages under `observations/`, and a page for a document that has none — both opt-outable).
+
+A fourth is off by default and is maintained rather than journalled. `ingest.text_rendition: true` keeps the
+extracted text of each readable document as `<file>.txt` beside it — so a `grep`, an editor, a git diff or an
+agent holding the folder can read a scanned contract without OCRing it again. Akno itself never needs it: the
+text is indexed against the document and `read({document})` returns all of it. A rendition is recognised as the
+same document rather than a second one, so it costs no extra summary and returns no second hit; one you have
+edited by hand is left alone, and one you delete stays deleted.
 
 ## Page classes
 
@@ -382,6 +390,14 @@ behind its owner's back is worse than the mess it fixes.
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
 how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.
+
+**`akno redeploy` applies a local change.** It builds, restarts `dev.akno`, and then waits for the socket
+to come back — `launchctl kickstart` returns when launchd has spawned the process, not when it is listening, so
+without the wait the next command fails with "no Akno service at …" and reads like a broken deploy. The two
+steps serve different consumers: launchd runs the TypeScript directly, so the service needs the restart and not
+the build, while a host importing `@akno/client` reads `packages/*/dist` and needs the build and not the
+restart. `--no-build` restarts only; `--no-restart` builds only. A failed build restarts nothing, so a deploy
+never reports success with the previous code back in service.
 
 **`adopt` is the one thing the cycle repairs.** Recall returns page cards, so an attachment nobody's page points
 at is extracted, indexed, and unreachable. `adopt` writes the page `ingest` would have written — the title from

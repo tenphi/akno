@@ -131,3 +131,95 @@ describe('applyUnifiedDiff', () => {
     expect(() => applyUnifiedDiff(body, 'just some text')).toThrow(/no @@ hunks/);
   });
 });
+
+/**
+ * Appending under a heading, which the host's tool has advertised all along while the schema
+ * silently dropped the field — so every heading-scoped append landed at the bottom of the page,
+ * under whatever heading happened to be last.
+ */
+describe('appending under a section', () => {
+  const page = [
+    '# Apartment',
+    '',
+    '## Rent',
+    '',
+    '- Rent: 1450 EUR',
+    '',
+    '### History',
+    '',
+    '- 2025: 1380 EUR',
+    '',
+    '## Utilities',
+    '',
+    '- Water: Waternet',
+    '',
+  ].join('\n');
+
+  it('lands at the end of the named section, not the end of the page', () => {
+    const result = applyEdit(page, { kind: 'append', text: '- Deposit: 2900 EUR', section: 'Utilities' });
+    const lines = result.content.split('\n');
+    // Directly after, with no gap: two bullets with a blank line between them are a loose list.
+    expect(lines[lines.indexOf('- Water: Waternet') + 1]).toBe('- Deposit: 2900 EUR');
+  });
+
+  it('keeps a subsection inside its parent rather than inserting above it', () => {
+    // `### History` belongs to `## Rent`. Stopping at the first heading of any level would put
+    // the new line above content that is part of the section being appended to.
+    const result = applyEdit(page, { kind: 'append', text: '- Indexed annually', section: 'Rent' });
+    const lines = result.content.split('\n');
+    expect(lines.indexOf('- Indexed annually')).toBeGreaterThan(lines.indexOf('- 2025: 1380 EUR'));
+    expect(lines.indexOf('- Indexed annually')).toBeLessThan(lines.indexOf('## Utilities'));
+  });
+
+  it('matches a heading by its text, at any level and whatever the case', () => {
+    expect(applyEdit(page, { kind: 'append', text: '- x', section: 'rent' }).content).toContain('- x');
+    expect(applyEdit(page, { kind: 'append', text: '- y', section: '## Rent' }).content).toContain('- y');
+    expect(applyEdit(page, { kind: 'append', text: '- z', section: 'History' }).content).toContain('- z');
+  });
+
+  it('does not touch the frontmatter', () => {
+    const withFront = `---\ntitle: Apartment\n---\n\n${page}`;
+    const result = applyEdit(withFront, { kind: 'append', text: '- q', section: 'Rent' });
+    expect(result.content.startsWith('---\ntitle: Apartment\n---\n')).toBe(true);
+  });
+
+  it('refuses a heading the page does not have, rather than falling back to the bottom', () => {
+    // The silent fallback is the bug being fixed. A caller that named a section had one in mind,
+    // and putting the text somewhere else is worse than not writing it.
+    expect(() => applyEdit(page, { kind: 'append', text: '- x', section: 'Parking' })).toThrow(/no heading/);
+  });
+
+  it('refuses an ambiguous heading, the way replace does', () => {
+    const twice = '## Notes\n\n- a\n\n## Notes\n\n- b\n';
+    expect(() => applyEdit(twice, { kind: 'append', text: '- c', section: 'Notes' })).toThrow(/2 times/);
+  });
+
+  it('still appends to the end of the body when no section is named', () => {
+    const result = applyEdit(page, { kind: 'append', text: '- Bins: Tuesday' });
+    expect(result.content.trimEnd().endsWith('- Bins: Tuesday')).toBe(true);
+  });
+});
+
+describe('the separator a section append uses', () => {
+  it('keeps a list tight, because a gap makes it a loose list', () => {
+    const page = '## Rent\n\n- Rent: 1450 EUR\n';
+    const result = applyEdit(page, { kind: 'append', text: '- Indexed annually', section: 'Rent' });
+    expect(result.content).toContain('- Rent: 1450 EUR\n- Indexed annually');
+  });
+
+  it('still separates two paragraphs', () => {
+    const page = '## Rent\n\nThe rent is reviewed each July.\n';
+    const result = applyEdit(page, {
+      kind: 'append',
+      text: 'The index is published in May.',
+      section: 'Rent',
+    });
+    expect(result.content).toContain('each July.\n\nThe index is published');
+  });
+
+  it('does not add a gap to an empty section', () => {
+    const page = '## Rent\n\n## Utilities\n\n- Water\n';
+    const result = applyEdit(page, { kind: 'append', text: '- Rent: 1450 EUR', section: 'Rent' });
+    expect(result.content).toContain('## Rent\n\n- Rent: 1450 EUR\n\n## Utilities');
+  });
+});

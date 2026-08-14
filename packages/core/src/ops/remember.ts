@@ -1,8 +1,15 @@
-import { RememberInput, type ApprovalRequest, type RememberOutput, type WriteTarget } from '@akno/protocol';
+import {
+  RememberInput,
+  type ApprovalRequest,
+  type FolderRequired,
+  type RememberOutput,
+  type WriteTarget,
+} from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import { newPrefixedId } from '../store/ids.ts';
+import { isReserved } from '../reserved.ts';
 import { recall } from './recall.ts';
 import { write } from './write.ts';
 
@@ -84,10 +91,13 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     })),
   );
 
+  // `kept` covers a claim bound for a page that does not exist yet, not just one that routed.
+  // It used to mean "routed", and once creating became possible that made every new page read
+  // back as a claim that had been dropped.
   const considered = routed.map((entry) => ({
     claim: entry.candidate.text,
-    kept: entry.slug !== null,
-    slug: entry.slug,
+    kept: entry.slug !== null || entry.candidate.page !== undefined,
+    slug: entry.slug ?? entry.candidate.page ?? null,
     score: Math.round(entry.score * 1000) / 1000,
   }));
 
@@ -103,34 +113,50 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   // ── Write ───────────────────────────────────────────────────────────────
   const wrote: WriteTarget[] = [];
   const approvals: ApprovalRequest[] = [];
+  const foldersNeeded: FolderRequired[] = [];
   const changeIds: string[] = [];
   let added = 0;
 
   for (const entry of routed) {
-    if (entry.slug === null) {
-      // Below the threshold it becomes a `requires_approval` proposal listing
-      // the candidates rather than a guess. A fact quietly landing on a plausible
-      // wrong page is invisible until someone reads it back months later.
+    // Nothing existing holds this. **A page is created rather than a question filed** —
+    // `remember` had no create path at all, so a claim with no home became a proposal, and a
+    // proposal is a page nobody writes. It fell hardest on findings about the world: their
+    // natural folders are `reference` class, routing refuses those on principle, and every
+    // finding therefore arrived at the one outcome that stores nothing.
+    const target = entry.slug ?? entry.candidate.page ?? null;
+    const creating = entry.slug === null;
+    if (target === null) {
+      // No destination and no suggestion. This is the one case still worth a question: the
+      // curator could not even name where it would go.
       approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest));
       continue;
     }
 
-    const result = await write(ctx, { slug: entry.slug, append: entry.candidate.text });
+    const result = await write(
+      ctx,
+      creating
+        ? { slug: target, content: entry.candidate.text, title: titleFor(entry.candidate) }
+        : { slug: target, append: entry.candidate.text },
+    );
     if (result.outcome === 'ok') {
       wrote.push(...(result.wrote ?? []));
       if (result.change_id) changeIds.push(result.change_id);
       added += result.facts?.added ?? 0;
+    } else if (result.requires_folder) {
+      // The caller declares the folder and calls again. Nothing is filed for a user to
+      // answer, because there is nothing here a user could usefully answer.
+      foldersNeeded.push(result.requires_folder);
     } else if (result.approval) {
       approvals.push(result.approval);
     } else if (result.conflict) {
       // A conflict from `remember` is not something to resolve unilaterally: the
       // caller has a user to ask, and this op has no mandate to overwrite a value.
       approvals.push({
-        proposal_id: recordConflictProposal(ctx, entry.slug, entry.candidate, result.conflict.existing),
+        proposal_id: recordConflictProposal(ctx, target, entry.candidate, result.conflict.existing),
         reason:
-          `'${entry.slug}' already claims something different: ${result.conflict.existing}. ` +
+          `'${target}' already claims something different: ${result.conflict.existing}. ` +
           'Ask which is current.',
-        nearest: [entry.slug],
+        nearest: [target],
       });
     }
   }
@@ -146,40 +172,78 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     }
   }
 
+  // Deduplicated: three findings bound for the same new folder are one thing to do, not three.
+  const folders = foldersNeeded.filter(
+    (required, index) => foldersNeeded.findIndex((other) => other.folder === required.folder) === index,
+  );
+
+  // `requires_folder` outranks `requires_approval` in the outcome, because they ask different
+  // people. A folder is the caller's to declare, now, without leaving the turn; an approval
+  // waits on the user. Reporting the first as the second is how a caller learns to stop.
+  const outcome = folders.length > 0 ? 'requires_folder' : approvals.length > 0 ? 'requires_approval' : null;
+
+  const held = [
+    folders.length > 0
+      ? `${folders.map((required) => `'${required.folder}'`).join(', ')} ` +
+        `${folders.length === 1 ? 'has' : 'have'} not been declared — call \`folder\` with a ` +
+        'description of what belongs there, then repeat this'
+      : null,
+    approvals.length > 0 ? 'some claims need the user to say where they go' : null,
+  ].filter(Boolean);
+
   if (wrote.length === 0) {
     return {
       status: 'ok',
-      outcome: approvals.length > 0 ? 'requires_approval' : 'noop',
+      outcome: outcome ?? 'noop',
       considered,
       ...(approvals.length > 0 ? { approvals } : {}),
-      note:
-        approvals.length > 0
-          ? 'nothing was written: every candidate needs a decision from the user'
-          : 'nothing was written',
+      ...(folders.length > 0 ? { requires_folder: folders } : {}),
+      note: held.length > 0 ? `nothing was written: ${held.join('; ')}` : 'nothing was written',
     };
   }
 
   return {
     status: 'ok',
-    outcome: approvals.length > 0 ? 'requires_approval' : 'ok',
+    outcome: outcome ?? 'ok',
     ...(changeIds[0] ? { change_id: changeIds[0] } : {}),
     wrote,
     facts: { retired: 0, added },
     considered,
     ...(approvals.length > 0 ? { approvals } : {}),
+    ...(folders.length > 0 ? { requires_folder: folders } : {}),
+    ...(held.length > 0 ? { note: held.join('; ') } : {}),
   };
+}
+
+/**
+ * A title for a page being created, from the subject the curator already named.
+ *
+ * `write` derives one from the slug when none is given, and a slug-derived title reads like a
+ * filename ("Tvr Complaint 2026 08"). The subject is a phrase a person wrote.
+ */
+function titleFor(candidate: RetainCandidate): string {
+  const subject = candidate.subject.trim();
+  return subject.charAt(0).toUpperCase() + subject.slice(1);
 }
 
 // ─── Routing ────────────────────────────────────────────────────────────────
 
 /**
- * An internal `recall` finds where a claim belongs. **Best score at or
- * above `route_threshold` wins and the write proceeds; below that it becomes a
- * proposal listing the candidates** rather than a guess.
+ * An internal `recall` finds where a claim belongs. **Best score at or above
+ * `route_threshold` wins and the claim is appended there; below that a page is created** at
+ * the slug the curator suggested.
  *
- * 0.5 is a placeholder and cannot be tuned by intuition, because
- * the failure it guards against is invisible until someone reads it back months
- * later. The mechanism is here; only the number moves.
+ * The second half is new, and it is the difference between a knowledge base that grows and one
+ * that only thickens. Below the threshold used to mean a proposal — a question for the user
+ * about where a claim goes — and a proposal is a page nobody writes. It fell hardest on
+ * exactly the material a knowledge base most needs new pages for: a finding about the world
+ * belongs in `research/` or `wiki/`, those folders are `reference` class, routing refuses
+ * reference pages on principle, and so every finding reached the one outcome that stores
+ * nothing. Creating is the honest answer to "nothing here holds this".
+ *
+ * 0.5 is a placeholder and cannot be tuned by intuition, because the failure it guards against
+ * is invisible until someone reads it back months later. The mechanism is here; only the
+ * number moves.
  */
 /**
  * Routing thresholds **`relevance`, never `score`.**
@@ -213,7 +277,16 @@ async function route(
   // Never route into a `reference` page: it is somebody else's words, and the rule is
   // explicit that only claims become facts. Appending a claim to evidence would make
   // the class boundary meaningless.
-  const candidates = result.cards.filter((card) => card.class === 'full');
+  //
+  // And never into a reserved path. The ledger is the one that bites: it is a plain `full`
+  // page, so nothing above disqualified it, and a ledger that already records events about a
+  // subject is *the best lexical match for that subject* — which is how a claim about an
+  // ongoing complaint came to be appended below the event list of the page recording it, in
+  // prose the event parser cannot see. The destination that scores highest is not always a
+  // destination.
+  const candidates = result.cards.filter(
+    (card) => card.class === 'full' && !isReserved(card.slug, ctx.config),
+  );
 
   // Suggestions are drawn from the same set, not from every card. Offering a `reference` page as
   // somewhere a claim "could go instead" proposes a destination this very function would refuse —

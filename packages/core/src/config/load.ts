@@ -461,6 +461,8 @@ function resolve(
       blockedExtensions: (doc.ingest?.blocked_extensions ?? DEFAULT_BLOCKED).map((extension: string) =>
         extension.replace(/^\./, '').toLowerCase(),
       ),
+      textRendition: doc.ingest?.text_rendition ?? false,
+      textRenditionMinChars: doc.ingest?.text_rendition_min_chars ?? 1000,
     },
     maintenance: {
       // Resolved through the same path as any role, so a typo in the provider name fails the

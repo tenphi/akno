@@ -12,6 +12,8 @@ const WRITE_HELP = `akno write [options]
   --slug <slug>         The page. Omit with --event for a ledger-only event.
   --content <text>      Replace the whole body (or create the page).
   --append <text>       Add to the end of the body.
+  --section <heading>   With --append: add at the end of that section instead. Errors
+                        when the page has no such heading, or more than one.
   --replace <find>      With --with: replace one unique occurrence.
   --with <text>
   --patch <-|file>      A unified diff. Context must match exactly.
@@ -34,6 +36,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
     slug?: string;
     content?: string;
     append?: string;
+    section?: string;
     replace?: string;
     with?: string;
     patch?: string;
@@ -50,6 +53,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
     slug: { type: 'string' },
     content: { type: 'string' },
     append: { type: 'string' },
+    section: { type: 'string' },
     replace: { type: 'string' },
     with: { type: 'string' },
     patch: { type: 'string' },
@@ -97,6 +101,7 @@ export async function writeCommand(argv: string[]): Promise<number> {
       ...(values.slug ? { slug: values.slug } : {}),
       ...(values.content !== undefined ? { content: values.content } : {}),
       ...(values.append !== undefined ? { append: values.append } : {}),
+      ...(values.section ? { section: values.section } : {}),
       ...(patch !== undefined ? { patch } : {}),
       ...(values.replace !== undefined ? { replace: { find: values.replace, with: values.with! } } : {}),
       ...(event ? { event } : {}),
@@ -121,8 +126,14 @@ export async function writeCommand(argv: string[]): Promise<number> {
 }
 
 /**
- * `conflict` and `requires_approval` are not failures — they are the layer doing
- * its job, and they must reach the caller as distinguishable results. Exit code 2 marks "needs a human", separate from 1.
+ * `conflict`, `requires_approval` and `requires_folder` are not failures — they are the layer
+ * doing its job, and they must reach the caller as distinguishable results. Exit code 2 marks
+ * "needs a decision", separate from 1.
+ *
+ * The three are not the same kind of thing, and the output says which. A conflict and an
+ * approval want a person; `requires_folder` wants a sentence from whoever is writing, and
+ * printing it under a heading that says "approval" is how a caller learns to wait for
+ * somebody who is never coming.
  */
 export function printWriteOutcome(result: {
   outcome: string;
@@ -133,6 +144,7 @@ export function printWriteOutcome(result: {
   documents?: { id: string; rel_path: string; text_from?: string }[];
   conflict?: { slug: string; line: number; existing: string; incoming: string; token: string };
   approval?: { proposal_id: string; reason: string; nearest: string[] };
+  requires_folder?: { folder: string; nearest: string[] };
   note?: string;
 }): number {
   if (result.outcome === 'conflict' && result.conflict) {
@@ -160,6 +172,17 @@ export function printWriteOutcome(result: {
     line(
       `\n  ${style.bold(`akno approve ${result.approval.proposal_id}`)}  ${style.grey('or')}  ${style.bold(`akno decline ${result.approval.proposal_id}`)}`,
     );
+    return 2;
+  }
+
+  if (result.outcome === 'requires_folder' && result.requires_folder) {
+    const required = result.requires_folder;
+    heading(style.yellow(`'${required.folder}' is not declared — nothing was written`));
+    if (required.nearest.length > 0) {
+      line(`  ${style.grey('could go instead')}  ${required.nearest.join(', ')}`);
+    }
+    line(`\n  ${style.grey('say what belongs there, then repeat the write:')}`);
+    line(`  ${style.bold(`akno folder ${required.folder} --description "…"`)}`);
     return 2;
   }
 

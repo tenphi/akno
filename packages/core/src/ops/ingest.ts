@@ -8,6 +8,7 @@ import { cleanupFetch, fetchDocument } from '../ingest/fetch.ts';
 import { nameDocument, nameIsUseless, type NamedDocument } from '../ingest/name.ts';
 import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { hashFile } from '../kb/scan.ts';
+import { physicalFolders } from '../kb/folders.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
@@ -251,17 +252,19 @@ export async function ingestFile(
     };
   }
 
-  // A new folder is gated exactly as a `write` into it would be.
-  const gated = ctx.gate.check(pageSlug, ctx.actor, { path: file.source, folder });
+  // A new folder is checked exactly as a `write` into it would be.
+  const gated = ctx.gate.check(pageSlug, ctx.actor);
   if (!gated.allowed) {
     return {
       status: 'ok',
-      outcome: 'requires_approval',
+      outcome: 'requires_folder',
       summary: named.summary,
       ocr: extraction.ocr,
       text_from: extraction.via,
-      approval: gated.approval,
-      note: 'the destination folder does not exist yet — the file stays where it is',
+      requires_folder: gated.requiresFolder,
+      note:
+        `'${gated.requiresFolder.folder}' has not been declared — the file stays where it is. ` +
+        'Call `folder` with a description of what belongs there, then ingest it again.',
     };
   }
 
@@ -504,6 +507,17 @@ function existingFolders(ctx: AknoContext): string[] {
   }[];
   const folders = new Set<string>();
   for (const row of rows) folders.add(row.slug.slice(0, row.slug.lastIndexOf('/')));
+  for (const folder of physicalFolders(ctx.config)) folders.add(folder);
+  for (const rule of ctx.config.rules) {
+    const folder = rule.glob.replace(/\/\*+$/, '');
+    if (
+      folder &&
+      !folder.includes('*') &&
+      effectiveRule(`${folder}/x`, ctx.config.rules).class !== 'excluded'
+    ) {
+      folders.add(folder);
+    }
+  }
   return [...folders].sort();
 }
 

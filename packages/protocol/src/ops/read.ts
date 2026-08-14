@@ -1,11 +1,15 @@
 import { z } from 'zod';
 import { DocumentRef, Line, PageClass, ResultEnvelope, SupersededClaim } from '../common.ts';
 
-/** One exact thing: a page by slug or id, or a document by id. */
+/** One exact thing: a page by slug or id, or a document by id, path or filename. */
 export const ReadInput = z
   .object({
     slug: z.string().optional(),
     id: z.string().optional(),
+    /**
+     * A document id, its path in the knowledge base, or its bare filename — the three handles a
+     * page read hands you, all of which now work. A filename resolves only when it is unique.
+     */
     document: z.string().optional(),
     /** Lines to return around a matched region. Whole body when absent. */
     from_line: z.number().int().positive().optional(),

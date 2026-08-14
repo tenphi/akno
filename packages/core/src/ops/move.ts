@@ -38,15 +38,17 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
     throw new AknoError('invalid', `${to} already exists — move it or pick another slug`);
   }
 
-  // The destination folder is gated exactly like a new page's would be: moving a
+  // The destination folder is checked exactly as a new page's would be: moving a
   // page into `medical/` creates `medical/` just as surely as writing one there.
-  const decision = ctx.gate.check(to, ctx.actor, input);
+  const decision = ctx.gate.check(to, ctx.actor);
   if (!decision.allowed) {
     return {
       status: 'ok',
-      outcome: 'requires_approval',
-      approval: decision.approval,
-      note: 'the destination folder does not exist yet',
+      outcome: 'requires_folder',
+      requires_folder: decision.requiresFolder,
+      note:
+        `'${decision.requiresFolder.folder}' has not been declared. Call \`folder\` with a ` +
+        'description of what belongs there, then repeat the move.',
     };
   }
 
@@ -59,20 +61,36 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   // renames them too. Doing these before the page means a crash leaves the page
   // still pointing at files that exist.
   const documents = ctx.store.db
-    .prepare('SELECT id, rel_path FROM documents WHERE page_id = ?')
-    .all(page.id) as { id: string; rel_path: string }[];
+    .prepare('SELECT id, rel_path, renders FROM documents WHERE page_id = ?')
+    .all(page.id) as { id: string; rel_path: string; renders: string | null }[];
+
+  const destinations = new Map<string, string>();
+  for (const document of documents)
+    destinations.set(document.rel_path, movedAttachmentPath(document.rel_path, from, to));
+  // A rendition is named after the file it renders, so it goes wherever that file goes.
+  // Deriving it from the page name instead would mean teaching the content-addressing rule
+  // about double extensions and then keeping two derivations agreeing with each other.
+  for (const document of documents) {
+    if (!document.renders) continue;
+    destinations.set(
+      document.rel_path,
+      movedRenditionPath(document.rel_path, document.renders, destinations),
+    );
+  }
 
   const rewrites: [string, string][] = [];
   for (const document of documents) {
-    const next = movedAttachmentPath(document.rel_path, from, to);
+    const next = destinations.get(document.rel_path)!;
     if (next === document.rel_path) continue;
     await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, next)), { recursive: true });
     await fsp.rename(
       path.join(ctx.config.aknoPath, document.rel_path),
       path.join(ctx.config.aknoPath, next),
     );
-    files.push({ relPath: document.rel_path, action: 'moved', before: null, after: null });
-    files.push({ relPath: next, action: 'created', before: null, after: null });
+    // One entry naming the destination, not a `moved`/`created` pair. Reversing that pair
+    // deleted the new file and then tried to restore a path holding nothing — an attachment
+    // has no text in `before` to put back — so undoing a move used to eat the binary.
+    files.push({ relPath: document.rel_path, action: 'moved', before: null, after: null, movedTo: next });
     moved.push(next);
     rewrites.push([path.basename(document.rel_path), path.basename(next)]);
   }
@@ -113,8 +131,13 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
     ctx.store.db.prepare('UPDATE pages SET slug = ?, rel_path = ? WHERE id = ?').run(to, toRelPath, page.id);
     ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(page.rel_path);
     for (const document of documents) {
-      const next = movedAttachmentPath(document.rel_path, from, to);
-      ctx.store.db.prepare('UPDATE documents SET rel_path = ? WHERE id = ?').run(next, document.id);
+      const next = destinations.get(document.rel_path)!;
+      // `renders` is a path, so it follows the file it points at — a rendition still naming
+      // the old folder is a rendition of nothing.
+      const renders = document.renders ? (destinations.get(document.renders) ?? null) : null;
+      ctx.store.db
+        .prepare('UPDATE documents SET rel_path = ?, renders = ? WHERE id = ?')
+        .run(next, renders, document.id);
       ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(document.rel_path);
     }
     recordOwnWrite(ctx.store, ctx.config.aknoPath, toRelPath, content, page.id);
@@ -160,4 +183,19 @@ function movedAttachmentPath(relPath: string, from: string, to: string): string 
         : base;
 
   return toDir ? `${toDir}/${nextBase}` : nextBase;
+}
+
+/**
+ * Where the text beside a document goes when that document moves.
+ *
+ * Both spellings follow the same principle — the rendition is named after what it renders,
+ * not after the page — so both are answered from the source's destination rather than from
+ * a second reading of the page name.
+ */
+function movedRenditionPath(relPath: string, renders: string, destinations: Map<string, string>): string {
+  const source = destinations.get(renders);
+  if (!source) return relPath;
+  // `contract.pdf.txt` keeps its suffix; `contract.txt` swaps the source's extension for it.
+  if (relPath === `${renders}.txt`) return `${source}.txt`;
+  return `${source.slice(0, -path.posix.extname(source).length)}.txt`;
 }

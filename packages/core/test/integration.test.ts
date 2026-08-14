@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -193,6 +194,36 @@ describe('index', () => {
   it('links a plain attachment to the page beside it', async () => {
     const page = await mem.read({ slug: 'documents/passport-ada' });
     expect(page.page?.documents?.[0]?.rel_path).toBe('documents/passport-ada.pdf');
+  });
+
+  it('reads a `.txt` beside a document as that document, not as a second one', async () => {
+    // Whoever wrote it — Akno or a person with `pdftotext` — a file named after another
+    // file is a rendering of it. Indexing it as a document of its own is what would return
+    // every phrase in the passport twice.
+    fs.writeFileSync(
+      path.join(root, 'documents/passport-ada.pdf.txt'),
+      'Passport of Ada Marlow, expires 2033.\n',
+      'utf8',
+    );
+    await mem.index({});
+
+    const health = await mem.doctor({ probeModels: false });
+    expect(health.counts.renditions).toBe(1);
+    expect(health.counts.documents).toBe(1);
+
+    const page = await mem.read({ slug: 'documents/passport-ada' });
+    expect(page.page?.documents?.map((entry) => entry.rel_path).sort()).toEqual([
+      'documents/passport-ada.pdf',
+      'documents/passport-ada.pdf.txt',
+    ]);
+    // And reading it gets the document it renders.
+    const rendition = page.page!.documents!.find((entry) => entry.rel_path.endsWith('.txt'))!;
+    expect((await mem.read({ document: rendition.id })).document?.rel_path).toBe(
+      'documents/passport-ada.pdf',
+    );
+
+    fs.rmSync(path.join(root, 'documents/passport-ada.pdf.txt'));
+    await mem.index({});
   });
 
   it('reports a link that points nowhere', async () => {
@@ -409,6 +440,42 @@ describe('reconciling a hand edit', () => {
     expect(card!.lines.some((line) => line.text.includes('1111'))).toBe(false);
   });
 
+  it('re-reads a page file the index lost the page for', async () => {
+    // The state a reorganization can leave: the `pages` row gone, the `files` row intact and
+    // pointing at it. The stat fast path then calls the file unchanged forever, so the note
+    // is on disk and unreachable — the folder and the index disagreeing, which is the one
+    // thing the index may not do.
+    const before = await mem.read({ slug: 'home/lease' });
+    const { default: Database } = await import('better-sqlite3');
+    const db = new Database(path.join(stateDir, 'akno.db'));
+    db.prepare('DELETE FROM pages WHERE slug = ?').run('home/lease');
+    db.close();
+
+    const report = await mem.index({});
+    expect(report.warnings.some((warning) => /nothing indexed for them/.test(warning))).toBe(true);
+    expect((await mem.read({ slug: 'home/lease' })).page?.rel_path).toBe(before.page?.rel_path);
+  });
+
+  it('keeps a page’s identity when a scoped pass sees the move', async () => {
+    // What the watcher runs. A folder renamed in Obsidian arrives as departures and arrivals
+    // in one scoped pass, and refusing to look at the departures split the pair: the arrival
+    // became a new page, and the original could only be deleted — losing every fact, link and
+    // journal entry hanging off its id.
+    const before = await mem.read({ slug: 'home/lease' });
+    const body = fs.readFileSync(path.join(root, 'home/lease.md'));
+    fs.mkdirSync(path.join(root, 'archive'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'archive/lease.md'), body);
+    fs.rmSync(path.join(root, 'home/lease.md'));
+
+    const report = await mem.index({ only: ['home/lease.md', 'archive/lease.md'] });
+    expect(report.pagesRenamed).toBe(1);
+    expect(report.pagesRemoved).toBe(0);
+
+    const after = await mem.read({ slug: 'archive/lease' });
+    expect(after.page?.id).toBe(before.page?.id);
+    await expect(mem.read({ slug: 'home/lease' })).rejects.toThrow(/no page/);
+  });
+
   it('removes a deleted page from the index', async () => {
     fs.rmSync(path.join(root, 'broken.md'));
     const report = await mem.index({});
@@ -417,15 +484,33 @@ describe('reconciling a hand edit', () => {
   });
 
   it('leaves the knowledge base byte-identical when write_ids is off', async () => {
-    // The whole point of sidecar identity: Akno added no frontmatter anywhere.
-    for (const relPath of Object.keys(KB)) {
-      if (!relPath.endsWith('.md')) continue;
-      if (!fs.existsSync(path.join(root, relPath))) continue;
-      const content = fs.readFileSync(path.join(root, relPath), 'utf8');
-      expect(content).not.toMatch(/^id:/m);
-    }
+    // Every file, hashed, before and after — not just the ones this test wrote, and not just
+    // their frontmatter. The claim four documents make is that an index pass changes nothing
+    // in the folder, and a check that only looks for an injected `id:` in known Markdown
+    // cannot see a file appearing, a file vanishing, or a body being rewritten.
+    const before = snapshot(root);
+    await mem.index({});
+    expect(snapshot(root)).toEqual(before);
   });
 });
+
+/** Every file under `dir`, relative path to content hash. */
+function snapshot(dir: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const walk = (absDir: string, relDir: string): void => {
+    for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
+      const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) walk(path.join(absDir, entry.name), rel);
+      else if (entry.isFile()) {
+        out[rel] = createHash('sha256')
+          .update(fs.readFileSync(path.join(absDir, entry.name)))
+          .digest('hex');
+      }
+    }
+  };
+  walk(dir, '');
+  return out;
+}
 
 describe('rebuilding the index', () => {
   it('reproduces everything from the Markdown alone', async () => {

@@ -85,6 +85,7 @@ export async function indexCommand(argv: string[]): Promise<number> {
       ['documents linked', report.documentsLinked],
       ['documents read', report.documentsExtracted > 0 ? report.documentsExtracted : '-'],
       ['documents summarized', report.documentsSummarized > 0 ? report.documentsSummarized : '-'],
+      ['text renditions', report.renditionsWritten > 0 ? report.renditionsWritten : '-'],
       ['files hashed', report.hashed],
     ]);
 

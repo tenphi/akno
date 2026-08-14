@@ -21,6 +21,7 @@ import { list } from './ops/list.ts';
 import { timeline } from './ops/timeline.ts';
 import { context as contextOp } from './ops/context.ts';
 import { write as writeOp } from './ops/write.ts';
+import { folder as folderOp } from './ops/folder.ts';
 import { remember as rememberOp } from './ops/remember.ts';
 import { forget as forgetOp } from './ops/forget.ts';
 import { undo as undoOp } from './ops/undo.ts';
@@ -86,7 +87,7 @@ export interface Akno extends AknoOps {
   approve(
     proposalId: string,
     options?: { slug?: string },
-  ): Promise<{ subject: string; write?: OpResult<'write'> }>;
+  ): Promise<{ subject: string; write?: OpResult<'write'>; ingest?: OpResult<'ingest'> }>;
   /** A declined proposal is remembered, so the agent stops re-asking. */
   decline(proposalId: string): Promise<{ subject: string }>;
   /**
@@ -232,6 +233,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     timeline,
     context: contextOp,
     write: writeOp,
+    folder: folderOp,
     remember: rememberOp,
     forget: forgetOp,
     undo: undoOp,
@@ -293,6 +295,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     timeline: (input) => call('timeline', input),
     context: (input) => call('context', input),
     write: (input) => call('write', input),
+    folder: (input) => call('folder', input),
     remember: (input) => call('remember', input),
     forget: (input) => call('forget', input),
     undo: (input) => call('undo', input),
@@ -328,7 +331,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     async approve(
       proposalId: string,
       answer: { slug?: string } = {},
-    ): Promise<{ subject: string; write?: OpResult<'write'> }> {
+    ): Promise<{ subject: string; write?: OpResult<'write'>; ingest?: OpResult<'ingest'> }> {
       const proposal = ctx.gate.get(proposalId);
       if (!proposal) throw new AknoError('not_found', `no proposal with id ${proposalId}`);
       if (proposal.status !== 'pending') {
@@ -337,6 +340,29 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
       // Replayed as the *user*, which is what makes approval work: the gate that
       // stopped the agent does not apply to the person answering it.
+      const asUser: AknoContext = { ...ctx, actor: 'user' };
+
+      // An ingest proposal holds the source, not a page write. Treat the answer as its folder and
+      // run ingest again with that explicit destination. Replaying every proposal through `write`
+      // stripped the source path and made file-placement proposals impossible to resolve.
+      if (proposal.kind === 'ingest') {
+        const folder = answer.slug?.trim();
+        if (!folder) {
+          const nearest = JSON.parse(proposal.nearest) as string[];
+          const candidates = nearest.length > 0 ? ` Nearest: ${nearest.join(', ')}.` : '';
+          throw new AknoError(
+            'invalid',
+            `${proposalId} has no destination — approve it with a folder.${candidates}`,
+          );
+        }
+        const held = JSON.parse(proposal.payload) as OpInput<'ingest'>;
+        const result = await ingestOp(asUser, { ...held, folder });
+        if (result.outcome === 'ok' || result.outcome === 'duplicate') {
+          ctx.gate.resolve(proposalId, 'approved', result.change_id);
+        }
+        return { subject: proposal.subject, ingest: result };
+      }
+
       const held = JSON.parse(proposal.payload) as OpInput<'write'>;
       const payload: OpInput<'write'> = answer.slug ? { ...held, slug: answer.slug } : held;
 
@@ -353,8 +379,10 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
         );
       }
 
-      const asUser: AknoContext = { ...ctx, actor: 'user' };
-      const result = await writeOp(asUser, payload);
+      const result = await writeOp(
+        asUser,
+        proposal.kind === 'conflict' ? { ...payload, resolve_conflict: true } : payload,
+      );
       ctx.gate.resolve(proposalId, 'approved', result.change_id);
       return { subject: proposal.subject, write: result };
     },

@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# akno — local CLI launcher.
+#
+# Resolve the checkout through this script's symlink and run the built CLI with
+# the Node major pinned by .nvmrc. This matters for native dependencies: a newer
+# `node` earlier on PATH may use a different module ABI from the one pnpm built.
+
+set -euo pipefail
+
+SCRIPT="${BASH_SOURCE[0]}"
+while [ -h "$SCRIPT" ]; do
+  DIR="$(cd -P "$(dirname "$SCRIPT")" && pwd)"
+  SCRIPT="$(readlink "$SCRIPT")"
+  [[ "$SCRIPT" != /* ]] && SCRIPT="$DIR/$SCRIPT"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+REQUESTED_NODE="$(tr -d '[:space:]' < "$PROJECT_ROOT/.nvmrc")"
+NODE_BIN=""
+
+if command -v node >/dev/null 2>&1; then
+  CURRENT_NODE="$(node -p 'process.versions.node')"
+  if [[ "$CURRENT_NODE" == "$REQUESTED_NODE" || "$CURRENT_NODE" == "$REQUESTED_NODE".* ]]; then
+    NODE_BIN="$(command -v node)"
+  fi
+fi
+
+NVM_ROOT="${NVM_DIR:-$HOME/.nvm}"
+if [[ -z "$NODE_BIN" && -d "$NVM_ROOT/versions/node" ]]; then
+  for CANDIDATE in "$NVM_ROOT"/versions/node/v"$REQUESTED_NODE"*/bin/node; do
+    if [[ -x "$CANDIDATE" ]]; then
+      NODE_BIN="$CANDIDATE"
+      break
+    fi
+  done
+fi
+
+if [[ -z "$NODE_BIN" ]]; then
+  printf 'akno requires Node %s (see %s/.nvmrc).\n' "$REQUESTED_NODE" "$PROJECT_ROOT" >&2
+  exit 1
+fi
+
+CLI="$PROJECT_ROOT/packages/cli/dist/bin.js"
+if [[ ! -f "$CLI" ]]; then
+  printf 'akno is not built; run `pnpm build` in %s.\n' "$PROJECT_ROOT" >&2
+  exit 1
+fi
+
+exec "$NODE_BIN" "$CLI" "$@"

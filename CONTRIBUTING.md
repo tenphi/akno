@@ -15,6 +15,12 @@ pnpm test
 `pnpm test` needs no models and no knowledge base of your own — the integration suite builds one in a temp
 directory. If it passes, your checkout is working.
 
+Once a service is installed, `pnpm akno redeploy` is the one command that applies a change: it builds, then
+restarts `dev.akno`, then waits for the socket to come back. Both halves are needed and for different
+reasons — launchd runs the TypeScript directly, so the *service* needs the restart and not the build, while a
+host importing `@akno/client` reads `packages/*/dist`, so it needs the build and not the restart. Doing one
+and not the other leaves half the system on the old code, and the symptom is `unknown op`.
+
 Node 22.18+ (native type stripping) and pnpm 10+. `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320` (three
 days), so a brand-new release of a dependency will not resolve; that is deliberate.
 
@@ -59,6 +65,9 @@ One place, then everything else follows:
    `implemented: false` until the body exists.
 3. Implement it in `packages/core/src/ops/` and wire it into the `implementations` map in `open.ts`.
 4. Add a CLI command if a human would use it.
+5. `pnpm akno redeploy`. The op registry a *host* sees is the built one, so a new op is invisible to Luna
+   until the build has run — and it fails as `unknown op`, which looks like a wiring mistake in the host
+   rather than a stale artifact.
 
 The socket, HTTP and MCP doors are generated from the registry, so they need no change. That is the point: an
 op cannot exist over one door and be missing from another.
@@ -79,9 +88,11 @@ Changes here need more care than the line count suggests.
   fusion scores on a different scale.
 - **Never mix score scales in one array.** bm25, cosine, reciprocal rank and cross-encoder logits are four
   different units. Fuse by rank; normalize before comparing.
-- **The knowledge base is the user's.** With `write_ids: false` (the default) Akno must leave every file
-  byte-identical. The integration suite asserts this. Frontmatter keys other than `id` are preserved byte for
-  byte, which is why frontmatter writes splice text rather than round-tripping through a YAML serializer.
+- **The knowledge base is the user's.** With the defaults, an index pass must leave the *set* of files and every
+  file's bytes unchanged. The integration suite asserts this by hashing the whole tree either side of a pass —
+  which catches a file appearing as well as a file being edited. Frontmatter keys other than `id` are preserved
+  byte for byte, which is why frontmatter writes splice text rather than round-tripping through a YAML
+  serializer. A setting may add a file (`write_ids`, `ingest.text_rendition`); it must ship off.
 - **Deleting the index must cost nothing.** Everything except the journal is derived and rebuildable. If you
   add a table, either it is derivable from Markdown or it needs the same durability argument the journal has.
 - **Never pre-record a hash in `files` before the indexer runs.** The stat fast path compares against `files`,
