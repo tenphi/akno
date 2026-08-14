@@ -4,7 +4,7 @@ import type { AknoContext } from '../context.ts';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
 import { AKNO_ITEM } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
-import { preservesValues } from './repair.ts';
+import { missingNumericValues } from './repair.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { sha256 } from '../store/ids.ts';
@@ -407,8 +407,15 @@ function guardRewrite(input: {
   if (beforeItems.size !== afterItems.size || [...beforeItems].some((id) => !afterItems.has(id))) {
     issues.push('stable item markers were lost, duplicated or changed');
   }
-  if (!preservesValues(input.before, combined))
-    issues.push('a numeric/date/value token changed or disappeared');
+  const missingValues = missingNumericValues(input.before, combined);
+  if (missingValues.length > 0) {
+    const shown = missingValues.slice(0, 12).map((value) => JSON.stringify(value));
+    const remainder = missingValues.length - shown.length;
+    issues.push(
+      `numeric/date/value tokens missing from rewrite: ${shown.join(', ')}` +
+        (remainder > 0 ? ` (+${remainder} more)` : ''),
+    );
+  }
   if (input.mode === 'hygiene') {
     const beforeH1 = firstH1(input.before);
     const afterH1 = firstH1(input.after);

@@ -68,11 +68,14 @@ export async function logDreamRun(
     // depending on whether the strong model was reachable at all.
     model: ctx.config.maintenance.model?.id ?? ctx.config.models.derive.id,
     phases: report.phases,
-    changeIds: [report.changeId, report.adoptChangeId].filter((id): id is string => id !== null),
+    changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId].filter(
+      (id): id is string => id !== null,
+    ),
     // What was written, with the added lines inline.
     applied: changes,
     // What was proposed and refused, which is where the reasoning shows.
     observations: report.observations,
+    curated: report.curated,
     rejected: report.rejected,
     adopted: report.adopted,
     conflicts: report.conflicts,

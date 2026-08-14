@@ -58,6 +58,10 @@ describe('curate', () => {
     expect(server.calls()).toBe(2);
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
     expect(report.curateChangeId).toBeNull();
+    const logged = JSON.parse(fs.readFileSync(report.logPath!, 'utf8').trim()) as {
+      curated: { slug: string; action: string }[];
+    };
+    expect(logged.curated).toMatchObject([{ slug: 'people/ada-marlow', action: 'would-update' }]);
 
     const unchangedInputs = await mem.dream({ phase: 'curate' });
     expect(unchangedInputs.curated).toEqual([]);
@@ -165,7 +169,7 @@ async function openMem(write: boolean): Promise<Akno> {
         expansion: { id: null },
         derive: { provider: 'stub', id: 'stub' },
       },
-      maintenance: { curate: { enabled: true, write, verify: true } },
+      maintenance: { log_changes: true, curate: { enabled: true, write, verify: true } },
     },
   });
 }

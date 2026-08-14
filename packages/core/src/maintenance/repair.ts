@@ -176,8 +176,13 @@ async function rewriteAsHistory(ctx: AknoContext, stale: string, current: string
  * number in the original must survive into the rewrite.
  */
 export function preservesValues(before: string, after: string): boolean {
+  return missingNumericValues(before, after).length === 0;
+}
+
+/** The exact tokens behind `preservesValues`, for guardrail diagnostics and audit logs. */
+export function missingNumericValues(before: string, after: string): string[] {
   const numbers = before.match(/\d[\d.,]*/g) ?? [];
-  return numbers.every((value) => after.includes(value));
+  return [...new Set(numbers.filter((value) => !after.includes(value)))];
 }
 
 /** Conflicts worth acting on: judged real, with a claim the model named as current. */

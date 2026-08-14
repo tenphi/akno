@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { actionable, candidatesFor, preservesValues } from './repair.ts';
+import { actionable, candidatesFor, missingNumericValues, preservesValues } from './repair.ts';
 import type { CrossPageConflict } from './conflicts.ts';
 
 /**
@@ -75,6 +75,10 @@ describe('rewriting a claim that was replaced', () => {
     expect(preservesValues('Policy 88-4120 renews 4 Nov 2026.', 'Policy 88-4120 renewed in 2025.')).toBe(
       false,
     );
+  });
+
+  it('reports the exact missing tokens for a guardrail log', () => {
+    expect(missingNumericValues('Built in 1640; restored in 2025.', 'Built in 1640.')).toEqual(['2025.']);
   });
 });
 
