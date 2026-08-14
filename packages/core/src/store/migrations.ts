@@ -355,6 +355,18 @@ export const MIGRATIONS: string[] = [
   ALTER TABLE facts ADD COLUMN item_id TEXT;
   CREATE INDEX facts_item ON facts(item_id);
   `,
+
+  // ── 8. Content-addressed curation freshness ────────────────────────────
+  //
+  // A page opting into hygiene or synthesis is permission, not a nightly work order. Keep the
+  // last complete input fingerprint in the disposable index so unchanged pages and evidence
+  // graphs do not spend model calls again. `preview` is distinct because enabling writes must
+  // reconsider a previously accepted preview once.
+  `
+  ALTER TABLE pages ADD COLUMN curate_input_hash TEXT;
+  ALTER TABLE pages ADD COLUMN curate_status TEXT;
+  ALTER TABLE pages ADD COLUMN curated_at TEXT;
+  `,
 ];
 
 /**

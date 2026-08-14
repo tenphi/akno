@@ -200,6 +200,9 @@ async function runPhase(
       }
       const result = await curatePages(ctx, {
         dryRun: (options.dryRun ?? false) || !ctx.config.maintenance.curate.write,
+        // An explicit dry run is observational. A scheduled preview, however, records that its
+        // exact inputs were considered so the same page is not sent to the model every night.
+        recordState: !(options.dryRun ?? false),
       });
       report.curated = result.pages;
       report.curateChangeId = result.changeId;

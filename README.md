@@ -242,6 +242,11 @@ make conservative formatting and local-language repairs, while synthesis may rew
 canonical page, accumulate linked evidence, preserve unresolved conflicts, and split oversized coherent
 sections beneath the canonical slug.
 
+Opt-in is permission, not a nightly work order. Hygiene runs again only after the page or its policy changes.
+Synthesis also watches its linked evidence and unresolved conflicts. Accepted previews, unchanged drafts and
+rejected rewrites are fingerprinted in the disposable index; they are reconsidered only when those inputs
+change. Turning the curate write switch on re-runs an accepted preview once so it can actually be applied.
+
 ```yaml
 akno:
   role: knowledge

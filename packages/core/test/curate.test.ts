@@ -58,6 +58,10 @@ describe('curate', () => {
     expect(server.calls()).toBe(2);
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
     expect(report.curateChangeId).toBeNull();
+
+    const unchangedInputs = await mem.dream({ phase: 'curate' });
+    expect(unchangedInputs.curated).toEqual([]);
+    expect(server.calls()).toBe(2);
   });
 
   it('rejects a draft that loses a stable item before asking the verifier', async () => {
@@ -67,6 +71,75 @@ describe('curate', () => {
     expect(report.curated[0]?.action).toBe('rejected');
     expect(report.curated[0]?.issues.join(' ')).toMatch(/stable item markers/);
     expect(server.calls()).toBe(1);
+
+    const unchangedInputs = await mem.dream({ phase: 'curate' });
+    expect(unchangedInputs.curated).toEqual([]);
+    expect(server.calls()).toBe(1);
+  });
+
+  it('reconsiders hygiene only after the page changes', async () => {
+    await mem.dream({ phase: 'curate' });
+    expect(server.calls()).toBe(2);
+
+    fs.appendFileSync(path.join(root, 'people/ada-marlow.md'), '\nA short personal note.\n');
+    await mem.index({ structuralOnly: true });
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.curated).toHaveLength(1);
+    expect(report.curated[0]?.slug).toBe('people/ada-marlow');
+    expect(server.calls()).toBe(4);
+  });
+
+  it('reconsiders synthesis when linked evidence changes', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    const evidence = path.join(root, 'evidence/ada-interview.md');
+    fs.writeFileSync(
+      evidence,
+      `---
+title: Ada interview
+akno:
+  role: source
+  about:
+    - people/ada-marlow
+---
+
+Ada described her work. [[people/ada-marlow]]
+`,
+    );
+    await mem.index({ structuralOnly: true });
+
+    await mem.dream({ phase: 'curate' });
+    expect(server.calls()).toBe(2);
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+
+    fs.appendFileSync(evidence, '\nShe later added another detail.\n');
+    await mem.index({ structuralOnly: true });
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.curated).toHaveLength(1);
+    expect(report.curated[0]?.mode).toBe('synthesize');
+    expect(server.calls()).toBe(4);
+  });
+
+  it('reconsiders an accepted preview once when writes are enabled', async () => {
+    await mem.dream({ phase: 'curate' });
+    expect(server.calls()).toBe(2);
+    await mem.close();
+    mem = await openMem(true);
+
+    const applied = await mem.dream({ phase: 'curate' });
+    expect(applied.curated[0]?.action).toBe('updated');
+    expect(applied.curateChangeId).not.toBeNull();
+    const callsAfterApply = server.calls();
+
+    const current = await mem.dream({ phase: 'curate' });
+    expect(current.curated).toEqual([]);
+    expect(server.calls()).toBe(callsAfterApply);
   });
 });
 

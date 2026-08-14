@@ -289,7 +289,9 @@
       "mission": null
     },
     // Page-owned curation. Only knowledge pages with an explicit frontmatter
-    // `akno.management.dream` of `hygiene` or `synthesize` are candidates.
+    // `akno.management.dream` of `hygiene` or `synthesize` are candidates. Input
+    // fingerprints skip unchanged pages; synthesis also fingerprints linked evidence
+    // and conflicts, and an accepted preview reruns once when writes are enabled.
     // The draft is checked by a second model pass and deterministic guards.
     // Enabling the phase still previews: `write` is a separate trust switch.
     "curate": {

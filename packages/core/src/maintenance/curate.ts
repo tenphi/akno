@@ -7,6 +7,7 @@ import { parseJsonLoose } from '../models/client.ts';
 import { preservesValues } from './repair.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
+import { sha256 } from '../store/ids.ts';
 
 export interface CuratedPage {
   slug: string;
@@ -31,6 +32,43 @@ interface PageRow {
   role: string;
   dream_management: 'hygiene' | 'synthesize';
   about: string;
+  body_hash: string;
+  curate_input_hash: string | null;
+  curate_status: CurateStatus | null;
+}
+
+type CurateStatus = 'preview' | 'unchanged' | 'rejected' | 'applied';
+
+interface EvidencePage {
+  id: string;
+  slug: string;
+  summary: string | null;
+  about: string;
+  role: string;
+  body_hash: string;
+  facts: EvidenceFact[];
+}
+
+interface EvidenceFact {
+  claim: string;
+  subject: string | null;
+  attribute: string | null;
+  value: string | null;
+  item_id: string | null;
+}
+
+interface ConflictEvidence {
+  subject: string;
+  attribute: string;
+  claim: string;
+  value: string;
+  slug: string;
+}
+
+interface CurateState {
+  pageId: string;
+  inputHash: string;
+  status: CurateStatus;
 }
 
 interface Draft {
@@ -71,26 +109,44 @@ more than minor structural changes. Reject a synthesis rewrite if it invents fac
 knowledge, hides a conflict, misattributes evidence, or creates an incoherent split. Stable item
 markers are metadata, not prose, and must remain attached to their knowledge.`;
 
-export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }): Promise<CurateResult> {
+// Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
+const CURATE_FINGERPRINT_VERSION = 1;
+
+export async function curatePages(
+  ctx: AknoContext,
+  options: { dryRun: boolean; recordState: boolean },
+): Promise<CurateResult> {
   const settings = ctx.config.maintenance.curate;
   const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [] };
   const rows = ctx.store.db
     .prepare(
-      `SELECT id, slug, rel_path, title, role, dream_management, about FROM pages
+      `SELECT id, slug, rel_path, title, role, dream_management, about, body_hash,
+              curate_input_hash, curate_status
+         FROM pages
         WHERE dream_management IN ('hygiene', 'synthesize') AND role = 'knowledge'
-        ORDER BY updated_at DESC LIMIT ?`,
+        ORDER BY updated_at DESC, slug`,
     )
-    .all(settings.maxPages) as PageRow[];
+    .all() as PageRow[];
 
   let splitBudget = settings.maxSplits;
+  let attempted = 0;
+  const state = new Map<string, CurateState>();
   const staged: {
     row: PageRow;
     before: string;
     after: string;
     children: { relPath: string; content: string; slug: string }[];
+    inputHash: string;
   }[] = [];
 
   for (const row of rows) {
+    const evidence = row.dream_management === 'synthesize' ? evidenceFor(ctx, row) : [];
+    const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
+    const inputHash = curateInputHash(row, evidence, conflicts);
+    if (!curationDue(row, inputHash, options.dryRun)) continue;
+    if (attempted >= settings.maxPages) break;
+    attempted++;
+
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
@@ -100,8 +156,6 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
     }
     const fm = parseFrontmatter(before);
     const body = before.slice(fm.bodyOffset);
-    const evidence = row.dream_management === 'synthesize' ? evidenceFor(ctx, row) : [];
-    const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
     const prompt = row.dream_management === 'hygiene' ? HYGIENE_SYSTEM : SYNTHESIZE_SYSTEM;
     const draftResult = await ctx.models.derive.chat(
       [
@@ -110,8 +164,10 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
           role: 'user',
           content:
             `Slug: ${row.slug}\nTitle: ${row.title}\n\nCurrent body:\n${body.slice(0, 40_000)}` +
-            (evidence.length ? `\n\nEvidence graph:\n${evidence.join('\n\n').slice(0, 40_000)}` : '') +
-            (conflicts.length ? `\n\nUnresolved conflicts:\n${conflicts.join('\n')}` : ''),
+            (evidence.length
+              ? `\n\nEvidence graph:\n${renderEvidence(evidence).join('\n\n').slice(0, 40_000)}`
+              : '') +
+            (conflicts.length ? `\n\nUnresolved conflicts:\n${renderConflicts(conflicts).join('\n')}` : ''),
         },
       ],
       { json: true, maxTokens: 8_000 },
@@ -127,6 +183,9 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
         splits: [],
         issues: [issue],
       });
+      // Provider/transport failures are retryable. A successful model call that returned an
+      // unusable draft is a completed rejection and should not burn another call next night.
+      if (draftResult.ok) queueCurateState(state, row.id, inputHash, 'rejected');
       continue;
     }
 
@@ -154,6 +213,7 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
         splits: [],
         issues: deterministic,
       });
+      queueCurateState(state, row.id, inputHash, 'rejected');
       continue;
     }
 
@@ -166,6 +226,7 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
         splits: [],
         issues: verified.issues,
       });
+      if (verified.cacheable) queueCurateState(state, row.id, inputHash, 'rejected');
       continue;
     }
 
@@ -186,9 +247,10 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
         splits: [],
         issues: [],
       });
+      queueCurateState(state, row.id, inputHash, 'unchanged');
       continue;
     }
-    staged.push({ row, before, after, children });
+    staged.push({ row, before, after, children, inputHash });
     splitBudget -= children.length;
     result.pages.push({
       slug: row.slug,
@@ -199,7 +261,17 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
     });
   }
 
-  if (options.dryRun || staged.length === 0) return result;
+  if (options.dryRun) {
+    for (const stage of staged) {
+      queueCurateState(state, stage.row.id, stage.inputHash, 'preview');
+    }
+    if (options.recordState) persistCurateState(ctx, state.values());
+    return result;
+  }
+  if (staged.length === 0) {
+    if (options.recordState) persistCurateState(ctx, state.values());
+    return result;
+  }
 
   for (const stage of staged) {
     const main = await writeFileAtomic(ctx.config.aknoPath, stage.row.rel_path, stage.after);
@@ -218,31 +290,51 @@ export async function curatePages(ctx: AknoContext, options: { dryRun: boolean }
   const paths = result.files.map((file) => file.relPath);
   await ctx.indexer.run({ only: paths, modelPaths: [] });
   ctx.derive.schedule(paths);
+  // The rewrite changes the canonical page's own hash. Record the post-write fingerprint or the
+  // curator would interpret its own work as new input on the next cycle. New split children are
+  // marked too, so creating one does not immediately enqueue it for another synthesis.
+  for (const stage of staged) {
+    for (const slug of [stage.row.slug, ...stage.children.map((child) => child.slug)]) {
+      const refreshed = pageForSlug(ctx, slug);
+      if (!refreshed) continue;
+      const evidence = refreshed.dream_management === 'synthesize' ? evidenceFor(ctx, refreshed) : [];
+      const conflicts = refreshed.dream_management === 'synthesize' ? conflictsFor(ctx, refreshed.id) : [];
+      queueCurateState(state, refreshed.id, curateInputHash(refreshed, evidence, conflicts), 'applied');
+    }
+  }
+  if (options.recordState) persistCurateState(ctx, state.values());
   return result;
 }
 
-function evidenceFor(ctx: AknoContext, page: PageRow): string[] {
+function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
   const rows = ctx.store.db
     .prepare(
-      `SELECT DISTINCT p.slug, p.summary, p.about FROM pages p
+      `SELECT DISTINCT p.id, p.slug, p.summary, p.about, p.role, p.body_hash FROM pages p
         WHERE p.id != ? AND (
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?)
           OR EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id)
           OR p.about LIKE ?
-        ) ORDER BY p.updated_at DESC LIMIT 30`,
+        ) ORDER BY p.slug COLLATE NOCASE LIMIT 30`,
     )
-    .all(page.id, page.id, page.id, `%${JSON.stringify(page.slug).slice(1, -1)}%`) as {
-    slug: string;
-    summary: string | null;
-    about: string;
-  }[];
-  return rows.map((row) => `[[${row.slug}]]${row.summary ? ` — ${row.summary}` : ''}`);
+    .all(page.id, page.id, page.id, `%${JSON.stringify(page.slug).slice(1, -1)}%`) as Omit<
+    EvidencePage,
+    'facts'
+  >[];
+  const facts = ctx.store.db.prepare(
+    `SELECT claim, subject, attribute, value, item_id FROM facts
+      WHERE page_id = ? AND valid_to IS NULL
+      ORDER BY line_start, id LIMIT 50`,
+  );
+  return rows.map((row) => ({
+    ...row,
+    facts: facts.all(row.id) as EvidenceFact[],
+  }));
 }
 
-function conflictsFor(ctx: AknoContext, pageId: string): string[] {
+function conflictsFor(ctx: AknoContext, pageId: string): ConflictEvidence[] {
   const rows = ctx.store.db
     .prepare(
-      `SELECT f.subject, f.attribute, f.claim, p.slug FROM facts f
+      `SELECT f.subject, f.attribute, f.claim, f.value, p.slug FROM facts f
         JOIN pages p ON p.id = f.page_id
         WHERE f.valid_to IS NULL AND f.subject IS NOT NULL AND f.attribute IS NOT NULL
           AND EXISTS (
@@ -253,10 +345,11 @@ function conflictsFor(ctx: AknoContext, pageId: string): string[] {
                AND other.value != f.value
           )
           AND (f.page_id = ? OR p.about LIKE (SELECT '%' || slug || '%' FROM pages WHERE id = ?))
+        ORDER BY p.slug COLLATE NOCASE, f.subject COLLATE NOCASE, f.attribute COLLATE NOCASE, f.claim
         LIMIT 20`,
     )
-    .all(pageId, pageId) as { subject: string; attribute: string; claim: string; slug: string }[];
-  return rows.map((row) => `${row.subject} / ${row.attribute}: ${row.claim} [[${row.slug}]]`);
+    .all(pageId, pageId) as ConflictEvidence[];
+  return rows;
 }
 
 async function verifyDraft(
@@ -265,9 +358,9 @@ async function verifyDraft(
   before: string,
   after: string,
   splits: SplitDraft[],
-  evidence: string[],
-  conflicts: string[],
-): Promise<{ ok: boolean; issues: string[] }> {
+  evidence: EvidencePage[],
+  conflicts: ConflictEvidence[],
+): Promise<{ ok: boolean; issues: string[]; cacheable: boolean }> {
   const result = await ctx.models.derive.chat(
     [
       { role: 'system', content: VERIFY_SYSTEM },
@@ -285,7 +378,9 @@ async function verifyDraft(
     ],
     { json: true, maxTokens: 1_200 },
   );
-  if (!result.ok || !result.value) return { ok: false, issues: [result.error ?? 'verification failed'] };
+  if (!result.ok || !result.value) {
+    return { ok: false, issues: [result.error ?? 'verification failed'], cacheable: false };
+  }
   const parsed = parseJsonLoose<{ ok?: unknown; issues?: unknown }>(result.value);
   const issues = Array.isArray(parsed?.issues)
     ? parsed.issues.filter((issue): issue is string => typeof issue === 'string').slice(0, 12)
@@ -293,6 +388,7 @@ async function verifyDraft(
   return {
     ok: parsed?.ok === true && issues.length === 0,
     issues: issues.length ? issues : ['verifier rejected rewrite'],
+    cacheable: true,
   };
 }
 
@@ -301,7 +397,7 @@ function guardRewrite(input: {
   before: string;
   after: string;
   splits: SplitDraft[];
-  conflicts: string[];
+  conflicts: ConflictEvidence[];
 }): string[] {
   const issues: string[] = [];
   const combined = [input.after, ...input.splits.map((split) => split.body)].join('\n');
@@ -324,6 +420,86 @@ function guardRewrite(input: {
     issues.push('known conflicts are not preserved under an Unresolved section');
   }
   return issues;
+}
+
+function renderEvidence(evidence: EvidencePage[]): string[] {
+  return evidence.map((row) => {
+    const heading = `[[${row.slug}]]${row.summary ? ` — ${row.summary}` : ''}`;
+    return row.facts.length
+      ? `${heading}\n${row.facts.map((fact) => `- ${fact.claim}`).join('\n')}`
+      : heading;
+  });
+}
+
+function renderConflicts(conflicts: ConflictEvidence[]): string[] {
+  return conflicts.map((row) => `${row.subject} / ${row.attribute}: ${row.claim} [[${row.slug}]]`);
+}
+
+function curateInputHash(page: PageRow, evidence: EvidencePage[], conflicts: ConflictEvidence[]): string {
+  return sha256(
+    JSON.stringify({
+      version: CURATE_FINGERPRINT_VERSION,
+      page: {
+        slug: page.slug,
+        title: page.title,
+        role: page.role,
+        mode: page.dream_management,
+        about: page.about,
+        bodyHash: page.body_hash,
+      },
+      // Hygiene deliberately has empty arrays here: its authority is confined to this page.
+      evidence: evidence.map((row) => ({
+        slug: row.slug,
+        summary: row.summary,
+        about: row.about,
+        role: row.role,
+        bodyHash: row.body_hash,
+        facts: row.facts,
+      })),
+      conflicts,
+    }),
+  );
+}
+
+function curationDue(page: PageRow, inputHash: string, dryRun: boolean): boolean {
+  if (page.curate_input_hash !== inputHash) return true;
+  // A write-enabled pass must rerun a previously accepted preview once. Rejected and unchanged
+  // inputs are already complete decisions, and applied input is current by definition.
+  return !dryRun && page.curate_status === 'preview';
+}
+
+function queueCurateState(
+  state: Map<string, CurateState>,
+  pageId: string,
+  inputHash: string,
+  status: CurateStatus,
+): void {
+  state.set(pageId, { pageId, inputHash, status });
+}
+
+function persistCurateState(ctx: AknoContext, values: Iterable<CurateState>): void {
+  const rows = [...values];
+  if (rows.length === 0) return;
+  const update = ctx.store.db.prepare(
+    `UPDATE pages SET curate_input_hash = ?, curate_status = ?, curated_at = ? WHERE id = ?`,
+  );
+  const now = new Date().toISOString();
+  ctx.store.transaction(() => {
+    for (const row of rows) update.run(row.inputHash, row.status, now, row.pageId);
+  });
+}
+
+function pageForSlug(ctx: AknoContext, slug: string): PageRow | null {
+  return (
+    (ctx.store.db
+      .prepare(
+        `SELECT id, slug, rel_path, title, role, dream_management, about, body_hash,
+                curate_input_hash, curate_status
+           FROM pages WHERE slug = ? AND role = 'knowledge'
+             AND dream_management IN ('hygiene', 'synthesize')`,
+      )
+      .get(slug) as PageRow | undefined) ?? null
+  );
 }
 
 function itemIds(text: string): Set<string> {
