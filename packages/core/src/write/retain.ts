@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import type { FolderCatalogEntry } from '../kb/folders.ts';
 
@@ -56,10 +57,32 @@ Rules:
   "ada-marlow/projects-taxonomy-branch-and-fallback-page-lowercase-and-hyphenated".
 - Always supply "page" when one of the supplied folders marked eligible=true fits. Its parent must
   be one exact eligible folder from the taxonomy. Never invent, rename or translate a folder. If
-  none fits, omit "page". A finding established by the assistant is canonical knowledge with
+  none fits, set "page" to null. A finding established by the assistant is canonical knowledge with
   assistant provenance; it still belongs in the subject's taxonomy branch, not a personal page.
 - Fewer, better. An empty candidates list is the correct answer for a conversation
   that decided nothing, and is much better than a vague one.`;
+
+/**
+ * `page` is nullable rather than optional, and the prompt above says "null" rather than "omit"
+ * for the same reason: OpenAI's strict mode rejects an optional property outright, and a schema
+ * it rejects takes this call site off constrained decoding silently — the fallback to a plain
+ * JSON request looks exactly like success. Nullable says the same thing and stays enforceable.
+ *
+ * The guards this cannot express stay downstream regardless: `cleanCandidates` drops
+ * speculation, fragments, and any page whose folder is not one that actually exists.
+ */
+export const RETAIN_SCHEMA = z.object({
+  candidates: z.array(
+    z.object({
+      text: z.string(),
+      subject: z.string(),
+      page: z.string().nullable(),
+      origin: z.enum(['user', 'assistant']),
+      kind: z.string(),
+    }),
+  ),
+  events: z.array(z.object({ date: z.string(), summary: z.string() })),
+});
 
 export interface RetainCandidate {
   text: string;
@@ -103,7 +126,7 @@ export async function runRetain(
       { role: 'system', content: system },
       { role: 'user', content: `Today is ${options.today}.\n\n${text}` },
     ],
-    { json: true, maxTokens: 1200 },
+    { schema: RETAIN_SCHEMA, maxTokens: 1200 },
   );
   if (!result.ok || !result.value) return { ...empty, error: result.error ?? 'retain failed' };
 
@@ -120,7 +143,7 @@ export async function runRetain(
 }
 
 function formatFolderCatalog(folders: FolderCatalogEntry[]): string {
-  if (folders.length === 0) return '(none — omit "page" rather than inventing a folder)';
+  if (folders.length === 0) return '(none — use null for "page" rather than inventing a folder)';
   return folders
     .map(
       (folder) =>

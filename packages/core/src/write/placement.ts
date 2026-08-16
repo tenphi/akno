@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
@@ -23,6 +24,12 @@ Choose the most specific semantically correct section for every item. Reuse an e
 when one fits. A new heading is allowed when it materially improves the page. Do not rewrite,
 rephrase, merge or omit items. Do not use the title as a heading. Never return "Unsorted"; the
 caller owns that fallback.`;
+
+/** `id` is checked against the supplied set afterwards — a grammar can require a string
+ *  there, not that it is one of the ids the model was actually given. */
+export const PLACEMENT_SCHEMA = z.object({
+  placements: z.array(z.object({ id: z.string(), heading: z.string() })),
+});
 
 /**
  * One model call places all managed items bound for a page. The model chooses only section names;
@@ -52,7 +59,7 @@ export async function placeManagedItems(
             `Items:\n${JSON.stringify(items.map(({ id, text }) => ({ id, text })))}`,
         },
       ],
-      { json: true, maxTokens: Math.min(1600, 200 + items.length * 100) },
+      { schema: PLACEMENT_SCHEMA, maxTokens: Math.min(1600, 200 + items.length * 100) },
     );
     if (result.ok && result.value) {
       const parsed = parseJsonLoose<{ placements?: unknown }>(result.value);

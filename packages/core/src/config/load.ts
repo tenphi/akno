@@ -302,6 +302,7 @@ function resolveProviders(
       baseUrl: doc.base_url.replace(/\/+$/, ''),
       apiKey: resolveSecret(doc.api_key, env),
       headers,
+      maxRetries: doc.max_retries ?? 2,
     };
   }
   return out;

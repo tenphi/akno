@@ -85,7 +85,28 @@
   "providers": {
     "local": {
       "base_url": null,
-      "api_key": null
+      "api_key": null,
+      // Retries after a rate limit (429) or a transient server error (500, 502,
+      // 503, 504), with exponential backoff and full jitter. A `Retry-After`
+      // header is obeyed when one is sent.
+      //
+      // What it costs to change: on the recall path, nothing — `recall.expansion_
+      // timeout_ms` is the budget for the whole sequence, so a retry happens only
+      // if there is time left inside it and a retrying recall can never be slower
+      // than one with retries off.
+      //
+      // Everywhere else a role's `timeout_ms` is per *attempt*, because it is a
+      // backstop against an endpoint that has gone quiet and nothing waits on a
+      // background derivation. So this multiplies the worst case: 2 against
+      // derive's 300s is 900s plus backoff for one page, in the case where an
+      // endpoint returns a slow 5xx three times running. Lower it if that matters
+      // more than the page; 0 turns retrying off entirely.
+      //
+      // A timeout is never retried: the attempt has already spent its deadline,
+      // and the callers that care have a better answer than repetition (a
+      // derivation that times out asks for the summary alone, which is cheaper
+      // *and* likelier to land than the identical request a second time).
+      "max_retries": 2
     }
   },
 

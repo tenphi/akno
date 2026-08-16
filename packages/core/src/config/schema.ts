@@ -16,6 +16,15 @@ export const ProviderDoc = z.object({
   api_key: SecretRef.nullable().optional(),
   /** Extra headers, for a gateway that wants one. Values may be secret refs. */
   headers: z.record(z.string(), z.union([z.string(), SecretRef])).optional(),
+  /**
+   * Retries after a rate limit or a transient server error, per request.
+   *
+   * On the provider rather than on a role because that is where the limit actually lives: a
+   * 429 is a property of an account and an endpoint, and every role pointed at this provider
+   * is queueing behind the same one. Capped at 5 because a request retried six times has
+   * stopped being a retry and become an outage nobody was told about.
+   */
+  max_retries: z.number().int().min(0).max(5).optional(),
 });
 export type ProviderDoc = z.infer<typeof ProviderDoc>;
 
@@ -284,6 +293,8 @@ export interface ResolvedProvider {
   baseUrl: string;
   apiKey: string | null;
   headers: Record<string, string>;
+  /** Retries after a rate limit or transient server error, within the role's existing deadline. */
+  maxRetries: number;
 }
 
 export interface ResolvedModelRole {

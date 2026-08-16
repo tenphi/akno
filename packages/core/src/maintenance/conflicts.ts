@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { valuesConflict } from '../write/conflict.ts';
@@ -141,6 +142,8 @@ conflict when:
 When you cannot tell, answer false. A false alarm wastes someone's afternoon looking for a contradiction
 that was never there.`;
 
+export const VERIFY_SCHEMA = z.object({ conflict: z.boolean(), current: z.string().nullable() });
+
 /**
  * Asks the derive model whether each candidate really is a contradiction.
  *
@@ -169,7 +172,7 @@ export async function verifyConflicts(
         { role: 'system', content: VERIFY },
         { role: 'user', content: `Subject: ${candidate.subject} / ${candidate.attribute}\n\n${listed}` },
       ],
-      { json: true, maxTokens: 200 },
+      { schema: VERIFY_SCHEMA, maxTokens: 200 },
     );
 
     if (!result.ok || !result.value) {

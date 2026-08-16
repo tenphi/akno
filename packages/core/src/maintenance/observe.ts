@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { contentWords } from '../kb/words.ts';
 
@@ -57,6 +58,22 @@ Hard rules:
 - You may be shown patterns already recorded for this subject. Never repeat one, and never reword one.
   Report only what those lines do not already say. If they cover it, return an empty list — that is the
   expected answer on most nights, because the facts rarely change between one night and the next.`;
+
+/**
+ * Shape only. Every rule this tier actually depends on — two distinct pages of evidence,
+ * slugs that exist, no hedging, nothing about health or finances — is enforced after the
+ * call, because those are the guards that exist precisely because a prompt could not be
+ * trusted to carry them.
+ */
+export const OBSERVE_SCHEMA = z.object({
+  observations: z.array(
+    z.object({
+      pattern: z.string(),
+      evidence: z.array(z.string()),
+      confidence: z.number(),
+    }),
+  ),
+});
 
 export interface ObservationCandidate {
   pattern: string;
@@ -179,7 +196,7 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
       { role: 'system', content: system },
       { role: 'user', content: `Subject: ${input.subject}\n\nFacts:\n${listed}${alreadyRecorded}` },
     ],
-    { json: true, maxTokens: 700 },
+    { schema: OBSERVE_SCHEMA, maxTokens: 700 },
   );
   if (!result.ok || !result.value) return { ...empty, error: result.error ?? 'the observe mission failed' };
 

@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { DegradedReason } from '@akno/protocol';
 import type { ResolvedModelRole } from '../config/schema.ts';
 
@@ -48,10 +49,41 @@ export interface ImagePart {
 type TokenParam = 'max_tokens' | 'max_completion_tokens';
 const UNSUPPORTED_MAX_TOKENS = /unsupported parameter.*max_tokens|use 'max_completion_tokens'/i;
 
+/**
+ * How this endpoint wants to be told the shape it must produce. Three rungs, tried in order
+ * and learned once, because there are two incompatible dialects in the wild and this codebase
+ * talks to both at the same time.
+ *
+ * - `schema` — llama.cpp's own `{"type":"json_object","schema":{…}}`, compiled to a GBNF
+ *   grammar so the sampler *cannot* emit anything else.
+ * - `json_schema` — OpenAI's `{"type":"json_schema","json_schema":{…,"strict":true}}`.
+ * - `plain` — `{"type":"json_object"}` and a prompt that asks nicely. What shipped before
+ *   this existed, and still the floor everything falls back to.
+ *
+ * **The order is chosen by which failure is detectable, not by which is more standard.**
+ * llama.cpp rejects an unknown `response_format` shape loudly, so starting there and stepping
+ * down is self-correcting: OpenAI answers the first probe with
+ * `Unknown parameter: 'response_format.schema'` and the client never sends it again. The
+ * reverse order is not safe — llama.cpp has a documented history of accepting `json_schema`
+ * and then applying no constraint at all, which produces no error to learn from and would
+ * leave the local roles silently unconstrained forever.
+ *
+ * The cost of getting it wrong is one rejected request per role per process. The cost of
+ * being unable to detect it is every request, silently.
+ */
+type SchemaMode = 'schema' | 'json_schema' | 'plain';
+const UNSUPPORTED_SCHEMA = /response_format|unsupported.*schema|unknown parameter.*schema|invalid.*schema/i;
+
+/** Statuses worth trying again. Everything else is a configuration error that a
+ *  second identical request will reproduce exactly. */
+const RETRYABLE_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
+
 export class ModelClient {
   readonly #role: ResolvedModelRole;
   /** Learned on first rejection, then reused. Per client, so per role. */
   #tokenParam: TokenParam = 'max_tokens';
+  /** Learned the same way, and for the same reason: one probe, then remembered. */
+  #schemaMode: SchemaMode = 'schema';
 
   constructor(role: ResolvedModelRole) {
     this.#role = role;
@@ -95,49 +127,129 @@ export class ModelClient {
       };
     }
 
-    const deadline = timeoutMs ?? this.#role.timeoutMs;
-    try {
-      const headers: Record<string, string> = {
-        'content-type': 'application/json',
-        ...this.#role.provider.headers,
-      };
-      if (this.#role.provider.apiKey) headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
+    const headers: Record<string, string> = {
+      'content-type': 'application/json',
+      ...this.#role.provider.headers,
+    };
+    if (this.#role.provider.apiKey) headers.authorization = `Bearer ${this.#role.provider.apiKey}`;
+    const payload = JSON.stringify(body);
 
-      const response = await fetch(`${this.#role.provider.baseUrl}${endpoint}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(body),
-        // `AbortSignal.timeout` is self-clearing. A hand-rolled
-        // setTimeout+AbortController leaks a pending timer on every request that
-        // resolves before its deadline, which holds the event loop open for the
-        // full timeout and turns a 40ms CLI command into a 60-second one.
-        signal: AbortSignal.timeout(deadline),
-      });
+    /**
+     * **The two deadlines bound different things, so retrying spends them differently.**
+     *
+     * A `timeoutMs` passed by the caller bounds **felt latency** — something is waiting on this
+     * answer. Only `expandQuery` passes one, and it does so precisely because a busy or cold
+     * endpoint must cost a weaker search rather than a slow one. So it is the budget for the
+     * whole sequence: retries fit inside it or do not happen, and a retrying recall can never
+     * outlast one with retrying switched off.
+     *
+     * The role's `timeout_ms` bounds **an endpoint that has stopped answering** — a backstop,
+     * not a target, and nothing is waiting on a background derivation. So it applies per
+     * attempt. Making it a total instead quietly rewrote what an operator's 300s meant: a 500
+     * arriving late into a long generation would leave the retry a fraction of the budget the
+     * number was tuned for, turning "slow error, then retry" into "slow error, then a retry
+     * that was set up to fail".
+     *
+     * What keeps the per-attempt side from running away is that a timeout is never retried, so
+     * the common slow path still costs the deadline exactly once. Only HTTP statuses retry, and
+     * the ones that occur — a rate limit, a busy llama-server — are refusals returned without
+     * doing any work, which makes a real sequence backoff-dominated and measured in seconds.
+     */
+    const totalBudget = timeoutMs ?? null;
+    const attemptDeadline = timeoutMs ?? this.#role.timeoutMs;
+    const maxAttempts = 1 + this.#role.provider.maxRetries;
+    let last: ModelOutcome<T> | null = null;
 
-      if (!response.ok) {
+    for (let attempt = 1; ; attempt++) {
+      // Rounded because `performance.now()` is fractional and `AbortSignal.timeout` rejects a
+      // non-integer delay outright — which fails the request before it is sent, on every call.
+      const remaining =
+        totalBudget === null
+          ? attemptDeadline
+          : Math.ceil(totalBudget - (performance.now() - started));
+      // Only reachable when a backoff consumed the budget between attempts; the
+      // pre-sleep check below normally stops it getting here.
+      if (remaining <= 0) break;
+
+      let status: number | null = null;
+      let retryAfter: string | null = null;
+
+      try {
+        const response = await fetch(`${this.#role.provider.baseUrl}${endpoint}`, {
+          method: 'POST',
+          headers,
+          body: payload,
+          // `AbortSignal.timeout` is self-clearing. A hand-rolled
+          // setTimeout+AbortController leaks a pending timer on every request that
+          // resolves before its deadline, which holds the event loop open for the
+          // full timeout and turns a 40ms CLI command into a 60-second one.
+          signal: AbortSignal.timeout(remaining),
+        });
+
+        if (response.ok) {
+          return { ok: true, value: (await response.json()) as T, latencyMs: performance.now() - started };
+        }
+
+        status = response.status;
+        retryAfter = response.headers.get('retry-after');
         const detail = (await response.text().catch(() => '')).slice(0, 300);
-        return {
+        last = {
           ok: false,
           value: null,
           reason: 'request_failed',
-          error: `${this.#role.role} endpoint returned ${response.status}${detail ? `: ${detail}` : ''}`,
+          error: `${this.#role.role} endpoint returned ${status}${detail ? `: ${detail}` : ''}`,
+          latencyMs: performance.now() - started,
+        };
+      } catch (err) {
+        // `AbortSignal.timeout` rejects with TimeoutError, not AbortError.
+        const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
+        /**
+         * **Neither a timeout nor a transport error is retried, and both omissions are
+         * deliberate.**
+         *
+         * A timeout means this attempt spent its whole deadline without an answer, and the
+         * callers that care already have a better move than repetition: `derivePage` falls back
+         * to asking for the summary alone, which is cheaper *and* likelier to succeed than the
+         * identical 2400-token request.
+         *
+         * A transport error is almost always a refused connection, meaning nothing is
+         * listening. Retrying that triples how long `doctor` takes to report the one thing
+         * the operator needs to hear.
+         */
+        return {
+          ok: false,
+          value: null,
+          reason: timedOut ? 'timeout' : 'request_failed',
+          error: withEarlier(
+            timedOut
+              ? `${this.#role.role} timed out after ${remaining}ms`
+              : `${this.#role.role} request failed: ${err instanceof Error ? err.message : String(err)}`,
+            last,
+          ),
           latencyMs: performance.now() - started,
         };
       }
-      return { ok: true, value: (await response.json()) as T, latencyMs: performance.now() - started };
-    } catch (err) {
-      // `AbortSignal.timeout` rejects with TimeoutError, not AbortError.
-      const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
-      return {
+
+      if (attempt >= maxAttempts || status === null || !RETRYABLE_STATUS.has(status)) break;
+
+      const wait = backoffMs(attempt, retryAfter, Math.random());
+      // A backoff that would outlast a total budget is not a backoff, it is a slower failure.
+      // With no total budget there is nothing for it to overrun — `backoffMs` caps itself.
+      if (totalBudget !== null && performance.now() - started + wait >= totalBudget) break;
+      await sleep(wait);
+    }
+
+    // Reached with `last` set on an exhausted or unretryable failure, and without it only when
+    // a total budget ran out before a single attempt could be made.
+    return (
+      last ?? {
         ok: false,
         value: null,
-        reason: timedOut ? 'timeout' : 'request_failed',
-        error: timedOut
-          ? `${this.#role.role} timed out after ${deadline}ms`
-          : `${this.#role.role} request failed: ${err instanceof Error ? err.message : String(err)}`,
+        reason: 'timeout',
+        error: `${this.#role.role} had no time left to call: ${attemptDeadline}ms was already spent`,
         latencyMs: performance.now() - started,
-      };
-    }
+      }
+    );
   }
 
   /**
@@ -194,6 +306,16 @@ export class ModelClient {
     messages: ChatMessage[],
     options: {
       json?: boolean;
+      /**
+       * The shape the prompt asks for, as a zod schema, sent so the endpoint can constrain
+       * decoding to it. Implies `json`.
+       *
+       * It does not replace the caller's own validation and is not meant to: a schema can say
+       * `line` is a number, but only `derivePage` knows it must be a line the model was
+       * actually shown. Constrained decoding removes the *syntactic* failures — the fenced
+       * prose, the trailing commentary, the object that stopped being JSON halfway through.
+       */
+      schema?: z.ZodType;
       maxTokens?: number;
       temperature?: number;
       timeoutMs?: number;
@@ -201,7 +323,12 @@ export class ModelClient {
       images?: ImagePart[];
     } = {},
   ): Promise<ModelOutcome<string>> {
-    const build = (tokenParam: TokenParam): Record<string, unknown> => {
+    const wantsJson = options.json || options.schema !== undefined;
+    // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
+    // retry must send the identical schema rather than a second conversion of it.
+    const jsonSchema = options.schema ? toEndpointSchema(options.schema) : null;
+
+    const build = (tokenParam: TokenParam, schemaMode: SchemaMode): Record<string, unknown> => {
       const body: Record<string, unknown> = {
         model: this.#role.id,
         messages: options.images?.length ? withImages(messages, options.images) : messages,
@@ -211,24 +338,32 @@ export class ModelClient {
       // value buys nothing here — every prompt in this codebase wants determinism.
       if (tokenParam === 'max_tokens') body.temperature = options.temperature ?? 0;
       // A small model free-forms its way out of a JSON contract given the chance.
-      if (options.json) body.response_format = { type: 'json_object' };
+      if (wantsJson) body.response_format = responseFormat(jsonSchema, schemaMode);
       return body;
     };
 
-    let result = await this.post<{ choices: { message?: { content?: string } }[] }>(
-      '/chat/completions',
-      build(this.#tokenParam),
-      options.timeoutMs,
-    );
-
-    // One retry on the one error that has a known, mechanical fix.
-    if (!result.ok && this.#tokenParam === 'max_tokens' && UNSUPPORTED_MAX_TOKENS.test(result.error ?? '')) {
-      this.#tokenParam = 'max_completion_tokens';
+    let result: ModelOutcome<{ choices: { message?: { content?: string } }[] }>;
+    // Three fixable mistakes at most — the token parameter, and two rungs down the schema
+    // ladder — so four passes is the ceiling, not a budget anything grows into.
+    for (let pass = 0; ; pass++) {
       result = await this.post<{ choices: { message?: { content?: string } }[] }>(
         '/chat/completions',
-        build(this.#tokenParam),
+        build(this.#tokenParam, this.#schemaMode),
         options.timeoutMs,
       );
+      if (result.ok || pass >= 3) break;
+
+      // Each of these has a known, mechanical fix, and each is learned once for the
+      // life of the process rather than rediscovered per call.
+      if (this.#tokenParam === 'max_tokens' && UNSUPPORTED_MAX_TOKENS.test(result.error ?? '')) {
+        this.#tokenParam = 'max_completion_tokens';
+        continue;
+      }
+      if (jsonSchema && this.#schemaMode !== 'plain' && UNSUPPORTED_SCHEMA.test(result.error ?? '')) {
+        this.#schemaMode = this.#schemaMode === 'schema' ? 'json_schema' : 'plain';
+        continue;
+      }
+      break;
     }
 
     if (!result.ok || !result.value) return { ...result, value: null };
@@ -315,6 +450,120 @@ export class ModelClient {
  * configuring it that way — and the reason the committed default is set by what derivation's JSON
  * needs rather than by a round number.
  */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Keeps the failure that *caused* the retry attached to the failure that ended the call.
+ *
+ * Without it a retried rate limit that then times out is reported as a plain timeout, and the
+ * two have opposite fixes: a timeout says raise the deadline or use a faster model, a 429 says
+ * raise `max_retries` or slow the caller down. This string is what `doctor` prints and what
+ * lands in an index warning, so the distinction has to survive as far as a person.
+ */
+function withEarlier<T>(message: string, earlier: ModelOutcome<T> | null): string {
+  return earlier?.error ? `${message} — a previous attempt was retried after: ${earlier.error}` : message;
+}
+
+/** Base delay, doubling per attempt, before jitter. */
+const BACKOFF_BASE_MS = 500;
+const BACKOFF_CAP_MS = 20_000;
+
+/**
+ * How long to wait before trying again.
+ *
+ * `Retry-After` is obeyed when a server sends one, because a rate limiter knows when its
+ * window opens and guessing can only be wrong in both directions. Otherwise exponential with
+ * **full** jitter — `random × window` rather than `window ± a bit`. That matters here
+ * specifically: `derive.concurrency` runs several workers against one endpoint, and workers
+ * that back off in lockstep rediscover the same 429 together. Spreading them across the whole
+ * window is what actually clears the queue.
+ *
+ * `jitter` is a parameter rather than a call to `Math.random` so the behaviour is testable
+ * without a clock.
+ */
+export function backoffMs(attempt: number, retryAfter: string | null, jitter: number): number {
+  const stated = parseRetryAfter(retryAfter);
+  if (stated !== null) return Math.min(stated, BACKOFF_CAP_MS);
+  const window = Math.min(BACKOFF_BASE_MS * 2 ** (attempt - 1), BACKOFF_CAP_MS);
+  return Math.round(window * jitter);
+}
+
+/** `Retry-After` is either delta-seconds or an HTTP date. Both are legal and both appear. */
+export function parseRetryAfter(value: string | null): number | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (/^\d+$/.test(trimmed)) return Number(trimmed) * 1000;
+  const at = Date.parse(trimmed);
+  if (Number.isNaN(at)) return null;
+  // A date already in the past means "now", not a negative sleep.
+  return Math.max(0, at - Date.now());
+}
+
+/**
+ * A zod schema as the JSON Schema an endpoint wants.
+ *
+ * `$schema` is stripped because it describes the *dialect* rather than the value, and a
+ * strict endpoint rejects the key outright. draft-7 is asked for because that is what
+ * llama.cpp's schema-to-GBNF converter reads.
+ */
+export function toEndpointSchema(schema: z.ZodType): Record<string, unknown> {
+  const { $schema: _dialect, ...rest } = z.toJSONSchema(schema, { target: 'draft-7' }) as Record<
+    string,
+    unknown
+  >;
+  return rest;
+}
+
+/** The `response_format` for a rung of the ladder. */
+function responseFormat(
+  jsonSchema: Record<string, unknown> | null,
+  mode: SchemaMode,
+): Record<string, unknown> {
+  if (!jsonSchema || mode === 'plain') return { type: 'json_object' };
+  if (mode === 'schema') return { type: 'json_object', schema: jsonSchema };
+  return {
+    type: 'json_schema',
+    // The name is required and is not addressable from anywhere else, so it is a constant
+    // rather than a per-call string nobody would ever look up.
+    json_schema: { name: 'akno_response', strict: true, schema: jsonSchema },
+  };
+}
+
+/**
+ * Whether a JSON Schema satisfies OpenAI's strict mode: every property of every object listed
+ * in that object's `required`, and `additionalProperties: false` throughout.
+ *
+ * This exists as a *test*, not as a runtime check. Strict mode rejects an optional property
+ * outright, so a schema written with `.optional()` would take the `json_schema` rung out of
+ * service for that one call site — quietly, because the fallback to plain `json_object` is
+ * indistinguishable from success. `.nullable()` is the shape that expresses "may be absent"
+ * and stays strict-safe, and every schema here is written that way on purpose.
+ */
+export function strictModeViolations(node: unknown, path = '$'): string[] {
+  if (node === null || typeof node !== 'object') return [];
+  const out: string[] = [];
+  const record = node as Record<string, unknown>;
+
+  if (record.type === 'object' && record.properties && typeof record.properties === 'object') {
+    const properties = Object.keys(record.properties as Record<string, unknown>);
+    const required = new Set(Array.isArray(record.required) ? (record.required as string[]) : []);
+    const missing = properties.filter((property) => !required.has(property));
+    if (missing.length > 0) out.push(`${path}: optional ${missing.join(', ')}`);
+    if (record.additionalProperties !== false) out.push(`${path}: additionalProperties not false`);
+  }
+
+  for (const [key, value] of Object.entries(record)) {
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => out.push(...strictModeViolations(entry, `${path}.${key}[${index}]`)));
+    } else if (value && typeof value === 'object') {
+      out.push(...strictModeViolations(value, `${path}.${key}`));
+    }
+  }
+  return out;
+}
+
 function tokenCeiling(perCall: number | undefined, perRole: number | undefined): number {
   const limits = [perCall, perRole].filter(
     (limit): limit is number => typeof limit === 'number' && Number.isFinite(limit) && limit > 0,

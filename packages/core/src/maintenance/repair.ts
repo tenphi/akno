@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import type { CrossPageConflict } from './conflicts.ts';
@@ -104,6 +105,10 @@ Rules:
 - If the candidates are all plausible and none is clearly right, reply {"slug": null, "confident": false}.
 - A wrong repoint sends a reader to the wrong page, which is worse than a link that visibly does not work.`;
 
+/** Nullable, not optional: "none of these is clearly right" is an answer the prompt asks
+ *  for explicitly, and it is checked against the candidate list either way. */
+export const CHOOSE_SCHEMA = z.object({ slug: z.string().nullable(), confident: z.boolean() });
+
 /** Choose among real candidates. It cannot invent a target: the answer is checked against the list. */
 async function chooseTarget(
   ctx: AknoContext,
@@ -119,7 +124,7 @@ async function chooseTarget(
         content: `Link: [[${target}]]\n\nCandidates:\n${candidates.map((c) => `- ${c}`).join('\n')}`,
       },
     ],
-    { json: true, maxTokens: 200 },
+    { schema: CHOOSE_SCHEMA, maxTokens: 200 },
   );
   if (!result.ok || !result.value) return null;
 
@@ -143,6 +148,8 @@ Rules:
 - One line. Never add a second sentence, and never add anything that was not already known.
 - If the sentence cannot be rewritten without changing what it says, reply {"line": null}.`;
 
+export const REWRITE_SCHEMA = z.object({ line: z.string().nullable() });
+
 /**
  * Turn a superseded claim into a past-tense one.
  *
@@ -158,7 +165,7 @@ async function rewriteAsHistory(ctx: AknoContext, stale: string, current: string
       { role: 'system', content: REWRITE_STALE },
       { role: 'user', content: `Out of date:\n${stale}\n\nReplaced by:\n${current}` },
     ],
-    { json: true, maxTokens: 300 },
+    { schema: REWRITE_SCHEMA, maxTokens: 300 },
   );
   if (!result.ok || !result.value) return null;
 

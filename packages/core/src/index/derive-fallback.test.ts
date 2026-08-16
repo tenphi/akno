@@ -60,7 +60,7 @@ async function startStub(): Promise<typeof server> {
 function client(url: string): ModelClient {
   return new ModelClient({
     role: 'derive',
-    provider: { name: 'stub', baseUrl: url, apiKey: null, headers: {} },
+    provider: { name: 'stub', baseUrl: url, apiKey: null, headers: {}, maxRetries: 0 },
     id: 'stub',
     enabled: true,
     requested: true,

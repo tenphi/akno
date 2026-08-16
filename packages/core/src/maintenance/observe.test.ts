@@ -17,7 +17,7 @@ import { ModelClient } from '../models/client.ts';
 function stubChat(reply: unknown): ModelClient {
   const client = new ModelClient({
     role: 'derive',
-    provider: { name: 'stub', baseUrl: 'http://127.0.0.1:0/v1', apiKey: null, headers: {} },
+    provider: { name: 'stub', baseUrl: 'http://127.0.0.1:0/v1', apiKey: null, headers: {}, maxRetries: 0 },
     id: 'stub',
     enabled: true,
     requested: true,

@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
 import { aknoItemId, type ParsedPage } from '../kb/page.ts';
@@ -47,10 +48,37 @@ Rules for facts:
 - subject/attribute/value may be null when the line does not decompose cleanly.
 - Prefer fewer, better facts. An empty list is a correct answer for a page of prose.`;
 
+/**
+ * The same shape the prompt above describes, in the form an endpoint can enforce.
+ *
+ * It is a mirror of the prompt and has to stay one — the prompt is what a model reads and this
+ * is what constrains what it may emit, so a field added to one and not the other is a field
+ * the model is told to produce and then forbidden from producing. Everything is deliberately
+ * permissive about *content*: `cleanFacts` still drops a fact whose line was never shown, and
+ * no grammar can express that.
+ */
+export const DERIVED_SCHEMA = z.object({
+  summary: z.string(),
+  keywords: z.array(z.string()),
+  facts: z.array(
+    z.object({
+      // Plain `number`, not `int`: zod emits safe-integer `minimum`/`maximum` bounds for the
+      // latter, which are noise in a grammar. `cleanFacts` checks `Number.isInteger` anyway.
+      line: z.number(),
+      claim: z.string(),
+      subject: z.string().nullable(),
+      attribute: z.string().nullable(),
+      value: z.string().nullable(),
+    }),
+  ),
+});
+
 const SUMMARY_ONLY = `Summarize a personal knowledge base page. Reply with JSON only.
 
 { "summary": "one or two sentences, under 200 characters, stating what this page is about and its most load-bearing values",
   "keywords": ["up to 8 short lowercase terms someone might search for"] }`;
+
+export const SUMMARY_ONLY_SCHEMA = z.object({ summary: z.string(), keywords: z.array(z.string()) });
 
 /**
  * One call per page returning summary, keywords and facts together — the model
@@ -78,7 +106,7 @@ export async function derivePage(
       { role: 'system', content: SYSTEM },
       { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
     ],
-    { json: true, maxTokens: 2400 },
+    { schema: DERIVED_SCHEMA, maxTokens: 2400 },
   );
 
   const parsed =
@@ -112,7 +140,7 @@ export async function derivePage(
         { role: 'system', content: SUMMARY_ONLY },
         { role: 'user', content: `Page: ${page.slug}\nTitle: ${page.title}\n\n${numbered}` },
       ],
-      { json: true, maxTokens: 400 },
+      { schema: SUMMARY_ONLY_SCHEMA, maxTokens: 400 },
     );
     const retried =
       retry.ok && retry.value ? parseJsonLoose<{ summary?: unknown; keywords?: unknown }>(retry.value) : null;
@@ -377,6 +405,8 @@ load-bearing values: who issued it, what it covers, amounts, dates, identifiers"
 The text may be OCR output with errors in it, and may be only the first pages of a longer document. Summarize
 what is there. Do not guess at what is missing.`;
 
+export const DOCUMENT_SUMMARY_SCHEMA = z.object({ summary: z.string() });
+
 /**
  * A stored document has extracted text, a summary and embeddings of its own.
  *
@@ -401,7 +431,7 @@ export async function summarizeDocument(
         { role: 'system', content: DOCUMENT_SUMMARY },
         { role: 'user', content: text.slice(0, chars) },
       ],
-      { json: true, maxTokens: 300 },
+      { schema: DOCUMENT_SUMMARY_SCHEMA, maxTokens: 300 },
     );
     if (!result.ok || !result.value) return { summary: null, error: result.error ?? 'summary failed' };
 

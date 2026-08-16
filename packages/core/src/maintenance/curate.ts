@@ -1,5 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
 import { AKNO_ITEM, normalizeLinkTarget } from '../kb/page.ts';
@@ -112,6 +113,8 @@ the page's meaning and semantically equivalent top-level structure. Do not add f
 anything except exact duplicates. Keep every <!-- akno:item ... --> marker immediately before the
 knowledge it identifies. Do not add frontmatter.`;
 
+export const HYGIENE_SCHEMA = z.object({ body: z.string() });
+
 const SYNTHESIZE_SYSTEM = `You synthesize one canonical Markdown knowledge page from its current body
 and linked evidence. Reply with JSON only:
 {"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}],"temporal":false}
@@ -132,10 +135,37 @@ or descriptions of different areas. Do not choose a side without evidence. Keep 
 canonical page remains at its current slug. Suggest splits only for genuinely oversized, coherent
 sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.
 
+Always send "splits" — an empty array when there is nothing to split.
+
 When no temporal boundary is supplied but the user message lists explicit boundary candidates, set
 "temporal" to {"kind":"event","start":"date or timestamp","until":"date or timestamp","timezone":"IANA zone"}
-only when this whole page is a bounded event. Use only listed dates, omit unknown fields and use false
-for evergreen or ambiguous pages. A date means the complete local day; never invent an end-of-day time.`;
+only when this whole page is a bounded event. Use only listed dates, use null for unknown fields and
+false for evergreen or ambiguous pages. A date means the complete local day; never invent an
+end-of-day time.`;
+
+/**
+ * Every field is required and `false`/`null` carry the "nothing here" cases, because strict
+ * mode rejects an optional property — so the prompt above was reworded to match. Neither is a
+ * behaviour change: `cleanSplits` already treats `[]` exactly as it treats an absent list, and
+ * `cleanTemporal` already reads a null `start` or `timezone` as unset.
+ *
+ * The boundary this schema cannot enforce is the one that matters most: `cleanTemporalProposal`
+ * still rejects any date the page did not itself supply. A grammar can require a date-shaped
+ * string; only the caller knows which dates were on the page.
+ */
+export const SYNTHESIZE_SCHEMA = z.object({
+  body: z.string(),
+  splits: z.array(z.object({ suffix: z.string(), title: z.string(), body: z.string() })),
+  temporal: z.union([
+    z.literal(false),
+    z.object({
+      kind: z.literal('event'),
+      start: z.string().nullable(),
+      until: z.string(),
+      timezone: z.string().nullable(),
+    }),
+  ]),
+});
 
 const ARCHIVE_SYSTEM = `${SYNTHESIZE_SYSTEM}
 
@@ -157,8 +187,12 @@ prose, and must remain attached to their knowledge. For an archival rewrite, rej
 a plan happened merely because its date passed, and reject restructuring with no substantive
 post-event knowledge.`;
 
+export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
+
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-const CURATE_FINGERPRINT_VERSION = 5;
+// 6: the synthesize prompt now asks for `splits` and `temporal` always, with `[]`/`false`/null for
+// the empty cases, so the shape can be enforced by the endpoint rather than requested politely.
+const CURATE_FINGERPRINT_VERSION = 6;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -250,7 +284,10 @@ export async function curatePages(
             (conflicts.length ? `\n\nUnresolved conflicts:\n${renderConflicts(conflicts).join('\n')}` : ''),
         },
       ],
-      { json: true, maxTokens: 8_000 },
+      {
+        schema: row.dream_management === 'hygiene' ? HYGIENE_SCHEMA : SYNTHESIZE_SCHEMA,
+        maxTokens: 8_000,
+      },
     );
     const parsed = draftResult.ok && draftResult.value ? parseJsonLoose<Draft>(draftResult.value) : null;
     let nextBody = typeof parsed?.body === 'string' ? endWithNewline(parsed.body) : null;
@@ -597,7 +634,7 @@ async function verifyDraft(
         }).slice(0, 100_000),
       },
     ],
-    { json: true, maxTokens: 1_200 },
+    { schema: VERIFY_SCHEMA, maxTokens: 1_200 },
   );
   if (!result.ok || !result.value) {
     return { ok: false, issues: [result.error ?? 'verification failed'], cacheable: false };

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**
@@ -66,6 +67,18 @@ Rules:
   Be honest. A low number is useful; a confident wrong name is not.
 - Reply with confidence 0 rather than inventing a title for text you cannot read.`;
 
+/** `folder` is nullable rather than optional: the prompt offers `null` explicitly as the
+ *  answer for "none fit", and a nullable field keeps that a stated choice instead of an
+ *  absence that could equally mean the model forgot. */
+export const NAME_SCHEMA = z.object({
+  title: z.string(),
+  slug: z.string(),
+  summary: z.string(),
+  type: z.string(),
+  folder: z.string().nullable(),
+  confidence: z.number(),
+});
+
 export interface NameOptions {
   /** Extracted text. Truncated before the call — a name does not need 40 pages. */
   text: string;
@@ -106,7 +119,7 @@ export async function nameDocument(options: NameOptions): Promise<NamedDocument>
         content: `Existing folders: ${folders || '(none yet)'}\n\nExtracted text:\n\n${excerpt}`,
       },
     ],
-    { json: true, maxTokens: 500 },
+    { schema: NAME_SCHEMA, maxTokens: 500 },
   );
   if (!result.ok || !result.value) return { ...empty, error: result.error ?? 'naming failed' };
 

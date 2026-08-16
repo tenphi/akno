@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { DegradedReason, RecallMode } from '@akno/protocol';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
@@ -123,6 +124,9 @@ export async function expandQuery(
 
   const instruction =
     mode === 'question' ? QUESTION_PROMPT : mode === 'explore' ? EXPLORE_PROMPT : LOOKUP_PROMPT;
+  // Per mode, because the modes ask for different fields. Handing the question schema to a
+  // lookup would make `answers` mandatory for a query that has no answer to hypothesize.
+  const schema = mode === 'question' ? QUESTION_SCHEMA : QUERIES_SCHEMA;
 
   const result = await model.chat(
     [
@@ -131,7 +135,7 @@ export async function expandQuery(
     ],
     // Its own deadline, not the role's ceiling: a busy or cold endpoint must cost a
     // weaker search, never a hung one.
-    { json: true, maxTokens: 400, timeoutMs },
+    { schema, maxTokens: 400, timeoutMs },
   );
 
   if (!result.ok || !result.value) {
@@ -176,6 +180,15 @@ For "when does the car insurance renew?" a good answer sentence is "The car insu
 const EXPLORE_PROMPT = `A user wants a broad overview from their personal knowledge base. Reply with JSON only:
 { "queries": ["3-5 varied searches covering different facets of the subject"],
   "concepts": ["the subject, lowercase"] }`;
+
+/** Lookup and explore: alternative phrasings and the concepts coverage is measured against. */
+export const QUERIES_SCHEMA = z.object({
+  queries: z.array(z.string()),
+  concepts: z.array(z.string()),
+});
+
+/** Question mode additionally wants the hypothetical answers the vector arm is steered by. */
+export const QUESTION_SCHEMA = QUERIES_SCHEMA.extend({ answers: z.array(z.string()) });
 
 function stringList(value: unknown, max: number): string[] {
   if (!Array.isArray(value)) return [];

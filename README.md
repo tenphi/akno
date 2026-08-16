@@ -120,6 +120,30 @@ and good. Expansion runs on every recall that asks for it, where a second of lat
 Pointing both at one model is a perfectly good answer; pointing `derive` at a 12B and `expansion` at a 3B is
 what a laptop wants, and it is what `config/local.example.jsonc` shows.
 
+**Every prompt that asks for JSON also sends the shape as a JSON Schema**, so the endpoint constrains decoding
+rather than the prompt requesting it politely — a llama-server compiles it to a GBNF grammar, and OpenAI's
+strict structured outputs does the equivalent. The two speak different dialects, so the client tries
+llama.cpp's `{"type":"json_object","schema":…}` first, steps down to OpenAI's `{"type":"json_schema",…}` on the
+rejection OpenAI actually sends, and finally to a plain JSON request. That order is chosen by which rejection
+is *detectable*: llama.cpp answers an unknown `response_format` shape with an error, but has a history of
+accepting `json_schema` and applying no constraint at all. Each rung is learned once per role per process, and
+the loose JSON parser stays behind all three — a schema removes the syntactic failures, not the need to check
+that a fact's line number is one the model was actually shown.
+
+**A rate limit is retried; a timeout is not.** A 429 or a transient 5xx backs off — obeying `Retry-After` when
+one is sent, otherwise exponentially with full jitter — up to `providers.<name>.max_retries` times. A timeout
+is left alone: the attempt has already spent its deadline, and the callers that care have a better answer than
+repetition — a derivation that times out asks for the summary alone, which is both cheaper and likelier to
+land. So is a transport error, which is usually nothing listening, and `doctor` should say so at once rather
+than three backoffs later.
+
+**The two deadlines bound different things, so retries spend them differently.** `recall.expansion_timeout_ms`
+bounds *felt latency* — someone is waiting — so it is the budget for the whole sequence, and a retrying recall
+can never outlast one with retrying switched off. A role's `timeout_ms` bounds *an endpoint that has stopped
+answering*, and nothing waits on a background derivation, so it applies per attempt: a 500 arriving late into a
+long generation must not leave the retry a fraction of the budget that number was tuned for. Only refusals
+returned without doing work are retried, which keeps a real sequence backoff-dominated and measured in seconds.
+
 `akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Model latency
 and index latency are reported separately, because a memory system that feels slow after idling is almost never
 suffering from its storage engine.
