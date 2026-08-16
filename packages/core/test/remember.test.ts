@@ -31,6 +31,31 @@ interface StubServer {
 
 let server: StubServer;
 
+/**
+ * A term-*count* embedder over several buckets, normalized, so cosine falls as a text spends more
+ * of itself on terms the other side never mentions. One-hot would make every pair 1 or 0, and the
+ * cases below all live in the middle: a page owns a claim's subject but not the attribute it
+ * carries, or two pages both match and only one of them is the right home.
+ *
+ * Counts, not presence, because repetition is how a fixture says *mostly about this* — a page
+ * naming concerts three times and meals once sits at 1/√10 ≈ 0.32 from a meal claim, under the
+ * 0.5 threshold, without needing a wall of filler text. The cost is that a term repeated across
+ * a candidate's subject *and* its text counts twice, which is real behaviour and worth knowing
+ * when reading a surprising number here.
+ *
+ * Calibrated to shapes measured live: 1/√6 ≈ 0.41 for a claim whose page states the subject and
+ * none of its five attributes, against 1.0 for the subject alone — the test-scale version of
+ * 0.27 vs 0.97 through `bge-reranker-v2-m3`.
+ */
+const TOPIC_TERMS = ['leoninum', 'pool', 'sauna', 'gym', 'wellness', 'towel', 'meal', 'concert'];
+
+function topicEmbedding(text: string): number[] {
+  const lower = text.toLowerCase();
+  const counts = TOPIC_TERMS.map((term) => lower.split(term).length - 1);
+  const norm = Math.hypot(...counts);
+  return norm === 0 ? [...counts, 1] : [...counts.map((n) => n / norm), 0];
+}
+
 async function startStubChat(): Promise<typeof server> {
   let system = '';
   let candidates: StubCandidate[] = [
@@ -40,11 +65,23 @@ async function startStubChat(): Promise<typeof server> {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
     request.on('end', () => {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      if (request.url?.includes('/embeddings')) {
+        const embedBody = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
+          input?: unknown;
+        };
+        const inputs = Array.isArray(embedBody.input) ? embedBody.input : [String(embedBody.input ?? '')];
+        response.end(
+          JSON.stringify({
+            data: inputs.map((input, index) => ({ index, embedding: topicEmbedding(String(input)) })),
+          }),
+        );
+        return;
+      }
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
         messages?: { role: string; content: string }[];
       };
       system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
-      response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
         JSON.stringify({
           choices: [
@@ -223,6 +260,231 @@ describe('what remember reports as written', () => {
       expect(result.considered?.[0]?.written).toBe(false);
       expect(result.considered?.[0]?.slug).toBeNull();
       expect(result.outcome).toBe('requires_approval');
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+/**
+ * A claim carries a subject and an attribute, and only the subject says who owns it. Scoring
+ * both together asks the cross-encoder "does this passage answer this", which the owning page
+ * fails whenever the attribute is the new part — the normal case for something worth
+ * remembering. Observed live: a hotel's pool went to a new page while the trip page naming that
+ * hotel three times sat at 0.27.
+ */
+describe('routing a claim whose attribute its page does not yet state', () => {
+  const embedded = {
+    models: {
+      embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+      reranker: { id: null, enabled: false },
+      derive: { provider: 'stub', id: 'stub-derive' },
+      expansion: { provider: 'stub', id: 'stub-derive' },
+    },
+  };
+
+  beforeEach(() => {
+    fs.mkdirSync(path.join(root, 'trips'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'trips/bonn.md'),
+      '---\ntitle: Bonn\n---\n\n# Bonn\n\n- Staying at the Leoninum, check-in 15:00.\n',
+      'utf8',
+    );
+  });
+
+  it('falls back to the subject alone and routes to the page that owns it', async () => {
+    server.respondWith([
+      {
+        text: 'The Leoninum has a pool, a sauna, a gym, a wellness area and towel service.',
+        subject: 'Leoninum',
+        page: 'trips/leoninum',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem(embedded);
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The Leoninum has a pool, a sauna, a gym, a wellness area and towel service.' });
+      expect(result.wrote?.[0]?.slug).toBe('trips/bonn');
+      expect(fs.existsSync(path.join(root, 'trips/leoninum.md'))).toBe(false);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('keeps the destination the claim itself chose when the claim routes', async () => {
+    server.respondWith([
+      {
+        text: 'The Leoninum pool is open until 22:00.',
+        subject: 'opening hours',
+        page: 'trips/anything',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem(embedded);
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The Leoninum pool is open until 22:00.' });
+      // The claim pass found `trips/bonn` on its own; the subject pass never had to run.
+      expect(result.wrote?.[0]?.slug).toBe('trips/bonn');
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+/**
+ * The fallback exists so a claim with no home can make one. It was also, silently, a way to
+ * append to a home somebody else already had: routing refuses, and the claim lands on whatever
+ * slug the retain model wrote before any candidate was scored.
+ *
+ * Observed 2026-08-16: a meal-box order appended to `household/concerts-2026`, which the reranker
+ * scores 0.026 against it. Routing had refused correctly; the guess simply outranked the refusal.
+ */
+describe('a routing refusal against a page that already exists', () => {
+  it('asks instead of appending to it', async () => {
+    const before = fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8');
+    server.respondWith([
+      {
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        subject: 'meal orders',
+        page: 'home/lease',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+      });
+      expect(result.wrote).toBeUndefined();
+      expect(result.outcome).toBe('requires_approval');
+      expect(result.approvals?.[0]?.reason).toContain('home/lease');
+      // The response must not report a claim as kept on a page it was refused.
+      expect(result.considered?.[0]?.kept).toBe(false);
+      expect(result.considered?.[0]?.slug).toBeNull();
+      expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('still creates the page when the guess names one that does not exist', async () => {
+    server.respondWith([
+      {
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        subject: 'meal orders',
+        page: 'home/meal-orders',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+      });
+      expect(result.wrote?.[0]?.slug).toBe('home/meal-orders');
+      expect(fs.existsSync(path.join(root, 'home/meal-orders.md'))).toBe(true);
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+/**
+ * Card order is `score * rank`, and a card's score is the best of its chunks — so the page that
+ * *leads* is the page with one strong passage, which is not the page a cross-encoder judges the
+ * right home. Routing used to threshold the leader alone, so a leader below the bar sent the
+ * whole claim to the retain model's guessed slug with every other candidate unread.
+ *
+ * Observed 2026-08-16: a meal-box order landed on `household/concerts-2026` (reranker 0.026)
+ * while `household/subscriptions`, already holding that supplier's cancellation, scored 0.755
+ * and was never looked at.
+ *
+ * Here `rank` does what one strong passage did there — it puts the weak page in front without
+ * touching either page's relevance.
+ */
+describe('routing when the best-ranked page is not the best-judged one', () => {
+  const embedded = {
+    models: {
+      embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+      reranker: { id: null, enabled: false },
+      derive: { provider: 'stub', id: 'stub-derive' },
+      expansion: { provider: 'stub', id: 'stub-derive' },
+    },
+    folders: { 'household/subscriptions*': { rank: 0.1 } },
+  };
+
+  beforeEach(() => {
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    // Leads on rank, and mostly about concerts: cosine 1/√10 ≈ 0.32, under the 0.5 threshold.
+    fs.writeFileSync(
+      path.join(root, 'household/concerts.md'),
+      '---\ntitle: Concerts\n---\n\n# Concerts\n\n- A concert, another concert, a third concert, and one meal.\n',
+      'utf8',
+    );
+    // The right home, and the reranker would say so: cosine 1.0. Ranked last by config.
+    fs.writeFileSync(
+      path.join(root, 'household/subscriptions.md'),
+      '---\ntitle: Subscriptions\n---\n\n# Subscriptions\n\n- The meal supplier cancelled in August.\n',
+      'utf8',
+    );
+  });
+
+  it('routes to the highest-judged candidate, not the one that happens to rank first', async () => {
+    server.respondWith([
+      {
+        text: 'The meal box order was confirmed, a meal for Thursday and a meal for Friday.',
+        subject: 'meal orders',
+        page: 'household/concerts',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem(embedded);
+    try {
+      await mem.index({});
+      const result = await mem.remember({
+        text: 'The meal box order was confirmed, a meal for Thursday and a meal for Friday.',
+      });
+      expect(result.wrote?.[0]?.slug).toBe('household/subscriptions');
+      // The leader is still a candidate — it just no longer decides for everyone behind it.
+      expect(result.wrote?.some((target) => target.slug === 'household/concerts')).toBeFalsy();
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+/**
+ * `users/` is Luna's hot memory: per-person standing instructions injected every turn, and never
+ * a destination for a remembered claim. `users/google-account.md` appeared there because no rule
+ * declared the folder — an undeclared folder is eligible, and the directory existed, which was
+ * the only question creation asked.
+ *
+ * A declared `remember: deny` is refused before routing ever runs: the catalog marks the folder
+ * ineligible, and retain drops a suggested page whose parent is not an eligible folder. That
+ * chain is three files apart, so this test is what keeps it joined up — it fails, and creates the
+ * page, the moment any link in it stops holding.
+ */
+describe('a folder that refuses remembered claims', () => {
+  it('refuses to create a page there, not just to append to one', async () => {
+    fs.mkdirSync(path.join(root, 'users'), { recursive: true });
+    server.respondWith([
+      {
+        text: 'The account was warned for two years of inactivity.',
+        subject: 'Google account inactivity',
+        page: 'users/google-account',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({ folders: { 'users/**': { role: 'knowledge', remember: 'deny' } } });
+    try {
+      const result = await mem.remember({
+        text: 'The account was warned for two years of inactivity.',
+      });
+      expect(result.wrote).toBeUndefined();
+      expect(result.outcome).toBe('requires_approval');
+      expect(fs.existsSync(path.join(root, 'users/google-account.md'))).toBe(false);
     } finally {
       await mem.close();
     }

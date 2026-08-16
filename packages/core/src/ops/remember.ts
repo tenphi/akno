@@ -135,6 +135,28 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest));
       continue;
     }
+
+    // **Creating a page on a guess is fine. Appending to an existing one is not.**
+    //
+    // `entry.slug === null` is routing having looked at the ranked candidates and said no page
+    // here is a home for this. The claim then fell through to `candidate.page` — a slug the
+    // retain model wrote before any of those candidates were scored — and if that slug happened
+    // to name a real page, the claim was appended to it with nothing having judged the pairing.
+    //
+    // Observed 2026-08-16: a meal-box order appended to `household/concerts-2026`, a page the
+    // reranker scores 0.026 against it, under a heading invented for the occasion. Nothing was
+    // broken — routing refused correctly, the fallback simply outranked the refusal.
+    //
+    // A guess that names *no* page still creates one: that is the case the fallback exists for,
+    // and a new page is inspectable and cheap to move. A guess that lands on somebody else's
+    // page becomes a question instead.
+    if (entry.slug === null && pageExists(ctx, target)) {
+      considered[index]!.kept = false;
+      considered[index]!.slug = null;
+      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, target));
+      continue;
+    }
+
     const group = groups.get(target) ?? { entries: [] };
     group.entries.push({ index, candidate: entry.candidate });
     groups.set(target, group);
@@ -152,6 +174,15 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       continue;
     }
 
+    // The same policy, for a page that does not exist yet.
+    //
+    // The check above reads `role` and `remember_management` off the page row, so a folder
+    // declared `remember: "deny"` protected only the pages already in it — creation consulted
+    // nothing but whether the parent directory existed. `users/` is the case that bites: those
+    // are per-person hot-memory pages, standing instructions injected every turn, and the
+    // folder exists, so a claim the retain model addressed to `users/google-account` was
+    // created there without anything having a chance to refuse. Declining to create is the
+    // same answer the folder already gives to writing.
     const parent = slug.slice(0, slug.lastIndexOf('/'));
     if (!row && !physicalFolderExists(ctx.config, parent)) {
       foldersNeeded.push({
@@ -340,12 +371,47 @@ function newManagedPage(title: string): string {
  * page — is invisible until someone reads it back months later, and a guess is worse than a
  * question.
  */
+/**
+ * Two questions, asked in order.
+ *
+ * The claim scores first, because the claim is what makes routing *specific*: when two pages
+ * could own a subject, only the attribute text says which. But a cross-encoder judges "does
+ * this passage answer this query", and a claim carries an attribute the owning page has no
+ * reason to already state. Measured here: "Collegium Leoninum. В отеле … бассейн … сауна и
+ * фитнес-зал" scored the trip page that names the hotel three times at **0.27**, because the
+ * page's accommodation paragraph answers *where they are staying*, not *whether it has a pool*.
+ * The subject alone scored the same page **0.97**. Same index, same options, same threshold.
+ *
+ * So the subject is asked only when the claim found nobody — the ownership question after the
+ * answers-this question came back empty. It costs a second recall exactly when the alternative
+ * was creating a page, never on the path that already routed, and it can only rescue a miss:
+ * a claim that routed keeps the destination its own text chose.
+ */
 async function route(
   ctx: AknoContext,
   candidate: RetainCandidate,
 ): Promise<{ slug: string | null; score: number; nearest: string[] }> {
+  const byClaim = await scoreDestinations(ctx, `${candidate.subject}. ${candidate.text}`, candidate);
+  if (byClaim.slug !== null) return byClaim;
+
+  const subject = candidate.subject.trim();
+  if (subject.length === 0) return byClaim;
+  const bySubject = await scoreDestinations(ctx, subject, candidate);
+  if (bySubject.slug !== null) return bySubject;
+
+  // Neither routed. Report whichever came closer, and prefer the claim pass's suggestions:
+  // they were drawn against the text the user actually said.
+  const closer = bySubject.score > byClaim.score ? bySubject : byClaim;
+  return { ...closer, nearest: byClaim.nearest.length > 0 ? byClaim.nearest : bySubject.nearest };
+}
+
+async function scoreDestinations(
+  ctx: AknoContext,
+  query: string,
+  candidate: RetainCandidate,
+): Promise<{ slug: string | null; score: number; nearest: string[] }> {
   const result = await recall(ctx, {
-    query: `${candidate.subject}. ${candidate.text}`,
+    query,
     mode: 'lookup',
     limit: 5,
     // Summaries only: routing is a decision about *which page*, and line windows
@@ -378,9 +444,23 @@ async function route(
   // agent read the list as the intended home and told the user it would be filed there.
   const nearest = candidates.slice(0, 4).map((card) => card.slug);
 
-  const writable = candidates.find((card) => card.relevance !== undefined);
-  if (!writable) return { slug: null, score: 0, nearest };
+  // **The best-judged candidate, not the best-ranked one.**
+  //
+  // This took the first card with a relevance and thresholded only that. Card order is
+  // `score * rankFactor`, and a card's score is the best of its chunks, so the page that leads
+  // is the page with one strong passage — not necessarily the page a cross-encoder considers
+  // the right home. When the leader fell below the threshold, routing refused and the claim
+  // dropped to the retain model's guessed slug, with every remaining candidate unread.
+  //
+  // Observed 2026-08-16: a meal-box order was filed onto `household/concerts-2026`, which the
+  // reranker scored 0.026, while `household/subscriptions` — already holding that supplier's
+  // cancellation — scored 0.755 and was never looked at. The measurement was bought and
+  // discarded. Taking the maximum cannot route anything the old code would have refused *and*
+  // the threshold rejects; it can only stop a low leader from hiding a qualified page behind it.
+  const scored = candidates.filter((card) => card.relevance !== undefined);
+  if (scored.length === 0) return { slug: null, score: 0, nearest };
 
+  const writable = scored.reduce((best, card) => (card.relevance! > best.relevance! ? card : best));
   const relevance = writable.relevance!;
   return relevance >= ctx.config.routeThreshold
     ? { slug: writable.slug, score: relevance, nearest }
@@ -402,8 +482,30 @@ function isInsideSuggestedFolder(slug: string, suggestedPage: string | undefined
 
 export { isInsideSuggestedFolder as isInsideSuggestedFolderForTesting };
 
-function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: string[]): ApprovalRequest {
+/** Does a page with this slug already exist, whatever its role? */
+function pageExists(ctx: AknoContext, slug: string): boolean {
+  return ctx.store.db.prepare('SELECT 1 FROM pages WHERE slug = ?').get(slug) !== undefined;
+}
+
+/**
+ * `refusedPage` names an existing page the retain model suggested and routing declined to use.
+ * It gets its own wording: the other two say a page has to be *found* or *made*, and neither
+ * describes the case where one was named, exists, and was judged not to be a home for this.
+ */
+function proposeUnrouted(
+  ctx: AknoContext,
+  candidate: RetainCandidate,
+  nearest: string[],
+  refusedPage?: string,
+): ApprovalRequest {
   const id = newPrefixedId('prop');
+  const threshold = ctx.config.routeThreshold;
+  const stored = refusedPage
+    ? `nothing scored above ${threshold} for "${candidate.subject}"; the suggested page "${refusedPage}" exists but was not judged a home for it`
+    : nearest.length > 0
+      ? `no page scored above ${threshold} for "${candidate.subject}"`
+      : `no page exists that could hold "${candidate.subject}" — every near match is source material`;
+
   ctx.store.db
     .prepare(
       `INSERT INTO proposals(id, at, kind, reason, subject, payload, nearest, status)
@@ -412,9 +514,7 @@ function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: 
     .run(
       id,
       new Date().toISOString(),
-      nearest.length > 0
-        ? `no page scored above ${ctx.config.routeThreshold} for "${candidate.subject}"`
-        : `no page exists that could hold "${candidate.subject}" — every near match is source material`,
+      stored,
       candidate.subject,
       JSON.stringify({ append: candidate.text }),
       JSON.stringify(nearest),
@@ -422,9 +522,10 @@ function proposeUnrouted(ctx: AknoContext, candidate: RetainCandidate, nearest: 
 
   return {
     proposal_id: id,
-    reason:
-      nearest.length > 0
-        ? `nothing scored above ${ctx.config.routeThreshold} for "${candidate.subject}" — ask where this goes`
+    reason: refusedPage
+      ? `"${refusedPage}" already exists and nothing judged it a home for "${candidate.subject}" — ask where this goes rather than appending to it`
+      : nearest.length > 0
+        ? `nothing scored above ${threshold} for "${candidate.subject}" — ask where this goes`
         : `no page could hold "${candidate.subject}" — every near match is source material, so this needs a new page`,
     nearest,
   };

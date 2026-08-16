@@ -35,6 +35,21 @@ const RerankerRoleDoc = z.object({
   ...modelRoleBase,
   top_k: z.number().int().positive().optional(),
   max_chars: z.number().int().positive().optional(),
+  /**
+   * Where this model's "relevant" boundary sits on its own logit scale. Subtracted before the
+   * sigmoid that turns a raw score into `relevance`, so the boundary lands on 0.5.
+   *
+   * Rerankers do not share a scale and nothing in a GGUF declares one. Measured on ~/Brain, 12
+   * labelled queries against 120 irrelevant pairs: bge-reranker-v2-m3 puts an irrelevant pair
+   * near −11 and clears 0.5 for 0.8% of them; gte-reranker-modernbert-base puts the same pairs
+   * near −0.3 and clears 0.5 for **42.5%**. Both rank correctly — only one is centred where a
+   * 0.5 cutoff means anything.
+   *
+   * Calibrating here rather than moving `route_threshold` per model is deliberate: this is the
+   * single point where a logit becomes a relevance, so every consumer downstream keeps working
+   * unchanged and `relevance` keeps meaning the same thing whichever model produced it.
+   */
+  score_offset: z.number().optional(),
 });
 /**
  * The shape shared by the two roles that generate text. They differ in what they are *for*,
@@ -295,6 +310,8 @@ export interface ResolvedModelRole {
   topK?: number;
   /** Characters of each candidate sent to the reranker. Cost scales with tokens. */
   maxChars?: number;
+  /** Logit subtracted before the sigmoid, so this model's relevant/irrelevant boundary lands on 0.5. */
+  scoreOffset?: number;
   maxOutputTokens?: number;
   concurrency?: number;
   /** Why the role is unusable, when it is. Reported verbatim by `doctor`. */

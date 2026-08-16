@@ -22,7 +22,7 @@ Reply with JSON only:
   "candidates": [
     { "text": "one self-contained sentence, phrased as it should appear on a page",
       "subject": "2-5 words naming what this is about, used to find the right page",
-      "page": "folder/page-name — taxonomy branch and fallback page, lowercase and hyphenated",
+      "page": "folder/page-name",
       "origin": "user or assistant — whose statement established the claim",
       "kind": "fact" }
   ],
@@ -49,6 +49,11 @@ Rules:
 - Prose, not triples. "The car insurance premium is now 33 EUR a month" — not "premium=33".
 - Resolve pronouns and relative dates against the text. Never invent a date you were not given.
 - An "events" entry is something that happened on a date, not a value that is true.
+- "page" is a slug and nothing else: lowercase, hyphenated, no description, no punctuation beyond
+  the single "/" between folder and page. Every other field above takes prose, so its example
+  doubles as instructions — for this one that is a filename, and a model that copies the wording
+  through writes a page named after it. Observed: a whole trip route filed under
+  "ada-marlow/projects-taxonomy-branch-and-fallback-page-lowercase-and-hyphenated".
 - Always supply "page" when one of the supplied folders marked eligible=true fits. Its parent must
   be one exact eligible folder from the taxonomy. Never invent, rename or translate a folder. If
   none fits, omit "page". A finding established by the assistant is canonical knowledge with

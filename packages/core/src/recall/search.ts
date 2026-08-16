@@ -241,6 +241,12 @@ export async function rerankHits(
   hits: ChunkHit[],
   topK: number,
   maxChars = 800,
+  /**
+   * Where this model puts the relevant/irrelevant boundary on its own logit scale. Subtracted
+   * before the sigmoid so that boundary lands on 0.5, which is what every threshold downstream
+   * already assumes. 0 leaves a model already centred there untouched.
+   */
+  scoreOffset = 0,
 ): Promise<{ hits: ChunkHit[]; degraded: DegradedReason | null; note: string | null }> {
   if (!reranker.available || hits.length <= 1) {
     return reranker.available
@@ -282,7 +288,14 @@ export async function rerankHits(
     // queries, and readable as a score rather than as a model internal.
     // The cross-encoder saw the query and the passage together, so its judgement
     // replaces cosine as the absolute signal rather than merging with it.
-    if (hit) reordered.push({ ...hit, score: sigmoid(entry.score), relevance: sigmoid(entry.score) });
+    //
+    // `scoreOffset` is what makes "comparable" true across *models* as well as queries. Two
+    // cross-encoders that rank a set identically can sit on entirely different scales: measured
+    // here, an irrelevant pair scores ~−11 on bge-reranker-v2-m3 and ~−0.3 on
+    // gte-reranker-modernbert-base, so the same 0.5 cutoff admits 0.8% of irrelevant pairs on
+    // one and 42.5% on the other. Recentring here keeps every threshold downstream honest.
+    const relevance = sigmoid(entry.score - scoreOffset);
+    if (hit) reordered.push({ ...hit, score: relevance, relevance });
   }
   reordered.sort((a, b) => b.score - a.score);
 

@@ -116,6 +116,32 @@ describe('rerankHits', () => {
     expect(result.hits[1]!.score).toBeLessThan(0.1);
   });
 
+  /**
+   * Two cross-encoders can rank a set identically and still disagree completely about where
+   * "relevant" starts. Measured on ~/Brain: an irrelevant pair sits near −11 on
+   * bge-reranker-v2-m3 and near −0.3 on gte-reranker-modernbert-base, so an uncalibrated 0.5
+   * cutoff admits 0.8% of irrelevant pairs on one model and 42.5% on the other.
+   */
+  it('recentres a model whose relevant boundary is not at logit zero', async () => {
+    // For such a model 1.2 is a relevant score and −0.3 an irrelevant one — yet raw, the
+    // irrelevant pair still sigmoids to within a whisker of the cutoff.
+    const raw = await rerankHits(store, fakeReranker([1.2, -0.3]), 'q', hits.slice(0, 2), 2);
+    expect(raw.hits[0]!.relevance!).toBeGreaterThan(0.5);
+    expect(raw.hits[1]!.relevance!).toBeGreaterThan(0.4);
+
+    const cal = await rerankHits(store, fakeReranker([1.2, -0.3]), 'q', hits.slice(0, 2), 2, 800, 0.5);
+    expect(cal.hits[0]!.relevance!).toBeGreaterThan(0.5);
+    expect(cal.hits[1]!.relevance!).toBeLessThan(0.5);
+    // Ordering is a property of the model; calibration only moves the cutoff.
+    expect(cal.hits.map((hit) => hit.chunkId)).toEqual(raw.hits.map((hit) => hit.chunkId));
+  });
+
+  it('leaves a model already centred at zero untouched', async () => {
+    const withZero = await rerankHits(store, fakeReranker([4.2, -11]), 'q', hits.slice(0, 2), 2, 800, 0);
+    const without = await rerankHits(store, fakeReranker([4.2, -11]), 'q', hits.slice(0, 2), 2);
+    expect(withZero.hits.map((hit) => hit.relevance)).toEqual(without.hits.map((hit) => hit.relevance));
+  });
+
   it('keeps a judged hit above every un-judged one, whatever its logit', async () => {
     // Only the first two are reranked, and both score badly. They must still
     // outrank the tail: the reranker looked at them and the tail it never saw.
