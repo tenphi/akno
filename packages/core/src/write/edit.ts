@@ -1,11 +1,18 @@
 import { AknoError } from '@akno/protocol';
-import { parseFrontmatter } from '../kb/frontmatter.ts';
+import { declaredFrontmatter, parseFrontmatter, withId } from '../kb/frontmatter.ts';
 
 /**
- * The four ways `write` can change a body, and the rule they all obey: **never
- * touch the frontmatter.** Every key except `id` is preserved byte for
- * byte, so every edit here operates on the body and splices it back under the
- * original head.
+ * The four ways `write` can change a body, and the rule they obey: **never touch the
+ * frontmatter, unless the caller sent one.** Every key is preserved byte for byte, so an
+ * edit here operates on the body and splices it back under the original head.
+ *
+ * The exception is `content` — a whole-page write — and it is not a loophole. `read` returns
+ * the file including its frontmatter, so a caller that read a page, revised it and sent the
+ * result back arrives holding a block; and `role`, `management` and `temporal` are declarable
+ * nowhere else in the write API, so rewriting the declaration is a thing a caller legitimately
+ * means. The old behaviour spliced that block under the existing head and produced a page with
+ * two, the second invisible to everything that reads frontmatter. Adopting it is both what the
+ * caller asked for and the only reading that cannot silently accumulate.
  */
 
 export type BodyEdit =
@@ -18,12 +25,42 @@ export interface EditResult {
   content: string;
   /** Lines that changed, for the journal summary and the write report. */
   firstChangedLine: number | null;
+  /**
+   * Set when the write carried its own frontmatter block and it replaced the page's.
+   * `dropped` names the keys the old block declared and the new one does not, because a
+   * caller rewriting a declaration from memory is the likeliest way to lose a key nobody
+   * meant to remove — and a rewrite nobody can see is the failure this whole path exists
+   * to stop repeating.
+   */
+  frontmatter?: { adopted: true; dropped: string[] };
 }
 
 export function applyEdit(original: string, edit: BodyEdit): EditResult {
   const frontmatter = parseFrontmatter(original);
   const head = original.slice(0, frontmatter.bodyOffset);
   const body = original.slice(frontmatter.bodyOffset);
+
+  if (edit.kind === 'content') {
+    const declared = declaredFrontmatter(edit.content);
+    if (declared) {
+      // `id` is Akno's own key and the caller has no reason to be carrying it. Losing it
+      // detaches the page from its row, so it survives a rewrite that omits it.
+      const id = frontmatter.data.id;
+      const nextHead = typeof id === 'string' && id.length > 0 ? withId(declared.head, id) : declared.head;
+      // A blank line between the closing fence and the body, matching how every page Akno
+      // composes is laid out. `bodyOffset` has already eaten the fence's own newline.
+      const separated = declared.body.startsWith('\n') ? declared.body : `\n${declared.body}`;
+      const content = nextHead + endWithNewline(separated);
+      const dropped = Object.keys(frontmatter.data).filter(
+        (key) => key !== 'id' && !Object.hasOwn(declared.data, key),
+      );
+      return {
+        content,
+        firstChangedLine: firstDifference(original, content),
+        frontmatter: { adopted: true, dropped },
+      };
+    }
+  }
 
   const nextBody = editBody(body, edit);
   const content = head + nextBody;

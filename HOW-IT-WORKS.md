@@ -341,6 +341,23 @@ akno write --slug home/dishwasher --append "Repaired today." \
 akno write --slug home/lease --append "- Deposit: 2222 EUR" --dry-run
 ```
 
+### Rewriting a page's declaration
+
+`--append`, `--patch` and `--replace` never touch the frontmatter. `--content` is the exception, and only when
+the text you give it opens with a frontmatter block: that block is adopted as the page's declaration, byte for
+byte, and the old one goes. It is the only way to set `akno.role`, `akno.management` or `akno.temporal`
+through `write`, so a caller sending one means it.
+
+This is also what keeps a page down to one block. `read` returns the file with its frontmatter included, so
+anything that reads a page, revises it and writes the result back is holding a block whether it meant to or
+not. Splicing that under the existing head — the old behaviour — produced pages with two, the second one
+invisible to the parser, the indexer and every recall. A page can end up titled after whichever stray fact
+happened to create it while the title you wrote sits four lines lower, unread.
+
+The keys the old block declared and the new one omits are named in the reply, because a declaration rewritten
+from memory is the easy way to lose a `temporal` boundary without changing a word anybody reads. Nothing is
+refused — the change is journalled, so `akno undo` takes it back.
+
 ### When two lines disagree
 
 ```

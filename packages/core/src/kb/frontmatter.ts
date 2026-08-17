@@ -100,9 +100,64 @@ export function withId(content: string, id: string): string {
     return `---\nid: ${id}\n---\n\n${content}`;
   }
   if (typeof fm.data.id === 'string' && fm.data.id.length > 0) return content;
+  return spliceAfterFence(content, [`id: ${id}`]);
+}
+
+/**
+ * Inserts lines immediately after the opening fence of an existing block, leaving
+ * every other byte alone. Immediately after, because that is where a human scanning
+ * frontmatter expects an identifier or a title to be.
+ *
+ * Splicing rather than parse-and-re-emit for the reason at the top of this file: the
+ * keys already there keep their exact quoting, ordering and comments.
+ */
+export function spliceAfterFence(content: string, lines: string[]): string {
+  if (lines.length === 0) return content;
+  const fm = parseFrontmatter(content);
+  if (!fm.present) return `---\n${lines.join('\n')}\n---\n\n${content}`;
   const head = content.slice(0, fm.bodyOffset);
-  // Insert immediately after the opening fence so `id` reads first, which is
-  // where a human scanning frontmatter expects an identifier to be.
   const firstNewline = head.indexOf('\n') + 1;
-  return `${head.slice(0, firstNewline)}id: ${id}\n${head.slice(firstNewline)}${content.slice(fm.bodyOffset)}`;
+  return (
+    head.slice(0, firstNewline) +
+    `${lines.join('\n')}\n` +
+    head.slice(firstNewline) +
+    content.slice(fm.bodyOffset)
+  );
+}
+
+/** A frontmatter block a caller supplied, split from the body it came with. */
+export interface DeclaredFrontmatter {
+  /** The block verbatim, fences and trailing newline included. */
+  head: string;
+  /** Everything after the closing fence. */
+  body: string;
+  data: Record<string, unknown>;
+}
+
+/**
+ * Reads a frontmatter block off the front of text a *caller* supplied, rather than off a
+ * file on disk.
+ *
+ * This exists because `read` hands back the whole file, frontmatter included. A caller that
+ * read a page, revised it and sent the result back therefore carries a block with it, and
+ * treating that block as body text is how a page grows a second one — the head is preserved,
+ * the block lands underneath it, and nothing that reads frontmatter can see it. Rewriting the
+ * declaration is a legitimate thing for a caller to want: `role`, `management` and `temporal`
+ * live nowhere else in the write API.
+ *
+ * Returns `null` when there is nothing to adopt — no fence, an unterminated fence, or a fence
+ * pair whose contents are not a mapping. That last case is the guard that matters: a body
+ * opening with a `---` horizontal rule and containing another one looks exactly like a
+ * frontmatter block until you try to parse it, and a horizontal rule is not a declaration.
+ */
+export function declaredFrontmatter(text: string): DeclaredFrontmatter | null {
+  // Leading blank lines are a formatting accident, not a statement that the block is body.
+  const trimmed = text.replace(/^(?:[ \t]*\r?\n)*/, '');
+  const fm = parseFrontmatter(trimmed);
+  if (!fm.present || Object.keys(fm.data).length === 0) return null;
+  return {
+    head: trimmed.slice(0, fm.bodyOffset),
+    body: trimmed.slice(fm.bodyOffset),
+    data: fm.data,
+  };
 }

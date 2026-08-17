@@ -62,6 +62,78 @@ describe('applyEdit', () => {
 });
 
 /**
+ * The one case where a body edit *does* change the frontmatter, and the reason it has to.
+ *
+ * `read` returns the file with its frontmatter, so a caller that read a page, revised it and
+ * wrote the result back arrives holding a block. Splicing that under the existing head is what
+ * gave `travel/2027/japan-trip` two of them, the second invisible to everything that reads
+ * frontmatter — including the indexer, which went on reporting a trip page titled after the
+ * one Shinkansen fact that happened to create it.
+ */
+describe('applyEdit adopting a frontmatter block the caller sent', () => {
+  const SENT = [
+    '---',
+    'title: Lease 2027',
+    'akno:',
+    '  role: knowledge',
+    '---',
+    '',
+    '# Lease 2027',
+    '',
+  ].join('\n');
+
+  it('replaces the page block rather than nesting a second one under it', () => {
+    const result = applyEdit(PAGE, { kind: 'content', content: SENT });
+    expect(result.content.match(/^---$/gm)).toHaveLength(2);
+    expect(result.content).toBe(SENT);
+    expect(result.frontmatter?.adopted).toBe(true);
+  });
+
+  it('names the keys the rewrite dropped, so a rewrite from memory is not silent', () => {
+    // `date` was on the page and is not in what came back. Nothing is refused — the caller
+    // may well have meant it — but a `temporal` or `management` key lost this way changes how
+    // a page behaves for months without changing a word anybody reads.
+    const result = applyEdit(PAGE, { kind: 'content', content: SENT });
+    expect(result.frontmatter?.dropped).toEqual(['date']);
+  });
+
+  it('carries `id` forward, because the caller has no reason to be holding it', () => {
+    const identified = `---\nid: 01JQZ4T7K2E9ABCD\ntitle: Lease\n---\n\n# Lease\n`;
+    const result = applyEdit(identified, { kind: 'content', content: SENT });
+    expect(result.content).toContain('id: 01JQZ4T7K2E9ABCD');
+    expect(result.frontmatter?.dropped).toEqual([]);
+  });
+
+  it('separates the block from the body even when the caller did not', () => {
+    const flush = '---\ntitle: Lease\n---\n# Lease\n';
+    expect(applyEdit(PAGE, { kind: 'content', content: flush }).content).toBe(
+      '---\ntitle: Lease\n---\n\n# Lease\n',
+    );
+  });
+
+  it('reads a horizontal rule as body, not as a declaration', () => {
+    // A body that opens with `---` and contains another one is indistinguishable from a
+    // frontmatter block until you parse it. Prose is not a mapping, so it stays body.
+    const ruled = '---\n\nSome prose about the lease.\n\n---\n\nMore prose.\n';
+    const result = applyEdit(PAGE, { kind: 'content', content: ruled });
+    expect(result.frontmatter).toBeUndefined();
+    expect(result.content.startsWith("---\ntitle: Lease\ndate: '2026-05-26T00:00:00.000Z'\n---\n")).toBe(
+      true,
+    );
+  });
+
+  it('leaves the frontmatter alone for append, patch and replace', () => {
+    // Only a whole-page write can mean "and this is the declaration". A block arriving in an
+    // append is text somebody pasted, and moving it to the head would be a guess.
+    const result = applyEdit(PAGE, { kind: 'append', text: SENT });
+    expect(result.content.startsWith("---\ntitle: Lease\ndate: '2026-05-26T00:00:00.000Z'\n---\n")).toBe(
+      true,
+    );
+    expect(result.frontmatter).toBeUndefined();
+  });
+});
+
+/**
  * Strictness is the feature. A fuzzy applier eventually lands a hunk in the wrong
  * place, and in a knowledge base that means a value silently attached to the wrong
  * subject. Refusing costs a re-read; guessing costs correctness.

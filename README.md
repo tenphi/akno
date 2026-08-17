@@ -226,6 +226,12 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 - If a reserved path exists and isn't what Akno expects — a `timeline.md` that is a project plan — it is left
   completely alone. `doctor` reports it and points at the config key to remap it.
 - Every frontmatter key except Akno's own `id` and `akno` policy block is preserved byte for byte.
+- The one way a caller changes a declaration is to send it: `write({content})` whose text opens with a
+  frontmatter block adopts that block as the page's, verbatim, and the reply names any key the old block had
+  and the new one does not. `role`, `management` and `temporal` are declarable nowhere else in the write API,
+  so this is deliberate rather than a leak — and it is what stops a page accumulating a second block, since
+  `read` returns the file with its frontmatter and a revised page comes back carrying one. `append`, `patch`
+  and `replace` never touch the head; a block arriving in one of those is text somebody pasted.
 
 Three operations do author files, and each is journalled and reversible with `akno undo`: `write` and
 `remember` (because you asked them to), `ingest` (a page for a document you handed over), and the maintenance

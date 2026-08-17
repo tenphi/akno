@@ -130,6 +130,43 @@ describe('write', () => {
     await mem.close();
   });
 
+  it('adopts a frontmatter block sent with the content instead of nesting a second one', async () => {
+    // The round trip that produced two blocks on `travel/2027/japan-trip`: `read` returns the
+    // file including its frontmatter, so a revised page comes back carrying one. It is also
+    // the only way a caller can state `role`, `management` or `temporal` at all.
+    const mem = await openAs('agent');
+    const result = await mem.write({
+      slug: 'home/lease',
+      content:
+        '---\ntitle: Apartment lease\nakno:\n  role: knowledge\n---\n\n# Apartment lease\n\n- Rent: 1111 EUR\n',
+    });
+    expect(result.outcome).toBe('ok');
+    const content = read('home/lease.md');
+    expect(content.match(/^---$/gm)).toHaveLength(2);
+    expect(content).toContain('role: knowledge');
+    // `type: contract` was on the page and not in what came back — allowed, and reported.
+    expect(result.note).toMatch(/dropping `type`/);
+    const page = await mem.read({ slug: 'home/lease' });
+    expect(page.page?.role).toBe('knowledge');
+    await mem.close();
+  });
+
+  it('keeps a caller-declared block verbatim on a page it is creating', async () => {
+    const mem = await openAs('agent');
+    await mem.write({
+      slug: 'home/japan-trip',
+      content:
+        '---\ntitle: "Japan Trip 2027"\nakno:\n  role: knowledge\n  temporal:\n    kind: event\n    until: 2027-06-08\n---\n\n# Japan Trip 2027\n\nOsaka, then Fukuoka.\n',
+      title: 'Ignored in favour of the block',
+    });
+    const content = read('home/japan-trip.md');
+    expect(content.match(/^---$/gm)).toHaveLength(2);
+    expect(content).toContain('title: "Japan Trip 2027"');
+    expect(content).not.toContain('Ignored in favour');
+    expect(content.match(/^#\s/gm)).toHaveLength(1);
+    await mem.close();
+  });
+
   it('reports a noop rather than journalling a change that changed nothing', async () => {
     const mem = await openAs('agent');
     const first = await mem.write({ slug: 'home/lease', content: 'Same body.' });

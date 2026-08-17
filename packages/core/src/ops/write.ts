@@ -3,8 +3,9 @@ import path from 'node:path';
 import { AknoError, WriteInput, type WriteOutput, type WriteTarget } from '@akno/protocol';
 import type { AknoContext } from '../context.ts';
 import { parsePage } from '../kb/page.ts';
+import { declaredFrontmatter, readString, spliceAfterFence } from '../kb/frontmatter.ts';
 import { detectConflict } from '../write/conflict.ts';
-import { applyEdit, type BodyEdit } from '../write/edit.ts';
+import { applyEdit, type BodyEdit, type EditResult } from '../write/edit.ts';
 import { insertEvent, newLedger } from '../write/ledger.ts';
 import { extract } from '../ingest/extract.ts';
 import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
@@ -75,7 +76,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   const before = existing ? await fsp.readFile(absPath, 'utf8') : null;
 
   const edit = resolveEdit(input, before !== null);
-  const edited =
+  const edited: EditResult =
     before === null
       ? { content: composeNewPage(input, slug, edit), firstChangedLine: null }
       : applyEdit(before, edit);
@@ -218,6 +219,17 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     return { id: id ?? '', rel_path: entry.relPath, text_from: entry.extraction.via };
   });
 
+  // A frontmatter rewrite is reported, never silent. The caller may not have realised the block
+  // it echoed back was a declaration, and dropping `temporal` or `management` changes how the
+  // page behaves for months without changing a word anybody reads.
+  const note = edited.frontmatter
+    ? `the frontmatter you sent replaced the page's` +
+      (edited.frontmatter.dropped.length > 0
+        ? `, dropping ${edited.frontmatter.dropped.map((key) => `\`${key}\``).join(', ')} — ` +
+          `write again with those keys if that was not deliberate, or \`undo\` the change`
+        : '')
+    : null;
+
   return {
     status: 'ok',
     outcome: 'ok',
@@ -225,6 +237,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     wrote,
     facts: { retired: 0, added: report.factsDerived },
     ...(documents.length > 0 ? { documents } : {}),
+    ...(note ? { note } : {}),
   };
 }
 
@@ -418,7 +431,9 @@ function actionFor(edit: BodyEdit): WriteTarget['action'] {
 function incomingText(input: ReturnType<typeof WriteInput.parse>, edit: BodyEdit): string {
   switch (edit.kind) {
     case 'content':
-      return edit.content;
+      // A declaration is not a claim. `role: knowledge` is not the page asserting anything
+      // about the world, and scanning it for conflicts finds pairs that mean nothing.
+      return declaredFrontmatter(edit.content)?.body ?? edit.content;
     case 'append':
       return edit.text;
     case 'replace':
@@ -441,20 +456,38 @@ function incomingText(input: ReturnType<typeof WriteInput.parse>, edit: BodyEdit
  * Composed directly rather than seeded-then-edited: `content` means "this is the
  * body", so running it through the body editor discarded the `# Title` heading the
  * seed had just added, and left the frontmatter fence flush against the first line.
+ *
+ * A caller who wrote their own frontmatter keeps it verbatim — the same courtesy the body
+ * already extends to a caller who wrote their own `# Heading`, and the same rule `applyEdit`
+ * follows for a page that already exists. `title`, `type` and `tags` then fill in only the
+ * keys the block left out, because an argument and a block that both say `title` are one
+ * intent stated twice and the block is the more specific statement of it.
  */
 function composeNewPage(input: ReturnType<typeof WriteInput.parse>, slug: string, edit: BodyEdit): string {
-  const title = input.title ?? titleFromSlug(slug);
-  const front = [`title: ${title}`];
-  if (input.type) front.push(`type: ${input.type}`);
-  if (input.tags?.length) front.push(`tags: [${input.tags.join(', ')}]`);
+  const supplied = edit.kind === 'content' ? edit.content : edit.kind === 'append' ? edit.text : '';
+  const declared = edit.kind === 'content' ? declaredFrontmatter(supplied) : null;
 
-  const body = edit.kind === 'content' ? edit.content.trim() : edit.kind === 'append' ? edit.text.trim() : '';
+  const title = readString(declared?.data ?? {}, 'title') ?? input.title ?? titleFromSlug(slug);
+  const body = (declared?.body ?? supplied).trim();
   // A caller who wrote their own heading keeps it; one who did not gets the title
   // as an H1, because a page whose body starts mid-sentence reads as a fragment.
   const heading = /^#{1,6}\s/.test(body) ? '' : `# ${title}\n\n`;
   const links = input.links?.length
     ? `\n\n${input.links.map((link) => `Related: [[${link}]]`).join('\n')}`
     : '';
+
+  if (declared) {
+    const missing = [
+      declared.data.title === undefined ? `title: ${title}` : null,
+      input.type && declared.data.type === undefined ? `type: ${input.type}` : null,
+      input.tags?.length && declared.data.tags === undefined ? `tags: [${input.tags.join(', ')}]` : null,
+    ].filter((line): line is string => line !== null);
+    return `${spliceAfterFence(declared.head, missing)}\n${heading}${body}${links}\n`;
+  }
+
+  const front = [`title: ${title}`];
+  if (input.type) front.push(`type: ${input.type}`);
+  if (input.tags?.length) front.push(`tags: [${input.tags.join(', ')}]`);
 
   return `---\n${front.join('\n')}\n---\n\n${heading}${body}${links}\n`;
 }
