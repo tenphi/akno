@@ -1421,14 +1421,41 @@ export class Indexer {
       try {
         const content = await fsp.readFile(path.join(this.#config.aknoPath, row.rel_path), 'utf8');
         const page = parsePage(row.rel_path, content);
+        const wantedFacts = wantFacts && row.role === 'knowledge';
         const derived = await derivePage(page, this.#models.derive, {
           summaries: wantSummaries,
-          facts: wantFacts && row.role === 'knowledge',
+          facts: wantedFacts,
         });
 
         if (derived.error) {
           report.warnings.push(`derivation for ${row.slug}: ${derived.error}`);
+        } else if (derived.partial && wantedFacts) {
+          // **The facts half failed. Keep the summary, and touch nothing else.**
+          //
+          // This used to fall through to the branch below, which meant a transient failure —
+          // one 400, one unparseable answer — did two permanent things. `replaceFacts` with an
+          // empty list *deleted* every fact on the page, because a fact whose source line is
+          // still present and which the derivation did not repeat is a rephrasing, not a
+          // supersession, and rephrasings are deleted. Then `derived_hash` was stamped, so the
+          // page read as derived and was never offered to another pass. One flaky call, and a
+          // page's facts were gone with no superseded rows to show they had ever existed.
+          //
+          // Observed here on 2026-08-17: `people/ada-marlow`, `timeline` and
+          // `shopping/zephyr-qx-100` lost every fact to a token-parameter race that a
+          // retry would have fixed, and nothing would ever have retried them.
+          //
+          // So the hash stays unstamped and the page comes back next pass, exactly as an outright
+          // `error` already does. The cost is honest and bounded: a page whose full derivation
+          // genuinely cannot succeed is re-attempted once per index pass, and its summary is
+          // rewritten each time. That is the same bill the `error` branch above already accepts,
+          // and it buys the difference between a stale fact and a deleted one.
+          report.warnings.push(`derivation for ${row.slug}: ${derived.partial}`);
+          this.#store.db
+            .prepare('UPDATE pages SET summary = ?, keywords = ? WHERE id = ?')
+            .run(derived.summary, JSON.stringify(derived.keywords), row.id);
         } else {
+          // A `partial` still reaches here when facts were never wanted — a `source` page asks for
+          // a summary alone, so there is nothing held back and nothing to protect.
           if (derived.partial) report.warnings.push(`derivation for ${row.slug}: ${derived.partial}`);
           this.#store.transaction(() => {
             this.#store.db

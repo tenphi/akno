@@ -435,7 +435,10 @@ describe('retrying a rate limit', () => {
     // A retried rate limit that then times out has two fixes with opposite directions, and
     // reporting only the timeout points at the wrong one.
     const { result } = await withServer(
-      [{ status: 429, headers: { 'retry-after': '0' } }, { status: 200, delayMs: 400 }],
+      [
+        { status: 429, headers: { 'retry-after': '0' } },
+        { status: 200, delayMs: 400 },
+      ],
       { timeoutMs: 150 },
       ask,
     );
@@ -595,5 +598,117 @@ describe('the schema ladder', () => {
       instance.close();
       instance.closeAllConnections();
     }
+  });
+});
+
+describe('learning a parameter dialect while several calls are in flight', () => {
+  /**
+   * An endpoint that answers by what the body actually contains, rather than by call order —
+   * which is the only way to test a race, because the point is that the losing call is the one
+   * whose *own* request was wrong.
+   */
+  async function withStrictEndpoint<T>(
+    reject: (body: Record<string, unknown>) => { message: string } | null,
+    use: (client: ModelClient) => Promise<T>,
+  ): Promise<{ result: T; bodies: Record<string, unknown>[] }> {
+    const bodies: Record<string, unknown>[] = [];
+    const instance = http.createServer((request, response) => {
+      const chunks: Buffer[] = [];
+      request.on('data', (chunk: Buffer) => chunks.push(chunk));
+      request.on('end', () => {
+        const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
+        bodies.push(body);
+        const complaint = reject(body);
+        // Held briefly so every concurrent call is past `build()` before any reply lands. Without
+        // it the calls serialize by luck and the race never happens.
+        setTimeout(() => {
+          if (complaint) {
+            response.writeHead(400, { 'content-type': 'application/json' });
+            response.end(JSON.stringify({ error: complaint }));
+            return;
+          }
+          response.writeHead(200, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ choices: [{ message: { content: '{"summary":"ok"}' } }] }));
+        }, 15);
+      });
+    });
+    await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
+    const { port } = instance.address() as { port: number };
+    try {
+      const client = new ModelClient({
+        role: 'derive',
+        provider: {
+          name: 'stub',
+          baseUrl: `http://127.0.0.1:${port}/v1`,
+          apiKey: null,
+          headers: {},
+          maxRetries: 0,
+        },
+        id: 'stub',
+        enabled: true,
+        requested: true,
+        timeoutMs: 5_000,
+        unavailableReason: null,
+      });
+      return { result: await use(client), bodies };
+    } finally {
+      instance.close();
+      instance.closeAllConnections();
+    }
+  }
+
+  it('corrects every concurrent call, not just the one that noticed first', async () => {
+    // The failure this locks: all four calls send `max_tokens` and all four are refused. The first
+    // to handle its rejection flips the shared field; the other three then asked "did I send
+    // `max_tokens`?" by reading that field back, saw the winner's correction, decided the complaint
+    // must have been about something else, and returned the 400. On this install at
+    // `derive.concurrency: 4` that cost the facts of the first pages derived after every service
+    // restart — permanently, because a failed derivation is stamped as derived and never retried.
+    const { result } = await withStrictEndpoint(
+      (body) =>
+        'max_tokens' in body
+          ? {
+              message:
+                "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.",
+            }
+          : null,
+      (client) =>
+        Promise.all(
+          Array.from({ length: 4 }, () => client.chat([{ role: 'user', content: 'hi' }], { maxTokens: 100 })),
+        ),
+    );
+
+    expect(result.map((outcome) => outcome.ok)).toEqual([true, true, true, true]);
+    expect(result.every((outcome) => outcome.value === '{"summary":"ok"}')).toBe(true);
+  });
+
+  it('never demotes the schema ladder past a rung nobody tried', async () => {
+    // Same race, one rung down. A call that sent `schema` while a concurrent call had already moved
+    // the field to `json_schema` used to compute its demotion *from the field* and jump straight to
+    // `plain` — so a race, rather than the endpoint, decided the process would spend the rest of its
+    // life without constrained decoding. Here only llama.cpp's form is refused, so `json_schema` is
+    // the correct resting rung and `plain` must never be reached.
+    const { bodies } = await withStrictEndpoint(
+      (body) => {
+        const format = body.response_format as { type?: string; schema?: unknown } | undefined;
+        return format?.schema ? { message: "Unknown parameter: 'response_format.schema'." } : null;
+      },
+      (client) =>
+        Promise.all(
+          Array.from({ length: 4 }, () =>
+            client.chat([{ role: 'user', content: 'hi' }], { schema: DOCUMENT_SUMMARY_SCHEMA }),
+          ),
+        ),
+    );
+
+    const types = bodies.map((body) => (body.response_format as { type?: string } | undefined)?.type);
+    expect(types).toContain('json_schema');
+    // `plain` is `{type: 'json_object'}` with no `schema` key — reached only by a second demotion.
+    expect(
+      bodies.filter((body) => {
+        const format = body.response_format as { type?: string; schema?: unknown } | undefined;
+        return format?.type === 'json_object' && !format.schema;
+      }),
+    ).toEqual([]);
   });
 });

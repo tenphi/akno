@@ -15,26 +15,36 @@ import { open, type Akno } from '../src/index.ts';
 
 let root: string;
 let stateDir: string;
-let server: { url: string; close: () => Promise<void>; setFacts: (facts: unknown[]) => void };
+let server: {
+  url: string;
+  close: () => Promise<void>;
+  setFacts: (facts: unknown[]) => void;
+  /** Break the full structured call only, leaving the summary-only fallback working. */
+  setBreakFacts: (broken: boolean) => void;
+};
 let mem: Akno;
 
 /** Minimal OpenAI-compatible chat endpoint returning a scripted derivation. */
 async function startStubChat(): Promise<typeof server> {
   const http = await import('node:http');
   let facts: unknown[] = [];
+  let breakFacts = false;
   const instance = http.createServer((request, response) => {
     let body = '';
     request.on('data', (chunk) => (body += chunk));
     request.on('end', () => {
-      const payload = JSON.stringify({
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({ summary: 'A stub summary.', keywords: ['stub'], facts }),
-            },
-          },
-        ],
-      });
+      // The full derivation asks for 2400 tokens, the summary-only fallback for 400. Telling them
+      // apart is what lets a test produce a *partial* derivation — the failure where the facts half
+      // is lost and the summary survives.
+      const asked = JSON.parse(body) as { max_tokens?: number; max_completion_tokens?: number };
+      const isFallback = (asked.max_tokens ?? asked.max_completion_tokens ?? 0) <= 400;
+      const content =
+        breakFacts && !isFallback
+          ? '{ "summary": "cut off mid'
+          : isFallback
+            ? JSON.stringify({ summary: 'Recovered on its own.', keywords: ['recovered'] })
+            : JSON.stringify({ summary: 'A stub summary.', keywords: ['stub'], facts });
+      const payload = JSON.stringify({ choices: [{ message: { content } }] });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(payload);
     });
@@ -49,6 +59,9 @@ async function startStubChat(): Promise<typeof server> {
     },
     setFacts: (next) => {
       facts = next;
+    },
+    setBreakFacts: (broken) => {
+      breakFacts = broken;
     },
   };
 }
@@ -152,6 +165,53 @@ describe('fact lifecycle', () => {
     // Gone, not retired: nothing was superseded, so there is no history to report. The
     // next pass over the same unchanged line can derive it again.
     expect(page.page!.lines.find((entry) => entry.text.includes('1111'))?.confidence).toBeUndefined();
+  });
+
+  /**
+   * A derivation that loses only its facts half must not be recorded as a derivation.
+   *
+   * It used to be. The partial fell through to the success branch, which did two permanent things:
+   * `replaceFacts` with an empty list *deleted* every fact on the page — a claim whose source line
+   * is still there and which this pass did not repeat is a rephrasing, and rephrasings are deleted
+   * — and then `derived_hash` was stamped, so the page read as derived and no later pass ever
+   * offered it again. One flaky call and a page's facts were gone, with no superseded rows to show
+   * they had existed.
+   *
+   * Seen for real on 2026-08-17: `people/ada-marlow`, `timeline` and
+   * `shopping/zephyr-qx-100` lost every fact to a token-parameter race a retry would have
+   * fixed, and nothing would ever have retried them.
+   */
+  it('keeps the facts and stays pending when only the facts half of a derivation fails', async () => {
+    server.setFacts([{ line: 7, claim: 'The rent is 1111 EUR per month.' }]);
+    await mem.index({});
+
+    const lease = path.join(root, 'lease.md');
+    // A new line, so the page needs deriving again — while the line the fact points at is untouched,
+    // which is what made deletion rather than supersession the old outcome.
+    fs.appendFileSync(lease, '- Deposit: 2222 EUR\n', 'utf8');
+    server.setBreakFacts(true);
+    await mem.index({});
+
+    const afterFailure = await mem.read({ slug: 'lease' });
+    // Still there. Stale by one pass at worst, which is the whole point: a stale fact can be
+    // re-derived, a deleted one cannot.
+    expect(afterFailure.page!.lines.find((entry) => entry.text.includes('1111'))?.confidence).toBeDefined();
+    expect(afterFailure.page!.superseded).toBeUndefined();
+    // The summary is the half that *was* recovered, so it is kept.
+    expect(afterFailure.page!.summary).toBe('Recovered on its own.');
+
+    // And the page is still pending, so a plain pass — no `rederive` — picks it up once the endpoint
+    // recovers. This is the assertion that the hash was never stamped.
+    server.setBreakFacts(false);
+    server.setFacts([
+      { line: 7, claim: 'The rent is 1111 EUR per month.' },
+      { line: 9, claim: 'The deposit is 2222 EUR.' },
+    ]);
+    await mem.index({});
+
+    const recovered = await mem.read({ slug: 'lease' });
+    expect(recovered.page!.lines.find((entry) => entry.text.includes('2222'))?.confidence).toBeDefined();
+    expect(recovered.page!.summary).toBe('A stub summary.');
   });
 
   it('supersedes when the source line actually changes', async () => {

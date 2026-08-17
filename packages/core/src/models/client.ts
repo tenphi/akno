@@ -72,6 +72,8 @@ const UNSUPPORTED_MAX_TOKENS = /unsupported parameter.*max_tokens|use 'max_compl
  * being unable to detect it is every request, silently.
  */
 type SchemaMode = 'schema' | 'json_schema' | 'plain';
+/** The rungs in order, so a demotion can be checked for direction rather than assumed. */
+const SCHEMA_RUNGS: readonly SchemaMode[] = ['schema', 'json_schema', 'plain'];
 const UNSUPPORTED_SCHEMA = /response_format|unsupported.*schema|unknown parameter.*schema|invalid.*schema/i;
 
 /** Statuses worth trying again. Everything else is a configuration error that a
@@ -164,9 +166,7 @@ export class ModelClient {
       // Rounded because `performance.now()` is fractional and `AbortSignal.timeout` rejects a
       // non-integer delay outright — which fails the request before it is sent, on every call.
       const remaining =
-        totalBudget === null
-          ? attemptDeadline
-          : Math.ceil(totalBudget - (performance.now() - started));
+        totalBudget === null ? attemptDeadline : Math.ceil(totalBudget - (performance.now() - started));
       // Only reachable when a backoff consumed the budget between attempts; the
       // pre-sleep check below normally stops it getting here.
       if (remaining <= 0) break;
@@ -346,21 +346,43 @@ export class ModelClient {
     // Three fixable mistakes at most — the token parameter, and two rungs down the schema
     // ladder — so four passes is the ceiling, not a budget anything grows into.
     for (let pass = 0; ; pass++) {
+      // **What this attempt sent, captured before it goes out.**
+      //
+      // The retry decisions below used to read the shared fields back after the call, which is
+      // only correct when one call is in flight. Concurrent calls all start with the same wrong
+      // parameter and all fail; the first to notice corrects the field; and every other one then
+      // asks "did I send `max_tokens`?", reads the field the winner just fixed, sees
+      // `max_completion_tokens`, concludes the complaint was about something else, and gives up
+      // holding a 400 whose fix was already known.
+      //
+      // Measured on this install at `derive.concurrency: 4`: a service restart cost the facts of
+      // the first pages it derived, every time, because a failed derivation is stamped as derived
+      // and never retried. The fix is one call's own state, not the endpoint's.
+      const sentTokenParam = this.#tokenParam;
+      const sentSchemaMode = this.#schemaMode;
+
       result = await this.post<{ choices: { message?: { content?: string } }[] }>(
         '/chat/completions',
-        build(this.#tokenParam, this.#schemaMode),
+        build(sentTokenParam, sentSchemaMode),
         options.timeoutMs,
       );
       if (result.ok || pass >= 3) break;
 
       // Each of these has a known, mechanical fix, and each is learned once for the
-      // life of the process rather than rediscovered per call.
-      if (this.#tokenParam === 'max_tokens' && UNSUPPORTED_MAX_TOKENS.test(result.error ?? '')) {
+      // life of the process rather than rediscovered per call. Both assignments are safe to
+      // repeat: they name the answer rather than stepping towards it.
+      if (sentTokenParam === 'max_tokens' && UNSUPPORTED_MAX_TOKENS.test(result.error ?? '')) {
         this.#tokenParam = 'max_completion_tokens';
         continue;
       }
-      if (jsonSchema && this.#schemaMode !== 'plain' && UNSUPPORTED_SCHEMA.test(result.error ?? '')) {
-        this.#schemaMode = this.#schemaMode === 'schema' ? 'json_schema' : 'plain';
+      if (jsonSchema && sentSchemaMode !== 'plain' && UNSUPPORTED_SCHEMA.test(result.error ?? '')) {
+        // Demoted from the rung *this* attempt used. Reading the shared field instead would skip a
+        // rung nobody tried — a call that sent `schema` while a concurrent one had already moved
+        // the field to `json_schema` would jump straight to `plain`, and the whole process would
+        // lose constrained decoding over a race rather than over an endpoint's actual limits.
+        // Monotonic, so a demotion another call has already discovered is never undone.
+        const next: SchemaMode = sentSchemaMode === 'schema' ? 'json_schema' : 'plain';
+        if (SCHEMA_RUNGS.indexOf(next) > SCHEMA_RUNGS.indexOf(this.#schemaMode)) this.#schemaMode = next;
         continue;
       }
       break;
