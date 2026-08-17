@@ -267,6 +267,61 @@ describe('what remember reports as written', () => {
 });
 
 /**
+ * What a page created by `remember` gets called.
+ *
+ * The slug comes from routing, which scored ranked candidates. The subject came off one claim.
+ * Where they disagree the slug is the better evidence of what the page is, because a claim is
+ * superseded in a week and the title it installed outlives it by months.
+ */
+describe('the title on a page remember creates', () => {
+  const created = (slug: string): string => fs.readFileSync(path.join(root, `${slug}.md`), 'utf8');
+
+  it('keeps the subject when it is what the page is about', async () => {
+    server.respondWith([
+      {
+        text: 'The bicycle is stored beside the blue cabinet.',
+        subject: 'bicycle storage',
+        page: 'home/bicycle-storage',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      await mem.remember({ text: 'The bicycle is stored beside the blue cabinet.' });
+      // A phrase a person wrote, against the filename-shaped "Bicycle Storage".
+      expect(created('home/bicycle-storage')).toContain('title: "Bicycle storage"');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('names the page after its slug when the subject is one fact on a broader page', async () => {
+    // `travel/2027/japan-trip`, live: a claim about the Shin-Osaka–Hakata Shinkansen was routed
+    // to the trip page — correctly — and created it titled "Osaka Fukuoka train". Every recall
+    // then reported a three-week trip under the name of the fact that happened to open it.
+    server.respondWith([
+      {
+        text: 'The direct Shinkansen from Shin-Osaka to Hakata takes about 2h30.',
+        subject: 'Osaka Fukuoka train',
+        page: 'home/japan-trip',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      await mem.remember({ text: 'The direct Shinkansen from Shin-Osaka to Hakata takes about 2h30.' });
+      const content = created('home/japan-trip');
+      expect(content).toContain('title: "Japan Trip"');
+      expect(content).not.toContain('Osaka Fukuoka train');
+      // The claim itself still lands on the page — only the name of the page changed.
+      expect(content).toContain('Shin-Osaka');
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+/**
  * A claim carries a subject and an attribute, and only the subject says who owns it. Scoring
  * both together asks the cross-encoder "does this passage answer this", which the owning page
  * fails whenever the attribute is the new part — the normal case for something worth
@@ -304,7 +359,9 @@ describe('routing a claim whose attribute its page does not yet state', () => {
     const mem = await openMem(embedded);
     try {
       await mem.index({});
-      const result = await mem.remember({ text: 'The Leoninum has a pool, a sauna, a gym, a wellness area and towel service.' });
+      const result = await mem.remember({
+        text: 'The Leoninum has a pool, a sauna, a gym, a wellness area and towel service.',
+      });
       expect(result.wrote?.[0]?.slug).toBe('trips/bonn');
       expect(fs.existsSync(path.join(root, 'trips/leoninum.md'))).toBe(false);
     } finally {

@@ -12,12 +12,13 @@ import { newPrefixedId } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
 import { folderCatalog, physicalFolderExists } from '../kb/folders.ts';
 import { parsePage } from '../kb/page.ts';
+import { contentWords } from '../kb/words.ts';
 import { detectConflict } from '../write/conflict.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { placeManagedItems, type ManagedItem } from '../write/placement.ts';
 import { recall } from './recall.ts';
-import { appendToLedger } from './write.ts';
+import { appendToLedger, titleFromSlug } from './write.ts';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 
@@ -198,7 +199,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     const relPath = row?.rel_path ?? `${slug}.md`;
     const current = row
       ? await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8')
-      : newManagedPage(titleFor(group.entries[0]!.candidate));
+      : newManagedPage(titleFor(group.entries[0]!.candidate, slug));
     const accepted: { index: number; candidate: RetainCandidate }[] = [];
     for (const entry of group.entries) {
       if (row) {
@@ -324,14 +325,35 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
 }
 
 /**
- * A title for a page being created, from the subject the curator already named.
+ * A title for a page being created: the subject the curator named, unless that subject is not
+ * what the page is.
  *
  * `write` derives one from the slug when none is given, and a slug-derived title reads like a
- * filename ("Tvr Complaint 2026 08"). The subject is a phrase a person wrote.
+ * filename ("Tvr Complaint 2026 08"). The subject is a phrase a person wrote, so it wins wherever
+ * the two are about the same thing.
+ *
+ * They are not always about the same thing, and that is this function's whole problem. The slug
+ * comes from routing, which scored ranked candidates; the subject came off one claim. A claim
+ * about the Shin-Osaka–Hakata Shinkansen addressed to `travel/2027/japan-trip` created that page
+ * — the right page — titled "Osaka Fukuoka train", and for two days every recall reported a
+ * three-week trip under the name of the single fact that happened to open it. A claim is
+ * superseded in a week; the title it installed outlives it by months.
+ *
+ * **One shared content word is enough to keep the subject.** The question is not whether the two
+ * agree closely, only whether they are about the same thing at all: `people/jane-doe` and "Jane
+ * Doe" share both words, `tvr-complaint-2026-08` and "TVR complaint" share two, `japan-trip` and
+ * "Osaka Fukuoka train" share none. Falling back costs a plainer title, which is a cost worth
+ * paying — a slug-derived title is dull but it is never about the wrong thing.
  */
-function titleFor(candidate: RetainCandidate): string {
+function titleFor(candidate: RetainCandidate, slug: string): string {
   const subject = candidate.subject.trim();
-  return subject.charAt(0).toUpperCase() + subject.slice(1);
+  if (subject.length === 0) return titleFromSlug(slug);
+
+  const named = contentWords(slug.slice(slug.lastIndexOf('/') + 1));
+  for (const word of contentWords(subject)) {
+    if (named.has(word)) return subject.charAt(0).toUpperCase() + subject.slice(1);
+  }
+  return titleFromSlug(slug);
 }
 
 function newManagedPage(title: string): string {

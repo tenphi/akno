@@ -492,7 +492,7 @@ function composeNewPage(input: ReturnType<typeof WriteInput.parse>, slug: string
   return `---\n${front.join('\n')}\n---\n\n${heading}${body}${links}\n`;
 }
 
-function titleFromSlug(slug: string): string {
+export function titleFromSlug(slug: string): string {
   const base = slug.split('/').pop() ?? slug;
   return base.replace(/[-_]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }
