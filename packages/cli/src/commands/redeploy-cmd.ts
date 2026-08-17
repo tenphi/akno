@@ -8,16 +8,23 @@ import { heading, json, kv, line, style } from '../output.ts';
 /**
  * `akno redeploy` — one command to apply local changes end-to-end.
  *
- * The thing to run after editing Akno, so nobody has to remember the sequence. Two steps, and
- * **they are for different consumers**, which is the part worth knowing:
+ * The thing to run after editing Akno, so nobody has to remember the sequence. Two steps:
  *
- *  1. `tsc --build`. The service itself does not need this — launchd runs `packages/cli/src/bin.ts`
- *     and Node strips the types, so a source edit is live at the next start. What needs building is
- *     `packages/protocol/dist` and `packages/client/dist`, because **a host importing
- *     `@akno/client` imports the built JavaScript.** Skip the build and Luna keeps calling the
- *     previous op registry: a new op is simply not there, and the failure is `unknown op`.
+ *  1. `tsc --build`. **The service needs this too, and that is easy to get wrong.** launchd runs
+ *     `packages/cli/src/bin.ts` and Node strips the types, so the CLI's own files are live at the
+ *     next start — but everything under `packages/core` reaches it as a *package*: `serve-cmd.ts`
+ *     imports `@akno/core`, whose `exports` field points at `dist/index.js`. So a source edit
+ *     inside core is invisible to the running service until it is built, however many times the
+ *     agent is restarted. Hosts need the build for their own reason: anything importing
+ *     `@akno/client` imports the built JavaScript, and skipping it leaves Luna calling the previous
+ *     op registry, where a new op is simply not there and the failure is `unknown op`.
+ *
+ *     This comment used to say the service did not need the build. It cost an afternoon: a fix to
+ *     `models/client.ts` was committed, the agent restarted, the identical failure reproduced, and
+ *     the code looked wrong when it was merely not loaded. `vitest` imports `./client.ts` directly,
+ *     so the tests passed throughout and proved nothing about what was running.
  *  2. Restart the `dev.akno` launchd agent, which holds the index, the watcher and the models, and
- *     outlives every host that talks to it. A source edit reaches it only here.
+ *     outlives every host that talks to it. A built change reaches it only here.
  *
  * Then it **waits for the socket**. `launchctl kickstart` returns as soon as launchd has spawned the
  * process, not when the process is listening — so the obvious next command fails with "no Akno
@@ -33,9 +40,13 @@ const REDEPLOY_HELP = `akno redeploy [options]
 
   Apply local changes: build, then restart the service, then wait for its socket.
 
-  The build is for the *hosts*, not for the service — launchd runs the TypeScript
-  directly, but anything importing @akno/client imports packages/*/dist. Skipping
-  it is how a host ends up calling an op registry one version behind.
+  The build is not optional for the service either: launchd runs the CLI's TypeScript
+  directly, but core reaches it as @akno/core, whose exports point at dist. A change
+  under packages/core is invisible to a restarted service until it is built.
+
+  Hosts need it for their own reason — anything importing @akno/client imports
+  packages/*/dist, and skipping it is how a host ends up calling an op registry one
+  version behind.
 
   --no-build          Restart only.
   --no-restart        Build only. For a checkout with no service installed.
