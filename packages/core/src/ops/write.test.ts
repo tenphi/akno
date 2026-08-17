@@ -77,4 +77,22 @@ describe('normalizeSlug', () => {
     expect(() => normalizeSlug('../outside')).toThrow();
     expect(() => normalizeSlug('~/notes')).toThrow();
   });
+
+  it('rejects a dot segment, because a page there would be written and then invisible', () => {
+    // Every walk Akno does — scanTree, the watcher, the folder catalog, both ingest
+    // passes — skips a name starting with a dot. `indexer.run({only})` filters the scan
+    // output rather than bypassing it, so a page written to a dot path is journalled and
+    // then indexed by nothing: recall, read and list all report it missing while the file
+    // sits on disk. `.git/config` was accepted and would have written a stray `config.md`
+    // inside the git directory.
+    for (const slug of ['.secret/note', 'travel/.hidden/page', '.git/config', '.DS_Store']) {
+      expect(() => normalizeSlug(slug), slug).toThrow(/does not index dot paths/);
+    }
+  });
+
+  it('still allows a dot inside a segment, which is only a filename', () => {
+    // The rule is about a *leading* dot. `v1.2` and `notes.old` are ordinary names.
+    expect(normalizeSlug('releases/v1.2')).toBe('releases/v1.2');
+    expect(normalizeSlug('people/jane.doe')).toBe('people/jane.doe');
+  });
 });

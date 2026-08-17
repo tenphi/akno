@@ -682,6 +682,20 @@ async function allObservations(ctx: AknoContext): Promise<Map<string, string[]>>
   for (const entry of entries) {
     if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
     const abs = path.join(entry.parentPath ?? root, entry.name);
+    // Skipped for the same reason `scanTree` and the watcher skip them: a dot path is
+    // sync-client or editor state, not an observation. Checked on the whole relative
+    // path rather than `entry.name`, because a recursive readdir reports a file inside
+    // `.trash/` with a perfectly ordinary basename. It also has to happen before
+    // `normalizeSlug` below, which now refuses a dot segment — an unfiltered walk would
+    // turn one stray `.backup.md` into a throw inside the nightly cycle.
+    if (
+      path
+        .relative(root, abs)
+        .split(path.sep)
+        .some((segment) => segment.startsWith('.'))
+    ) {
+      continue;
+    }
     const body = await fsp.readFile(abs, 'utf8').catch(() => null);
     if (body === null) continue;
 

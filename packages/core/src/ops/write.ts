@@ -515,8 +515,28 @@ export function normalizeSlug(raw: string): string {
     !slug.startsWith('~') &&
     !/^[a-zA-Z]:/.test(slug) &&
     !slug.includes('\0') &&
-    slug.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..');
+    slug.split('/').every((segment) => segment !== '');
 
   if (!safe) throw new AknoError('invalid', `not a usable slug: ${raw}`);
+
+  // **Akno ignores dot paths, so it must refuse to create one.** `scanTree`, the
+  // watcher, the folder catalog and both ingest walks all skip any name starting with
+  // a dot — that is where Obsidian, git and sync clients keep working state, and none
+  // of it is a note. A slug that lands in one is therefore written and then invisible
+  // to everything: `indexer.run({only})` *filters the scan output* rather than
+  // bypassing it, so the file is never indexed, and recall, read and list will all
+  // say the page does not exist while it sits on disk. `.git/config` was accepted and
+  // would have put a stray `config.md` inside the git directory.
+  //
+  // This subsumes `.` and `..`, which were the only two rejected before.
+  const dotted = slug.split('/').find((segment) => segment.startsWith('.'));
+  if (dotted !== undefined) {
+    throw new AknoError(
+      'invalid',
+      `'${dotted}' starts with a dot, and Akno does not index dot paths — a page there would be ` +
+        `written and then invisible to recall. Choose a name without the leading dot.`,
+      { slug: raw, segment: dotted },
+    );
+  }
   return slug;
 }
