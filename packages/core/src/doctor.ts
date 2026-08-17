@@ -264,6 +264,8 @@ export async function doctor(
   if (counts.pages === 0) {
     warnings.push('the index is empty — run `akno index`.');
   }
+  const stale = staleBuild();
+  if (stale) warnings.push(stale);
   // A rule is matched against a page's *slug*, which carries no extension, so a glob
   // ending in `.md` can never match anything. `akno rules` lists it like any other rule,
   // which makes it look applied — the one thing a config guard should never do.
@@ -300,4 +302,105 @@ export async function doctor(
 
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
+}
+
+/**
+ * **Has the build run since the source last changed?**
+ *
+ * Here because the failure it catches is invisible everywhere else. `serve-cmd.ts` imports
+ * `@akno/core`, whose `exports` point at `dist/index.js`, so the running service executes built
+ * JavaScript — while `vitest` imports `./*.ts` directly. That combination lets a fix be committed, the
+ * service restarted, the tests green, and the old code still serving: the suite proves the change is
+ * right and says nothing about whether it is loaded. It happened, and the afternoon went into
+ * suspecting the fix.
+ *
+ * **Measured against `tsconfig.tsbuildinfo`, not against the emitted `.js`.** Two earlier versions of
+ * this got it wrong in opposite ways, and both would have been ignored inside a day:
+ *
+ * - against `dist/index.js`: `tsc --build` rewrites that file only when `index.ts` changes, so it read
+ *   as stale immediately after a successful build.
+ * - against each file's own output: TypeScript decides what to emit from content, not mtime, so a
+ *   `touch` — or a `git checkout` restamping files — emits nothing and the warning stuck forever.
+ *
+ * `tsbuildinfo` is rewritten on every successful build run whether or not anything is emitted, which
+ * is exactly the question here: *did the build run after I edited this?* Verified rather than assumed —
+ * a touch-then-build leaves `dist/models/client.js` untouched and moves `tsconfig.tsbuildinfo`.
+ *
+ * mtime, not content: a cheap stat on a diagnostics path. A touched file with no real change warns
+ * harmlessly, and one build clears it.
+ */
+function staleBuild(): string | null {
+  // The package root, found by walking up to the `package.json` that declares this package.
+  //
+  // Not by looking for a `src/` or `dist/` segment in the path: this module runs from both — `dist`
+  // under the service and the CLI, which is the whole point of the check, and `src` under `vitest` —
+  // and as the *last* segment neither has a trailing separator to match on. That was the first
+  // version, and it silently found nothing in the one place it matters, which is the same class of
+  // mistake it exists to catch.
+  const root = packageRoot(path.dirname(new URL(import.meta.url).pathname));
+  if (!root) return null;
+  const srcDir = path.join(root, 'src');
+  if (!fs.existsSync(srcDir)) return null;
+  if (!fs.existsSync(path.join(root, 'dist'))) {
+    return '`packages/core/dist` has never been built — a host importing @akno/core gets nothing. Run `akno redeploy`.';
+  }
+
+  let builtAt: number;
+  try {
+    builtAt = fs.statSync(path.join(root, 'tsconfig.tsbuildinfo')).mtimeMs;
+  } catch {
+    // No incremental record — a published package, or a build configured without one. Nothing
+    // reliable to compare against, and a guess here is worse than silence.
+    return null;
+  }
+
+  const stale = firstNewerThan(srcDir, srcDir, builtAt);
+  if (!stale) return null;
+  return (
+    `\`${stale}\` has changed since the last build. The service runs the built JavaScript, so this ` +
+    'change is not loaded however often it restarts — run `akno redeploy`.'
+  );
+}
+
+/**
+ * The first source file modified after `since`, relative to the package root, or null.
+ *
+ * Returns on the first hit: the message names one file to make the point, and walking the rest buys
+ * nothing once the answer is "run the build".
+ */
+export function firstNewerThan(dir: string, srcRoot: string, since: number): string | null {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const found = firstNewerThan(full, srcRoot, since);
+      if (found) return found;
+      continue;
+    }
+    // Tests are not emitted, so editing one cannot leave the service behind.
+    if (!entry.name.endsWith('.ts') || entry.name.endsWith('.test.ts')) continue;
+    try {
+      if (fs.statSync(full).mtimeMs > since) return path.join('src', path.relative(srcRoot, full));
+    } catch {
+      // A file that vanished between readdir and stat is not a stale build.
+    }
+  }
+  return null;
+}
+
+/** Nearest ancestor directory holding a `package.json`, or null. */
+function packageRoot(from: string): string | null {
+  let dir = from;
+  for (let up = 0; up < 8; up++) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+  return null;
 }

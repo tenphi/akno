@@ -128,16 +128,35 @@ service is `KeepAlive`, the index is derived and rebuilt from the Markdown, and 
 not touched. What is destructive is *not* doing it, because then the thing being tested is the code
 that was already running.
 
-**Both steps matter, and they are for different consumers.** This is the trap:
+**Both steps matter, and the build is not optional for the service.** This is the trap:
 
-- launchd runs `packages/cli/src/bin.ts` directly and Node strips the types, so **the service needs
-  the restart and not the build** — a source edit is live at its next start.
-- A host importing `@akno/client` imports `packages/*/dist`, so **it needs the build and not the
-  restart**. Skip the build and Luna keeps calling the previous op registry: a newly added op is
-  simply absent, and the failure reads `unknown op`, which looks like a wiring bug rather than a
-  stale artifact.
+- launchd runs `packages/cli/src/bin.ts` directly and Node strips the types, so the CLI's _own_
+  files are live at the next start. **`packages/core` is not one of them.** `serve-cmd.ts` imports
+  `@akno/core`, whose `exports` field points at `dist/index.js` — check it yourself with
+  `node -e "console.log(require.resolve('@akno/core'))"` from a CLI file. So an edit under
+  `packages/core` is invisible to the running service until it is built, however many times the agent
+  is restarted.
+- A host importing `@akno/client` imports `packages/*/dist` too. Skip the build and Luna keeps
+  calling the previous op registry: a newly added op is simply absent, and the failure reads
+  `unknown op`, which looks like a wiring bug rather than a stale artifact.
 
-Do one and not the other and half the system is on the new code.
+So: build, then restart. Do one and not the other and half the system is on the old code.
+
+**This paragraph used to say the service did not need the build, and that cost an afternoon.** A fix
+to `models/client.ts` was committed, `launchctl kickstart` run, the identical failure reproduced —
+and the conclusion drawn was that the fix was wrong, when it was merely not loaded. `pnpm build`
+plus one more restart turned the same command from three warnings into none.
+
+**A green suite is not evidence of a deployment.** `vitest` imports `./client.ts` — source, directly —
+so the tests pass whether or not `dist` was ever rebuilt. The two facts a test cannot give you:
+
+```bash
+grep -c "<a token from your change>" packages/core/dist/<file>.js   # is it built?
+ps -o lstart= -p "$(pgrep -f 'bin.ts serve' | head -1)"             # started after that build?
+```
+
+If you fixed a bug you could reproduce, **reproduce it again after redeploying.** That is the only
+check that covers the whole path, and it is the one that catches this.
 
 **`redeploy` waits for the socket, and that is not decoration.** `launchctl kickstart` returns when
 launchd has spawned the process, not when it is listening — the socket is created last, after the
