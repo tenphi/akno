@@ -2,8 +2,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { open, type Akno } from '../src/index.ts';
+import { open, type Akno, type MaintenanceMode } from '../src/index.ts';
 import { linkIssuesForTesting } from '../src/maintenance/curate.ts';
 
 let root: string;
@@ -13,6 +15,7 @@ let server: {
   url: string;
   close: () => Promise<void>;
   calls: () => number;
+  curatorCalls: () => number;
   loseMarker: (value: boolean) => void;
   changeNumber: (value: boolean) => void;
   echoDraft: (value: boolean) => void;
@@ -233,6 +236,165 @@ The gathering ended with a confirmed ferry ride.
   });
 });
 
+describe('plan-backed hygiene', () => {
+  it('persists an audit plan without changing the knowledge base', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+
+    const report = await mem.dream({ phase: 'curate', mode: 'audit' });
+    const plan = report.maintenancePlan!;
+
+    expect(plan).toMatchObject({ mode: 'audit', phase: 'curate', status: 'ready' });
+    expect(plan.items).toHaveLength(1);
+    expect(plan.items[0]).toMatchObject({ status: 'proposed', subject: 'people/ada-marlow' });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(mem.maintenanceDiff(plan.id)).toContain('--- a/people/ada-marlow.md');
+
+    await mem.close();
+    mem = await openMem(false);
+    expect(mem.plan(plan.id)).toMatchObject({ id: plan.id, status: 'ready' });
+    expect(mem.maintenanceStatus()).toMatchObject({ active: 1, awaitingHuman: 1 });
+  });
+
+  it('keeps human review separate from apply and leaves an undoable change', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+
+    const decided = mem.decidePlan(planned.id, item.id, 'approve', 'The exact hygiene diff is safe.');
+    expect(decided).toMatchObject({ status: 'approved' });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+
+    const applied = await mem.applyPlan(planned.id);
+    expect(applied.plan).toMatchObject({ status: 'completed' });
+    expect(applied.plan.items[0]).toMatchObject({ status: 'applied' });
+    expect(fs.readFileSync(page, 'utf8')).not.toBe(before);
+
+    const changeId = applied.plan.items[0]!.changeId!;
+    await mem.undo({ change_id: changeId });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+  });
+
+  it('refuses an approved item when its source changed after planning', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    fs.appendFileSync(page, '\nA newer note from Ada Marlow.\n');
+    const newer = fs.readFileSync(page, 'utf8');
+
+    mem.decidePlan(planned.id, item.id, 'approve', 'Approved before the newer edit arrived.');
+    const result = await mem.applyPlan(planned.id);
+
+    expect(result.plan).toMatchObject({ status: 'failed' });
+    expect(result.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(fs.readFileSync(page, 'utf8')).toBe(newer);
+    expect(result.files).toEqual([]);
+  });
+
+  it('does not regenerate a human-rejected plan for unchanged input', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    mem.decidePlan(planned.id, planned.items[0]!.id, 'reject', 'Leave the existing wording as written.');
+    const calls = server.calls();
+
+    const next = await mem.dream({ phase: 'curate', mode: 'review' });
+
+    expect(next.maintenancePlan).toBeNull();
+    expect(next.curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+  });
+
+  it('uses an independent curator in auto mode', async () => {
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+
+    expect(report.maintenancePlan).toMatchObject({ mode: 'auto', status: 'completed' });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(report.curated[0]?.action).toBe('updated');
+    expect(server.calls()).toBe(3);
+    expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('uses configured auto mode inside the complete scheduled cycle', async () => {
+    await mem.close();
+    mem = await openMem(false, 'auto');
+
+    const report = await mem.dream();
+
+    expect(report.phases.map((phase) => phase.phase)).toEqual([
+      'observe',
+      'reflect',
+      'curate',
+      'adopt',
+      'conflicts',
+      'repair',
+      'housekeeping',
+    ]);
+    expect(report.maintenancePlan).toMatchObject({ mode: 'auto', status: 'completed' });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+    });
+    expect(report.curated[0]?.action).toBe('updated');
+  });
+
+  it('lets autonomous dream recover an interrupted exact write after restart', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    mem.decidePlan(planned.id, item.id, 'approve', 'The hygiene edit is safe.');
+
+    const db = new Database(mem.config.dbPath);
+    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
+    db.close();
+    fs.writeFileSync(page, item.operations[0]!.after);
+    await mem.close();
+    mem = await openMem(false);
+
+    const recovered = await mem.dream({ phase: 'curate', mode: 'auto' });
+    expect(recovered.maintenancePlan).toMatchObject({ status: 'completed' });
+    expect(recovered.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(1);
+
+    await mem.undo({ change_id: recovered.maintenancePlan!.items[0]!.changeId! });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+  });
+
+  it('rolls a journaled write back when post-apply verification fails', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    const operation = item.operations[0]!;
+    const unsafeAfter = operation.after.replace('akno:\n', 'akno:\n  role: ignored\n');
+    const tampered = [{ ...operation, after: unsafeAfter, afterHash: digest(unsafeAfter) }];
+    const db = new Database(mem.config.dbPath);
+    db.prepare('UPDATE maintenance_items SET operations = ? WHERE id = ?').run(
+      JSON.stringify(tampered),
+      item.id,
+    );
+    db.close();
+
+    mem.decidePlan(planned.id, item.id, 'approve', 'Exercise the post-write verifier.');
+    const result = await mem.applyPlan(planned.id);
+
+    expect(result.plan.items[0]).toMatchObject({
+      status: 'verification_failed',
+      verification: { status: 'rolled_back' },
+    });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(mem.changes(1)[0]).toMatchObject({ status: 'undone' });
+  });
+});
+
 describe('curation link integrity', () => {
   it('preserves supplied targets and allows resolvable wikilinks', () => {
     const before = '[Source](https://example.test/original)\n[[travel/rome]]\n';
@@ -256,7 +418,7 @@ describe('curation link integrity', () => {
   });
 });
 
-async function openMem(write: boolean): Promise<Akno> {
+async function openMem(write: boolean, mode?: MaintenanceMode): Promise<Akno> {
   return open({
     aknoPath: root,
     stateDir,
@@ -272,13 +434,17 @@ async function openMem(write: boolean): Promise<Akno> {
         expansion: { id: null },
         derive: { provider: 'stub', id: 'stub' },
       },
-      maintenance: { log_changes: true, curate: { enabled: true, write, verify: true } },
+      maintenance: {
+        log_changes: true,
+        curate: { enabled: true, ...(mode ? { mode } : {}), write, verify: true },
+      },
     },
   });
 }
 
 async function startStub(): Promise<typeof server> {
   let calls = 0;
+  let curatorCalls = 0;
   let drop = false;
   let changeNumber = false;
   let echoDraft = false;
@@ -296,20 +462,27 @@ async function startStub(): Promise<typeof server> {
       if (
         system.includes('Markdown page hygienist') ||
         system.includes('synthesize one canonical') ||
-        system.includes('verify an automatic Markdown rewrite')
+        system.includes('verify an automatic Markdown rewrite') ||
+        system.includes('independent curator')
       ) {
         calls++;
       }
-      const content = system.includes('verify an automatic Markdown rewrite')
-        ? JSON.stringify({ ok: true, issues: [] })
-        : echoDraft
-          ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
-          : JSON.stringify({
-              body:
-                '# Ada Marlow\n\n## Details\n\n' +
-                (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-            });
+      if (system.includes('independent curator')) curatorCalls++;
+      const content = system.includes('independent curator')
+        ? JSON.stringify({
+            outcome: 'approve',
+            reason: 'The rewrite is conservative and preserves knowledge.',
+          })
+        : system.includes('verify an automatic Markdown rewrite')
+          ? JSON.stringify({ ok: true, issues: [] })
+          : echoDraft
+            ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
+            : JSON.stringify({
+                body:
+                  '# Ada Marlow\n\n## Details\n\n' +
+                  (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                  `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+              });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -324,6 +497,7 @@ async function startStub(): Promise<typeof server> {
       instance.closeAllConnections();
     },
     calls: () => calls,
+    curatorCalls: () => curatorCalls,
     loseMarker: (value) => {
       drop = value;
     },
@@ -335,6 +509,10 @@ async function startStub(): Promise<typeof server> {
     },
     userMessages: () => [...userMessages],
   };
+}
+
+function digest(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
 }
 
 function currentBody(user: string): string {

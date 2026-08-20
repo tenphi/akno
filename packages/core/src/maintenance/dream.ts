@@ -21,6 +21,16 @@ import { ModelClient } from '../models/client.ts';
 import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
 import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 import { curatePages, type CuratedPage } from './curate.ts';
+import {
+  applyMaintenancePlan,
+  createHygienePlan,
+  decideMaintenancePlanWithCurator,
+  findActiveMaintenancePlan,
+  type MaintenanceItem,
+  type MaintenanceMode,
+  type MaintenancePlan,
+  type MaintenancePlanSummary,
+} from './plans.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -82,6 +92,14 @@ export interface PhaseReport {
   durationMs: number;
 }
 
+export interface DreamMaintenancePlan extends MaintenancePlanSummary {
+  /** Decision and outcome metadata only; exact private bytes are fetched explicitly with `plan()`. */
+  items: Pick<
+    MaintenanceItem,
+    'id' | 'subject' | 'status' | 'decision' | 'statusReason' | 'changeId' | 'verification'
+  >[];
+}
+
 export interface DreamReport {
   phases: PhaseReport[];
   observations: ObservationWritten[];
@@ -100,6 +118,8 @@ export interface DreamReport {
   /** The `adopt` phase's change, kept apart from observe's. */
   adoptChangeId: string | null;
   curateChangeId: string | null;
+  /** The sealed artifact produced by plan-backed curation, when a mode was selected. */
+  maintenancePlan: DreamMaintenancePlan | null;
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
@@ -111,9 +131,17 @@ export interface DreamOptions {
   phase?: DreamPhase;
   /** Report what would be written without touching disk. */
   dryRun?: boolean;
+  /** Authority policy for durable hygiene plans. Requires `phase: 'curate'`. */
+  mode?: MaintenanceMode;
 }
 
 export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promise<DreamReport> {
+  if (options.mode && options.phase !== 'curate') {
+    throw new AknoError('invalid', 'a maintenance mode currently requires `phase: curate`');
+  }
+  if (options.mode && options.dryRun) {
+    throw new AknoError('invalid', 'choose `mode: audit` instead of combining a mode with dryRun');
+  }
   const started = performance.now();
   // The tiers run unattended and are worth a better model than indexing needs — measured:
   // the same observe pass over one knowledge base produced 15 candidates worth about four with a
@@ -135,6 +163,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     changeId: null,
     adoptChangeId: null,
     curateChangeId: null,
+    maintenancePlan: null,
     warnings: [],
     durationMs: 0,
   };
@@ -197,6 +226,72 @@ async function runPhase(
       if (!ctx.config.maintenance.curate.enabled) return 'disabled in config';
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
+      }
+      // A configured mode is how a full scheduled run gets plan-backed curation without
+      // turning the scheduler into a curate-only command. An explicit dry run keeps its
+      // existing read-only path; creating a durable plan needs the service's write handle.
+      const mode = options.mode ?? (options.dryRun ? null : ctx.config.maintenance.curate.mode);
+      if (mode) {
+        let plan = mode === 'auto' ? findActiveMaintenancePlan(ctx, 'auto') : null;
+        if (plan) {
+          report.curated = plan.items.map((item) => ({
+            slug: item.subject,
+            mode: 'hygiene',
+            action: 'would-update',
+            splits: [],
+            issues: [],
+          }));
+        } else {
+          const result = await curatePages(ctx, {
+            dryRun: true,
+            recordState: false,
+            onlyMode: 'hygiene',
+            includePreviewed: true,
+          });
+          report.curated = result.pages;
+          report.warnings.push(...result.warnings);
+          plan = createHygienePlan(ctx, mode, result.drafts);
+        }
+        if (!plan) return null;
+        if (mode === 'auto') {
+          if (plan.items.some((item) => item.status === 'proposed')) {
+            plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+          }
+          if (
+            plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))
+          ) {
+            const appliedResult = await applyMaintenancePlan(ctx, plan.id);
+            plan = appliedResult.plan;
+            applied.push(...appliedResult.files.map((file) => asApplied('curate', file)));
+          }
+        }
+        report.curated = report.curated.map((page) => {
+          const item = plan.items.find((candidate) => candidate.subject === page.slug);
+          if (!item) return page;
+          if (item.status === 'applied') return { ...page, action: 'updated', issues: [] };
+          if (item.status === 'verification_pending') {
+            return {
+              ...page,
+              action: 'updated',
+              issues: [item.verification?.detail ?? 'post-write verification is pending'],
+            };
+          }
+          if (['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)) {
+            return {
+              ...page,
+              action: 'rejected',
+              issues: [
+                item.verification?.detail ??
+                  item.decision?.reason ??
+                  item.statusReason ??
+                  `maintenance item is ${item.status}`,
+              ],
+            };
+          }
+          return page;
+        });
+        report.maintenancePlan = maintenancePlanForReport(plan);
+        return null;
       }
       const result = await curatePages(ctx, {
         dryRun: (options.dryRun ?? false) || !ctx.config.maintenance.curate.write,
@@ -263,6 +358,22 @@ async function runPhase(
       return null;
     }
   }
+}
+
+function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
+  const { items, ...summary } = plan;
+  return {
+    ...summary,
+    items: items.map((item) => ({
+      id: item.id,
+      subject: item.subject,
+      status: item.status,
+      decision: item.decision,
+      statusReason: item.statusReason,
+      changeId: item.changeId,
+      verification: item.verification,
+    })),
+  };
 }
 
 // ─── Observe ────────────────────────────────────────────────────────────────

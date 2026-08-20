@@ -497,6 +497,7 @@ function resolve(
       },
       curate: {
         enabled: doc.maintenance?.curate?.enabled ?? false,
+        mode: doc.maintenance?.curate?.mode ?? null,
         write: doc.maintenance?.curate?.write ?? false,
         verify: doc.maintenance?.curate?.verify ?? true,
         maxPages: doc.maintenance?.curate?.max_pages ?? 8,

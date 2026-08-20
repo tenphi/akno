@@ -68,8 +68,8 @@ describe('the socket door', () => {
       expect(client.hello.ops).toContain('recall');
       expect(client.hello.ops).toContain('write');
       // Advertised separately from the ops: the ops are what an agent calls about memory, these are
-      // what an operator asks of the process — including the four that answer a gate or read the
-      // journal, which are deliberately *not* ops so an agent cannot approve its own proposal.
+      // what an operator asks of the process — including gates, journal reads, and maintenance plans,
+      // which are deliberately *not* ops so an agent cannot approve its own proposal.
       expect(client.hello.commands).toEqual([
         'index',
         'inbox',
@@ -78,6 +78,7 @@ describe('the socket door', () => {
         'decline',
         'changes',
         'proposals',
+        'plan',
       ]);
     } finally {
       await client.close();
@@ -111,6 +112,11 @@ describe('the socket door', () => {
 
       const inbox = (await client.command('inbox', {})) as { filed: unknown[] };
       expect(inbox.filed).toEqual([]);
+
+      const plans = (await client.command('plan', { action: 'list' })) as unknown[];
+      expect(plans).toEqual([]);
+      const status = (await client.command('plan', { action: 'status' })) as { active: number };
+      expect(status.active).toBe(0);
     } finally {
       await client.close();
     }

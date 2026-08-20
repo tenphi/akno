@@ -1,13 +1,13 @@
 /**
  * One SQLite file. Deleting it costs one re-index and no data — that
  * property is the design, and it is why nothing here is a source of truth.
- * Only the journal is irreplaceable, which is why it is the one table that
- * records content rather than pointing at it.
+ * The journal and live maintenance plans are the durable exceptions. The journal keeps prior bytes for undo;
+ * a sealed plan keeps exact proposed bytes so a decision survives a restart and never has to regenerate a
+ * possibly different rewrite.
  *
  * Migrations are append-only and idempotent. `user_version` tracks the applied
- * count, so a rebuild and an upgrade take the same path. There is one entry: 0.1.0
- * is the first release, so the schema is stated once rather than reconstructed
- * from the steps that reached it. Append the next one below rather than editing
+ * count, so a rebuild and an upgrade take the same path. The first entry is the 0.1.0
+ * schema. Append the next migration below rather than editing an earlier one
  * this — an index in the field is rebuildable, but only if it can tell how far
  * along it is.
  */
@@ -282,6 +282,50 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX proposals_status  ON proposals(status);
   CREATE INDEX proposals_subject ON proposals(subject, status);
+  `,
+  // ── 2. Durable maintenance plans ──────────────────────────────────────────
+  // Full proposed bytes live here rather than in the human-gate proposal table. A maintenance
+  // item is independently decidable, may outlive the process that planned it, and points to the
+  // journal change that eventually applied it.
+  `
+  CREATE TABLE maintenance_plans (
+    id           TEXT PRIMARY KEY,
+    created_at   TEXT NOT NULL,
+    updated_at   TEXT NOT NULL,
+    mode         TEXT NOT NULL,
+    phase        TEXT NOT NULL,
+    status       TEXT NOT NULL,
+    fingerprint  TEXT NOT NULL,
+    summary      TEXT NOT NULL,
+    error        TEXT
+  );
+  CREATE INDEX maintenance_plans_status ON maintenance_plans(status, created_at DESC);
+  CREATE INDEX maintenance_plans_fingerprint ON maintenance_plans(fingerprint, mode, status);
+
+  CREATE TABLE maintenance_items (
+    id                 TEXT PRIMARY KEY,
+    plan_id            TEXT NOT NULL REFERENCES maintenance_plans(id) ON DELETE CASCADE,
+    ord                INTEGER NOT NULL,
+    revision           INTEGER NOT NULL DEFAULT 1,
+    kind               TEXT NOT NULL,
+    risk               TEXT NOT NULL,
+    status             TEXT NOT NULL,
+    subject            TEXT NOT NULL,
+    rationale          TEXT NOT NULL,
+    input_hash         TEXT NOT NULL,
+    operations         TEXT NOT NULL,
+    checks             TEXT NOT NULL DEFAULT '[]',
+    decision_actor     TEXT,
+    decision_outcome   TEXT,
+    decision_reason    TEXT,
+    decided_at         TEXT,
+    change_id          TEXT,
+    verification       TEXT,
+    updated_at         TEXT NOT NULL,
+    UNIQUE(plan_id, ord)
+  );
+  CREATE INDEX maintenance_items_plan ON maintenance_items(plan_id, ord);
+  CREATE INDEX maintenance_items_status ON maintenance_items(status, updated_at DESC);
   `,
 ];
 

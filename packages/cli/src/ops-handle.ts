@@ -88,7 +88,8 @@ function socketFor(openOptions: { aknoPath?: string; stateDir?: string }): strin
 }
 
 /**
- * Runs maintenance — `index`, `inbox`, `dream` — through the running service when there
+ * Runs operator work — including `index`, `inbox`, `dream`, gates, journal reads, and plans — through the
+ * running service when there
  * is one, and in-process when there is not.
  *
  * Exactly one process may hold the write handle, so with a service running these have to go
@@ -127,7 +128,7 @@ export async function runMaintenance<T>(
     }
   }
 
-  // `proposals` and `changes` only read; taking the write handle for them would block a service
+  // Proposal, change, and plan reads only inspect state; taking the write handle for them would block a service
   // from starting while somebody lists their pending approvals.
   const akno = await open({ ...openOptions, ...(options.writable === false ? { writable: false } : {}) });
   try {

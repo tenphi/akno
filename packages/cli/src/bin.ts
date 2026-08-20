@@ -19,6 +19,7 @@ import { approveCommand, forgetCommand, moveCommand, undoCommand } from './comma
 import { ingestCommand } from './commands/ingest-cmd.ts';
 import { inboxCommand } from './commands/inbox-cmd.ts';
 import { dreamCommand } from './commands/dream-cmd.ts';
+import { planCommand } from './commands/plan-cmd.ts';
 
 const VERSION = '0.1.0';
 
@@ -44,6 +45,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
 
   ${style.bold('Admin')}
     dream                Seven maintenance phases: infer, curate, adopt, inspect, repair.
+    plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd agent.
@@ -81,6 +83,7 @@ const COMMANDS: Record<string, Command> = {
   ingest: ingestCommand,
   inbox: inboxCommand,
   dream: dreamCommand,
+  plan: planCommand,
   approve: approveCommand,
   decline: (argv: string[]) => approveCommand(argv, true),
   index: indexCommand,

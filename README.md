@@ -509,10 +509,28 @@ phases are journalled by purpose, so reversing a night's inferences does not als
 documents searchable. `conflicts` and `housekeeping` only report; curation and repair require explicit write
 permission.
 
-Curate has two switches on purpose: `enabled` includes it in scheduled runs, while `write` grants authority to
-apply accepted drafts. With `write: false`, scheduled runs remain summary previews, but the current report does
-not expose the proposed body or a diff. Stable item markers and provenance survive rewrites and moves, and a
-split keeps the canonical `page.md` while adding children under `page/`. See the
+Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
+between summary preview and direct application. For the first plan-backed path, opted-in hygiene pages can use
+an explicit trust mode:
+
+```bash
+akno dream --phase curate --mode audit   # persistent exact diffs; no note changes
+akno dream --phase curate --mode review  # wait for human item decisions
+akno dream --phase curate --mode auto    # separate curator turn, then verified apply
+
+akno plan diff <plan-id>
+akno plan decide <plan-id> --item <item-id> --approve
+akno plan apply <plan-id>
+akno dream status
+```
+
+All three modes seal the same exact operations. Apply refuses changed inputs, journals each item separately,
+re-indexes it, verifies disk and index state, and rolls back a proven failed result. A command-line mode is
+hygiene-only and explicitly invoked with `--phase curate`. The same mode can be set at
+`maintenance.curate.mode` so the curate phase of a full nightly cycle uses it without skipping other phases.
+Plan-backed synthesis is not implemented, so a configured mode leaves `synthesize` pages alone. Stable item
+markers and provenance survive rewrites and moves, and a split keeps the canonical `page.md` while adding
+children under `page/`. See the
 [dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
@@ -614,8 +632,10 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   what survives them is the model's, and on a small local model most of it was not worth keeping.
 - **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
   one coincidence.
-- **`curate`** — off globally, and its write switch is separately off. Even when enabled, it only considers
-  pages whose own frontmatter opts into `hygiene` or `synthesize`.
+- **`curate`** — off globally, with both its trust mode and legacy write switch unset/off. Even when enabled,
+  it only considers pages whose own frontmatter opts into `hygiene` or `synthesize`. `--mode auto` is explicit
+  per-run authority for opted-in hygiene pages; `maintenance.curate.mode` gives the nightly phase the same
+  authority when the owner deliberately configures it.
 - **`repair`** — automatic link and stale-claim edits. The actions are guarded, bounded, journalled, and still
   edits to pages you wrote, so the phase is off.
 - **`maintenance.log_changes`** — a full record of every cycle run appended to

@@ -41,6 +41,16 @@ export interface CurateResult {
   files: ChangeFile[];
   changeId: string | null;
   warnings: string[];
+  /** Exact, already-guarded rewrites for a durable maintenance plan. */
+  drafts: CurateDraft[];
+}
+
+export interface CurateDraft {
+  slug: string;
+  relPath: string;
+  inputHash: string;
+  before: string;
+  after: string;
 }
 
 interface PageRow {
@@ -196,10 +206,16 @@ const CURATE_FINGERPRINT_VERSION = 6;
 
 export async function curatePages(
   ctx: AknoContext,
-  options: { dryRun: boolean; recordState: boolean },
+  options: {
+    dryRun: boolean;
+    recordState: boolean;
+    onlyMode?: 'hygiene' | 'synthesize';
+    /** A durable plan may supersede a legacy preview without changing the page first. */
+    includePreviewed?: boolean;
+  },
 ): Promise<CurateResult> {
   const settings = ctx.config.maintenance.curate;
-  const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [] };
+  const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [], drafts: [] };
   const rows = ctx.store.db
     .prepare(
       `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, body_hash,
@@ -229,6 +245,7 @@ export async function curatePages(
   }[] = [];
 
   for (const row of rows) {
+    if (options.onlyMode && row.dream_management !== options.onlyMode) continue;
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
@@ -257,7 +274,7 @@ export async function curatePages(
     let evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
     const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
     let inputHash = curateInputHash(row, evidence, conflicts, temporal, eventState);
-    if (!curationDue(row, inputHash, options.dryRun)) continue;
+    if (!curationDue(row, inputHash, options.dryRun, options.includePreviewed ?? false)) continue;
     if (attempted >= settings.maxPages) break;
     attempted++;
 
@@ -441,6 +458,14 @@ export async function curatePages(
       ...temporalResult(temporal, temporalSource, clock, archival),
     });
   }
+
+  result.drafts = staged.map((stage) => ({
+    slug: stage.row.slug,
+    relPath: stage.row.rel_path,
+    inputHash: stage.inputHash,
+    before: stage.before,
+    after: stage.after,
+  }));
 
   if (options.dryRun) {
     for (const stage of staged) {
@@ -888,11 +913,48 @@ function curateInputHash(
   );
 }
 
-function curationDue(page: PageRow, inputHash: string, dryRun: boolean): boolean {
+function curationDue(page: PageRow, inputHash: string, dryRun: boolean, includePreviewed: boolean): boolean {
   if (page.curate_input_hash !== inputHash) return true;
+  if (includePreviewed && page.curate_status === 'preview') return true;
   // A write-enabled pass must rerun a previously accepted preview once. Rejected and unchanged
   // inputs are already complete decisions, and applied input is current by definition.
   return !dryRun && page.curate_status === 'preview';
+}
+
+/** Mark successfully plan-applied pages against their post-write fingerprints. */
+export function markCurateApplied(ctx: AknoContext, slugs: Iterable<string>): void {
+  const state = new Map<string, CurateState>();
+  const clock = temporalClock();
+  for (const slug of slugs) {
+    const refreshed = pageForSlug(ctx, slug);
+    if (!refreshed) continue;
+    const temporal = temporalForRow(refreshed);
+    const eventState = temporal ? temporalState(temporal, clock) : null;
+    const archival = refreshed.dream_management === 'synthesize' && eventState === 'past';
+    const allEvidence = refreshed.dream_management === 'synthesize' ? evidenceFor(ctx, refreshed) : [];
+    const evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
+    const conflicts = refreshed.dream_management === 'synthesize' ? conflictsFor(ctx, refreshed.id) : [];
+    queueCurateState(
+      state,
+      refreshed.id,
+      curateInputHash(refreshed, evidence, conflicts, temporal, eventState),
+      'applied',
+    );
+  }
+  persistCurateState(ctx, state.values());
+}
+
+/** Cache a completed plan decision so the same rejected input is not proposed every cycle. */
+export function markCurateRejected(
+  ctx: AknoContext,
+  pages: Iterable<{ slug: string; inputHash: string }>,
+): void {
+  const state = new Map<string, CurateState>();
+  for (const page of pages) {
+    const row = pageForSlug(ctx, page.slug);
+    if (row) queueCurateState(state, row.id, page.inputHash, 'rejected');
+  }
+  persistCurateState(ctx, state.values());
 }
 
 function queueCurateState(

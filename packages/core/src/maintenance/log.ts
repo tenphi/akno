@@ -71,6 +71,7 @@ export async function logDreamRun(
     changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId].filter(
       (id): id is string => id !== null,
     ),
+    maintenancePlanId: report.maintenancePlan?.id ?? null,
     // What was written, with the added lines inline.
     applied: changes,
     // What was proposed and refused, which is where the reasoning shows.

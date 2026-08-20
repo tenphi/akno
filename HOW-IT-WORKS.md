@@ -129,6 +129,7 @@ much you already know about the answer or change.
 | Process a drop folder                       | `inbox`                  | Applies ingest automatically to arrivals                        | yes              |
 | Correct, remove, or relocate something      | `forget`, `undo`, `move` | Preserves file-level semantics and history                      | yes              |
 | Run slow maintenance                        | `dream`                  | Performs bounded, repeat-safe background phases                 | depends on phase |
+| Review or apply maintenance proposals       | `plan`                   | Uses durable exact diffs, decisions, and verification receipts  | apply only       |
 
 Two rules of thumb prevent most misuse:
 
@@ -174,7 +175,8 @@ A practical adoption path is:
 3. **Document intake:** declare folder rules, then try one file with `ingest` before enabling an
    inbox.
 4. **Background operation:** install only the service and watcher with `akno service install --no-dream`.
-5. **Maintenance:** inspect `dream --dry-run`, then install the schedule after choosing which phases may write.
+5. **Maintenance:** start with `dream --phase curate --mode audit`, inspect its exact plan diff, then choose
+   human review or autonomous application for opted-in hygiene pages.
 
 This sequence is about learning the trust boundaries, not satisfying a technical prerequisite.
 
@@ -591,6 +593,8 @@ akno dream
 akno dream --dry-run
 akno dream --phase housekeeping
 akno dream --phase curate
+akno dream --phase curate --mode audit
+akno dream status
 ```
 
 `--dry-run` executes the selected checks and model decisions but does not change knowledge-base files.
@@ -710,24 +714,81 @@ akno:
 
 **Method:** select only `knowledge` pages with an explicit mode; build a draft from the page and allowed
 evidence; run a separate verifier; then enforce deterministic checks for markers, values, links, size,
-and split limits.
+and split limits. Plan-backed hygiene seals the resulting exact before/after bytes only after those checks.
 
 **Write authority has three gates:**
 
 1. The page opts in with `dream: hygiene` or `dream: synthesize`.
 2. `maintenance.curate.enabled` includes the phase in scheduled runs.
-3. `maintenance.curate.write` allows an accepted draft to reach disk.
+3. A configured or command-line trust mode authorizes the plan-backed hygiene path; when no mode is set,
+   the legacy `maintenance.curate.write` switch controls previews and writes.
 
 With `enabled: true` and `write: false`, scheduled runs are summary previews: they report that a page would
 change, its mode, verification issues, proposed child slugs, and temporal handling. They do **not** currently
 return the proposed body or a diff. Input fingerprints are recorded so unchanged pages do not spend model
 calls every night. An explicit `--dry-run` is observational and does not record that state.
 
+For opted-in **hygiene** pages, a per-run mode provides the new durable path:
+
+```bash
+# Seal exact diffs, but make no decision and change no note.
+akno dream --phase curate --mode audit
+
+# Seal the same artifact and leave every item for a person.
+akno dream --phase curate --mode review
+
+# Seal it, ask an independent curator turn, and apply only approved items.
+akno dream --phase curate --mode auto
+```
+
+The selected mode is explicit authority for that run, so it replaces the legacy `maintenance.curate.write`
+choice for these hygiene items. It still requires `maintenance.curate.enabled`, an available maintenance or
+derive model, and page-level `dream: hygiene`. A command-line `--mode` currently requires `--phase curate`;
+it does not run the other six phases.
+
+For the nightly full cycle, put the same decision in configuration instead:
+
+```jsonc
+{
+  "maintenance": {
+    "curate": { "enabled": true, "mode": "auto", "write": false },
+  },
+}
+```
+
+The scheduled command remains plain `akno dream`, so observation, reflection, adoption, conflict detection,
+repair, and housekeeping keep running. Only its curate phase reads this mode. Plan-backed synthesis is not
+implemented yet, so a non-null mode considers opted-in `hygiene` pages and leaves `synthesize` pages alone.
+Set `mode` to `null` only when intentionally retaining the legacy curate behavior.
+
+All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its exact
+operation, input hash, completed guards, decision, journal change id, and verification result. `audit` leaves
+items proposed, `review` labels the plan as waiting for human decisions, and `auto` uses a separate model call
+with no tools and a fresh curator prompt after the plan is sealed. A failed or malformed curator response is
+blocked, never treated as approval.
+
+```bash
+akno plan list
+akno plan show <plan-id>
+akno plan diff <plan-id>
+akno plan decide <plan-id> --item <item-id> --approve --reason "Meaning is unchanged."
+akno plan apply <plan-id>
+akno plan status                 # same minimal queue view as `akno dream status`
+```
+
+Planning never changes a knowledge-base file. Apply hashes the current whole file and refuses the item as
+`stale` if it no longer matches the sealed input. Each approved item is written atomically and journalled as
+its own undoable change, then structurally re-indexed and checked for exact disk bytes, page identity, policy,
+and body hash. A proven verification failure rolls the journalled write back. If verification cannot run, the
+write stays visible as `verification_pending` and a later `plan apply` retries verification without applying
+the edit twice.
+
 ```jsonc
 {
   "maintenance": {
     "curate": {
       "enabled": true,
+      "mode": "review",
       "write": false,
       "verify": true,
       "max_pages": 8,
@@ -828,6 +889,9 @@ curation, adoption, and repair can therefore have separate change ids. Use the i
 akno undo <change-id>
 ```
 
+Plan-backed hygiene is finer-grained: every applied item has its own change id, printed by `plan show` and
+`plan apply`. Human approval changes only plan state; the note remains byte-identical until `plan apply`.
+
 To retain a machine-readable audit record:
 
 ```jsonc
@@ -845,13 +909,14 @@ This is off by default because the log duplicates sensitive inferences outside t
 2. Run a full `akno dream --dry-run`; inspect every phase, not only the totals.
 3. Keep the default `adopt` phase if minimal owner pages are useful; disable it in media folders with
    `ingest: "file"`.
-4. Enable curate with `write: false` and opt in one test page. The current preview confirms whether it would
-   change, but does not expose the proposed body.
-5. Test curate writes only on a copied or version-controlled knowledge base, inspect the file diff, and use
-   the printed change id to undo. Do not treat the summary preview as approval of unseen wording.
-6. Enable observe only with a model whose dry-run patterns are worth recalling later.
-7. Treat reflect as a later-stage feature, after the observation layer has real volume.
-8. Enable repair last, with a low `max_changes`, after reviewing the same full-run dry output.
+4. Enable curate, opt in one test page with `dream: hygiene`, and run `--mode audit`.
+5. Inspect the exact diff with `akno plan diff`, then try `--mode review`: approve one item, apply the plan,
+   and use its printed change id to undo.
+6. Use `--mode auto` only after the same maintenance model has produced consistently safe audit plans. Auto
+   adds a separate curator turn, stale-input checks, journalling, re-indexing, and post-write verification.
+7. Enable observe only with a model whose dry-run patterns are worth recalling later.
+8. Treat reflect as a later-stage feature, after the observation layer has real volume.
+9. Enable repair last, with a low `max_changes`, after reviewing the same full-run dry output.
 
 ---
 
@@ -987,7 +1052,7 @@ because an endpoint or GPU was temporarily busy.
 
 ```text
 <state_dir>/
-  akno.db       disposable derived index
+  akno.db       derived index plus journal, gates, and durable maintenance plans
   akno.sock     local service socket
   akno.lock     current write-holder metadata
   trash/          recoverable forgotten files
@@ -997,8 +1062,9 @@ because an endpoint or GPU was temporarily busy.
 Inside the knowledge base, Akno touches only files authorized by an explicit operation or setting. By
 default an index pass leaves both the set of files and every file's bytes unchanged.
 
-If search state is suspect, rebuild the index. If a write is wrong, undo its change id. If a page or document
-was forgotten, recover it from Akno's trash within the configured retention period.
+If search state is suspect, re-run `akno index`; do not delete `akno.db` while journal undo history,
+pending gated writes, or maintenance plans still matter. If a write is wrong, undo its change id. If a page
+or document was forgotten, recover it from Akno's trash within the configured retention period.
 
 ---
 
@@ -1007,16 +1073,12 @@ was forgotten, recover it from Akno's trash within the configured retention peri
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### There is no durable human review inbox
+### The durable review queue currently covers hygiene only
 
-Dream prints conflicts, previews, refused repairs, and housekeeping findings, but it does not yet offer one
-persistent queue where a person can approve, dismiss, snooze, or apply them. Scheduled output therefore lives
-in service logs, or in the optional JSONL audit log that intentionally duplicates sensitive material.
-
-A maintenance-plan contract should add stable plan and item ids, provenance, complete proposed diffs, input
-hashes, separate human or curator decisions, apply, verify, and undo. This is especially important for curate:
-its current “preview” says that a page would change but does not show the proposed body or diff. Every reporting
-or preview phase should feed the same decision surface.
+Hygiene now has stable plan and item ids, exact diffs, input hashes, separate human or curator decisions,
+hash-checked apply, verification receipts, and journal undo. The other dream outputs still do not feed that
+queue: synthesis, observations, principles, adoption, conflict findings, repairs, and housekeeping each retain
+their existing execution or reporting behavior. There is also no snooze or requested-revision decision yet.
 
 ### Searchability should not depend on an overnight write
 
@@ -1029,10 +1091,10 @@ Recall should be able to return an orphan document card directly, with document-
 `needs_home` state. Adoption could then become an optional filing action instead of a default write required
 for search correctness.
 
-### Dream should be a plan, apply, verify loop
+### The whole dream should become a plan, apply, verify loop
 
-The seven phases currently mix analysis, proposals, writes, and final reporting in one command. A clearer dream
-lifecycle has six user-visible stages:
+The hygiene slice now follows this lifecycle. The seven-phase cycle as a whole still mixes analysis, proposals,
+writes, and final reporting. Its consistent user-visible stages should be:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
 2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
@@ -1051,13 +1113,12 @@ Dream currently combines global phase switches, a separate curate write switch, 
 rules, dry-run behavior, and per-run caps. The safeguards are valuable; the interaction is difficult to hold
 in one mental model.
 
-A better operator UX would expose named trust profiles such as `audit`, `review`, and `autonomous`, then show
-the resolved permission for each transformation and page with `akno dream status`. Expert config could remain
-underneath. Autonomous maintenance should be a direct, well-guarded setup choice rather than a maze of write
-switches; setup must still say plainly when it schedules knowledge-base writes. Today, `service install` creates
-the dream job and `adopt` is enabled by default, so installing background operation can eventually add Markdown
-pages unless the user knows to pass `--no-dream` or disable adoption. See
-the proposed trust-mode and status design.
+The hygiene path now exposes `audit`, `review`, and `auto` both per command and through
+`maintenance.curate.mode`, so a full scheduled run can use durable plans without dropping the other phases.
+The next operator step is still a named profile that resolves authority across every transformation, not just
+curation. Expert config can remain underneath. Setup must say plainly when it schedules knowledge-base writes.
+`adopt` is enabled by default, so installing background operation can eventually add Markdown pages unless the
+user passes `--no-dream` or disables adoption.
 
 The intended profile depends on how Akno is used: a trusted agent-connected installation should recommend
 `autonomous`, with a separate model curator and automatic verified application; a standalone installation should
@@ -1065,9 +1126,9 @@ recommend `review`, where a human makes the final decision. `audit` remains the 
 
 ### The scheduled cycle has weak visibility
 
-`service status` tells whether launchd jobs exist, while the useful maintenance state is spread across terminal
-output, logs, config, and the index. A single status view should show the last run, next scheduled run, enabled
-phases, model in use, applied change ids, failures, and review backlog.
+`akno dream status` now shows active plans, proposed items, pending verification, and the latest plan.
+It still does not show the last full-cycle run, next scheduled run, resolved permissions, model in use, or
+phase-level failures.
 
 ### Setup assumes too much infrastructure knowledge
 
@@ -1112,6 +1173,7 @@ inference so an unresolved claim cannot quietly become a new observation.
 | `ingest <path\|url>`  | Extract, name, route, store, and index                 | yes                              | derive; vision when needed               |
 | `inbox`               | Process arrivals in routed folders                     | yes                              | same as ingest                           |
 | `dream`               | Run the seven maintenance phases                       | depends on enabled phases        | maintenance or derive                    |
+| `plan`                | Inspect, decide, and apply durable maintenance items   | apply only                       | none after planning                      |
 | `serve`               | Run the watcher and operation doors                    | no by itself                     | none by itself                           |
 | `service`             | Install, inspect, or remove background jobs            | outside the knowledge base       | none                                     |
 | `doctor`              | Diagnose paths, index, models, and structural warnings | no                               | probes configured roles                  |

@@ -23,10 +23,11 @@ import { ERROR_CODES } from './errors.ts';
  * *process* — reconcile the tree, file the inbox, run the cycle — plus the four that answer a gate
  * or the journal.
  *
- * `approve`, `decline`, `changes` and `proposals` are here for the same reason the first three are:
+ * Gates, journal reads, and maintenance plans are here for the same reason the first three are:
  * exactly one process may write, so with a service running they are reachable through it or not at
  * all. They are deliberately absent from the op registry — an agent does not get to approve its own
- * gated proposal, and putting them on the op surface would hand it exactly that.
+ * gated proposal or approve its own maintenance rewrite, and putting them on the op surface would hand it
+ * exactly that.
  */
 export const COMMAND_NAMES = [
   'index',
@@ -36,6 +37,7 @@ export const COMMAND_NAMES = [
   'decline',
   'changes',
   'proposals',
+  'plan',
 ] as const;
 export type CommandName = (typeof COMMAND_NAMES)[number];
 

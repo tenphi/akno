@@ -213,6 +213,8 @@ const MaintenanceDoc = z.object({
   curate: z
     .object({
       enabled: z.boolean().optional(),
+      /** Trust mode used by the curate phase inside an otherwise complete scheduled dream run. */
+      mode: z.enum(['audit', 'review', 'auto']).nullable().optional(),
       /** Explicit write switch; enabled curate may still run as a scheduled preview. */
       write: z.boolean().optional(),
       verify: z.boolean().optional(),
@@ -411,6 +413,8 @@ export interface AknoConfig {
     reflect: { enabled: boolean; mission: string | null };
     curate: {
       enabled: boolean;
+      /** Null preserves the legacy preview/write switches. */
+      mode: 'audit' | 'review' | 'auto' | null;
       write: boolean;
       verify: boolean;
       maxPages: number;

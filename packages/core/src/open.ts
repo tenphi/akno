@@ -36,6 +36,18 @@ import { move as moveOp } from './ops/move.ts';
 import { ingest as ingestOp } from './ops/ingest.ts';
 import { isInInbox, processInbox, type InboxResult } from './ingest/inbox.ts';
 import { dream, type DreamOptions, type DreamReport } from './maintenance/dream.ts';
+import {
+  applyMaintenancePlan,
+  decideMaintenanceItem,
+  getMaintenancePlan,
+  listMaintenancePlans,
+  maintenanceStatus,
+  renderMaintenanceDiff,
+  type ApplyMaintenanceResult,
+  type MaintenancePlan,
+  type MaintenancePlanSummary,
+  type MaintenanceStatus,
+} from './maintenance/plans.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -79,6 +91,18 @@ export interface Akno extends AknoOps {
   changes(limit?: number): ChangeSummary[];
   /** Gated proposals waiting on the user. */
   proposals(): ProposalRow[];
+  /** Durable maintenance plans, newest first. */
+  plans(limit?: number): MaintenancePlanSummary[];
+  /** One sealed plan, including its exact operations and decisions. */
+  plan(planId: string): MaintenancePlan;
+  /** A compact unified diff for one item or the whole plan. */
+  maintenanceDiff(planId: string, itemId?: string): string;
+  /** Record a human decision without applying it. */
+  decidePlan(planId: string, itemId: string, outcome: 'approve' | 'reject', reason?: string): MaintenancePlan;
+  /** Apply approved items with stale-input checks, journaling and verification. */
+  applyPlan(planId: string): Promise<ApplyMaintenanceResult>;
+  /** A small operational view of the maintenance queue. */
+  maintenanceStatus(): MaintenanceStatus;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -334,6 +358,34 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     changes: (limit) => ctx.journal.list(limit),
 
     proposals: () => ctx.gate.pending(),
+
+    plans: (limit) => listMaintenancePlans(ctx, limit),
+
+    plan: (planId) => getMaintenancePlan(ctx, planId),
+
+    maintenanceDiff: (planId, itemId) => renderMaintenanceDiff(getMaintenancePlan(ctx, planId), itemId),
+
+    decidePlan(planId, itemId, outcome, reason = '') {
+      if (!writable) {
+        throw new AknoError(
+          'read_only',
+          `deciding a maintenance plan needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return decideMaintenanceItem(ctx, planId, itemId, outcome, 'human', reason);
+    },
+
+    async applyPlan(planId) {
+      if (!writable) {
+        throw new AknoError(
+          'read_only',
+          `applying a maintenance plan needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return applyMaintenancePlan(ctx, planId);
+    },
+
+    maintenanceStatus: () => maintenanceStatus(ctx),
 
     async approve(
       proposalId: string,

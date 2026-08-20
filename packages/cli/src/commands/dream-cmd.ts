@@ -1,9 +1,11 @@
-import { parsePhase, type DreamReport } from '@tenphi/akno-core';
+import { AknoError, parsePhase, type DreamReport, type MaintenanceMode } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance } from '../ops-handle.ts';
 import { heading, json, kv, line, ms, style, truncate } from '../output.ts';
+import { loadMaintenanceStatus, printMaintenanceStatus } from './plan-cmd.ts';
 
 const DREAM_HELP = `akno dream [options]
+akno dream status
 
   The maintenance cycle. Phases are selectable and safe to re-run. Claim repair uses
   conflict verdicts from the preceding phase in a full run.
@@ -22,15 +24,19 @@ const DREAM_HELP = `akno dream [options]
                    Off by default; changes are bounded and undo together.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
 
-  Curate writes only when maintenance.curate.write is true; otherwise scheduled runs show a summary preview.
+  A full/scheduled run uses maintenance.curate.mode when configured. Otherwise curate
+  keeps the legacy maintenance.curate.write behavior.
 
   --phase <name>   Run one phase instead of every enabled one.
+  --mode <policy>  audit | review | auto. A command-line mode currently requires
+                   --phase curate and plans only explicitly opted-in hygiene pages.
   --dry-run        Run selected checks and proposals; change no knowledge-base files.
   --json`;
 
 export async function dreamCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ phase?: string; 'dry-run': boolean }>(argv, {
+  const { values, positionals } = parse<{ phase?: string; mode?: string; 'dry-run': boolean }>(argv, {
     phase: { type: 'string' },
+    mode: { type: 'string' },
     'dry-run': { type: 'boolean', default: false },
   });
 
@@ -39,9 +45,25 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     return 0;
   }
 
+  if (positionals[0] === 'status' && positionals.length === 1) {
+    const status = await loadMaintenanceStatus(values);
+    if (values.json) json(status);
+    else printMaintenanceStatus(status);
+    return 0;
+  }
+  if (positionals.length > 0) {
+    line(DREAM_HELP);
+    return 1;
+  }
+
   const phase = values.phase ? parsePhase(values.phase) : undefined;
+  const mode = values.mode ? parseMode(values.mode) : undefined;
+  if (mode && phase !== 'curate') {
+    throw new AknoError('invalid', '--mode currently requires --phase curate');
+  }
   const input = {
     ...(phase ? { phase } : {}),
+    ...(mode ? { mode } : {}),
     ...(values['dry-run'] ? { dryRun: true } : {}),
   };
 
@@ -103,6 +125,24 @@ function printDream(report: DreamReport, dryRun: boolean): number {
       }
       for (const issue of entry.issues) line(`          ${style.grey(issue)}`);
       if (entry.splits.length) line(`          ${style.grey(`splits: ${entry.splits.join(', ')}`)}`);
+    }
+  }
+
+  if (report.maintenancePlan) {
+    const plan = report.maintenancePlan;
+    heading(`Maintenance plan — ${plan.status}`);
+    line(`  ${style.bold(plan.id)}  ${plan.mode}/${plan.phase}  ${style.grey(plan.summary)}`);
+    const proposed = plan.items.filter((item) => item.status === 'proposed').length;
+    const approved = plan.items.filter((item) => item.status === 'approved').length;
+    if (proposed > 0) {
+      line(`  ${style.grey('inspect:')} ${style.bold(`akno plan diff ${plan.id}`)}`);
+      line(
+        `  ${style.grey('decide:')} ${style.bold(`akno plan decide ${plan.id} --item <item_id> --approve`)}`,
+      );
+    }
+    if (approved > 0) line(`  ${style.grey('apply:')} ${style.bold(`akno plan apply ${plan.id}`)}`);
+    for (const item of plan.items.filter((entry) => entry.changeId)) {
+      line(`  ${style.grey(`${item.subject} undo:`)} ${style.bold(`akno undo ${item.changeId}`)}`);
     }
   }
 
@@ -225,4 +265,9 @@ function printDream(report: DreamReport, dryRun: boolean): number {
     if (id) line(`\n  ${style.grey(`reverse ${what} with`)} ${style.bold(`akno undo ${id}`)}`);
   }
   return 0;
+}
+
+function parseMode(value: string): MaintenanceMode {
+  if (value === 'audit' || value === 'review' || value === 'auto') return value;
+  throw new AknoError('invalid', `unknown maintenance mode '${value}' — expected audit, review or auto`);
 }

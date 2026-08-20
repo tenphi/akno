@@ -109,7 +109,7 @@ export async function serveSocket(
 }
 
 /**
- * The three maintenance commands, run by the process that holds the write handle. Input is
+ * Operator commands, run by the process that holds the write handle. Input is
  * shaped by the CLI that sends it; each of these is a small, named bag of options rather than
  * an op with a schema, which is why they are not in the registry.
  */
@@ -135,10 +135,53 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
       return akno.changes(limitFrom(input));
     case 'proposals':
       return akno.proposals();
+    case 'plan': {
+      const action = stringFrom(input, 'action');
+      switch (action) {
+        case 'list':
+          return akno.plans(limitFrom(input));
+        case 'show':
+          return akno.plan(idFrom(input, 'plan_id'));
+        case 'diff': {
+          const item = (input as { item_id?: unknown } | null)?.item_id;
+          return akno.maintenanceDiff(
+            idFrom(input, 'plan_id'),
+            typeof item === 'string' && item.length > 0 ? item : undefined,
+          );
+        }
+        case 'decide': {
+          const outcome = stringFrom(input, 'outcome');
+          if (outcome !== 'approve' && outcome !== 'reject') {
+            throw new AknoError('invalid', 'outcome must be approve or reject');
+          }
+          const reason = (input as { reason?: unknown } | null)?.reason;
+          return akno.decidePlan(
+            idFrom(input, 'plan_id'),
+            idFrom(input, 'item_id'),
+            outcome,
+            typeof reason === 'string' ? reason : '',
+          );
+        }
+        case 'apply':
+          return akno.applyPlan(idFrom(input, 'plan_id'));
+        case 'status':
+          return akno.maintenanceStatus();
+        default:
+          throw new AknoError('invalid', `unknown plan action: ${action}`);
+      }
+    }
   }
 }
 
 function idFrom(input: unknown, key: string): string {
+  const value = (input as Record<string, unknown> | null)?.[key];
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new AknoError('invalid', `${key} is required`);
+  }
+  return value;
+}
+
+function stringFrom(input: unknown, key: string): string {
   const value = (input as Record<string, unknown> | null)?.[key];
   if (typeof value !== 'string' || value.length === 0) {
     throw new AknoError('invalid', `${key} is required`);

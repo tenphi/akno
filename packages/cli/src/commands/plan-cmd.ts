@@ -1,0 +1,245 @@
+import type {
+  ApplyMaintenanceResult,
+  MaintenanceItemStatus,
+  MaintenancePlan,
+  MaintenancePlanSummary,
+  MaintenanceStatus,
+} from '@tenphi/akno-core';
+import { openOptionsFrom, parse } from '../args.ts';
+import { runMaintenance } from '../ops-handle.ts';
+import { heading, json, kv, line, style } from '../output.ts';
+
+const PLAN_HELP = `akno plan [list] [--limit <n>]
+akno plan show <plan_id>
+akno plan diff <plan_id> [--item <item_id>]
+akno plan decide <plan_id> --item <item_id> <--approve | --reject> [--reason <text>]
+akno plan apply <plan_id>
+akno plan status
+
+  Inspect and control durable maintenance plans. Planning never changes knowledge-base
+  files. Applying checks that every source still matches, journals each item separately,
+  re-indexes it, and verifies the resulting index.
+
+  --json`;
+
+export async function planCommand(argv: string[]): Promise<number> {
+  const { values, positionals } = parse<{
+    limit?: string;
+    item?: string;
+    approve: boolean;
+    reject: boolean;
+    reason?: string;
+  }>(argv, {
+    limit: { type: 'string' },
+    item: { type: 'string' },
+    approve: { type: 'boolean', default: false },
+    reject: { type: 'boolean', default: false },
+    reason: { type: 'string' },
+  });
+  const action = positionals[0] ?? 'list';
+  const planId = positionals[1];
+
+  if (values.help) {
+    line(PLAN_HELP);
+    return 0;
+  }
+
+  if (action === 'list') {
+    const limit = positiveLimit(values.limit);
+    const plans = await runMaintenance(
+      'plan',
+      { action: 'list', limit },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.plans(limit),
+      { writable: false },
+    );
+    if (values.json) json(plans);
+    else printPlanList(plans);
+    return 0;
+  }
+
+  if (action === 'status') {
+    const status = await loadMaintenanceStatus(values);
+    if (values.json) json(status);
+    else printMaintenanceStatus(status);
+    return 0;
+  }
+
+  if (!planId || !['show', 'diff', 'decide', 'apply'].includes(action)) {
+    line(PLAN_HELP);
+    return 1;
+  }
+
+  if (action === 'show') {
+    const plan = await runMaintenance(
+      'plan',
+      { action: 'show', plan_id: planId },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.plan(planId),
+      { writable: false },
+    );
+    if (values.json) json(plan);
+    else printPlan(plan);
+    return 0;
+  }
+
+  if (action === 'diff') {
+    const diff = await runMaintenance(
+      'plan',
+      { action: 'diff', plan_id: planId, ...(values.item ? { item_id: values.item } : {}) },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.maintenanceDiff(planId, values.item),
+      { writable: false },
+    );
+    if (values.json) json({ plan_id: planId, item_id: values.item ?? null, diff });
+    else line(diff);
+    return 0;
+  }
+
+  if (action === 'decide') {
+    if (!values.item || Number(values.approve) + Number(values.reject) !== 1) {
+      line(PLAN_HELP);
+      return 1;
+    }
+    const outcome = values.approve ? 'approve' : 'reject';
+    const plan = await runMaintenance(
+      'plan',
+      {
+        action: 'decide',
+        plan_id: planId,
+        item_id: values.item,
+        outcome,
+        reason: values.reason ?? '',
+      },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.decidePlan(planId, values.item!, outcome, values.reason),
+    );
+    if (values.json) json(plan);
+    else {
+      line(`${style.green(outcome === 'approve' ? 'approved' : 'rejected')} ${values.item}`);
+      printPlanSummary(plan);
+    }
+    return 0;
+  }
+
+  const result = await runMaintenance(
+    'plan',
+    { action: 'apply', plan_id: planId },
+    values,
+    openOptionsFrom(values),
+    async (mem) => mem.applyPlan(planId),
+  );
+  if (values.json) json(result);
+  else printApplyResult(result);
+  return result.plan.status === 'failed' ? 2 : 0;
+}
+
+export async function loadMaintenanceStatus(
+  values: Parameters<typeof openOptionsFrom>[0],
+): Promise<MaintenanceStatus> {
+  return runMaintenance(
+    'plan',
+    { action: 'status' },
+    values,
+    openOptionsFrom(values),
+    async (mem) => mem.maintenanceStatus(),
+    { writable: false },
+  );
+}
+
+export function printMaintenanceStatus(status: MaintenanceStatus): void {
+  heading('Maintenance');
+  kv([
+    ['active plans', status.active],
+    ['awaiting decisions', status.awaitingHuman],
+    ['verification pending', status.verificationPending],
+  ]);
+  if (!status.latest) {
+    line(style.grey('\n  no maintenance plans yet'));
+    return;
+  }
+  line('\n  latest');
+  printPlanSummary(status.latest);
+}
+
+function printPlanList(plans: MaintenancePlanSummary[]): void {
+  if (plans.length === 0) {
+    line(style.grey('no maintenance plans'));
+    return;
+  }
+  heading(`${plans.length} maintenance plan${plans.length === 1 ? '' : 's'}`);
+  for (const plan of plans) printPlanSummary(plan);
+}
+
+function printPlan(plan: MaintenancePlan): void {
+  heading(`${plan.id} — ${plan.status}`);
+  kv([
+    ['mode', plan.mode],
+    ['phase', plan.phase],
+    ['created', plan.createdAt],
+    ['summary', plan.summary],
+  ]);
+  for (const item of plan.items) {
+    line(`\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.subject}`);
+    line(`    ${style.grey(item.rationale)}`);
+    if (item.decision) {
+      line(`    ${style.grey(`${item.decision.actor}: ${item.decision.outcome} — ${item.decision.reason}`)}`);
+    }
+    if (!item.decision && item.statusReason) line(`    ${style.grey(item.statusReason)}`);
+    if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
+    if (item.changeId) {
+      line(`    ${style.grey('undo:')} ${style.bold(`akno undo ${item.changeId}`)}`);
+    }
+  }
+  if (plan.items.some((item) => item.status === 'proposed')) {
+    line(`\n  ${style.grey('inspect exact changes with')} ${style.bold(`akno plan diff ${plan.id}`)}`);
+  }
+}
+
+function printPlanSummary(plan: MaintenancePlanSummary): void {
+  const counts = nonzeroCounts(plan.counts);
+  line(
+    `  ${style.bold(plan.id)}  ${itemStatus(plan.status)}  ${plan.mode}/${plan.phase}` +
+      (counts ? style.grey(`  ${counts}`) : ''),
+  );
+  line(`    ${style.grey(`${plan.createdAt.slice(0, 19).replace('T', ' ')} · ${plan.summary}`)}`);
+}
+
+function printApplyResult(result: ApplyMaintenanceResult): void {
+  heading(`${result.plan.id} — ${result.plan.status}`);
+  for (const item of result.plan.items) {
+    line(`  ${itemStatus(item.status)}  ${item.id}  ${item.subject}`);
+    if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
+    if (item.changeId)
+      line(`    ${style.grey('reverse with')} ${style.bold(`akno undo ${item.changeId}`)}`);
+  }
+}
+
+function itemStatus(status: string): string {
+  if (status === 'applied' || status === 'completed' || status === 'approved') return style.green(status);
+  if (
+    status === 'rejected' ||
+    status === 'stale' ||
+    status === 'verification_failed' ||
+    status === 'failed'
+  ) {
+    return style.yellow(status);
+  }
+  return style.cyan(status);
+}
+
+function nonzeroCounts(counts: Record<MaintenanceItemStatus, number>): string {
+  return Object.entries(counts)
+    .filter(([, value]) => value > 0)
+    .map(([name, value]) => `${value} ${name.replaceAll('_', ' ')}`)
+    .join(', ');
+}
+
+function positiveLimit(value: string | undefined): number {
+  const parsed = value ? Number(value) : 20;
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 20;
+}

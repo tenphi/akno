@@ -18,6 +18,7 @@ export {
   DREAM_PHASES,
   parsePhase,
   type DreamOptions,
+  type DreamMaintenancePlan,
   type DreamPhase,
   type DreamReport,
   type CuratedPage,
@@ -29,6 +30,21 @@ export type { AdoptedDocument } from './maintenance/adopt.ts';
 export type { BrokenLink, Housekeeping, OrphanedDocument, RuleDrift } from './maintenance/housekeeping.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
+export {
+  CURATOR_SCHEMA,
+  type ApplyMaintenanceResult,
+  type MaintenanceCheck,
+  type MaintenanceDecision,
+  type MaintenanceItem,
+  type MaintenanceItemStatus,
+  type MaintenanceMode,
+  type MaintenancePlan,
+  type MaintenancePlanStatus,
+  type MaintenancePlanSummary,
+  type MaintenanceStatus,
+  type MaintenanceVerification,
+  type ReplaceOperation,
+} from './maintenance/plans.ts';
 
 // Re-exported so a host importing only `@tenphi/akno-core` gets the op types and the
 // error class without adding a second dependency it never calls directly.
