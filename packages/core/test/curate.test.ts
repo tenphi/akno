@@ -23,7 +23,7 @@ let server: {
   cosmeticDraft: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
   extractDraft: (value: boolean) => void;
-  copyExtraction: (value: boolean) => void;
+  invalidExtractionHeading: (value: boolean) => void;
   invalidExtractionTarget: (value: boolean) => void;
   userMessages: () => string[];
 };
@@ -478,11 +478,11 @@ describe('plan-backed hygiene', () => {
     expect(fs.existsSync(extracted)).toBe(false);
   });
 
-  it('rejects copied extraction content before model verification', async () => {
+  it('rejects an extraction that does not select an exact eligible source heading', async () => {
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), extractionSource());
     fs.mkdirSync(path.join(root, 'topics'), { recursive: true });
     server.extractDraft(true);
-    server.copyExtraction(true);
+    server.invalidExtractionHeading(true);
     await mem.close();
     mem = await openMem(false, undefined, { allowExtracts: true });
     await mem.index({ structuralOnly: true });
@@ -491,7 +491,9 @@ describe('plan-backed hygiene', () => {
 
     expect(report.maintenancePlan).toBeNull();
     expect(report.curated[0]?.action).toBe('rejected');
-    expect(report.curated[0]?.issues.join(' ')).toMatch(/account for every source line exactly once/);
+    expect(report.curated[0]?.issues.join(' ')).toMatch(
+      /source_heading is not one exact eligible source section/,
+    );
     expect(server.calls()).toBe(1);
   });
 
@@ -799,7 +801,7 @@ async function startStub(): Promise<typeof server> {
   let cosmeticDraft = false;
   let splitDraft = false;
   let extractDraft = false;
-  let copyExtraction = false;
+  let invalidExtractionHeading = false;
   let invalidExtractionTarget = false;
   const userMessages: string[] = [];
   const instance = http.createServer((request, response) => {
@@ -829,7 +831,7 @@ async function startStub(): Promise<typeof server> {
         : system.includes('verify an automatic Markdown rewrite')
           ? JSON.stringify({ ok: true, issues: [] })
           : extractDraft && system.includes('synthesize one canonical')
-            ? extractionDraftResponse(copyExtraction, invalidExtractionTarget)
+            ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
             : splitDraft && system.includes('synthesize one canonical')
               ? JSON.stringify({
                   body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
@@ -913,8 +915,8 @@ async function startStub(): Promise<typeof server> {
     extractDraft: (value) => {
       extractDraft = value;
     },
-    copyExtraction: (value) => {
-      copyExtraction = value;
+    invalidExtractionHeading: (value) => {
+      invalidExtractionHeading = value;
     },
     invalidExtractionTarget: (value) => {
       invalidExtractionTarget = value;
@@ -946,24 +948,21 @@ Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.
 `;
 }
 
-function extractionDraftResponse(copy: boolean, invalidTarget: boolean): string {
+function extractionDraftResponse(invalidHeading: boolean, invalidTarget: boolean): string {
   const target = invalidTarget ? 'archive/zephyr-qx-100' : 'topics/zephyr-qx-100';
-  const retained = `# Ada Marlow
-
-## Details
-
-<!-- akno:item itm_ada source=conversation origin=user -->
-Ada Marlow lives at 111 Example Street.`;
-  const moved = `## Equipment
-
-<!-- akno:item itm_zephyr source=conversation origin=user -->
-Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.
-- **Warranty:** five years`;
   const bridge = `See [[${target}]] for Ada Marlow's equipment notes.`;
   return JSON.stringify({
-    body: `${retained}\n\n${copy ? `${moved}\n\n` : ''}${bridge}\n`,
+    // Extraction content comes from the selected source section, never from model-authored bytes.
+    body: '# Model draft that Akno must not use for an extraction.\n',
     splits: [],
-    extracts: [{ slug: target, title: 'Zephyr QX-100 notes', body: `${moved}\n`, bridge }],
+    extracts: [
+      {
+        slug: target,
+        title: 'Zephyr QX-100 notes',
+        source_heading: invalidHeading ? '## Missing field manual' : '## Equipment',
+        bridge,
+      },
+    ],
     temporal: false,
   });
 }

@@ -534,7 +534,7 @@ page and creates every child together, or changes nothing. A command-line mode i
 `--phase curate`; the same mode can be set at `maintenance.curate.mode` so the curate phase of a full nightly
 cycle uses it without skipping other phases. Stable item markers and provenance survive rewrites and moves,
 and a split keeps the canonical `page.md` while adding children under `page/`. An extraction instead moves
-one coherent block of authored Markdown verbatim into an independent page, leaves a managed source bridge
+one exact source section of authored Markdown verbatim into an independent page, leaves a managed source bridge
 and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
 The replacement and creation are still one collision-checked item and one undo. See the
 [dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.

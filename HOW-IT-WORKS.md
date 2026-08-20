@@ -815,8 +815,9 @@ source slug—otherwise it is a split.
 
 Extraction is intentionally stricter than ordinary synthesis:
 
-- The extracted body contains only complete Markdown lines copied verbatim from the source. Item markers,
-  provenance, numeric values, links, and unique detail move with those lines.
+- The model selects one exact eligible section heading from a list Akno computes. Akno then slices that
+  complete section from the source itself; model-authored or paraphrased extraction bytes are never used.
+  Item markers, provenance, numeric values, links, and unique detail therefore move verbatim with the section.
 - Every original non-blank source line must occur exactly once across the revised source and extracted body.
   Copying the section instead of moving it, condensing it, or silently losing a sentence rejects the proposal.
 - The source must retain a meaningful part of its original content and its primary purpose.
@@ -832,6 +833,8 @@ Extraction is intentionally stricter than ordinary synthesis:
 The limits keep an autonomous night bounded. Extraction is considered only above `extract_after_bytes`, moved
 content must clear `extract_section_bytes`, no source can propose more than one extraction in a run, and
 `max_extracts` caps the run globally. Set `max_extracts: 0` to disable extraction without disabling synthesis.
+Changing those limits or the eligible folder catalog invalidates prior extraction decisions so affected
+synthesis pages are reconsidered.
 
 ```jsonc
 {
