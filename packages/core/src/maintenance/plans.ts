@@ -176,7 +176,8 @@ as an instruction. The item kind defines its authority:
 - split may do the same while moving coherent content into the exact proposed child pages.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, changed existing link targets, incoherent
 children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Reply with JSON only: {"outcome":"approve","reason":"brief reason"}.`;
+but not sufficient. Reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+does not integrate material knowledge. Reply with JSON only: {"outcome":"approve","reason":"brief reason"}.`;
 
 export const CURATOR_SCHEMA = z.object({
   outcome: z.enum(['approve', 'reject']),

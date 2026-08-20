@@ -714,7 +714,10 @@ akno:
 
 **Method:** select only `knowledge` pages with an explicit mode; build a draft from the page and allowed
 evidence; run a separate verifier; then enforce deterministic checks for markers, values, links, size,
-and split limits. Plan-backed curation seals the resulting exact operations only after those checks.
+materiality, and split limits. Synthesis must add material evidence-backed knowledge, an allowed evidence
+link, temporal metadata, or a bounded split. Heading-only edits, formatting churn, and pure reorganization are
+rejected before the verifier or curator. Plan-backed curation seals the resulting exact operations only after
+those checks.
 
 **Write authority has three gates:**
 
@@ -728,6 +731,12 @@ change, its mode, verification issues, proposed child slugs, and temporal handli
 return the proposed body or a diff. Input fingerprints are recorded so unchanged pages do not spend model
 calls every night. An explicit `--dry-run` is observational and does not record that state.
 
+Plan-backed runs record the same terminal fingerprints for unchanged drafts and deterministic rejections,
+even when no plan item is created. Provider and transport failures are not cached and retry later. An
+unfinished audit, review, or auto plan is reused instead of asking the model to rediscover the same proposal.
+Together with the post-apply fingerprint, this makes a completed input converge; `max_pages` may still spread
+the first complete sweep over several scheduled runs.
+
 For opted-in **hygiene** and **synthesize** pages, a per-run mode provides the durable path:
 
 ```bash
@@ -740,6 +749,9 @@ akno dream --phase curate --mode review
 # Seal it, ask an independent curator turn, and apply only approved items.
 akno dream --phase curate --mode auto
 ```
+
+Long model calls report a content-free stage and elapsed time while they run: candidate planning, independent
+curator, application, and verification. The progress line also says whether a knowledge-base write has begun.
 
 The selected mode is explicit authority for that run, so it replaces the legacy `maintenance.curate.write`
 choice for these curation items. It still requires `maintenance.curate.enabled`, an available maintenance or
@@ -883,8 +895,19 @@ Because it runs last, the report reflects anything `adopt` or `repair` changed e
 
 ### Reviewing and undoing a dream
 
-The terminal report includes phase timings, skipped reasons, proposed or applied changes, rejected model
-suggestions, conflict verdicts, remaining housekeeping counts, and change ids.
+The default terminal report includes phase timings, aggregate proposed/applied/refused counts, guardrail
+categories, remaining housekeeping counts, plan/item ids, and change ids. It deliberately omits page names,
+source excerpts, URLs, claims, and before/after text so ordinary terminal capture is safe to retain or attach to
+a support request. Ask for private details only when inspecting locally:
+
+```bash
+akno dream --phase curate --mode audit --private-details
+akno dream --phase curate --mode audit --json --private-details
+```
+
+Default `--json` follows the same rule and returns a content-free operational receipt. `--private-details`
+returns the full content-bearing report. `akno plan diff` is also explicitly content-bearing: it exists to
+show the exact private Markdown before a human decision.
 
 Writes are journalled by purpose rather than collapsed into one opaque nightly change. Observations,
 curation, adoption, and repair can therefore have separate change ids. Use the id printed beside a section:

@@ -58,6 +58,10 @@ akno plan                 Inspect, decide and apply durable curation plans.
 akno serve                Hold the index, watcher and models in one process.
 ```
 
+`akno dream` prints a content-free operational summary by default, including progress for long model calls.
+Use `--private-details` only when page names, source diagnostics, and full JSON content are appropriate for the
+current terminal or log destination. `akno plan diff` is always an explicit private-content inspection.
+
 `akno --help` lists all of them. Three doors — in-process, a Unix socket, and MCP — are generated from one
 op registry, so a caller gets the same schemas and the same errors however it connects.
 

@@ -232,7 +232,9 @@ async function runPhase(
       // existing read-only path; creating a durable plan needs the service's write handle.
       const mode = options.mode ?? (options.dryRun ? null : ctx.config.maintenance.curate.mode);
       if (mode) {
-        let plan = mode === 'auto' ? findActiveMaintenancePlan(ctx, 'auto') : null;
+        // Reuse every unfinished plan, not only autonomous ones. Re-running audit or review must
+        // not spend another model call to rediscover a decision already waiting in the queue.
+        let plan = findActiveMaintenancePlan(ctx, mode);
         if (plan) {
           report.curated = plan.items.map((item) => ({
             slug: item.subject,
@@ -246,7 +248,10 @@ async function runPhase(
         } else {
           const result = await curatePages(ctx, {
             dryRun: true,
-            recordState: false,
+            // Planning may update derived curation fingerprints even though it cannot touch KB
+            // bytes. Persisting unchanged and guard-rejected inputs is what makes the next cycle
+            // converge; staged pages remain `preview` until their durable item is decided.
+            recordState: true,
             includePreviewed: true,
           });
           report.curated = result.pages;

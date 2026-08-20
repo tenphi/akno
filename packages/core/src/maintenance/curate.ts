@@ -211,9 +211,9 @@ post-event knowledge.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 6: the synthesize prompt now asks for `splits` and `temporal` always, with `[]`/`false`/null for
-// the empty cases, so the shape can be enforced by the endpoint rather than requested politely.
-const CURATE_FINGERPRINT_VERSION = 6;
+// 7: synthesis now has a deterministic materiality floor. Old "unchanged" and rejected
+// decisions must be reconsidered once because they were made without that boundary.
+const CURATE_FINGERPRINT_VERSION = 7;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -420,7 +420,7 @@ export async function curatePages(
     }
 
     const verified =
-      metadataOnly || archivalNoop
+      metadataOnly || archivalNoop || (nextBody === body && splits.length === 0)
         ? { ok: true, issues: [], cacheable: true }
         : await verifyDraft(ctx, row, body, nextBody, splits, evidence, conflicts, temporal, clock, archival);
     if (!verified.ok) {
@@ -748,6 +748,14 @@ function guardRewrite(input: {
     if (ratio < 0.6 || ratio > 1.4) issues.push('the hygiene rewrite changed the page size too drastically');
     if (input.splits.length > 0) issues.push('hygiene pages cannot split');
   }
+  if (
+    input.mode === 'synthesize' &&
+    input.after !== input.before &&
+    input.splits.length === 0 &&
+    !hasMaterialSynthesisChange(input.before, input.after, input.pageSlug)
+  ) {
+    issues.push('synthesis rewrite is cosmetic or organizational; no material knowledge was added');
+  }
   if (input.mode === 'synthesize' && input.conflicts.length > 0 && !/^##\s+Unresolved\s*$/im.test(combined)) {
     issues.push('known conflicts are not preserved under an Unresolved section');
   }
@@ -764,6 +772,44 @@ function guardRewrite(input: {
     issues.push('an Unresolved section was added even though no unresolved conflict was supplied');
   }
   return issues;
+}
+
+/**
+ * Synthesis exists to integrate knowledge, not to spend a high-risk transaction on prose churn.
+ * Headings and Markdown decoration are deliberately ignored: changing "Highlights" to "History
+ * and highlights" must not count as new knowledge. A new evidence-backed wikilink is material by
+ * itself; otherwise the rewrite needs at least two new content terms. The model verifier and
+ * independent curator still decide whether those terms are actually supported and useful.
+ */
+function hasMaterialSynthesisChange(before: string, after: string, pageSlug: string): boolean {
+  const priorLinks = linkTargets(before, pageSlug).wiki;
+  const nextLinks = linkTargets(after, pageSlug).wiki;
+  if ([...nextLinks].some((target) => !priorLinks.has(target))) return true;
+
+  const priorTerms = synthesisTerms(before);
+  const nextTerms = synthesisTerms(after);
+  let added = 0;
+  for (const term of nextTerms) {
+    if (!priorTerms.has(term) && ++added >= 2) return true;
+  }
+  return false;
+}
+
+function synthesisTerms(body: string): Set<string> {
+  const prose = body
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .split('\n')
+    .filter((line) => !/^\s{0,3}#{1,6}\s+/.test(line))
+    .join('\n')
+    // Link targets are evaluated separately. Keeping them here would let a path rename masquerade
+    // as a factual addition; visible Markdown-link labels remain ordinary prose.
+    .replace(/!\[\[[^\]]+\]\]/g, ' ')
+    .replace(/\[\[[^\]]+\]\]/g, ' ')
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .normalize('NFKC')
+    .toLowerCase();
+  return new Set(prose.match(/[\p{L}\p{N}]+(?:['’_-][\p{L}\p{N}]+)*/gu) ?? []);
 }
 
 function missingValueContexts(body: string, values: string[]): string[] {

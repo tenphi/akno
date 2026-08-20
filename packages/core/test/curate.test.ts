@@ -18,7 +18,9 @@ let server: {
   loseMarker: (value: boolean) => void;
   changeNumber: (value: boolean) => void;
   echoDraft: (value: boolean) => void;
+  exactDraft: (value: boolean) => void;
   synthesisDraft: (value: boolean) => void;
+  cosmeticDraft: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
   userMessages: () => string[];
 };
@@ -142,7 +144,7 @@ Ada described her work. [[people/ada-marlow]]
     await mem.index({ structuralOnly: true });
 
     await mem.dream({ phase: 'curate' });
-    expect(server.calls()).toBe(2);
+    expect(server.calls()).toBe(1);
     expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
 
     fs.appendFileSync(evidence, '\nShe later added another detail.\n');
@@ -151,7 +153,7 @@ Ada described her work. [[people/ada-marlow]]
 
     expect(report.curated).toHaveLength(1);
     expect(report.curated[0]?.mode).toBe('synthesize');
-    expect(server.calls()).toBe(4);
+    expect(server.calls()).toBe(2);
   });
 
   it('reconsiders an accepted preview once when writes are enabled', async () => {
@@ -251,6 +253,11 @@ describe('plan-backed hygiene', () => {
     expect(fs.readFileSync(page, 'utf8')).toBe(before);
     expect(mem.maintenanceDiff(plan.id)).toContain('--- a/people/ada-marlow.md');
 
+    const callsAfterPlanning = server.calls();
+    const repeated = await mem.dream({ phase: 'curate', mode: 'audit' });
+    expect(repeated.maintenancePlan?.id).toBe(plan.id);
+    expect(server.calls()).toBe(callsAfterPlanning);
+
     await mem.close();
     mem = await openMem(false);
     expect(mem.plan(plan.id)).toMatchObject({ id: plan.id, status: 'ready' });
@@ -317,6 +324,49 @@ describe('plan-backed hygiene', () => {
     expect(report.curated[0]?.action).toBe('updated');
     expect(server.calls()).toBe(3);
     expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('rejects cosmetic-only synthesis and caches that completed input', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    server.cosmeticDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto');
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated).toMatchObject([
+      {
+        slug: 'people/ada-marlow',
+        action: 'rejected',
+        issues: ['synthesis rewrite is cosmetic or organizational; no material knowledge was added'],
+      },
+    ]);
+    expect(server.calls()).toBe(1);
+    expect(server.curatorCalls()).toBe(0);
+
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(1);
+  });
+
+  it('caches unchanged plan-backed candidates instead of resampling them', async () => {
+    server.exactDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto');
+    await mem.index({ structuralOnly: true });
+
+    const first = await mem.dream({ phase: 'curate' });
+    expect(first.maintenancePlan).toBeNull();
+    expect(first.curated).toMatchObject([{ slug: 'people/ada-marlow', action: 'unchanged' }]);
+    expect(server.calls()).toBe(1);
+
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(1);
   });
 
   it('uses configured auto mode inside the complete scheduled cycle', async () => {
@@ -613,7 +663,9 @@ async function startStub(): Promise<typeof server> {
   let drop = false;
   let changeNumber = false;
   let echoDraft = false;
+  let exactDraft = false;
   let synthesisDraft = false;
+  let cosmeticDraft = false;
   let splitDraft = false;
   const userMessages: string[] = [];
   const instance = http.createServer((request, response) => {
@@ -654,20 +706,30 @@ async function startStub(): Promise<typeof server> {
                 ],
                 temporal: false,
               })
-            : synthesisDraft && system.includes('synthesize one canonical')
+            : cosmeticDraft && system.includes('synthesize one canonical')
               ? JSON.stringify({
-                  body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                  body: currentBody(user)
+                    .replace(/^\n(?=#)/, '')
+                    .replace('## Details', '## History and details'),
                   splits: [],
                   temporal: false,
                 })
-              : echoDraft
-                ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
-                : JSON.stringify({
-                    body:
-                      '# Ada Marlow\n\n## Details\n\n' +
-                      (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                      `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                  });
+              : synthesisDraft && system.includes('synthesize one canonical')
+                ? JSON.stringify({
+                    body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                    splits: [],
+                    temporal: false,
+                  })
+                : exactDraft
+                  ? JSON.stringify({ body: currentBody(user), splits: [], temporal: false })
+                  : echoDraft
+                    ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
+                    : JSON.stringify({
+                        body:
+                          '# Ada Marlow\n\n## Details\n\n' +
+                          (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                          `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                      });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -692,8 +754,14 @@ async function startStub(): Promise<typeof server> {
     echoDraft: (value) => {
       echoDraft = value;
     },
+    exactDraft: (value) => {
+      exactDraft = value;
+    },
     synthesisDraft: (value) => {
       synthesisDraft = value;
+    },
+    cosmeticDraft: (value) => {
+      cosmeticDraft = value;
     },
     splitDraft: (value) => {
       splitDraft = value;

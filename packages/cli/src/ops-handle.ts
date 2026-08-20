@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { connect, defaultSocketPath } from '@tenphi/akno-client';
-import { loadConfig, open, type Akno } from '@tenphi/akno-core';
+import { loadConfig, open, type Akno, type MaintenanceStatus } from '@tenphi/akno-core';
 import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@tenphi/akno-protocol';
 import { style } from './output.ts';
 
@@ -15,6 +15,12 @@ export interface OpsHandle {
   akno: Akno | null;
   via: 'socket' | 'in-process';
   close(): Promise<void>;
+}
+
+export interface MaintenanceWaitUpdate {
+  elapsedMs: number;
+  via: 'socket' | 'in-process';
+  status: MaintenanceStatus | null;
 }
 
 /**
@@ -103,7 +109,12 @@ export async function runMaintenance<T>(
   values: { connect?: boolean; json?: boolean },
   openOptions: { aknoPath?: string; stateDir?: string },
   inProcess: (akno: Akno) => Promise<T>,
-  options: { writable?: boolean } = {},
+  options: {
+    writable?: boolean;
+    /** Periodic, content-free queue snapshots for long-running operator commands. */
+    onWait?: (update: MaintenanceWaitUpdate) => void;
+    waitEveryMs?: number;
+  } = {},
 ): Promise<T> {
   const socketPath = socketFor(openOptions);
 
@@ -114,7 +125,12 @@ export async function runMaintenance<T>(
         if (!values.json) {
           process.stderr.write(style.grey(`via the service on ${socketPath}\n`));
         }
-        return (await client.command(command, input)) as T;
+        return await withWaitUpdates(
+          client.command(command, input) as Promise<T>,
+          'socket',
+          async () => (await client.command('plan', { action: 'status' })) as MaintenanceStatus,
+          options,
+        );
       } finally {
         await client.close();
       }
@@ -132,8 +148,55 @@ export async function runMaintenance<T>(
   // from starting while somebody lists their pending approvals.
   const akno = await open({ ...openOptions, ...(options.writable === false ? { writable: false } : {}) });
   try {
-    return await inProcess(akno);
+    return await withWaitUpdates(
+      inProcess(akno),
+      'in-process',
+      async () => akno.maintenanceStatus(),
+      options,
+    );
   } finally {
     await akno.close();
+  }
+}
+
+async function withWaitUpdates<T>(
+  work: Promise<T>,
+  via: MaintenanceWaitUpdate['via'],
+  readStatus: () => Promise<MaintenanceStatus>,
+  options: {
+    onWait?: (update: MaintenanceWaitUpdate) => void;
+    waitEveryMs?: number;
+  },
+): Promise<T> {
+  if (!options.onWait) return work;
+  const started = performance.now();
+  const every = Math.max(1_000, options.waitEveryMs ?? 5_000);
+  let stopped = false;
+  let timer: NodeJS.Timeout | null = null;
+  let polling = false;
+
+  const emit = async (): Promise<void> => {
+    if (stopped || polling) return;
+    polling = true;
+    let status: MaintenanceStatus | null = null;
+    try {
+      status = await readStatus();
+    } catch {
+      // Progress is observational. Losing one snapshot must never fail or cancel the work.
+    } finally {
+      polling = false;
+    }
+    if (!stopped) {
+      options.onWait?.({ elapsedMs: Math.round(performance.now() - started), via, status });
+      timer = setTimeout(() => void emit(), every);
+    }
+  };
+
+  timer = setTimeout(() => void emit(), every);
+  try {
+    return await work;
+  } finally {
+    stopped = true;
+    if (timer) clearTimeout(timer);
   }
 }

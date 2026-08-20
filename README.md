@@ -517,6 +517,7 @@ explicit trust mode:
 akno dream --phase curate --mode audit   # persistent exact diffs; no note changes
 akno dream --phase curate --mode review  # wait for human item decisions
 akno dream --phase curate --mode auto    # separate curator turn, then verified apply
+akno dream --phase curate --mode audit --private-details  # include private page-level diagnostics
 
 akno plan diff <plan-id>
 akno plan decide <plan-id> --item <item-id> --approve
@@ -532,6 +533,12 @@ page and creates every child together, or changes nothing. A command-line mode i
 cycle uses it without skipping other phases. Stable item markers and provenance survive rewrites and moves,
 and a split keeps the canonical `page.md` while adding children under `page/`. See the
 [dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.
+
+Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure
+reorganization never reach the curator. Completed unchanged and rejected inputs are fingerprinted in
+plan-backed mode too, so later runs do not resample them unless page, evidence, conflict, or temporal inputs
+change. Long runs print content-free planning/curator/apply progress. Dream output and `--json` are redacted by
+default; `--private-details` deliberately includes page names and source-level diagnostics.
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
 how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.
