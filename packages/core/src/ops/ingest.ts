@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { AknoError, IngestInput, type IngestOutput } from '@akno/protocol';
+import { AknoError, IngestInput, type IngestOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { extract, type Extraction } from '../ingest/extract.ts';

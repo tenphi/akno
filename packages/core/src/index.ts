@@ -1,5 +1,5 @@
 /**
- * The public surface of `@akno/core`. Deliberately small: an export is a
+ * The public surface of `@tenphi/akno-core`. Deliberately small: an export is a
  * promise not to break something, and a barrel that re-exports every internal
  * helper makes the actual contract impossible to read. Internals are reachable by
  * deep import for a caller who accepts the churn; tests import them relatively.
@@ -30,7 +30,7 @@ export type { BrokenLink, Housekeeping, OrphanedDocument, RuleDrift } from './ma
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 
-// Re-exported so a host importing only `@akno/core` gets the op types and the
+// Re-exported so a host importing only `@tenphi/akno-core` gets the op types and the
 // error class without adding a second dependency it never calls directly.
 export {
   AknoError,
@@ -46,4 +46,4 @@ export {
   type PageRole,
   type RecallMode,
   type ResultStatus,
-} from '@akno/protocol';
+} from '@tenphi/akno-protocol';

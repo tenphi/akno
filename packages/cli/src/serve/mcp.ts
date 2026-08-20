@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { AknoError, MCP_SERVER_NAME, OPS, type OpName } from '@akno/protocol';
-import type { OpInput, OpResult } from '@akno/protocol';
+import { AknoError, MCP_SERVER_NAME, OPS, type OpName } from '@tenphi/akno-protocol';
+import type { OpInput, OpResult } from '@tenphi/akno-protocol';
 
 /**
  * The stdio MCP door, for third-party agents that speak it:

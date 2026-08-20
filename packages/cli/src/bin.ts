@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { AknoError, OPS, OP_NAMES } from '@akno/protocol';
+import { AknoError, OPS, OP_NAMES } from '@tenphi/akno-protocol';
 import { fail, line, style } from './output.ts';
 import { indexCommand } from './commands/index-cmd.ts';
 import { recallCommand } from './commands/recall-cmd.ts';

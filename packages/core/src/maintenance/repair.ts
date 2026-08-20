@@ -26,7 +26,7 @@ import type { CrossPageConflict } from './conflicts.ts';
  * wrong edits your notes.
  */
 
-export interface LinkRepair {
+interface LinkRepair {
   from: string;
   brokenTarget: string;
   newTarget: string;
@@ -34,7 +34,7 @@ export interface LinkRepair {
   how: 'unique' | 'model';
 }
 
-export interface ClaimRepair {
+interface ClaimRepair {
   slug: string;
   line: number;
   before: string;

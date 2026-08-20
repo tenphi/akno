@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { AknoError } from '@akno/protocol';
+import { AknoError } from '@tenphi/akno-protocol';
 import { readJsoncFile } from './jsonc.ts';
 import { expandTilde, findRepoRoot, resolveUserPath } from './paths.ts';
 import { compileRules } from '../rules/compile.ts';

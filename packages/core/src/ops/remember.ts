@@ -4,7 +4,7 @@ import {
   type FolderRequired,
   type RememberOutput,
   type WriteTarget,
-} from '@akno/protocol';
+} from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';

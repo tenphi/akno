@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import * as sqliteVec from 'sqlite-vec';
-import { AknoError } from '@akno/protocol';
+import { AknoError } from '@tenphi/akno-protocol';
 import { MIGRATIONS } from './migrations.ts';
 import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
 

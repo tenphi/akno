@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Card } from '@akno/protocol';
+import type { Card } from '@tenphi/akno-protocol';
 import { computeCoverage, estimateTokens } from './assemble.ts';
 
 function card(overrides: Partial<Card> = {}): Card {

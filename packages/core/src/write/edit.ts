@@ -1,4 +1,4 @@
-import { AknoError } from '@akno/protocol';
+import { AknoError } from '@tenphi/akno-protocol';
 import { declaredFrontmatter, parseFrontmatter, withId } from '../kb/frontmatter.ts';
 
 /**

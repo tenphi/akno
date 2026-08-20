@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { open } from '@akno/core';
+import { open } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, kv, line, ms, style, warn } from '../output.ts';
 import { serveSocket } from '../serve/socket.ts';
 import { serveHttp } from '../serve/http.ts';
 import { serveMcp } from '../serve/mcp.ts';
 import { resolveOps } from '../ops-handle.ts';
-import { AknoError } from '@akno/protocol';
+import { AknoError } from '@tenphi/akno-protocol';
 
 const SERVE_HELP = `akno serve [options]
 
@@ -301,7 +301,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   // service installed, the nightly cycle not, and an error message about neither.
   const hour = dreamHour(values['dream-hour']);
 
-  const { loadConfig } = await import('@akno/core');
+  const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
   const binary = process.argv[1] ?? 'akno';
   const args = ['serve', ...(values.http ? ['--http', values.http] : [])];

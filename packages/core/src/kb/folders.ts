@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { PageRole, RememberManagement } from '@akno/protocol';
+import type { PageRole, RememberManagement } from '@tenphi/akno-protocol';
 import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
 import { effectiveRule } from '../rules/compile.ts';

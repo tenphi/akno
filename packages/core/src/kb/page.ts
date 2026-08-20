@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { DreamManagement, PageRole, RememberManagement } from '@akno/protocol';
+import type { DreamManagement, PageRole, RememberManagement } from '@tenphi/akno-protocol';
 import { parseFrontmatter, readString, readTags, type Frontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 

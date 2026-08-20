@@ -18,15 +18,15 @@ directory. If it passes, your checkout is working.
 Once a service is installed, `pnpm akno redeploy` is the one command that applies a change: it builds, then
 restarts `dev.akno`, then waits for the socket to come back. Both halves are needed and for different
 reasons — launchd runs the TypeScript directly, so the _service_ needs the restart and not the build, while a
-host importing `@akno/client` reads `packages/*/dist`, so it needs the build and not the restart. Doing one
-and not the other leaves half the system on the old code, and the symptom is `unknown op`.
+host importing `@tenphi/akno-client` reads `packages/*/dist`, so it needs the build and not the restart.
+Doing one and not the other leaves half the system on the old code, and the symptom is `unknown op`.
 
 Node 22.18+ (native type stripping) and pnpm 10+. `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320` (three
 days), so a brand-new release of a dependency will not resolve; that is deliberate.
 
-**macOS only.** `@akno/core` and the CLI declare `"os": ["darwin"]`, and there is no plan to change that —
-see [Platform](README.md#platform). Do not add a Linux or Windows code path "just in case": an untested
-second watcher is a correctness claim nobody has checked. `@akno/client` is the exception and must stay
+**macOS only.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin"]`, and there is no plan to change
+that — see [Platform](README.md#platform). Do not add a Linux or Windows code path "just in case": an untested
+second watcher is a correctness claim nobody has checked. `@tenphi/akno-client` is the exception and must stay
 portable, because a Linux container talking to a macOS host over the HTTP door is a supported deployment.
 
 ## The one rule about config
@@ -50,10 +50,13 @@ packages/protocol   op registry, zod schemas, wire format. Depends on zod and no
 packages/core       config, store, indexer, models, recall, watcher, doctor, bench.
 packages/client      thin typed client over a running service. No native dependencies — ever.
 packages/cli        commands, and the three doors (socket, HTTP, MCP).
+config/             default.jsonc (committed) + local.jsonc (never)
+examples/demo-brain a small invented knowledge base, with a test that keeps it working
+scripts/            the two smoke scripts, and the pack-time asset staging
 ```
 
-`@akno/protocol` exists so `@akno/client` can share schemas with `@akno/core` without pulling
-`better-sqlite3` and `sqlite-vec` into a host's build. **Do not add a runtime dependency from `client` to
+`@tenphi/akno-protocol` exists so `@tenphi/akno-client` can share schemas with `@tenphi/akno-core`
+without pulling `better-sqlite3` and `sqlite-vec` into a host's build. **Do not add a runtime dependency from `client` to
 `core`.** That boundary is the reason a containerized agent can talk to Akno without compiling anything.
 
 ## Adding an op
@@ -65,7 +68,7 @@ One place, then everything else follows:
    `implemented: false` until the body exists.
 3. Implement it in `packages/core/src/ops/` and wire it into the `implementations` map in `open.ts`.
 4. Add a CLI command if a human would use it.
-5. `pnpm akno redeploy`. The op registry a _host_ sees is the built one, so a new op is invisible to Luna
+5. `pnpm akno redeploy`. The op registry a _host_ sees is the built one, so a new op is invisible to a host
    until the build has run — and it fails as `unknown op`, which looks like a wiring mistake in the host
    rather than a stale artifact.
 
@@ -162,8 +165,13 @@ Changes here need more care than the line count suggests.
 - `packages/core/test/integration.test.ts` indexes a real knowledge base on disk **with no models configured**.
   Keep it that way: proving Akno degrades rather than fails is more valuable than proving it works when
   everything is present, and it keeps CI free of an LLM.
-- `scripts/smoke.mjs` drives the built CLI end to end. It sets `AKNO_ISOLATED=1` so your `config/local.jsonc`
-  cannot make it pass or fail for the wrong reason.
+- `scripts/smoke.mjs` drives the built CLI end to end against a generated knowledge base, and
+  `scripts/smoke-demo.mjs` does the same against the one this repo ships at `examples/demo-brain`. Both set
+  `AKNO_ISOLATED=1` so your `config/local.jsonc` cannot make them pass or fail for the wrong reason.
+  `pnpm smoke` runs both.
+- The example is documentation that runs, which is why it has a test. Nothing else in the suite would notice
+  an event line in a format the indexer does not match, or a relative Markdown link pointing out of the
+  folder — which indexes as a broken link _inside_ it. Both were real.
 - `akno bench` asserts the performance budgets. If you make something slower, the budget should move
   deliberately and with a reason in the commit message, not quietly.
 
@@ -212,6 +220,38 @@ Comments should explain **why**, especially where the obvious implementation is 
 changed; a comment earns its place by recording the reasoning that is not visible in the code — the failure
 mode being avoided, the alternative that was rejected, the measurement behind a constant. A comment restating
 the line above it is noise.
+
+## Releasing
+
+Four packages, one version, published from a tag by
+[`.github/workflows/release.yml`](.github/workflows/release.yml).
+
+```bash
+# 1. Bump all four to the same version, and write the CHANGELOG entry.
+# 2. Let CI go green on main.
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+The workflow re-runs the whole gate, checks the tag against every manifest, verifies the tarballs,
+then publishes in dependency order: protocol, core, client, cli.
+
+Three things about it are worth knowing, because each one is a way a release breaks quietly:
+
+- **`pnpm publish`, never `npm publish`.** Only pnpm rewrites `workspace:*` and `catalog:` into real
+  version ranges. A tarball packed the other way asks a registry for `workspace:*` and fails on
+  install, and nothing before that point notices.
+- **The tarball is not covered by the build or the suite.** `packages/core` needs
+  `config/default.jsonc` and `swift/extract.swift` inside it — the first because an installed copy has
+  no repo root to walk up to and throws `committed defaults are missing` without it, the second
+  because PDF and OCR extraction is dead without it. Both are staged by
+  [`scripts/pack-assets.mjs`](scripts/pack-assets.mjs) at `prepack`, alongside the LICENSE, and the
+  release job asserts all of it before publishing.
+- **A version number is spent once.** `pnpm publish` refuses one already on the registry, which is
+  the behaviour you want — re-running a half-failed job cannot ship different bytes under the same
+  number. If a publish fails partway, bump the patch rather than trying to reuse it.
+
+To rehearse a release without publishing, run the workflow from the Actions tab with `dry_run` left
+on: everything happens except the last step.
 
 ## Never use real data in tests
 

@@ -1,4 +1,4 @@
-import type { Line } from '@akno/protocol';
+import type { Line } from '@tenphi/akno-protocol';
 
 /**
  * What a line's facts add to it: a confidence, and a handle to retract by.

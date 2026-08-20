@@ -1,5 +1,5 @@
 {
-  "name": "@akno/protocol",
+  "name": "@tenphi/akno-protocol",
   "version": "0.1.0",
   "description": "Akno op registry and schemas \u2014 the single source of truth every door is generated from",
   "license": "PolyForm-Noncommercial-1.0.0",
@@ -17,5 +17,21 @@
   ],
   "dependencies": {
     "zod": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenphi/akno.git",
+    "directory": "packages/protocol"
+  },
+  "homepage": "https://github.com/tenphi/akno#readme",
+  "bugs": {
+    "url": "https://github.com/tenphi/akno/issues"
+  },
+  "author": "Andrey Yamanov",
+  "scripts": {
+    "prepack": "node ../../scripts/pack-assets.mjs"
   }
 }

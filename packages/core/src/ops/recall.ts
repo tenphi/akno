@@ -1,4 +1,4 @@
-import { RecallInput, type DegradedReason, type PageRole, type RecallOutput } from '@akno/protocol';
+import { RecallInput, type DegradedReason, type PageRole, type RecallOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { indexDegradation } from '../context.ts';
 import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';

@@ -308,7 +308,7 @@ function round(value: number): number {
  * **Has the build run since the source last changed?**
  *
  * Here because the failure it catches is invisible everywhere else. `serve-cmd.ts` imports
- * `@akno/core`, whose `exports` point at `dist/index.js`, so the running service executes built
+ * `@tenphi/akno-core`, whose `exports` point at `dist/index.js`, so the running service executes built
  * JavaScript — while `vitest` imports `./*.ts` directly. That combination lets a fix be committed, the
  * service restarted, the tests green, and the old code still serving: the suite proves the change is
  * right and says nothing about whether it is loaded. It happened, and the afternoon went into
@@ -342,7 +342,7 @@ function staleBuild(): string | null {
   const srcDir = path.join(root, 'src');
   if (!fs.existsSync(srcDir)) return null;
   if (!fs.existsSync(path.join(root, 'dist'))) {
-    return '`packages/core/dist` has never been built — a host importing @akno/core gets nothing. Run `akno redeploy`.';
+    return '`packages/core/dist` has never been built — a host importing @tenphi/akno-core gets nothing. Run `akno redeploy`.';
   }
 
   let builtAt: number;

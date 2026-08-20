@@ -102,7 +102,7 @@ are the ones that have actually broken:
   strings.
 - **Absence has three answers.** `empty`, `degraded` and `unavailable` are different results and must never be
   collapsed — an agent uses the distinction to decide whether it may say "not recorded".
-- **The knowledge base is the user's.** With the defaults, an index pass must leave the *set* of files and every
+- **The knowledge base is the user's.** With the defaults, an index pass must leave the _set_ of files and every
   file's bytes unchanged, and a test asserts it by hashing the whole tree either side of a pass. A setting may
   add a file — `write_ids`, `ingest.text_rendition` — but only one the user turned on, and never by default.
 - **A comment should say why**, especially where the obvious implementation is wrong. `git blame` covers what
@@ -125,18 +125,18 @@ docs write `akno <cmd>` because that is the installed UX.
 **Run it when you are done.** An agent working in this repo may redeploy on its own once the change
 is finished and verified — typecheck, lint and the suite green. It is not a destructive action: the
 service is `KeepAlive`, the index is derived and rebuilt from the Markdown, and the knowledge base is
-not touched. What is destructive is *not* doing it, because then the thing being tested is the code
+not touched. What is destructive is _not_ doing it, because then the thing being tested is the code
 that was already running.
 
 **Both steps matter, and the build is not optional for the service.** This is the trap:
 
 - launchd runs `packages/cli/src/bin.ts` directly and Node strips the types, so the CLI's _own_
   files are live at the next start. **`packages/core` is not one of them.** `serve-cmd.ts` imports
-  `@akno/core`, whose `exports` field points at `dist/index.js` — check it yourself with
-  `node -e "console.log(require.resolve('@akno/core'))"` from a CLI file. So an edit under
+  `@tenphi/akno-core`, whose `exports` field points at `dist/index.js` — check it yourself with
+  `node -e "console.log(require.resolve('@tenphi/akno-core'))"` from a CLI file. So an edit under
   `packages/core` is invisible to the running service until it is built, however many times the agent
   is restarted.
-- A host importing `@akno/client` imports `packages/*/dist` too. Skip the build and Luna keeps
+- A host importing `@tenphi/akno-client` imports `packages/*/dist` too. Skip the build and a host keeps
   calling the previous op registry: a newly added op is simply absent, and the failure reads
   `unknown op`, which looks like a wiring bug rather than a stale artifact.
 

@@ -1,0 +1,11 @@
+{
+  "folders": {
+    "sources/**": { "role": "source", "remember": "deny" },
+    "people/**": { "role": "knowledge", "remember": "integrate" },
+    "household/**": { "role": "knowledge", "remember": "integrate" },
+    "work/**": { "role": "knowledge", "remember": "integrate" },
+    "shopping/**": { "role": "knowledge", "remember": "integrate" },
+    "travel/**": { "role": "knowledge", "remember": "integrate" },
+    "inbox/**": { "ingest": "auto", "route": true }
+  }
+}

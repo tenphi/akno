@@ -513,7 +513,7 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
 });
 
 /**
- * `users/` is Luna's hot memory: per-person standing instructions injected every turn, and never
+ * `users/` is a host’s hot memory: per-person standing instructions injected every turn, and never
  * a destination for a remembered claim. `users/google-account.md` appeared there because no rule
  * declared the folder — an undeclared folder is eligible, and the directory existed, which was
  * the only question creation asked.

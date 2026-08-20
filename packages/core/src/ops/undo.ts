@@ -1,4 +1,4 @@
-import { UndoInput, type UndoOutput } from '@akno/protocol';
+import { UndoInput, type UndoOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 
 /**

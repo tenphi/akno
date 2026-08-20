@@ -37,7 +37,7 @@ describe('what a redeploy decides to do', () => {
 
   it('does not silently drop the build when the restart cannot happen', () => {
     // The two steps are for different consumers: the build is what a host importing
-    // `@akno/client` reads, and it is worth doing even where there is no service to bounce.
+    // `@tenphi/akno-client` reads, and it is worth doing even where there is no service to bounce.
     for (const over of [{ restart: false }, { darwin: false }, { serviceInstalled: false }]) {
       expect(plan(over).build).toBe(true);
     }

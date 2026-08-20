@@ -1,6 +1,6 @@
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style } from '../output.ts';
-import { open } from '@akno/core';
+import { open } from '@tenphi/akno-core';
 
 const RULES_HELP = `akno rules [path]
 

@@ -1,0 +1,98 @@
+name: Release
+
+# Publishing is deliberate: a tag push, never a merge. The tag is the record of what was
+# published, and `pnpm publish` refuses a version already on the registry, so a re-run of a
+# failed job cannot quietly ship something different under the same number.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Pack and verify without publishing'
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    # macOS because the test suite exercises the Vision/PDFKit extractor and the FSEvents
+    # watcher. A package published from a machine that could not run its own tests is a guess.
+    runs-on: macos-latest
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+
+      # The full gate. A release runs everything CI runs, because the tag is the last chance.
+      - run: pnpm build
+      - run: pnpm lint
+      - run: pnpm knip
+      - run: pnpm test
+      - run: node scripts/smoke.mjs
+      - run: node scripts/smoke-demo.mjs
+
+      # The tag must name the version in the manifests, or the tag is a lie about what shipped.
+      - name: Tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tagged="${GITHUB_REF_NAME#v}"
+          for pkg in protocol core client cli; do
+            found=$(node -p "require('./packages/$pkg/package.json').version")
+            if [ "$found" != "$tagged" ]; then
+              echo "::error::packages/$pkg is $found but the tag says $tagged"
+              exit 1
+            fi
+          done
+          echo "all four packages are $tagged"
+
+      # What a tarball contains is not covered by the build or the tests, and it is the one
+      # thing that cannot be fixed after the fact — a published version number is spent.
+      - name: Tarballs carry what the runtime needs
+        run: |
+          set -euo pipefail
+          out=$(mktemp -d)
+          for pkg in protocol core client cli; do
+            (cd "packages/$pkg" && pnpm pack --pack-destination "$out" >/dev/null)
+          done
+          for tgz in "$out"/*.tgz; do
+            name=$(basename "$tgz")
+            for required in package/LICENSE package/README.md; do
+              tar tzf "$tgz" | grep -qx "$required" || { echo "::error::$name has no $required"; exit 1; }
+            done
+            # workspace:* and catalog: must be gone. pnpm rewrites them; npm does not, and a
+            # tarball with either in it installs from the registry and fails.
+            if tar xzOf "$tgz" package/package.json | grep -qE '"(workspace|catalog):'; then
+              echo "::error::$name still has an unresolved workspace or catalog specifier"
+              exit 1
+            fi
+          done
+          # The installed core reads its committed defaults from beside dist. Without this file
+          # every command throws `committed defaults are missing`.
+          tar tzf "$out"/tenphi-akno-core-*.tgz | grep -qx 'package/config/default.jsonc' \
+            || { echo "::error::akno-core has no config/default.jsonc — see scripts/pack-assets.mjs"; exit 1; }
+          tar tzf "$out"/tenphi-akno-core-*.tgz | grep -qx 'package/swift/extract.swift' \
+            || { echo "::error::akno-core has no swift/extract.swift — PDF and OCR would be dead"; exit 1; }
+          echo "all four tarballs verified"
+
+      # Dependency order: each package's deps must already resolve on the registry.
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for pkg in protocol core client cli; do
+            (cd "packages/$pkg" && pnpm publish --access public --no-git-checks --provenance)
+          done

@@ -4,7 +4,7 @@ import path from 'node:path';
 import type { AknoConfig } from '../config/schema.ts';
 import { KB_RULES_FILE } from '../config/load.ts';
 import { ledgerSlug } from '../reserved.ts';
-import { extract, legacyVia, type Extraction } from '../ingest/extract.ts';
+import { extract, type Extraction } from '../ingest/extract.ts';
 import { documentPart, documentRendition } from '../ingest/parts.ts';
 import { looksLikeRendition, renditionBody, renditionPathFor, renditionWanted } from '../ingest/rendition.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
@@ -1080,9 +1080,10 @@ export class Indexer {
         text: row.text ?? '',
         pageCount: row.page_count,
         ocr: row.ocr === 1,
-        via:
-          (row.extract_via as Extraction['via'] | null) ??
-          legacyVia({ relPath: row.rel_path, ocr: row.ocr === 1, hasText: row.text !== null }),
+        // Null only where the text is null too — the two are cleared together whenever a
+        // hash changes or a file turns out to be a rendition. So 'none' is not a fallback
+        // for an unknown provenance; it is the provenance of a row with nothing extracted.
+        via: (row.extract_via as Extraction['via'] | null) ?? 'none',
         confidence: row.confidence,
       };
       const gate = renditionWanted(source, {

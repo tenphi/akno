@@ -13,10 +13,10 @@ import {
   type OpInput,
   type OpName,
   type OpResult,
-} from '@akno/protocol';
+} from '@tenphi/akno-protocol';
 
 /**
- * `@akno/client` has the **identical interface** to the library — same
+ * `@tenphi/akno-client` has the **identical interface** to the library — same
  * ops, same schemas, generated from the same registry. Swapping `open()` for
  * `connect()` is the only difference between embedding and connecting, so the
  * decision is reversible and nothing above the call site knows which is in use.
@@ -310,5 +310,5 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, error: Error): Pr
   }
 }
 
-export { PROTOCOL_VERSION, AknoError } from '@akno/protocol';
-export type { Card, AknoOps, Line, OpName, RecallMode } from '@akno/protocol';
+export { PROTOCOL_VERSION, AknoError } from '@tenphi/akno-protocol';
+export type { Card, AknoOps, Line, OpName, RecallMode } from '@tenphi/akno-protocol';

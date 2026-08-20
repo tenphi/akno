@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { ConflictReport } from '@akno/protocol';
+import type { ConflictReport } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 
 /**

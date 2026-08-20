@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { AknoError, FolderInput, type FolderOutput } from '@akno/protocol';
+import { AknoError, FolderInput, type FolderOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { KB_RULES_FILE } from '../config/load.ts';
 import { readJsoncFile } from '../config/jsonc.ts';

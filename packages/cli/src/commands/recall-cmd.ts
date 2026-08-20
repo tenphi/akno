@@ -1,4 +1,4 @@
-import type { Card, RecallMode } from '@akno/protocol';
+import type { Card, RecallMode } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';

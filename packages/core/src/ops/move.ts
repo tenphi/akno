@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { AknoError, MoveInput, type MoveOutput } from '@akno/protocol';
+import { AknoError, MoveInput, type MoveOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { ATTACHMENT_NAME } from '../kb/page.ts';
 import { recordOwnWrite, writeFileAtomic } from '../write/atomic.ts';

@@ -1,4 +1,4 @@
-import { ContextInput, type Card, type ContextOutput, type Event } from '@akno/protocol';
+import { ContextInput, type Card, type ContextOutput, type Event } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { estimateTokens } from '../recall/assemble.ts';
 import { recall } from './recall.ts';

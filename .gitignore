@@ -56,5 +56,7 @@ AGENTS.local.md
 .vscode/
 *.swp
 
-# Generated at pack time from the repo root config (see packages/core prepack).
+# Staged at pack time from the repo root (see scripts/pack-assets.mjs). Build output that
+# happens to be a copy of a file the repo authors once.
 packages/core/config/
+packages/*/LICENSE

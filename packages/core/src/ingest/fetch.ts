@@ -1,7 +1,7 @@
 import fsp from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { AknoError } from '@akno/protocol';
+import { AknoError } from '@tenphi/akno-protocol';
 
 /**
  * `ingest` pulls documents from a file, a folder, or a URL. This is the URL.

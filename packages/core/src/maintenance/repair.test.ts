@@ -31,9 +31,7 @@ describe('finding the page a broken link meant', () => {
   });
 
   it('matches a link that kept the name a page was renamed around', () => {
-    expect(candidatesFor('Blackwater-Bay', slugs)).toEqual([
-      'travel/2031/2031-04-10-12-blackwater-bay',
-    ]);
+    expect(candidatesFor('Blackwater-Bay', slugs)).toEqual(['travel/2031/2031-04-10-12-blackwater-bay']);
   });
 
   it('will not hand one person’s document to another', () => {

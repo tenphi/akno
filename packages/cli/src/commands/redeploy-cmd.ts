@@ -13,10 +13,10 @@ import { heading, json, kv, line, style } from '../output.ts';
  *  1. `tsc --build`. **The service needs this too, and that is easy to get wrong.** launchd runs
  *     `packages/cli/src/bin.ts` and Node strips the types, so the CLI's own files are live at the
  *     next start — but everything under `packages/core` reaches it as a *package*: `serve-cmd.ts`
- *     imports `@akno/core`, whose `exports` field points at `dist/index.js`. So a source edit
+ *     imports `@tenphi/akno-core`, whose `exports` field points at `dist/index.js`. So a source edit
  *     inside core is invisible to the running service until it is built, however many times the
  *     agent is restarted. Hosts need the build for their own reason: anything importing
- *     `@akno/client` imports the built JavaScript, and skipping it leaves Luna calling the previous
+ *     `@tenphi/akno-client` imports the built JavaScript, and skipping it leaves a host calling the previous
  *     op registry, where a new op is simply not there and the failure is `unknown op`.
  *
  *     This comment used to say the service did not need the build. It cost an afternoon: a fix to
@@ -41,10 +41,10 @@ const REDEPLOY_HELP = `akno redeploy [options]
   Apply local changes: build, then restart the service, then wait for its socket.
 
   The build is not optional for the service either: launchd runs the CLI's TypeScript
-  directly, but core reaches it as @akno/core, whose exports point at dist. A change
+  directly, but core reaches it as @tenphi/akno-core, whose exports point at dist. A change
   under packages/core is invisible to a restarted service until it is built.
 
-  Hosts need it for their own reason — anything importing @akno/client imports
+  Hosts need it for their own reason — anything importing @tenphi/akno-client imports
   packages/*/dist, and skipping it is how a host ends up calling an op registry one
   version behind.
 
@@ -137,7 +137,7 @@ export async function redeployCommand(argv: string[]): Promise<number> {
   }
 
   // ── Restart ───────────────────────────────────────────────────────────────
-  const { loadConfig } = await import('@akno/core');
+  const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
   result.socket = config.socketPath;
 

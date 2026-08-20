@@ -1,4 +1,4 @@
-import type { FolderRequired } from '@akno/protocol';
+import type { FolderRequired } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import type { AknoConfig } from '../config/schema.ts';
 import { physicalFolderExists } from '../kb/folders.ts';

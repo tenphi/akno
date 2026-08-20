@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
-import type { Card, Depth, Line, PageRole, RecallMode, SupersededClaim } from '@akno/protocol';
+import type { Card, Depth, Line, PageRole, RecallMode, SupersededClaim } from '@tenphi/akno-protocol';
 import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
 import { isObservation } from '../kb/page.ts';

@@ -13,7 +13,7 @@ export async function configCommand(argv: string[]): Promise<number> {
     return 0;
   }
 
-  const { loadConfig } = await import('@akno/core');
+  const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
 
   // Redaction is not optional: this output goes into bug reports.

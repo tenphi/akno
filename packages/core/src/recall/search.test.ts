@@ -118,7 +118,7 @@ describe('rerankHits', () => {
 
   /**
    * Two cross-encoders can rank a set identically and still disagree completely about where
-   * "relevant" starts. Measured on ~/Brain: an irrelevant pair sits near −11 on
+   * "relevant" starts. Measured on the development knowledge base: an irrelevant pair sits near −11 on
    * bge-reranker-v2-m3 and near −0.3 on gte-reranker-modernbert-base, so an uncalibrated 0.5
    * cutoff admits 0.8% of irrelevant pairs on one model and 42.5% on the other.
    */

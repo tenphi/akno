@@ -1,7 +1,7 @@
 {
-  "name": "@akno/client",
+  "name": "@tenphi/akno-client",
   "version": "0.1.0",
-  "description": "Thin typed client for a running Akno service — identical interface to @akno/core, no native dependencies",
+  "description": "Thin typed client for a running Akno service \u2014 identical interface to @tenphi/akno-core, no native dependencies",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,8 +12,26 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
-    "@akno/protocol": "workspace:*"
+    "@tenphi/akno-protocol": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenphi/akno.git",
+    "directory": "packages/client"
+  },
+  "homepage": "https://github.com/tenphi/akno#readme",
+  "bugs": {
+    "url": "https://github.com/tenphi/akno/issues"
+  },
+  "author": "Andrey Yamanov",
+  "scripts": {
+    "prepack": "node ../../scripts/pack-assets.mjs"
   }
 }

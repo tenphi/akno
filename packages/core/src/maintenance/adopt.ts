@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { AknoContext } from '../context.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { cleanSlug } from '../ingest/name.ts';
-import { legacyVia, type Extraction } from '../ingest/extract.ts';
+import type { Extraction } from '../ingest/extract.ts';
 import { provenanceLines } from '../ingest/store.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
@@ -159,34 +159,24 @@ function composeDocumentPage(ctx: AknoContext, group: OrphanGroup): string {
   const embeds = group.parts
     .map((part) => {
       const document = ctx.store.db
-        .prepare(
-          'SELECT rel_path, ocr, page_count, extract_via, confidence, text FROM documents WHERE id = ?',
-        )
+        .prepare('SELECT ocr, page_count, extract_via, confidence FROM documents WHERE id = ?')
         .get(part.id) as
         | {
-            rel_path: string;
             ocr: number;
             page_count: number | null;
             extract_via: string | null;
             confidence: number | null;
-            text: string | null;
           }
         | undefined;
-      // Read rather than guessed. This used to reconstruct `via` from the `ocr` flag alone,
-      // which cannot express the one case the line exists for: an image a model *described*
-      // rather than read, adopted into a page that then claimed OCR had found the words.
+      // `via` is read, never reconstructed from the `ocr` flag. The flag cannot express the
+      // one case this line exists for: an image a model *described* rather than read, which
+      // would otherwise be adopted into a page claiming OCR had found the words.
       const provenance = provenanceLines({
         text: '',
         pageCount: document?.page_count ?? null,
         ocr: document?.ocr === 1,
         confidence: document?.confidence ?? null,
-        via:
-          (document?.extract_via as Extraction['via'] | null) ??
-          legacyVia({
-            relPath: document?.rel_path ?? part.relPath,
-            ocr: document?.ocr === 1,
-            hasText: (document?.text ?? null) !== null,
-          }),
+        via: (document?.extract_via as Extraction['via'] | null) ?? 'none',
         note: null,
       });
       const name = path.posix.basename(part.relPath.replaceAll('\\', '/'));

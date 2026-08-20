@@ -1,5 +1,5 @@
 {
-  "name": "@akno/core",
+  "name": "@tenphi/akno-core",
   "version": "0.1.0",
   "description": "Akno \u2014 the memory layer itself: index, ops, watcher, models",
   "license": "PolyForm-Noncommercial-1.0.0",
@@ -18,7 +18,7 @@
     "swift"
   ],
   "dependencies": {
-    "@akno/protocol": "workspace:*",
+    "@tenphi/akno-protocol": "workspace:*",
     "better-sqlite3": "^12.4.1",
     "sqlite-vec": "^0.1.9",
     "yaml": "^2.9.0",
@@ -28,12 +28,25 @@
     "@types/better-sqlite3": "^7.6.12"
   },
   "scripts": {
-    "prepack": "node -e \"require('node:fs').mkdirSync('config',{recursive:true});require('node:fs').copyFileSync('../../config/default.jsonc','config/default.jsonc')\""
+    "prepack": "node ../../scripts/pack-assets.mjs"
   },
   "os": [
     "darwin"
   ],
   "engines": {
     "node": ">=22.18"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenphi/akno.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/tenphi/akno#readme",
+  "bugs": {
+    "url": "https://github.com/tenphi/akno/issues"
+  },
+  "author": "Andrey Yamanov"
 }

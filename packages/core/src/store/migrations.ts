@@ -5,10 +5,14 @@
  * records content rather than pointing at it.
  *
  * Migrations are append-only and idempotent. `user_version` tracks the applied
- * count, so a rebuild and an upgrade take the same path.
+ * count, so a rebuild and an upgrade take the same path. There is one entry: 0.1.0
+ * is the first release, so the schema is stated once rather than reconstructed
+ * from the steps that reached it. Append the next one below rather than editing
+ * this — an index in the field is rebuildable, but only if it can tell how far
+ * along it is.
  */
 export const MIGRATIONS: string[] = [
-  // ── 1 ──────────────────────────────────────────────────────────────────────
+  // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
   `
   CREATE TABLE meta (
     key   TEXT PRIMARY KEY,
@@ -24,12 +28,18 @@ export const MIGRATIONS: string[] = [
     title                 TEXT NOT NULL,
     type                  TEXT,
     tags                  TEXT NOT NULL DEFAULT '[]',
-    class                 TEXT NOT NULL DEFAULT 'full',
+    -- What the page contributes: 'knowledge', 'source' or 'ignored'. Distinct from
+    -- management below, which says what an automatic curator may do to it — one
+    -- column governing both meant recall shape, fact eligibility and edit authority
+    -- could not be set independently.
+    role                  TEXT NOT NULL DEFAULT 'knowledge',
     frontmatter           TEXT NOT NULL DEFAULT '{}',
     body_hash             TEXT NOT NULL,
     summary               TEXT,
     keywords              TEXT,
-    reference_fence_line  INTEGER,
+    -- Where the <!-- source --> fence sits, when the page has one. Below it the
+    -- page is quotable source rather than knowledge.
+    source_fence_line     INTEGER,
     body_line             INTEGER NOT NULL DEFAULT 1,
     line_count            INTEGER NOT NULL DEFAULT 0,
     bytes                 INTEGER NOT NULL DEFAULT 0,
@@ -39,9 +49,23 @@ export const MIGRATIONS: string[] = [
     -- Which model-backed derivations are current for this body_hash. Lets an
     -- index pass run structurally now and fill in summaries later without
     -- forgetting which pages still owe one.
-    derived_hash          TEXT
+    derived_hash          TEXT,
+    -- What automatic writers may do. 'remember' governs the per-turn retain tier;
+    -- 'dream' opts a page into nightly hygiene or synthesis and defaults to neither,
+    -- because a curator that edits pages nobody offered it is not a feature.
+    remember_management   TEXT NOT NULL DEFAULT 'deny',
+    dream_management      TEXT NOT NULL DEFAULT 'none',
+    about                 TEXT NOT NULL DEFAULT '[]',
+    aliases               TEXT NOT NULL DEFAULT '[]',
+    -- Curation freshness, content-addressed. A page opting into hygiene or synthesis
+    -- is permission, not a nightly work order: an unchanged input fingerprint skips
+    -- the page without spending a model call. 'preview' is a distinct status because
+    -- enabling writes must reconsider a previously accepted preview exactly once.
+    curate_input_hash     TEXT,
+    curate_status         TEXT,
+    curated_at            TEXT
   );
-  CREATE INDEX pages_class    ON pages(class);
+  CREATE INDEX pages_role     ON pages(role);
   CREATE INDEX pages_type     ON pages(type);
   CREATE INDEX pages_updated  ON pages(updated_at DESC);
 
@@ -58,23 +82,81 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX files_sha ON files(sha256);
 
+  -- A stored document is a memory object with its own row: bytes on disk
+  -- beside its page, plus extracted text, so a PDF is searchable by its content.
+  CREATE TABLE documents (
+    id             TEXT PRIMARY KEY,
+    page_id        TEXT REFERENCES pages(id) ON DELETE SET NULL,
+    rel_path       TEXT NOT NULL UNIQUE,
+    mime           TEXT,
+    sha256         TEXT NOT NULL,
+    label          TEXT,
+    text           TEXT,
+    summary        TEXT,
+    page_count     INTEGER,
+    ocr            INTEGER NOT NULL DEFAULT 0,
+    bytes          INTEGER NOT NULL DEFAULT 0,
+    indexed_at     TEXT NOT NULL,
+    -- The file hash the current text was extracted from. The invalidation rule, written
+    -- down: text is re-extracted when this stops matching the file.
+    extracted_sha  TEXT,
+    -- A scanner that produced 'passport.pdf' and 'passport-2.pdf' did not produce two
+    -- documents. Parts share a group_key — the rel_path of part one — which is what gives
+    -- them one owning page, one summary, and page numbers that run through the whole
+    -- thing rather than restarting at 1 halfway.
+    group_key      TEXT,
+    part           INTEGER NOT NULL DEFAULT 1,
+    -- Pages in the parts before this one, so a citation can say "page 5 of the passport"
+    -- rather than "page 2 of the second file", which is not a thing a reader can look up.
+    page_offset    INTEGER NOT NULL DEFAULT 0,
+    -- Set on a *rendition*: 'contract.pdf.txt' is the same document in a format a reader
+    -- can open, not a second half of one. Parts concatenate; a rendition does not, and
+    -- treating one as the other returns every phrase in a contract twice against one
+    -- budget. A rendition carries no text of its own for that reason — the text is the
+    -- source's and is already indexed there. What it carries is the pointer back.
+    renders        TEXT,
+    -- On the *source* row: the hash the rendition was last decided against. Set after a
+    -- write and after a decline, so a photo that earns no rendition is not reconsidered
+    -- every pass.
+    rendition_sha  TEXT,
+    -- How the text was obtained: 'plain', 'textutil', 'text-layer', 'ocr', 'vision' or
+    -- 'none'. Recorded rather than reconstructed from the ocr flag, which cannot express
+    -- the case the distinction exists for — an image a model *described* rather than read.
+    extract_via    TEXT,
+    confidence     REAL
+  );
+  CREATE INDEX documents_page    ON documents(page_id);
+  CREATE INDEX documents_sha     ON documents(sha256);
+  CREATE INDEX documents_group   ON documents(group_key, part);
+  CREATE INDEX documents_renders ON documents(renders);
+
+  -- A page's chunks and a document's chunks live in one table on purpose: FTS, the
+  -- vector table and rank fusion all read it, so a PDF's text is searched by the same
+  -- machinery as a note's with nothing new to keep in step. A document chunk carries
+  -- the owning page's id as well, which is what lets a hit inside a PDF surface as a
+  -- card for the page it belongs to.
   CREATE TABLE chunks (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     page_id       TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
     ord           INTEGER NOT NULL,
-    -- 'full' or 'reference' — a page can switch class mid-body at the
-    -- <!-- reference --> fence, so class is a property of the chunk.
-    kind          TEXT NOT NULL DEFAULT 'full',
+    -- 'knowledge' or 'source' — a page can switch role mid-body at the
+    -- <!-- source --> fence, so this is a property of the chunk.
+    kind          TEXT NOT NULL DEFAULT 'knowledge',
     heading_path  TEXT NOT NULL DEFAULT '',
     text          TEXT NOT NULL,
     line_start    INTEGER NOT NULL,
     line_end      INTEGER NOT NULL,
     -- Set once the chunk's vector is present, so a partial embed is visible
     -- rather than looking like a complete index with poor recall.
-    embedded      INTEGER NOT NULL DEFAULT 0
+    embedded      INTEGER NOT NULL DEFAULT 0,
+    document_id   TEXT REFERENCES documents(id) ON DELETE CASCADE,
+    -- The page number *within the document*. NULL for a format with no pages: a .txt
+    -- file has none, and inventing "page 1" would be a claim rather than a fact.
+    doc_page      INTEGER
   );
-  CREATE INDEX chunks_page ON chunks(page_id, ord);
+  CREATE INDEX chunks_page     ON chunks(page_id, ord);
   CREATE INDEX chunks_embedded ON chunks(embedded);
+  CREATE INDEX chunks_document ON chunks(document_id, ord);
 
   -- External-content FTS5: the text lives in 'chunks' and is never duplicated.
   -- Porter stemming means "renewing" finds "renews" without a model.
@@ -104,11 +186,16 @@ export const MIGRATIONS: string[] = [
     -- superseded, never as a second competing current answer.
     valid_to          TEXT,
     first_seen        TEXT NOT NULL,
-    last_seen         TEXT NOT NULL
+    last_seen         TEXT NOT NULL,
+    -- Managed content carries this stable id in Markdown. A fact derived from a reworded
+    -- or moved unit follows it instead of manufacturing a supersession on the night the
+    -- page was merely reformatted.
+    item_id           TEXT
   );
   CREATE INDEX facts_page    ON facts(page_id, line_start);
   CREATE INDEX facts_subject ON facts(subject, attribute);
   CREATE INDEX facts_live    ON facts(valid_to);
+  CREATE INDEX facts_item    ON facts(item_id);
 
   -- Dated lines are indexed from any page, not just the ledger, so events typed
   -- into someone's own daily notes are found for free.
@@ -137,64 +224,8 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX links_from ON links(from_page);
   CREATE INDEX links_to   ON links(to_slug);
 
-  -- A stored document is a memory object with its own row: bytes on disk
-  -- beside its page, plus extracted text, so a PDF is searchable by its content.
-  CREATE TABLE documents (
-    id          TEXT PRIMARY KEY,
-    page_id     TEXT REFERENCES pages(id) ON DELETE SET NULL,
-    rel_path    TEXT NOT NULL UNIQUE,
-    mime        TEXT,
-    sha256      TEXT NOT NULL,
-    label       TEXT,
-    text        TEXT,
-    summary     TEXT,
-    page_count  INTEGER,
-    ocr         INTEGER NOT NULL DEFAULT 0,
-    bytes       INTEGER NOT NULL DEFAULT 0,
-    indexed_at  TEXT NOT NULL
-  );
-  CREATE INDEX documents_page ON documents(page_id);
-  CREATE INDEX documents_sha  ON documents(sha256);
-
-  -- The one irreplaceable table: it records the previous bytes, not a pointer to
-  -- them, so undo survives a full rebuild of everything else.
-  CREATE TABLE journal (
-    id             TEXT PRIMARY KEY,
-    at             TEXT NOT NULL,
-    actor          TEXT NOT NULL,
-    action         TEXT NOT NULL,
-    slug           TEXT,
-    rel_path       TEXT,
-    before         TEXT,
-    after          TEXT,
-    snapshot_path  TEXT,
-    status         TEXT NOT NULL DEFAULT 'applied'
-  );
-  CREATE INDEX journal_at ON journal(at DESC);
-
-  -- A declined proposal is remembered, so an agent stops re-asking for the
-  -- same folder.
-  CREATE TABLE proposals (
-    id        TEXT PRIMARY KEY,
-    at        TEXT NOT NULL,
-    kind      TEXT NOT NULL,
-    reason    TEXT NOT NULL,
-    payload   TEXT NOT NULL,
-    status    TEXT NOT NULL DEFAULT 'pending',
-    resolved_at TEXT
-  );
-  CREATE INDEX proposals_status ON proposals(status);
-  `,
-
-  // ── 2 ──────────────────────────────────────────────────────────────────────
-  // The journal as shipped had one row per change, which cannot describe the
-  // changes the write path actually makes: a single 'write' can touch a page, the
-  // event ledger and an attachment, and 'undo' has to reverse all of them or none.
-  // Nothing had written to it yet, so it is replaced rather than migrated.
-  `
-  DROP TABLE IF EXISTS journal;
-
-  -- One row per change. The unit 'undo' takes.
+  -- One row per change. The unit 'undo' takes: a single 'write' can touch a page, the
+  -- event ledger and an attachment, and undo has to reverse all of them or none.
   CREATE TABLE changes (
     id       TEXT PRIMARY KEY,
     at       TEXT NOT NULL,
@@ -223,6 +254,10 @@ export const MIGRATIONS: string[] = [
     after      TEXT,
     -- Set instead of 'before' for a binary: the bytes live in trash/<change>/.
     snapshot   TEXT,
+    -- Where a moved file went. Without it undo reverses "no prior content" by deleting,
+    -- which for an attachment ate the binary; with it the reversal is a rename, which
+    -- is what the change was.
+    moved_to   TEXT,
     PRIMARY KEY (change_id, ord)
   );
   CREATE INDEX change_files_path ON change_files(rel_path);
@@ -230,7 +265,6 @@ export const MIGRATIONS: string[] = [
   -- A declined proposal is remembered, so an agent stops re-asking for the
   -- same folder. The pending content is held here, so approving completes the
   -- write rather than asking the caller to repeat it.
-  DROP TABLE IF EXISTS proposals;
   CREATE TABLE proposals (
     id          TEXT PRIMARY KEY,
     at          TEXT NOT NULL,
@@ -248,124 +282,6 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX proposals_status  ON proposals(status);
   CREATE INDEX proposals_subject ON proposals(subject, status);
-  `,
-
-  // ── 3. A document's own text, indexed as the document ──────────────────────
-  //
-  // A stored PDF is searchable by its own content, and the card points at the page, the
-  // document, and *the page number within it*. Document text is derived from the attachment
-  // and invalidated when the file hash changes — which is only true if the
-  // text is indexed against the document rather than pasted into someone's Markdown.
-  //
-  // Document chunks live in `chunks` on purpose: FTS, the vector table and rank fusion all
-  // read that one table, so a document's text is searched by the same machinery as a page's
-  // with nothing new to keep in step. They carry the owning page's id as well, which is
-  // what lets a hit inside a PDF surface as a card for the page it belongs to.
-  `
-  ALTER TABLE chunks ADD COLUMN document_id TEXT REFERENCES documents(id) ON DELETE CASCADE;
-  -- The page number *within the document*. NULL for a format with no pages: a .txt file
-  -- has none, and inventing "page 1" would be a claim rather than a fact.
-  ALTER TABLE chunks ADD COLUMN doc_page INTEGER;
-  CREATE INDEX chunks_document ON chunks(document_id, ord);
-
-  -- The file hash the current text was extracted from. The invalidation rule, written
-  -- down: text is re-extracted when this stops matching the file.
-  ALTER TABLE documents ADD COLUMN extracted_sha TEXT;
-  `,
-
-  // ── 4. Multi-part documents ────────────────────────────────────────────────
-  //
-  // A scanner that produced `passport.pdf` and `passport-2.pdf` did not produce two
-  // documents. Parts share a `group_key` — the rel_path of part one — which is what gives
-  // them one owning page, one summary, and page numbers that run through the whole thing
-  // rather than restarting at 1 halfway.
-  `
-  ALTER TABLE documents ADD COLUMN group_key TEXT;
-  ALTER TABLE documents ADD COLUMN part INTEGER NOT NULL DEFAULT 1;
-  -- Pages in the parts before this one, so a citation can say "page 5 of the passport"
-  -- rather than "page 2 of the second file", which is not a thing a reader can look up.
-  ALTER TABLE documents ADD COLUMN page_offset INTEGER NOT NULL DEFAULT 0;
-  CREATE INDEX documents_group ON documents(group_key, part);
-  `,
-
-  // ── 5. Text renditions ─────────────────────────────────────────────────────
-  //
-  // `passport.pdf` and `passport-2.pdf` are two halves of one document. `passport.pdf.txt`
-  // is not a half of anything — it is the *same* document in a format a reader can open.
-  // Parts concatenate; a rendition does not, and treating one as the other would return
-  // every phrase in a contract twice against one budget.
-  //
-  // A rendition carries no text of its own for exactly that reason: the text is the source's
-  // and is already indexed against it. What it carries is the pointer back, so `read`,
-  // `move` and `forget` can tell the two apart with one predicate.
-  `
-  ALTER TABLE documents ADD COLUMN renders TEXT;
-
-  -- On the *source* row: the hash the rendition was last decided against. Set after a write
-  -- and after a decline, for the same reason extracted_sha is recorded when nothing could
-  -- be read — a photo that earns no rendition should not be reconsidered every pass.
-  ALTER TABLE documents ADD COLUMN rendition_sha TEXT;
-
-  -- How the text was obtained. Derived at extraction and thrown away until now, which left
-  -- everything downstream guessing: a page composed for an adopted image claimed its text
-  -- came from OCR when a model had described the picture, and the rendition gate cannot
-  -- tell those apart at all.
-  ALTER TABLE documents ADD COLUMN extract_via TEXT;
-  ALTER TABLE documents ADD COLUMN confidence REAL;
-  CREATE INDEX documents_renders ON documents(renders);
-  `,
-
-  // ── 6. Where a moved file went ─────────────────────────────────────────────
-  //
-  // A move journalled the old path as `moved` with no prior content and the new path as
-  // `created`, and undo reverses "no prior content" by deleting. For a page that works,
-  // because its bytes are in `before`. For an **attachment** it deleted the new file and then
-  // removed a path that was not there — undoing a move ate the binary. Recording the
-  // destination makes the reversal a rename, which is what the change was.
-  `
-  ALTER TABLE change_files ADD COLUMN moved_to TEXT;
-  `,
-
-  // ── 7. Independent page role and automatic-management policy ─────────────
-  //
-  // `class` coupled recall shape, fact eligibility and edit authority. Role now says what
-  // the page contributes; management says what automatic curators may do. The index is
-  // disposable, but migrating it in place keeps a redeploy from requiring a cold rebuild.
-  `
-  DROP INDEX IF EXISTS pages_class;
-  ALTER TABLE pages RENAME COLUMN class TO role;
-  ALTER TABLE pages RENAME COLUMN reference_fence_line TO source_fence_line;
-  UPDATE pages SET role = CASE role
-    WHEN 'full' THEN 'knowledge'
-    WHEN 'reference' THEN 'source'
-    WHEN 'excluded' THEN 'ignored'
-    ELSE role
-  END;
-  CREATE INDEX pages_role ON pages(role);
-
-  ALTER TABLE pages ADD COLUMN remember_management TEXT NOT NULL DEFAULT 'deny';
-  ALTER TABLE pages ADD COLUMN dream_management TEXT NOT NULL DEFAULT 'none';
-  ALTER TABLE pages ADD COLUMN about TEXT NOT NULL DEFAULT '[]';
-  ALTER TABLE pages ADD COLUMN aliases TEXT NOT NULL DEFAULT '[]';
-
-  UPDATE chunks SET kind = CASE kind WHEN 'full' THEN 'knowledge' WHEN 'reference' THEN 'source' ELSE kind END;
-
-  -- Managed content carries this stable id in Markdown. Facts derived from a reworded or moved
-  -- unit can follow it instead of manufacturing a supersession on the night it was formatted.
-  ALTER TABLE facts ADD COLUMN item_id TEXT;
-  CREATE INDEX facts_item ON facts(item_id);
-  `,
-
-  // ── 8. Content-addressed curation freshness ────────────────────────────
-  //
-  // A page opting into hygiene or synthesis is permission, not a nightly work order. Keep the
-  // last complete input fingerprint in the disposable index so unchanged pages and evidence
-  // graphs do not spend model calls again. `preview` is distinct because enabling writes must
-  // reconsider a previously accepted preview once.
-  `
-  ALTER TABLE pages ADD COLUMN curate_input_hash TEXT;
-  ALTER TABLE pages ADD COLUMN curate_status TEXT;
-  ALTER TABLE pages ADD COLUMN curated_at TEXT;
   `,
 ];
 

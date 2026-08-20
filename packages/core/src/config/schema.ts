@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PageRole, RememberManagement } from '@akno/protocol';
+import { PageRole, RememberManagement } from '@tenphi/akno-protocol';
 
 /**
  * The config document as it appears on disk. Every field is optional here —
@@ -48,7 +48,7 @@ const RerankerRoleDoc = z.object({
    * Where this model's "relevant" boundary sits on its own logit scale. Subtracted before the
    * sigmoid that turns a raw score into `relevance`, so the boundary lands on 0.5.
    *
-   * Rerankers do not share a scale and nothing in a GGUF declares one. Measured on ~/Brain, 12
+   * Rerankers do not share a scale and nothing in a GGUF declares one. Measured on the development knowledge base, 12
    * labelled queries against 120 irrelevant pairs: bge-reranker-v2-m3 puts an irrelevant pair
    * near −11 and clears 0.5 for 0.8% of them; gte-reranker-modernbert-base puts the same pairs
    * near −0.3 and clears 0.5 for **42.5%**. Both rank correctly — only one is centred where a

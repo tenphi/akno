@@ -266,7 +266,7 @@
     // that wants a good model once a night should not thereby send every recall
     // expansion to a paid API.
     //
-    //   "model": { "provider": "openai", "id": "gpt-5.6-luna" }
+    //   "model": { "provider": "openai", "id": "gpt-5.6" }
     "model": null,
     // Retain is the `remember` op, available per-turn — the tier that needs
     // to be fresh does not wait for a timer. `dream` does not re-run it.

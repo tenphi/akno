@@ -1,6 +1,6 @@
 import http from 'node:http';
-import { AknoError, OPS, PROTOCOL_VERSION, isOpName, type Hello } from '@akno/protocol';
-import type { Akno } from '@akno/core';
+import { AknoError, OPS, PROTOCOL_VERSION, isOpName, type Hello } from '@tenphi/akno-protocol';
+import type { Akno } from '@tenphi/akno-core';
 
 export interface HttpServer {
   readonly address: string;

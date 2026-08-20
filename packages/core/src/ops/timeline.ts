@@ -1,4 +1,4 @@
-import { TimelineInput, type TimelineOutput } from '@akno/protocol';
+import { TimelineInput, type TimelineOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 
 /**

@@ -37,7 +37,7 @@ export async function indexCommand(argv: string[]): Promise<number> {
   }
 
   if (values.rebuild) {
-    const { loadConfig } = await import('@akno/core');
+    const { loadConfig } = await import('@tenphi/akno-core');
     const config = loadConfig(openOptionsFrom(values));
     const fs = await import('node:fs');
     // Deleting the index costs one re-index and no data. That property is the

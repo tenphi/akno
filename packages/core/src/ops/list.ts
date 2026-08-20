@@ -1,4 +1,4 @@
-import { ListInput, type ListOutput, type PageRole } from '@akno/protocol';
+import { ListInput, type ListOutput, type PageRole } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { physicalFolders } from '../kb/folders.ts';
 import { effectiveRule, matchRules } from '../rules/compile.ts';

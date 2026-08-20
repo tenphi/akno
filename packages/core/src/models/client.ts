@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { DegradedReason } from '@akno/protocol';
+import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { ResolvedModelRole } from '../config/schema.ts';
 
 /**

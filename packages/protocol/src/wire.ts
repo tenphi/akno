@@ -55,7 +55,7 @@ export const WireRequest = z.object({
    * On the socket and the loopback HTTP door the caller is trusted to say — filesystem permissions
    * and loopback are the authentication, and a caller that can open either could write anything it
    * liked regardless. The gate is not a defence against that caller; it is a policy about *whose*
-   * request this is, and only the caller knows. A host mediating for an agent (Luna) and a person at
+   * request this is, and only the caller knows. A host mediating for an agent and a person at
    * a terminal both need to say "this one is the user speaking" — otherwise approving a gated
    * proposal is impossible through the very door the service is meant to be reached by.
    *

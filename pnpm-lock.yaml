@@ -35,31 +35,31 @@ importers:
 
   packages/cli:
     dependencies:
-      '@akno/client':
-        specifier: workspace:*
-        version: link:../client
-      '@akno/core':
-        specifier: workspace:*
-        version: link:../core
-      '@akno/protocol':
-        specifier: workspace:*
-        version: link:../protocol
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.30.0(zod@4.4.3)
+      '@tenphi/akno-client':
+        specifier: workspace:*
+        version: link:../client
+      '@tenphi/akno-core':
+        specifier: workspace:*
+        version: link:../core
+      '@tenphi/akno-protocol':
+        specifier: workspace:*
+        version: link:../protocol
       zod:
         specifier: 'catalog:'
         version: 4.4.3
 
   packages/client:
     dependencies:
-      '@akno/protocol':
+      '@tenphi/akno-protocol':
         specifier: workspace:*
         version: link:../protocol
 
   packages/core:
     dependencies:
-      '@akno/protocol':
+      '@tenphi/akno-protocol':
         specifier: workspace:*
         version: link:../protocol
       better-sqlite3:

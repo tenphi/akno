@@ -61,8 +61,15 @@ try {
   check('re-index is a no-op', second.pagesIndexed === 0 && second.pagesUnchanged === 4);
 
   const recall = JSON.parse(run('recall', 'dishwasher Zephyr warranty'));
-  check('finds the page lexically', recall.cards.some((card) => card.slug === 'home/appliances'));
-  check('reports the missing embedding model', (recall.degraded ?? []).includes('no_embedding_model'), JSON.stringify(recall.degraded));
+  check(
+    'finds the page lexically',
+    recall.cards.some((card) => card.slug === 'home/appliances'),
+  );
+  check(
+    'reports the missing embedding model',
+    (recall.degraded ?? []).includes('no_embedding_model'),
+    JSON.stringify(recall.degraded),
+  );
   check(
     'every line carries a real address',
     recall.cards.every((card) =>
@@ -78,11 +85,20 @@ try {
   check('absence reports what was searched', empty.searched.length > 0);
 
   const page = JSON.parse(run('read', 'home/lease'));
-  check('reads a page in full', page.page.lines.some((line) => line.text.includes('1111')));
-  check('reports backlinks', JSON.parse(run('read', 'home/appliances')).page.backlinks.includes('home/lease'));
+  check(
+    'reads a page in full',
+    page.page.lines.some((line) => line.text.includes('1111')),
+  );
+  check(
+    'reports backlinks',
+    JSON.parse(run('read', 'home/appliances')).page.backlinks.includes('home/lease'),
+  );
 
   const source = JSON.parse(run('read', 'sources/rules'));
-  check('read returns source pages in full', source.page.lines.some((line) => line.text.includes('deliveries')));
+  check(
+    'read returns source pages in full',
+    source.page.lines.some((line) => line.text.includes('deliveries')),
+  );
 
   const timeline = JSON.parse(run('timeline'));
   check('timeline finds the event and its target', timeline.events[0]?.slug === 'home/appliances');
@@ -102,7 +118,9 @@ try {
 
   const failed = checks.filter((entry) => !entry.ok);
   for (const entry of checks) {
-    process.stdout.write(`${entry.ok ? '  ok  ' : 'FAIL  '}${entry.name}${entry.detail && !entry.ok ? ` — ${entry.detail}` : ''}\n`);
+    process.stdout.write(
+      `${entry.ok ? '  ok  ' : 'FAIL  '}${entry.name}${entry.detail && !entry.ok ? ` — ${entry.detail}` : ''}\n`,
+    );
   }
   process.stdout.write(`\n${checks.length - failed.length}/${checks.length} passed\n`);
   process.exitCode = failed.length === 0 ? 0 : 1;

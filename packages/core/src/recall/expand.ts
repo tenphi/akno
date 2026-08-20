@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { DegradedReason, RecallMode } from '@akno/protocol';
+import type { DegradedReason, RecallMode } from '@tenphi/akno-protocol';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 
 /**

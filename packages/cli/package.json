@@ -1,5 +1,5 @@
 {
-  "name": "akno",
+  "name": "@tenphi/akno",
   "version": "0.1.0",
   "description": "Akno \u2014 a two-way memory layer for agents over a Markdown knowledge base",
   "license": "PolyForm-Noncommercial-1.0.0",
@@ -11,9 +11,9 @@
     "dist"
   ],
   "dependencies": {
-    "@akno/client": "workspace:*",
-    "@akno/core": "workspace:*",
-    "@akno/protocol": "workspace:*",
+    "@tenphi/akno-client": "workspace:*",
+    "@tenphi/akno-core": "workspace:*",
+    "@tenphi/akno-protocol": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "catalog:"
   },
@@ -22,5 +22,21 @@
   ],
   "engines": {
     "node": ">=22.18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenphi/akno.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/tenphi/akno#readme",
+  "bugs": {
+    "url": "https://github.com/tenphi/akno/issues"
+  },
+  "author": "Andrey Yamanov",
+  "scripts": {
+    "prepack": "node ../../scripts/pack-assets.mjs"
   }
 }

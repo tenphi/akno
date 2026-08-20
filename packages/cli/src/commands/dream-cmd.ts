@@ -1,4 +1,4 @@
-import { parsePhase, type DreamReport } from '@akno/core';
+import { parsePhase, type DreamReport } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance } from '../ops-handle.ts';
 import { heading, json, kv, line, ms, style, truncate } from '../output.ts';

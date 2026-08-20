@@ -1,6 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { AknoError, OPS, type AknoOps, type OpName, type OpInput, type OpResult } from '@akno/protocol';
+import {
+  AknoError,
+  OPS,
+  type AknoOps,
+  type OpName,
+  type OpInput,
+  type OpResult,
+} from '@tenphi/akno-protocol';
 import { loadConfig, type LoadOptions } from './config/load.ts';
 import type { AknoConfig } from './config/schema.ts';
 import { acquireWriteLock, openStore, type WriteLock } from './store/db.ts';
@@ -145,11 +152,11 @@ export function readOnlyExplanation(
  * **The library is the product.** One op registry, one schema per op, three
  * transports over it — so the doors cannot drift into different behaviour.
  *
- *   import { open } from '@akno/core';
+ *   import { open } from '@tenphi/akno-core';
  *   const mem = await open({ aknoPath: '~/Notes' });
  *   const { cards } = await mem.recall({ query: 'car insurance renewal' });
  *
- * Swapping `open()` for `connect()` from `@akno/client` is the only difference
+ * Swapping `open()` for `connect()` from `@tenphi/akno-client` is the only difference
  * between embedding and connecting to a running service, so the decision is
  * reversible and nothing above the call site knows which is in use.
  */

@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { AknoError, WriteInput, type WriteOutput, type WriteTarget } from '@akno/protocol';
+import { AknoError, WriteInput, type WriteOutput, type WriteTarget } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { parsePage } from '../kb/page.ts';
 import { declaredFrontmatter, readString, spliceAfterFence } from '../kb/frontmatter.ts';

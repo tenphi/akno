@@ -13,8 +13,8 @@ import {
   isOpName,
   PROTOCOL_VERSION,
   type Hello,
-} from '@akno/protocol';
-import type { Akno } from '@akno/core';
+} from '@tenphi/akno-protocol';
+import type { Akno } from '@tenphi/akno-core';
 
 export interface SocketServer {
   readonly path: string;

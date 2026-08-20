@@ -1,4 +1,4 @@
-import type { DegradedReason } from '@akno/protocol';
+import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 

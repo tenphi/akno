@@ -60,3 +60,9 @@ jobs:
       # covers that, and it is the property that keeps CI free of an LLM.
       - name: Smoke — index and query a generated knowledge base
         run: node scripts/smoke.mjs
+
+      # The shipped example is documentation that runs. Nothing else in this job would
+      # notice an event line in a format the indexer does not match, or a link out of
+      # the folder that indexes as a broken link inside it. Both have happened.
+      - name: Smoke — the example knowledge base still works
+        run: node scripts/smoke-demo.mjs

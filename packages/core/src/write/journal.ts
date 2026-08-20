@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { AknoError } from '@akno/protocol';
+import { AknoError } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { restoreFile, type WriteResult } from './atomic.ts';

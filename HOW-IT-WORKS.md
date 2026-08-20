@@ -179,7 +179,7 @@ ok mode=question 2 cards 1180 tokens
   coverage ✓ car insurance  ✗ renewal date
   nothing returned covers "renewal date" — do not answer that part
 
-documents/car-insurance-2026 (full, 0.931)
+documents/car-insurance-2026 (knowledge, 0.931)
   Car insurance 2026 › Policy
   Vulpine Mutual policy for the household car, renews 4 Nov 2026.
   documents/car-insurance-2026:11  Premium: 33 EUR/month (raised at renewal; was 28) ~0.94
@@ -673,7 +673,7 @@ search the contents of a PDF and get told which page of it matched.
 ```
 akno recall "who replaced the drain pump"
 
-household/dishwasher-repair (full, 0.91)
+household/dishwasher-repair (knowledge, 0.91)
   household/dishwasher-repair-8e7705eb.pdf p1
     MERIDIAN APPLIANCE CARE
     Replaced the drain pump

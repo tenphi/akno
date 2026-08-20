@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import { connect, defaultSocketPath } from '@akno/client';
-import { loadConfig, open, type Akno } from '@akno/core';
-import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@akno/protocol';
+import { connect, defaultSocketPath } from '@tenphi/akno-client';
+import { loadConfig, open, type Akno } from '@tenphi/akno-core';
+import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@tenphi/akno-protocol';
 import { style } from './output.ts';
 
 export interface OpsHandle {

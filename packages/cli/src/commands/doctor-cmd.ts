@@ -1,4 +1,4 @@
-import { open, readOnlyExplanation } from '@akno/core';
+import { open, readOnlyExplanation } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, ms, style } from '../output.ts';
 

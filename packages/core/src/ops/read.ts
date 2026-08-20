@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
-import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@akno/protocol';
+import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 
 /**

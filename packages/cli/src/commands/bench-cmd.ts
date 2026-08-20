@@ -1,4 +1,4 @@
-import { open, runBench, type Akno } from '@akno/core';
+import { open, runBench, type Akno } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, style } from '../output.ts';
 

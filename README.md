@@ -36,19 +36,35 @@ where it runs every time:
 
 ## Quick start
 
-Requires Node 22+ and pnpm. macOS only, [on purpose](#platform).
+macOS only, [on purpose](#platform). Requires Node 22.18+.
 
 ```bash
-pnpm install && pnpm build
-cp config/local.example.jsonc config/local.jsonc   # set akno_path and your model ids
-node packages/cli/dist/bin.js index
-node packages/cli/dist/bin.js doctor
+npm install -g @tenphi/akno
 ```
 
-Then ask it something:
+Akno refuses to start until you say which folder holds your notes — there is no sensible default for that.
+The machine config lives beside the state directory:
 
 ```bash
-node packages/cli/dist/bin.js recall "when does the car insurance renew?"
+mkdir -p ~/.akno && cat > ~/.akno/config.json <<'JSON'
+{
+  "akno_path": "~/Notes",
+  "providers": { "local": { "base_url": "http://127.0.0.1:8080/v1" } },
+  "models": {
+    "embedding": { "id": "text-embedding-qwen3-embedding-0.6b", "dimensions": 1024 },
+    "derive":    { "id": "gemma-4-12b-it" },
+    "expansion": { "id": "llama-3.2-3b-instruct" }
+  }
+}
+JSON
+akno index
+akno doctor
+```
+
+`index` before `doctor`: most of what `doctor` reports is counted out of the index. Then ask it something:
+
+```bash
+akno recall "when does the car insurance renew?"
 ```
 
 ```
@@ -56,14 +72,28 @@ ok mode=question 2 cards 1180 tokens
   coverage ✓ car insurance  ✗ renewal date
   nothing returned covers "renewal date" — do not answer that part
 
-documents/car-insurance-2026 (full, 0.931)
-  Car insurance 2026 › Policy
+household/car-insurance (knowledge, 0.931)
+  Car insurance › Policy
   Vulpine Mutual policy for the household car, renews 4 Nov 2026.
-  documents/car-insurance-2026:11  Premium: €33/month (raised at the 2026 renewal; was €28) ~0.94
+  household/car-insurance:11  Premium: 33 EUR/month (raised at the 2026 renewal; was 28 EUR) ~0.94
 ```
 
 Every line carries `file:line`. The `~0.94` is derivation confidence — how sure the deriver is that the line
 states a well-formed durable claim, not how sure it is that the claim is true.
+
+No notes to point it at yet? [`examples/demo-brain`](examples) is a small invented one — eleven pages with
+the shapes that matter, and a table of things to try.
+
+**Working on Akno itself** is a checkout rather than an install, and needs pnpm:
+
+```bash
+pnpm install && pnpm build
+cp config/local.example.jsonc config/local.jsonc   # set akno_path and your model ids
+pnpm akno index
+```
+
+`bin/akno` is a launcher that resolves the checkout and pins the Node major from `.nvmrc`; symlink it
+somewhere on `PATH` and `akno` works from any directory without shadowing an installed copy's config.
 
 ## Configuration
 
@@ -79,8 +109,13 @@ Two files, and only one of them is ever committed.
 Precedence, lowest to highest:
 
 ```
-config/default.jsonc  →  ~/.akno/config.json  →  config/local.jsonc  →  AKNO_* env
+config/default.jsonc  →  <state_dir>/config.json  →  config/local.jsonc  →  AKNO_* env
 ```
+
+An **installed** copy only sees the first, second and fourth: there is no checkout, so there is no
+`local.jsonc`, and `config/default.jsonc` is the copy shipped inside `@tenphi/akno-core`. That is why the
+quick start above writes `~/.akno/config.json` — for an install, the machine config _is_ the config. A
+**checkout** adds `config/local.jsonc` on top, which is the layer that never gets committed.
 
 **A config file never contains a credential.** It names the environment variable that holds one:
 
@@ -125,7 +160,7 @@ rather than the prompt requesting it politely — a llama-server compiles it to 
 strict structured outputs does the equivalent. The two speak different dialects, so the client tries
 llama.cpp's `{"type":"json_object","schema":…}` first, steps down to OpenAI's `{"type":"json_schema",…}` on the
 rejection OpenAI actually sends, and finally to a plain JSON request. That order is chosen by which rejection
-is *detectable*: llama.cpp answers an unknown `response_format` shape with an error, but has a history of
+is _detectable_: llama.cpp answers an unknown `response_format` shape with an error, but has a history of
 accepting `json_schema` and applying no constraint at all. Each rung is learned once per role per process, and
 the loose JSON parser stays behind all three — a schema removes the syntactic failures, not the need to check
 that a fact's line number is one the model was actually shown.
@@ -138,9 +173,9 @@ land. So is a transport error, which is usually nothing listening, and `doctor` 
 than three backoffs later.
 
 **The two deadlines bound different things, so retries spend them differently.** `recall.expansion_timeout_ms`
-bounds *felt latency* — someone is waiting — so it is the budget for the whole sequence, and a retrying recall
-can never outlast one with retrying switched off. A role's `timeout_ms` bounds *an endpoint that has stopped
-answering*, and nothing waits on a background derivation, so it applies per attempt: a 500 arriving late into a
+bounds _felt latency_ — someone is waiting — so it is the budget for the whole sequence, and a retrying recall
+can never outlast one with retrying switched off. A role's `timeout_ms` bounds _an endpoint that has stopped
+answering_, and nothing waits on a background derivation, so it applies per attempt: a 500 arriving late into a
 long generation must not leave the retry a fraction of the budget that number was tuned for. Only refusals
 returned without doing work are retried, which keeps a real sequence backoff-dominated and measured in seconds.
 
@@ -179,13 +214,13 @@ rather than being told in prose.
 ## Three doors, one registry
 
 ```ts
-import { open } from '@akno/core';
+import { open } from '@tenphi/akno-core';
 const mem = await open({ aknoPath: '~/Notes' });
 const { cards } = await mem.recall({ query: 'car insurance renewal', budget: 8000 });
 ```
 
 ```ts
-import { connect } from '@akno/client';
+import { connect } from '@tenphi/akno-client';
 const mem = await connect(); // unix socket, identical interface
 ```
 
@@ -407,7 +442,7 @@ a stored PDF is searchable by its own content and a hit can say which page it is
 ```
 recall "who replaced the drain pump"
 
-  household/dishwasher-repair-2026-08 (full, 0.91)
+  household/dishwasher-repair-2026-08 (knowledge, 0.91)
     household/dishwasher-repair-2026-08-8e7705eb.pdf p1
       MERIDIAN APPLIANCE CARE
       Replaced the drain pump
@@ -481,7 +516,7 @@ how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it
 to come back — `launchctl kickstart` returns when launchd has spawned the process, not when it is listening, so
 without the wait the next command fails with "no Akno service at …" and reads like a broken deploy. The two
 steps serve different consumers: launchd runs the TypeScript directly, so the service needs the restart and not
-the build, while a host importing `@akno/client` reads `packages/*/dist` and needs the build and not the
+the build, while a host importing `@tenphi/akno-client` reads `packages/*/dist` and needs the build and not the
 restart. `--no-build` restarts only; `--no-restart` builds only. A failed build restarts nothing, so a deploy
 never reports success with the previous code back in service.
 
@@ -592,9 +627,9 @@ the dataless-file flag, because a notes folder lives in iCloud Drive or Dropbox 
 another device. A port would not be a build-matrix entry, it would be a second watcher with its own correctness
 argument, and one tested watcher is worth more than two hopeful ones.
 
-`@akno/core` and the `akno` CLI declare `"os": ["darwin"]`.
+`@tenphi/akno-core` and the `akno` CLI declare `"os": ["darwin"]`.
 
-**`@akno/client` stays portable, and that is the useful part.** It has no native dependencies, so a Linux
+**`@tenphi/akno-client` stays portable, and that is the useful part.** It has no native dependencies, so a Linux
 container reaching a macOS host over the loopback HTTP door is a supported shape — the knowledge base and the
 index never enter the sandbox, which is also what keeps the single-writer property intact.
 
@@ -612,14 +647,15 @@ Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`
 `@modelcontextprotocol/sdk` for the MCP door. Terminal colour is `node:util`'s `styleText`, request deadlines
 are `AbortSignal.timeout`, and the file walker is `node:fs` — none of that needs a package.
 
-`@akno/protocol` exists so `@akno/client` can share schemas with `@akno/core` without pulling
+`@tenphi/akno-protocol` exists so `@tenphi/akno-client` can share schemas with `@tenphi/akno-core` without pulling
 `better-sqlite3` and `sqlite-vec` into a host's build.
 
 ## Development
 
 ```bash
 pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — 353 tests, no models required
+pnpm test          # vitest — 613 tests, no models required
+pnpm smoke         # both end-to-end scripts, through the built dist
 pnpm lint          # oxlint
 pnpm knip          # dead exports and unused dependencies
 pnpm bench
