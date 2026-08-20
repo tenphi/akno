@@ -23,7 +23,7 @@ import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 import { curatePages, type CuratedPage } from './curate.ts';
 import {
   applyMaintenancePlan,
-  createHygienePlan,
+  createCurationPlan,
   decideMaintenancePlanWithCurator,
   findActiveMaintenancePlan,
   type MaintenanceItem,
@@ -96,7 +96,7 @@ export interface DreamMaintenancePlan extends MaintenancePlanSummary {
   /** Decision and outcome metadata only; exact private bytes are fetched explicitly with `plan()`. */
   items: Pick<
     MaintenanceItem,
-    'id' | 'subject' | 'status' | 'decision' | 'statusReason' | 'changeId' | 'verification'
+    'id' | 'kind' | 'risk' | 'subject' | 'status' | 'decision' | 'statusReason' | 'changeId' | 'verification'
   >[];
 }
 
@@ -236,21 +236,22 @@ async function runPhase(
         if (plan) {
           report.curated = plan.items.map((item) => ({
             slug: item.subject,
-            mode: 'hygiene',
+            mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
             action: 'would-update',
-            splits: [],
+            splits: item.operations
+              .filter((operation) => operation.type === 'create')
+              .map((operation) => operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, '')),
             issues: [],
           }));
         } else {
           const result = await curatePages(ctx, {
             dryRun: true,
             recordState: false,
-            onlyMode: 'hygiene',
             includePreviewed: true,
           });
           report.curated = result.pages;
           report.warnings.push(...result.warnings);
-          plan = createHygienePlan(ctx, mode, result.drafts);
+          plan = createCurationPlan(ctx, mode, result.drafts);
         }
         if (!plan) return null;
         if (mode === 'auto') {
@@ -366,6 +367,8 @@ function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
     ...summary,
     items: items.map((item) => ({
       id: item.id,
+      kind: item.kind,
+      risk: item.risk,
       subject: item.subject,
       status: item.status,
       decision: item.decision,

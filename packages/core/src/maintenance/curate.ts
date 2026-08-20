@@ -47,10 +47,21 @@ export interface CurateResult {
 
 export interface CurateDraft {
   slug: string;
+  mode: 'hygiene' | 'synthesize';
   relPath: string;
   inputHash: string;
   before: string;
   after: string;
+  children: { slug: string; relPath: string; content: string }[];
+  evidence: {
+    slug: string;
+    relationship: 'about' | 'outbound' | 'backlink';
+    bodyHash: string;
+    summary: string | null;
+    claims: string[];
+    events: string[];
+  }[];
+  conflicts: { slug: string; subject: string; attribute: string; claim: string; value: string }[];
 }
 
 interface PageRow {
@@ -209,7 +220,6 @@ export async function curatePages(
   options: {
     dryRun: boolean;
     recordState: boolean;
-    onlyMode?: 'hygiene' | 'synthesize';
     /** A durable plan may supersede a legacy preview without changing the page first. */
     includePreviewed?: boolean;
   },
@@ -240,12 +250,13 @@ export async function curatePages(
     before: string;
     after: string;
     children: { relPath: string; content: string; slug: string }[];
+    evidence: EvidencePage[];
+    conflicts: ConflictEvidence[];
     inputHash: string;
     metadataOnly: boolean;
   }[] = [];
 
   for (const row of rows) {
-    if (options.onlyMode && row.dream_management !== options.onlyMode) continue;
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
@@ -447,7 +458,7 @@ export async function curatePages(
       queueCurateState(state, row.id, inputHash, 'unchanged');
       continue;
     }
-    staged.push({ row, before, after, children, inputHash, metadataOnly });
+    staged.push({ row, before, after, children, evidence, conflicts, inputHash, metadataOnly });
     splitBudget -= children.length;
     result.pages.push({
       slug: row.slug,
@@ -461,10 +472,27 @@ export async function curatePages(
 
   result.drafts = staged.map((stage) => ({
     slug: stage.row.slug,
+    mode: stage.row.dream_management,
     relPath: stage.row.rel_path,
     inputHash: stage.inputHash,
     before: stage.before,
     after: stage.after,
+    children: stage.children,
+    evidence: stage.evidence.map((entry) => ({
+      slug: entry.slug,
+      relationship: entry.relationship,
+      bodyHash: entry.body_hash,
+      summary: entry.relationship === 'about' ? entry.summary : null,
+      claims: entry.facts.map((fact) => fact.claim),
+      events: entry.events.map((event) => `${event.date}: ${event.summary}`),
+    })),
+    conflicts: stage.conflicts.map((entry) => ({
+      slug: entry.slug,
+      subject: entry.subject,
+      attribute: entry.attribute,
+      claim: entry.claim,
+      value: entry.value,
+    })),
   }));
 
   if (options.dryRun) {
@@ -722,6 +750,10 @@ function guardRewrite(input: {
   }
   if (input.mode === 'synthesize' && input.conflicts.length > 0 && !/^##\s+Unresolved\s*$/im.test(combined)) {
     issues.push('known conflicts are not preserved under an Unresolved section');
+  }
+  for (const split of input.splits) {
+    const target = `${input.pageSlug}/${split.suffix}`.toLowerCase();
+    if (input.knownSlugs.has(target)) issues.push(`split target already exists: ${target}`);
   }
   if (
     input.mode === 'synthesize' &&

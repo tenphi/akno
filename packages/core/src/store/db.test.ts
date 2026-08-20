@@ -1,9 +1,11 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
 
-import { acquireWriteLock } from './db.ts';
+import { acquireWriteLock, openStore } from './db.ts';
+import { MIGRATIONS, SCHEMA_VERSION } from './migrations.ts';
 
 /**
  * Exactly one process may write, and the rule is enforced by a pid in a lock file. What is tested
@@ -42,6 +44,32 @@ describe('waiting for the write handle', () => {
     expect(lock.heldByPid).toBe(process.ppid);
     // It waited rather than failing instantly.
     expect(Date.now() - started).toBeGreaterThanOrEqual(250);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe('schema migration', () => {
+  it('adds durable maintenance capabilities to a historical version-eight database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    legacy.exec(MIGRATIONS[0]!);
+    legacy.pragma('user_version = 8');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const tables = store.db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'maintenance_%' ORDER BY name",
+      )
+      .all() as { name: string }[];
+    const columns = store.db.pragma('table_info(maintenance_items)') as { name: string }[];
+
+    expect(tables.map((row) => row.name)).toEqual(['maintenance_items', 'maintenance_plans']);
+    expect(columns.map((row) => row.name)).toContain('evidence');
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
 });

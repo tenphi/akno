@@ -3,7 +3,12 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import * as sqliteVec from 'sqlite-vec';
 import { AknoError } from '@tenphi/akno-protocol';
-import { MIGRATIONS } from './migrations.ts';
+import {
+  MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
+  MAINTENANCE_PLANS_MIGRATION_INDEX,
+  MIGRATIONS,
+  SCHEMA_VERSION,
+} from './migrations.ts';
 import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
 
 export interface StoreOptions {
@@ -118,13 +123,35 @@ export function openStore(options: StoreOptions): Store {
 
 function migrate(db: Database.Database): void {
   const current = (db.pragma('user_version', { simple: true }) as number) ?? 0;
-  if (current >= MIGRATIONS.length) return;
   db.transaction(() => {
-    for (let i = current; i < MIGRATIONS.length; i++) {
-      db.exec(MIGRATIONS[i]!);
+    if (current === 0) {
+      // A new database starts from the compact canonical schema, then receives every
+      // durable extension. Its version is the historical schema number below, not 3.
+      for (const migration of MIGRATIONS) db.exec(migration);
+    } else {
+      // Released databases exist with both compact version 1 and historical version 8.
+      // Table/column capabilities are unambiguous where an array index is not.
+      if (!tableExists(db, 'maintenance_plans')) {
+        db.exec(MIGRATIONS[MAINTENANCE_PLANS_MIGRATION_INDEX]!);
+      }
+      if (!columnExists(db, 'maintenance_items', 'evidence')) {
+        db.exec(MIGRATIONS[MAINTENANCE_EVIDENCE_MIGRATION_INDEX]!);
+      }
     }
-    db.pragma(`user_version = ${MIGRATIONS.length}`);
+    if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();
+}
+
+function tableExists(db: Database.Database, name: string): boolean {
+  const row = db
+    .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = ?")
+    .get(name) as { present: number } | undefined;
+  return row?.present === 1;
+}
+
+function columnExists(db: Database.Database, table: string, column: string): boolean {
+  const rows = db.pragma(`table_info(${JSON.stringify(table)})`) as { name: string }[];
+  return rows.some((row) => row.name === column);
 }
 
 /**

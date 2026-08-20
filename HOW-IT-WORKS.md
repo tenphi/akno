@@ -176,7 +176,7 @@ A practical adoption path is:
    inbox.
 4. **Background operation:** install only the service and watcher with `akno service install --no-dream`.
 5. **Maintenance:** start with `dream --phase curate --mode audit`, inspect its exact plan diff, then choose
-   human review or autonomous application for opted-in hygiene pages.
+   human review or autonomous application for opted-in curation.
 
 This sequence is about learning the trust boundaries, not satisfying a technical prerequisite.
 
@@ -714,13 +714,13 @@ akno:
 
 **Method:** select only `knowledge` pages with an explicit mode; build a draft from the page and allowed
 evidence; run a separate verifier; then enforce deterministic checks for markers, values, links, size,
-and split limits. Plan-backed hygiene seals the resulting exact before/after bytes only after those checks.
+and split limits. Plan-backed curation seals the resulting exact operations only after those checks.
 
 **Write authority has three gates:**
 
 1. The page opts in with `dream: hygiene` or `dream: synthesize`.
 2. `maintenance.curate.enabled` includes the phase in scheduled runs.
-3. A configured or command-line trust mode authorizes the plan-backed hygiene path; when no mode is set,
+3. A configured or command-line trust mode authorizes plan-backed curation; when no mode is set,
    the legacy `maintenance.curate.write` switch controls previews and writes.
 
 With `enabled: true` and `write: false`, scheduled runs are summary previews: they report that a page would
@@ -728,7 +728,7 @@ change, its mode, verification issues, proposed child slugs, and temporal handli
 return the proposed body or a diff. Input fingerprints are recorded so unchanged pages do not spend model
 calls every night. An explicit `--dry-run` is observational and does not record that state.
 
-For opted-in **hygiene** pages, a per-run mode provides the new durable path:
+For opted-in **hygiene** and **synthesize** pages, a per-run mode provides the durable path:
 
 ```bash
 # Seal exact diffs, but make no decision and change no note.
@@ -742,9 +742,9 @@ akno dream --phase curate --mode auto
 ```
 
 The selected mode is explicit authority for that run, so it replaces the legacy `maintenance.curate.write`
-choice for these hygiene items. It still requires `maintenance.curate.enabled`, an available maintenance or
-derive model, and page-level `dream: hygiene`. A command-line `--mode` currently requires `--phase curate`;
-it does not run the other six phases.
+choice for these curation items. It still requires `maintenance.curate.enabled`, an available maintenance or
+derive model, and page-level `dream: hygiene` or `dream: synthesize`. A command-line `--mode` currently requires
+`--phase curate`; it does not run the other six phases.
 
 For the nightly full cycle, put the same decision in configuration instead:
 
@@ -757,9 +757,8 @@ For the nightly full cycle, put the same decision in configuration instead:
 ```
 
 The scheduled command remains plain `akno dream`, so observation, reflection, adoption, conflict detection,
-repair, and housekeeping keep running. Only its curate phase reads this mode. Plan-backed synthesis is not
-implemented yet, so a non-null mode considers opted-in `hygiene` pages and leaves `synthesize` pages alone.
-Set `mode` to `null` only when intentionally retaining the legacy curate behavior.
+repair, and housekeeping keep running. Only its curate phase reads this mode. Set `mode` to `null` only when
+intentionally retaining the legacy curate behavior.
 
 All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its exact
 operation, input hash, completed guards, decision, journal change id, and verification result. `audit` leaves
@@ -782,6 +781,11 @@ its own undoable change, then structurally re-indexed and checked for exact disk
 and body hash. A proven verification failure rolls the journalled write back. If verification cannot run, the
 write stays visible as `verification_pending` and a later `plan apply` retries verification without applying
 the edit twice.
+
+Synthesis plans also retain the bounded linked evidence and conflict records supplied to the independent
+curator. When synthesis proposes children, the canonical replacement and every child creation form one item.
+All input files and create-path assertions are checked before the first write; a collision makes the whole item
+stale. One journal change, one verification result, and one undo cover the complete split.
 
 ```jsonc
 {
@@ -889,7 +893,7 @@ curation, adoption, and repair can therefore have separate change ids. Use the i
 akno undo <change-id>
 ```
 
-Plan-backed hygiene is finer-grained: every applied item has its own change id, printed by `plan show` and
+Plan-backed curation is finer-grained: every applied item has its own change id, printed by `plan show` and
 `plan apply`. Human approval changes only plan state; the note remains byte-identical until `plan apply`.
 
 To retain a machine-readable audit record:
@@ -1073,12 +1077,13 @@ or document was forgotten, recover it from Akno's trash within the configured re
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### The durable review queue currently covers hygiene only
+### The durable review queue currently covers curation only
 
-Hygiene now has stable plan and item ids, exact diffs, input hashes, separate human or curator decisions,
-hash-checked apply, verification receipts, and journal undo. The other dream outputs still do not feed that
-queue: synthesis, observations, principles, adoption, conflict findings, repairs, and housekeeping each retain
-their existing execution or reporting behavior. There is also no snooze or requested-revision decision yet.
+Hygiene, synthesis, and bounded splits now have stable plan and item ids, exact diffs, input hashes, separate
+human or curator decisions, hash-checked apply, verification receipts, and journal undo. The other dream
+outputs still do not feed that queue: observations, principles, adoption, conflict findings, repairs, and
+housekeeping each retain their existing execution or reporting behavior. There is also no snooze or
+requested-revision decision yet.
 
 ### Searchability should not depend on an overnight write
 
@@ -1093,7 +1098,7 @@ for search correctness.
 
 ### The whole dream should become a plan, apply, verify loop
 
-The hygiene slice now follows this lifecycle. The seven-phase cycle as a whole still mixes analysis, proposals,
+The curation slice now follows this lifecycle. The seven-phase cycle as a whole still mixes analysis, proposals,
 writes, and final reporting. Its consistent user-visible stages should be:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
@@ -1113,7 +1118,7 @@ Dream currently combines global phase switches, a separate curate write switch, 
 rules, dry-run behavior, and per-run caps. The safeguards are valuable; the interaction is difficult to hold
 in one mental model.
 
-The hygiene path now exposes `audit`, `review`, and `auto` both per command and through
+The curation path now exposes `audit`, `review`, and `auto` both per command and through
 `maintenance.curate.mode`, so a full scheduled run can use durable plans without dropping the other phases.
 The next operator step is still a named profile that resolves authority across every transformation, not just
 curation. Expert config can remain underneath. Setup must say plainly when it schedules knowledge-base writes.

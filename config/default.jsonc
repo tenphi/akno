@@ -316,10 +316,10 @@
     // events gain a journalled `akno.temporal` boundary; after it passes, only strong
     // post-event evidence wakes one archival assessment instead of another planning pass.
     // The draft is checked by a second model pass and deterministic guards.
-    // `mode` opts scheduled/full runs into durable exact plans for hygiene pages:
+    // `mode` opts scheduled/full runs into durable exact plans for hygiene and
+    // synthesis pages, including atomic canonical-page splits:
     // audit records proposals, review waits for human decisions, and auto asks an
-    // independent curator before applying. Null preserves the legacy `write` switch,
-    // including synthesis, until that transformation is plan-backed too.
+    // independent curator before applying. Null preserves the legacy `write` switch.
     "curate": {
       "enabled": false,
       "mode": null,

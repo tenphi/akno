@@ -17,8 +17,8 @@ akno plan apply <plan_id>
 akno plan status
 
   Inspect and control durable maintenance plans. Planning never changes knowledge-base
-  files. Applying checks that every source still matches, journals each item separately,
-  re-indexes it, and verifies the resulting index.
+  files. Applying checks every source and create target before writing, journals each
+  item as one change, re-indexes every affected path, and verifies the resulting index.
 
   --json`;
 
@@ -184,7 +184,9 @@ function printPlan(plan: MaintenancePlan): void {
     ['summary', plan.summary],
   ]);
   for (const item of plan.items) {
-    line(`\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.subject}`);
+    line(
+      `\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.kind}/${item.risk}  ${item.subject}`,
+    );
     line(`    ${style.grey(item.rationale)}`);
     if (item.decision) {
       line(`    ${style.grey(`${item.decision.actor}: ${item.decision.outcome} — ${item.decision.reason}`)}`);

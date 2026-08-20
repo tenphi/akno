@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno, type MaintenanceMode } from '../src/index.ts';
@@ -19,6 +18,8 @@ let server: {
   loseMarker: (value: boolean) => void;
   changeNumber: (value: boolean) => void;
   echoDraft: (value: boolean) => void;
+  synthesisDraft: (value: boolean) => void;
+  splitDraft: (value: boolean) => void;
   userMessages: () => string[];
 };
 
@@ -341,6 +342,126 @@ describe('plan-backed hygiene', () => {
     expect(report.curated[0]?.action).toBe('updated');
   });
 
+  it('applies synthesis and its child page as one plan item and one undo', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    const before = fs.readFileSync(canonical, 'utf8');
+    server.splitDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowSplits: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    const item = plan.items[0]!;
+    const child = path.join(root, 'people/ada-marlow/history.md');
+
+    expect(item).toMatchObject({ kind: 'split', risk: 'medium', status: 'applied' });
+    expect(item.operations.map((operation) => operation.type)).toEqual(['replace', 'create']);
+    expect(mem.maintenanceDiff(plan.id)).toContain('--- /dev/null');
+    expect(fs.readFileSync(canonical, 'utf8')).toContain('[[people/ada-marlow/history]]');
+    expect(fs.readFileSync(child, 'utf8')).toContain('Ada Marlow lives at 111 Example Street.');
+    expect(mem.changes(1)[0]).toMatchObject({
+      id: item.changeId,
+      op: 'maintenance',
+      files: [
+        { relPath: 'people/ada-marlow.md', action: 'modified' },
+        { relPath: 'people/ada-marlow/history.md', action: 'created' },
+      ],
+    });
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
+    expect(fs.existsSync(child)).toBe(false);
+  });
+
+  it('seals linked evidence into a high-risk synthesis decision', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'evidence/ada-interview.md'),
+      `---
+title: Ada interview
+akno:
+  role: source
+  about:
+    - people/ada-marlow
+---
+
+An invented interview record.
+`,
+    );
+    server.synthesisDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto');
+    await mem.index({ structuralOnly: true });
+    const db = new Database(mem.config.dbPath);
+    db.prepare('UPDATE pages SET summary = ? WHERE slug = ?').run(
+      'Ada Marlow maintains a brass compass collection.',
+      'evidence/ada-interview',
+    );
+    db.close();
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(item).toMatchObject({ kind: 'synthesis', risk: 'high', status: 'applied' });
+    expect(item.operations).toHaveLength(1);
+    expect(item.evidence).toContainEqual(
+      expect.objectContaining({
+        type: 'page',
+        source: 'evidence/ada-interview',
+        relationship: 'about',
+        details: ['Ada Marlow maintains a brass compass collection.'],
+      }),
+    );
+    expect(fs.readFileSync(canonical, 'utf8')).toContain('brass compass collection');
+    expect(server.curatorCalls()).toBe(1);
+    expect(
+      server
+        .userMessages()
+        .some(
+          (message) =>
+            message.includes('"item"') &&
+            message.includes('Ada Marlow maintains a brass compass collection.'),
+        ),
+    ).toBe(true);
+  });
+
+  it('makes a whole split item stale when its child target appears before apply', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    const before = fs.readFileSync(canonical, 'utf8');
+    server.splitDraft(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowSplits: true });
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    const child = path.join(root, 'people/ada-marlow/history.md');
+    fs.mkdirSync(path.dirname(child), { recursive: true });
+    fs.writeFileSync(child, '# A separately authored history\n');
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply only if every planned path is still available.');
+
+    const result = await mem.applyPlan(planned.id);
+
+    expect(result.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
+    expect(fs.readFileSync(child, 'utf8')).toBe('# A separately authored history\n');
+    expect(result.files).toEqual([]);
+  });
+
   it('lets autonomous dream recover an interrupted exact write after restart', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const before = fs.readFileSync(page, 'utf8');
@@ -368,20 +489,50 @@ describe('plan-backed hygiene', () => {
     expect(fs.readFileSync(page, 'utf8')).toBe(before);
   });
 
+  it('restores and reapplies an interrupted partial split as one item', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    const before = fs.readFileSync(canonical, 'utf8');
+    server.splitDraft(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowSplits: true });
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    mem.decidePlan(planned.id, item.id, 'approve', 'The complete split is safe.');
+    const db = new Database(mem.config.dbPath);
+    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
+    db.close();
+    fs.writeFileSync(canonical, item.operations[0]!.after);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowSplits: true });
+
+    const recovered = await mem.dream({ phase: 'curate' });
+    const child = path.join(root, 'people/ada-marlow/history.md');
+
+    expect(recovered.maintenancePlan).toMatchObject({ status: 'completed' });
+    expect(recovered.maintenancePlan?.items[0]).toMatchObject({ status: 'applied' });
+    expect(fs.readFileSync(canonical, 'utf8')).toContain('[[people/ada-marlow/history]]');
+    expect(fs.existsSync(child)).toBe(true);
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(1);
+
+    await mem.undo({ change_id: recovered.maintenancePlan!.items[0]!.changeId! });
+    expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
+    expect(fs.existsSync(child)).toBe(false);
+  });
+
   it('rolls a journaled write back when post-apply verification fails', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const before = fs.readFileSync(page, 'utf8');
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
     const item = mem.plan(planned.id).items[0]!;
-    const operation = item.operations[0]!;
-    const unsafeAfter = operation.after.replace('akno:\n', 'akno:\n  role: ignored\n');
-    const tampered = [{ ...operation, after: unsafeAfter, afterHash: digest(unsafeAfter) }];
-    const db = new Database(mem.config.dbPath);
-    db.prepare('UPDATE maintenance_items SET operations = ? WHERE id = ?').run(
-      JSON.stringify(tampered),
-      item.id,
-    );
-    db.close();
+    await mem.close();
+    mem = await openMem(false, undefined, { folders: { 'people/**': { role: 'ignored' } } });
 
     mem.decidePlan(planned.id, item.id, 'approve', 'Exercise the post-write verifier.');
     const result = await mem.applyPlan(planned.id);
@@ -418,7 +569,14 @@ describe('curation link integrity', () => {
   });
 });
 
-async function openMem(write: boolean, mode?: MaintenanceMode): Promise<Akno> {
+async function openMem(
+  write: boolean,
+  mode?: MaintenanceMode,
+  options: {
+    allowSplits?: boolean;
+    folders?: Record<string, { role: 'ignored' }>;
+  } = {},
+): Promise<Akno> {
   return open({
     aknoPath: root,
     stateDir,
@@ -436,8 +594,15 @@ async function openMem(write: boolean, mode?: MaintenanceMode): Promise<Akno> {
       },
       maintenance: {
         log_changes: true,
-        curate: { enabled: true, ...(mode ? { mode } : {}), write, verify: true },
+        curate: {
+          enabled: true,
+          ...(mode ? { mode } : {}),
+          write,
+          verify: true,
+          ...(options.allowSplits ? { split_after_bytes: 1, split_section_bytes: 1 } : {}),
+        },
       },
+      ...(options.folders ? { folders: options.folders } : {}),
     },
   });
 }
@@ -448,6 +613,8 @@ async function startStub(): Promise<typeof server> {
   let drop = false;
   let changeNumber = false;
   let echoDraft = false;
+  let synthesisDraft = false;
+  let splitDraft = false;
   const userMessages: string[] = [];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -475,14 +642,32 @@ async function startStub(): Promise<typeof server> {
           })
         : system.includes('verify an automatic Markdown rewrite')
           ? JSON.stringify({ ok: true, issues: [] })
-          : echoDraft
-            ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
-            : JSON.stringify({
-                body:
-                  '# Ada Marlow\n\n## Details\n\n' +
-                  (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                  `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-              });
+          : splitDraft && system.includes('synthesize one canonical')
+            ? JSON.stringify({
+                body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
+                splits: [
+                  {
+                    suffix: 'history',
+                    title: 'Ada Marlow history',
+                    body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+                  },
+                ],
+                temporal: false,
+              })
+            : synthesisDraft && system.includes('synthesize one canonical')
+              ? JSON.stringify({
+                  body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                  splits: [],
+                  temporal: false,
+                })
+              : echoDraft
+                ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
+                : JSON.stringify({
+                    body:
+                      '# Ada Marlow\n\n## Details\n\n' +
+                      (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                      `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                  });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -507,12 +692,14 @@ async function startStub(): Promise<typeof server> {
     echoDraft: (value) => {
       echoDraft = value;
     },
+    synthesisDraft: (value) => {
+      synthesisDraft = value;
+    },
+    splitDraft: (value) => {
+      splitDraft = value;
+    },
     userMessages: () => [...userMessages],
   };
-}
-
-function digest(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
 }
 
 function currentBody(user: string): string {

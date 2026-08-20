@@ -29,7 +29,7 @@ akno dream status
 
   --phase <name>   Run one phase instead of every enabled one.
   --mode <policy>  audit | review | auto. A command-line mode currently requires
-                   --phase curate and plans only explicitly opted-in hygiene pages.
+                   --phase curate and plans opted-in hygiene and synthesis pages.
   --dry-run        Run selected checks and proposals; change no knowledge-base files.
   --json`;
 

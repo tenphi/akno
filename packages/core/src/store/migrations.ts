@@ -5,12 +5,16 @@
  * a sealed plan keeps exact proposed bytes so a decision survives a restart and never has to regenerate a
  * possibly different rewrite.
  *
- * Migrations are append-only and idempotent. `user_version` tracks the applied
- * count, so a rebuild and an upgrade take the same path. The first entry is the 0.1.0
- * schema. Append the next migration below rather than editing an earlier one
- * this — an index in the field is rebuildable, but only if it can tell how far
- * along it is.
+ * The first entry is the canonical 0.1.0 schema, compacted from historical versions
+ * 1–8. Later entries add durable state that cannot be recovered by rebuilding the index.
+ * `user_version` therefore uses the historical schema number, not this array's length.
+ * Upgrade code capability-checks durable tables and columns so databases created before
+ * or after the compaction converge on the same schema.
  */
+export const SCHEMA_VERSION = 10;
+export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
+export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
+
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
   `
@@ -326,6 +330,12 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX maintenance_items_plan ON maintenance_items(plan_id, ord);
   CREATE INDEX maintenance_items_status ON maintenance_items(status, updated_at DESC);
+  `,
+  // ── 3. Evidence supplied to the independent maintenance curator ──────────
+  // Exact page operations were already durable. Synthesis decisions also need the bounded
+  // evidence graph that justified new knowledge, kept in state_dir with the private plan.
+  `
+  ALTER TABLE maintenance_items ADD COLUMN evidence TEXT NOT NULL DEFAULT '[]';
   `,
 ];
 
