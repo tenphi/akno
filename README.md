@@ -251,8 +251,10 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 
 ## How your files are treated
 
-**Akno writes nothing into your knowledge base by default.** Not frontmatter, not fact tables, not a
-`timeline.md` you did not ask for.
+**An index pass writes nothing into your knowledge base by default.** Not frontmatter, not fact tables, not a
+`timeline.md` you did not ask for. Explicit write operations do, and the scheduled dream cycle has one enabled
+write phase: `adopt` creates a minimal page for each eligible readable document that no page owns. Install the
+watcher with `akno service install --no-dream` if you want background indexing without scheduled writes.
 
 - Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to have
   Akno add a frontmatter `id:` — the only index-time write into a page you wrote — for identity that
@@ -268,11 +270,11 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
   `read` returns the file with its frontmatter and a revised page comes back carrying one. `append`, `patch`
   and `replace` never touch the head; a block arriving in one of those is text somebody pasted.
 
-Three operations do author files, and each is journalled and reversible with `akno undo`: `write` and
-`remember` (because you asked them to), `ingest` (a page for a document you handed over), and the maintenance
-cycle (pages under `observations/`, and a page for a document that has none — both opt-outable).
+Four workflows author files, and each is journalled and reversible with `akno undo`: `write`, `remember`,
+`ingest`, and enabled maintenance phases. Dream can append observations, curate opted-in pages, adopt unowned
+documents, and apply bounded repairs; only adoption is enabled to write by default.
 
-A fourth is off by default and is maintained rather than journalled. `ingest.text_rendition: true` keeps the
+A separate optional output is maintained rather than journalled. `ingest.text_rendition: true` keeps the
 extracted text of each readable document as `<file>.txt` beside it — so a `grep`, an editor, a git diff or an
 agent holding the folder can read a scanned contract without OCRing it again. Akno itself never needs it: the
 text is indexed against the document and `read({document})` returns all of it. A rendition is recognised as the
@@ -488,7 +490,9 @@ Nothing is routed or named, because the caller already decided both.
 
 ## The maintenance cycle
 
-`akno dream` runs seven phases. They are independent, and each is safe to re-run.
+`akno dream` runs seven selectable, repeat-safe phases. Claim repair consumes verdicts from the preceding
+conflict phase in a full run; running `--phase repair` alone can still repair links but has no fresh conflict
+verdicts to apply.
 
 | Phase          | Writes?       | What it does                                                                                                              |
 | -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -500,14 +504,16 @@ Nothing is routed or named, because the caller already decided both.
 | `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                       |
 | `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                      |
 
-`observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Each
-phase's writes are their own `akno undo`, so reversing a night's inferences does not also reverse the pages
-that made documents searchable. The rest report, because a maintenance process that tidies a knowledge base
-behind its owner's back is worse than the mess it fixes.
+`observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
+phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
+documents searchable. `conflicts` and `housekeeping` only report; curation and repair require explicit write
+permission.
 
 Curate has two switches on purpose: `enabled` includes it in scheduled runs, while `write` grants authority to
-apply accepted drafts. With `write: false`, scheduled runs remain previews. Stable item markers and provenance
-survive rewrites and moves, and a split keeps the canonical `page.md` while adding children under `page/`.
+apply accepted drafts. With `write: false`, scheduled runs remain summary previews, but the current report does
+not expose the proposed body or a diff. Stable item markers and provenance survive rewrites and moves, and a
+split keeps the canonical `page.md` while adding children under `page/`. See the
+[dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
 how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.
@@ -515,10 +521,11 @@ how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it
 **`akno redeploy` applies a local change.** It builds, restarts `dev.akno`, and then waits for the socket
 to come back — `launchctl kickstart` returns when launchd has spawned the process, not when it is listening, so
 without the wait the next command fails with "no Akno service at …" and reads like a broken deploy. The two
-steps serve different consumers: launchd runs the TypeScript directly, so the service needs the restart and not
-the build, while a host importing `@tenphi/akno-client` reads `packages/*/dist` and needs the build and not the
-restart. `--no-build` restarts only; `--no-restart` builds only. A failed build restarts nothing, so a deploy
-never reports success with the previous code back in service.
+steps serve different consumers: launchd runs the CLI TypeScript directly, but that CLI imports
+`@tenphi/akno-core` from `packages/core/dist`, so core changes require the build and the running service needs
+the restart. Hosts importing `@tenphi/akno-client` also read package `dist` output. `--no-build` restarts only;
+`--no-restart` builds only. A failed build restarts nothing, so a deploy never reports success with the previous
+code back in service.
 
 **`adopt` is the one thing the cycle repairs.** Recall returns page cards, so an attachment nobody's page points
 at is extracted, indexed, and unreachable. `adopt` writes the page `ingest` would have written — the title from
@@ -601,13 +608,16 @@ build time, recall accuracy and a second structure to keep in sync, to save mill
 ## What ships switched off
 
 Named plainly, because a README that implies more than exists is the same failure mode Akno is built to
-prevent. Both of these are decisions with a measurement behind them, not gaps:
+prevent. These defaults keep inference and unattended edits behind explicit permission:
 
 - **`observe`** — the tier that infers patterns and writes them as prose. Its guardrails hold; the quality of
   what survives them is the model's, and on a small local model most of it was not worth keeping.
 - **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
   one coincidence.
-
+- **`curate`** — off globally, and its write switch is separately off. Even when enabled, it only considers
+  pages whose own frontmatter opts into `hygiene` or `synthesize`.
+- **`repair`** — automatic link and stale-claim edits. The actions are guarded, bounded, journalled, and still
+  edits to pages you wrote, so the phase is off.
 - **`maintenance.log_changes`** — a full record of every cycle run appended to
   `<state_dir>/logs/dream.jsonl`: what it applied with the lines it added, what a guardrail refused and which
   guard refused it, what was skipped and why. It is the fastest way to decide whether to trust the cycle, and

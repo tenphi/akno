@@ -111,7 +111,7 @@
   },
 
   // ─── Models ───────────────────────────────────────────────────────────────
-  // Three roles, all optional, each degrading rather than failing. `id: null`
+  // Five roles, all optional, each degrading rather than failing. `id: null`
   // means the role is unconfigured — Akno reports it in `doctor` and takes
   // the documented degraded path.
   "models": {
@@ -347,6 +347,16 @@
       // every candidate reported as `unverified`, which is honest and cheaper.
       "verify": true,
       "max_pairs": 40
+    },
+    // Apply the narrow fixes that can be guarded: repoint a broken wikilink to
+    // an existing page, or rewrite the verified stale side of a conflict as
+    // history without changing any value. Off by default because this edits
+    // pages while nobody is watching. One run is one undoable, bounded change.
+    "repair": {
+      "enabled": false,
+      "links": true,
+      "conflicts": true,
+      "max_changes": 25
     }
   },
 

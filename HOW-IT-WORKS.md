@@ -1,1029 +1,1111 @@
 # How Akno works
 
-A walk through every command and every background process, in plain language.
+Akno is a memory layer for agents, built on a folder of Markdown files that you own.
+It helps an agent find what your notes actually say, show where each answer came from, and
+make deliberate, reversible changes without taking control of the folder away from you.
 
-If you have not set it up yet, start with the [README](README.md#quick-start). This document assumes Akno is
-pointed at a folder of notes and explains what actually happens when you run things.
+This guide explains the user workflows first, then the machinery behind them. If Akno is
+not installed yet, start with the [README quick start](README.md#quick-start).
 
 ---
 
 ## Contents
 
-- [The shape of it](#the-shape-of-it)
-- [Two rules that explain the rest](#two-rules-that-explain-the-rest)
-- [Which model does what](#which-model-does-what)
-- [`akno index` — reading your folder](#akno-index--reading-your-folder)
-- [`akno recall` — asking a question](#akno-recall--asking-a-question)
-- [`read`, `list`, `timeline` — looking things up directly](#read-list-timeline--looking-things-up-directly)
-- [`akno context` — everything a turn needs, once](#akno-context--everything-a-turn-needs-once)
-- [`akno write` — changing a page safely](#akno-write--changing-a-page-safely)
-- [`akno remember` — "just keep this"](#akno-remember--just-keep-this)
-- [`forget`, `undo`, `move` — taking things back](#forget-undo-move--taking-things-back)
-- [Declaring a folder](#declaring-a-folder)
-- [`akno ingest` — files, folders and URLs](#akno-ingest--files-folders-and-urls)
-- [The inbox — drop it and forget it](#the-inbox--drop-it-and-forget-it)
-- [How a PDF becomes searchable](#how-a-pdf-becomes-searchable)
-- [`akno dream` — the nightly cycle](#akno-dream--the-nightly-cycle)
-- [`serve` and `service` — running it properly](#serve-and-service--running-it-properly)
-- [`doctor`, `rules`, `config`, `bench` — checking on it](#doctor-rules-config-bench--checking-on-it)
-- [What happens when a model is missing](#what-happens-when-a-model-is-missing)
-- [Where Akno keeps its own things](#where-akno-keeps-its-own-things)
-- [Every command, one table](#every-command-one-table)
+- [What Akno is useful for](#what-akno-is-useful-for)
+- [The mental model](#the-mental-model)
+- [Choose the right method](#choose-the-right-method)
+- [A first useful run](#a-first-useful-run)
+- [How indexing works](#how-indexing-works)
+- [Ways to retrieve knowledge](#ways-to-retrieve-knowledge)
+- [Ways to capture and change knowledge](#ways-to-capture-and-change-knowledge)
+- [How folders, roles, and rules work](#how-folders-roles-and-rules-work)
+- [How documents and the inbox work](#how-documents-and-the-inbox-work)
+- [The dream cycle, phase by phase](#the-dream-cycle-phase-by-phase)
+- [Models and graceful degradation](#models-and-graceful-degradation)
+- [Running Akno as a service](#running-akno-as-a-service)
+- [Diagnostics and recovery](#diagnostics-and-recovery)
+- [What Akno does not solve yet](#what-akno-does-not-solve-yet)
+- [Command reference](#command-reference)
 
 ---
 
-## The shape of it
+## What Akno is useful for
 
-You have a folder of Markdown files. Akno reads it into a small database beside it, and offers that folder to
-agents through a handful of operations. You keep editing the files however you like.
+Akno is most helpful when an agent needs continuity across conversations but the knowledge
+must remain inspectable and under your control.
+
+It turns common requests into grounded workflows:
+
+- **“What did we decide?”** Search the notes, return the relevant page and exact lines, and
+  say which parts of the question were not answered.
+- **“Keep this for later.”** Extract the durable parts of a conversation, find the canonical
+  page, append the knowledge, and record the change for undo.
+- **“File this scan.”** Extract or OCR it, give an unhelpful filename a meaningful name, route
+  it only when the destination is sufficiently clear, and make its contents searchable.
+- **“What changed over time?”** Combine a central event ledger with dated lines from any page.
+- **“Is the knowledge base still coherent?”** Find cross-page conflicts, broken links,
+  unowned documents, and pages that have drifted from their folder rules.
+
+The useful distinction is that Akno does not answer on the agent's behalf. It supplies
+**evidence with addresses** and an explicit account of missing coverage. The agent still
+reasons and writes the final response.
+
+Akno is a good fit when:
+
+- Markdown is already the durable record, or you want it to become the durable record.
+- You want people and agents to edit the same files.
+- Citations, reversibility, and honest absence matter more than a frictionless black box.
+- You are comfortable running a local service on macOS and configuring model endpoints.
+
+It is not a replacement for a note editor, a chat interface, a backup system, or a source of
+truth about the world. It only knows what the indexed files and documents contain.
+
+---
+
+## The mental model
 
 ```mermaid
 flowchart LR
-    You["You<br/>Obsidian, vim, Finder"] -->|edit files| Notes["Your folder<br/>~/Notes"]
-    Notes -->|watched and indexed| Index[("Akno index<br/>~/.akno/akno.db")]
-    Index -->|"cards with line numbers"| Agent["An agent<br/>CLI, MCP, socket, HTTP"]
+    Person["You<br/>Obsidian, vim, Finder"] -->|"edit normally"| Notes["Markdown + documents<br/>your knowledge base"]
+    Notes -->|"watch and index"| Index[("Disposable index<br/>state directory")]
+    Index -->|"cards, citations, coverage"| Agent["Agent or CLI"]
     Agent -->|"write, remember, ingest"| Notes
+    Agent -->|"undoable changes"| Journal["Journal + trash<br/>state directory"]
 ```
 
-Three things follow from that picture:
+Four rules explain most of the system:
 
-- **Your folder is the real thing.** The index is a reading of it, not a copy of it.
-- **Changes flow both ways.** You edit by hand; agents edit through operations. Neither has to know about the
-  other.
-- **Nothing is hidden.** Every answer Akno gives points at a file and a line you can open.
+1. **The files are the truth.** The database is a derived reading of them. Delete it and run
+   `akno index`; the knowledge base remains intact.
+2. **The index is not a second knowledge base.** Search chunks, embeddings, summaries, facts,
+   links, and events can all be rebuilt.
+3. **Every returned claim has an address.** Page text is cited as `slug:line`; document text is
+   cited with the document name and page number.
+4. **Missing capabilities degrade explicitly.** If a model or the index is unavailable, Akno
+   returns a typed degraded or unavailable result instead of quietly pretending it searched
+   normally.
 
----
+### Pages and documents have different jobs
 
-## Two rules that explain the rest
+A Markdown page says what a document is and why it matters. The document keeps its own text.
+Akno indexes both, but it does not paste an extracted PDF into the page beside it. That avoids
+duplicate search hits and prevents a stale copy from surviving after the file changes.
 
-**1. The Markdown is the truth.** If Akno and your folder disagree, your folder wins. Delete the whole index
-and run `akno index` — every chunk, embedding, summary, fact, event and link comes back from the files.
+### Evidence and knowledge have different jobs
 
-**2. Missing pieces degrade, they do not fail.** No embedding model? Search still works, lexically. No model for
-summaries? Recall still works, without them. Akno tells you what it lost instead of pretending.
+Not every page should be treated as a claim you endorse. A contract, email, transcript, or
+article may be useful evidence without being canonical knowledge.
 
-Everything below is an application of those two.
+| Role        | Searchable? | Normal recall behavior                                | Fact-derived? |
+| ----------- | ----------- | ----------------------------------------------------- | ------------- |
+| `knowledge` | yes         | Summary plus matching lines; full body when requested | yes           |
+| `source`    | yes         | Summary plus a capped quotation window                | no            |
+| `inference` | yes         | Returned below authored knowledge                     | no            |
+| `ignored`   | no          | Never returned                                        | no            |
 
----
+A `<!-- source -->` fence can switch a knowledge page into evidence partway through the file.
+Content above the fence is canonical; content below it remains searchable but is not fact-mined
+or returned in full by default.
 
-## Which model does what
-
-Akno uses five model roles. Most operations use none of them.
-
-| Role          | Runs during                               | How it is called                                            |
-| ------------- | ----------------------------------------- | ----------------------------------------------------------- |
-| **embedding** | `index`, and the meaning half of `recall` | once per chunk when indexing; once per query when searching |
-| **reranker**  | `recall`                                  | once per search, over the top candidates only               |
-| **expansion** | `recall`                                  | once per search, before the search runs                     |
-| **derive**    | `index`, `ingest`, `remember`, `dream`    | once per page, and once per document                        |
-| **vision**    | `ingest` and `write --attach`             | once per image that has no text in it                       |
-
-Two of these are on the path you wait for and three are not, which is the whole reason they are separate
-settings:
-
-- **`expansion` and `reranker` run inside a search you are waiting for.** Point them at something fast. Their
-  output is thrown away after the answer.
-- **`derive` runs while indexing, on arrival, and at night, and what it writes stays in your notes.** A slower,
-  better model earns its keep here. One model can serve both roles; two is usually better.
-
-**`maintenance.model` overrides `derive`, for the two jobs where the writing is the point:** `remember`, which
-decides what is worth keeping and where it goes, and the whole nightly cycle. Set it and the rest of the system
-is unaffected. Leave it unset and both fall back to `derive`.
-
-Everything else — `read`, `list`, `timeline`, `write`, `forget`, `undo`, `move`, `approve` — runs no model at
-all. They are database and file operations. What follows a write is not: changing a page re-indexes it, so
-`derive` sees it again.
-
-Nothing here is required. See [What happens when a model is missing](#what-happens-when-a-model-is-missing).
+Roles are retrieval policy, not access control. An exact `read` can still return a source page.
 
 ---
 
-## `akno index` — reading your folder
+## Choose the right method
 
-This is the pass that turns files into something searchable. Run it once after setup; after that the running
-service does it for you as files change.
+The command surface is deliberately small, but several commands can look similar. Choose by how
+much you already know about the answer or change.
+
+| Your intent                                 | Method                   | Why this one                                                    | Writes files?    |
+| ------------------------------------------- | ------------------------ | --------------------------------------------------------------- | ---------------- |
+| Ask a fuzzy or natural-language question    | `recall`                 | Finds relevant pages and reports coverage                       | no               |
+| Open a page or document you already know    | `read`                   | No ranking or truncation policy                                 | no               |
+| Browse the shape of the knowledge base      | `list`                   | Shows folders, pages, or a tree                                 | no               |
+| Ask what happened in a period               | `timeline`               | Uses structured events and dated lines                          | no               |
+| Prepare everything an agent turn needs      | `context`                | Fits pins, recent events, structure, and recall into one budget | no               |
+| Put exact wording on an exact page          | `write`                  | The caller controls destination and text                        | yes              |
+| Keep the durable parts of unstructured text | `remember`               | Akno decides what lasts and where it belongs                  | yes              |
+| Bring in a file, folder, or URL             | `ingest`                 | Extracts, names, routes, stores, and indexes                    | yes              |
+| Process a drop folder                       | `inbox`                  | Applies ingest automatically to arrivals                        | yes              |
+| Correct, remove, or relocate something      | `forget`, `undo`, `move` | Preserves file-level semantics and history                      | yes              |
+| Run slow maintenance                        | `dream`                  | Performs bounded, repeat-safe background phases                 | depends on phase |
+
+Two rules of thumb prevent most misuse:
+
+- If you know the destination and wording, use `write`; if you are handing over raw material,
+  use `remember`.
+- If you know the slug, use `read`; if you only know the subject, use `recall`.
+
+The CLI exposes these methods to a person. The in-process, socket, HTTP, and MCP interfaces expose
+the same operations to an agent from one registry, with the same schemas and errors.
+
+---
+
+## A first useful run
+
+After configuring `akno_path`, start read-only. Index, diagnose, ask a question, and inspect the
+source before enabling any automatic writing.
 
 ```bash
 akno index
+akno doctor
+akno recall "when does the car insurance renew and what is the excess?"
+akno read household/car-insurance
 ```
 
-```
-Indexed in 255ms
-  pages indexed     221
-  pages unchanged   0
-  chunks written    1069
-  chunks embedded   1069
-  pages summarized  214
-  facts derived     982
-  events indexed    8
-  documents read    13
-```
-
-### What each pass does
-
-```mermaid
-flowchart TD
-    scan["1. Walk the folder"] --> stat["2. Skip what has not changed"]
-    stat --> hash["3. Hash what has"]
-    hash --> pages["4. Parse pages: frontmatter, headings, links, dates"]
-    pages --> chunks["5. Cut each page into chunks"]
-    chunks --> docs["6. Notice attachments"]
-    docs --> extract["7. Read documents: text layer, OCR"]
-    extract --> embed["8. Embed chunks"]
-    embed --> derive["9. Summaries, keywords, facts"]
-    derive --> summ["10. One summary per document"]
-```
-
-| Pass                | What it is doing                                                                              | Needs a model? |
-| ------------------- | --------------------------------------------------------------------------------------------- | -------------- |
-| Walk                | Lists files. Skips dotfolders, `node_modules`, anything in `ignore`.                          | no             |
-| Skip unchanged      | Compares size and modification time against last run. This is why a restart is not a rebuild. | no             |
-| Hash                | Only for files that look changed. Confirms whether the content really moved.                  | no             |
-| Parse pages         | Frontmatter, headings, `[[links]]`, dated lines, the `<!-- source -->` fence.                 | no             |
-| Chunk               | Splits a page on its own headings, ~1,200 characters per chunk.                               | no             |
-| Notice attachments  | Records PDFs, images and Office files, and which page owns each.                              | no             |
-| Read documents      | PDF text layer, or OCR for scans. Per page of the document.                                   | no (macOS)     |
-| Embed               | Turns each chunk into a vector for semantic search.                                           | embedding      |
-| Derive              | One call per page: a summary, keywords, and the durable claims on it.                         | derive         |
-| Summarize documents | One summary per document, so a card can say what a PDF is.                                    | derive         |
-
-The first three passes are the reason indexing feels instant on the second run. Nothing is re-read unless its
-bytes moved.
-
-### Useful variations
+No notes to use yet? The repository includes a completely invented example:
 
 ```bash
-akno index --structural   # skip everything that needs a model. Milliseconds.
-akno index --verify       # hash every file, ignoring timestamps. The paranoid pass.
-akno index --rederive     # ask the model again for summaries and facts.
-akno index --rebuild      # delete the index and start over. Costs time, never data.
+cp -R examples/demo-brain ~/akno-demo
+export AKNO_STATE_DIR=~/akno-demo-state
+akno --akno-path ~/akno-demo index
+akno --akno-path ~/akno-demo doctor
+akno --akno-path ~/akno-demo recall "who services the boiler?"
 ```
 
-`--verify` exists because a modification time can lie — a sync client or a restored backup can put old
-timestamps on new content. Akno trusts timestamps for speed and hashes everything on the periodic sweep and
-whenever you ask.
+Copy the demo before using write operations; `remember`, `ingest`, and enabled dream phases can
+change the folder.
+
+A practical adoption path is:
+
+1. **Search only:** index, recall, read, list, timeline, and context.
+2. **Explicit writes:** use `write`, `remember --dry-run`, and `undo` until the filing behavior is
+   familiar.
+3. **Document intake:** declare folder rules, then try one file with `ingest` before enabling an
+   inbox.
+4. **Background operation:** install only the service and watcher with `akno service install --no-dream`.
+5. **Maintenance:** inspect `dream --dry-run`, then install the schedule after choosing which phases may write.
+
+This sequence is about learning the trust boundaries, not satisfying a technical prerequisite.
 
 ---
 
-## `akno recall` — asking a question
+## How indexing works
 
-The command you will use most. You ask in words; you get back **page cards**: a summary, the lines that
-matched, and where each line lives.
+`akno index` reconciles the derived index with the folder. Run it once after setup. A running
+service then watches for file changes and performs targeted re-indexing.
+
+```mermaid
+flowchart TD
+    scan["1. Walk the folder"] --> stat["2. Skip unchanged paths"]
+    stat --> hash["3. Hash changed candidates"]
+    hash --> parse["4. Parse pages, roles, links, and dates"]
+    parse --> chunk["5. Split pages on headings"]
+    chunk --> docs["6. Discover and extract documents"]
+    docs --> embed["7. Embed searchable chunks"]
+    embed --> derive["8. Derive summaries, keywords, and facts"]
+    derive --> store["9. Commit the new reading to the index"]
+```
+
+| Pass                | Method                                                                 | Model         |
+| ------------------- | ---------------------------------------------------------------------- | ------------- |
+| Walk                | Ignore configured paths, dot folders, and unsupported page types       | none          |
+| Skip                | Compare size and modification time with the previous pass              | none          |
+| Verify              | Hash likely changes; periodic sweeps also catch misleading timestamps  | none          |
+| Parse               | Read frontmatter, headings, wikilinks, dates, roles, and source fences | none          |
+| Chunk               | Follow headings and configured size limits                             | none          |
+| Extract             | Read PDF text, OCR scans, and convert supported Office files           | none on macOS |
+| Embed               | Turn chunks into vectors for semantic search                           | embedding     |
+| Derive              | Produce page summaries, keywords, and durable fact candidates          | derive        |
+| Summarize documents | Describe each document without copying its body into Markdown          | derive        |
+
+The fast path is why a second index pass is normally quick: unchanged bytes are not re-read,
+re-embedded, or re-derived.
+
+Useful variants:
 
 ```bash
-akno recall "when does the car insurance renew?"
+akno index --structural  # parse and reconcile without model-backed work
+akno index --verify      # hash every file instead of trusting timestamps
+akno index --rederive    # regenerate summaries, keywords, and facts
+akno index --rebuild     # discard the derived index and recreate it
 ```
 
+`--rebuild` deletes derived state, not the knowledge base. Indexing does not write into the notes
+by default. Two opt-in settings are exceptions: `write_ids` can add an Akno id to frontmatter,
+and `ingest.text_rendition` can keep extracted text beside readable documents.
+
+---
+
+## Ways to retrieve knowledge
+
+### `recall`: ask when you know the subject, not the file
+
+```bash
+akno recall "when does the car insurance renew and what is the excess?"
 ```
-ok mode=question 2 cards 1180 tokens
-  coverage ✓ car insurance  ✗ renewal date
-  nothing returned covers "renewal date" — do not answer that part
 
-documents/car-insurance-2026 (knowledge, 0.931)
-  Car insurance 2026 › Policy
-  Vulpine Mutual policy for the household car, renews 4 Nov 2026.
-  documents/car-insurance-2026:11  Premium: 33 EUR/month (raised at renewal; was 28) ~0.94
+An abbreviated result might look like this:
+
+```text
+ok mode=question 1 card 620 tokens
+  coverage ✓ renewal date  ✗ excess
+  nothing returned covers "excess" — do not answer that part
+
+household/car-insurance (knowledge, 0.93)
+  Car insurance › Policy
+  Vulpine Mutual policy for the household car.
+  household/car-insurance:11  Renews 4 November 2031. ~0.94
 ```
 
-### Reading that output
+The important fields are:
 
-| What you see                   | What it means                                                                    |
-| ------------------------------ | -------------------------------------------------------------------------------- |
-| `mode=question`                | Akno inferred you asked a question, not a keyword lookup.                      |
-| `2 cards 1180 tokens`          | Two pages came back, and the whole answer costs about 1,180 tokens.              |
-| `coverage ✓ … ✗ …`             | Which parts of your question the results actually cover — and which they do not. |
-| `documents/car-insurance-2026` | The page. `knowledge` is its role; `0.931` is how relevant it is.                |
-| `Car insurance 2026 › Policy`  | Which heading the best match sat under.                                          |
-| `…:11`                         | File and line. Open it and check.                                                |
-| `~0.94`                        | How confident the deriver is that this line states a solid durable claim.        |
+| Output              | Meaning                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `mode=question`     | The retrieval strategy chosen for this query                                   |
+| `1 card 620 tokens` | The number of page cards and their approximate prompt cost                     |
+| `coverage ✓ … ✗ …`  | Which concepts the returned evidence covers                                    |
+| `knowledge`         | The page role                                                                  |
+| `0.93`              | Relevance of the page to this query                                            |
+| `slug:11`           | The exact Markdown line to inspect                                             |
+| `~0.94`             | Confidence that the line expresses a durable claim, not that the claim is true |
 
-That coverage line is the point of the whole thing. If the answer to half your question is not in your notes,
-Akno says so rather than letting an agent fill the gap.
+Coverage is a guardrail for the answer. A relevant page can still fail to answer one part of a
+compound question. The caller should answer the covered part and be explicit about the missing one.
 
-### What happens inside
+#### The recall pipeline
 
 ```mermaid
 flowchart LR
-    q["your words"] --> expand["1. Expand<br/>expansion model"]
-    expand --> lex["2a. Keyword search<br/>no model"]
-    expand --> vec["2b. Meaning search<br/>embedding model"]
-    lex --> fuse["3. Merge both rankings<br/>no model"]
-    vec --> fuse
-    fuse --> rerank["4. Re-rank the top<br/>reranker model"]
-    rerank --> cards["5. Build cards, fit the budget<br/>no model"]
+    query["Your query"] --> expand["1. Expand<br/>optional expansion model"]
+    expand --> lexical["2a. Keyword search"]
+    expand --> semantic["2b. Meaning search<br/>optional embeddings"]
+    lexical --> fuse["3. Fuse by rank"]
+    semantic --> fuse
+    fuse --> rerank["4. Rerank candidates<br/>optional reranker"]
+    rerank --> cards["5. Assemble page cards<br/>and fit one budget"]
 ```
 
-Three model calls at most, and each one is optional. Without the expansion model your exact words are searched
-for; without the embedding model the meaning half drops out and keyword search carries the answer; without the
-reranker the merged ranking is the final one. The result says which of these happened rather than quietly
-returning less.
+The search arms use different score scales, so they are merged by rank rather than comparing raw
+scores. The final cards are built only after fusion and optional reranking.
 
-Step 1 is different depending on what you asked, which is what `mode` selects:
+Recall has three modes:
 
-| Mode       | Use it for                           | What expansion does                                  |
-| ---------- | ------------------------------------ | ---------------------------------------------------- |
-| `lookup`   | "car insurance renewal"              | adds synonyms and word forms                         |
-| `question` | "when does the car insurance renew?" | writes a _hypothetical answer_ and searches for that |
-| `explore`  | "anything about the car?"            | goes broad, returns summaries only                   |
+| Mode       | Best for                             | Expansion method                                                               |
+| ---------- | ------------------------------------ | ------------------------------------------------------------------------------ |
+| `lookup`   | `car insurance renewal`              | Add synonyms and word forms                                                    |
+| `question` | `when does the car insurance renew?` | Search a hypothetical answer because questions and answers use different words |
+| `explore`  | `anything about the car`             | Search broadly and favor summaries                                             |
 
-Why the hypothetical answer? Because a question does not sound like its answer. "When does the car insurance
-renew?" shares almost no words with "Renews 4 Nov 2026". So in question mode Akno invents a plausible answer
-and searches for _that_ — it matches the shape of the real one.
-
-### Narrowing it down
+The mode is inferred, or you can set it explicitly. Filters narrow the candidate set before cards
+are assembled:
 
 ```bash
-akno recall "rent" --folder home            # only inside home/
-akno recall "invoice" --type receipt        # only pages with type: receipt
-akno recall "lease" --tag legal,home        # only pages with both tags
-akno recall "policy wording" --include source --depth full      # include evidence pages, in full
-akno recall "rent" --budget 2000            # keep the answer small
+akno recall "renewal" --folder household
+akno recall "invoice" --type receipt
+akno recall "policy wording" --include source --depth full
+akno recall "rent" --tag legal,household --budget 2000
 ```
 
----
-
-## `read`, `list`, `timeline` — looking things up directly
-
-When you already know what you want, do not search for it.
-
-### `read` — one exact thing
+### `read`: open one exact page or document
 
 ```bash
-akno read home/lease
-akno read home/lease --from 10 --to 20
+akno read household/car-insurance
+akno read household/car-insurance --from 10 --to 20
 akno read --document doc_a1b2c3d4
-akno read --document household/lease-8e7705eb.pdf   # or just `lease-8e7705eb.pdf`
+akno read --document household/policy-8e7705eb.pdf
 ```
 
-`read` always gives you the whole body, even for pages recall would only quote a window of. Recall is a
-relevance policy; `read` is you asking directly.
+`read` is not a search. It returns the requested object directly and can return a complete source
+page that recall would normally quote only briefly.
 
-### `list` — browse the structure
+### `list`: browse the structure
 
 ```bash
-akno list                        # folders, with how many pages each holds
-akno list --kind pages --folder home
-akno list --kind tree --depth 2  # an outline
+akno list
+akno list --kind pages --folder household
+akno list --kind tree --depth 2
 akno list --type receipt --order recent
 ```
 
-Useful before writing: an agent that can see your folders stops inventing new ones.
+This is useful before writing. A caller that can see the existing taxonomy is less likely to invent
+a duplicate page or folder.
 
-### `timeline` — when things happened
+### `timeline`: retrieve events by time
 
 ```bash
-akno timeline --since 2026-01 --until 2026-06
-akno timeline --match dishwasher
+akno timeline --since 2031-01 --until 2031-06
+akno timeline --match boiler
 akno timeline --subject people/ada-marlow
 ```
 
-Events come from two places: the ledger in `timeline.md`, and **any dated line on any page**. Write
-`- **2026-03-20** | Replaced the dishwasher` on your appliances page and the timeline finds it. You do not have
-to keep a separate diary.
+Events come from the configured timeline ledger and from dated lines on any page. A page can remain
+the canonical home of an event while `timeline` still finds it globally.
 
----
-
-## `akno context` — everything a turn needs, once
-
-This one is for whoever builds the agent, not usually for you at a prompt. It assembles the whole pre-turn
-bundle against **one** budget: pinned pages, recent events, a structure outline, and this turn's recall.
+### `context`: prepare one bounded agent turn
 
 ```bash
-akno context "the dishwasher is making a noise again" --budget 8000 --pin home/appliances
+akno context "the boiler is making a noise again" \
+  --budget 8000 --pin household/boiler
 ```
 
-The point of one budget is that the parts compete honestly. Four separate calls each with its own limit will
-overflow the model's window together while each one believes it behaved.
+`context` combines pinned pages, recent events, a structure outline, and this turn's recall under
+one token budget. The parts compete for the same space, so four individually reasonable calls do not
+overflow the model's context when combined.
 
 ---
 
-## `akno write` — changing a page safely
+## Ways to capture and change knowledge
 
-Write creates a page, or appends to one, or patches it. What makes it safe is the order things happen in.
+### `write`: exact destination, exact wording
+
+`write` creates, appends, patches, or replaces a page. The caller owns the wording; Akno enforces
+the folder, conflict, journaling, and re-indexing rules around it.
 
 ```mermaid
 flowchart TD
-    start["akno write …"] --> ledger{"Is it prose<br/>into the event ledger?"}
-    ledger -->|yes| refuse["Stop. The ledger takes events."]
-    ledger -->|no| gate{"Undeclared folder,<br/>and an agent is asking?"}
-    gate -->|yes| declare["Stop. Ask the caller to<br/>declare the folder first."]
-    gate -->|no| conflict{"Does a line already claim<br/>something different?"}
-    conflict -->|yes| report["Stop. Report both values<br/>and a token to override."]
-    conflict -->|no| disk["Write the file"]
-    disk --> journal["Record it in the journal"]
-    journal --> reindex["Re-index just this page"]
+    request["write request"] --> validate["Validate target and operation"]
+    validate --> folder{"Folder declared<br/>when required?"}
+    folder -->|no| stop1["Return requires_folder"]
+    folder -->|yes| conflict{"Structured claim<br/>conflicts locally?"}
+    conflict -->|yes| stop2["Return both values<br/>and a resolution token"]
+    conflict -->|no| disk["Write atomically"]
+    disk --> journal["Record before/after bytes"]
+    journal --> index["Re-index touched files"]
 ```
 
-Nothing is half-done: a write that is going to be refused is refused before your file is touched, and a write
-that lands is recorded before anything else happens.
-
-### The everyday shapes
+Examples:
 
 ```bash
-# add a line to a page
-akno write --slug home/lease --append "- Deposit: 2222 EUR"
-
-# create a page
-akno write --slug home/wifi --title "Wi-Fi" --content "Router in the hallway cupboard."
-
-# replace one exact string
-akno write --slug home/lease --replace "1111 EUR" --with "1234 EUR"
-
-# add a timeline entry at the same time, in one undoable change
-akno write --slug home/appliances --append "- Serviced 4 August." \
-             --event "2026-08-04=Dishwasher serviced."
-
-# attach a file to a page
-akno write --slug home/dishwasher --append "Repaired today." \
-             --attach ~/Desktop/receipt.pdf=The invoice
-
-# see what would happen, touch nothing
-akno write --slug home/lease --append "- Deposit: 2222 EUR" --dry-run
+akno write --slug household/lease --append "- Deposit: 2222 EUR"
+akno write --slug household/wifi --title "Wi-Fi" \
+  --content "Router in the hallway cupboard."
+akno write --slug household/lease --replace "1111 EUR" --with "2222 EUR"
+akno write --slug household/boiler --append "- Serviced 4 August." \
+  --event "2031-08-04=Boiler serviced."
+akno write --slug household/boiler --append "Invoice attached." \
+  --attach ~/Desktop/invoice.pdf="The invoice"
+akno write --slug household/lease --append "- Deposit: 2222 EUR" --dry-run
 ```
 
-### Rewriting a page's declaration
+`append`, `patch`, and `replace` never alter frontmatter. A full `content` replacement can replace
+frontmatter only when the submitted content starts with a frontmatter block. The response names keys
+removed from the previous declaration so a missing policy or temporal boundary is visible.
 
-`--append`, `--patch` and `--replace` never touch the frontmatter. `--content` is the exception, and only when
-the text you give it opens with a frontmatter block: that block is adopted as the page's declaration, byte for
-byte, and the old one goes. It is the only way to set `akno.role`, `akno.management` or `akno.temporal`
-through `write`, so a caller sending one means it.
+#### Local conflict detection
 
-This is also what keeps a page down to one block. `read` returns the file with its frontmatter included, so
-anything that reads a page, revises it and writes the result back is holding a block whether it meant to or
-not. Splicing that under the existing head — the old behaviour — produced pages with two, the second one
-invisible to the parser, the indexer and every recall. A page can end up titled after whichever stray fact
-happened to create it while the title you wrote sits four lines lower, unread.
+If a page says `Rent: 1111 EUR` and a write proposes `Rent: 2222 EUR`, Akno stops before touching
+the file and returns both lines plus a conflict token. After deciding which value is current, repeat
+the write with the resolution token.
 
-The keys the old block declared and the new one omits are named in the reply, because a declaration rewritten
-from memory is the easy way to lose a `temporal` boundary without changing a word anybody reads. Nothing is
-refused — the change is journalled, so `akno undo` takes it back.
+This immediate check is deliberately narrow: it compares structured values containing numbers or
+dates on the target page. Thorough cross-page conflict detection belongs in the dream cycle, where a
+model call does not delay an interactive write.
 
-### When two lines disagree
+### `remember`: raw material in, durable knowledge out
 
-```
-conflict — nothing was written
-  page      home/lease:7
-  on file   - Rent: 1111 EUR per month
-  incoming  - Rent: 1234 EUR per month
-
-  ask the user which is current, then:
-  akno write … --resolve-conflict c8f21a90b3d4
-```
-
-Akno noticed that your page already says something different about the same thing, and stopped. It does not
-guess which is current — you decide, then repeat the write with the token.
-
-This check is deliberately cheap: it compares structured lines like `Rent: 1111 EUR` and only fires when both
-values contain numbers or dates. Free prose rarely contradicts itself in a way a machine can see, and a check
-that thought otherwise would block half your writes. The slower, thorough check runs at night — see
-[`dream`](#akno-dream--the-nightly-cycle).
-
----
-
-## `akno remember` — "just keep this"
-
-`write` is for when you know the page and the wording. `remember` is for when you do not.
-
-**Which model:** `maintenance.model` if you set one, otherwise `derive`. The first call sees the complete folder
-taxonomy and decides what is worth keeping and its canonical destination. Recall may bind it to an existing
-page. One final call per target page chooses the precise section; deterministic code performs the insertion and
-falls back to `## Unsorted` if placement fails. `remember` never creates a folder.
+Use `remember` when you do not know which sentences should survive or where they belong.
 
 ```bash
-akno remember "Decision: switching the internet plan to Blackwater Fibre at 39 EUR a month from 1 October."
+akno remember "Decision: extend the Zephyr QX-100 warranty for €33/month from 1 October 2031."
+akno remember "..." --dry-run
 ```
 
-```
-ok
+Its method is:
 
-Wrote
-  event  timeline:24
-```
+1. Extract durable decisions, values, dates, preferences, and proven experience. Drop chatter,
+   speculation, and facts that are only momentarily true.
+2. Use the visible folder taxonomy to choose a branch. It never creates a folder.
+3. Recall candidate pages inside that branch and require the routing score to clear the threshold.
+4. Run the same local conflict check as `write`.
+5. Choose a section, append prose with provenance, and fall back to `## Unsorted` if placement fails.
+6. Add dated material to the timeline in the same undoable change.
 
-That one was a dated decision, so it became a timeline line and nothing else. When a claim also belongs on a
-page, the report shows what it weighed:
+`maintenance.model` handles this when configured; otherwise `derive` does. A call can include a
+`mission` such as “attribute forwarded content to its original author.” The mission adds emphasis to
+the fixed retention rules; it cannot replace their safety constraints.
 
-```
-ok
-
-Considered
-  keep The rent increases to 1234 EUR from September 2026.
-       → home/lease (0.82)
-  ask  The landlord agreed to repair the kitchen tap.
-       → no page scored high enough
-
-Wrote
-  appended  home/lease:8
-  event     timeline:41
-```
-
-What it does, in order:
-
-1. Reads your text and keeps only what lasts — decisions, values, dates, preferences. Chatter, speculation and
-   anything true only today are dropped. The curator receives the complete visible folder taxonomy, including
-   empty and newly declared folders, and may only suggest a page beneath one of those folders.
-2. Searches your notes for where each claim belongs, within the folder the curator selected. A topical match in
-   another taxonomy branch cannot override that filing decision.
-3. Checks for conflicts, exactly as `write` would.
-4. Appends **prose** to the right page — not a row in a table. Facts get derived from that sentence afterwards.
-5. Puts anything dated on the timeline as well, in the same undoable change.
-
-Where it was not confident enough about the destination, it says so instead of guessing. `--dry-run` shows the
-whole plan without writing.
-
-### Telling it what to notice in _this_ text
-
-A host handing over a conversation often knows something about it that the text does not say: that a message was
-forwarded and its facts belong on somebody else's page, that a channel is mostly logistics, that today's subject
-is medical. That travels with the call:
-
-```jsonc
-{
-  "text": "Forwarded from Brannoch: my membership number is 88-4120.",
-  "source": "telegram:2026-08-07",
-  "mission": "Attribute forwarded content to its original author, not the forwarder.",
-}
-```
-
-It is **emphasis, not a replacement**. Your words are appended to the standing rules about what lasts, never
-substituted for them — otherwise one careless instruction would discard every guardrail at once. A caller that
-wants to decide the phrasing and the page itself should use `write`, which is exactly that.
-
-Omit it and `maintenance.retain.mission` applies instead, so an install-wide policy still holds. The digest also
-runs on `maintenance.model` when one is set: it is a maintenance tier, and an install that pointed the nightly
-cycle at a strong model should not have to say so twice.
-
----
-
-## `forget`, `undo`, `move` — taking things back
-
-### `forget` — retract something
+When a durable claim has no confident destination, Akno proposes instead of guessing:
 
 ```bash
-akno forget --fact fact_9c2e11ab     # remove the sentence that produced a fact
-akno forget --slug home/old-notes    # move a page to trash
-akno forget --document doc_a1b2c3d4  # move a document to trash
-```
-
-Forgetting a fact edits the Markdown, because that is where the fact came from. There is no separate store to
-delete from. Trashed files go to Akno's trash folder and stay there for 30 days.
-
-### `undo` — reverse any change
-
-```bash
-akno undo --list
-akno undo chg_7f3a9c21
-```
-
-```
-ok reversed appended home/lease
-  restored  home/lease.md
-```
-
-Every write, ingest, move, forget and maintenance run is one journalled change with an id. Undo puts the exact
-previous bytes back. For a file that was _created_, undo removes it — and says `removed`, not `restored`.
-
-### `move` — relocate a page
-
-```bash
-akno move home/lease home/rental/lease
-```
-
-The page moves, its attachments move with it and are renamed to match, embeds inside the page are rewritten,
-and **inbound links from other pages are reported rather than rewritten** — editing five other people's pages
-is a bigger action than you asked for.
-
----
-
-## Declaring a folder
-
-An agent inventing folders is how a tidy knowledge base turns into forty top-level directories. This used to
-be handled by asking you: a new top-level folder became a proposal and an approval card.
-
-That was the wrong question put to the wrong person. You cannot usefully rule on whether a research note needs
-a `research/` folder, and while the question waited the note was lost. Worse, an agent that learns a folder
-request may be declined learns to append to whatever page already exists instead — which is how claims land on
-the pages of unrelated subjects.
-
-So **nothing waits on you any more.** What is refused is not the folder but the _silence_: a write into an
-undeclared folder comes back asking for a sentence.
-
-```
-'warranties' is not declared — nothing was written
-  could go instead  home, documents, receipts
-
-  say what belongs there, then repeat the write:
-  akno folder warranties --description "…"
-```
-
-```bash
-akno folder warranties --description "Appliance and electronics warranties, with their expiry dates."
-akno folder conversations --description "Chat transcripts: what was said." --role source --remember deny
-```
-
-The description is the point of the step. It is returned by `list` and carried in the pre-turn bundle, so it is
-what the _next_ caller reads before filing a page — and `research/` versus `household/` is not self-explanatory
-to anyone who has not been told that one holds findings about the world and the other holds claims about this
-household. `--role source --remember deny` is the other load-bearing choice: only knowledge claims become
-facts, so transcripts and legal texts remain searchable evidence and cannot receive retained claims.
-
-The rule is written to `<akno_path>/akno.json` as a textual insert, so every comment already in that file
-survives and the diff is one hunk. It is in force immediately — declare and write in the same turn.
-
-`gate` in config still decides how deep this applies: `top-level` (the default) asks about a new top-level
-folder and lets subfolders of a described one through. A folder you create yourself is yours and is never
-questioned, and `--actor user` writes wherever you say.
-
-Proposals still exist, for the one question only you can answer: `remember` kept a claim, nothing scored high
-enough to hold it, and it could not name a page for it either.
-
-```bash
-akno approve --list          # what is waiting
-akno approve prop_5c1e77a2 --slug home/warranties
+akno approve --list
+akno approve prop_5c1e77a2 --slug household/warranties
 akno decline prop_5c1e77a2
 ```
 
+### `forget`, `undo`, and `move`: correct the record
+
+```bash
+akno forget --fact fact_9c2e11ab
+akno forget --slug household/old-notes
+akno forget --document doc_a1b2c3d4
+
+akno undo --list
+akno undo chg_7f3a9c21
+
+akno move household/lease household/rental/lease
+```
+
+- Forgetting a fact removes the sentence that produced it; there is no hidden fact store to edit
+  instead of the Markdown.
+- Forgetting a page or document moves it to Akno's trash, retained for the configured period.
+- Undo restores exact previous bytes. If a change created a file, undo removes that created file.
+- Move relocates a page and its owned documents, updates embeds within the page, and reports inbound
+  links from other pages instead of silently rewriting them.
+
 ---
 
-## `akno ingest` — files, folders and URLs
+## How folders, roles, and rules work
 
-Hand Akno a file and it does the whole job: read the text, name it from what is inside, summarize it, decide
-where it goes, and index it.
+An agent that invents folders without describing them can turn a useful taxonomy into a pile of
+near-duplicates. Akno gates the missing description, not the user's approval.
 
-**Which model:** `derive`, once, to name and summarize the document. Getting the text out is not a model job —
-a PDF's text layer is read directly and a scan is OCRed locally. `vision` is called only for an image that
-turns out to have no text in it at all, to describe what it shows.
+If an agent writes into an undeclared folder, the write returns `requires_folder` and suggests nearby
+existing folders. The caller declares the new folder, then retries:
+
+```bash
+akno folder warranties \
+  --description "Appliance and electronics warranties, with expiry dates."
+akno folder conversations \
+  --description "Chat transcripts: what was said." \
+  --role source --remember deny
+```
+
+The description helps later agents decide where pages belong. Role and management defaults prevent
+evidence folders from receiving canonical remembered claims.
+
+Rules can live in machine config or in `<akno_path>/akno.json`. Rules beside the notes win, so a
+taxonomy can travel with the knowledge base. They are glob-scoped and the most specific match wins.
+
+```jsonc
+{
+  "folders": {
+    "sources/**": { "role": "source", "remember": "deny", "ingest": "document" },
+    "templates/**": { "role": "ignored", "remember": "deny" },
+    "inbox/**": { "ingest": "auto", "route": true },
+  },
+}
+```
+
+Use `akno rules <path>` to see the resolved policy and which file supplied it. Changing rules causes
+affected pages to be reconsidered on the next index pass even when their content has not changed.
+
+Automatic write policy has two independent dimensions:
+
+- `remember: integrate|deny` controls whether retained knowledge may be appended.
+- Page frontmatter `akno.management.dream: none|hygiene|synthesize` controls whether curation may
+  rewrite that page during a dream cycle.
+
+A person's manually created folder is not gated. The default `gate: top-level` requires declarations
+for agent-created top-level folders while allowing subfolders beneath a declared branch.
+
+---
+
+## How documents and the inbox work
+
+### `ingest`: one file, folder, or URL
 
 ```bash
 akno ingest ~/Downloads/policy.pdf
 akno ingest ~/Downloads --limit 20
 akno ingest https://example.com/policy.pdf
-akno ingest ~/Desktop/scan.pdf --folder documents   # you choose the folder
+akno ingest ~/Desktop/scan.pdf --folder documents
 ```
 
-```
-ok change chg_61c811fc
-  page          documents/car-insurance-2026
-  file          documents/car-insurance-2026-91de77c4.pdf
-  pages         9
-  text from     the document's own text layer
-  renamed from  Scan 2026-08-06 at 14.22.pdf
-
-  Northwind motor policy, 33 EUR/month, renews 4 Nov 2026, second driver covered.
-```
-
-### What it decides, in order
+The method is:
 
 ```mermaid
 flowchart TD
-    file["a file arrives"] --> extract["read the text<br/>text layer, then OCR"]
-    extract --> readable{"any usable text?"}
-    readable -->|no| keep1["keep the name, no page,<br/>say why"]
-    readable -->|yes| name["name it from the contents"]
-    name --> sure{"confident enough?"}
-    sure -->|no| keep2["keep the name, no page,<br/>say why"]
-    sure -->|yes| route{"a folder scores<br/>high enough?"}
-    route -->|no| keep3["leave it where it is,<br/>with a proposal"]
-    route -->|yes| store["store it, write a page,<br/>index it"]
+    input["File arrives"] --> extract["Extract text or OCR"]
+    extract --> usable{"Usable content?"}
+    usable -->|no| report1["Leave it alone and explain why"]
+    usable -->|yes| describe["Name and summarize"]
+    describe --> named{"Naming confidence<br/>high enough?"}
+    named -->|no| report2["Keep its name and location"]
+    named -->|yes| route["Score eligible folders"]
+    route --> clear{"Destination clears<br/>the threshold?"}
+    clear -->|no| report3["Leave it in place with a proposal"]
+    clear -->|yes| store["Store, page, link, and index"]
 ```
 
-### The three things it refuses to do
+Extraction uses PDFKit, Vision OCR, and `textutil` on macOS. `derive` names and summarizes. The
+optional `vision` role is used only when an image contains no readable text and needs a visual
+description.
 
-- **Rename a file whose name already says something.** `2024-lease-agreement.pdf` keeps its name.
-  `IMG_4821.HEIC` does not — that name says nothing, which is the whole reason to replace it.
-- **Name a file it could not read.** A photo of a garden gets no invented title. It keeps its name and is
-  reported.
-- **File a document it cannot place.** If no folder is clearly right, the file stays exactly where it is with a
-  note about it. A misfiled document is a lost one.
+Ingest refuses three risky guesses:
 
-### Reading a folder
+- It does not rename a file whose existing name is already meaningful.
+- It does not name a file whose contents it could not understand confidently.
+- It does not route a file when no folder clears `route_threshold`.
 
-Folders are walked **one level deep**, and every file gets its own verdict:
+A folder ingest walks one level deep and reports one verdict per file. A URL ingest accepts HTTP and
+HTTPS, enforces the size limit on bytes actually received, and stores the final URL as provenance.
 
+Stored documents are content-addressed, so ingesting identical bytes again is a no-op. File text is
+chunked by document page, making a result cite the original page number:
+
+```text
+household/boiler-service (knowledge, 0.91)
+  household/boiler-service-8e7705eb.pdf p1
+    VULPINE MUTUAL
+    Renewal date: 4 November 2031
 ```
-5 files
-  invoice-june.pdf     filed           receipts/vulpine-mutual-invoice-2026-06
-  invoice-july.pdf     filed           receipts/vulpine-mutual-invoice-2026-07
-  garden.jpg           skipped         nothing could be extracted
-  contract.pdf         needs a home    nothing scored above 0.5
-  duplicate.pdf        already stored  receipts/vulpine-mutual-invoice-2026-06-91de77c4.pdf
-```
 
-One unreadable file does not abandon the rest, and if `--limit` cut the pass short, the report says how many
-were not looked at.
+Split scans such as `policy.pdf`, `policy-2.pdf`, and `policy-3.pdf` can form one document with
+continuous page numbers. The rule is intentionally narrow: extension and folder must match, part one
+must exist, and only a short trailing part number qualifies.
 
-### Reading a URL
+### The inbox: ingest on arrival
 
-Only `http` and `https` — a `file://` URL would turn "fetch this" into "read anything on my disk". The size
-limit applies to the bytes that actually arrive, not to the size the server claims. The final URL is saved into
-the page as `source_url`, because "where did this come from" is the one question a downloaded file cannot
-answer for itself.
-
----
-
-## The inbox — drop it and forget it
-
-An inbox is any folder you mark with `route: true`:
+An inbox is a folder rule with `route: true`; its name is not special.
 
 ```jsonc
-// akno.json in your notes folder, or config/local.jsonc
-"folders": {
-  "inbox/**": { "ingest": "auto", "route": true }
-}
-```
-
-Now drop anything in it.
-
-```mermaid
-flowchart TD
-    drop["you drop a file in inbox/"] --> read["read, name, summarize"]
-    read --> score{"does a folder score<br/>above the threshold?"}
-    score -->|yes| move["move the file and its new page<br/>to where it belongs"]
-    score -->|no| stay["leave it in the inbox<br/>with a proposal"]
-```
-
-```bash
-akno inbox          # process what is sitting there now
-```
-
-```
-1 filed
-  → inbox/Scan 2026-08-06 at 14.22.pdf  became  receipts/vulpine-mutual-invoice-2026-06
-
-1 still in the inbox
-  · inbox/contract.pdf
-    nothing scored above 0.5 — the file stays where it is
-```
-
-A running service does this as files land, so usually you never type the command.
-
-**The inbox is the only place Akno moves files.** A file you put straight into `documents/` was put there on
-purpose — Akno will name it, page it and index it, but never relocate it.
-
-And when routing is not sure, the file **stays in the inbox**. That is deliberate: an inbox with three things
-in it is a to-do list, and you will see it. A file confidently filed into the wrong folder is gone.
-
----
-
-## How a PDF becomes searchable
-
-Akno reads every attachment and indexes its text **against the document**, not into your page. So you can
-search the contents of a PDF and get told which page of it matched.
-
-```
-akno recall "who replaced the drain pump"
-
-household/dishwasher-repair (knowledge, 0.91)
-  household/dishwasher-repair-8e7705eb.pdf p1
-    MERIDIAN APPLIANCE CARE
-    Replaced the drain pump
-```
-
-The page beside the file stays short — what the document is, and a link to it. Its text is not pasted in,
-because a copy in your Markdown is a copy that cannot be corrected when the file changes.
-
-### Scanners that split one document in two
-
-`passport.pdf` and `passport-2.pdf` are one document, not two. Akno treats files that differ only by a
-trailing `-2`, `-3` as parts of the same thing: one page, one summary, and page numbers that run through the
-whole document — so a hit on the second file's first page is cited as page 5 of the passport.
-
-The rule is deliberately narrow, because welding two unrelated documents together would be worse than missing
-a pair. All of these must hold: the same extension, the same folder, a one or two digit suffix that does not
-follow another digit (so `bill-2026-07-28.pdf` is a date, not part 28), and part one has to exist.
-
-### Files nothing points at
-
-Recall answers with pages, so a document no page mentions has nowhere to appear. Akno links a file to a page
-when the filename matches (`passport.pdf` next to `passport.md`), when it follows the
-`<page>-<8 characters>.pdf` shape Akno itself writes, or when **any page embeds it** with `![[filename]]`.
-Anything still unlinked gets a page of its own from the nightly cycle.
-
----
-
-## `akno dream` — the nightly cycle
-
-Slow work that should not happen while you are waiting: noticing patterns, finding contradictions, tidying
-reports. Seven phases, each independent and safe to run twice.
-
-**Which model:** `maintenance.model` for the whole cycle if set, otherwise `derive`. `adopt` and `housekeeping`
-are mostly bookkeeping; `observe`, `reflect`, `curate` and verified conflicts spend calls, and they run at 3am
-precisely so a slow model costs you nothing.
-
-```bash
-akno dream              # every enabled phase
-akno dream --dry-run    # show what it would write, write nothing
-akno dream --phase conflicts
-```
-
-| Phase          | Writes?       | What it does                                                                        |
-| -------------- | ------------- | ----------------------------------------------------------------------------------- |
-| `observe`      | appends lines | Notices patterns across repeated facts. **Off by default.**                         |
-| `reflect`      | appends lines | Builds principles on top of observations. **Off by default.**                       |
-| `curate`       | preview/edit  | Hygienizes or synthesizes only pages that explicitly authorize it.                  |
-| `adopt`        | creates pages | Gives a document with no page a page, so its text can be found at all.              |
-| `conflicts`    | never         | Finds two pages that state different values for the same thing.                     |
-| `repair`       | edits pages   | Acts on the two above: repoints links, retires replaced claims. **Off by default.** |
-| `housekeeping` | never         | Broken links, unlinked documents, pages that drifted from their folder's rules.     |
-
-Curate is page-owned policy, not a global license. `dream: hygiene` permits formatting, Markdown, minor
-language fixes and local restructuring while retaining the top-level structure and meaning. `dream:
-synthesize` permits a full rewrite of a canonical knowledge page: it may organize linked evidence, retain
-unresolved contradictions explicitly, and split oversized coherent sections beneath the canonical slug.
-Each proposal goes through a draft call, a separate verifier call, and deterministic marker/value/size guards.
-`maintenance.curate.enabled` schedules it; the separate `maintenance.curate.write` switch defaults to false,
-so initial runs are previews even without `--dry-run`.
-
-`conflicts` and `housekeeping` only ever report, which is the safe default and, run nightly for a
-year, a to-do list nobody reads. `repair` is the phase that acts on them, and it is off by default
-because it is the only one that edits pages you wrote:
-
-- **Broken links** are repointed, never removed. A link is a pointer, not a claim — moving it changes
-  no assertion, it restores an address you meant. The target is matched on the tokens of the whole
-  slug, path included, so `personal/residence-permit-ada-marlow` finds
-  `ada-marlow/residence-permit` (every word survives, only its position moved) while
-  `bo-winters/spare-travel-passport` does **not** match a page called
-  `ada-marlow/passport` (one word in five, and somebody else's document). Where several pages
-  could be meant, the maintenance model chooses — from that list only, never a page of its own
-  invention.
-- **A conflict's stale side** is rewritten into the past tense, never deleted. The sentence stays on
-  the page, which is what makes it read as superseded rather than disappear — a fact marked stale
-  only in the index is live again the next time its page is read. Every number in the original must
-  survive the rewrite or it is refused: changing a tense is tidying, changing a value is a model
-  deciding what your rent is.
-- **Everything it will not touch is reported with the reason.** A repair tier that skips silently is
-  indistinguishable from a broken one.
-
-One journalled change per night, so `akno undo` takes the whole run, and a ceiling per run so a
-bad night is a small bad night. Try it with `--dry-run` first: on the knowledge base this was built
-against, the dry run is what caught the passport case above.
-
-```
-Dream — 1.3s
-  observe       skipped  disabled in config
-  reflect       skipped  off by default — enable it once the knowledge base has the volume for it
-  adopt         ran  2ms
-  conflicts     ran  1.3s
-  housekeeping  ran  5ms
-
-5 conflict candidate(s) — 0 to look at, 5 judged not a conflict
-
-Housekeeping
-  broken links           12
-  orphaned documents     1
-  pages off their rules  0
-```
-
-### Why two phases ship switched off
-
-`observe` writes sentences it inferred into your notes, and once written they read like anything else you
-wrote. So it is opt-in, and its rules are enforced in code rather than asked for in a prompt:
-
-- at least two **different** pages as evidence, and every page it cites is checked against what it was shown
-- claims only — never a `source` page like a contract or an email
-- never its own output as evidence for more output
-- no hedging: "might", "seems", "possibly" are refused outright
-- nothing about anyone's health, relationships, finances, beliefs or character
-- nothing that describes your files rather than your life
-
-On a real 223-page knowledge base with a small local model, those rules refused 18 suggestions and passed 15,
-of which about four were worth keeping. With a strong model: 8 suggestions, **none refused**, most of them
-useful. Which is why the cycle can use a different model from everything else:
-
-```jsonc
-"maintenance": {
-  "model": { "provider": "openai", "id": "your-good-model" },
-  "observe": { "enabled": true }
-}
-```
-
-Read the first run with `--dry-run` before letting it write.
-
-### Keeping a record of what it did
-
-`akno undo <change-id>` reverses a night's work, and the index keeps the bytes of every change — so what a run
-_wrote_ is always recoverable. What is not recorded by default is the reasoning: which pattern a guard refused
-and why, which phase was skipped, what it deliberately left alone. Turn that on and every run appends one JSON
-object to `<state_dir>/logs/dream.jsonl`:
-
-```jsonc
-"maintenance": {
-  "log_changes": true
+{
+  "folders": {
+    "inbox/**": { "ingest": "auto", "route": true },
+  },
 }
 ```
 
 ```bash
-# every suggestion a guardrail refused, over every run so far
-jq -r '.rejected[] | "\(.reason): \(.pattern)"' ~/.akno/logs/dream.jsonl
+akno inbox
 ```
 
-It is off by default on purpose. A log of inferences drawn from your notes is a second copy of the private part,
-sitting outside your notes — worth having while you decide whether to trust the cycle, and your decision to
-make. `--dry-run` writes a record too, marked as one, so you can review a night that never touched a file.
+A running service processes arrivals automatically. Above the routing threshold, the file and its new
+page move together. Below it, the file remains visibly in the inbox with a proposal.
 
-### Why the conflict phase never fixes anything
+The inbox is the only place where Akno automatically moves an existing document. A file manually
+placed in another folder may be extracted, named, paged, and indexed, but it is not relocated.
 
-It reports. On that same knowledge base it found five candidate contradictions and the model correctly cleared
-all five — three months of bank statements with different totals, and three different Rome addresses filed
-under one heading. A pass that had "fixed" those would have destroyed correct records.
+### Why an unowned document needs a page
+
+Recall returns page cards. A document that no page owns may be extracted and indexed but still have no
+card through which its matching text can be returned. Ownership is established by:
+
+- Akno's content-addressed `<page>-<8 hex>.<ext>` filename;
+- a matching page and document stem; or
+- a `![[filename]]` embed from a page.
+
+The dream cycle's `adopt` phase creates a minimal owning page for readable documents that still have
+none.
 
 ---
 
-## `serve` and `service` — running it properly
+## The dream cycle, phase by phase
 
-Starting a new process for every question costs about 33 ms; a running one answers in 0.04 ms. So Akno is
-meant to run as a small background service.
+`akno dream` is not one model prompt that rewrites the knowledge base. It is an ordered maintenance
+run containing seven bounded phases with different inputs, permissions, and side effects.
 
 ```bash
-akno serve                            # unix socket, the default door
-akno serve --mcp                      # stdio MCP, for any agent that speaks it
-akno serve --http 127.0.0.1:7777      # for agents in a container or on another machine
+akno dream
+akno dream --dry-run
+akno dream --phase housekeeping
+akno dream --phase curate
 ```
+
+`--dry-run` executes the selected checks and model decisions but does not change knowledge-base files.
+The phases are designed to be safe to repeat: unchanged input should not create duplicate output.
+
+### The retention ladder is not the execution order
+
+Akno has a conceptual ladder for turning raw material into progressively more derived knowledge:
 
 ```mermaid
 flowchart TD
-    cli["akno CLI"] --> sock["unix socket"]
-    mcp["an MCP agent"] --> stdio["stdio"]
-    cont["an agent in a container"] --> http["loopback HTTP"]
-    sock --> one["one Akno process<br/>holds the write handle"]
-    stdio --> one
-    http --> one
-    one --> notes[("your folder + index")]
+    conversation["Conversation or raw notes"] --> remember["retain / remember<br/>durable claims"]
+    remember --> facts["Authored knowledge pages<br/>and derived facts"]
+    facts --> observe["observe<br/>patterns across pages"]
+    observe --> observations["Inference pages<br/>with evidence"]
+    observations --> reflect["reflect<br/>decision principles"]
 ```
 
-All three doors are generated from the same list of operations, so they cannot drift apart. What differs is
-trust: the MCP door exposes only the five read operations by default, so an agent reaching Akno that way
-cannot write until you allow it.
+`retain` is the `remember` operation and happens when a person or agent asks for it. It is deliberately
+not rerun at night: fresh conversation context should not wait for a schedule, and the dream cycle has
+no new conversation to retain.
 
-**Only one process may write.** A second one opens read-only and says so. That is why `akno index`,
-`akno inbox` and `akno dream` are sent _through_ a running service when there is one — they need the write
-handle, and the service has it. Without a service they simply run in place.
+`observe` and `reflect` are the two inference tiers. Both are off by default because their usefulness
+depends strongly on data volume and model quality.
 
-### Install it as a background agent
+### The actual nightly order
+
+```mermaid
+flowchart LR
+    observe["1. observe"] --> reflect["2. reflect"] --> curate["3. curate"] --> adopt["4. adopt"] --> conflicts["5. conflicts"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
+```
+
+Order matters in three places:
+
+- `reflect` reads observations, so `observe` runs first.
+- Claim repair consumes conflict verdicts from the same full run, so `conflicts` runs before `repair`.
+  Running `--phase repair` alone can still repair uniquely resolvable links, but it has no fresh
+  conflict verdicts to act on.
+- `housekeeping` runs last so its counts describe the state after adoption and enabled repairs.
+
+### Phase summary
+
+| Phase          | Reads                                                                        | Produces                                                | Writes by default?                  | Model?                          |
+| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------- | ------------------------------- |
+| `observe`      | Durable facts from at least two knowledge pages                              | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive           |
+| `reflect`      | Existing observation pages                                                   | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive           |
+| `curate`       | Explicitly opted-in knowledge pages, linked evidence, conflicts, event state | Verified hygiene or synthesis proposals                 | no; phase and write switch disabled | maintenance or derive           |
+| `adopt`        | Readable documents with no owning page                                       | Minimal page beside each eligible document              | **yes**, capped at 20 per run       | no new call                     |
+| `conflicts`    | Live facts on different knowledge pages                                      | Conflict candidates and optional verdicts               | no                                  | optional verification           |
+| `repair`       | Broken links and conflict verdicts                                           | Bounded link and stale-claim edits                      | no; phase disabled                  | only ambiguous choices/rewrites |
+| `housekeeping` | Links, documents, pages, and folder rules                                    | Counts and actionable diagnostics                       | no                                  | no                              |
+
+The default dream therefore has one automatic write-capable phase: `adopt`. It creates pages for
+otherwise unreachable documents, but never moves or edits the document itself. `conflicts` and
+`housekeeping` report. The other writing phases require explicit opt-in.
+
+### Phase 1: `observe` — infer patterns across authored facts
+
+**Problem it solves:** repeated facts can imply a stable pattern that no single page states.
+
+**Method:** group sufficiently confident live facts by subject and top-level folder, require evidence
+from at least two distinct knowledge pages, and ask the maintenance model for a pattern that is not a
+restatement of any source fact.
+
+**Output:** an inference page under `observations/`. Every line is dated, links to the evidence pages,
+and is marked as derived. Recall ranks it below authored knowledge.
+
+**Write behavior:** append-only. A changed pattern adds a new line; it does not delete or overwrite the
+old one. Repeated wording is detected so an unchanged run writes nothing.
+
+**Guards:** source pages cannot become evidence, observations cannot feed other observations, every
+cited slug must have been shown to the model, hedged patterns are refused, and sensitive conclusions
+about health, relationships, finances, beliefs, or character are out of bounds.
+
+**Default:** off. Enable only after reviewing a dry run with a model that produces useful patterns:
+
+```jsonc
+{
+  "maintenance": {
+    "model": { "provider": "openai", "id": "your-maintenance-model" },
+    "observe": { "enabled": true, "min_evidence": 2, "max_subjects": 40 },
+  },
+}
+```
+
+### Phase 2: `reflect` — derive principles from observations
+
+**Problem it attempts to solve:** useful observations may support a durable decision principle or
+long-term tendency.
+
+**Method:** read summaries from at least two observation pages, require a higher evidence floor than
+`observe`, and reject anything that merely repeats a raw fact or an existing observation.
+
+**Output:** append-only, evidence-linked lines in `observations/principles.md`.
+
+**Default:** off and best understood as an extension point. On a knowledge base with only a few hundred
+pages, an apparent pattern may be one coincidence away from noise. Enable it only when `observe` already
+produces consistently valuable material and the knowledge base contains enough repeated history.
+
+### Phase 3: `curate` — maintain pages that explicitly permit it
+
+**Problem it solves:** a canonical page can accumulate duplicated sections, weak formatting, unresolved
+contradictions, and scattered linked evidence.
+
+Curate has two page-owned modes:
+
+```yaml
+akno:
+  management:
+    dream: hygiene
+```
+
+- `hygiene` permits Markdown cleanup, minor language repair, and local restructuring while preserving
+  top-level organization and meaning.
+- `synthesize` permits a full rewrite of a canonical knowledge page, organization of linked evidence,
+  explicit preservation of unresolved conflicts, and bounded splitting of oversized coherent sections.
+
+**Method:** select only `knowledge` pages with an explicit mode; build a draft from the page and allowed
+evidence; run a separate verifier; then enforce deterministic checks for markers, values, links, size,
+and split limits.
+
+**Write authority has three gates:**
+
+1. The page opts in with `dream: hygiene` or `dream: synthesize`.
+2. `maintenance.curate.enabled` includes the phase in scheduled runs.
+3. `maintenance.curate.write` allows an accepted draft to reach disk.
+
+With `enabled: true` and `write: false`, scheduled runs are summary previews: they report that a page would
+change, its mode, verification issues, proposed child slugs, and temporal handling. They do **not** currently
+return the proposed body or a diff. Input fingerprints are recorded so unchanged pages do not spend model
+calls every night. An explicit `--dry-run` is observational and does not record that state.
+
+```jsonc
+{
+  "maintenance": {
+    "curate": {
+      "enabled": true,
+      "write": false,
+      "verify": true,
+      "max_pages": 8,
+    },
+  },
+}
+```
+
+For bounded event pages, synthesis can add an Akno-owned temporal declaration using complete dates
+already present in the page. When an event ends, one archival assessment may reorganize later knowledge,
+but a passed date is never treated as proof that a plan happened.
+
+### Phase 4: `adopt` — make unowned documents retrievable
+
+**Problem it solves:** extracted document text cannot appear in a page-card result when no page owns the
+document.
+
+**Method:** find readable unowned documents, make a page name from the existing filename, and create the
+same minimal page shape used by ingest: title, available summary, embeds, and extraction provenance.
+
+**Write behavior:** enabled by default and capped at 20 created pages per run. It never renames, moves,
+or edits the document. A folder rule of `ingest: "file"` or `ingest: "ignore"` disables adoption there.
+If a page already occupies the intended path, adopt reports the collision and asks for an explicit embed
+instead of creating a near-duplicate.
+
+**Model use:** no new call. It uses extraction and summary data already in the index; if no summary exists,
+the page states only that the stored document is indexed and searchable.
+
+### Phase 5: `conflicts` — find disagreements across pages
+
+**Problem it solves:** the interactive write check sees only the page being changed. Two untouched pages can
+state different values for the same subject and attribute.
+
+**Method:** join sufficiently confident live facts from different `knowledge` pages, find disagreeing
+values, and optionally ask the maintenance model whether they truly describe the same thing at the same time.
+
+**Output:** every candidate receives one of three honest verdicts:
+
+- `real`: the claims appear to conflict;
+- `not_a_conflict`: different periods, scopes, or equivalent values explain the difference;
+- `unverified`: structural evidence exists, but no reliable model verdict was available.
+
+**Write behavior:** never. This phase reports evidence and a likely-current page when the verifier can
+identify one. It does not choose a truth or edit a sentence.
+
+### Phase 6: `repair` — apply only bounded, guardable fixes
+
+**Problem it solves:** a report-only cycle can accumulate the same actionable findings every night.
+
+Repair has two independently configurable actions:
+
+- **Links:** repoint a broken wikilink when there is one credible target. If several candidates exist,
+  the model may select only from that list; it cannot invent a page.
+- **Conflicts:** when the preceding conflict phase verified a conflict and identified one current page,
+  rewrite stale lines into historical wording. Values from the original line must survive unchanged.
+
+It never deletes a claim. Ambiguous targets, changed line addresses, and rewrites that alter a value are
+left alone with a reason.
+
+```jsonc
+{
+  "maintenance": {
+    "repair": {
+      "enabled": true,
+      "links": true,
+      "conflicts": true,
+      "max_changes": 25,
+    },
+  },
+}
+```
+
+**Default:** off. Run a full `akno dream --dry-run` before enabling it. A real repair run groups its edits
+into one change id so the night's repairs undo together.
+
+### Phase 7: `housekeeping` — report the remaining structural work
+
+**Problem it solves:** some problems require a person's intent, not an automatic rewrite.
+
+Housekeeping reports:
+
+- broken non-embed wikilinks;
+- documents with no owning page, including whether their text is readable;
+- pages whose type, slug pattern, or nesting depth conflicts with a matching folder rule.
+
+It always reports and never writes. Lists are capped for readability, while counts show the full total.
+Because it runs last, the report reflects anything `adopt` or `repair` changed earlier in the cycle.
+
+### Reviewing and undoing a dream
+
+The terminal report includes phase timings, skipped reasons, proposed or applied changes, rejected model
+suggestions, conflict verdicts, remaining housekeeping counts, and change ids.
+
+Writes are journalled by purpose rather than collapsed into one opaque nightly change. Observations,
+curation, adoption, and repair can therefore have separate change ids. Use the id printed beside a section:
 
 ```bash
-akno service install     # writes two launchd agents
+akno undo <change-id>
+```
+
+To retain a machine-readable audit record:
+
+```jsonc
+{
+  "maintenance": { "log_changes": true },
+}
+```
+
+Each run then appends one JSON object to `<state_dir>/logs/dream.jsonl`, including explicit dry runs.
+This is off by default because the log duplicates sensitive inferences outside the knowledge base.
+
+### A safe way to introduce the cycle
+
+1. Run `akno dream --phase housekeeping` and fix obvious rule or ownership problems.
+2. Run a full `akno dream --dry-run`; inspect every phase, not only the totals.
+3. Keep the default `adopt` phase if minimal owner pages are useful; disable it in media folders with
+   `ingest: "file"`.
+4. Enable curate with `write: false` and opt in one test page. The current preview confirms whether it would
+   change, but does not expose the proposed body.
+5. Test curate writes only on a copied or version-controlled knowledge base, inspect the file diff, and use
+   the printed change id to undo. Do not treat the summary preview as approval of unseen wording.
+6. Enable observe only with a model whose dry-run patterns are worth recalling later.
+7. Treat reflect as a later-stage feature, after the observation layer has real volume.
+8. Enable repair last, with a low `max_changes`, after reviewing the same full-run dry output.
+
+---
+
+## Models and graceful degradation
+
+Akno has five model roles. All are optional.
+
+| Role        | Used by                                                      | Without it                                                      |
+| ----------- | ------------------------------------------------------------ | --------------------------------------------------------------- |
+| `embedding` | Indexing and semantic recall                                 | Lexical search still works                                      |
+| `reranker`  | Final ordering of recall candidates                          | Rank-fused ordering remains                                     |
+| `expansion` | Query expansion before recall                                | Search uses the query as written                                |
+| `derive`    | Summaries, facts, remember, naming, and maintenance fallback | Core search/read/write still works; derived features are absent |
+| `vision`    | Description of images with no readable text                  | OCR still covers scans and screenshots                          |
+
+Two roles are on the interactive path:
+
+- `expansion` should be fast because a person is waiting for it.
+- `reranker` should be sized for the configured candidate count.
+
+`derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
+than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the
+rest of the system.
+
+Read-only operations such as `read`, `list`, and `timeline` require no model. `write`, `move`, `forget`, and
+`undo` are deterministic file and database operations, although re-indexing after a write may call `derive`.
+
+With no models at all, Akno remains a line-citing lexical search and exact read/write layer over Markdown.
+`akno doctor` reports which roles resolved and describes the specific capability lost for each missing one.
+
+---
+
+## Running Akno as a service
+
+The long-lived service holds the index, watcher, model clients, and single write handle.
+
+```bash
+akno serve
+akno serve --mcp
+akno serve --http 127.0.0.1:7777
+```
+
+The default Unix socket is for local CLI and client calls. MCP is for compatible agent hosts. Loopback HTTP
+is useful when an agent runs in a container and cannot reach the host's Unix socket.
+
+All doors are generated from one operation registry. Transport does not grant trust: `server.mcp_allow`
+controls the operations exposed over MCP and defaults to the five read operations.
+
+Only one process may write to a state directory. If the service holds the write handle, operator commands such
+as `index`, `inbox`, and `dream` are sent through it. Without a running service, they execute in-process.
+
+Install the macOS background agents with:
+
+```bash
+akno service install --no-dream  # cautious first install: watcher only
+akno service install             # watcher plus the nightly dream schedule
 akno service status
 akno service uninstall
 ```
 
-Two agents: the service itself, which restarts if it ever stops, and a nightly `dream` at 03:00. Use
-`--dream-hour 4` to move it or `--no-dream` to skip it. Logs land in your state directory.
+The installation includes the watcher service and, unless disabled, a nightly dream schedule at 03:00. Use
+`--dream-hour` to choose another hour or `--no-dream` to omit the scheduled cycle.
+
+For an agent host, choose one integration:
+
+```ts
+import { open } from '@tenphi/akno-core';
+
+const memory = await open({ aknoPath: '~/Notes' });
+const result = await memory.call('recall', { query: 'car insurance renewal' });
+```
+
+```ts
+import { connect } from '@tenphi/akno-client';
+
+const memory = await connect();
+const result = await memory.call('recall', { query: 'car insurance renewal' });
+```
+
+```json
+{
+  "mcpServers": {
+    "memory": { "command": "akno", "args": ["serve", "--mcp"] }
+  }
+}
+```
 
 ---
 
-## `doctor`, `rules`, `config`, `bench` — checking on it
+## Diagnostics and recovery
 
-### `doctor` — what is working, and what each gap costs
+### `doctor`: what works and what each gap costs
 
-```bash
-akno doctor
-```
+Run `akno doctor` after the first index and whenever behavior changes unexpectedly. It reports the
+knowledge-base path and writability, index counts, broken links, document ownership, model availability and
+latency, and degraded capabilities in plain language.
 
-```
-Akno
-  knowledge base  /Users/you/Notes
-  writable        yes
-  vector backend  sqlite-vec
-
-Index
-  pages            221 (122 knowledge, 99 source)
-  chunks           1142 (1142 embedded)
-  facts            1036 live, 0 superseded
-  documents        13 (13 extracted)
-  links            136 (12 broken)
-
-Models
-  embedding  ok 68ms
-  reranker   ok 60ms
-  derive     ok 81ms
-  expansion  ok 44ms
-  vision     unavailable
-    without it: photos with no text yield no page; OCR still covers scans and screenshots
-
-2 warnings
-  · 1 attachment has text that recall cannot reach, because no page owns it
-  · 12 wikilinks point at pages that do not exist
-```
-
-The last column of the models section is the important part: not "reranker missing" but what you lose without
-it. Model latency and index latency are shown separately, because a system that feels slow after idling is
-almost never slow because of its database.
-
-### `rules` — why is this page treated that way?
+### `rules`: why a page is treated this way
 
 ```bash
-akno rules                       # every rule, most specific first
-akno rules articles/some-page    # what governs this one path
+akno rules
+akno rules household/boiler.md
 ```
 
-```
-articles/some-page
-  role      source
-  remember  deny
+The result lists matching rules from most to least specific and names the config file that supplied each one.
 
-  matched, most specific first:
-    articles/**  ~/Notes/akno.json
-```
-
-So you get the setting that actually applies, and the file the rule came from. When nothing matches, it says
-so and names the default.
-
-### `config` — what settings are actually in effect
+### `config`: what settings won
 
 ```bash
 akno config
 ```
 
-Prints the merged configuration with secrets replaced by the name of the environment variable they come from,
-and lists the files it was assembled from, lowest priority first. The fastest way to find out why a setting you
-changed is not doing anything.
+Configuration precedence is:
 
-### `bench` — is it still fast?
+```text
+config/default.jsonc → <state_dir>/config.json → config/local.jsonc → AKNO_* environment
+```
+
+An installed package has no checkout-level `config/local.jsonc`; its machine config normally lives at
+`~/.akno/config.json`. `akno config` prints the merged result with credentials redacted and lists the
+source files in precedence order.
+
+### `bench`: whether important paths remain fast
 
 ```bash
 akno bench --write
 ```
 
-Asserts the budgets that matter and _reports_ the ones that depend on your models, rather than failing because
-your GPU was busy.
+Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
+because an endpoint or GPU was temporarily busy.
 
----
+### Recovery guarantees
 
-## What happens when a model is missing
-
-Nothing breaks. Things get simpler, and Akno says which.
-
-| Missing   | What still works                                       | What you lose                                      |
-| --------- | ------------------------------------------------------ | -------------------------------------------------- |
-| Embedding | keyword search with stemming, all reading, all writing | semantic matching; question-mode hypotheticals     |
-| Reranker  | everything                                             | the final precise ordering of results              |
-| Derive    | search, reading, writing, `ingest` of readable files   | summaries, keywords, facts, `remember`, `observe`  |
-| Expansion | everything                                             | synonyms and related words — your exact words only |
-| Vision    | everything, including OCR of scans and screenshots     | a description of a photo that contains no text     |
-
-The two text roles are separate because one is allowed to be slow. **Derive** runs while indexing, on arrival and
-at night, and what it writes stays in your notes — a bigger model earns its keep. **Expansion** runs inside a
-recall you are waiting for, so it wants a fast one. One model can serve both; two is usually better.
-
-With no models at all, Akno is still a fast, addressable, line-citing search over your notes.
-
----
-
-## Where Akno keeps its own things
-
-```
-~/.akno/
-  akno.db        the index. Delete it and re-index; you lose nothing.
-  akno.sock      the socket the service listens on
-  akno.lock      which process holds the write handle
-  trash/           what forget and undo moved aside, kept 30 days
-  logs/            service and nightly-cycle logs
+```text
+<state_dir>/
+  akno.db       disposable derived index
+  akno.sock     local service socket
+  akno.lock     current write-holder metadata
+  trash/          recoverable forgotten files
+  logs/           service and optional dream logs
 ```
 
-Inside **your** folder, Akno only ever touches:
+Inside the knowledge base, Akno touches only files authorized by an explicit operation or setting. By
+default an index pass leaves both the set of files and every file's bytes unchanged.
 
-- `timeline.md` — the event ledger, if you use one
-- `inbox/` — only if you created it
-- `observations/` — only if you switch `observe` on
-- one frontmatter key, `id`, and only if you set `write_ids: true`
-- `<file>.txt` beside a document — only if you switch `ingest.text_rendition` on
-
-Everything else in your folder is yours. Every other frontmatter key is preserved exactly, including ones
-Akno has never heard of.
+If search state is suspect, rebuild the index. If a write is wrong, undo its change id. If a page or document
+was forgotten, recover it from Akno's trash within the configured retention period.
 
 ---
 
-## Every command, one table
+## What Akno does not solve yet
 
-| Command               | In one line                                               | Writes to your folder? | Models                              |
-| --------------------- | --------------------------------------------------------- | ---------------------- | ----------------------------------- |
-| `recall <query>`      | Search, and get lines with addresses                      | no                     | expansion, embedding, reranker      |
-| `read <slug>`         | One page or document, in full                             | no                     | —                                   |
-| `list`                | Browse folders, pages, or an outline                      | no                     | —                                   |
-| `timeline`            | What happened, filtered by date, subject or text          | no                     | —                                   |
-| `context <query>`     | The whole pre-turn bundle against one budget              | no                     | same as `recall`                    |
-| `write`               | Create, append, patch or replace a page                   | **yes**                | vision, only for `--attach`         |
-| `remember <text>`     | Keep what matters from some notes, in the right place     | **yes**                | maintenance or derive, + recall     |
-| `forget`              | Retract a fact, or trash a page or document               | **yes**                | —                                   |
-| `undo <id>`           | Reverse any change                                        | **yes**                | —                                   |
-| `move <from> <to>`    | Relocate a page with its documents                        | **yes**                | —                                   |
-| `approve` / `decline` | Resolve something an agent asked permission for           | **yes** on approve     | whatever the held call needed       |
-| `ingest <path\|url>`  | Read a file, name it, file it                             | **yes**                | derive; vision for text-less images |
-| `inbox`               | Process whatever was dropped in an inbox folder           | **yes**                | same as `ingest`, per file          |
-| `dream`               | The nightly cycle                                         | only `observe`/`adopt` | maintenance or derive               |
-| `index`               | Reconcile the index with your folder                      | only if you asked¹     | embedding, derive                   |
-| `serve`               | Run as a service, with all three doors                    | no                     | —                                   |
-| `service`             | Install or remove the background agents                   | no                     | —                                   |
-| `doctor`              | What works, what does not, and what that costs            | no                     | pings each configured one           |
-| `rules [path]`        | Which rule governs a path, and why                        | no                     | —                                   |
-| `config`              | The settings actually in effect, and where they came from | no                     | —                                   |
-| `bench`               | Check the performance budgets                             | no                     | embedding, expansion, reranker      |
+The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
+maintenance.
 
-¹ Nothing by default. `write_ids: true` adds a frontmatter `id:`; `ingest.text_rendition: true` keeps a
-`<file>.txt` beside each document it can read. Both are off until you turn them on.
+### There is no durable human review inbox
 
-Anything writing to your folder also re-indexes what it touched, so `derive` sees the changed page again.
+Dream prints conflicts, previews, refused repairs, and housekeeping findings, but it does not yet offer one
+persistent queue where a person can approve, dismiss, snooze, or apply them. Scheduled output therefore lives
+in service logs, or in the optional JSONL audit log that intentionally duplicates sensitive material.
 
-Add `--help` to any of them for the full flag list, and `--json` to any of them to get a machine-readable
-version of the same answer.
+The strongest improvement would be a first-class `akno review` workflow with stable finding ids, last-seen
+state, provenance, proposed diffs, and actions such as `approve`, `dismiss`, `apply`, and `undo`. This is
+especially important for curate: its current “preview” says that a page would change but does not show the
+proposed body or diff. Every reporting or preview phase should feed the same review surface.
+
+### Searchability should not depend on an overnight write
+
+An extracted document with no owning page is currently absent from recall because recall returns page cards.
+The default `adopt` phase repairs that by creating a Markdown page later. This is internally coherent but
+surprising from a user's perspective: indexing can report success while a document remains unanswerable, then
+a scheduled maintenance run creates a file to make retrieval work.
+
+Recall should be able to return an orphan document card directly, with document-page citations and a
+`needs_home` state. Adoption could then become an optional filing action instead of a default write required
+for search correctness.
+
+### Dream should be a plan, apply, verify loop
+
+The seven phases currently mix analysis, proposals, writes, and final reporting in one command. A clearer and
+safer cycle would have four user-visible stages:
+
+1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
+2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
+3. **Apply:** execute an approved or policy-authorized bounded plan only if those inputs are unchanged.
+4. **Verify:** re-index touched files, rerun relevant checks, and produce one durable receipt.
+
+The named phases can remain as internal methods, but the operator would reason about one consistent lifecycle.
+Conflict analysis should also precede `observe` and `reflect`, or unresolved claim groups should be excluded,
+so higher-level inference is not built from facts the same run later identifies as contradictory.
+
+### Maintenance permission is powerful but hard to reason about
+
+Dream currently combines global phase switches, a separate curate write switch, page-level policy, folder
+rules, dry-run behavior, and per-run caps. The safeguards are valuable; the interaction is difficult to hold
+in one mental model.
+
+A better operator UX would expose named trust profiles such as `audit`, `assist`, and `autopilot`, then show the
+resolved permission for each phase and page with `akno dream status`. Expert config could remain underneath.
+The scheduled profile should begin at `audit`; today, `service install` creates the dream job and `adopt` is
+enabled by default, so installing background operation can eventually add Markdown pages unless the user knows
+to pass `--no-dream` or disable adoption.
+
+### The scheduled cycle has weak visibility
+
+`service status` tells whether launchd jobs exist, while the useful maintenance state is spread across terminal
+output, logs, config, and the index. A single status view should show the last run, next scheduled run, enabled
+phases, model in use, applied change ids, failures, and review backlog.
+
+### Setup assumes too much infrastructure knowledge
+
+The first useful result currently requires editing JSON, knowing an OpenAI-compatible endpoint, choosing model
+roles, indexing, diagnosing, and then connecting an agent host. The graceful no-model path helps, but the user
+still has to discover it from prose.
+
+A guided `akno init` should select the knowledge-base folder, perform a read-only scan, detect reachable
+models, explain degraded choices, run one recall, and optionally install the service. That would shorten the
+distance between “I have notes” and “my agent can cite them” without weakening any safety rule.
+
+### Inference should remain visibly separate from authored memory
+
+`observe` and `reflect` mark their pages as derived and recall ranks them lower, but once inference is written
+as fluent Markdown it can still feel authored. Until a durable review layer exists, keeping these phases off by
+default is the right product posture. A future design could stage inference outside canonical notes and promote
+only explicitly accepted items.
+
+---
+
+## Command reference
+
+| Command               | Purpose                                                | Writes to the knowledge base?    | Model roles                              |
+| --------------------- | ------------------------------------------------------ | -------------------------------- | ---------------------------------------- |
+| `index`               | Reconcile the index with files                         | no by default                    | embedding, derive                        |
+| `recall <query>`      | Search and return cited page cards                     | no                               | expansion, embedding, reranker           |
+| `read <slug>`         | Read one page or document directly                     | no                               | none                                     |
+| `list`                | Browse folders, pages, or a tree                       | no                               | none                                     |
+| `timeline`            | Retrieve events by range, subject, or text             | no                               | none                                     |
+| `context <query>`     | Assemble one bounded pre-turn bundle                   | no                               | same as recall                           |
+| `write`               | Create, append, patch, or replace a page               | yes                              | vision only for textless attachments     |
+| `remember <text>`     | Retain durable knowledge and route it                  | yes                              | maintenance or derive, plus recall roles |
+| `folder`              | Declare a folder and its default policy                | yes, `akno.json`               | none                                     |
+| `approve` / `decline` | Resolve a held routing proposal                        | approve may write                | depends on held action                   |
+| `forget`              | Retract a fact or trash a page/document                | yes                              | none                                     |
+| `undo <id>`           | Restore exact bytes from a journalled change           | yes                              | none                                     |
+| `move <from> <to>`    | Move a page and its owned documents                    | yes                              | none                                     |
+| `ingest <path\|url>`  | Extract, name, route, store, and index                 | yes                              | derive; vision when needed               |
+| `inbox`               | Process arrivals in routed folders                     | yes                              | same as ingest                           |
+| `dream`               | Run the seven maintenance phases                       | depends on enabled phases        | maintenance or derive                    |
+| `serve`               | Run the watcher and operation doors                    | no by itself                     | none by itself                           |
+| `service`             | Install, inspect, or remove background jobs            | outside the knowledge base       | none                                     |
+| `doctor`              | Diagnose paths, index, models, and structural warnings | no                               | probes configured roles                  |
+| `rules [path]`        | Explain effective folder policy                        | no                               | none                                     |
+| `config`              | Print resolved, redacted configuration                 | no                               | none                                     |
+| `bench`               | Measure important latency budgets                      | only with explicit write testing | configured search roles                  |
+| `redeploy`            | Build, restart, and wait for the local service         | no knowledge-base write          | none                                     |
+
+Add `--help` to a command for its flags. Commands that support structured output accept `--json`.

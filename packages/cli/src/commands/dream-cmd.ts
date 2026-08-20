@@ -5,7 +5,8 @@ import { heading, json, kv, line, ms, style, truncate } from '../output.ts';
 
 const DREAM_HELP = `akno dream [options]
 
-  The maintenance cycle. Phases are independent and each is safe to re-run.
+  The maintenance cycle. Phases are selectable and safe to re-run. Claim repair uses
+  conflict verdicts from the preceding phase in a full run.
 
     observe        Combine repeated facts into stable patterns. Writes pages under
                    observations/ with their evidence, and never restates a fact.
@@ -17,12 +18,14 @@ const DREAM_HELP = `akno dream [options]
                    text can be returned at all. Honours \`ingest: "file"\`.
     conflicts      The thorough pass inline checking cannot do: facts from different
                    pages that state different values for the same thing.
+    repair         Repoint guardable broken links and retire verified stale claims.
+                   Off by default; changes are bounded and undo together.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
 
-  Curate writes only when maintenance.curate.write is true; otherwise scheduled runs preview it.
+  Curate writes only when maintenance.curate.write is true; otherwise scheduled runs show a summary preview.
 
   --phase <name>   Run one phase instead of every enabled one.
-  --dry-run        Report what observe would write; touch nothing.
+  --dry-run        Run selected checks and proposals; change no knowledge-base files.
   --json`;
 
 export async function dreamCommand(argv: string[]): Promise<number> {
