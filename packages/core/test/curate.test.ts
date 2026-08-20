@@ -23,6 +23,8 @@ let server: {
   cosmeticDraft: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
   extractDraft: (value: boolean) => void;
+  mergeDraft: (value: boolean) => void;
+  lossyMergeDraft: (value: boolean) => void;
   invalidExtractionHeading: (value: boolean) => void;
   invalidExtractionTarget: (value: boolean) => void;
   userMessages: () => string[];
@@ -290,7 +292,7 @@ describe('plan-backed hygiene', () => {
   it('refuses an approved item when its source changed after planning', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
-    const item = planned.items[0]!;
+    const item = mem.plan(planned.id).items[0]!;
     fs.appendFileSync(page, '\nA newer note from Ada Marlow.\n');
     const newer = fs.readFileSync(page, 'utf8');
 
@@ -567,6 +569,139 @@ describe('plan-backed hygiene', () => {
     expect(result.files).toEqual([]);
   });
 
+  it('atomically merges an exact-alias duplicate, rewrites inbound links, and converges', async () => {
+    const paths = writeMergeFixture();
+    const before = Object.fromEntries(
+      Object.entries(paths).map(([key, file]) => [key, fs.readFileSync(file, 'utf8')]),
+    );
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.curated).toMatchObject([
+      {
+        slug: 'people/ada-marlow',
+        action: 'updated',
+        merges: ['people/ada-field-notes'],
+        issues: [],
+      },
+    ]);
+    expect(item).toMatchObject({ kind: 'merge', risk: 'high', status: 'applied' });
+    expect(item.operations.map((operation) => operation.type)).toEqual(['replace', 'replace', 'delete']);
+    expect(item.evidence).toContainEqual(
+      expect.objectContaining({
+        type: 'page',
+        source: 'people/ada-field-notes',
+        relationship: 'identity',
+      }),
+    );
+    expect(mem.maintenanceDiff(item.planId)).toContain('+++ /dev/null');
+    const canonical = fs.readFileSync(paths.canonical, 'utf8');
+    expect(canonical).toContain('- people/ada-field-notes');
+    expect(canonical).toContain('- "Ada field notes"');
+    expect(canonical).toContain('Ada Marlow tests the Zephyr QX-100 at Blackwater Bay.');
+    expect(fs.existsSync(paths.duplicate)).toBe(false);
+    expect(fs.readFileSync(paths.inbound, 'utf8')).toContain(
+      '[[people/ada-marlow#Equipment|Ada’s equipment notes]]',
+    );
+    expect(mem.changes(1)[0]).toMatchObject({
+      id: item.changeId,
+      op: 'maintenance',
+      files: [
+        { relPath: 'people/ada-marlow.md', action: 'modified' },
+        { relPath: 'people/bo-winters.md', action: 'modified' },
+        { relPath: 'people/ada-field-notes.md', action: 'deleted' },
+      ],
+    });
+
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(paths.canonical, 'utf8')).toBe(before.canonical);
+    expect(fs.readFileSync(paths.duplicate, 'utf8')).toBe(before.duplicate);
+    expect(fs.readFileSync(paths.inbound, 'utf8')).toBe(before.inbound);
+  });
+
+  it('refuses a merge when an inbound page does not permit synthesis writes', async () => {
+    const paths = writeMergeFixture();
+    fs.writeFileSync(
+      paths.inbound,
+      '# Bo Winters\n\nSee [[people/ada-field-notes#Equipment|Ada’s equipment notes]].\n',
+    );
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated).toMatchObject([
+      {
+        slug: 'people/ada-marlow',
+        action: 'rejected',
+        merges: ['people/ada-field-notes'],
+      },
+    ]);
+    expect(report.curated[0]?.issues.join(' ')).toMatch(/not opted in to synthesis link updates/);
+    expect(server.calls()).toBe(0);
+    expect(fs.existsSync(paths.duplicate)).toBe(true);
+
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(0);
+  });
+
+  it('rejects a merge draft that drops one unique authored line before verification', async () => {
+    const paths = writeMergeFixture();
+    server.mergeDraft(true);
+    server.lossyMergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated[0]).toMatchObject({
+      slug: 'people/ada-marlow',
+      action: 'rejected',
+      merges: ['people/ada-field-notes'],
+    });
+    expect(report.curated[0]?.issues.join(' ')).toMatch(/preserve every unique authored line/);
+    expect(server.calls()).toBe(1);
+    expect(fs.existsSync(paths.duplicate)).toBe(true);
+  });
+
+  it('makes the whole merge stale when the duplicate changes before apply', async () => {
+    const paths = writeMergeFixture();
+    const canonicalBefore = fs.readFileSync(paths.canonical, 'utf8');
+    const inboundBefore = fs.readFileSync(paths.inbound, 'utf8');
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    fs.appendFileSync(paths.duplicate, '\nA newer invented calibration note.\n');
+    const duplicateNewer = fs.readFileSync(paths.duplicate, 'utf8');
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply only if every merge input remains unchanged.');
+
+    const result = await mem.applyPlan(planned.id);
+
+    expect(result.plan.items[0]).toMatchObject({ kind: 'merge', status: 'stale' });
+    expect(result.files).toEqual([]);
+    expect(fs.readFileSync(paths.canonical, 'utf8')).toBe(canonicalBefore);
+    expect(fs.readFileSync(paths.inbound, 'utf8')).toBe(inboundBefore);
+    expect(fs.readFileSync(paths.duplicate, 'utf8')).toBe(duplicateNewer);
+  });
+
   it('seals linked evidence into a high-risk synthesis decision', async () => {
     const canonical = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(
@@ -715,6 +850,48 @@ An invented interview record.
     expect(fs.existsSync(child)).toBe(false);
   });
 
+  it('recovers a fully written merge that was interrupted before journalling', async () => {
+    const paths = writeMergeFixture();
+    const before = Object.fromEntries(
+      Object.entries(paths).map(([key, file]) => [key, fs.readFileSync(file, 'utf8')]),
+    );
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    mem.decidePlan(planned.id, item.id, 'approve', 'Exercise exact merge crash recovery.');
+    const db = new Database(mem.config.dbPath);
+    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
+    db.close();
+    for (const operation of item.operations) {
+      const target = path.join(root, operation.relPath);
+      if (operation.type === 'delete') fs.rmSync(target);
+      else fs.writeFileSync(target, operation.after);
+    }
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowMerges: true });
+
+    const recovered = await mem.dream({ phase: 'curate' });
+
+    expect(recovered.maintenancePlan).toMatchObject({ status: 'completed' });
+    expect(recovered.maintenancePlan?.items[0]).toMatchObject({
+      kind: 'merge',
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(1);
+    expect(fs.existsSync(paths.duplicate)).toBe(false);
+
+    await mem.undo({ change_id: recovered.maintenancePlan!.items[0]!.changeId! });
+    expect(fs.readFileSync(paths.canonical, 'utf8')).toBe(before.canonical);
+    expect(fs.readFileSync(paths.duplicate, 'utf8')).toBe(before.duplicate);
+    expect(fs.readFileSync(paths.inbound, 'utf8')).toBe(before.inbound);
+  });
+
   it('rolls a journaled write back when post-apply verification fails', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const before = fs.readFileSync(page, 'utf8');
@@ -764,6 +941,7 @@ async function openMem(
   options: {
     allowSplits?: boolean;
     allowExtracts?: boolean;
+    allowMerges?: boolean;
     folders?: Record<string, { role: 'ignored' }>;
   } = {},
 ): Promise<Akno> {
@@ -791,6 +969,7 @@ async function openMem(
           verify: true,
           ...(options.allowSplits ? { split_after_bytes: 1, split_section_bytes: 1 } : {}),
           ...(options.allowExtracts ? { extract_after_bytes: 1, extract_section_bytes: 1 } : {}),
+          ...(options.allowMerges ? { max_merges: 2, merge_folders: ['people'] } : {}),
         },
       },
       ...(options.folders ? { folders: options.folders } : {}),
@@ -809,6 +988,8 @@ async function startStub(): Promise<typeof server> {
   let cosmeticDraft = false;
   let splitDraft = false;
   let extractDraft = false;
+  let mergeDraft = false;
+  let lossyMergeDraft = false;
   let invalidExtractionHeading = false;
   let invalidExtractionTarget = false;
   const userMessages: string[] = [];
@@ -825,6 +1006,7 @@ async function startStub(): Promise<typeof server> {
       if (
         system.includes('Markdown page hygienist') ||
         system.includes('synthesize one canonical') ||
+        system.includes('merge two Markdown pages') ||
         system.includes('verify an automatic Markdown rewrite') ||
         system.includes('independent curator')
       ) {
@@ -838,52 +1020,54 @@ async function startStub(): Promise<typeof server> {
           })
         : system.includes('verify an automatic Markdown rewrite')
           ? JSON.stringify({ ok: true, issues: [] })
-          : extractDraft && system.includes('synthesize one canonical')
-            ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
-            : splitDraft && system.includes('synthesize one canonical')
-              ? JSON.stringify({
-                  body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
-                  splits: [
-                    {
-                      suffix: 'history',
-                      title: 'Ada Marlow history',
-                      body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
-                    },
-                  ],
-                  extracts: [],
-                  temporal: false,
-                })
-              : cosmeticDraft && system.includes('synthesize one canonical')
+          : mergeDraft && system.includes('merge two Markdown pages')
+            ? mergeDraftResponse(user, lossyMergeDraft)
+            : extractDraft && system.includes('synthesize one canonical')
+              ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
+              : splitDraft && system.includes('synthesize one canonical')
                 ? JSON.stringify({
-                    body: currentBody(user)
-                      .replace(/^\n(?=#)/, '')
-                      .replace('## Details', '## History and details'),
-                    splits: [],
+                    body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
+                    splits: [
+                      {
+                        suffix: 'history',
+                        title: 'Ada Marlow history',
+                        body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+                      },
+                    ],
                     extracts: [],
                     temporal: false,
                   })
-                : synthesisDraft && system.includes('synthesize one canonical')
+                : cosmeticDraft && system.includes('synthesize one canonical')
                   ? JSON.stringify({
-                      body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                      body: currentBody(user)
+                        .replace(/^\n(?=#)/, '')
+                        .replace('## Details', '## History and details'),
                       splits: [],
                       extracts: [],
                       temporal: false,
                     })
-                  : exactDraft
-                    ? JSON.stringify({ body: currentBody(user), splits: [], extracts: [], temporal: false })
-                    : echoDraft
-                      ? JSON.stringify({
-                          body: currentBody(user).replace(/^\n(?=#)/, ''),
-                          splits: [],
-                          extracts: [],
-                          temporal: false,
-                        })
-                      : JSON.stringify({
-                          body:
-                            '# Ada Marlow\n\n## Details\n\n' +
-                            (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                            `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                        });
+                  : synthesisDraft && system.includes('synthesize one canonical')
+                    ? JSON.stringify({
+                        body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                        splits: [],
+                        extracts: [],
+                        temporal: false,
+                      })
+                    : exactDraft
+                      ? JSON.stringify({ body: currentBody(user), splits: [], extracts: [], temporal: false })
+                      : echoDraft
+                        ? JSON.stringify({
+                            body: currentBody(user).replace(/^\n(?=#)/, ''),
+                            splits: [],
+                            extracts: [],
+                            temporal: false,
+                          })
+                        : JSON.stringify({
+                            body:
+                              '# Ada Marlow\n\n## Details\n\n' +
+                              (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                              `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                          });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -923,6 +1107,12 @@ async function startStub(): Promise<typeof server> {
     extractDraft: (value) => {
       extractDraft = value;
     },
+    mergeDraft: (value) => {
+      mergeDraft = value;
+    },
+    lossyMergeDraft: (value) => {
+      lossyMergeDraft = value;
+    },
     invalidExtractionHeading: (value) => {
       invalidExtractionHeading = value;
     },
@@ -931,6 +1121,63 @@ async function startStub(): Promise<typeof server> {
     },
     userMessages: () => [...userMessages],
   };
+}
+
+function writeMergeFixture(): { canonical: string; duplicate: string; inbound: string } {
+  const canonical = path.join(root, 'people/ada-marlow.md');
+  const duplicate = path.join(root, 'people/ada-field-notes.md');
+  const inbound = path.join(root, 'people/bo-winters.md');
+  fs.writeFileSync(
+    canonical,
+    `---
+title: Ada Marlow
+akno:
+  aliases:
+    - people/ada-field-notes
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow
+
+## Details
+
+<!-- akno:item itm_ada source=conversation origin=user -->
+Ada Marlow lives at 111 Example Street.
+`,
+  );
+  fs.writeFileSync(
+    duplicate,
+    `---
+title: Ada field notes
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada field notes
+
+## Equipment
+
+<!-- akno:item itm_zephyr source=conversation origin=user -->
+Ada Marlow tests the Zephyr QX-100 at Blackwater Bay.
+`,
+  );
+  fs.writeFileSync(
+    inbound,
+    `---
+title: Bo Winters
+akno:
+  management:
+    dream: synthesize
+---
+
+# Bo Winters
+
+See [[people/ada-field-notes#Equipment|Ada’s equipment notes]].
+`,
+  );
+  return { canonical, duplicate, inbound };
 }
 
 function extractionSource(): string {
@@ -984,4 +1231,18 @@ function currentBody(user: string): string {
     .map((suffix) => body.indexOf(suffix))
     .filter((index) => index >= 0);
   return cuts.length ? body.slice(0, Math.min(...cuts)) : body;
+}
+
+function mergeDraftResponse(user: string, lossy: boolean): string {
+  const canonicalMarker = '\n\nCanonical body:\n';
+  const duplicateMarker = '\n\nPrepared duplicate body:\n';
+  const canonicalStart = user.indexOf(canonicalMarker);
+  const duplicateStart = user.indexOf(duplicateMarker);
+  if (canonicalStart < 0 || duplicateStart < 0) return JSON.stringify({ body: '' });
+  const canonical = user.slice(canonicalStart + canonicalMarker.length, duplicateStart).trimEnd();
+  const duplicate = user
+    .slice(duplicateStart + duplicateMarker.length)
+    .trim()
+    .replace(lossy ? 'Ada Marlow tests the Zephyr QX-100 at Blackwater Bay.' : /$^/, '');
+  return JSON.stringify({ body: `${canonical}\n\n${duplicate}\n` });
 }

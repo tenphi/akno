@@ -496,15 +496,15 @@ Nothing is routed or named, because the caller already decided both.
 conflict phase in a full run; running `--phase repair` alone can still repair links but has no fresh conflict
 verdicts to apply.
 
-| Phase          | Writes?       | What it does                                                                                                                                                                  |
-| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `observe`      | appends       | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                   |
-| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                  |
-| `curate`       | preview/write | Hygiene or full synthesis only for pages that explicitly opt in, including atomic splits and independent extraction. Draft, verifier and deterministic guards must all agree. |
-| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                    |
-| `conflicts`    | no            | Facts on **different** pages stating different values for one thing — which inline checking cannot see.                                                                       |
-| `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                                                                           |
-| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                          |
+| Phase          | Writes?       | What it does                                                                                                                                                                                                 |
+| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `observe`      | appends       | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                                                  |
+| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                                 |
+| `curate`       | preview/write | Hygiene or full synthesis only for pages that explicitly opt in, including atomic splits, independent extraction, and configured exact-alias merge. Draft, verifier and deterministic guards must all agree. |
+| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                                                   |
+| `conflicts`    | no            | Facts on **different** pages stating different values for one thing — which inline checking cannot see.                                                                                                      |
+| `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                                                                                                          |
+| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                         |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
 phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
@@ -538,6 +538,11 @@ one exact source section of authored Markdown verbatim into an independent page,
 and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
 The replacement and creation are still one collision-checked item and one undo. See the
 [dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.
+
+An exact-alias merge is a high-risk plan item available only in configured `merge_folders`. It preserves every
+unique authored line, rewrites all eligible inbound links, records the retired slug and title as aliases, and
+deletes the duplicate in one verified, undoable transaction. Conflicts, document ownership, protected inbound
+pages, ambiguous identity, or unique frontmatter without a lossless disposition block the merge.
 
 Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure
 reorganization never reach the curator. Completed unchanged and rejected inputs are fingerprinted in

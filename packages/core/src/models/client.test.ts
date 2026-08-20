@@ -20,6 +20,7 @@ import { OBSERVE_SCHEMA } from '../maintenance/observe.ts';
 import { CHOOSE_SCHEMA, REWRITE_SCHEMA } from '../maintenance/repair.ts';
 import {
   HYGIENE_SCHEMA,
+  MERGE_SCHEMA,
   SYNTHESIZE_SCHEMA,
   VERIFY_SCHEMA as CURATE_VERIFY_SCHEMA,
 } from '../maintenance/curate.ts';
@@ -255,6 +256,7 @@ describe('every schema stays strict-mode safe', () => {
     CHOOSE_SCHEMA,
     REWRITE_SCHEMA,
     HYGIENE_SCHEMA,
+    MERGE_SCHEMA,
     SYNTHESIZE_SCHEMA,
     CURATE_VERIFY_SCHEMA,
   };

@@ -34,6 +34,7 @@ export {
   CURATOR_SCHEMA,
   type ApplyMaintenanceResult,
   type CreateOperation,
+  type DeleteOperation,
   type MaintenanceCheck,
   type MaintenanceDecision,
   type MaintenanceEvidence,

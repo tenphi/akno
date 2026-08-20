@@ -221,6 +221,9 @@ const MaintenanceDoc = z.object({
       max_pages: z.number().int().positive().optional(),
       max_splits: z.number().int().nonnegative().optional(),
       max_extracts: z.number().int().nonnegative().optional(),
+      max_merges: z.number().int().nonnegative().optional(),
+      /** Exact folder prefixes eligible for identity-backed merge; empty keeps merge disabled. */
+      merge_folders: z.array(z.string().min(1)).optional(),
       max_children_per_page: z.number().int().positive().optional(),
       split_after_bytes: z.number().int().positive().optional(),
       split_section_bytes: z.number().int().positive().optional(),
@@ -423,6 +426,8 @@ export interface AknoConfig {
       maxPages: number;
       maxSplits: number;
       maxExtracts: number;
+      maxMerges: number;
+      mergeFolders: string[];
       maxChildrenPerPage: number;
       splitAfterBytes: number;
       splitSectionBytes: number;

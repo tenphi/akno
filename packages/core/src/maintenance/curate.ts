@@ -3,8 +3,8 @@ import path from 'node:path';
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
-import { parseFrontmatter } from '../kb/frontmatter.ts';
-import { AKNO_ITEM, normalizeLinkTarget } from '../kb/page.ts';
+import { parseFrontmatter, withAknoAliases } from '../kb/frontmatter.ts';
+import { AKNO_ITEM, normalizeLinkTarget, parsePage } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
 import { missingNumericValues } from './repair.ts';
@@ -30,6 +30,7 @@ export interface CuratedPage {
   action: 'would-update' | 'updated' | 'unchanged' | 'rejected';
   splits: string[];
   extractions: string[];
+  merges: string[];
   issues: string[];
   temporal?: {
     source: 'declared' | 'inferred' | 'model';
@@ -57,6 +58,14 @@ export interface CurateDraft {
   after: string;
   children: { slug: string; relPath: string; content: string }[];
   extractions: { slug: string; relPath: string; content: string }[];
+  merge: {
+    sourceSlug: string;
+    sourceRelPath: string;
+    sourceBefore: string;
+    sourceBodyHash: string;
+    identitySignal: string;
+    linkUpdates: { slug: string; relPath: string; before: string; after: string }[];
+  } | null;
   evidence: {
     slug: string;
     relationship: 'about' | 'outbound' | 'backlink';
@@ -77,7 +86,9 @@ interface PageRow {
   dream_management: 'hygiene' | 'synthesize';
   about: string;
   frontmatter: string;
+  aliases: string;
   body_hash: string;
+  bytes: number;
   curate_input_hash: string | null;
   curate_status: CurateStatus | null;
 }
@@ -146,6 +157,22 @@ interface ExtractionSection {
   body: string;
   startIndex: number;
   endIndex: number;
+}
+
+interface MergeCandidate {
+  canonical: PageRow;
+  duplicate: PageRow;
+  identitySignal: string;
+}
+
+interface MergeInboundPage {
+  id: string;
+  slug: string;
+  relPath: string;
+  role: string;
+  dreamManagement: string;
+  bodyHash: string;
+  content: string;
 }
 
 const HYGIENE_SYSTEM = `You are a conservative Markdown page hygienist. Reply with JSON only:
@@ -228,6 +255,19 @@ export const SYNTHESIZE_SCHEMA = z.object({
   ]),
 });
 
+const MERGE_SYSTEM = `You merge two Markdown pages that an explicit exact alias identifies as the same
+durable subject. Reply with JSON only: {"body":"complete merged canonical Markdown body"}
+
+The user message supplies a canonical body and a prepared duplicate body. Preserve every non-blank line from
+both inputs verbatim. An exactly identical line repeated by both inputs may appear once, but otherwise do not
+rewrite, summarize, combine, or omit lines. You may interleave complete sections to make one coherent page,
+but preserve line order within each input. Do not add connective prose, headings, frontmatter, facts, links, or item markers. Keep each
+<!-- akno:item ... --> marker immediately before the knowledge it identifies. The canonical page's first H1
+must remain its first H1. The duplicate title is preserved separately as an alias, so its leading H1 may already
+have been removed from the prepared duplicate body.`;
+
+export const MERGE_SCHEMA = z.object({ body: z.string() });
+
 const ARCHIVE_SYSTEM = `${SYNTHESIZE_SYSTEM}
 
 This page describes an event that has ended. This is an archival synthesis, not another planning pass.
@@ -251,12 +291,19 @@ prose, and must remain attached to their knowledge. For an archival rewrite, rej
 a plan happened merely because its date passed, and reject restructuring with no substantive
 post-event knowledge.`;
 
+const VERIFY_MERGE_SYSTEM = `${VERIFY_SYSTEM}
+
+For a merge, require the exact alias signal to establish one durable identity. Reject the merge if the two
+pages merely concern related subjects, if any unique authored detail or provenance marker is lost, if an
+unrelated page is rewritten, if an inbound link is not redirected, or if deleting the duplicate would orphan
+owned evidence. Exact duplicate lines may be deduplicated.`;
+
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 10: the verifier sees the final managed destination backlink, not only the raw moved section.
-// Old live rejections made without that generated postcondition must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 10;
+// 11: exact-alias, lossless merge candidates and their multi-page link updates are now part of curation.
+// Decisions from the previous transformation surface must be reconsidered once.
+const CURATE_FINGERPRINT_VERSION = 11;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -271,7 +318,7 @@ export async function curatePages(
   const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [], drafts: [] };
   const rows = ctx.store.db
     .prepare(
-      `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, body_hash,
+      `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, aliases, body_hash, bytes,
               curate_input_hash, curate_status
          FROM pages
         WHERE dream_management IN ('hygiene', 'synthesize') AND role = 'knowledge'
@@ -302,8 +349,81 @@ export async function curatePages(
     inputHash: string;
     metadataOnly: boolean;
   }[] = [];
+  const mergeDrafts: CurateDraft[] = [];
+  const mergeReserved = new Set<string>();
+  const mergeOperationPaths = new Set<string>();
+
+  // Merge is available only through durable plans. The legacy `write` switch cannot represent
+  // a separately decided deletion, while audit/review/auto all seal the exact multi-file item.
+  if (options.includePreviewed && settings.maxMerges > 0) {
+    const candidates = discoverMergeCandidates(rows, settings.mergeFolders);
+    for (const candidate of candidates) {
+      mergeReserved.add(candidate.canonical.id);
+      mergeReserved.add(candidate.duplicate.id);
+    }
+    let mergeAttempts = 0;
+    for (const candidate of candidates) {
+      if (mergeAttempts >= settings.maxMerges) break;
+      if (attempted + 2 > settings.maxPages) break;
+      const inspection = await inspectMergeCandidate(ctx, candidate);
+      if (!inspection) {
+        result.warnings.push(
+          `${candidate.canonical.slug}: could not read the exact-alias merge candidate ${candidate.duplicate.slug}`,
+        );
+        continue;
+      }
+      for (const page of inspection.inbound) mergeReserved.add(page.id);
+      if (!curationDue(candidate.canonical, inspection.inputHash, options.dryRun, true)) continue;
+      mergeAttempts++;
+      attempted += 2;
+      const prepared = await prepareMergeDraft(ctx, inspection);
+      const paths = prepared.draft
+        ? [
+            prepared.draft.relPath,
+            ...prepared.draft.merge!.linkUpdates.map((update) => update.relPath),
+            prepared.draft.merge!.sourceRelPath,
+          ]
+        : [];
+      if (paths.some((relPath) => mergeOperationPaths.has(relPath))) {
+        prepared.draft = null;
+        prepared.issues = ['merge overlaps another planned merge operation in this run'];
+        prepared.cacheable = true;
+      }
+      if (prepared.issues.length > 0 || !prepared.draft) {
+        result.pages.push({
+          slug: candidate.canonical.slug,
+          mode: 'synthesize',
+          action: 'rejected',
+          splits: [],
+          extractions: [],
+          merges: [candidate.duplicate.slug],
+          issues: prepared.issues.length > 0 ? prepared.issues : ['merge planner returned no exact draft'],
+        });
+        if (prepared.cacheable) {
+          queueCurateState(state, candidate.canonical.id, prepared.inputHash, 'rejected');
+        }
+        continue;
+      }
+      mergeDrafts.push(prepared.draft);
+      for (const relPath of paths) mergeOperationPaths.add(relPath);
+      for (const update of prepared.draft.merge!.linkUpdates) {
+        const row = rows.find((page) => page.slug === update.slug);
+        if (row) mergeReserved.add(row.id);
+      }
+      result.pages.push({
+        slug: candidate.canonical.slug,
+        mode: 'synthesize',
+        action: 'would-update',
+        splits: [],
+        extractions: [],
+        merges: [candidate.duplicate.slug],
+        issues: [],
+      });
+    }
+  }
 
   for (const row of rows) {
+    if (mergeReserved.has(row.id)) continue;
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
@@ -396,6 +516,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         extractions: [],
+        merges: [],
         issues: [issue],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -415,6 +536,7 @@ export async function curatePages(
           action: 'rejected',
           splits: [],
           extractions: [],
+          merges: [],
           issues: [proposed.issue],
         });
         queueCurateState(state, row.id, inputHash, 'rejected');
@@ -454,6 +576,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         extractions: [],
+        merges: [],
         issues: [issue],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -494,6 +617,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         extractions: [],
+        merges: [],
         issues: extractionResult.issues,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -522,6 +646,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         extractions: [],
+        merges: [],
         issues: deterministic,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -552,6 +677,7 @@ export async function curatePages(
         action: 'rejected',
         splits: [],
         extractions: [],
+        merges: [],
         issues: verified.issues,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -581,6 +707,7 @@ export async function curatePages(
         action: 'unchanged',
         splits: [],
         extractions: [],
+        merges: [],
         issues: [],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -607,38 +734,47 @@ export async function curatePages(
       action: options.dryRun ? 'would-update' : 'updated',
       splits: children.map((child) => child.slug),
       extractions: extractedPages.map((page) => page.slug),
+      merges: [],
       issues: [],
       ...temporalResult(temporal, temporalSource, clock, archival),
     });
   }
 
-  result.drafts = staged.map((stage) => ({
-    slug: stage.row.slug,
-    mode: stage.row.dream_management,
-    relPath: stage.row.rel_path,
-    inputHash: stage.inputHash,
-    before: stage.before,
-    after: stage.after,
-    children: stage.children,
-    extractions: stage.extractions,
-    evidence: stage.evidence.map((entry) => ({
-      slug: entry.slug,
-      relationship: entry.relationship,
-      bodyHash: entry.body_hash,
-      summary: entry.relationship === 'about' ? entry.summary : null,
-      claims: entry.facts.map((fact) => fact.claim),
-      events: entry.events.map((event) => `${event.date}: ${event.summary}`),
+  result.drafts = [
+    ...mergeDrafts,
+    ...staged.map((stage) => ({
+      slug: stage.row.slug,
+      mode: stage.row.dream_management,
+      relPath: stage.row.rel_path,
+      inputHash: stage.inputHash,
+      before: stage.before,
+      after: stage.after,
+      children: stage.children,
+      extractions: stage.extractions,
+      merge: null,
+      evidence: stage.evidence.map((entry) => ({
+        slug: entry.slug,
+        relationship: entry.relationship,
+        bodyHash: entry.body_hash,
+        summary: entry.relationship === 'about' ? entry.summary : null,
+        claims: entry.facts.map((fact) => fact.claim),
+        events: entry.events.map((event) => `${event.date}: ${event.summary}`),
+      })),
+      conflicts: stage.conflicts.map((entry) => ({
+        slug: entry.slug,
+        subject: entry.subject,
+        attribute: entry.attribute,
+        claim: entry.claim,
+        value: entry.value,
+      })),
     })),
-    conflicts: stage.conflicts.map((entry) => ({
-      slug: entry.slug,
-      subject: entry.subject,
-      attribute: entry.attribute,
-      claim: entry.claim,
-      value: entry.value,
-    })),
-  }));
+  ];
 
   if (options.dryRun) {
+    for (const draft of mergeDrafts) {
+      const row = rows.find((candidate) => candidate.slug === draft.slug);
+      if (row) queueCurateState(state, row.id, draft.inputHash, 'preview');
+    }
     for (const stage of staged) {
       queueCurateState(state, stage.row.id, stage.inputHash, 'preview');
     }
@@ -710,6 +846,595 @@ export async function curatePages(
   }
   if (options.recordState) persistCurateState(ctx, state.values());
   return result;
+}
+
+function discoverMergeCandidates(rows: PageRow[], folders: string[]): MergeCandidate[] {
+  const eligible = rows.filter(
+    (row) => row.dream_management === 'synthesize' && mergeFolderAllowed(row.slug, folders),
+  );
+  if (eligible.length < 2 || folders.length === 0) return [];
+  const identities = new Map<string, PageRow[]>();
+  for (const row of eligible) {
+    for (const value of [row.slug, row.title]) {
+      const key = exactIdentityKey(value);
+      const found = identities.get(key) ?? [];
+      found.push(row);
+      identities.set(key, found);
+    }
+  }
+
+  const pairs = new Map<string, MergeCandidate>();
+  for (const canonical of eligible) {
+    for (const alias of storedStrings(canonical.aliases)) {
+      const matches = [
+        ...new Map(
+          (identities.get(exactIdentityKey(alias)) ?? [])
+            .filter((row) => row.id !== canonical.id)
+            .map((row) => [row.id, row]),
+        ).values(),
+      ];
+      if (matches.length !== 1) continue;
+      const duplicate = matches[0]!;
+      const pairKey = [canonical.id, duplicate.id].sort().join('|');
+      const proposed: MergeCandidate = {
+        canonical,
+        duplicate,
+        identitySignal: `exact alias ${JSON.stringify(alias)} on ${canonical.slug} identifies ${duplicate.slug}`,
+      };
+      const prior = pairs.get(pairKey);
+      if (!prior) {
+        pairs.set(pairKey, proposed);
+        continue;
+      }
+      // Reciprocal aliases are equally explicit. Prefer the page with more authored bytes,
+      // then a stable slug tie-break, so two consecutive cycles cannot choose opposite sides.
+      const preferred = [prior.canonical, proposed.canonical].sort(
+        (left, right) => right.bytes - left.bytes || left.slug.localeCompare(right.slug),
+      )[0]!;
+      if (preferred.id === proposed.canonical.id) {
+        pairs.set(pairKey, { ...proposed, identitySignal: `reciprocal exact aliases identify one subject` });
+      } else {
+        pairs.set(pairKey, { ...prior, identitySignal: `reciprocal exact aliases identify one subject` });
+      }
+    }
+  }
+
+  const selected: MergeCandidate[] = [];
+  const occupied = new Set<string>();
+  for (const candidate of [...pairs.values()].sort((left, right) =>
+    left.canonical.slug.localeCompare(right.canonical.slug),
+  )) {
+    if (occupied.has(candidate.canonical.id) || occupied.has(candidate.duplicate.id)) continue;
+    occupied.add(candidate.canonical.id);
+    occupied.add(candidate.duplicate.id);
+    selected.push(candidate);
+  }
+  return selected;
+}
+
+function mergeFolderAllowed(slug: string, folders: string[]): boolean {
+  const value = slug.toLowerCase();
+  return folders.some((raw) => {
+    const folder = raw
+      .trim()
+      .replace(/^\/+|\/+$/g, '')
+      .toLowerCase();
+    return folder === '*' || (folder.length > 0 && value.startsWith(`${folder}/`));
+  });
+}
+
+function exactIdentityKey(value: string): string {
+  return value
+    .trim()
+    .replace(/\\/g, '/')
+    .replace(/\.(?:md|markdown)$/i, '')
+    .normalize('NFKC')
+    .toLowerCase();
+}
+
+function storedStrings(value: string): string[] {
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+interface PreparedMerge {
+  inputHash: string;
+  draft: CurateDraft | null;
+  issues: string[];
+  cacheable: boolean;
+}
+
+interface MergeInspection {
+  candidate: MergeCandidate;
+  canonicalBefore: string;
+  duplicateBefore: string;
+  canonical: ReturnType<typeof parsePage>;
+  duplicate: ReturnType<typeof parsePage>;
+  inbound: MergeInboundPage[];
+  inputHash: string;
+  canonicalWithAliases: string | null;
+  issues: string[];
+}
+
+async function inspectMergeCandidate(
+  ctx: AknoContext,
+  candidate: MergeCandidate,
+): Promise<MergeInspection | null> {
+  const [canonicalBefore, duplicateBefore] = await Promise.all([
+    fsp.readFile(path.join(ctx.config.aknoPath, candidate.canonical.rel_path), 'utf8').catch(() => null),
+    fsp.readFile(path.join(ctx.config.aknoPath, candidate.duplicate.rel_path), 'utf8').catch(() => null),
+  ]);
+  if (canonicalBefore === null || duplicateBefore === null) return null;
+  const canonical = parsePage(candidate.canonical.rel_path, canonicalBefore);
+  const duplicate = parsePage(candidate.duplicate.rel_path, duplicateBefore);
+  const conflicts = [
+    ...conflictsFor(ctx, candidate.canonical.id),
+    ...conflictsFor(ctx, candidate.duplicate.id),
+  ];
+  const inbound = await mergeInboundPages(ctx, candidate.duplicate);
+  const inputHash = mergeInputHash(ctx, candidate, canonicalBefore, duplicateBefore, inbound, conflicts);
+  const issues = mergeEligibilityIssues(ctx, candidate, canonical, duplicate, inbound, conflicts);
+  if (Buffer.byteLength(canonical.body) + Buffer.byteLength(duplicate.body) > 80_000) {
+    issues.push('merge inputs exceed the 80000-byte lossless planning limit');
+  }
+
+  const duplicateAliases = storedStrings(candidate.duplicate.aliases);
+  const aliasCollision = mergeAliasCollision(ctx, candidate, [
+    duplicate.slug,
+    duplicate.title,
+    ...duplicateAliases,
+  ]);
+  if (aliasCollision) issues.push(aliasCollision);
+  const canonicalWithAliases = withAknoAliases(canonicalBefore, [
+    duplicate.slug,
+    duplicate.title,
+    ...duplicateAliases,
+  ]);
+  if (canonicalWithAliases === null) {
+    issues.push('canonical frontmatter cannot accept aliases without reformatting unknown YAML');
+  }
+  return {
+    candidate,
+    canonicalBefore,
+    duplicateBefore,
+    canonical,
+    duplicate,
+    inbound,
+    inputHash,
+    canonicalWithAliases,
+    issues: [...new Set(issues)],
+  };
+}
+
+async function prepareMergeDraft(ctx: AknoContext, inspection: MergeInspection): Promise<PreparedMerge> {
+  const {
+    candidate,
+    canonicalBefore,
+    duplicateBefore,
+    canonical,
+    duplicate,
+    inbound,
+    inputHash,
+    canonicalWithAliases,
+    issues,
+  } = inspection;
+  if (issues.length > 0 || canonicalWithAliases === null) {
+    return { inputHash, draft: null, issues, cacheable: true };
+  }
+  const canonicalPrepared = rewritePageLinks(canonical.body, canonical.slug, duplicate.slug, canonical.slug);
+  const duplicatePrepared = rewritePageLinks(
+    withoutDuplicateTitle(duplicate.body, duplicate.title),
+    duplicate.slug,
+    duplicate.slug,
+    canonical.slug,
+  );
+  const planned = await ctx.models.derive.chat(
+    [
+      { role: 'system', content: MERGE_SYSTEM },
+      {
+        role: 'user',
+        content:
+          `Identity signal: ${candidate.identitySignal}\nCanonical slug: ${canonical.slug}\n` +
+          `Duplicate slug to retire: ${duplicate.slug}\n\nCanonical body:\n${canonicalPrepared}\n\n` +
+          `Prepared duplicate body:\n${duplicatePrepared}`,
+      },
+    ],
+    { schema: MERGE_SCHEMA, maxTokens: 8_000 },
+  );
+  const parsed = planned.ok && planned.value ? parseJsonLoose<{ body?: unknown }>(planned.value) : null;
+  const nextBody = typeof parsed?.body === 'string' ? endWithNewline(parsed.body) : null;
+  if (!nextBody) {
+    return {
+      inputHash,
+      draft: null,
+      issues: [planned.error ?? 'merge planner returned invalid JSON without a body'],
+      cacheable: planned.ok,
+    };
+  }
+
+  const guarded = mergeAccountingIssues(canonicalPrepared, duplicatePrepared, nextBody);
+  const incomingAnchors = await incomingHeadingAnchors(ctx, candidate.duplicate.id, duplicate.slug);
+  const resultingHeadings = headingReferences(nextBody);
+  if ([...incomingAnchors].some((anchor) => !resultingHeadings.has(anchor))) {
+    guarded.push('the merge would remove a heading targeted by an incoming link');
+  }
+  if (guarded.length > 0) {
+    return { inputHash, draft: null, issues: [...new Set(guarded)], cacheable: true };
+  }
+
+  const aliasFm = parseFrontmatter(canonicalWithAliases);
+  const canonicalAfter = canonicalWithAliases.slice(0, aliasFm.bodyOffset) + nextBody;
+  const linkUpdates = inbound
+    .filter((page) => page.id !== candidate.canonical.id)
+    .map((page) => ({
+      slug: page.slug,
+      relPath: page.relPath,
+      before: page.content,
+      after: rewritePageLinks(page.content, page.slug, duplicate.slug, canonical.slug),
+    }));
+  if (linkUpdates.some((update) => update.before === update.after)) {
+    return {
+      inputHash,
+      draft: null,
+      issues: ['an indexed inbound link could not be rewritten exactly'],
+      cacheable: true,
+    };
+  }
+  const verified = await verifyMergeDraft(
+    ctx,
+    candidate,
+    canonicalPrepared,
+    duplicatePrepared,
+    canonicalAfter,
+    linkUpdates,
+  );
+  if (!verified.ok) {
+    return { inputHash, draft: null, issues: verified.issues, cacheable: verified.cacheable };
+  }
+
+  return {
+    inputHash,
+    issues: [],
+    cacheable: true,
+    draft: {
+      slug: canonical.slug,
+      mode: 'synthesize',
+      relPath: canonical.relPath,
+      inputHash,
+      before: canonicalBefore,
+      after: canonicalAfter,
+      children: [],
+      extractions: [],
+      merge: {
+        sourceSlug: duplicate.slug,
+        sourceRelPath: duplicate.relPath,
+        sourceBefore: duplicateBefore,
+        sourceBodyHash: candidate.duplicate.body_hash,
+        identitySignal: candidate.identitySignal,
+        linkUpdates,
+      },
+      evidence: [],
+      conflicts: [],
+    },
+  };
+}
+
+async function mergeInboundPages(ctx: AknoContext, duplicate: PageRow): Promise<MergeInboundPage[]> {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT DISTINCT p.id, p.slug, p.rel_path, p.role, p.dream_management, p.body_hash
+       FROM links l JOIN pages p ON p.id = l.from_page
+       WHERE lower(l.to_slug) = lower(?) AND l.from_page != ? AND l.kind != 'embed'
+       ORDER BY p.slug`,
+    )
+    .all(duplicate.slug, duplicate.id) as {
+    id: string;
+    slug: string;
+    rel_path: string;
+    role: string;
+    dream_management: string;
+    body_hash: string;
+  }[];
+  const pages: MergeInboundPage[] = [];
+  for (const row of rows) {
+    const content = await fsp
+      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
+      .catch(() => null);
+    if (content === null) continue;
+    pages.push({
+      id: row.id,
+      slug: row.slug,
+      relPath: row.rel_path,
+      role: row.role,
+      dreamManagement: row.dream_management,
+      bodyHash: row.body_hash,
+      content,
+    });
+  }
+  return pages;
+}
+
+function mergeEligibilityIssues(
+  ctx: AknoContext,
+  candidate: MergeCandidate,
+  canonical: ReturnType<typeof parsePage>,
+  duplicate: ReturnType<typeof parsePage>,
+  inbound: MergeInboundPage[],
+  conflicts: ConflictEvidence[],
+): string[] {
+  const issues: string[] = [];
+  if (
+    canonical.declaredManagement.dream !== 'synthesize' ||
+    duplicate.declaredManagement.dream !== 'synthesize'
+  ) {
+    issues.push('both merge pages must explicitly declare dream: synthesize');
+  }
+  if (canonical.declaredRole && canonical.declaredRole !== 'knowledge') {
+    issues.push('the canonical merge page is not declared as knowledge');
+  }
+  if (duplicate.declaredRole && duplicate.declaredRole !== 'knowledge') {
+    issues.push('the duplicate merge page is not declared as knowledge');
+  }
+  if (canonical.about.includes(duplicate.slug) || duplicate.about.includes(canonical.slug)) {
+    issues.push('parent/child pages cannot be merged as duplicate identities');
+  }
+  if (conflicts.length > 0) issues.push('unresolved conflicts must be handled before these pages can merge');
+  const documents = ctx.store.db
+    .prepare('SELECT count(*) AS n FROM documents WHERE page_id = ?')
+    .get(candidate.duplicate.id) as { n: number };
+  if (documents.n > 0) issues.push('the duplicate owns documents whose canonical ownership is unresolved');
+  for (const page of inbound) {
+    if (page.id === candidate.canonical.id) continue;
+    if (page.role !== 'knowledge' || page.dreamManagement !== 'synthesize') {
+      issues.push(`inbound link page ${page.slug} is not opted in to synthesis link updates`);
+      continue;
+    }
+    const parsed = parsePage(page.relPath, page.content);
+    if (parsed.declaredManagement.dream !== 'synthesize') {
+      issues.push(`inbound link page ${page.slug} does not explicitly permit synthesis writes`);
+    }
+  }
+  issues.push(...mergeFrontmatterIssues(canonical.frontmatter.data, duplicate.frontmatter.data));
+  return issues;
+}
+
+function mergeFrontmatterIssues(
+  canonical: Record<string, unknown>,
+  duplicate: Record<string, unknown>,
+): string[] {
+  const issues: string[] = [];
+  for (const [key, value] of Object.entries(duplicate)) {
+    if (key === 'title' || key === 'id' || key === 'akno') continue;
+    if (JSON.stringify(canonical[key]) !== JSON.stringify(value)) {
+      issues.push(`duplicate frontmatter key ${key} has no lossless canonical disposition`);
+    }
+  }
+  const canonicalAkno = objectValue(canonical.akno);
+  const duplicateAkno = objectValue(duplicate.akno);
+  for (const [key, value] of Object.entries(duplicateAkno)) {
+    if (key === 'aliases' || key === 'role') continue;
+    if (key === 'about') {
+      const canonicalAbout = new Set(stringArray(canonicalAkno.about));
+      if (stringArray(value).some((entry) => !canonicalAbout.has(entry))) {
+        issues.push('duplicate about relationships have no lossless canonical disposition');
+      }
+      continue;
+    }
+    if (JSON.stringify(canonicalAkno[key]) !== JSON.stringify(value)) {
+      issues.push(`duplicate akno.${key} metadata differs from the canonical page`);
+    }
+  }
+  return issues;
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
+}
+
+function mergeAliasCollision(
+  ctx: AknoContext,
+  candidate: MergeCandidate,
+  aliases: string[],
+): string | null {
+  const other = ctx.store.db
+    .prepare('SELECT slug, title FROM pages WHERE id NOT IN (?, ?)')
+    .all(candidate.canonical.id, candidate.duplicate.id) as { slug: string; title: string }[];
+  const occupied = new Set(other.flatMap((row) => [exactIdentityKey(row.slug), exactIdentityKey(row.title)]));
+  const collision = aliases.find((alias) => occupied.has(exactIdentityKey(alias)));
+  return collision ? `retired identity ${JSON.stringify(collision)} also identifies another page` : null;
+}
+
+function mergeInputHash(
+  ctx: AknoContext,
+  candidate: MergeCandidate,
+  canonicalBefore: string,
+  duplicateBefore: string,
+  inbound: MergeInboundPage[],
+  conflicts: ConflictEvidence[],
+): string {
+  const documents = ctx.store.db
+    .prepare('SELECT rel_path, sha256 FROM documents WHERE page_id = ? ORDER BY rel_path')
+    .all(candidate.duplicate.id);
+  const retiredKeys = new Set(
+    [candidate.duplicate.slug, candidate.duplicate.title, ...storedStrings(candidate.duplicate.aliases)].map(
+      exactIdentityKey,
+    ),
+  );
+  const identityCollisions = (
+    ctx.store.db
+      .prepare('SELECT id, slug, title FROM pages WHERE id NOT IN (?, ?) ORDER BY slug')
+      .all(candidate.canonical.id, candidate.duplicate.id) as { id: string; slug: string; title: string }[]
+  ).filter(
+    (row) => retiredKeys.has(exactIdentityKey(row.slug)) || retiredKeys.has(exactIdentityKey(row.title)),
+  );
+  return sha256(
+    JSON.stringify({
+      version: CURATE_FINGERPRINT_VERSION,
+      kind: 'merge',
+      canonical: { slug: candidate.canonical.slug, hash: sha256(canonicalBefore) },
+      duplicate: { slug: candidate.duplicate.slug, hash: sha256(duplicateBefore) },
+      identitySignal: candidate.identitySignal,
+      inbound: inbound.map((page) => ({
+        slug: page.slug,
+        hash: sha256(page.content),
+        role: page.role,
+        dreamManagement: page.dreamManagement,
+      })),
+      documents,
+      identityCollisions,
+      conflicts,
+      policy: {
+        maxMerges: ctx.config.maintenance.curate.maxMerges,
+        mergeFolders: ctx.config.maintenance.curate.mergeFolders,
+      },
+    }),
+  );
+}
+
+function withoutDuplicateTitle(body: string, title: string): string {
+  const lines = body.replaceAll('\r\n', '\n').split('\n');
+  const index = lines.findIndex((line) => line.trim().length > 0);
+  if (index < 0) return body;
+  const heading = /^#\s+(.+?)\s*#*\s*$/.exec(lines[index]!);
+  if (!heading || exactIdentityKey(heading[1]!) !== exactIdentityKey(title)) return body;
+  lines.splice(index, 1);
+  while (lines[0] === '') lines.shift();
+  return endWithNewline(lines.join('\n'));
+}
+
+function rewritePageLinks(text: string, fromPage: string, retired: string, canonical: string): string {
+  const wiki = text.replace(/\[\[([^\]|#]+)((?:#[^\]|]+)?(?:\|[^\]]+)?)\]\]/g, (whole, target, suffix) => {
+    return normalizeLinkTarget(String(target), fromPage).toLowerCase() === retired.toLowerCase()
+      ? `[[${canonical}${String(suffix)}]]`
+      : whole;
+  });
+  return wiki.replace(
+    /(?<!!)\[([^\]]*)\]\(\s*<?([^\s)>]+)>?(\s+[^)]*)?\)/g,
+    (whole, label, href, titlePart) => {
+      const value = String(href);
+      const hash = value.indexOf('#');
+      const target = hash >= 0 ? value.slice(0, hash) : value;
+      const fragment = hash >= 0 ? value.slice(hash) : '';
+      if (normalizeLinkTarget(target, fromPage).toLowerCase() !== retired.toLowerCase()) return whole;
+      return `[${String(label)}](${canonical}.md${fragment}${String(titlePart ?? '')})`;
+    },
+  );
+}
+
+function mergeAccountingIssues(canonical: string, duplicate: string, after: string): string[] {
+  const expected = nonBlankLineCounts(canonical);
+  for (const [line, count] of nonBlankLineCounts(duplicate)) {
+    expected.set(line, Math.max(expected.get(line) ?? 0, count));
+  }
+  const actual = nonBlankLineCounts(after);
+  const issues: string[] = [];
+  for (const [line, count] of expected) {
+    if ((actual.get(line) ?? 0) !== count) {
+      issues.push('merge did not preserve every unique authored line exactly once');
+      break;
+    }
+  }
+  if ([...actual].some(([line, count]) => !expected.has(line) || count !== expected.get(line))) {
+    issues.push('merge body contains text that was not present in either source page');
+  }
+  const afterLines = nonBlankLines(after);
+  if (
+    !lineSubsequence(nonBlankLines(canonical), afterLines) ||
+    !lineSubsequence(nonBlankLines(duplicate), afterLines)
+  ) {
+    issues.push('merge changed the authored line order inside a source page');
+  }
+  for (const [marker, knowledge] of [...markerAttachments(canonical), ...markerAttachments(duplicate)]) {
+    const markerIndex = afterLines.indexOf(marker);
+    if (markerIndex < 0 || afterLines[markerIndex + 1] !== knowledge) {
+      issues.push('merge detached a stable item marker from its authored knowledge');
+      break;
+    }
+  }
+  if (firstH1(after) !== firstH1(canonical)) {
+    issues.push('merge changed the canonical page title heading');
+  }
+  return [...new Set(issues)];
+}
+
+function nonBlankLines(value: string): string[] {
+  return value
+    .replaceAll('\r\n', '\n')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line) => line.trim().length > 0);
+}
+
+function lineSubsequence(source: string[], combined: string[]): boolean {
+  let at = 0;
+  for (const line of source) {
+    while (at < combined.length && combined[at] !== line) at++;
+    if (at >= combined.length) return false;
+    at++;
+  }
+  return true;
+}
+
+function markerAttachments(value: string): [string, string][] {
+  const lines = nonBlankLines(value);
+  const pairs: [string, string][] = [];
+  for (let index = 0; index < lines.length - 1; index++) {
+    if (AKNO_ITEM.test(lines[index]!)) pairs.push([lines[index]!, lines[index + 1]!]);
+  }
+  return pairs;
+}
+
+async function verifyMergeDraft(
+  ctx: AknoContext,
+  candidate: MergeCandidate,
+  canonicalBody: string,
+  duplicateBody: string,
+  canonicalAfter: string,
+  linkUpdates: { slug: string; relPath: string; before: string; after: string }[],
+): Promise<{ ok: boolean; issues: string[]; cacheable: boolean }> {
+  const result = await ctx.models.derive.chat(
+    [
+      { role: 'system', content: VERIFY_MERGE_SYSTEM },
+      {
+        role: 'user',
+        content: JSON.stringify({
+          identity: candidate.identitySignal,
+          canonical: { slug: candidate.canonical.slug, before: canonicalBody, after: canonicalAfter },
+          duplicate: { slug: candidate.duplicate.slug, body: duplicateBody, operation: 'delete' },
+          inboundLinkUpdates: linkUpdates,
+        }).slice(0, 100_000),
+      },
+    ],
+    { schema: VERIFY_SCHEMA, maxTokens: 1_200 },
+  );
+  const parsed =
+    result.ok && result.value ? parseJsonLoose<{ ok?: unknown; issues?: unknown }>(result.value) : null;
+  if (parsed?.ok === true && Array.isArray(parsed.issues)) return { ok: true, issues: [], cacheable: true };
+  if (parsed?.ok === false && Array.isArray(parsed.issues)) {
+    const issues = parsed.issues.filter((issue): issue is string => typeof issue === 'string');
+    return {
+      ok: false,
+      issues: issues.length > 0 ? issues : ['merge verifier rejected draft'],
+      cacheable: true,
+    };
+  }
+  return {
+    ok: false,
+    issues: [result.error ?? 'merge verifier returned invalid JSON'],
+    cacheable: result.ok,
+  };
 }
 
 function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
@@ -1281,7 +2006,7 @@ function pageForSlug(ctx: AknoContext, slug: string): PageRow | null {
   return (
     (ctx.store.db
       .prepare(
-        `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, body_hash,
+        `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, aliases, body_hash, bytes,
                 curate_input_hash, curate_status
            FROM pages WHERE slug = ? AND role = 'knowledge'
              AND dream_management IN ('hygiene', 'synthesize')`,
@@ -1623,10 +2348,10 @@ async function incomingHeadingAnchors(
     .prepare(
       `SELECT p.slug, p.rel_path, l.line FROM links l
        JOIN pages p ON p.id = l.from_page
-       WHERE l.to_page = ? AND l.from_page != ?
+       WHERE (l.to_page = ? OR lower(l.to_slug) = lower(?)) AND l.from_page != ?
        ORDER BY p.slug, l.line`,
     )
-    .all(sourcePageId, sourcePageId) as { slug: string; rel_path: string; line: number }[];
+    .all(sourcePageId, sourceSlug, sourcePageId) as { slug: string; rel_path: string; line: number }[];
   const anchors = new Set<string>();
   for (const row of rows) {
     const content = await fsp

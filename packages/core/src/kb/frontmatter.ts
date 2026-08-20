@@ -125,6 +125,76 @@ export function spliceAfterFence(content: string, lines: string[]): string {
   );
 }
 
+/**
+ * Adds identity aliases without round-tripping the rest of the frontmatter through YAML.
+ *
+ * Merge is allowed to retire one page identity, but the old title and slug must remain
+ * discoverable on the canonical page. Complex inline `akno` mappings are refused: silently
+ * reformatting an owner's unknown keys and comments would make a structural cleanup broader
+ * than the plan says it is.
+ */
+export function withAknoAliases(content: string, aliases: string[]): string | null {
+  const additions = [...new Set(aliases.map((value) => value.trim()).filter(Boolean))];
+  if (additions.length === 0) return content;
+  const fm = parseFrontmatter(content);
+  if (fm.present && fm.raw.trim().length > 0 && Object.keys(fm.data).length === 0) return null;
+  const akno = fm.data.akno;
+  const record =
+    akno && typeof akno === 'object' && !Array.isArray(akno)
+      ? (akno as Record<string, unknown>)
+      : null;
+  if (akno !== undefined && !record) return null;
+  const existingValue = record?.aliases;
+  if (existingValue !== undefined && !Array.isArray(existingValue)) return null;
+  const existing = (existingValue ?? []).filter((value): value is string => typeof value === 'string');
+  const wanted = [...new Set([...existing, ...additions])];
+  if (wanted.length === existing.length) return content;
+  const missing = wanted.filter((value) => !existing.includes(value));
+  const rendered = wanted.map((value) => `    - ${JSON.stringify(value)}`);
+
+  if (!fm.present || !record) {
+    return spliceAfterFence(content, ['akno:', '  aliases:', ...rendered]);
+  }
+
+  const newline = fm.raw.includes('\r\n') ? '\r\n' : '\n';
+  if (newline === '\r\n' && fm.raw.replaceAll('\r\n', '').includes('\n')) return null;
+  const lines = fm.raw.split(newline);
+  const aknoIndex = lines.findIndex((line) => /^akno:[ \t]*(?:#.*)?$/.test(line));
+  if (aknoIndex < 0) return null;
+  let blockEnd = lines.length;
+  for (let index = aknoIndex + 1; index < lines.length; index++) {
+    const line = lines[index]!;
+    if (line.trim() && !/^[ \t]/.test(line)) {
+      blockEnd = index;
+      break;
+    }
+  }
+  const aliasesIndex = lines.findIndex(
+    (line, index) => index > aknoIndex && index < blockEnd && /^  aliases:/.test(line),
+  );
+  if (aliasesIndex < 0) {
+    lines.splice(aknoIndex + 1, 0, '  aliases:', ...rendered);
+  } else {
+    const match = /^  aliases:[ \t]*(.*)$/.exec(lines[aliasesIndex]!);
+    const tail = match?.[1]?.trim() ?? '';
+    if (tail.startsWith('[') && tail.endsWith(']')) {
+      lines[aliasesIndex] = `  aliases: ${JSON.stringify(wanted)}`;
+    } else if (tail.length === 0) {
+      let insertAt = aliasesIndex + 1;
+      while (insertAt < blockEnd && (/^[ \t]{4,}/.test(lines[insertAt]!) || !lines[insertAt]!.trim())) {
+        insertAt++;
+      }
+      lines.splice(insertAt, 0, ...missing.map((value) => `    - ${JSON.stringify(value)}`));
+    } else {
+      return null;
+    }
+  }
+
+  const firstFenceEnd = content.indexOf('\n') + 1;
+  const rawEnd = firstFenceEnd + fm.raw.length;
+  return content.slice(0, firstFenceEnd) + lines.join(newline) + content.slice(rawEnd);
+}
+
 /** A frontmatter block a caller supplied, split from the body it came with. */
 export interface DeclaredFrontmatter {
   /** The block verbatim, fences and trailing newline included. */

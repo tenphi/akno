@@ -93,6 +93,7 @@ function privateReport(): DreamReport {
         action: 'rejected',
         splits: [],
         extractions: [],
+        merges: [],
         issues: [
           'numeric/date/value tokens missing from rewrite: "111"',
           'source body line 7 for "111": Ada Marlow lives at 111 Example Street.',

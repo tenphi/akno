@@ -166,6 +166,7 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
         if (entry.extractions.length) {
           line(`          ${style.grey(`extracts: ${entry.extractions.join(', ')}`)}`);
         }
+        if (entry.merges.length) line(`          ${style.grey(`merges: ${entry.merges.join(', ')}`)}`);
       }
     } else {
       const counts = curationCounts(report);

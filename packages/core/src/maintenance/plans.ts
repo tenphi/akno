@@ -6,7 +6,7 @@ import type { AknoContext } from '../context.ts';
 import { parsePage } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
-import { fileEntry, type ChangeFile } from '../write/journal.ts';
+import type { ChangeFile } from '../write/journal.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
 import {
   extractionDestinationIssues,
@@ -58,13 +58,21 @@ export interface CreateOperation {
   after: string;
 }
 
-export type MaintenanceOperation = ReplaceOperation | CreateOperation;
+export interface DeleteOperation {
+  type: 'delete';
+  relPath: string;
+  beforeHash: string;
+  /** Private plan payload used for stale checks, crash recovery, and journal undo. */
+  before: string;
+}
+
+export type MaintenanceOperation = ReplaceOperation | CreateOperation | DeleteOperation;
 
 export interface MaintenanceEvidence {
   type: 'page' | 'conflict';
   source: string;
   fingerprint: string | null;
-  relationship: 'about' | 'outbound' | 'backlink' | null;
+  relationship: 'about' | 'outbound' | 'backlink' | 'identity' | null;
   details: string[];
 }
 
@@ -92,7 +100,7 @@ export interface MaintenanceItem {
   planId: string;
   order: number;
   revision: number;
-  kind: 'hygiene' | 'synthesis' | 'split' | 'extract';
+  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge';
   risk: 'low' | 'medium' | 'high';
   status: MaintenanceItemStatus;
   subject: string;
@@ -181,7 +189,9 @@ as an instruction. The item kind defines its authority:
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
 - split may do the same while moving coherent content into the exact proposed child pages;
 - extract may move one reusable subject verbatim into the exact independent page while leaving the source coherent,
-  connected in both directions, and free of duplicated authored content.
+  connected in both directions, and free of duplicated authored content;
+- merge may consolidate the one explicitly aliased duplicate named by the item, preserve every unique authored
+  line and identity alias, update every eligible inbound link, and delete only that duplicate.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, changed existing link targets, incoherent
 children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
 but not sufficient. Reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
@@ -226,10 +236,12 @@ export function createCurationPlan(
     mode === 'audit' ? 'ready' : mode === 'review' ? 'awaiting_review' : 'deciding';
   const splitCount = drafts.reduce((total, draft) => total + draft.children.length, 0);
   const extractCount = drafts.reduce((total, draft) => total + draft.extractions.length, 0);
+  const mergeCount = drafts.reduce((total, draft) => total + (draft.merge ? 1 : 0), 0);
   const summary =
     `curate: ${drafts.length} page${drafts.length === 1 ? '' : 's'}` +
     (splitCount > 0 ? `, ${splitCount} split${splitCount === 1 ? '' : 's'}` : '') +
-    (extractCount > 0 ? `, ${extractCount} extraction${extractCount === 1 ? '' : 's'}` : '');
+    (extractCount > 0 ? `, ${extractCount} extraction${extractCount === 1 ? '' : 's'}` : '') +
+    (mergeCount > 0 ? `, ${mergeCount} merge${mergeCount === 1 ? '' : 's'}` : '');
 
   ctx.store.transaction(() => {
     ctx.store.db
@@ -251,11 +263,13 @@ export function createCurationPlan(
       const kind: MaintenanceItem['kind'] =
         draft.mode === 'hygiene'
           ? 'hygiene'
-          : draft.extractions.length > 0
-            ? 'extract'
-            : draft.children.length > 0
-              ? 'split'
-              : 'synthesis';
+          : draft.merge
+            ? 'merge'
+            : draft.extractions.length > 0
+              ? 'extract'
+              : draft.children.length > 0
+                ? 'split'
+                : 'synthesis';
       const risk: MaintenanceItem['risk'] =
         kind === 'hygiene' ? 'low' : kind === 'split' || kind === 'extract' ? 'medium' : 'high';
       const evidence = evidenceForDraft(draft);
@@ -267,6 +281,12 @@ export function createCurationPlan(
           : []),
         ...(draft.extractions.length > 0
           ? [{ name: 'extracted lines and destination are bounded', status: 'passed' as const }]
+          : []),
+        ...(draft.merge
+          ? [
+              { name: 'exact alias establishes merge identity', status: 'passed' as const },
+              { name: 'unique authored lines and inbound links are preserved', status: 'passed' as const },
+            ]
           : []),
       ];
       insert.run(
@@ -282,7 +302,9 @@ export function createCurationPlan(
             ? 'Synthesize an opted-in canonical page and atomically create its coherent child pages.'
             : kind === 'extract'
               ? 'Move one reusable subject from an opted-in page into an independent linked knowledge page.'
-              : 'Integrate bounded linked evidence into an opted-in canonical knowledge page.',
+              : kind === 'merge'
+                ? 'Consolidate one explicitly aliased duplicate into its canonical opted-in page without losing authored knowledge.'
+                : 'Integrate bounded linked evidence into an opted-in canonical knowledge page.',
         draft.inputHash,
         JSON.stringify(operations),
         JSON.stringify(evidence),
@@ -441,13 +463,18 @@ export async function applyMaintenancePlan(
     }
 
     updateItemStatus(ctx, item.id, 'applying', null);
-    const written = [] as Awaited<ReturnType<typeof writeFileAtomic>>[];
+    const appliedOperations: MaintenanceOperation[] = [];
     try {
       for (const operation of item.operations) {
-        written.push(await writeFileAtomic(ctx.config.aknoPath, operation.relPath, operation.after));
+        if (operation.type === 'delete') {
+          await fsp.rm(await safeOperationPath(ctx, operation.relPath));
+        } else {
+          await writeFileAtomic(ctx.config.aknoPath, operation.relPath, operation.after);
+        }
+        appliedOperations.push(operation);
       }
     } catch (err) {
-      const rollback = await restoreWrites(ctx, written);
+      const rollback = await restoreOperations(ctx, appliedOperations);
       if (rollback) {
         updateItemStatus(ctx, item.id, 'verification_failed', {
           status: 'failed',
@@ -459,7 +486,7 @@ export async function applyMaintenancePlan(
       blockItem(ctx, planId, item.id, `atomic write failed before application: ${errorMessage(err)}`);
       continue;
     }
-    const entries = written.map(fileEntry);
+    const entries = appliedOperations.map(operationEntry);
     let changeId: string;
     try {
       changeId = ctx.journal.record({
@@ -469,7 +496,7 @@ export async function applyMaintenancePlan(
         files: entries,
       });
     } catch (err) {
-      const rollback = await restoreWrites(ctx, written);
+      const rollback = await restoreOperations(ctx, appliedOperations);
       if (rollback) {
         updateItemStatus(ctx, item.id, 'verification_failed', {
           status: 'failed',
@@ -593,7 +620,12 @@ export function renderMaintenanceDiff(plan: MaintenancePlan, itemId?: string): s
   return items
     .map((item) => {
       const diffs = supportedOperations(item).map((operation) =>
-        unifiedDiff(operation.relPath, operationBefore(operation) ?? '', operation.after, operation.type),
+        unifiedDiff(
+          operation.relPath,
+          operationBefore(operation) ?? '',
+          operationAfter(operation) ?? '',
+          operation.type,
+        ),
       );
       return `# ${item.id} · ${item.subject}\n${diffs.join('\n\n')}`;
     })
@@ -631,7 +663,9 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
   const verification = await verifyApplied(ctx, item, operations);
   const paths = operations.map((operation) => operation.relPath);
   if (verification === null) {
-    const slugs = operations.map((operation) => parsePage(operation.relPath, operation.after).slug);
+    const slugs = operations
+      .filter((operation) => operation.type !== 'delete')
+      .map((operation) => parsePage(operation.relPath, operation.after).slug);
     markCurateApplied(ctx, slugs);
     updateItemStatus(ctx, item.id, 'applied', {
       status: 'passed',
@@ -675,10 +709,18 @@ async function verifyApplied(
 ): Promise<string | null> {
   const expectedMode = item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
   let canonical: ReturnType<typeof parsePage> | null = null;
+  let retired: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
     const content = await fsp
       .readFile(path.join(ctx.config.aknoPath, operation.relPath), 'utf8')
       .catch(() => null);
+    if (operation.type === 'delete') {
+      if (content !== null) return `${operation.relPath} still exists after the merge.`;
+      retired = parsePage(operation.relPath, operation.before);
+      const row = ctx.store.db.prepare('SELECT 1 FROM pages WHERE rel_path = ?').get(operation.relPath);
+      if (row) return `${operation.relPath} still exists in the structural index.`;
+      continue;
+    }
     if (content === null) return `${operation.relPath} disappeared after the write.`;
     if (sha256(content) !== operation.afterHash) {
       return `${operation.relPath} does not match its sealed operation.`;
@@ -725,6 +767,22 @@ async function verifyApplied(
       if (incoming.length > 0) return incoming[0]!;
     }
     if (row.body_hash !== parsed.bodyHash) return `${operation.relPath} has a stale indexed body hash.`;
+  }
+  if (item.kind === 'merge') {
+    if (!canonical || !retired) return 'The merge did not retain both sealed identities for verification.';
+    if (
+      !canonical.aliases.some(
+        (alias) =>
+          alias.toLowerCase() === retired!.slug.toLowerCase() ||
+          alias.toLowerCase() === retired!.title.toLowerCase(),
+      )
+    ) {
+      return 'The canonical page lost the retired slug and title aliases.';
+    }
+    const remaining = ctx.store.db
+      .prepare("SELECT count(*) AS n FROM links WHERE lower(to_slug) = lower(?) AND kind != 'embed'")
+      .get(retired.slug) as { n: number };
+    if (remaining.n > 0) return `The structural index still contains links to ${retired.slug}.`;
   }
   return null;
 }
@@ -797,16 +855,22 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   const paths = new Set<string>();
   for (const [index, operation] of item.operations.entries()) {
-    if (operation.type !== 'replace' && operation.type !== 'create') {
+    if (!['replace', 'create', 'delete'].includes(operation.type)) {
       throw new AknoError('invalid', `${item.id} contains an unsupported maintenance operation`);
     }
-    if (index > 0 && operation.type !== 'create') {
+    if (item.kind !== 'merge' && index > 0 && operation.type !== 'create') {
       throw new AknoError('invalid', `${item.id} may only replace its canonical page`);
+    }
+    if (item.kind === 'merge' && operation.type === 'create') {
+      throw new AknoError('invalid', `${item.id} cannot create pages during a merge`);
     }
     if (paths.has(operation.relPath)) {
       throw new AknoError('invalid', `${item.id} contains the same path more than once`);
     }
     paths.add(operation.relPath);
+  }
+  if (item.kind === 'merge' && item.operations.at(-1)?.type !== 'delete') {
+    throw new AknoError('invalid', `${item.id} must retire its duplicate as the final operation`);
   }
   return item.operations;
 }
@@ -821,6 +885,14 @@ function operationsForDraft(draft: CurateDraft): MaintenanceOperation[] {
       before: draft.before,
       after: draft.after,
     },
+    ...(draft.merge?.linkUpdates.map((update): ReplaceOperation => ({
+      type: 'replace',
+      relPath: update.relPath,
+      beforeHash: sha256(update.before),
+      afterHash: sha256(update.after),
+      before: update.before,
+      after: update.after,
+    })) ?? []),
     ...draft.children.map((child): CreateOperation => ({
       type: 'create',
       relPath: child.relPath,
@@ -833,11 +905,32 @@ function operationsForDraft(draft: CurateDraft): MaintenanceOperation[] {
       afterHash: sha256(extraction.content),
       after: extraction.content,
     })),
+    ...(draft.merge
+      ? [
+          {
+            type: 'delete' as const,
+            relPath: draft.merge.sourceRelPath,
+            beforeHash: sha256(draft.merge.sourceBefore),
+            before: draft.merge.sourceBefore,
+          },
+        ]
+      : []),
   ];
 }
 
 function evidenceForDraft(draft: CurateDraft): MaintenanceEvidence[] {
   return [
+    ...(draft.merge
+      ? [
+          {
+            type: 'page' as const,
+            source: draft.merge.sourceSlug,
+            fingerprint: draft.merge.sourceBodyHash,
+            relationship: 'identity' as const,
+            details: [draft.merge.identitySignal],
+          },
+        ]
+      : []),
     ...draft.evidence.map((entry): MaintenanceEvidence => ({
       type: 'page',
       source: entry.slug,
@@ -859,13 +952,13 @@ function operationFingerprint(operation: MaintenanceOperation): {
   type: MaintenanceOperation['type'];
   relPath: string;
   beforeHash: string | null;
-  afterHash: string;
+  afterHash: string | null;
 } {
   return {
     type: operation.type,
     relPath: operation.relPath,
-    beforeHash: operation.type === 'replace' ? operation.beforeHash : null,
-    afterHash: operation.afterHash,
+    beforeHash: operation.type === 'create' ? null : operation.beforeHash,
+    afterHash: operation.type === 'delete' ? null : operation.afterHash,
   };
 }
 
@@ -879,6 +972,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     return { status: 'blocked', detail: errorMessage(err) };
   }
   const creates = operations.filter((operation) => operation.type === 'create').length;
+  const deletes = operations.filter((operation) => operation.type === 'delete').length;
   if (item.kind === 'extract' && creates !== 1) {
     return { status: 'blocked', detail: 'an extract item must create exactly one independent page' };
   }
@@ -888,9 +982,19 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if ((item.kind === 'hygiene' || item.kind === 'synthesis') && creates > 0) {
     return { status: 'blocked', detail: `${item.kind} items cannot create pages` };
   }
+  if (item.kind === 'merge' && (creates !== 0 || deletes !== 1)) {
+    return {
+      status: 'blocked',
+      detail: 'a merge item must delete exactly one duplicate and create no pages',
+    };
+  }
+  if (item.kind !== 'merge' && deletes > 0) {
+    return { status: 'blocked', detail: `${item.kind} items cannot delete pages` };
+  }
   const expectedMode = item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
   const slugs = new Set<string>();
   let canonical: ReturnType<typeof parsePage> | null = null;
+  let mergeSource: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
     let absPath: string;
     try {
@@ -902,33 +1006,34 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
       if (err.code === 'ENOENT') return null;
       throw err;
     });
-    if (operation.type === 'replace') {
+    if (operation.type !== 'create') {
       if (current === null || sha256(current) !== operation.beforeHash) {
         return { status: 'stale', detail: `${operation.relPath} no longer matches its sealed input.` };
       }
     } else if (current !== null) {
       return { status: 'stale', detail: `${operation.relPath} now exists, so the planned create is stale.` };
     }
-    if (sha256(operation.after) !== operation.afterHash) {
+    if (operation.type !== 'delete' && sha256(operation.after) !== operation.afterHash) {
       return { status: 'blocked', detail: `${operation.relPath} failed its sealed output hash check.` };
     }
     let parsed: ReturnType<typeof parsePage>;
     try {
-      parsed = parsePage(operation.relPath, operation.after);
+      parsed = parsePage(operation.relPath, operation.type === 'delete' ? operation.before : operation.after);
     } catch (err) {
       return {
         status: 'blocked',
         detail: `${operation.relPath} is not valid Markdown: ${errorMessage(err)}`,
       };
     }
-    if (slugs.has(parsed.slug)) {
+    if (operation.type !== 'delete' && slugs.has(parsed.slug)) {
       return { status: 'blocked', detail: `the plan produces duplicate page identity ${parsed.slug}` };
     }
-    slugs.add(parsed.slug);
+    if (operation.type !== 'delete') slugs.add(parsed.slug);
     if (index === 0 && parsed.slug !== item.subject) {
       return { status: 'blocked', detail: 'the canonical operation changed the planned page identity' };
     }
     if (index === 0) canonical = parsed;
+    if (operation.type === 'delete') mergeSource = parsed;
     if (parsed.declaredRole && parsed.declaredRole !== 'knowledge') {
       return { status: 'blocked', detail: `${operation.relPath} is not declared as knowledge` };
     }
@@ -958,6 +1063,56 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
         const incoming = await extractionIncomingHeadingIssues(ctx, item.subject, parsed.body);
         if (incoming.length > 0) return { status: 'blocked', detail: incoming[0]! };
       }
+    }
+  }
+  if (item.kind === 'merge') {
+    if (!canonical || !mergeSource || mergeSource.slug === canonical.slug) {
+      return { status: 'blocked', detail: 'merge identities are incomplete or collapse to the same page' };
+    }
+    const retiredKeys = new Set(canonical.aliases.map((alias) => alias.toLowerCase()));
+    if (
+      !retiredKeys.has(mergeSource.slug.toLowerCase()) &&
+      !retiredKeys.has(mergeSource.title.toLowerCase())
+    ) {
+      return {
+        status: 'blocked',
+        detail: 'the canonical page does not preserve the retired slug or title as an alias',
+      };
+    }
+    if (
+      operations
+        .filter((operation) => operation.type === 'replace')
+        .some((operation) =>
+          parsePage(operation.relPath, operation.after).links.some(
+            (link) => link.toSlug.toLowerCase() === mergeSource!.slug.toLowerCase(),
+          ),
+        )
+    ) {
+      return { status: 'blocked', detail: 'a merge replacement still links to the retired page' };
+    }
+    const source = ctx.store.db.prepare('SELECT id FROM pages WHERE slug = ?').get(mergeSource.slug) as
+      { id: string } | undefined;
+    if (!source)
+      return { status: 'stale', detail: 'the merge duplicate is missing from the structural index' };
+    const owners = ctx.store.db
+      .prepare('SELECT count(*) AS n FROM documents WHERE page_id = ?')
+      .get(source.id) as { n: number };
+    if (owners.n > 0) {
+      return { status: 'blocked', detail: 'the merge duplicate acquired owned documents after planning' };
+    }
+    const plannedReplacements = new Set(
+      operations
+        .filter((operation) => operation.type === 'replace')
+        .map((operation) => parsePage(operation.relPath, operation.after).slug),
+    );
+    const inbound = ctx.store.db
+      .prepare(
+        `SELECT DISTINCT p.slug FROM links l JOIN pages p ON p.id = l.from_page
+         WHERE lower(l.to_slug) = lower(?) AND l.from_page != ? AND l.kind != 'embed'`,
+      )
+      .all(mergeSource.slug, source.id) as { slug: string }[];
+    if (inbound.some((page) => !plannedReplacements.has(page.slug))) {
+      return { status: 'stale', detail: 'the duplicate gained an inbound link after the merge was planned' };
     }
   }
   return { status: 'ready' };
@@ -993,7 +1148,11 @@ async function safeOperationPath(ctx: AknoContext, relPath: string): Promise<str
 }
 
 function operationBefore(operation: MaintenanceOperation): string | null {
-  return operation.type === 'replace' ? operation.before : null;
+  return operation.type === 'create' ? null : operation.before;
+}
+
+function operationAfter(operation: MaintenanceOperation): string | null {
+  return operation.type === 'delete' ? null : operation.after;
 }
 
 async function operationState(
@@ -1006,6 +1165,8 @@ async function operationState(
     throw err;
   });
   const currentHash = current === null ? null : sha256(current);
+  if (operation.type === 'delete')
+    return current === null ? 'after' : currentHash === operation.beforeHash ? 'before' : 'other';
   if (currentHash === operation.afterHash) return 'after';
   if (operation.type === 'create') return current === null ? 'before' : 'other';
   return currentHash === operation.beforeHash ? 'before' : 'other';
@@ -1014,19 +1175,19 @@ async function operationState(
 function operationEntry(operation: MaintenanceOperation): ChangeFile {
   return {
     relPath: operation.relPath,
-    action: operation.type === 'create' ? 'created' : 'modified',
+    action: operation.type === 'create' ? 'created' : operation.type === 'delete' ? 'deleted' : 'modified',
     before: operationBefore(operation),
-    after: operation.after,
+    after: operationAfter(operation),
   };
 }
 
-async function restoreWrites(
+async function restoreOperations(
   ctx: AknoContext,
-  writes: Awaited<ReturnType<typeof writeFileAtomic>>[],
+  operations: MaintenanceOperation[],
 ): Promise<string | null> {
   try {
-    for (const write of [...writes].reverse()) {
-      await restoreFile(ctx.config.aknoPath, write.relPath, write.before);
+    for (const operation of [...operations].reverse()) {
+      await restoreFile(ctx.config.aknoPath, operation.relPath, operationBefore(operation));
     }
     return null;
   } catch (err) {
@@ -1177,6 +1338,15 @@ function unifiedDiff(
       `+++ b/${relPath}`,
       `@@ -0,0 +1,${newLines.length} @@`,
       ...newLines.map((line) => `+${line}`),
+    ].join('\n');
+  }
+  if (operation === 'delete') {
+    const oldLines = before.replaceAll('\r\n', '\n').split('\n');
+    return [
+      `--- a/${relPath}`,
+      '+++ /dev/null',
+      `@@ -1,${oldLines.length} +0,0 @@`,
+      ...oldLines.map((line) => `-${line}`),
     ].join('\n');
   }
   const oldLines = before.replaceAll('\r\n', '\n').split('\n');

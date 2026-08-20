@@ -256,6 +256,14 @@ async function runPhase(
                       operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
                     )
                 : [],
+            merges:
+              item.kind === 'merge'
+                ? item.operations
+                    .filter((operation) => operation.type === 'delete')
+                    .map((operation) =>
+                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                    )
+                : [],
             issues: [],
           }));
         } else {

@@ -711,14 +711,16 @@ akno:
   top-level organization and meaning.
 - `synthesize` permits a full rewrite of a canonical knowledge page, organization of linked evidence,
   explicit preservation of unresolved conflicts, bounded splitting of oversized coherent sections, and
-  extraction of a reusable subject into an independent knowledge page.
+  extraction of a reusable subject into an independent knowledge page. Durable plan modes can also merge an
+  explicitly aliased duplicate inside configured folders.
 
 **Method:** select only `knowledge` pages with an explicit mode; build a draft from the page and allowed
 evidence; run a separate verifier; then enforce deterministic checks for markers, values, links, size,
 materiality, split limits, extraction placement, and exact source-line accounting. Synthesis must add material
 evidence-backed knowledge, an allowed evidence link, temporal metadata, a bounded split, or a guarded
-extraction. Heading-only edits, formatting churn, and pure reorganization are rejected before the verifier or
-curator. Plan-backed curation seals the resulting exact operations only after those checks.
+extraction. Merge candidates use a separate exact-alias and information-preservation contract. Heading-only
+edits, formatting churn, and pure reorganization are rejected before the verifier or curator. Plan-backed
+curation seals the resulting exact operations only after those checks.
 
 **Write authority has three gates:**
 
@@ -836,6 +838,37 @@ content must clear `extract_section_bytes`, no source can propose more than one 
 Changing those limits or the eligible folder catalog invalidates prior extraction decisions so affected
 synthesis pages are reconsidered.
 
+#### Merge is identity-backed and lossless
+
+A **merge** consolidates two pages only when one page explicitly lists the other's exact slug or title in
+`akno.aliases`. Matching titles, similar prose, embeddings, shared templates, and model confidence are not
+identity proof in this first slice. Both pages must explicitly permit `dream: synthesize`, and both must be
+inside a folder named by `merge_folders`. An empty list disables merge even when curation itself is automatic.
+
+The alias-bearing page is canonical. Reciprocal aliases use the page with more authored bytes, then a stable
+slug tie-break. The planner may interleave complete source sections and remove exact duplicate lines, but it
+must preserve each source's internal line order and may not paraphrase, combine, or omit a unique non-blank
+line. Akno checks that contract deterministically and preserves the retired slug and title as canonical
+aliases.
+
+A merge is refused before planning when:
+
+- either page has an unresolved conflict or a parent/child relationship with the other;
+- the duplicate owns documents whose ownership would need to change;
+- unique duplicate frontmatter has no byte-safe canonical disposition;
+- a retired alias would collide with a third page;
+- an inbound link comes from a page that does not itself explicitly allow synthesis; or
+- a heading fragment addressed by an inbound link would disappear.
+
+Every eligible inbound page is rewritten in the same item, including link labels and heading fragments, while
+only the target changes. The canonical replacement, all inbound-link replacements, and one duplicate deletion
+are sealed before the first write. A new inbound link or any changed input makes the item stale. Apply records
+one high-risk journal change, verifies that the duplicate is absent from disk and the index, and confirms that
+no link still targets its slug. One `undo` restores the canonical, every inbound page, and the duplicate.
+
+Merge deliberately runs only through `audit`, `review`, or `auto`. The legacy `maintenance.curate.write`
+switch cannot authorize it because that path has no durable, separately decided deletion artifact.
+
 ```jsonc
 {
   "maintenance": {
@@ -847,6 +880,8 @@ synthesis pages are reconsidered.
       "max_pages": 8,
       "max_splits": 3,
       "max_extracts": 3,
+      "max_merges": 2,
+      "merge_folders": ["people", "projects"],
       "split_after_bytes": 16384,
       "split_section_bytes": 8192,
       "extract_after_bytes": 8192,
@@ -1145,8 +1180,9 @@ maintenance. The proposals in this section describe a direction, not behavior th
 
 ### The durable review queue currently covers curation only
 
-Hygiene, synthesis, bounded splits, and independent extraction now have stable plan and item ids, exact diffs, input hashes, separate
-human or curator decisions, hash-checked apply, verification receipts, and journal undo. The other dream
+Hygiene, synthesis, bounded splits, independent extraction, and exact-alias merge now have stable plan and item
+ids, exact diffs, input hashes, separate human or curator decisions, hash-checked apply, verification receipts,
+and journal undo. The other dream
 outputs still do not feed that queue: observations, principles, adoption, conflict findings, repairs, and
 housekeeping each retain their existing execution or reporting behavior. There is also no snooze or
 requested-revision decision yet.
