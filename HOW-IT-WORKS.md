@@ -1059,6 +1059,10 @@ the dream job and `adopt` is enabled by default, so installing background operat
 pages unless the user knows to pass `--no-dream` or disable adoption. See
 the proposed trust-mode and status design.
 
+The intended profile depends on how Akno is used: a trusted agent-connected installation should recommend
+`autonomous`, with a separate model curator and automatic verified application; a standalone installation should
+recommend `review`, where a human makes the final decision. `audit` remains the no-write option for either case.
+
 ### The scheduled cycle has weak visibility
 
 `service status` tells whether launchd jobs exist, while the useful maintenance state is spread across terminal
