@@ -240,9 +240,22 @@ async function runPhase(
             slug: item.subject,
             mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
             action: 'would-update',
-            splits: item.operations
-              .filter((operation) => operation.type === 'create')
-              .map((operation) => operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, '')),
+            splits:
+              item.kind === 'split'
+                ? item.operations
+                    .filter((operation) => operation.type === 'create')
+                    .map((operation) =>
+                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                    )
+                : [],
+            extractions:
+              item.kind === 'extract'
+                ? item.operations
+                    .filter((operation) => operation.type === 'create')
+                    .map((operation) =>
+                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                    )
+                : [],
             issues: [],
           }));
         } else {

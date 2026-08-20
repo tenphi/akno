@@ -710,14 +710,15 @@ akno:
 - `hygiene` permits Markdown cleanup, minor language repair, and local restructuring while preserving
   top-level organization and meaning.
 - `synthesize` permits a full rewrite of a canonical knowledge page, organization of linked evidence,
-  explicit preservation of unresolved conflicts, and bounded splitting of oversized coherent sections.
+  explicit preservation of unresolved conflicts, bounded splitting of oversized coherent sections, and
+  extraction of a reusable subject into an independent knowledge page.
 
 **Method:** select only `knowledge` pages with an explicit mode; build a draft from the page and allowed
 evidence; run a separate verifier; then enforce deterministic checks for markers, values, links, size,
-materiality, and split limits. Synthesis must add material evidence-backed knowledge, an allowed evidence
-link, temporal metadata, or a bounded split. Heading-only edits, formatting churn, and pure reorganization are
-rejected before the verifier or curator. Plan-backed curation seals the resulting exact operations only after
-those checks.
+materiality, split limits, extraction placement, and exact source-line accounting. Synthesis must add material
+evidence-backed knowledge, an allowed evidence link, temporal metadata, a bounded split, or a guarded
+extraction. Heading-only edits, formatting churn, and pure reorganization are rejected before the verifier or
+curator. Plan-backed curation seals the resulting exact operations only after those checks.
 
 **Write authority has three gates:**
 
@@ -799,6 +800,39 @@ curator. When synthesis proposes children, the canonical replacement and every c
 All input files and create-path assertions are checked before the first write; a collision makes the whole item
 stale. One journal change, one verification result, and one undo cover the complete split.
 
+#### Split and extract are different operations
+
+A **split** is for an oversized page whose sections are still subordinate to one canonical subject. Child
+slugs stay below the source, such as `people/ada-marlow/history`, and each child declares the canonical page in
+`akno.about`.
+
+An **extract** is for a mixed-purpose page containing one coherent subject that should be independently
+retrievable and reusable. It may create at most one page per source per run. The destination must be inside an
+existing or explicitly configured folder that resolves to `role: knowledge` and `remember: integrate`; the
+model receives that bounded folder catalog and cannot invent a new top-level taxonomy. The destination uses a
+lowercase-hyphenated basename, must satisfy the folder's `slug_pattern` and `max_depth`, and cannot be below the
+source slug—otherwise it is a split.
+
+Extraction is intentionally stricter than ordinary synthesis:
+
+- The extracted body contains only complete Markdown lines copied verbatim from the source. Item markers,
+  provenance, numeric values, links, and unique detail move with those lines.
+- Every original non-blank source line must occur exactly once across the revised source and extracted body.
+  Copying the section instead of moving it, condensing it, or silently losing a sentence rejects the proposal.
+- The source must retain a meaningful part of its original content and its primary purpose.
+- Akno wraps the model's short bridge in `<!-- akno:extract ... -->` markers and adds a managed
+  `Extracted from [[source/page]]` backlink to the destination. Preflight and post-write verification require
+  both links.
+- If another page links directly to a heading that would move, the extraction is rejected. Akno does not
+  leave a valid page link with a broken heading fragment or silently broaden the item to rewrite its author.
+- The source replacement and destination creation are one medium-risk plan item. A changed source, occupied
+  destination, changed folder rule, partial write, or failed verification prevents or rolls back the whole
+  operation. Its journal change restores the source and removes the destination in one `undo`.
+
+The limits keep an autonomous night bounded. Extraction is considered only above `extract_after_bytes`, moved
+content must clear `extract_section_bytes`, no source can propose more than one extraction in a run, and
+`max_extracts` caps the run globally. Set `max_extracts: 0` to disable extraction without disabling synthesis.
+
 ```jsonc
 {
   "maintenance": {
@@ -808,6 +842,12 @@ stale. One journal change, one verification result, and one undo cover the compl
       "write": false,
       "verify": true,
       "max_pages": 8,
+      "max_splits": 3,
+      "max_extracts": 3,
+      "split_after_bytes": 16384,
+      "split_section_bytes": 8192,
+      "extract_after_bytes": 8192,
+      "extract_section_bytes": 1024,
     },
   },
 }
@@ -1102,7 +1142,7 @@ maintenance. The proposals in this section describe a direction, not behavior th
 
 ### The durable review queue currently covers curation only
 
-Hygiene, synthesis, and bounded splits now have stable plan and item ids, exact diffs, input hashes, separate
+Hygiene, synthesis, bounded splits, and independent extraction now have stable plan and item ids, exact diffs, input hashes, separate
 human or curator decisions, hash-checked apply, verification receipts, and journal undo. The other dream
 outputs still do not feed that queue: observations, principles, adoption, conflict findings, repairs, and
 housekeeping each retain their existing execution or reporting behavior. There is also no snooze or

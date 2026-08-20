@@ -317,7 +317,8 @@
     // post-event evidence wakes one archival assessment instead of another planning pass.
     // The draft is checked by a second model pass and deterministic guards.
     // `mode` opts scheduled/full runs into durable exact plans for hygiene and
-    // synthesis pages, including atomic canonical-page splits:
+    // synthesis pages, including atomic canonical-page splits and extraction of a
+    // reusable subject into an independent page in an existing eligible folder:
     // audit records proposals, review waits for human decisions, and auto asks an
     // independent curator before applying. Null preserves the legacy `write` switch.
     "curate": {
@@ -326,10 +327,16 @@
       "write": false,
       "verify": true,
       "max_pages": 8,
+      // Structural operations are separately bounded across the whole run.
       "max_splits": 3,
+      "max_extracts": 3,
       "max_children_per_page": 2,
+      // Split only large canonical pages into substantial subordinate sections.
       "split_after_bytes": 16384,
-      "split_section_bytes": 8192
+      "split_section_bytes": 8192,
+      // Extract one reusable subject into an existing integrated-knowledge folder.
+      "extract_after_bytes": 8192,
+      "extract_section_bytes": 1024
     },
     // Give a document that no page owns a page of its own, beside the file, from
     // the summary extraction already produced. Without this its text is indexed

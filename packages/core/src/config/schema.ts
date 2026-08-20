@@ -220,9 +220,12 @@ const MaintenanceDoc = z.object({
       verify: z.boolean().optional(),
       max_pages: z.number().int().positive().optional(),
       max_splits: z.number().int().nonnegative().optional(),
+      max_extracts: z.number().int().nonnegative().optional(),
       max_children_per_page: z.number().int().positive().optional(),
       split_after_bytes: z.number().int().positive().optional(),
       split_section_bytes: z.number().int().positive().optional(),
+      extract_after_bytes: z.number().int().positive().optional(),
+      extract_section_bytes: z.number().int().positive().optional(),
     })
     .optional(),
   adopt: z
@@ -419,9 +422,12 @@ export interface AknoConfig {
       verify: boolean;
       maxPages: number;
       maxSplits: number;
+      maxExtracts: number;
       maxChildrenPerPage: number;
       splitAfterBytes: number;
       splitSectionBytes: number;
+      extractAfterBytes: number;
+      extractSectionBytes: number;
     };
     adopt: { enabled: boolean; maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; maxPairs: number };

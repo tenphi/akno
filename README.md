@@ -307,7 +307,9 @@ knowledge may be placed on a page; page frontmatter overrides folder policy, whi
 `dream: none|hygiene|synthesize` is deliberately page-only and controls unattended maintenance: hygiene may
 make conservative formatting and local-language repairs, while synthesis may rewrite and reorganize a
 canonical page, accumulate linked evidence, preserve unresolved conflicts, and split oversized coherent
-sections beneath the canonical slug.
+sections beneath the canonical slug. Synthesis may also extract one reusable subject from a mixed-purpose
+page into an independent page in an existing or declared eligible knowledge folder. A split says “this is part of the
+same subject”; an extraction says “this deserves its own subject and can be reused elsewhere.”
 
 Opt-in is permission, not a nightly work order. Hygiene runs again only after the page or its policy changes.
 Synthesis also watches its linked evidence and unresolved conflicts. Accepted previews, unchanged drafts and
@@ -494,15 +496,15 @@ Nothing is routed or named, because the caller already decided both.
 conflict phase in a full run; running `--phase repair` alone can still repair links but has no fresh conflict
 verdicts to apply.
 
-| Phase          | Writes?       | What it does                                                                                                              |
-| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `observe`      | appends       | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.               |
-| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                              |
-| `curate`       | preview/write | Hygiene or full synthesis only for pages that explicitly opt in. Draft, verifier and deterministic guards must all agree. |
-| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                |
-| `conflicts`    | no            | Facts on **different** pages stating different values for one thing — which inline checking cannot see.                   |
-| `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                       |
-| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                      |
+| Phase          | Writes?       | What it does                                                                                                                                                                  |
+| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `observe`      | appends       | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                   |
+| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                  |
+| `curate`       | preview/write | Hygiene or full synthesis only for pages that explicitly opt in, including atomic splits and independent extraction. Draft, verifier and deterministic guards must all agree. |
+| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                    |
+| `conflicts`    | no            | Facts on **different** pages stating different values for one thing — which inline checking cannot see.                                                                       |
+| `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                                                                           |
+| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                          |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
 phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
@@ -531,7 +533,10 @@ bounded evidence graph given to the independent curator. A split is one atomic i
 page and creates every child together, or changes nothing. A command-line mode is explicitly invoked with
 `--phase curate`; the same mode can be set at `maintenance.curate.mode` so the curate phase of a full nightly
 cycle uses it without skipping other phases. Stable item markers and provenance survive rewrites and moves,
-and a split keeps the canonical `page.md` while adding children under `page/`. See the
+and a split keeps the canonical `page.md` while adding children under `page/`. An extraction instead moves
+one coherent block of authored Markdown verbatim into an independent page, leaves a managed source bridge
+and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
+The replacement and creation are still one collision-checked item and one undo. See the
 [dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.
 
 Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure

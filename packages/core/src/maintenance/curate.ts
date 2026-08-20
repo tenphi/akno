@@ -2,9 +2,11 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
+import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
 import { AKNO_ITEM, normalizeLinkTarget } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import { effectiveRule, matchesGlob } from '../rules/compile.ts';
 import { missingNumericValues } from './repair.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
@@ -27,6 +29,7 @@ export interface CuratedPage {
   mode: 'hygiene' | 'synthesize';
   action: 'would-update' | 'updated' | 'unchanged' | 'rejected';
   splits: string[];
+  extractions: string[];
   issues: string[];
   temporal?: {
     source: 'declared' | 'inferred' | 'model';
@@ -53,6 +56,7 @@ export interface CurateDraft {
   before: string;
   after: string;
   children: { slug: string; relPath: string; content: string }[];
+  extractions: { slug: string; relPath: string; content: string }[];
   evidence: {
     slug: string;
     relationship: 'about' | 'outbound' | 'backlink';
@@ -117,6 +121,7 @@ interface CurateState {
 interface Draft {
   body?: unknown;
   splits?: unknown;
+  extracts?: unknown;
   temporal?: unknown;
 }
 
@@ -124,6 +129,13 @@ interface SplitDraft {
   suffix: string;
   title: string;
   body: string;
+}
+
+interface ExtractionDraft {
+  slug: string;
+  title: string;
+  body: string;
+  bridge: string;
 }
 
 const HYGIENE_SYSTEM = `You are a conservative Markdown page hygienist. Reply with JSON only:
@@ -138,7 +150,7 @@ export const HYGIENE_SCHEMA = z.object({ body: z.string() });
 
 const SYNTHESIZE_SYSTEM = `You synthesize one canonical Markdown knowledge page from its current body
 and linked evidence. Reply with JSON only:
-{"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}],"temporal":false}
+{"body":"complete canonical Markdown body","splits":[{"suffix":"topic","title":"Title","body":"complete child body"}],"extracts":[{"slug":"allowed-folder/topic","title":"Title","body":"verbatim moved Markdown","bridge":"See [[allowed-folder/topic]]."}],"temporal":false}
 
 You may fully rewrite and restructure the body. Accumulate knowledge by subject; link to evidence and
 related pages in the sections they support instead of repeating whole source pages. A link or backlink
@@ -156,7 +168,16 @@ or descriptions of different areas. Do not choose a side without evidence. Keep 
 canonical page remains at its current slug. Suggest splits only for genuinely oversized, coherent
 sections. Child suffixes are one lowercase hyphenated path segment. Do not add frontmatter.
 
-Always send "splits" — an empty array when there is nothing to split.
+An extraction is different from a split: move one coherent, reusable subject out while the source
+retains its primary purpose. Propose at most one extraction, only into an exact allowed destination
+folder supplied by the user message. Use a lowercase-hyphenated basename and never make the target a
+child of the source page. The extraction body must consist only of complete Markdown lines copied
+verbatim from the current body, including its item markers, provenance and links. Remove those exact
+lines from the source; do not copy or summarize them. Keep the rest of the source verbatim. Put the
+short bridge in the revised source exactly once as its own paragraph, and link it to the exact proposed
+slug. Do not propose a split and an extraction for the same page.
+
+Always send "splits" and "extracts" — empty arrays when there is nothing to move.
 
 When no temporal boundary is supplied but the user message lists explicit boundary candidates, set
 "temporal" to {"kind":"event","start":"date or timestamp","until":"date or timestamp","timezone":"IANA zone"}
@@ -177,6 +198,7 @@ end-of-day time.`;
 export const SYNTHESIZE_SCHEMA = z.object({
   body: z.string(),
   splits: z.array(z.object({ suffix: z.string(), title: z.string(), body: z.string() })),
+  extracts: z.array(z.object({ slug: z.string(), title: z.string(), body: z.string(), bridge: z.string() })),
   temporal: z.union([
     z.literal(false),
     z.object({
@@ -202,7 +224,10 @@ const VERIFY_SYSTEM = `You verify an automatic Markdown rewrite. Reply with JSON
 Reject a hygiene rewrite if it changes meaning, loses non-duplicate knowledge, adds facts, or makes
 more than minor structural changes. Reject a synthesis rewrite if it invents facts, loses supported
 knowledge, hides a conflict, misattributes evidence, repeats unrelated cross-cutting logistics, changes
-an existing link target, invents a URL or creates an incoherent split. A backlink is only a relevance
+an existing link target, invents a URL, creates an incoherent split, or extracts content that is not a
+coherent reusable subject. For an extraction, require every moved authored line to remain verbatim,
+the source to retain its primary purpose, a useful source bridge, a source backlink, and an independent
+destination rather than a disguised child split. A backlink is only a relevance
 hint, not evidence that every fact on that page belongs here. Stable item markers are metadata, not
 prose, and must remain attached to their knowledge. For an archival rewrite, reject any claim that
 a plan happened merely because its date passed, and reject restructuring with no substantive
@@ -211,9 +236,9 @@ post-event knowledge.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 7: synthesis now has a deterministic materiality floor. Old "unchanged" and rejected
-// decisions must be reconsidered once because they were made without that boundary.
-const CURATE_FINGERPRINT_VERSION = 7;
+// 8: synthesis can propose a separately guarded extraction into the user's existing taxonomy.
+// Old decisions must be reconsidered once because the model previously had no such operation.
+const CURATE_FINGERPRINT_VERSION = 8;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -240,9 +265,12 @@ export async function curatePages(
       row.slug.toLowerCase(),
     ),
   );
+  const extractionFolders = allowedExtractionFolders(ctx);
+  const extractionFolderFingerprint = sha256(JSON.stringify(extractionFolders));
   const clock = temporalClock();
 
   let splitBudget = settings.maxSplits;
+  let extractBudget = settings.maxExtracts;
   let attempted = 0;
   const state = new Map<string, CurateState>();
   const staged: {
@@ -250,6 +278,7 @@ export async function curatePages(
     before: string;
     after: string;
     children: { relPath: string; content: string; slug: string }[];
+    extractions: { relPath: string; content: string; slug: string }[];
     evidence: EvidencePage[];
     conflicts: ConflictEvidence[];
     inputHash: string;
@@ -284,7 +313,15 @@ export async function curatePages(
     const allEvidence = row.dream_management === 'synthesize' ? evidenceFor(ctx, row) : [];
     let evidence = archival ? archivalEvidence(allEvidence) : allEvidence;
     const conflicts = row.dream_management === 'synthesize' ? conflictsFor(ctx, row.id) : [];
-    let inputHash = curateInputHash(row, evidence, conflicts, temporal, eventState);
+    let inputHash = curateInputHash(
+      row,
+      evidence,
+      conflicts,
+      temporal,
+      eventState,
+      extractionFolderFingerprint,
+      incomingLinkFingerprint(ctx, row.id),
+    );
     if (!curationDue(row, inputHash, options.dryRun, options.includePreviewed ?? false)) continue;
     if (attempted >= settings.maxPages) break;
     attempted++;
@@ -295,6 +332,12 @@ export async function curatePages(
         : [];
     const prompt =
       row.dream_management === 'hygiene' ? HYGIENE_SYSTEM : archival ? ARCHIVE_SYSTEM : SYNTHESIZE_SYSTEM;
+    const canRequestExtraction =
+      row.dream_management === 'synthesize' &&
+      !archival &&
+      extractBudget > 0 &&
+      Buffer.byteLength(before) >= settings.extractAfterBytes &&
+      extractionFolders.length > 0;
     const draftResult = await ctx.models.derive.chat(
       [
         { role: 'system', content: prompt },
@@ -302,6 +345,9 @@ export async function curatePages(
           role: 'user',
           content:
             `${temporalPrompt(temporal, clock)}\n\nSlug: ${row.slug}\nTitle: ${row.title}` +
+            (row.dream_management === 'synthesize'
+              ? extractionFolderPrompt(canRequestExtraction ? extractionFolders : [])
+              : '') +
             (candidates.length
               ? `\nTemporal boundary candidates explicitly present in this page: ${candidates.join(', ')}`
               : '') +
@@ -326,6 +372,7 @@ export async function curatePages(
         mode: row.dream_management,
         action: 'rejected',
         splits: [],
+        extractions: [],
         issues: [issue],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -344,6 +391,7 @@ export async function curatePages(
           mode: row.dream_management,
           action: 'rejected',
           splits: [],
+          extractions: [],
           issues: [proposed.issue],
         });
         queueCurateState(state, row.id, inputHash, 'rejected');
@@ -359,7 +407,15 @@ export async function curatePages(
         if (archival) {
           nextBody = body;
           evidence = archivalEvidence(allEvidence);
-          inputHash = curateInputHash(row, evidence, conflicts, temporal, eventState);
+          inputHash = curateInputHash(
+            row,
+            evidence,
+            conflicts,
+            temporal,
+            eventState,
+            extractionFolderFingerprint,
+            incomingLinkFingerprint(ctx, row.id),
+          );
           metadataOnly = true;
         }
       }
@@ -374,6 +430,7 @@ export async function curatePages(
         mode: row.dream_management,
         action: 'rejected',
         splits: [],
+        extractions: [],
         issues: [issue],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -396,15 +453,43 @@ export async function curatePages(
           settings.splitSectionBytes,
         )
       : [];
+    const extractionResult = cleanExtractions(parsed?.extracts, {
+      available: canRequestExtraction && !metadataOnly && !archivalNoop,
+      limit: Math.min(1, extractBudget),
+      minBytes: settings.extractSectionBytes,
+      sourceSlug: row.slug,
+      folders: extractionFolders,
+      knownSlugs,
+      rules: ctx.config.rules,
+    });
+    const extractions = extractionResult.extractions;
+    if (extractionResult.issues.length > 0) {
+      result.pages.push({
+        slug: row.slug,
+        mode: row.dream_management,
+        action: 'rejected',
+        splits: [],
+        extractions: [],
+        issues: extractionResult.issues,
+        ...temporalResult(temporal, temporalSource, clock, archival),
+      });
+      queueCurateState(state, row.id, inputHash, 'rejected');
+      continue;
+    }
+    if (extractions.length > 0) nextBody = withExtractionBridge(nextBody, extractions[0]!);
+    const incomingAnchors =
+      extractions.length > 0 ? await incomingHeadingAnchors(ctx, row.id, row.slug) : new Set<string>();
     const deterministic = guardRewrite({
       mode: row.dream_management,
       before: body,
       after: nextBody,
       splits,
+      extractions,
       conflicts,
       pageSlug: row.slug,
       knownSlugs,
       allowedLinkSlugs: new Set(evidence.map((entry) => entry.slug.toLowerCase())),
+      incomingAnchors,
     });
     if (deterministic.length > 0) {
       result.pages.push({
@@ -412,6 +497,7 @@ export async function curatePages(
         mode: row.dream_management,
         action: 'rejected',
         splits: [],
+        extractions: [],
         issues: deterministic,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -420,15 +506,28 @@ export async function curatePages(
     }
 
     const verified =
-      metadataOnly || archivalNoop || (nextBody === body && splits.length === 0)
+      metadataOnly || archivalNoop || (nextBody === body && splits.length === 0 && extractions.length === 0)
         ? { ok: true, issues: [], cacheable: true }
-        : await verifyDraft(ctx, row, body, nextBody, splits, evidence, conflicts, temporal, clock, archival);
+        : await verifyDraft(
+            ctx,
+            row,
+            body,
+            nextBody,
+            splits,
+            extractions,
+            evidence,
+            conflicts,
+            temporal,
+            clock,
+            archival,
+          );
     if (!verified.ok) {
       result.pages.push({
         slug: row.slug,
         mode: row.dream_management,
         action: 'rejected',
         splits: [],
+        extractions: [],
         issues: verified.issues,
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
@@ -444,27 +543,46 @@ export async function curatePages(
         content: childPage(split, row.slug),
       };
     });
+    const extractedPages = extractions.map((extraction) => ({
+      slug: extraction.slug,
+      relPath: `${extraction.slug}.md`,
+      content: extractionPage(extraction, row.slug),
+    }));
     const temporalFm = parseFrontmatter(temporalBase);
     const after = temporalBase.slice(0, temporalFm.bodyOffset) + nextBody;
-    if (after === before && children.length === 0) {
+    if (after === before && children.length === 0 && extractedPages.length === 0) {
       result.pages.push({
         slug: row.slug,
         mode: row.dream_management,
         action: 'unchanged',
         splits: [],
+        extractions: [],
         issues: [],
         ...temporalResult(temporal, temporalSource, clock, archival),
       });
       queueCurateState(state, row.id, inputHash, 'unchanged');
       continue;
     }
-    staged.push({ row, before, after, children, evidence, conflicts, inputHash, metadataOnly });
+    staged.push({
+      row,
+      before,
+      after,
+      children,
+      extractions: extractedPages,
+      evidence,
+      conflicts,
+      inputHash,
+      metadataOnly,
+    });
     splitBudget -= children.length;
+    extractBudget -= extractedPages.length;
+    for (const created of [...children, ...extractedPages]) knownSlugs.add(created.slug.toLowerCase());
     result.pages.push({
       slug: row.slug,
       mode: row.dream_management,
       action: options.dryRun ? 'would-update' : 'updated',
       splits: children.map((child) => child.slug),
+      extractions: extractedPages.map((page) => page.slug),
       issues: [],
       ...temporalResult(temporal, temporalSource, clock, archival),
     });
@@ -478,6 +596,7 @@ export async function curatePages(
     before: stage.before,
     after: stage.after,
     children: stage.children,
+    extractions: stage.extractions,
     evidence: stage.evidence.map((entry) => ({
       slug: entry.slug,
       relationship: entry.relationship,
@@ -514,22 +633,33 @@ export async function curatePages(
       const written = await writeFileAtomic(ctx.config.aknoPath, child.relPath, child.content);
       result.files.push(fileEntry(written));
     }
+    for (const extracted of stage.extractions) {
+      const written = await writeFileAtomic(ctx.config.aknoPath, extracted.relPath, extracted.content);
+      result.files.push(fileEntry(written));
+    }
   }
   result.changeId = ctx.journal.record({
     actor: 'agent',
     op: 'curate',
-    summary: `curate: ${staged.length} canonical page(s), ${settings.maxSplits - splitBudget} split(s)`,
+    summary:
+      `curate: ${staged.length} canonical page(s), ${settings.maxSplits - splitBudget} split(s), ` +
+      `${settings.maxExtracts - extractBudget} extraction(s)`,
     files: result.files,
   });
   const paths = result.files.map((file) => file.relPath);
   await ctx.indexer.run({ only: paths, modelPaths: [] });
   ctx.derive.schedule(paths);
+  const postExtractionFolderFingerprint = sha256(JSON.stringify(allowedExtractionFolders(ctx)));
   // The rewrite changes the canonical page's own hash. Record the post-write fingerprint or the
   // curator would interpret its own work as new input on the next cycle. New split children are
   // marked too, so creating one does not immediately enqueue it for another synthesis.
   for (const stage of staged) {
     if (stage.metadataOnly) continue;
-    for (const slug of [stage.row.slug, ...stage.children.map((child) => child.slug)]) {
+    for (const slug of [
+      stage.row.slug,
+      ...stage.children.map((child) => child.slug),
+      ...stage.extractions.map((page) => page.slug),
+    ]) {
       const refreshed = pageForSlug(ctx, slug);
       if (!refreshed) continue;
       const temporal = temporalForRow(refreshed);
@@ -541,7 +671,15 @@ export async function curatePages(
       queueCurateState(
         state,
         refreshed.id,
-        curateInputHash(refreshed, evidence, conflicts, temporal, eventState),
+        curateInputHash(
+          refreshed,
+          evidence,
+          conflicts,
+          temporal,
+          eventState,
+          postExtractionFolderFingerprint,
+          incomingLinkFingerprint(ctx, refreshed.id),
+        ),
         'applied',
       );
     }
@@ -664,6 +802,7 @@ async function verifyDraft(
   before: string,
   after: string,
   splits: SplitDraft[],
+  extractions: ExtractionDraft[],
   evidence: EvidencePage[],
   conflicts: ConflictEvidence[],
   temporal: TemporalMetadata | null,
@@ -680,6 +819,7 @@ async function verifyDraft(
           before,
           after,
           splits,
+          extracts: extractions,
           evidence,
           conflicts,
           time: temporalPrompt(temporal, clock),
@@ -708,13 +848,19 @@ function guardRewrite(input: {
   before: string;
   after: string;
   splits: SplitDraft[];
+  extractions: ExtractionDraft[];
   conflicts: ConflictEvidence[];
   pageSlug: string;
   knownSlugs: Set<string>;
   allowedLinkSlugs: Set<string>;
+  incomingAnchors: Set<string>;
 }): string[] {
   const issues: string[] = [];
-  const combined = [input.after, ...input.splits.map((split) => split.body)].join('\n');
+  const combined = [
+    input.after,
+    ...input.splits.map((split) => split.body),
+    ...input.extractions.map((extraction) => extractionPageBody(extraction, input.pageSlug)),
+  ].join('\n');
   const beforeItems = itemIds(input.before);
   const afterItems = itemIds(combined);
   if (beforeItems.size !== afterItems.size || [...beforeItems].some((id) => !afterItems.has(id))) {
@@ -736,6 +882,7 @@ function guardRewrite(input: {
       combined,
       input.pageSlug,
       input.splits,
+      input.extractions,
       input.knownSlugs,
       input.allowedLinkSlugs,
     ),
@@ -747,11 +894,21 @@ function guardRewrite(input: {
     const ratio = input.after.length / Math.max(1, input.before.length);
     if (ratio < 0.6 || ratio > 1.4) issues.push('the hygiene rewrite changed the page size too drastically');
     if (input.splits.length > 0) issues.push('hygiene pages cannot split');
+    if (input.extractions.length > 0) issues.push('hygiene pages cannot extract');
+  }
+  if (input.splits.length > 0 && input.extractions.length > 0) {
+    issues.push('one curation item cannot split and extract at the same time');
+  }
+  if (input.extractions.length > 0) {
+    issues.push(
+      ...extractionAccountingIssues(input.before, input.after, input.extractions, input.incomingAnchors),
+    );
   }
   if (
     input.mode === 'synthesize' &&
     input.after !== input.before &&
     input.splits.length === 0 &&
+    input.extractions.length === 0 &&
     !hasMaterialSynthesisChange(input.before, input.after, input.pageSlug)
   ) {
     issues.push('synthesis rewrite is cosmetic or organizational; no material knowledge was added');
@@ -762,6 +919,11 @@ function guardRewrite(input: {
   for (const split of input.splits) {
     const target = `${input.pageSlug}/${split.suffix}`.toLowerCase();
     if (input.knownSlugs.has(target)) issues.push(`split target already exists: ${target}`);
+  }
+  for (const extraction of input.extractions) {
+    if (input.knownSlugs.has(extraction.slug.toLowerCase())) {
+      issues.push(`extraction target already exists: ${extraction.slug}`);
+    }
   }
   if (
     input.mode === 'synthesize' &&
@@ -846,6 +1008,7 @@ function linkIssues(
   after: string,
   pageSlug: string,
   splits: SplitDraft[],
+  extractions: ExtractionDraft[],
   knownSlugs: Set<string>,
   allowedLinkSlugs: Set<string>,
 ): string[] {
@@ -867,12 +1030,15 @@ function linkIssues(
         : `new internal Markdown link target is not allowed; use an exact wikilink slug: ${target}`,
     );
   }
-  const proposed = new Set(splits.map((split) => `${pageSlug}/${split.suffix}`.toLowerCase()));
+  const proposed = new Set([
+    ...splits.map((split) => `${pageSlug}/${split.suffix}`.toLowerCase()),
+    ...extractions.map((extraction) => extraction.slug.toLowerCase()),
+  ]);
   for (const target of next.wiki) {
     if (prior.wiki.has(target)) continue;
     if (!knownSlugs.has(target) && !proposed.has(target)) {
-      issues.push(`new wikilink does not resolve to an existing page or proposed split: [[${target}]]`);
-    } else if (!allowedLinkSlugs.has(target) && !proposed.has(target)) {
+      issues.push(`new wikilink does not resolve to an existing or proposed page: [[${target}]]`);
+    } else if (!allowedLinkSlugs.has(target) && !proposed.has(target) && target !== pageSlug.toLowerCase()) {
       issues.push(`new wikilink target was not supplied by the evidence graph: [[${target}]]`);
     }
   }
@@ -905,7 +1071,7 @@ export function linkIssuesForTesting(
   knownSlugs: string[],
 ): string[] {
   const known = new Set(knownSlugs.map((slug) => slug.toLowerCase()));
-  return linkIssues(before, after, pageSlug, [], known, known);
+  return linkIssues(before, after, pageSlug, [], [], known, known);
 }
 
 function renderEvidence(evidence: EvidencePage[]): string[] {
@@ -958,6 +1124,8 @@ function curateInputHash(
   conflicts: ConflictEvidence[],
   temporal: TemporalMetadata | null,
   eventState: 'active' | 'past' | null,
+  extractionFolderFingerprint: string,
+  incomingLinksFingerprint: string,
 ): string {
   return sha256(
     JSON.stringify({
@@ -987,8 +1155,23 @@ function curateInputHash(
       // Unlike the current date, this changes only once for a bounded event. It schedules one
       // archival assessment without making every page stale every day.
       eventState,
+      extractionFolderFingerprint:
+        page.dream_management === 'synthesize' ? extractionFolderFingerprint : null,
+      incomingLinksFingerprint: page.dream_management === 'synthesize' ? incomingLinksFingerprint : null,
     }),
   );
+}
+
+function incomingLinkFingerprint(ctx: AknoContext, pageId: string): string {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT p.slug, p.body_hash, l.kind, l.line FROM links l
+       JOIN pages p ON p.id = l.from_page
+       WHERE l.to_page = ? AND l.from_page != ?
+       ORDER BY p.slug, l.kind, l.line`,
+    )
+    .all(pageId, pageId);
+  return sha256(JSON.stringify(rows));
 }
 
 function curationDue(page: PageRow, inputHash: string, dryRun: boolean, includePreviewed: boolean): boolean {
@@ -1003,6 +1186,7 @@ function curationDue(page: PageRow, inputHash: string, dryRun: boolean, includeP
 export function markCurateApplied(ctx: AknoContext, slugs: Iterable<string>): void {
   const state = new Map<string, CurateState>();
   const clock = temporalClock();
+  const extractionFolderFingerprint = sha256(JSON.stringify(allowedExtractionFolders(ctx)));
   for (const slug of slugs) {
     const refreshed = pageForSlug(ctx, slug);
     if (!refreshed) continue;
@@ -1015,7 +1199,15 @@ export function markCurateApplied(ctx: AknoContext, slugs: Iterable<string>): vo
     queueCurateState(
       state,
       refreshed.id,
-      curateInputHash(refreshed, evidence, conflicts, temporal, eventState),
+      curateInputHash(
+        refreshed,
+        evidence,
+        conflicts,
+        temporal,
+        eventState,
+        extractionFolderFingerprint,
+        incomingLinkFingerprint(ctx, refreshed.id),
+      ),
       'applied',
     );
   }
@@ -1107,8 +1299,320 @@ function cleanSplits(value: unknown, limit: number, minBytes: number): SplitDraf
   return out;
 }
 
+function allowedExtractionFolders(ctx: AknoContext): FolderCatalogEntry[] {
+  return (
+    folderCatalog(ctx.config, ctx.store)
+      .filter(
+        (entry) =>
+          entry.eligible &&
+          entry.role === 'knowledge' &&
+          entry.remember === 'integrate' &&
+          entry.path.length > 0,
+      )
+      // A bounded taxonomy keeps a large knowledge base from crowding the page and evidence out of
+      // the model context. The same exact list is used by the deterministic destination guard.
+      .slice(0, 120)
+  );
+}
+
+/** Re-check a sealed extraction against the current user-owned taxonomy before any write. */
+export function extractionDestinationIssues(
+  ctx: AknoContext,
+  sourceSlug: string,
+  targetSlug: string,
+): string[] {
+  const slash = targetSlug.lastIndexOf('/');
+  const parent = slash > 0 ? targetSlug.slice(0, slash) : '';
+  const allowed = allowedExtractionFolders(ctx).some(
+    (entry) => entry.path.toLowerCase() === parent.toLowerCase(),
+  );
+  const issues = allowed
+    ? destinationRuleIssues(targetSlug, ctx.config.rules)
+    : [`extraction destination is no longer an allowed knowledge folder: ${parent || '(root)'}`];
+  if (targetSlug.toLowerCase().startsWith(`${sourceSlug.toLowerCase()}/`)) {
+    issues.push('extraction destination became a child of the source; use a split instead');
+  }
+  return issues;
+}
+
+function extractionFolderPrompt(folders: FolderCatalogEntry[]): string {
+  if (folders.length === 0) {
+    return '\n\nNo extraction destination is available for this item. Return "extracts": [].';
+  }
+  return (
+    '\n\nAllowed extraction destination folders (use one exact path as the parent):\n' +
+    JSON.stringify(
+      folders.map((entry) => ({
+        path: entry.path,
+        ...(entry.description ? { purpose: entry.description } : {}),
+      })),
+    )
+  );
+}
+
+function cleanExtractions(
+  value: unknown,
+  options: {
+    available: boolean;
+    limit: number;
+    minBytes: number;
+    sourceSlug: string;
+    folders: FolderCatalogEntry[];
+    knownSlugs: Set<string>;
+    rules: AknoContext['config']['rules'];
+  },
+): { extractions: ExtractionDraft[]; issues: string[] } {
+  if (!Array.isArray(value) || value.length === 0) return { extractions: [], issues: [] };
+  if (!options.available || options.limit <= 0) {
+    return { extractions: [], issues: ['an extraction was proposed when no extraction slot was available'] };
+  }
+  if (value.length > options.limit) {
+    return { extractions: [], issues: ['a page may propose at most one extraction'] };
+  }
+
+  const entry = value[0];
+  if (!entry || typeof entry !== 'object') {
+    return { extractions: [], issues: ['the extraction proposal is malformed'] };
+  }
+  const row = entry as Record<string, unknown>;
+  const proposedSlug = typeof row.slug === 'string' ? row.slug.trim().replace(/^\/+|\/+$/g, '') : '';
+  const title = typeof row.title === 'string' ? row.title.trim() : '';
+  const body = typeof row.body === 'string' ? endWithNewline(row.body) : '';
+  const bridge = typeof row.bridge === 'string' ? row.bridge.trim() : '';
+  const slash = proposedSlug.lastIndexOf('/');
+  const proposedFolder = slash > 0 ? proposedSlug.slice(0, slash) : '';
+  const basename = slash > 0 ? proposedSlug.slice(slash + 1) : '';
+  const folder = options.folders.find(
+    (candidate) => candidate.path.toLowerCase() === proposedFolder.toLowerCase(),
+  );
+  const slug = folder ? `${folder.path}/${basename}` : proposedSlug;
+  const issues: string[] = [];
+
+  if (!folder)
+    issues.push(`extraction destination is not an allowed knowledge folder: ${proposedFolder || '(root)'}`);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(basename)) {
+    issues.push('extraction destination basename must be lowercase and hyphenated');
+  }
+  if (!title) issues.push('extraction title is empty');
+  if (Buffer.byteLength(body) < options.minBytes) {
+    issues.push(`extraction body is smaller than the ${options.minBytes}-byte safety floor`);
+  }
+  if (!bridge || bridge.includes('\n') || bridge.includes('<!--') || bridge.includes('-->')) {
+    issues.push('extraction bridge must be one short plain Markdown paragraph');
+  } else if (Buffer.byteLength(bridge) > 400) {
+    issues.push('extraction bridge is too long');
+  }
+  if (slug.toLowerCase().startsWith(`${options.sourceSlug.toLowerCase()}/`)) {
+    issues.push('extraction destination is a child of the source; use a split instead');
+  }
+  if (options.knownSlugs.has(slug.toLowerCase())) issues.push(`extraction target already exists: ${slug}`);
+  if (folder && basename) issues.push(...destinationRuleIssues(slug, options.rules));
+
+  return issues.length > 0
+    ? { extractions: [], issues }
+    : { extractions: [{ slug, title, body, bridge }], issues: [] };
+}
+
+function destinationRuleIssues(slug: string, rules: AknoContext['config']['rules']): string[] {
+  const issues: string[] = [];
+  const rule = effectiveRule(slug, rules);
+  const role = rule.role ?? 'knowledge';
+  const remember = rule.remember ?? (role === 'knowledge' ? 'integrate' : 'deny');
+  if (role !== 'knowledge' || remember !== 'integrate') {
+    issues.push(`extraction destination is not opted-in integrated knowledge: ${slug}`);
+  }
+  const basename = slug.slice(slug.lastIndexOf('/') + 1);
+  if (rule.slug_pattern) {
+    try {
+      if (!new RegExp(rule.slug_pattern).test(basename)) {
+        issues.push(`extraction destination does not satisfy its folder slug pattern: ${slug}`);
+      }
+    } catch {
+      issues.push(`extraction destination folder has an invalid slug pattern: ${slug}`);
+    }
+  }
+  const depthRule = rules.find(
+    (candidate) => candidate.max_depth !== undefined && matchesGlob(slug, candidate.glob),
+  );
+  if (depthRule?.max_depth !== undefined) {
+    const baseDepth = depthRule.glob
+      .replace(/\/\*\*?$/, '')
+      .split('/')
+      .filter(Boolean).length;
+    const depth = slug.split('/').length - baseDepth;
+    if (depth > depthRule.max_depth) {
+      issues.push(`extraction destination exceeds its folder depth limit: ${slug}`);
+    }
+  }
+  return issues;
+}
+
+function withExtractionBridge(body: string, extraction: ExtractionDraft): string {
+  if (body.split(extraction.bridge).length !== 2) return body;
+  const managed =
+    `<!-- akno:extract target=${JSON.stringify(extraction.slug)} -->\n` +
+    `${extraction.bridge}\n` +
+    '<!-- /akno:extract -->';
+  return body.replace(extraction.bridge, managed);
+}
+
+function extractionAccountingIssues(
+  before: string,
+  after: string,
+  extractions: ExtractionDraft[],
+  incomingAnchors: Set<string>,
+): string[] {
+  const issues: string[] = [];
+  const prior = nonBlankLineCounts(before);
+  const retained = nonBlankLineCounts(after);
+  const moved = nonBlankLineCounts(extractions.map((entry) => entry.body).join('\n'));
+  const combined = nonBlankLineCounts([after, ...extractions.map((entry) => entry.body)].join('\n'));
+
+  for (const [line, count] of prior) {
+    if ((combined.get(line) ?? 0) !== count) {
+      issues.push('extraction did not account for every source line exactly once');
+      break;
+    }
+  }
+  for (const [line, count] of moved) {
+    if ((prior.get(line) ?? 0) < count) {
+      issues.push('extraction body contains authored text that was not copied verbatim from the source');
+      break;
+    }
+  }
+
+  const priorCount = [...prior.values()].reduce((total, count) => total + count, 0);
+  const retainedCount = [...prior].reduce(
+    (total, [line, count]) => total + Math.min(count, retained.get(line) ?? 0),
+    0,
+  );
+  if (moved.size === 0 || retainedCount === priorCount) {
+    issues.push('extraction did not move any authored source lines');
+  }
+  if (retainedCount < 2 || retainedCount / Math.max(1, priorCount) < 0.25) {
+    issues.push('source page does not retain enough of its original purpose after extraction');
+  }
+  if (firstH1(before) !== firstH1(after)) {
+    issues.push('source page heading changed during extraction');
+  }
+
+  const movedHeadings = headingReferences(extractions.map((entry) => entry.body).join('\n'));
+  if ([...incomingAnchors].some((anchor) => movedHeadings.has(anchor))) {
+    issues.push('an incoming link targets a heading that the extraction would move');
+  }
+
+  for (const extraction of extractions) {
+    const occurrences = after.split(extraction.bridge).length - 1;
+    if (occurrences !== 1) issues.push('extraction bridge must appear exactly once in the source');
+    if (!linkTargets(extraction.bridge, '').wiki.has(extraction.slug.toLowerCase())) {
+      issues.push(`extraction bridge does not link to its exact destination: [[${extraction.slug}]]`);
+    }
+  }
+  return [...new Set(issues)];
+}
+
+function nonBlankLineCounts(text: string): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const raw of text.replaceAll('\r\n', '\n').split('\n')) {
+    const line = raw.trimEnd();
+    if (!line.trim()) continue;
+    counts.set(line, (counts.get(line) ?? 0) + 1);
+  }
+  return counts;
+}
+
+async function incomingHeadingAnchors(
+  ctx: AknoContext,
+  sourcePageId: string,
+  sourceSlug: string,
+): Promise<Set<string>> {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT p.slug, p.rel_path, l.line FROM links l
+       JOIN pages p ON p.id = l.from_page
+       WHERE l.to_page = ? AND l.from_page != ?
+       ORDER BY p.slug, l.line`,
+    )
+    .all(sourcePageId, sourcePageId) as { slug: string; rel_path: string; line: number }[];
+  const anchors = new Set<string>();
+  for (const row of rows) {
+    const content = await fsp
+      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
+      .catch(() => null);
+    if (content === null) continue;
+    const line = content.replaceAll('\r\n', '\n').split('\n')[row.line - 1] ?? '';
+    for (const match of line.matchAll(/\[\[([^\]|#]+)#([^\]|]+)(?:\|[^\]]*)?\]\]/g)) {
+      if (normalizeLinkTarget(match[1]!).toLowerCase() === sourceSlug.toLowerCase()) {
+        anchors.add(normalizeHeadingReference(match[2]!));
+      }
+    }
+    for (const match of line.matchAll(/(?<!!)\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+[^)]*)?\)/g)) {
+      const href = match[1]!;
+      const hash = href.indexOf('#');
+      if (hash < 0) continue;
+      const target = href.slice(0, hash);
+      if (normalizeLinkTarget(target, row.slug).toLowerCase() === sourceSlug.toLowerCase()) {
+        anchors.add(normalizeHeadingReference(href.slice(hash + 1)));
+      }
+    }
+  }
+  return anchors;
+}
+
+/** Re-check heading-fragment safety against current backlinks at plan apply and verification time. */
+export async function extractionIncomingHeadingIssues(
+  ctx: AknoContext,
+  sourceSlug: string,
+  extractedBody: string,
+): Promise<string[]> {
+  const source = ctx.store.db.prepare('SELECT id FROM pages WHERE slug = ?').get(sourceSlug) as
+    { id: string } | undefined;
+  if (!source) return [`the extraction source is missing from the structural index: ${sourceSlug}`];
+  const incoming = await incomingHeadingAnchors(ctx, source.id, sourceSlug);
+  const moved = headingReferences(extractedBody);
+  return [...incoming].some((anchor) => moved.has(anchor))
+    ? ['an incoming link targets a heading that the extraction would move']
+    : [];
+}
+
+function headingReferences(body: string): Set<string> {
+  return new Set(
+    body
+      .split('\n')
+      .map((line) => /^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/.exec(line)?.[1] ?? null)
+      .filter((heading): heading is string => heading !== null)
+      .map(normalizeHeadingReference),
+  );
+}
+
+function normalizeHeadingReference(value: string): string {
+  let decoded = value;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch {
+    // A malformed escape should not take maintenance down; compare its literal form instead.
+  }
+  return decoded
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
 function childPage(split: SplitDraft, canonicalSlug: string): string {
   return `---\ntitle: ${JSON.stringify(split.title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n    dream: synthesize\n  about:\n    - ${JSON.stringify(canonicalSlug)}\n---\n\n${split.body}`;
+}
+
+function extractionPage(extraction: ExtractionDraft, sourceSlug: string): string {
+  return `---\ntitle: ${JSON.stringify(extraction.title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n    dream: synthesize\n---\n\n${extractionPageBody(extraction, sourceSlug)}`;
+}
+
+function extractionPageBody(extraction: ExtractionDraft, sourceSlug: string): string {
+  return (
+    `${extraction.body.trimEnd()}\n\n` +
+    `<!-- akno:extracted-from source=${JSON.stringify(sourceSlug)} -->\n` +
+    `Extracted from [[${sourceSlug}]].\n` +
+    '<!-- /akno:extracted-from -->\n'
+  );
 }
 
 function endWithNewline(text: string): string {

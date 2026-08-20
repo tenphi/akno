@@ -502,9 +502,12 @@ function resolve(
         verify: doc.maintenance?.curate?.verify ?? true,
         maxPages: doc.maintenance?.curate?.max_pages ?? 8,
         maxSplits: doc.maintenance?.curate?.max_splits ?? 3,
+        maxExtracts: doc.maintenance?.curate?.max_extracts ?? 3,
         maxChildrenPerPage: doc.maintenance?.curate?.max_children_per_page ?? 2,
         splitAfterBytes: doc.maintenance?.curate?.split_after_bytes ?? 16_384,
         splitSectionBytes: doc.maintenance?.curate?.split_section_bytes ?? 8_192,
+        extractAfterBytes: doc.maintenance?.curate?.extract_after_bytes ?? 8_192,
+        extractSectionBytes: doc.maintenance?.curate?.extract_section_bytes ?? 1_024,
       },
       adopt: {
         enabled: doc.maintenance?.adopt?.enabled ?? true,

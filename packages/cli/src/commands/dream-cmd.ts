@@ -163,6 +163,9 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
         }
         for (const issue of entry.issues) line(`          ${style.grey(issue)}`);
         if (entry.splits.length) line(`          ${style.grey(`splits: ${entry.splits.join(', ')}`)}`);
+        if (entry.extractions.length) {
+          line(`          ${style.grey(`extracts: ${entry.extractions.join(', ')}`)}`);
+        }
       }
     } else {
       const counts = curationCounts(report);
@@ -398,6 +401,7 @@ function guardrailCategory(issue: string): string {
   if (/unresolved|conflict/i.test(issue)) return 'conflict preservation';
   if (/evidence/i.test(issue)) return 'evidence relevance';
   if (/archiv|post-event/i.test(issue)) return 'archival materiality';
+  if (/extract|destination|source page/i.test(issue)) return 'extraction safety';
   if (/cosmetic|material|heading|structur|format|size/i.test(issue)) return 'materiality';
   if (/timeout|provider|transport|model|json|schema/i.test(issue)) return 'model response';
   return 'other safety check';

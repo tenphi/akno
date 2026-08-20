@@ -22,6 +22,9 @@ let server: {
   synthesisDraft: (value: boolean) => void;
   cosmeticDraft: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
+  extractDraft: (value: boolean) => void;
+  copyExtraction: (value: boolean) => void;
+  invalidExtractionTarget: (value: boolean) => void;
   userMessages: () => string[];
 };
 
@@ -428,6 +431,132 @@ describe('plan-backed hygiene', () => {
     expect(fs.existsSync(child)).toBe(false);
   });
 
+  it('atomically extracts a reusable subject into an independent page and converges', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(canonical, extractionSource());
+    fs.mkdirSync(path.join(root, 'topics'), { recursive: true });
+    const before = fs.readFileSync(canonical, 'utf8');
+    server.extractDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowExtracts: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    const extracted = path.join(root, 'topics/zephyr-qx-100.md');
+
+    expect(report.curated[0]).toMatchObject({
+      action: 'updated',
+      splits: [],
+      extractions: ['topics/zephyr-qx-100'],
+    });
+    expect(item).toMatchObject({ kind: 'extract', risk: 'medium', status: 'applied' });
+    expect(item.operations.map((operation) => operation.type)).toEqual(['replace', 'create']);
+    expect(fs.readFileSync(canonical, 'utf8')).toContain(
+      '<!-- akno:extract target="topics/zephyr-qx-100" -->',
+    );
+    expect(fs.readFileSync(canonical, 'utf8')).toContain('[[topics/zephyr-qx-100]]');
+    const extractedBody = fs.readFileSync(extracted, 'utf8');
+    expect(extractedBody).toContain('Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.');
+    expect(extractedBody).toContain('Extracted from [[people/ada-marlow]].');
+    expect(extractedBody).not.toContain('about:');
+    expect(mem.changes(1)[0]).toMatchObject({
+      id: item.changeId,
+      op: 'maintenance',
+      files: [
+        { relPath: 'people/ada-marlow.md', action: 'modified' },
+        { relPath: 'topics/zephyr-qx-100.md', action: 'created' },
+      ],
+    });
+
+    const calls = server.calls();
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(calls);
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
+    expect(fs.existsSync(extracted)).toBe(false);
+  });
+
+  it('rejects copied extraction content before model verification', async () => {
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), extractionSource());
+    fs.mkdirSync(path.join(root, 'topics'), { recursive: true });
+    server.extractDraft(true);
+    server.copyExtraction(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowExtracts: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated[0]?.action).toBe('rejected');
+    expect(report.curated[0]?.issues.join(' ')).toMatch(/account for every source line exactly once/);
+    expect(server.calls()).toBe(1);
+  });
+
+  it('rejects an extraction outside the supplied folder taxonomy', async () => {
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), extractionSource());
+    fs.mkdirSync(path.join(root, 'topics'), { recursive: true });
+    server.extractDraft(true);
+    server.invalidExtractionTarget(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowExtracts: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.curated[0]?.action).toBe('rejected');
+    expect(report.curated[0]?.issues.join(' ')).toMatch(/not an allowed knowledge folder/);
+    expect(server.calls()).toBe(1);
+  });
+
+  it('rejects moving a heading that an incoming link addresses', async () => {
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), extractionSource());
+    fs.mkdirSync(path.join(root, 'topics'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'notes'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'notes/equipment-reference.md'),
+      '# Equipment reference\n\nSee [[people/ada-marlow#Equipment]].\n',
+    );
+    server.extractDraft(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowExtracts: true });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.curated[0]?.action).toBe('rejected');
+    expect(report.curated[0]?.issues).toContain(
+      'an incoming link targets a heading that the extraction would move',
+    );
+    expect(server.calls()).toBe(1);
+  });
+
+  it('makes the whole extraction stale when its destination appears before apply', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(canonical, extractionSource());
+    fs.mkdirSync(path.join(root, 'topics'), { recursive: true });
+    const before = fs.readFileSync(canonical, 'utf8');
+    server.extractDraft(true);
+    await mem.close();
+    mem = await openMem(false, undefined, { allowExtracts: true });
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    const target = path.join(root, 'topics/zephyr-qx-100.md');
+    fs.writeFileSync(target, '# A separately authored topic\n');
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply only if the destination remains available.');
+
+    const result = await mem.applyPlan(planned.id);
+
+    expect(result.plan.items[0]).toMatchObject({ kind: 'extract', status: 'stale' });
+    expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
+    expect(fs.readFileSync(target, 'utf8')).toBe('# A separately authored topic\n');
+    expect(result.files).toEqual([]);
+  });
+
   it('seals linked evidence into a high-risk synthesis decision', async () => {
     const canonical = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(
@@ -624,6 +753,7 @@ async function openMem(
   mode?: MaintenanceMode,
   options: {
     allowSplits?: boolean;
+    allowExtracts?: boolean;
     folders?: Record<string, { role: 'ignored' }>;
   } = {},
 ): Promise<Akno> {
@@ -650,6 +780,7 @@ async function openMem(
           write,
           verify: true,
           ...(options.allowSplits ? { split_after_bytes: 1, split_section_bytes: 1 } : {}),
+          ...(options.allowExtracts ? { extract_after_bytes: 1, extract_section_bytes: 1 } : {}),
         },
       },
       ...(options.folders ? { folders: options.folders } : {}),
@@ -667,6 +798,9 @@ async function startStub(): Promise<typeof server> {
   let synthesisDraft = false;
   let cosmeticDraft = false;
   let splitDraft = false;
+  let extractDraft = false;
+  let copyExtraction = false;
+  let invalidExtractionTarget = false;
   const userMessages: string[] = [];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -694,42 +828,52 @@ async function startStub(): Promise<typeof server> {
           })
         : system.includes('verify an automatic Markdown rewrite')
           ? JSON.stringify({ ok: true, issues: [] })
-          : splitDraft && system.includes('synthesize one canonical')
-            ? JSON.stringify({
-                body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
-                splits: [
-                  {
-                    suffix: 'history',
-                    title: 'Ada Marlow history',
-                    body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
-                  },
-                ],
-                temporal: false,
-              })
-            : cosmeticDraft && system.includes('synthesize one canonical')
+          : extractDraft && system.includes('synthesize one canonical')
+            ? extractionDraftResponse(copyExtraction, invalidExtractionTarget)
+            : splitDraft && system.includes('synthesize one canonical')
               ? JSON.stringify({
-                  body: currentBody(user)
-                    .replace(/^\n(?=#)/, '')
-                    .replace('## Details', '## History and details'),
-                  splits: [],
+                  body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
+                  splits: [
+                    {
+                      suffix: 'history',
+                      title: 'Ada Marlow history',
+                      body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+                    },
+                  ],
+                  extracts: [],
                   temporal: false,
                 })
-              : synthesisDraft && system.includes('synthesize one canonical')
+              : cosmeticDraft && system.includes('synthesize one canonical')
                 ? JSON.stringify({
-                    body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                    body: currentBody(user)
+                      .replace(/^\n(?=#)/, '')
+                      .replace('## Details', '## History and details'),
                     splits: [],
+                    extracts: [],
                     temporal: false,
                   })
-                : exactDraft
-                  ? JSON.stringify({ body: currentBody(user), splits: [], temporal: false })
-                  : echoDraft
-                    ? JSON.stringify({ body: currentBody(user).replace(/^\n(?=#)/, ''), temporal: false })
-                    : JSON.stringify({
-                        body:
-                          '# Ada Marlow\n\n## Details\n\n' +
-                          (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                          `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                      });
+                : synthesisDraft && system.includes('synthesize one canonical')
+                  ? JSON.stringify({
+                      body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                      splits: [],
+                      extracts: [],
+                      temporal: false,
+                    })
+                  : exactDraft
+                    ? JSON.stringify({ body: currentBody(user), splits: [], extracts: [], temporal: false })
+                    : echoDraft
+                      ? JSON.stringify({
+                          body: currentBody(user).replace(/^\n(?=#)/, ''),
+                          splits: [],
+                          extracts: [],
+                          temporal: false,
+                        })
+                      : JSON.stringify({
+                          body:
+                            '# Ada Marlow\n\n## Details\n\n' +
+                            (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                            `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                        });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -766,8 +910,62 @@ async function startStub(): Promise<typeof server> {
     splitDraft: (value) => {
       splitDraft = value;
     },
+    extractDraft: (value) => {
+      extractDraft = value;
+    },
+    copyExtraction: (value) => {
+      copyExtraction = value;
+    },
+    invalidExtractionTarget: (value) => {
+      invalidExtractionTarget = value;
+    },
     userMessages: () => [...userMessages],
   };
+}
+
+function extractionSource(): string {
+  return `---
+title: Ada Marlow
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow
+
+## Details
+
+<!-- akno:item itm_ada source=conversation origin=user -->
+Ada Marlow lives at 111 Example Street.
+
+## Equipment
+
+<!-- akno:item itm_zephyr source=conversation origin=user -->
+Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.
+- **Warranty:** five years
+`;
+}
+
+function extractionDraftResponse(copy: boolean, invalidTarget: boolean): string {
+  const target = invalidTarget ? 'archive/zephyr-qx-100' : 'topics/zephyr-qx-100';
+  const retained = `# Ada Marlow
+
+## Details
+
+<!-- akno:item itm_ada source=conversation origin=user -->
+Ada Marlow lives at 111 Example Street.`;
+  const moved = `## Equipment
+
+<!-- akno:item itm_zephyr source=conversation origin=user -->
+Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.
+- **Warranty:** five years`;
+  const bridge = `See [[${target}]] for Ada Marlow's equipment notes.`;
+  return JSON.stringify({
+    body: `${retained}\n\n${copy ? `${moved}\n\n` : ''}${bridge}\n`,
+    splits: [],
+    extracts: [{ slug: target, title: 'Zephyr QX-100 notes', body: `${moved}\n`, bridge }],
+    temporal: false,
+  });
 }
 
 function currentBody(user: string): string {
