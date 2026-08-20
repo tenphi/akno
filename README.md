@@ -651,6 +651,7 @@ packages/core       the memory layer: config, store, indexer, models, recall, wa
 packages/client     thin typed client over a running service; no native dependencies
 packages/cli        commands and the three doors
 config/             default.jsonc (committed) + local.jsonc (never)
+specs/              proposed product and engineering contracts for future behavior
 ```
 
 Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`, and

@@ -1005,7 +1005,9 @@ was forgotten, recover it from Akno's trash within the configured retention peri
 ## What Akno does not solve yet
 
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
-maintenance.
+maintenance. The proposed contracts for addressing them live in the
+[product specifications](specs/README.md); this section describes the current gap, not behavior that already
+ships.
 
 ### There is no durable human review inbox
 
@@ -1013,10 +1015,10 @@ Dream prints conflicts, previews, refused repairs, and housekeeping findings, bu
 persistent queue where a person can approve, dismiss, snooze, or apply them. Scheduled output therefore lives
 in service logs, or in the optional JSONL audit log that intentionally duplicates sensitive material.
 
-The strongest improvement would be a first-class `akno review` workflow with stable finding ids, last-seen
-state, provenance, proposed diffs, and actions such as `approve`, `dismiss`, `apply`, and `undo`. This is
-especially important for curate: its current “preview” says that a page would change but does not show the
-proposed body or diff. Every reporting or preview phase should feed the same review surface.
+The proposed [maintenance-plan contract](specs/001-maintenance-plans-and-decisions.md) adds stable plan and item
+ids, provenance, complete proposed diffs, input hashes, separate human or curator decisions, apply, verify, and
+undo. This is especially important for curate: its current “preview” says that a page would change but does not
+show the proposed body or diff. Every reporting or preview phase should feed the same decision surface.
 
 ### Searchability should not depend on an overnight write
 
@@ -1027,17 +1029,20 @@ a scheduled maintenance run creates a file to make retrieval work.
 
 Recall should be able to return an orphan document card directly, with document-page citations and a
 `needs_home` state. Adoption could then become an optional filing action instead of a default write required
-for search correctness.
+for search correctness. The result and migration contract is in
+[orphan-document retrieval](specs/004-orphan-document-retrieval.md).
 
 ### Dream should be a plan, apply, verify loop
 
-The seven phases currently mix analysis, proposals, writes, and final reporting in one command. A clearer and
-safer cycle would have four user-visible stages:
+The seven phases currently mix analysis, proposals, writes, and final reporting in one command. The proposed
+[dream lifecycle](specs/003-dream-lifecycle.md) has six user-visible stages:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
 2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
-3. **Apply:** execute an approved or policy-authorized bounded plan only if those inputs are unchanged.
-4. **Verify:** re-index touched files, rerun relevant checks, and produce one durable receipt.
+3. **Decide:** let a human or a separate curator turn approve, reject, or request revisions.
+4. **Apply:** execute the authorized bounded plan only if its inputs are unchanged.
+5. **Re-index:** reconcile every affected path before judging the result.
+6. **Verify:** rerun relevant checks and produce one durable receipt.
 
 The named phases can remain as internal methods, but the operator would reason about one consistent lifecycle.
 Conflict analysis should also precede `observe` and `reflect`, or unresolved claim groups should be excluded,
@@ -1049,11 +1054,13 @@ Dream currently combines global phase switches, a separate curate write switch, 
 rules, dry-run behavior, and per-run caps. The safeguards are valuable; the interaction is difficult to hold
 in one mental model.
 
-A better operator UX would expose named trust profiles such as `audit`, `assist`, and `autopilot`, then show the
-resolved permission for each phase and page with `akno dream status`. Expert config could remain underneath.
-The scheduled profile should begin at `audit`; today, `service install` creates the dream job and `adopt` is
-enabled by default, so installing background operation can eventually add Markdown pages unless the user knows
-to pass `--no-dream` or disable adoption.
+A better operator UX would expose named trust profiles such as `audit`, `review`, and `autonomous`, then show
+the resolved permission for each transformation and page with `akno dream status`. Expert config could remain
+underneath. Autonomous maintenance should be a direct, well-guarded setup choice rather than a maze of write
+switches; setup must still say plainly when it schedules knowledge-base writes. Today, `service install` creates
+the dream job and `adopt` is enabled by default, so installing background operation can eventually add Markdown
+pages unless the user knows to pass `--no-dream` or disable adoption. See
+[trust modes and status](specs/005-trust-modes-and-status.md).
 
 ### The scheduled cycle has weak visibility
 
@@ -1071,12 +1078,18 @@ A guided `akno init` should select the knowledge-base folder, perform a read-onl
 models, explain degraded choices, run one recall, and optionally install the service. That would shorten the
 distance between “I have notes” and “my agent can cite them” without weakening any safety rule.
 
+The proposed [single-model setup](specs/006-single-model-setup.md) adds a one-provider OpenAI preset using
+`gpt-5.6-luna` for generative work and prompted reranking, with lexical retrieval when no separate embedding
+model is configured. That recommendation is gated by a checked-in
+[ranking benchmark](specs/007-llm-reranking-benchmark.md), including an explicit comparison of disabled and low
+reasoning effort.
+
 ### Inference should remain visibly separate from authored memory
 
 `observe` and `reflect` mark their pages as derived and recall ranks them lower, but once inference is written
-as fluent Markdown it can still feel authored. Until a durable review layer exists, keeping these phases off by
-default is the right product posture. A future design could stage inference outside canonical notes and promote
-only explicitly accepted items.
+as fluent Markdown it can still feel authored. The planned lifecycle stages these outputs alongside other exact
+diffs and makes a separate curator or human decision before applying them. Conflict screening also moves before
+inference so an unresolved claim cannot quietly become a new observation.
 
 ---
 
