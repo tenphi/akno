@@ -1005,9 +1005,7 @@ was forgotten, recover it from Akno's trash within the configured retention peri
 ## What Akno does not solve yet
 
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
-maintenance. The proposed contracts for addressing them live in the
-[product specifications](specs/README.md); this section describes the current gap, not behavior that already
-ships.
+maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
 ### There is no durable human review inbox
 
@@ -1015,10 +1013,10 @@ Dream prints conflicts, previews, refused repairs, and housekeeping findings, bu
 persistent queue where a person can approve, dismiss, snooze, or apply them. Scheduled output therefore lives
 in service logs, or in the optional JSONL audit log that intentionally duplicates sensitive material.
 
-The proposed [maintenance-plan contract](specs/001-maintenance-plans-and-decisions.md) adds stable plan and item
-ids, provenance, complete proposed diffs, input hashes, separate human or curator decisions, apply, verify, and
-undo. This is especially important for curate: its current “preview” says that a page would change but does not
-show the proposed body or diff. Every reporting or preview phase should feed the same decision surface.
+A maintenance-plan contract should add stable plan and item ids, provenance, complete proposed diffs, input
+hashes, separate human or curator decisions, apply, verify, and undo. This is especially important for curate:
+its current “preview” says that a page would change but does not show the proposed body or diff. Every reporting
+or preview phase should feed the same decision surface.
 
 ### Searchability should not depend on an overnight write
 
@@ -1029,13 +1027,12 @@ a scheduled maintenance run creates a file to make retrieval work.
 
 Recall should be able to return an orphan document card directly, with document-page citations and a
 `needs_home` state. Adoption could then become an optional filing action instead of a default write required
-for search correctness. The result and migration contract is in
-[orphan-document retrieval](specs/004-orphan-document-retrieval.md).
+for search correctness.
 
 ### Dream should be a plan, apply, verify loop
 
-The seven phases currently mix analysis, proposals, writes, and final reporting in one command. The proposed
-[dream lifecycle](specs/003-dream-lifecycle.md) has six user-visible stages:
+The seven phases currently mix analysis, proposals, writes, and final reporting in one command. A clearer dream
+lifecycle has six user-visible stages:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
 2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
@@ -1060,7 +1057,7 @@ underneath. Autonomous maintenance should be a direct, well-guarded setup choice
 switches; setup must still say plainly when it schedules knowledge-base writes. Today, `service install` creates
 the dream job and `adopt` is enabled by default, so installing background operation can eventually add Markdown
 pages unless the user knows to pass `--no-dream` or disable adoption. See
-[trust modes and status](specs/005-trust-modes-and-status.md).
+the proposed trust-mode and status design.
 
 ### The scheduled cycle has weak visibility
 
@@ -1078,11 +1075,9 @@ A guided `akno init` should select the knowledge-base folder, perform a read-onl
 models, explain degraded choices, run one recall, and optionally install the service. That would shorten the
 distance between “I have notes” and “my agent can cite them” without weakening any safety rule.
 
-The proposed [single-model setup](specs/006-single-model-setup.md) adds a one-provider OpenAI preset using
-`gpt-5.6-luna` for generative work and prompted reranking, with lexical retrieval when no separate embedding
-model is configured. That recommendation is gated by a checked-in
-[ranking benchmark](specs/007-llm-reranking-benchmark.md), including an explicit comparison of disabled and low
-reasoning effort.
+A single-model setup could add a one-provider OpenAI preset using `gpt-5.6-luna` for generative work and
+prompted reranking, with lexical retrieval when no separate embedding model is configured. That recommendation
+should be gated by a ranking benchmark, including an explicit comparison of disabled and low reasoning effort.
 
 ### Inference should remain visibly separate from authored memory
 

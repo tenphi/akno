@@ -50,6 +50,9 @@ CLAUDE.local.md
 AGENTS.local.md
 .claude/settings.local.json
 
+# ─── Local product planning ───────────────────────────────────────────────
+specs/
+
 # ─── OS & editors ─────────────────────────────────────────────────────────
 .DS_Store
 .idea/
