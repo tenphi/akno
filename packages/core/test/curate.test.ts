@@ -460,6 +460,14 @@ describe('plan-backed hygiene', () => {
     expect(extractedBody).toContain('Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.');
     expect(extractedBody).toContain('Extracted from [[people/ada-marlow]].');
     expect(extractedBody).not.toContain('about:');
+    expect(
+      server
+        .userMessages()
+        .some(
+          (message) =>
+            message.includes('"extracts"') && message.includes('Extracted from [[people/ada-marlow]].'),
+        ),
+    ).toBe(true);
     expect(mem.changes(1)[0]).toMatchObject({
       id: item.changeId,
       op: 'maintenance',

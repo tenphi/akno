@@ -254,9 +254,9 @@ post-event knowledge.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 9: extraction selects a source section and Akno performs the verbatim move. Old decisions
-// must be reconsidered because asking the model to reproduce moved text proved unreliable live.
-const CURATE_FINGERPRINT_VERSION = 9;
+// 10: the verifier sees the final managed destination backlink, not only the raw moved section.
+// Old live rejections made without that generated postcondition must be reconsidered once.
+const CURATE_FINGERPRINT_VERSION = 10;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -843,7 +843,13 @@ async function verifyDraft(
           before,
           after,
           splits,
-          extracts: extractions,
+          extracts: extractions.map((extraction) => ({
+            slug: extraction.slug,
+            title: extraction.title,
+            sourceHeading: extraction.sourceHeading,
+            bridge: extraction.bridge,
+            body: extractionPageBody(extraction, page.slug),
+          })),
           evidence,
           conflicts,
           time: temporalPrompt(temporal, clock),
