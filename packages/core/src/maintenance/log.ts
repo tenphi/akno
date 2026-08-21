@@ -59,6 +59,11 @@ export async function logDreamRun(
   changes: AppliedChange[],
   options: { dryRun: boolean },
 ): Promise<string | null> {
+  const plans = report.maintenancePlans.length > 0
+    ? report.maintenancePlans
+    : report.maintenancePlan
+      ? [report.maintenancePlan]
+      : [];
   const record = {
     at: new Date().toISOString(),
     runId: report.run.id,
@@ -70,9 +75,15 @@ export async function logDreamRun(
     // depending on whether the strong model was reachable at all.
     model: ctx.config.maintenance.model?.id ?? ctx.config.models.derive.id,
     phases: report.phases,
-    changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId].filter(
-      (id): id is string => id !== null,
-    ),
+    changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId]
+      .filter((id): id is string => id !== null)
+      .concat(
+        plans.flatMap((plan) =>
+          plan.items.map((item) => item.changeId).filter((id): id is string => id !== null),
+        ),
+      )
+      .filter((id, index, all) => all.indexOf(id) === index),
+    maintenancePlanIds: plans.map((plan) => plan.id),
     maintenancePlanId: report.maintenancePlan?.id ?? null,
     // What was written, with the added lines inline.
     applied: changes,

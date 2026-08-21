@@ -253,8 +253,9 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 
 **An index pass writes nothing into your knowledge base by default.** Not frontmatter, not fact tables, not a
 `timeline.md` you did not ask for. Explicit write operations do, and the scheduled dream cycle has one enabled
-write phase: `adopt` creates a minimal page for each eligible readable document that no page owns. Install the
-watcher with `akno service install --no-dream` if you want background indexing without scheduled writes.
+write phase: `adopt` seals a minimal page for each eligible readable document that no page owns, asks a separate
+curator, and applies accepted items. Install the watcher with `akno service install --no-dream` if you want
+background indexing without scheduled writes.
 
 - Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to have
   Akno add a frontmatter `id:` — the only index-time write into a page you wrote — for identity that
@@ -272,8 +273,8 @@ watcher with `akno service install --no-dream` if you want background indexing w
 
 Four workflows author files, and each is journalled and reversible with `akno undo`: `write`, `remember`,
 `ingest`, and enabled maintenance phases. Dream can append observations, curate opted-in pages, adopt unowned
-documents, and apply bounded broken-link items through curation plans; only adoption is enabled to write by
-default.
+documents, and apply bounded broken-link items through maintenance plans; only adoption is enabled in automatic
+mode by default.
 
 A separate optional output is maintained rather than journalled. `ingest.text_rendition: true` keeps the
 extracted text of each readable document as `<file>.txt` beside it — so a `grep`, an editor, a git diff or an
@@ -503,14 +504,14 @@ unverified claims cannot feed observation, reflection, or synthesis. Selecting `
 | `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                  |
 | `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                   |
 | `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
-| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                                     |
+| `adopt`        | plan/write    | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                         |
 | `repair`       | no            | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                      |
 | `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                           |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
 phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
 documents searchable. `conflicts`, legacy `repair`, and `housekeeping` only report; durable curation requires
-an explicit trust policy before it writes.
+an explicit trust policy before it writes. Adoption has its own audit/review/auto policy and defaults to auto.
 
 Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
 between summary preview and direct application. Opted-in hygiene and synthesis pages can instead use an
@@ -521,6 +522,9 @@ akno dream --phase curate --mode audit   # persistent exact diffs; no note chang
 akno dream --phase curate --mode review  # wait for human item decisions
 akno dream --phase curate --mode auto    # separate curator turn, then verified apply
 akno dream --phase curate --mode audit --private-details  # include private page-level diagnostics
+akno dream --phase adopt --mode audit    # exact filing-page diffs; no page creation
+akno dream --phase adopt --mode review   # human decides each document group
+akno dream --phase adopt --mode auto     # separate curator, apply, ownership verification
 
 akno plan diff <plan-id>
 akno plan decide <plan-id> --item <item-id> --approve
@@ -532,8 +536,8 @@ All three modes seal the same exact operations. Apply refuses changed inputs, jo
 re-indexes it, verifies disk and index state, and rolls back a proven failed result. Synthesis items retain the
 bounded evidence graph given to the independent curator. A split is one atomic item: it replaces the canonical
 page and creates every child together, or changes nothing. A command-line mode is explicitly invoked with
-`--phase curate`; the same mode can be set at `maintenance.curate.mode` so the curate phase of a full nightly
-cycle uses it without skipping other phases. Stable item markers and provenance survive rewrites and moves,
+`--phase curate` or `--phase adopt`; the same policy can be set at `maintenance.curate.mode` or
+`maintenance.adopt.mode` so a full nightly cycle uses it without skipping other phases. Stable item markers and provenance survive rewrites and moves,
 and a split keeps the canonical `page.md` while adding children under `page/`. An extraction instead moves
 one exact source section of authored Markdown verbatim into an independent page, leaves a managed source bridge
 and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
@@ -573,14 +577,14 @@ the restart. Hosts importing `@tenphi/akno-client` also read package `dist` outp
 `--no-restart` builds only. A failed build restarts nothing, so a deploy never reports success with the previous
 code back in service.
 
-**`adopt` is the one thing the cycle repairs.** Recall returns page cards, so an attachment nobody's page points
-at is extracted, indexed, and unreachable. `adopt` writes the page `ingest` would have written — the title from
-the filename, the body from the summary extraction already produced, then the embed that makes the link hold —
-and the document's own text becomes answerable, cited by its page number inside the file. It honours a folder
-rule of `ingest: "file"`, which exists for precisely the case where a stub page per file would be noise; it
-leaves a page that is already there alone, since that is almost always your own notes about that very file; and
-it is capped per run so a folder of 500 unowned PDFs does not become 500 pages before anyone has read the first
-report.
+**`adopt` is the one thing the cycle repairs by default.** Recall returns page cards, so an attachment nobody's
+page points at is extracted, indexed, and unreachable. `adopt` plans the page `ingest` would have written — the
+title from the filename, the body from the summary extraction already produced, then the embed that makes the
+link hold. One document group is one low-risk item. Apply re-hashes every source, confirms it is still unowned,
+creates and journals only the sealed page, forces ownership re-indexing, and verifies the relationship. It
+honours a folder rule of `ingest: "file"`, leaves a page that is already there alone, and is capped per run so a
+folder of 500 unowned PDFs does not become 500 pages before anyone has read the first report. Audit and review
+make the same exact proposals without autonomous writes; auto requires a separate curator decision.
 
 **`observe` ships off, and what it produces is almost entirely a function of the model behind it.** Its
 guardrails are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug
@@ -674,8 +678,8 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   it is off by default because a log of inferences drawn from private notes is a second copy of the sensitive
   part, kept outside the notes. That is the owner's call, not a default.
 
-Everything else is on: extraction for every attachment including the ones that predate Akno, `adopt`, the
-cross-page conflict pass, and the housekeeping report.
+Everything else is on: extraction for every attachment including the ones that predate Akno, plan-backed
+`adopt` in auto mode, the cross-page conflict pass, and the housekeeping report.
 
 ## Platform
 

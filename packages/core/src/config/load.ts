@@ -513,6 +513,9 @@ function resolve(
       },
       adopt: {
         enabled: doc.maintenance?.adopt?.enabled ?? true,
+        // Adoption already ran autonomously before it became plan-backed. Keep that product
+        // behavior while adding a separate curator decision, exact diff, and verification.
+        mode: doc.maintenance?.adopt?.mode === undefined ? 'auto' : doc.maintenance.adopt.mode,
         maxPages: doc.maintenance?.adopt?.max_pages ?? 20,
       },
       conflicts: {

@@ -5,8 +5,7 @@ import { effectiveRule } from '../rules/compile.ts';
 import { cleanSlug } from '../ingest/name.ts';
 import type { Extraction } from '../ingest/extract.ts';
 import { provenanceLines } from '../ingest/store.ts';
-import { writeFileAtomic } from '../write/atomic.ts';
-import type { ChangeFile } from '../write/journal.ts';
+import { sha256 } from '../store/ids.ts';
 
 /**
  * A page for a document that has none, written beside the file.
@@ -36,24 +35,60 @@ export interface AdoptedDocument {
   slug: string;
   /** The files the page now owns — parts of one document share a page. */
   files: string[];
-  action: 'created' | 'skipped';
+  action: 'planned' | 'created' | 'skipped' | 'rejected';
   reason?: string;
+}
+
+export interface AdoptionDraft {
+  slug: string;
+  relPath: string;
+  inputHash: string;
+  after: string;
+  documents: {
+    id: string;
+    relPath: string;
+    sha256: string;
+    metadataHash: string;
+    groupKey: string;
+  }[];
+}
+
+export interface AdoptionSnapshot {
+  indexRevision: string;
+  knowledgeBaseFingerprint: string;
+  configurationFingerprint: string;
 }
 
 interface OrphanGroup {
   groupKey: string;
-  parts: { id: string; relPath: string; summary: string | null }[];
+  parts: {
+    id: string;
+    relPath: string;
+    sha256: string;
+    summary: string | null;
+    ocr: number;
+    pageCount: number | null;
+    extractVia: string | null;
+    confidence: number | null;
+  }[];
 }
 
-export async function adoptOrphans(
+/**
+ * Seal exact page creations without touching the knowledge base.
+ *
+ * The document hashes become item inputs and the run-start manifest is retained as plan evidence.
+ * Apply rechecks both the source files and their orphaned index rows, so a page is never created
+ * from a stale summary or for a document somebody filed while the plan was waiting.
+ */
+export async function planOrphanAdoptions(
   ctx: AknoContext,
-  options: { limit: number; dryRun: boolean },
-): Promise<{ adopted: AdoptedDocument[]; files: ChangeFile[] }> {
+  options: { limit: number },
+): Promise<{ adopted: AdoptedDocument[]; drafts: AdoptionDraft[] }> {
   const adopted: AdoptedDocument[] = [];
-  const files: ChangeFile[] = [];
+  const drafts: AdoptionDraft[] = [];
 
   for (const group of orphanGroups(ctx)) {
-    if (adopted.filter((entry) => entry.action === 'created').length >= options.limit) break;
+    if (drafts.length >= options.limit) break;
 
     const first = group.parts[0]!;
     const directory = path.posix.dirname(first.relPath.replaceAll('\\', '/'));
@@ -103,20 +138,90 @@ export async function adoptOrphans(
       continue;
     }
 
+    const documents = group.parts.map((part) => ({
+      id: part.id,
+      relPath: part.relPath,
+      sha256: part.sha256,
+      metadataHash: sha256(
+        JSON.stringify([
+          part.summary,
+          part.ocr,
+          part.pageCount,
+          part.extractVia,
+          part.confidence,
+        ]),
+      ),
+      groupKey: group.groupKey,
+    }));
+    const inputHash = sha256(
+      JSON.stringify({
+        documents: documents.map((document) => [
+          document.id,
+          document.relPath,
+          document.sha256,
+          document.metadataHash,
+          document.groupKey,
+        ]),
+      }),
+    );
+    const draft: AdoptionDraft = {
+      slug,
+      relPath,
+      inputHash,
+      after: composeDocumentPage(group),
+      documents,
+    };
+    const rejectedBy = matchingRejectedItem(ctx, draft);
     adopted.push({
-      slug: relPath.replace(/\.md$/, ''),
+      slug,
       files: group.parts.map((part) => part.relPath),
-      action: 'created',
+      action: rejectedBy ? 'rejected' : 'planned',
+      ...(rejectedBy
+        ? { reason: `the unchanged filing page was previously rejected as ${rejectedBy}` }
+        : {}),
     });
-    if (options.dryRun) continue;
-
-    const body = composeDocumentPage(ctx, group);
-    await fsp.mkdir(path.dirname(absPath), { recursive: true });
-    const result = await writeFileAtomic(ctx.config.aknoPath, relPath, body);
-    files.push({ relPath, action: 'created', before: null, after: result.after });
+    if (!rejectedBy) drafts.push(draft);
   }
 
-  return { adopted, files };
+  return { adopted, drafts };
+}
+
+/** A rejected exact item is a durable decision; do not ask again until its inputs change. */
+function matchingRejectedItem(ctx: AknoContext, draft: AdoptionDraft): string | null {
+  const available = ctx.store.db
+    .prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'maintenance_items'")
+    .get();
+  if (!available) return null;
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT id, operations FROM maintenance_items
+        WHERE kind = 'adopt' AND status = 'rejected' AND subject = ? AND input_hash = ?
+        ORDER BY rowid DESC`,
+    )
+    .all(draft.slug, draft.inputHash) as { id: string; operations: string }[];
+  const afterHash = sha256(draft.after);
+  for (const row of rows) {
+    try {
+      const operations = JSON.parse(row.operations) as unknown;
+      if (
+        Array.isArray(operations) &&
+        operations.length === 1 &&
+        typeof operations[0] === 'object' &&
+        operations[0] !== null &&
+        'type' in operations[0] &&
+        operations[0].type === 'create' &&
+        'relPath' in operations[0] &&
+        operations[0].relPath === draft.relPath &&
+        'afterHash' in operations[0] &&
+        operations[0].afterHash === afterHash
+      ) {
+        return row.id;
+      }
+    } catch {
+      // A malformed old private payload is not evidence of a rejection.
+    }
+  }
+  return null;
 }
 
 /**
@@ -129,16 +234,36 @@ export async function adoptOrphans(
 function orphanGroups(ctx: AknoContext): OrphanGroup[] {
   const rows = ctx.store.db
     .prepare(
-      `SELECT id, rel_path, group_key, summary FROM documents
+      `SELECT id, rel_path, sha256, group_key, summary, ocr, page_count, extract_via, confidence
+         FROM documents
         WHERE page_id IS NULL AND text IS NOT NULL
         ORDER BY group_key, part`,
     )
-    .all() as { id: string; rel_path: string; group_key: string | null; summary: string | null }[];
+    .all() as {
+    id: string;
+    rel_path: string;
+    sha256: string;
+    group_key: string | null;
+    summary: string | null;
+    ocr: number;
+    page_count: number | null;
+    extract_via: string | null;
+    confidence: number | null;
+  }[];
 
   const groups = new Map<string, OrphanGroup>();
   for (const row of rows) {
     const key = row.group_key ?? row.rel_path;
-    const part = { id: row.id, relPath: row.rel_path, summary: row.summary };
+    const part = {
+      id: row.id,
+      relPath: row.rel_path,
+      sha256: row.sha256,
+      summary: row.summary,
+      ocr: row.ocr,
+      pageCount: row.page_count,
+      extractVia: row.extract_via,
+      confidence: row.confidence,
+    };
     const existing = groups.get(key);
     if (existing) existing.parts.push(part);
     else groups.set(key, { groupKey: key, parts: [part] });
@@ -151,32 +276,22 @@ function orphanGroups(ctx: AknoContext): OrphanGroup[] {
  * inferred here that the document does not say about itself, and the file's own text stays
  * indexed against the document rather than copied into the page.
  */
-function composeDocumentPage(ctx: AknoContext, group: OrphanGroup): string {
+function composeDocumentPage(group: OrphanGroup): string {
   const first = group.parts[0]!;
   const title = titleFrom(first.relPath);
   const summary = group.parts.find((part) => part.summary)?.summary;
 
   const embeds = group.parts
     .map((part) => {
-      const document = ctx.store.db
-        .prepare('SELECT ocr, page_count, extract_via, confidence FROM documents WHERE id = ?')
-        .get(part.id) as
-        | {
-            ocr: number;
-            page_count: number | null;
-            extract_via: string | null;
-            confidence: number | null;
-          }
-        | undefined;
       // `via` is read, never reconstructed from the `ocr` flag. The flag cannot express the
       // one case this line exists for: an image a model *described* rather than read, which
       // would otherwise be adopted into a page claiming OCR had found the words.
       const provenance = provenanceLines({
         text: '',
-        pageCount: document?.page_count ?? null,
-        ocr: document?.ocr === 1,
-        confidence: document?.confidence ?? null,
-        via: (document?.extract_via as Extraction['via'] | null) ?? 'none',
+        pageCount: part.pageCount,
+        ocr: part.ocr === 1,
+        confidence: part.confidence,
+        via: (part.extractVia as Extraction['via'] | null) ?? 'none',
         note: null,
       });
       const name = path.posix.basename(part.relPath.replaceAll('\\', '/'));

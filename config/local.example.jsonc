@@ -76,12 +76,12 @@
   // every affected page to opt into `dream: synthesize`; qualified rewrites additionally
   // require exact scope evidence. Null preserves the legacy `write` preview/apply path.
   //
-  // The separate `adopt` phase is enabled by default and can create minimal pages
-  // for readable documents with no owner. Set `adopt.enabled` false if scheduled
-  // maintenance must be report-only.
+  // The separate `adopt` phase is enabled by default and plans minimal filing pages
+  // for readable documents with no owner. Its default `auto` mode uses the same separate
+  // curator/apply/verify path; choose `review` or `audit` for less authority.
   "maintenance": {
     "curate": { "enabled": false, "mode": null, "write": false, "verify": true },
     "conflicts": { "enabled": true, "verify": true, "resolve": true },
-    "adopt": { "enabled": true }
+    "adopt": { "enabled": true, "mode": "auto" }
   }
 }

@@ -594,6 +594,7 @@ akno dream --dry-run
 akno dream --phase housekeeping
 akno dream --phase curate
 akno dream --phase curate --mode audit
+akno dream --phase adopt --mode audit
 akno dream status
 ```
 
@@ -645,13 +646,15 @@ Order matters in three places:
 | `observe`      | Conflict-eligible facts from at least two knowledge pages             | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive         |
 | `reflect`      | Conflict-eligible observation pages                                   | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive         |
 | `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans | no; phase and write switch disabled | page/curator work yes; link audit no |
-| `adopt`        | Readable documents with no owning page                                | Minimal page beside each eligible document              | **yes**, capped at 20 per run       | no new call                   |
+| `adopt`        | Readable documents with no owning page                                | Exact low-risk filing-page plans                         | auto, capped at 20 per run          | planner no; auto curator yes  |
 | `repair`       | Broken links                                                          | Read-only view of exact proposals and refusals          | no; phase disabled                  | no                            |
 | `housekeeping` | Links, documents, pages, and folder rules                             | Counts and actionable diagnostics                       | no                                  | no                            |
 
-The default dream therefore has one automatic write-capable phase: `adopt`. It creates pages for
-otherwise unreachable documents, but never moves or edits the document itself. `conflicts` and
-`housekeeping` report. The other writing phases require explicit opt-in.
+The default dream therefore has one automatic write-capable phase: `adopt`. It first seals exact page
+creations, then asks the independent curator and applies only accepted items. It never moves or edits the
+document itself. Without an available curator model, its items remain blocked rather than becoming
+policy-approved writes. `conflicts` and `housekeeping` report. The other writing phases require explicit
+opt-in.
 
 ### Phase 1: `conflicts` — classify disagreements before inference
 
@@ -800,8 +803,8 @@ curator, application, and verification. The progress line also says whether a kn
 
 The selected mode is explicit authority for that run, so it replaces the legacy `maintenance.curate.write`
 choice for these curation items. It still requires `maintenance.curate.enabled`, an available maintenance or
-derive model, and page-level `dream: hygiene` or `dream: synthesize`. A command-line `--mode` currently requires
-`--phase curate`; it does not run the other six phases.
+derive model, and page-level `dream: hygiene` or `dream: synthesize`. A command-line `--mode` requires
+`--phase curate` or `--phase adopt`; it does not run the other phases.
 
 For the nightly full cycle, put the same decision in configuration instead:
 
@@ -942,16 +945,28 @@ but a passed date is never treated as proof that a plan happened.
 **Problem it solves:** extracted document text cannot appear in a page-card result when no page owns the
 document.
 
-**Method:** find readable unowned documents, make a page name from the existing filename, and create the
-same minimal page shape used by ingest: title, available summary, embeds, and extraction provenance.
+**Method:** find readable unowned documents, make a page name from the existing filename, and seal the same
+minimal page shape used by ingest: title, available summary, embeds, and extraction provenance. Each document
+group becomes one low-risk maintenance item. The plan records the run-start index/configuration manifest,
+the exact page bytes, and every document id, path, and source hash.
 
-**Write behavior:** enabled by default and capped at 20 created pages per run. It never renames, moves,
-or edits the document. A folder rule of `ingest: "file"` or `ingest: "ignore"` disables adoption there.
-If a page already occupies the intended path, adopt reports the collision and asks for an explicit embed
-instead of creating a near-duplicate.
+**Write behavior:** enabled in `auto` mode by default and capped at 20 planned pages per run. Before apply,
+Akno re-hashes the actual document bytes, confirms every indexed part is still readable and unowned, and
+requires the target page not to exist. Apply creates only the sealed page, journals it, forces a structural
+re-index of the unchanged documents, and verifies that every part is now owned by the new page. A failed
+postcondition rolls the page back. The document is never renamed, moved, or edited. A folder rule of
+`ingest: "file"` or `ingest: "ignore"` disables adoption there. If a page already occupies the intended path,
+adopt reports the collision and asks for an explicit embed instead of creating a near-duplicate.
 
-**Model use:** no new call. It uses extraction and summary data already in the index; if no summary exists,
-the page states only that the stored document is indexed and searchable.
+**Trust modes:** the planner itself makes no model call. `audit` persists an inspectable diff without a
+decision, `review` waits for a human, and `auto` makes one separate curator decision per item before verified
+apply. If no summary exists, the page states only that the stored document is indexed and searchable.
+
+```bash
+akno dream --phase adopt --mode audit
+akno dream --phase adopt --mode review
+akno dream --phase adopt --mode auto
+```
 
 ### Phase 6: `repair` — compatibility report for broken-link proposals
 
@@ -1043,8 +1058,9 @@ items (including broken links), and adoption can therefore have separate change 
 akno undo <change-id>
 ```
 
-Plan-backed curation is finer-grained: every applied item has its own change id, printed by `plan show` and
-`plan apply`. Human approval changes only plan state; the note remains byte-identical until `plan apply`.
+Plan-backed curation and adoption are finer-grained: every applied item has its own change id, printed by
+`plan show` and `plan apply`. Human approval changes only plan state; the knowledge base remains byte-identical
+until `plan apply`.
 
 To retain a machine-readable audit record:
 
@@ -1228,14 +1244,14 @@ or document was forgotten, recover it from Akno's trash within the configured re
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### The durable review queue currently covers curation only
+### The durable review queue does not cover every phase yet
 
 Hygiene, synthesis, bounded splits, independent extraction, and exact-alias merge now have stable plan and item
 ids, exact diffs, input hashes, separate human or curator decisions, hash-checked apply, verification receipts,
-and journal undo. The other dream
-outputs still do not feed that queue: observations, principles, adoption, conflict findings, repairs, and
-housekeeping each retain their existing execution or reporting behavior. There is also no snooze or
-requested-revision decision yet.
+and journal undo. Orphan-document adoption now uses the same lifecycle, including sealed source hashes and
+ownership verification. The remaining dream outputs still do not all feed that queue: observations,
+principles, report-only conflict findings, legacy repair output, and housekeeping retain their existing
+execution or reporting behavior. There is also no snooze or requested-revision decision yet.
 
 ### Searchability should not depend on an overnight write
 
@@ -1250,8 +1266,8 @@ for search correctness.
 
 ### The whole dream should become a plan, apply, verify loop
 
-The curation slice now follows this lifecycle. The seven-phase cycle as a whole still mixes analysis, proposals,
-writes, and final reporting. Its consistent user-visible stages should be:
+The curation and adoption slices now follow this lifecycle. The seven-phase cycle as a whole still mixes
+analysis, proposals, writes, and final reporting. Its consistent user-visible stages should be:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
 2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
@@ -1270,12 +1286,12 @@ Dream currently combines global phase switches, a separate curate write switch, 
 rules, dry-run behavior, and per-run caps. The safeguards are valuable; the interaction is difficult to hold
 in one mental model.
 
-The curation path now exposes `audit`, `review`, and `auto` both per command and through
-`maintenance.curate.mode`, so a full scheduled run can use durable plans without dropping the other phases.
-The next operator step is still a named profile that resolves authority across every transformation, not just
-curation. Expert config can remain underneath. Setup must say plainly when it schedules knowledge-base writes.
-`adopt` is enabled by default, so installing background operation can eventually add Markdown pages unless the
-user passes `--no-dream` or disables adoption.
+The curation and adoption paths expose `audit`, `review`, and `auto` both per command and through their own
+configured modes, so a full scheduled run can use durable plans without dropping the other phases. The next
+operator step is still a named profile that resolves authority across every transformation. Expert config can
+remain underneath. Setup must say plainly when it schedules knowledge-base writes. `adopt` is enabled in auto
+mode by default, so installing background operation can eventually add curator-approved Markdown pages unless
+the user passes `--no-dream`, disables adoption, or selects audit/review.
 
 The intended profile depends on how Akno is used: a trusted agent-connected installation should recommend
 `autonomous`, with a separate model curator and automatic verified application; a standalone installation should

@@ -477,6 +477,25 @@ describe('repair', () => {
     expect(report.phases.find((phase) => phase.phase === 'repair')?.ran).toBe(true);
   });
 
+  it('reports both curate and adopt plans from one full run', async () => {
+    await withBrokenLinks('audit');
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'household/coverage note.txt'),
+      'Vulpine Mutual coverage renews in 2031.\n',
+    );
+    await mem.index({});
+
+    const report = await mem.dream({});
+
+    expect(report.maintenancePlans.map((plan) => plan.phase)).toEqual(['curate', 'adopt']);
+    expect(report.run.maintenancePlanIds).toEqual(report.maintenancePlans.map((plan) => plan.id));
+    expect(report.maintenancePlan?.phase).toBe('adopt');
+    expect(report.adopted).toContainEqual(
+      expect.objectContaining({ slug: 'household/coverage-note', action: 'created' }),
+    );
+  });
+
   it('uses journalled move history when the new name has no textual resemblance', async () => {
     await mem.close();
     fs.writeFileSync(
@@ -1211,6 +1230,7 @@ describe('the cycle', () => {
       mode: 'legacy',
       requestedPhase: 'housekeeping',
       persisted: true,
+      maintenancePlanIds: [],
       maintenancePlanId: null,
       errorCode: null,
     });
@@ -1323,6 +1343,24 @@ describe('adopt', () => {
     expect(report.adopted).toHaveLength(1);
     expect(report.adopted[0]!.action).toBe('created');
     expect(report.adopted[0]!.slug).toBe('household/lease-scan');
+    expect(report.maintenancePlan).toMatchObject({
+      mode: 'auto',
+      phase: 'adopt',
+      status: 'completed',
+    });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      kind: 'adopt',
+      risk: 'low',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    expect(item.operations).toMatchObject([{ type: 'create', relPath: 'household/lease-scan.md' }]);
+    expect(item.evidence.find((entry) => entry.type === 'snapshot')?.fingerprint).toBe(
+      report.run.snapshot.indexRevision,
+    );
+    expect(item.evidence.filter((entry) => entry.type === 'document')).toHaveLength(1);
 
     const page = fs.readFileSync(path.join(root, 'household/lease-scan.md'), 'utf8');
     // The title comes from the filename, tidied — nothing invented about a file Akno was not
@@ -1393,8 +1431,88 @@ describe('adopt', () => {
   it('writes nothing on a dry run', async () => {
     await mem.index({});
     const report = await mem.dream({ phase: 'adopt', dryRun: true });
-    expect(report.adopted[0]!.action).toBe('created');
+    expect(report.adopted[0]!.action).toBe('planned');
     expect(report.adoptChangeId).toBeNull();
+    expect(report.maintenancePlan).toBeNull();
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+  });
+
+  it('persists an audit plan without writing', async () => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt', mode: 'audit' });
+
+    expect(report.adopted[0]).toMatchObject({ action: 'planned', slug: 'household/lease-scan' });
+    expect(report.maintenancePlan).toMatchObject({ mode: 'audit', phase: 'adopt', status: 'ready' });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({ kind: 'adopt', status: 'proposed' });
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    expect(mem.maintenanceDiff(report.maintenancePlan!.id)).toContain(
+      '--- /dev/null\n+++ b/household/lease-scan.md',
+    );
+  });
+
+  it('can audit adoption without a model', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      maintenance: { adopt: { mode: 'audit' } },
+    });
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'adopt' });
+
+    expect(report.maintenancePlan).toMatchObject({ mode: 'audit', phase: 'adopt', status: 'ready' });
+    expect(report.adopted[0]).toMatchObject({ action: 'planned' });
+  });
+
+  it('keeps review separate from apply and verifies document ownership', async () => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt', mode: 'review' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    const item = plan.items[0]!;
+
+    expect(report.adopted[0]!.action).toBe('planned');
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    mem.decidePlan(plan.id, item.id, 'approve', 'The deterministic filing page is correctly scoped.');
+    const applied = await mem.applyPlan(plan.id);
+
+    expect(applied.plan.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(true);
+    expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(0);
+  });
+
+  it('makes an approved adoption stale when the source bytes changed after planning', async () => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt', mode: 'review' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    const item = plan.items[0]!;
+    fs.appendFileSync(path.join(root, 'household/lease scan.txt'), 'A newer invented clause.\n');
+
+    mem.decidePlan(plan.id, item.id, 'approve', 'Approved before the source changed.');
+    const applied = await mem.applyPlan(plan.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(applied.files).toEqual([]);
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+  });
+
+  it('does not resubmit an unchanged human-rejected adoption', async () => {
+    await mem.index({});
+    const report = await mem.dream({ phase: 'adopt', mode: 'review' });
+    const item = report.maintenancePlan!.items[0]!;
+    mem.decidePlan(
+      report.maintenancePlan!.id,
+      item.id,
+      'reject',
+      'This document should remain unfiled.',
+    );
+
+    const repeated = await mem.dream({ phase: 'adopt', mode: 'review' });
+
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(repeated.adopted[0]).toMatchObject({ action: 'rejected' });
     expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
   });
 

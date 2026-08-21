@@ -350,6 +350,9 @@
     // file would be noise — and never touches the file itself.
     "adopt": {
       "enabled": true,
+      // Adoption is deterministic but still goes through an exact plan and separate curator
+      // decision. Use "review" for manual approval or "audit" to keep proposals read-only.
+      "mode": "auto",
       // A folder of 500 unowned PDFs should not become 500 pages overnight before
       // anyone has read the first report.
       "max_pages": 20

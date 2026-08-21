@@ -54,6 +54,8 @@ export interface DreamRunReceipt {
   phases: { phase: DreamPhase; ran: boolean; skipped: boolean; durationMs: number }[];
   counts: DreamRunCounts;
   durationMs: number | null;
+  maintenancePlanIds: string[];
+  /** Most recently touched plan, retained for older clients. */
   maintenancePlanId: string | null;
   changeIds: string[];
   errorCode: ErrorCode | null;
@@ -111,6 +113,7 @@ export function beginDreamRun(
     phases: [],
     counts: emptyCounts(),
     durationMs: null,
+    maintenancePlanIds: [],
     maintenancePlanId: null,
     changeIds: [],
     errorCode: null,
@@ -135,20 +138,26 @@ export function completeDreamRun(
   report: DreamReport,
 ): DreamRunReceipt {
   const finishedAt = new Date().toISOString();
+  const plans = report.maintenancePlans.length > 0
+    ? report.maintenancePlans
+    : report.maintenancePlan
+      ? [report.maintenancePlan]
+      : [];
   const receipt: DreamRunReceipt = {
     ...started,
     finishedAt,
-    status: completedStatus(report, started.mode),
+    status: completedStatus(report),
     phases: safePhases(report.phases),
     counts: reportCounts(report),
     durationMs: report.durationMs,
-    maintenancePlanId: report.maintenancePlan?.id ?? null,
+    maintenancePlanIds: plans.map((plan) => plan.id),
+    maintenancePlanId: plans.at(-1)?.id ?? null,
     changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId]
       .filter((id): id is string => id !== null)
       .concat(
-        report.maintenancePlan?.items
-          .map((item) => item.changeId)
-          .filter((id): id is string => id !== null) ?? [],
+        plans.flatMap((plan) =>
+          plan.items.map((item) => item.changeId).filter((id): id is string => id !== null),
+        ),
       )
       .filter((id, index, all) => all.indexOf(id) === index),
   };
@@ -181,11 +190,7 @@ export function latestDreamRun(ctx: AknoContext): DreamRunReceipt | null {
     .prepare('SELECT receipt FROM maintenance_runs ORDER BY rowid DESC LIMIT 1')
     .get() as ReceiptRow | undefined;
   if (!row) return null;
-  try {
-    return JSON.parse(row.receipt) as DreamRunReceipt;
-  } catch {
-    return null;
-  }
+  return parseReceipt(row.receipt);
 }
 
 /**
@@ -315,11 +320,17 @@ function roleFingerprint(role: ResolvedModelRole | null): Record<string, unknown
   };
 }
 
-function completedStatus(report: DreamReport, mode: DreamRunMode): DreamRunStatus {
-  const status = report.maintenancePlan?.status;
-  if (mode === 'review' && status === 'awaiting_review') return 'awaiting_review';
-  if (status === 'failed') return 'failed';
-  if (status === 'partially_completed') return 'partially_completed';
+function completedStatus(report: DreamReport): DreamRunStatus {
+  const plans = report.maintenancePlans.length > 0
+    ? report.maintenancePlans
+    : report.maintenancePlan
+      ? [report.maintenancePlan]
+      : [];
+  if (plans.some((plan) => plan.status === 'awaiting_review')) {
+    return 'awaiting_review';
+  }
+  if (plans.some((plan) => plan.status === 'failed')) return 'failed';
+  if (plans.some((plan) => plan.status === 'partially_completed')) return 'partially_completed';
   return 'completed';
 }
 
@@ -382,7 +393,15 @@ function activeRunRows(ctx: AknoContext): ActiveRunRow[] {
 
 function parseReceipt(value: string): DreamRunReceipt | null {
   try {
-    return JSON.parse(value) as DreamRunReceipt;
+    const receipt = JSON.parse(value) as DreamRunReceipt & { maintenancePlanIds?: unknown };
+    return {
+      ...receipt,
+      maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
+        ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')
+        : receipt.maintenancePlanId
+          ? [receipt.maintenancePlanId]
+          : [],
+    };
   } catch {
     return null;
   }

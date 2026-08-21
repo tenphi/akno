@@ -19,8 +19,11 @@ import type { ContradictionDraft } from './contradictions.ts';
 import { replaceLinkTarget, type BrokenLinkDraft, type LinkIdentitySignal } from './link-repairs.ts';
 import { preservesAuthoredTokens, preservesValues } from './repair.ts';
 import { activeDreamRuns, latestDreamRun, type DreamRunReceipt } from './runs.ts';
+import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
+import { effectiveRule } from '../rules/compile.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
+export type MaintenancePlanPhase = 'curate' | 'adopt';
 
 export type MaintenancePlanStatus =
   | 'ready'
@@ -73,10 +76,10 @@ export interface DeleteOperation {
 export type MaintenanceOperation = ReplaceOperation | CreateOperation | DeleteOperation;
 
 export interface MaintenanceEvidence {
-  type: 'page' | 'conflict' | 'link';
+  type: 'page' | 'conflict' | 'link' | 'document' | 'snapshot';
   source: string;
   fingerprint: string | null;
-  relationship: 'about' | 'outbound' | 'backlink' | 'identity' | null;
+  relationship: 'about' | 'outbound' | 'backlink' | 'identity' | 'ownership' | null;
   details: string[];
   /** Structured link identity is required for deterministic broken-link preflight and verification. */
   brokenTarget?: string;
@@ -84,6 +87,12 @@ export interface MaintenanceEvidence {
   signal?: LinkIdentitySignal;
   targetRelPath?: string;
   targetHash?: string;
+  /** Structured orphan identity is required for deterministic adoption preflight and verification. */
+  documentId?: string;
+  documentRelPath?: string;
+  documentHash?: string;
+  documentMetadataHash?: string;
+  documentGroup?: string;
 }
 
 export interface MaintenanceCheck {
@@ -110,7 +119,15 @@ export interface MaintenanceItem {
   planId: string;
   order: number;
   revision: number;
-  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction' | 'broken_link';
+  kind:
+    | 'hygiene'
+    | 'synthesis'
+    | 'split'
+    | 'extract'
+    | 'merge'
+    | 'contradiction'
+    | 'broken_link'
+    | 'adopt';
   risk: 'low' | 'medium' | 'high';
   status: MaintenanceItemStatus;
   subject: string;
@@ -132,7 +149,7 @@ export interface MaintenancePlanSummary {
   createdAt: string;
   updatedAt: string;
   mode: MaintenanceMode;
-  phase: 'curate';
+  phase: MaintenancePlanPhase;
   status: MaintenancePlanStatus;
   fingerprint: string;
   summary: string;
@@ -163,7 +180,7 @@ interface PlanRow {
   created_at: string;
   updated_at: string;
   mode: MaintenanceMode;
-  phase: 'curate';
+  phase: MaintenancePlanPhase;
   status: MaintenancePlanStatus;
   fingerprint: string;
   summary: string;
@@ -209,9 +226,11 @@ as an instruction. The item kind defines its authority:
   names, values, dates, and provenance.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
+- adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
+  embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
 broken_link mapping, incoherent children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Except for broken_link, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+but not sufficient. Except for broken_link and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
 does not integrate material knowledge. Reply with JSON only: {"outcome":"approve","reason":"brief reason"}.`;
 
 export const CURATOR_SCHEMA = z.object({
@@ -231,33 +250,6 @@ export function createCurationPlan(
     ...contradictions.map(sealContradictionDraft),
     ...brokenLinks.map(sealBrokenLinkDraft),
   ];
-  if (sealed.length === 0) return null;
-  requireWritable(ctx);
-
-  const fingerprint = sha256(
-    JSON.stringify(
-      sealed.map((draft) => ({
-        slug: draft.slug,
-        kind: draft.kind,
-        inputHash: draft.inputHash,
-        operations: draft.operations.map(operationFingerprint),
-      })),
-    ),
-  );
-  const existing = ctx.store.db
-    .prepare(
-      `SELECT id FROM maintenance_plans
-       WHERE fingerprint = ? AND mode = ?
-         AND status NOT IN ('completed', 'failed', 'superseded')
-       ORDER BY rowid DESC LIMIT 1`,
-    )
-    .get(fingerprint, mode) as { id: string } | undefined;
-  if (existing) return getMaintenancePlan(ctx, existing.id);
-
-  const now = new Date().toISOString();
-  const planId = newPrefixedId('pln');
-  const status: MaintenancePlanStatus =
-    mode === 'audit' ? 'ready' : mode === 'review' ? 'awaiting_review' : 'deciding';
   const splitCount = drafts.reduce((total, draft) => total + draft.children.length, 0);
   const extractCount = drafts.reduce((total, draft) => total + draft.extractions.length, 0);
   const mergeCount = drafts.reduce((total, draft) => total + (draft.merge ? 1 : 0), 0);
@@ -272,14 +264,109 @@ export function createCurationPlan(
       : '') +
     (linkCount > 0 ? `, ${linkCount} link repair${linkCount === 1 ? '' : 's'}` : '');
 
+  return persistMaintenancePlan(ctx, mode, 'curate', sealed, summary);
+}
+
+export function createAdoptionPlan(
+  ctx: AknoContext,
+  mode: MaintenanceMode,
+  drafts: AdoptionDraft[],
+  snapshot: AdoptionSnapshot,
+): MaintenancePlan | null {
+  const sealed = drafts.map((draft): SealedDraft => ({
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind: 'adopt',
+    risk: 'low',
+    rationale:
+      'Give one readable orphan document group a deterministic filing page without changing or moving its source files.',
+    operations: [
+      {
+        type: 'create',
+        relPath: draft.relPath,
+        afterHash: sha256(draft.after),
+        after: draft.after,
+      },
+    ],
+    evidence: [
+      ...draft.documents.map(
+        (document): MaintenanceEvidence => ({
+          type: 'document',
+          source: document.relPath,
+          fingerprint: document.sha256,
+          relationship: 'ownership',
+          details: ['readable orphan sealed before adoption'],
+          documentId: document.id,
+          documentRelPath: document.relPath,
+          documentHash: document.sha256,
+          documentMetadataHash: document.metadataHash,
+          documentGroup: document.groupKey,
+        }),
+      ),
+      {
+        type: 'snapshot',
+        source: 'dream-start-manifest',
+        fingerprint: snapshot.indexRevision,
+        relationship: null,
+        details: [snapshot.knowledgeBaseFingerprint, snapshot.configurationFingerprint],
+      },
+    ],
+    checks: [
+      { name: 'target page did not exist in the run-start index', status: 'passed' },
+      { name: 'every readable orphan part and source hash is sealed', status: 'passed' },
+      { name: 'page embeds every source file without moving or rewriting it', status: 'passed' },
+    ],
+  }));
+  const documents = drafts.reduce((total, draft) => total + draft.documents.length, 0);
+  const summary =
+    `adopt: ${drafts.length} page${drafts.length === 1 ? '' : 's'}` +
+    ` for ${documents} orphan document${documents === 1 ? '' : 's'}`;
+  return persistMaintenancePlan(ctx, mode, 'adopt', sealed, summary);
+}
+
+function persistMaintenancePlan(
+  ctx: AknoContext,
+  mode: MaintenanceMode,
+  phase: MaintenancePlanPhase,
+  sealed: SealedDraft[],
+  summary: string,
+): MaintenancePlan | null {
+  if (sealed.length === 0) return null;
+  requireWritable(ctx);
+  const fingerprint = sha256(
+    JSON.stringify({
+      phase,
+      items: sealed.map((draft) => ({
+        slug: draft.slug,
+        kind: draft.kind,
+        inputHash: draft.inputHash,
+        operations: draft.operations.map(operationFingerprint),
+      })),
+    }),
+  );
+  const existing = ctx.store.db
+    .prepare(
+      `SELECT id FROM maintenance_plans
+       WHERE fingerprint = ? AND mode = ? AND phase = ?
+         AND status NOT IN ('completed', 'failed', 'superseded')
+       ORDER BY rowid DESC LIMIT 1`,
+    )
+    .get(fingerprint, mode, phase) as { id: string } | undefined;
+  if (existing) return getMaintenancePlan(ctx, existing.id);
+
+  const now = new Date().toISOString();
+  const planId = newPrefixedId('pln');
+  const status: MaintenancePlanStatus =
+    mode === 'audit' ? 'ready' : mode === 'review' ? 'awaiting_review' : 'deciding';
+
   ctx.store.transaction(() => {
     ctx.store.db
       .prepare(
         `INSERT INTO maintenance_plans
           (id, created_at, updated_at, mode, phase, status, fingerprint, summary, error)
-         VALUES (?, ?, ?, ?, 'curate', ?, ?, ?, NULL)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)`,
       )
-      .run(planId, now, now, mode, status, fingerprint, summary);
+      .run(planId, now, now, mode, phase, status, fingerprint, summary);
 
     const insert = ctx.store.db.prepare(
       `INSERT INTO maintenance_items
@@ -473,14 +560,18 @@ export function getMaintenancePlan(ctx: AknoContext, planId: string): Maintenanc
 }
 
 /** Oldest unfinished plan for restart recovery; fresh planning waits until it is resolved. */
-export function findActiveMaintenancePlan(ctx: AknoContext, mode: MaintenanceMode): MaintenancePlan | null {
+export function findActiveMaintenancePlan(
+  ctx: AknoContext,
+  mode: MaintenanceMode,
+  phase: MaintenancePlanPhase,
+): MaintenancePlan | null {
   const row = ctx.store.db
     .prepare(
-      `SELECT id FROM maintenance_plans WHERE mode = ?
+      `SELECT id FROM maintenance_plans WHERE mode = ? AND phase = ?
        AND status NOT IN ('completed', 'failed', 'superseded')
        ORDER BY rowid LIMIT 1`,
     )
-    .get(mode) as { id: string } | undefined;
+    .get(mode, phase) as { id: string } | undefined;
   return row ? getMaintenancePlan(ctx, row.id) : null;
 }
 
@@ -504,7 +595,12 @@ export function decideMaintenanceItem(
        decision_reason = ?, decided_at = ?, updated_at = ? WHERE id = ? AND plan_id = ?`,
     )
     .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
-  if (outcome === 'reject' && item.kind !== 'contradiction' && item.kind !== 'broken_link') {
+  if (
+    outcome === 'reject' &&
+    item.kind !== 'contradiction' &&
+    item.kind !== 'broken_link' &&
+    item.kind !== 'adopt'
+  ) {
     markCurateRejected(ctx, [{ slug: item.subject, inputHash: item.input_hash }]);
   }
   refreshDecisionStatus(ctx, planId);
@@ -646,9 +742,8 @@ export async function applyMaintenancePlan(
     files.push(...entries);
     setItemChange(ctx, item.id, changeId);
 
-    const paths = item.operations.map((operation) => operation.relPath);
     try {
-      await ctx.indexer.run({ only: paths, modelPaths: [] });
+      await indexMaintenanceItem(ctx, item);
     } catch (err) {
       updateItemStatus(ctx, item.id, 'verification_pending', {
         status: 'pending',
@@ -788,9 +883,8 @@ async function resumeVerification(ctx: AknoContext, item: MaintenanceItem): Prom
     });
     return;
   }
-  const paths = operations.map((operation) => operation.relPath);
   try {
-    await ctx.indexer.run({ only: paths, modelPaths: [] });
+    await indexMaintenanceItem(ctx, item);
   } catch (err) {
     updateItemStatus(ctx, item.id, 'verification_pending', {
       status: 'pending',
@@ -805,25 +899,31 @@ async function resumeVerification(ctx: AknoContext, item: MaintenanceItem): Prom
 async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Promise<void> {
   const operations = supportedOperations(item);
   const verification = await verifyApplied(ctx, item, operations);
-  const paths = operations.map((operation) => operation.relPath);
+  const operationPaths = operations.map((operation) => operation.relPath);
   if (verification === null) {
     const slugs = operations
       .filter((operation) => operation.type !== 'delete')
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
-    if (item.kind !== 'contradiction' && item.kind !== 'broken_link') markCurateApplied(ctx, slugs);
+    if (
+      item.kind !== 'contradiction' &&
+      item.kind !== 'broken_link' &&
+      item.kind !== 'adopt'
+    ) {
+      markCurateApplied(ctx, slugs);
+    }
     updateItemStatus(ctx, item.id, 'applied', {
       status: 'passed',
       detail: `Exact bytes for ${operations.length} file${operations.length === 1 ? '' : 's'} are on disk and current in the structural index.`,
       at: new Date().toISOString(),
     });
-    if (item.kind !== 'broken_link') ctx.derive.schedule(paths);
+    if (item.kind !== 'broken_link') ctx.derive.schedule(operationPaths);
     return;
   }
 
   if (item.changeId) {
     try {
       await ctx.journal.undo(item.changeId);
-      await ctx.indexer.run({ only: paths, modelPaths: [] });
+      await indexMaintenanceItem(ctx, item);
       updateItemStatus(ctx, item.id, 'verification_failed', {
         status: 'rolled_back',
         detail: `${verification} The journaled write was rolled back.`,
@@ -852,8 +952,13 @@ async function verifyApplied(
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
   const expectedMode =
-    item.kind === 'broken_link' ? null : item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
+    item.kind === 'broken_link' || item.kind === 'adopt'
+      ? null
+      : item.kind === 'hygiene'
+        ? 'hygiene'
+        : 'synthesize';
   let canonical: ReturnType<typeof parsePage> | null = null;
+  let canonicalPageId: string | null = null;
   let retired: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
     const content = await fsp
@@ -880,9 +985,10 @@ async function verifyApplied(
     }
     const parsed = parsePage(operation.relPath, content);
     const row = ctx.store.db
-      .prepare('SELECT slug, rel_path, body_hash, role, dream_management FROM pages WHERE rel_path = ?')
+      .prepare('SELECT id, slug, rel_path, body_hash, role, dream_management FROM pages WHERE rel_path = ?')
       .get(operation.relPath) as
       | {
+          id: string;
           slug: string;
           rel_path: string;
           body_hash: string;
@@ -897,7 +1003,10 @@ async function verifyApplied(
     if (index === 0 && row.slug !== item.subject) {
       return 'The canonical operation no longer resolves to the planned subject.';
     }
-    if (index === 0) canonical = parsed;
+    if (index === 0) {
+      canonical = parsed;
+      canonicalPageId = row.id;
+    }
     if (row.role !== 'knowledge') {
       return `${operation.relPath} is no longer live knowledge.`;
     }
@@ -947,6 +1056,39 @@ async function verifyApplied(
       .prepare("SELECT count(*) AS n FROM links WHERE lower(to_slug) = lower(?) AND kind != 'embed'")
       .get(retired.slug) as { n: number };
     if (remaining.n > 0) return `The structural index still contains links to ${retired.slug}.`;
+  }
+  if (item.kind === 'adopt') {
+    if (!canonicalPageId) return 'The adopted page is missing its indexed identity.';
+    for (const entry of item.evidence.filter((candidate) => candidate.type === 'document')) {
+      if (!entry.documentId || !entry.documentRelPath || !entry.documentHash) {
+        return 'The adopted document evidence became incomplete.';
+      }
+      const document = ctx.store.db
+        .prepare('SELECT rel_path, sha256, page_id FROM documents WHERE id = ?')
+        .get(entry.documentId) as
+        | { rel_path: string; sha256: string; page_id: string | null }
+        | undefined;
+      if (
+        !document ||
+        document.rel_path !== entry.documentRelPath ||
+        document.sha256 !== entry.documentHash
+      ) {
+        return `${entry.source} no longer has its sealed indexed identity.`;
+      }
+      if (document.page_id !== canonicalPageId) {
+        return `${entry.source} did not become owned by the adopted page.`;
+      }
+      let documentPath: string;
+      try {
+        documentPath = await safeOperationPath(ctx, entry.documentRelPath);
+      } catch (err) {
+        return errorMessage(err);
+      }
+      const bytes = await fsp.readFile(documentPath).catch(() => null);
+      if (bytes === null || sha256(bytes) !== entry.documentHash) {
+        return `${entry.source} changed while its filing page was applied.`;
+      }
+    }
   }
   if (item.kind === 'broken_link') {
     const source = ctx.store.db.prepare('SELECT id FROM pages WHERE slug = ?').get(item.subject) as
@@ -1034,7 +1176,13 @@ function itemRow(ctx: AknoContext, planId: string, itemId: string): ItemRow {
 }
 
 function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
-  if (item.operations.length === 0 || item.operations[0]?.type !== 'replace') {
+  if (
+    item.kind === 'adopt' &&
+    (item.operations.length !== 1 || item.operations[0]?.type !== 'create')
+  ) {
+    throw new AknoError('invalid', `${item.id} must contain exactly one page creation`);
+  }
+  if (item.kind !== 'adopt' && (item.operations.length === 0 || item.operations[0]?.type !== 'replace')) {
     throw new AknoError('invalid', `${item.id} does not start with one supported canonical replacement`);
   }
   const paths = new Set<string>();
@@ -1046,6 +1194,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
       item.kind !== 'merge' &&
       item.kind !== 'contradiction' &&
       item.kind !== 'broken_link' &&
+      item.kind !== 'adopt' &&
       index > 0 &&
       operation.type !== 'create'
     ) {
@@ -1070,6 +1219,9 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
     (item.operations.length !== 1 || item.operations.some((operation) => operation.type !== 'replace'))
   ) {
     throw new AknoError('invalid', `${item.id} must contain exactly one source replacement`);
+  }
+  if (item.kind === 'adopt' && item.operations.some((operation) => operation.type !== 'create')) {
+    throw new AknoError('invalid', `${item.id} may only create its filing page`);
   }
   return item.operations;
 }
@@ -1161,6 +1313,28 @@ function operationFingerprint(operation: MaintenanceOperation): {
   };
 }
 
+function maintenanceIndexPaths(item: MaintenanceItem): string[] {
+  const paths = [
+    ...item.operations.map((operation) => operation.relPath),
+    ...(item.kind === 'adopt'
+      ? item.evidence.flatMap((entry) =>
+          entry.type === 'document' && entry.documentRelPath ? [entry.documentRelPath] : [],
+        )
+      : []),
+  ];
+  return paths.filter((relPath, index) => paths.indexOf(relPath) === index);
+}
+
+async function indexMaintenanceItem(ctx: AknoContext, item: MaintenanceItem): Promise<void> {
+  const paths = maintenanceIndexPaths(item);
+  await Promise.all(paths.map((relPath) => safeOperationPath(ctx, relPath)));
+  await ctx.indexer.run({
+    only: paths,
+    modelPaths: [],
+    ...(item.kind === 'adopt' ? { reindexUnchanged: true } : {}),
+  });
+}
+
 type PreflightResult = { status: 'ready' } | { status: 'stale' | 'blocked'; detail: string };
 
 function brokenLinkOperationIssue(item: MaintenanceItem, operations: MaintenanceOperation[]): string | null {
@@ -1191,6 +1365,57 @@ function brokenLinkOperationIssue(item: MaintenanceItem, operations: Maintenance
   }
   if (expected !== source.after)
     return 'the source replacement changes bytes beyond its sealed link evidence';
+  return null;
+}
+
+function adoptionOperationIssue(item: MaintenanceItem, operations: MaintenanceOperation[]): string | null {
+  const operation = operations[0];
+  if (!operation || operation.type !== 'create') return 'an adoption item has no filing-page creation';
+  const documents = item.evidence.filter((entry) => entry.type === 'document');
+  const snapshots = item.evidence.filter((entry) => entry.type === 'snapshot');
+  if (
+    documents.length === 0 ||
+    snapshots.length !== 1 ||
+    documents.length + snapshots.length !== item.evidence.length
+  ) {
+    return 'an adoption item requires only structured document evidence and one start manifest';
+  }
+  const groups = new Set<string>();
+  const ids = new Set<string>();
+  const relPaths = new Set<string>();
+  let parsed: ReturnType<typeof parsePage>;
+  try {
+    parsed = parsePage(operation.relPath, operation.after);
+  } catch (err) {
+    return `the adoption output is not valid Markdown: ${errorMessage(err)}`;
+  }
+  const embeds = new Set(
+    parsed.links.filter((link) => link.kind === 'embed').map((link) => link.toSlug),
+  );
+  for (const entry of documents) {
+    if (
+      entry.relationship !== 'ownership' ||
+      !entry.documentId ||
+      !entry.documentRelPath ||
+      !entry.documentHash ||
+      !entry.documentMetadataHash ||
+      !entry.documentGroup ||
+      entry.source !== entry.documentRelPath ||
+      entry.fingerprint !== entry.documentHash
+    ) {
+      return 'an adoption item contains incomplete document identity evidence';
+    }
+    if (ids.has(entry.documentId) || relPaths.has(entry.documentRelPath)) {
+      return 'an adoption item contains duplicate document evidence';
+    }
+    ids.add(entry.documentId);
+    relPaths.add(entry.documentRelPath);
+    groups.add(entry.documentGroup);
+    if (!embeds.has(path.posix.basename(entry.documentRelPath.replaceAll('\\', '/')))) {
+      return `${operation.relPath} does not embed every sealed orphan document`;
+    }
+  }
+  if (groups.size !== 1) return 'an adoption item combines unrelated document groups';
   return null;
 }
 
@@ -1227,12 +1452,23 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'broken_link' && (creates > 0 || deletes > 0)) {
     return { status: 'blocked', detail: 'a broken-link item may only replace existing pages' };
   }
+  if (item.kind === 'adopt' && (creates !== 1 || deletes !== 0)) {
+    return { status: 'blocked', detail: 'an adoption item must create exactly one filing page' };
+  }
   if (item.kind === 'broken_link') {
     const issue = brokenLinkOperationIssue(item, operations);
     if (issue) return { status: 'blocked', detail: issue };
   }
+  if (item.kind === 'adopt') {
+    const issue = adoptionOperationIssue(item, operations);
+    if (issue) return { status: 'blocked', detail: issue };
+  }
   const expectedMode =
-    item.kind === 'broken_link' ? null : item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
+    item.kind === 'broken_link' || item.kind === 'adopt'
+      ? null
+      : item.kind === 'hygiene'
+        ? 'hygiene'
+        : 'synthesize';
   const slugs = new Set<string>();
   let canonical: ReturnType<typeof parsePage> | null = null;
   let mergeSource: ReturnType<typeof parsePage> | null = null;
@@ -1325,6 +1561,79 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
         }
         const incoming = await extractionIncomingHeadingIssues(ctx, item.subject, parsed.body);
         if (incoming.length > 0) return { status: 'blocked', detail: incoming[0]! };
+      }
+    }
+  }
+  if (item.kind === 'adopt') {
+    const documents = item.evidence.filter((entry) => entry.type === 'document');
+    const rule = effectiveRule(item.subject, ctx.config.rules);
+    if (rule.ingest === 'file' || rule.ingest === 'ignore') {
+      return {
+        status: 'blocked',
+        detail: `the current folder rule now says ingest: ${rule.ingest}`,
+      };
+    }
+    const expectedIds = new Set(documents.map((entry) => entry.documentId!));
+    const group = documents[0]!.documentGroup!;
+    const currentGroup = ctx.store.db
+      .prepare(
+        `SELECT id FROM documents
+          WHERE COALESCE(group_key, rel_path) = ? AND page_id IS NULL AND text IS NOT NULL`,
+      )
+      .all(group) as { id: string }[];
+    if (
+      currentGroup.length !== expectedIds.size ||
+      currentGroup.some((document) => !expectedIds.has(document.id))
+    ) {
+      return { status: 'stale', detail: 'the readable orphan document group changed after planning' };
+    }
+    for (const entry of documents) {
+      const row = ctx.store.db
+        .prepare(
+          `SELECT rel_path, sha256, page_id, summary, ocr, page_count, extract_via, confidence
+             FROM documents WHERE id = ?`,
+        )
+        .get(entry.documentId) as
+        | {
+            rel_path: string;
+            sha256: string;
+            page_id: string | null;
+            summary: string | null;
+            ocr: number;
+            page_count: number | null;
+            extract_via: string | null;
+            confidence: number | null;
+          }
+        | undefined;
+      const metadataHash = row
+        ? sha256(
+            JSON.stringify([
+              row.summary,
+              row.ocr,
+              row.page_count,
+              row.extract_via,
+              row.confidence,
+            ]),
+          )
+        : null;
+      if (
+        !row ||
+        row.page_id !== null ||
+        row.rel_path !== entry.documentRelPath ||
+        row.sha256 !== entry.documentHash ||
+        metadataHash !== entry.documentMetadataHash
+      ) {
+        return { status: 'stale', detail: `${entry.source} no longer matches its sealed orphan row` };
+      }
+      let documentPath: string;
+      try {
+        documentPath = await safeOperationPath(ctx, entry.documentRelPath!);
+      } catch (err) {
+        return { status: 'blocked', detail: errorMessage(err) };
+      }
+      const bytes = await fsp.readFile(documentPath).catch(() => null);
+      if (bytes === null || sha256(bytes) !== entry.documentHash) {
+        return { status: 'stale', detail: `${entry.source} no longer matches its sealed source bytes` };
       }
     }
   }

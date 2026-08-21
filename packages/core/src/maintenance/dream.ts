@@ -17,11 +17,12 @@ import {
 import { planContradictions } from './contradictions.ts';
 import { housekeeping, type Housekeeping } from './housekeeping.ts';
 import { ModelClient } from '../models/client.ts';
-import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
+import { planOrphanAdoptions, type AdoptedDocument } from './adopt.ts';
 import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 import { curatePages, type CurateDraft, type CuratedPage } from './curate.ts';
 import {
   applyMaintenancePlan,
+  createAdoptionPlan,
   createCurationPlan,
   decideMaintenancePlanWithCurator,
   findActiveMaintenancePlan,
@@ -128,6 +129,8 @@ export interface DreamReport {
   curateChangeId: string | null;
   /** The sealed artifact produced by plan-backed curation, when a mode was selected. */
   maintenancePlan: DreamMaintenancePlan | null;
+  /** Every phase-specific plan touched by this run. */
+  maintenancePlans: DreamMaintenancePlan[];
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
@@ -139,13 +142,13 @@ export interface DreamOptions {
   phase?: DreamPhase;
   /** Report what would be written without touching disk. */
   dryRun?: boolean;
-  /** Authority policy for durable hygiene plans. Requires `phase: 'curate'`. */
+  /** Authority policy for a durable curate or adopt plan. */
   mode?: MaintenanceMode;
 }
 
 export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promise<DreamReport> {
-  if (options.mode && options.phase !== 'curate') {
-    throw new AknoError('invalid', 'a maintenance mode currently requires `phase: curate`');
+  if (options.mode && options.phase !== 'curate' && options.phase !== 'adopt') {
+    throw new AknoError('invalid', 'a maintenance mode requires `phase: curate` or `phase: adopt`');
   }
   if (options.mode && options.dryRun) {
     throw new AknoError('invalid', 'choose `mode: audit` instead of combining a mode with dryRun');
@@ -181,6 +184,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     adoptChangeId: null,
     curateChangeId: null,
     maintenancePlan: null,
+    maintenancePlans: [],
     warnings: [],
     durationMs: 0,
   };
@@ -229,7 +233,11 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
 function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
   if (options.dryRun) return 'audit';
   if (options.mode) return options.mode;
-  if (!options.phase || options.phase === 'curate') return ctx.config.maintenance.curate.mode ?? 'legacy';
+  if (options.phase === 'adopt') return ctx.config.maintenance.adopt.mode ?? 'legacy';
+  if (!options.phase) {
+    return ctx.config.maintenance.curate.mode ?? ctx.config.maintenance.adopt.mode ?? 'legacy';
+  }
+  if (options.phase === 'curate') return ctx.config.maintenance.curate.mode ?? 'legacy';
   return 'legacy';
 }
 
@@ -274,7 +282,7 @@ async function runPhase(
       if (mode) {
         // Reuse every unfinished plan, not only autonomous ones. Re-running audit or review must
         // not spend another model call to rediscover a decision already waiting in the queue.
-        let plan = findActiveMaintenancePlan(ctx, mode);
+        let plan = findActiveMaintenancePlan(ctx, mode, 'curate');
         if (plan) {
           report.curated = plan.items.filter(isGeneralCurationItem).map((item) => ({
             slug: item.subject,
@@ -423,7 +431,7 @@ async function runPhase(
           return page;
         });
         report.repaired = repairResultFromPlan(plan, report.repaired?.declined ?? []);
-        report.maintenancePlan = maintenancePlanForReport(plan);
+        recordMaintenancePlan(report, plan);
         return null;
       }
       const result = await curatePages(ctx, {
@@ -440,34 +448,65 @@ async function runPhase(
     }
     case 'adopt': {
       if (!ctx.config.maintenance.adopt.enabled) return 'disabled in config';
-      const result = await adoptOrphans(ctx, {
+      const result = await planOrphanAdoptions(ctx, {
         limit: ctx.config.maintenance.adopt.maxPages,
-        dryRun: options.dryRun ?? false,
       });
       report.adopted = result.adopted;
-      applied.push(...result.files.map((file) => asApplied('adopt', file)));
-      if (result.files.length > 0) {
-        // Its own change, separate from observe's: adopting a document is a mechanical write
-        // from what the file says, and undoing it should not also undo a night's inferences.
-        report.adoptChangeId = ctx.journal.record({
-          actor: 'agent',
-          op: 'write',
-          summary: `adopt: ${result.files.length} page(s) for documents that had none`,
-          files: result.files,
-        });
-        // The documents as well as the new pages, forced: the whole point of the phase is that
-        // the attachment gains an owner, and its bytes have not changed, so the stat fast path
-        // would skip the one file whose ownership just became answerable. Ownership then
-        // resolves the ordinary way — through the `![[…]]` embed the page carries — rather than
-        // by writing `page_id` behind the indexer's back.
-        const adoptedFiles = result.adopted
-          .filter((entry) => entry.action === 'created')
-          .flatMap((entry) => entry.files);
-        await ctx.indexer.run({
-          only: [...result.files.map((file) => file.relPath), ...adoptedFiles],
-          reindexUnchanged: true,
+      if (options.dryRun) return null;
+      const mode = options.mode ?? ctx.config.maintenance.adopt.mode;
+      if (!mode) return null;
+
+      let plan = findActiveMaintenancePlan(ctx, mode, 'adopt');
+      if (!plan && result.drafts.length > 0) {
+        plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot);
+      }
+      if (!plan) return null;
+      for (const item of plan.items.filter((candidate) => candidate.kind === 'adopt')) {
+        if (report.adopted.some((entry) => entry.slug === item.subject)) continue;
+        report.adopted.push({
+          slug: item.subject,
+          files: item.evidence.flatMap((entry) =>
+            entry.type === 'document' && entry.documentRelPath ? [entry.documentRelPath] : [],
+          ),
+          action: 'planned',
         });
       }
+      if (mode === 'auto') {
+        if (plan.items.some((item) => item.status === 'proposed')) {
+          plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+        }
+        if (
+          plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))
+        ) {
+          const appliedResult = await applyMaintenancePlan(ctx, plan.id);
+          plan = appliedResult.plan;
+          applied.push(...appliedResult.files.map((file) => asApplied('adopt', file)));
+        }
+      }
+      report.adopted = report.adopted.map((entry) => {
+        if (entry.action !== 'planned') return entry;
+        const item = plan!.items.find((candidate) => candidate.subject === entry.slug);
+        if (!item) return entry;
+        if (item.status === 'applied') return { ...entry, action: 'created' };
+        if (['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)) {
+          return {
+            ...entry,
+            action: 'rejected',
+            reason:
+              item.verification?.detail ??
+              item.decision?.reason ??
+              item.statusReason ??
+              `maintenance item is ${item.status}`,
+          };
+        }
+        return entry;
+      });
+      const adoptionChanges = plan.items
+        .map((item) => item.changeId)
+        .filter((id): id is string => id !== null);
+      // Compatibility for callers that adopted one orphan before adoption gained per-item plans.
+      report.adoptChangeId = adoptionChanges.length === 1 ? adoptionChanges[0]! : null;
+      recordMaintenancePlan(report, plan);
       return null;
     }
     case 'conflicts': {
@@ -515,7 +554,7 @@ function linkDraftPaths(draft: BrokenLinkDraft): string[] {
 }
 
 function isGeneralCurationItem(item: MaintenanceItem): boolean {
-  return item.kind !== 'contradiction' && item.kind !== 'broken_link';
+  return item.kind !== 'contradiction' && item.kind !== 'broken_link' && item.kind !== 'adopt';
 }
 
 function repairResultFromPlan(plan: MaintenancePlan, declined: RepairResult['declined'] = []): RepairResult {
@@ -560,6 +599,15 @@ function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
       verification: item.verification,
     })),
   };
+}
+
+function recordMaintenancePlan(report: DreamReport, plan: MaintenancePlan): void {
+  const summary = maintenancePlanForReport(plan);
+  const existing = report.maintenancePlans.findIndex((candidate) => candidate.id === plan.id);
+  if (existing === -1) report.maintenancePlans.push(summary);
+  else report.maintenancePlans[existing] = summary;
+  // Kept for older clients and single-phase callers. Multi-phase clients should use the array.
+  report.maintenancePlan = summary;
 }
 
 // ─── Observe ────────────────────────────────────────────────────────────────

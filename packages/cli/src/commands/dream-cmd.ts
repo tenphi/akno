@@ -29,12 +29,11 @@ akno dream status
                    are low-risk items in curate audit, review, or auto plans.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
 
-  A full/scheduled run uses maintenance.curate.mode when configured. Otherwise curate
-  keeps the legacy maintenance.curate.write behavior.
+  A full/scheduled run uses each plan-backed phase's configured trust mode. Curate can
+  retain its legacy write behavior when no mode is configured; adopt defaults to auto.
 
   --phase <name>   Run one phase instead of every enabled one.
-  --mode <policy>  audit | review | auto. A command-line mode currently requires
-                   --phase curate and plans opted-in hygiene and synthesis pages.
+  --mode <policy>  audit | review | auto. Requires --phase curate or --phase adopt.
   --dry-run        Run selected checks and proposals; change no knowledge-base files.
   --private-details
                    Include page names, source excerpts, URLs and other private content in
@@ -72,8 +71,8 @@ export async function dreamCommand(argv: string[]): Promise<number> {
 
   const phase = values.phase ? parsePhase(values.phase) : undefined;
   const mode = values.mode ? parseMode(values.mode) : undefined;
-  if (mode && phase !== 'curate') {
-    throw new AknoError('invalid', '--mode currently requires --phase curate');
+  if (mode && phase !== 'curate' && phase !== 'adopt') {
+    throw new AknoError('invalid', '--mode requires --phase curate or --phase adopt');
   }
   const input = {
     ...(phase ? { phase } : {}),
@@ -219,8 +218,11 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
     }
   }
 
-  if (report.maintenancePlan) {
-    const plan = report.maintenancePlan;
+  for (const plan of (report.maintenancePlans ?? []).length > 0
+    ? report.maintenancePlans
+    : report.maintenancePlan
+      ? [report.maintenancePlan]
+      : []) {
     heading(`Maintenance plan — ${plan.status}`);
     line(`  ${style.bold(plan.id)}  ${plan.mode}/${plan.phase}  ${style.grey(plan.summary)}`);
     const proposed = plan.items.filter((item) => item.status === 'proposed').length;
@@ -254,10 +256,21 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
 
   if (report.adopted.length > 0) {
     const created = report.adopted.filter((entry) => entry.action === 'created');
-    heading(`${created.length} document(s) given a page${dryRun ? ' (would be)' : ''}`);
+    const planned = report.adopted.filter((entry) => entry.action === 'planned');
+    const rejected = report.adopted.filter((entry) => entry.action === 'rejected');
+    heading(
+      `Document adoption — ${created.length} created, ${planned.length} proposed, ${rejected.length} rejected`,
+    );
     if (privateDetails) {
       for (const entry of report.adopted) {
-        const mark = entry.action === 'created' ? style.green('page   ') : style.grey('left   ');
+        const mark =
+          entry.action === 'created'
+            ? style.green('page   ')
+            : entry.action === 'planned'
+              ? style.yellow('plan   ')
+              : entry.action === 'rejected'
+                ? style.red('refused')
+                : style.grey('left   ');
         line(`  ${mark} ${entry.slug}  ${style.grey(entry.files.join(', '))}`);
         if (entry.reason) line(`          ${style.grey(entry.reason)}`);
       }
@@ -265,6 +278,8 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
       const counts = countBy(report.adopted, (entry) => entry.action);
       kv([
         ['created', counts.created ?? 0],
+        ['proposed', counts.planned ?? 0],
+        ['rejected', counts.rejected ?? 0],
         ['left alone', counts.skipped ?? 0],
       ]);
     }
@@ -298,6 +313,9 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
     }
     if (
       actionable.length > 0 &&
+      !(report.maintenancePlans ?? []).some((plan) =>
+        plan.items.some((item) => item.kind === 'contradiction'),
+      ) &&
       !report.maintenancePlan?.items.some((item) => item.kind === 'contradiction')
     ) {
       line(
@@ -483,35 +501,14 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       ...curationCounts(report),
       guardrails: curationGuardSummary(report),
     },
-    maintenancePlan: report.maintenancePlan
-      ? {
-          id: report.maintenancePlan.id,
-          createdAt: report.maintenancePlan.createdAt,
-          updatedAt: report.maintenancePlan.updatedAt,
-          mode: report.maintenancePlan.mode,
-          phase: report.maintenancePlan.phase,
-          status: report.maintenancePlan.status,
-          fingerprint: report.maintenancePlan.fingerprint,
-          counts: report.maintenancePlan.counts,
-          items: report.maintenancePlan.items.map((item) => ({
-            id: item.id,
-            kind: item.kind,
-            risk: item.risk,
-            status: item.status,
-            decision: item.decision
-              ? { actor: item.decision.actor, outcome: item.decision.outcome, at: item.decision.at }
-              : null,
-            changeId: item.changeId,
-            verification: item.verification
-              ? { status: item.verification.status, at: item.verification.at }
-              : null,
-          })),
-        }
-      : null,
+    maintenancePlan: report.maintenancePlan ? safeMaintenancePlan(report.maintenancePlan) : null,
+    maintenancePlans: (report.maintenancePlans ?? []).map(safeMaintenancePlan),
     rejectedByGuard: report.rejected.length,
     adopted: {
       total: report.adopted.length,
       created: adopted.created ?? 0,
+      planned: adopted.planned ?? 0,
+      rejected: adopted.rejected ?? 0,
       skipped: adopted.skipped ?? 0,
     },
     conflicts: {
@@ -540,6 +537,32 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       repaired: report.repairChangeId,
     },
     privateLogWritten: report.logPath !== undefined,
+  };
+}
+
+function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Record<string, unknown> {
+  return {
+    id: plan.id,
+    createdAt: plan.createdAt,
+    updatedAt: plan.updatedAt,
+    mode: plan.mode,
+    phase: plan.phase,
+    status: plan.status,
+    fingerprint: plan.fingerprint,
+    counts: plan.counts,
+    items: plan.items.map((item) => ({
+      id: item.id,
+      kind: item.kind,
+      risk: item.risk,
+      status: item.status,
+      decision: item.decision
+        ? { actor: item.decision.actor, outcome: item.decision.outcome, at: item.decision.at }
+        : null,
+      changeId: item.changeId,
+      verification: item.verification
+        ? { status: item.verification.status, at: item.verification.at }
+        : null,
+    })),
   };
 }
 

@@ -234,6 +234,8 @@ const MaintenanceDoc = z.object({
   adopt: z
     .object({
       enabled: z.boolean().optional(),
+      /** Trust mode for deterministic orphan filing pages. Null disables durable adoption. */
+      mode: z.enum(['audit', 'review', 'auto']).nullable().optional(),
       /** Pages created per run. A folder of media should not become 500 pages overnight. */
       max_pages: z.number().int().positive().optional(),
     })
@@ -431,7 +433,7 @@ export interface AknoConfig {
       extractAfterBytes: number;
       extractSectionBytes: number;
     };
-    adopt: { enabled: boolean; maxPages: number };
+    adopt: { enabled: boolean; mode: 'audit' | 'review' | 'auto' | null; maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; resolve: boolean; maxPairs: number };
     repair: { enabled: boolean; links: boolean; maxChanges: number };
   };
