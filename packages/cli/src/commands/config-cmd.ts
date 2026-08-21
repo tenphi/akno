@@ -1,5 +1,6 @@
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line } from '../output.ts';
+import type { AknoConfig, ResolvedModelRole, ResolvedProvider } from '@tenphi/akno-core';
 
 const CONFIG_HELP = `akno config
 
@@ -16,22 +17,7 @@ export async function configCommand(argv: string[]): Promise<number> {
   const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
 
-  // Redaction is not optional: this output goes into bug reports.
-  const redacted = {
-    ...config,
-    providers: Object.fromEntries(
-      Object.entries(config.providers).map(([name, provider]) => [
-        name,
-        { ...provider, apiKey: provider.apiKey ? '<set>' : null, headers: Object.keys(provider.headers) },
-      ]),
-    ),
-    models: Object.fromEntries(
-      Object.entries(config.models).map(([role, model]) => [
-        role,
-        { ...model, provider: model.provider ? model.provider.name : null },
-      ]),
-    ),
-  };
+  const redacted = configForOutput(config);
 
   if (values.json) {
     json(redacted);
@@ -45,4 +31,65 @@ export async function configCommand(argv: string[]): Promise<number> {
   heading('Resolved');
   json(redacted);
   return 0;
+}
+
+/** Redaction is not optional: this output is routinely pasted into bug reports. */
+export function configForOutput(config: AknoConfig): unknown {
+  const projected = {
+    ...config,
+    providers: Object.fromEntries(
+      Object.entries(config.providers).map(([name, provider]) => [name, providerForOutput(provider)]),
+    ),
+    models: Object.fromEntries(
+      Object.entries(config.models).map(([role, model]) => [role, modelForOutput(model)]),
+    ),
+    maintenance: {
+      ...config.maintenance,
+      model: config.maintenance.model ? modelForOutput(config.maintenance.model) : null,
+    },
+  };
+  // Keep a final recursive boundary even though known provider/model shapes are projected above.
+  // A newly nested credential must fail closed instead of waiting for another hand-written branch.
+  return redactSecrets(projected);
+}
+
+function providerForOutput(provider: ResolvedProvider): Record<string, unknown> {
+  return {
+    ...provider,
+    apiKey: provider.apiKey === null ? null : '<set>',
+    headers: Object.keys(provider.headers),
+  };
+}
+
+function modelForOutput(model: ResolvedModelRole): Record<string, unknown> {
+  return { ...model, provider: model.provider?.name ?? null };
+}
+
+const SECRET_FIELDS = new Set([
+  'apikey',
+  'authorization',
+  'password',
+  'secret',
+  'clientsecret',
+  'token',
+  'accesstoken',
+  'refreshtoken',
+  'bearertoken',
+]);
+
+/** Defensive recursive redaction for future config fields and plugin/provider extensions. */
+export function redactSecrets(value: unknown, field = ''): unknown {
+  const normalized = field.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (SECRET_FIELDS.has(normalized)) return value === null || value === undefined ? value : '<set>';
+  if (Array.isArray(value)) return value.map((entry) => redactSecrets(entry));
+  if (value && typeof value === 'object') {
+    if (normalized === 'headers') return Object.keys(value as Record<string, unknown>);
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+        key,
+        redactSecrets(entry, key),
+      ]),
+    );
+  }
+  return value;
 }
