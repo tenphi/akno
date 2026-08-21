@@ -34,6 +34,7 @@ import { forget as forgetOp } from './ops/forget.ts';
 import { undo as undoOp } from './ops/undo.ts';
 import { move as moveOp } from './ops/move.ts';
 import { ingest as ingestOp } from './ops/ingest.ts';
+import { adopt as adoptOp } from './ops/adopt.ts';
 import { isInInbox, processInbox, type InboxResult } from './ingest/inbox.ts';
 import { dream, type DreamOptions, type DreamReport } from './maintenance/dream.ts';
 import {
@@ -276,6 +277,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     undo: undoOp,
     move: moveOp,
     ingest: ingestOp,
+    adopt: adoptOp,
   };
 
   async function call<N extends OpName>(
@@ -338,6 +340,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     undo: (input) => call('undo', input),
     move: (input) => call('move', input),
     ingest: (input) => call('ingest', input),
+    adopt: (input) => call('adopt', input),
 
     call,
 

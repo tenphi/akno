@@ -59,7 +59,7 @@ export interface AknoClient extends AknoOps {
   /**
    * Ask the writer to do maintenance: `index`, `inbox`, `dream`.
    *
-   * Not an op — the ten ops are what an agent calls about memory, and these are operator
+   * Not an op — the registry ops are what an agent calls about memory, and these are operator
    * commands about the process. They exist here because exactly one process may write: with a
    * service running, work that writes is either reachable through it or not reachable at all.
    */

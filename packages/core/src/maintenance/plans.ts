@@ -119,15 +119,7 @@ export interface MaintenanceItem {
   planId: string;
   order: number;
   revision: number;
-  kind:
-    | 'hygiene'
-    | 'synthesis'
-    | 'split'
-    | 'extract'
-    | 'merge'
-    | 'contradiction'
-    | 'broken_link'
-    | 'adopt';
+  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction' | 'broken_link' | 'adopt';
   risk: 'low' | 'medium' | 'high';
   status: MaintenanceItemStatus;
   subject: string;
@@ -278,6 +270,7 @@ export function createAdoptionPlan(
     inputHash: draft.inputHash,
     kind: 'adopt',
     risk: 'low',
+    ...(draft.blockedReason ? { initialStatus: 'blocked' as const, statusReason: draft.blockedReason } : {}),
     rationale:
       'Give one readable orphan document group a deterministic filing page without changing or moving its source files.',
     operations: [
@@ -289,30 +282,32 @@ export function createAdoptionPlan(
       },
     ],
     evidence: [
-      ...draft.documents.map(
-        (document): MaintenanceEvidence => ({
-          type: 'document',
-          source: document.relPath,
-          fingerprint: document.sha256,
-          relationship: 'ownership',
-          details: ['readable orphan sealed before adoption'],
-          documentId: document.id,
-          documentRelPath: document.relPath,
-          documentHash: document.sha256,
-          documentMetadataHash: document.metadataHash,
-          documentGroup: document.groupKey,
-        }),
-      ),
+      ...draft.documents.map((document): MaintenanceEvidence => ({
+        type: 'document',
+        source: document.relPath,
+        fingerprint: document.sha256,
+        relationship: 'ownership',
+        details: ['readable orphan sealed before adoption'],
+        documentId: document.id,
+        documentRelPath: document.relPath,
+        documentHash: document.sha256,
+        documentMetadataHash: document.metadataHash,
+        documentGroup: document.groupKey,
+      })),
       {
         type: 'snapshot',
-        source: 'dream-start-manifest',
+        source: 'maintenance-start-manifest',
         fingerprint: snapshot.indexRevision,
         relationship: null,
         details: [snapshot.knowledgeBaseFingerprint, snapshot.configurationFingerprint],
       },
     ],
     checks: [
-      { name: 'target page did not exist in the run-start index', status: 'passed' },
+      {
+        name: 'target page did not exist at planning time',
+        status: draft.blockedReason ? 'failed' : 'passed',
+        ...(draft.blockedReason ? { detail: draft.blockedReason } : {}),
+      },
       { name: 'every readable orphan part and source hash is sealed', status: 'passed' },
       { name: 'page embeds every source file without moving or rewriting it', status: 'passed' },
     ],
@@ -340,15 +335,18 @@ function persistMaintenancePlan(
         slug: draft.slug,
         kind: draft.kind,
         inputHash: draft.inputHash,
+        initialStatus: draft.initialStatus ?? 'proposed',
+        statusReason: draft.statusReason ?? null,
         operations: draft.operations.map(operationFingerprint),
       })),
     }),
   );
+  const onlyBlocked = sealed.every((draft) => draft.initialStatus === 'blocked');
   const existing = ctx.store.db
     .prepare(
       `SELECT id FROM maintenance_plans
        WHERE fingerprint = ? AND mode = ? AND phase = ?
-         AND status NOT IN ('completed', 'failed', 'superseded')
+         AND ${onlyBlocked ? "status != 'superseded'" : "status NOT IN ('completed', 'failed', 'superseded')"}
        ORDER BY rowid DESC LIMIT 1`,
     )
     .get(fingerprint, mode, phase) as { id: string } | undefined;
@@ -356,8 +354,14 @@ function persistMaintenancePlan(
 
   const now = new Date().toISOString();
   const planId = newPrefixedId('pln');
-  const status: MaintenancePlanStatus =
-    mode === 'audit' ? 'ready' : mode === 'review' ? 'awaiting_review' : 'deciding';
+  const hasProposed = sealed.some((draft) => (draft.initialStatus ?? 'proposed') === 'proposed');
+  const status: MaintenancePlanStatus = !hasProposed
+    ? 'failed'
+    : mode === 'audit'
+      ? 'ready'
+      : mode === 'review'
+        ? 'awaiting_review'
+        : 'deciding';
 
   ctx.store.transaction(() => {
     ctx.store.db
@@ -371,22 +375,26 @@ function persistMaintenancePlan(
     const insert = ctx.store.db.prepare(
       `INSERT INTO maintenance_items
         (id, plan_id, ord, revision, kind, risk, status, subject, rationale, input_hash,
-         operations, evidence, checks, updated_at)
-       VALUES (?, ?, ?, 1, ?, ?, 'proposed', ?, ?, ?, ?, ?, ?, ?)`,
+         operations, evidence, checks, decision_reason, decided_at, updated_at)
+       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     sealed.forEach((draft, order) => {
+      const initialStatus = draft.initialStatus ?? 'proposed';
       insert.run(
         newPrefixedId('itm'),
         planId,
         order,
         draft.kind,
         draft.risk,
+        initialStatus,
         draft.slug,
         draft.rationale,
         draft.inputHash,
         JSON.stringify(draft.operations),
         JSON.stringify(draft.evidence),
         JSON.stringify(draft.checks),
+        draft.statusReason ?? null,
+        initialStatus === 'blocked' ? now : null,
         now,
       );
     });
@@ -403,6 +411,8 @@ interface SealedDraft {
   operations: MaintenanceOperation[];
   evidence: MaintenanceEvidence[];
   checks: MaintenanceCheck[];
+  initialStatus?: Extract<MaintenanceItemStatus, 'proposed' | 'blocked'>;
+  statusReason?: string;
 }
 
 function sealCurateDraft(draft: CurateDraft): SealedDraft {
@@ -904,11 +914,7 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
     const slugs = operations
       .filter((operation) => operation.type !== 'delete')
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
-    if (
-      item.kind !== 'contradiction' &&
-      item.kind !== 'broken_link' &&
-      item.kind !== 'adopt'
-    ) {
+    if (item.kind !== 'contradiction' && item.kind !== 'broken_link' && item.kind !== 'adopt') {
       markCurateApplied(ctx, slugs);
     }
     updateItemStatus(ctx, item.id, 'applied', {
@@ -1065,9 +1071,7 @@ async function verifyApplied(
       }
       const document = ctx.store.db
         .prepare('SELECT rel_path, sha256, page_id FROM documents WHERE id = ?')
-        .get(entry.documentId) as
-        | { rel_path: string; sha256: string; page_id: string | null }
-        | undefined;
+        .get(entry.documentId) as { rel_path: string; sha256: string; page_id: string | null } | undefined;
       if (
         !document ||
         document.rel_path !== entry.documentRelPath ||
@@ -1176,10 +1180,7 @@ function itemRow(ctx: AknoContext, planId: string, itemId: string): ItemRow {
 }
 
 function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
-  if (
-    item.kind === 'adopt' &&
-    (item.operations.length !== 1 || item.operations[0]?.type !== 'create')
-  ) {
+  if (item.kind === 'adopt' && (item.operations.length !== 1 || item.operations[0]?.type !== 'create')) {
     throw new AknoError('invalid', `${item.id} must contain exactly one page creation`);
   }
   if (item.kind !== 'adopt' && (item.operations.length === 0 || item.operations[0]?.type !== 'replace')) {
@@ -1389,9 +1390,7 @@ function adoptionOperationIssue(item: MaintenanceItem, operations: MaintenanceOp
   } catch (err) {
     return `the adoption output is not valid Markdown: ${errorMessage(err)}`;
   }
-  const embeds = new Set(
-    parsed.links.filter((link) => link.kind === 'embed').map((link) => link.toSlug),
-  );
+  const embeds = new Set(parsed.links.filter((link) => link.kind === 'embed').map((link) => link.toSlug));
   for (const entry of documents) {
     if (
       entry.relationship !== 'ownership' ||
@@ -1606,15 +1605,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
           }
         | undefined;
       const metadataHash = row
-        ? sha256(
-            JSON.stringify([
-              row.summary,
-              row.ocr,
-              row.page_count,
-              row.extract_via,
-              row.confidence,
-            ]),
-          )
+        ? sha256(JSON.stringify([row.summary, row.ocr, row.page_count, row.extract_via, row.confidence]))
         : null;
       if (
         !row ||

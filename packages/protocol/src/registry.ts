@@ -7,6 +7,8 @@ import { ContextInput, ContextOutput } from './ops/context.ts';
 import { WriteInput, WriteOutput } from './ops/write.ts';
 import { FolderInput, FolderOutput } from './ops/folder.ts';
 import {
+  AdoptInput,
+  AdoptOutput,
   ForgetInput,
   ForgetOutput,
   IngestInput,
@@ -178,6 +180,18 @@ export const OPS = {
     description:
       'Pull a file, folder or URL into memory. The text is extracted for you, OCRed if there is no text layer, ' +
       'named from its contents, summarized, and routed to a folder. You never run an extraction tool.',
+  }),
+  adopt: op({
+    name: 'adopt',
+    kind: 'write',
+    input: AdoptInput,
+    output: AdoptOutput,
+    implemented: true,
+    description:
+      'Organize one orphan document card by proposing its exact deterministic filing page. Uses the configured ' +
+      'adoption trust mode: audit returns a durable diff, review waits for an operator decision, and auto asks ' +
+      'the independent curator before applying and verifying ownership. It never adopts other orphan documents ' +
+      'and retrieval does not depend on accepting the proposal.',
   }),
 } as const;
 

@@ -237,7 +237,8 @@ akno serve --http 127.0.0.1:7777           # for agents in containers or on anot
 Every door is generated from one op registry with one schema per op, so they cannot drift into different
 behaviour. Trust is a parameter, not a property of the transport: `server.mcp_allow` restricts what a door
 exposes without a second code path that can grow its own bugs — it defaults to the five read ops, so an agent
-reaching Akno over MCP cannot write until you say so.
+reaching Akno over MCP cannot write until you say so. Add `"adopt"` to that list when the agent should be
+able to invoke a document card's scoped, plan-backed filing action; this does not expose human plan decisions.
 
 **Exactly one process may write.** It takes a lock file with its pid; a second process opens read-only and says
 so, rather than racing. That is why `akno index`, `akno inbox` and `akno dream` are sent over the socket
@@ -526,6 +527,7 @@ akno dream --phase curate --mode audit --private-details  # include private page
 akno dream --phase adopt --mode audit    # exact filing-page diffs; no page creation
 akno dream --phase adopt --mode review   # human decides each document group
 akno dream --phase adopt --mode auto     # separate curator, apply, ownership verification
+akno adopt <document-id>                 # same policy, one recalled document group only
 
 akno plan diff <plan-id>
 akno plan decide <plan-id> --item <item-id> --approve
@@ -583,9 +585,11 @@ code back in service.
 extraction already produced, then the embed that gives the document a browsable home. One document group is one
 low-risk item. Apply re-hashes every source, confirms it is still unowned, creates and journals only the sealed
 page, forces ownership re-indexing, and verifies the relationship. It honours a folder rule of `ingest: "file"`,
-leaves a page that is already there alone, and is capped per run so a folder of 500 unowned PDFs does not become
-500 pages before anyone has read the first report. Audit and review make the same exact proposals without
-autonomous writes; auto requires a separate curator decision.
+turns a target-path collision into a blocked plan instead of inventing a near-duplicate, and is capped per run
+so a folder of 500 unowned PDFs does not become 500 pages before anyone has read the first report. A recall
+document card includes a typed action for the single-document form, `akno adopt <document-id>`; invoking it
+plans only that document group. The nightly `adopt` phase remains the bounded bulk form. Both use the configured
+audit/review/auto policy, and auto still requires a separate curator decision.
 
 **`observe` ships off, and what it produces is almost entirely a function of the model behind it.** Its
 guardrails are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug

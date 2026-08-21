@@ -20,6 +20,7 @@ import { ingestCommand } from './commands/ingest-cmd.ts';
 import { inboxCommand } from './commands/inbox-cmd.ts';
 import { dreamCommand } from './commands/dream-cmd.ts';
 import { planCommand } from './commands/plan-cmd.ts';
+import { adoptCommand } from './commands/adopt-cmd.ts';
 
 const VERSION = '0.1.0';
 
@@ -42,6 +43,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     approve / decline    Resolve a gated proposal. \`--list\` shows pending.
     ingest <path|url>    Extract, OCR, name, summarize and route a file or folder.
     inbox                File whatever was dropped in an inbox folder.
+    adopt <document_id>  Organize one orphan document through its trust policy.
 
   ${style.bold('Admin')}
     dream                Seven maintenance phases: infer, curate, adopt, inspect, repair.
@@ -82,6 +84,7 @@ const COMMANDS: Record<string, Command> = {
   folder: folderCommand,
   ingest: ingestCommand,
   inbox: inboxCommand,
+  adopt: adoptCommand,
   dream: dreamCommand,
   plan: planCommand,
   approve: approveCommand,

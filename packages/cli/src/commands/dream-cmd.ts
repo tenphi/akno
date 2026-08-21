@@ -119,8 +119,7 @@ async function reportActiveDream(
 ): Promise<number> {
   const status = await loadMaintenanceStatus(values);
   const requestedId = typeof error.details?.run_id === 'string' ? error.details.run_id : null;
-  const reportedStart =
-    typeof error.details?.started_at === 'string' ? error.details.started_at : 'unknown';
+  const reportedStart = typeof error.details?.started_at === 'string' ? error.details.started_at : 'unknown';
   const run = status.latestRun?.id === requestedId ? status.latestRun : null;
   const outcome = run?.status === 'running' ? 'already_running' : 'finished_while_waiting';
   if (values.json) {
@@ -559,9 +558,7 @@ function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Rec
         ? { actor: item.decision.actor, outcome: item.decision.outcome, at: item.decision.at }
         : null,
       changeId: item.changeId,
-      verification: item.verification
-        ? { status: item.verification.status, at: item.verification.at }
-        : null,
+      verification: item.verification ? { status: item.verification.status, at: item.verification.at } : null,
     })),
   };
 }

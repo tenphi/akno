@@ -59,11 +59,12 @@ export async function logDreamRun(
   changes: AppliedChange[],
   options: { dryRun: boolean },
 ): Promise<string | null> {
-  const plans = report.maintenancePlans.length > 0
-    ? report.maintenancePlans
-    : report.maintenancePlan
-      ? [report.maintenancePlan]
-      : [];
+  const plans =
+    report.maintenancePlans.length > 0
+      ? report.maintenancePlans
+      : report.maintenancePlan
+        ? [report.maintenancePlan]
+        : [];
   const record = {
     at: new Date().toISOString(),
     runId: report.run.id,

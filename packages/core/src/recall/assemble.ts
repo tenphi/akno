@@ -15,6 +15,7 @@ import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
 import { isObservation } from '../kb/page.ts';
 import { effectiveRule } from '../rules/compile.ts';
+import { cleanSlug } from '../ingest/name.ts';
 import type { ChunkHit } from './search.ts';
 
 export interface AssembleOptions {
@@ -272,9 +273,24 @@ export class Assembler {
         confidence: bestPart.confidence,
       },
       ownership: { status: 'orphan' },
+      ...(this.canSuggestAdoption(first.rel_path)
+        ? { suggested_actions: [{ op: 'adopt' as const, args: { documentId: first.id } }] }
+        : {}),
       score: round(score),
       ...(relevance !== undefined ? { relevance: round(relevance) } : {}),
     };
+  }
+
+  private canSuggestAdoption(relPath: string): boolean {
+    const adoption = this.#config.maintenance.adopt;
+    if (!adoption.enabled || !adoption.mode) return false;
+    const portable = relPath.replaceAll('\\', '/');
+    const adoptionStem = cleanSlug(path.posix.basename(portable));
+    if (!adoptionStem) return false;
+    const directory = path.posix.dirname(portable);
+    const slug = directory === '.' ? adoptionStem : `${directory}/${adoptionStem}`;
+    const rule = effectiveRule(slug, this.#config.rules);
+    return rule.ingest !== 'file' && rule.ingest !== 'ignore';
   }
 
   private buildCard(page: PageRow, hits: ChunkHit[], score: number, options: AssembleOptions): Card {

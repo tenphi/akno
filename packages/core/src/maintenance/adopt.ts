@@ -34,7 +34,7 @@ export interface AdoptedDocument {
   slug: string;
   /** The files the page now owns — parts of one document share a page. */
   files: string[];
-  action: 'planned' | 'created' | 'skipped' | 'rejected';
+  action: 'planned' | 'created' | 'skipped' | 'blocked' | 'rejected';
   reason?: string;
 }
 
@@ -43,6 +43,8 @@ export interface AdoptionDraft {
   relPath: string;
   inputHash: string;
   after: string;
+  /** Persist the exact proposal, but do not decide or apply it until this condition is resolved. */
+  blockedReason?: string;
   documents: {
     id: string;
     relPath: string;
@@ -81,12 +83,12 @@ interface OrphanGroup {
  */
 export async function planOrphanAdoptions(
   ctx: AknoContext,
-  options: { limit: number },
+  options: { limit: number; documentId?: string },
 ): Promise<{ adopted: AdoptedDocument[]; drafts: AdoptionDraft[] }> {
   const adopted: AdoptedDocument[] = [];
   const drafts: AdoptionDraft[] = [];
 
-  for (const group of orphanGroups(ctx)) {
+  for (const group of orphanGroups(ctx, options.documentId)) {
     if (drafts.length >= options.limit) break;
 
     const first = group.parts[0]!;
@@ -122,21 +124,6 @@ export async function planOrphanAdoptions(
       (await fsp.stat(absPath).catch(() => null)) !== null ||
       ctx.store.db.prepare('SELECT 1 FROM pages WHERE slug = ?').get(slug) !== undefined;
 
-    if (taken) {
-      // A page is already there — almost always the user's own notes about this very file,
-      // which is why the name collides. Writing `lease-scan-2.md` beside it would be a
-      // near-duplicate nobody asked for; the fix a person wants is one `![[…]]` line in the page
-      // they wrote, and that is what the report says. Skipping also means the orphan is found
-      // again next run, by which time that line may exist.
-      adopted.push({
-        slug,
-        files: group.parts.map((part) => part.relPath),
-        action: 'skipped',
-        reason: 'a page already exists at that path — add `![[filename]]` to it to link them',
-      });
-      continue;
-    }
-
     const documents = group.parts.map((part) => ({
       id: part.id,
       relPath: part.relPath,
@@ -162,8 +149,26 @@ export async function planOrphanAdoptions(
       relPath,
       inputHash,
       after: composeDocumentPage(group),
+      ...(taken
+        ? {
+            blockedReason:
+              'a page already exists at that path — add the document embed to it or move that page before retrying',
+          }
+        : {}),
       documents,
     };
+    if (taken) {
+      // Sealing the collision makes it visible and resolvable without inventing a suffixed near-duplicate.
+      // The source remains orphaned and recallable; removing the collision lets this exact item be approved.
+      adopted.push({
+        slug,
+        files: group.parts.map((part) => part.relPath),
+        action: 'blocked',
+        reason: draft.blockedReason,
+      });
+      drafts.push(draft);
+      continue;
+    }
     const rejectedBy = matchingRejectedItem(ctx, draft);
     adopted.push({
       slug,
@@ -222,15 +227,32 @@ function matchingRejectedItem(ctx: AknoContext, draft: AdoptionDraft): string | 
  * Documents with no readable text are left out: a page whose body is a filename helps nobody,
  * and `doctor` already reports them as unreadable.
  */
-function orphanGroups(ctx: AknoContext): OrphanGroup[] {
-  const rows = ctx.store.db
-    .prepare(
-      `SELECT id, rel_path, sha256, group_key, summary, ocr, page_count, extract_via, confidence
-         FROM documents
-        WHERE page_id IS NULL AND text IS NOT NULL
-        ORDER BY group_key, part`,
-    )
-    .all() as {
+function orphanGroups(ctx: AknoContext, documentId?: string): OrphanGroup[] {
+  const selected = documentId
+    ? (ctx.store.db
+        .prepare('SELECT COALESCE(group_key, rel_path) AS group_key FROM documents WHERE id = ?')
+        .get(documentId) as { group_key: string } | undefined)
+    : undefined;
+  if (documentId && !selected) return [];
+  const rows = (
+    selected
+      ? ctx.store.db
+          .prepare(
+            `SELECT id, rel_path, sha256, group_key, summary, ocr, page_count, extract_via, confidence
+               FROM documents
+              WHERE page_id IS NULL AND text IS NOT NULL AND COALESCE(group_key, rel_path) = ?
+              ORDER BY group_key, part`,
+          )
+          .all(selected.group_key)
+      : ctx.store.db
+          .prepare(
+            `SELECT id, rel_path, sha256, group_key, summary, ocr, page_count, extract_via, confidence
+               FROM documents
+              WHERE page_id IS NULL AND text IS NOT NULL
+              ORDER BY group_key, part`,
+          )
+          .all()
+  ) as {
     id: string;
     rel_path: string;
     sha256: string;

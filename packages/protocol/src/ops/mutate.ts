@@ -182,3 +182,61 @@ export const IngestOutput = ResultEnvelope.extend({
     .optional(),
 });
 export type IngestOutput = z.infer<typeof IngestOutput>;
+
+/** Organize one already-indexed orphan document without making retrieval depend on filing. */
+export const AdoptInput = z.object({
+  /** Stable document id returned by recall or read. All parts in the same document group follow it. */
+  documentId: z.string().min(1),
+});
+export type AdoptInput = z.infer<typeof AdoptInput>;
+
+export const AdoptOutput = ResultEnvelope.extend({
+  outcome: z.enum([
+    'planned',
+    'requires_review',
+    'created',
+    'verification_pending',
+    'noop',
+    'blocked',
+    'rejected',
+    'disabled',
+  ]),
+  document_id: z.string(),
+  /** Every part filed by this operation; a multi-part document is always adopted as one unit. */
+  document_ids: z.array(z.string()).optional(),
+  slug: z.string().optional(),
+  rel_path: z.string().optional(),
+  change_id: z.string().optional(),
+  reason: z.string().optional(),
+  /** Compact reference only; exact private operations remain behind the maintenance-plan interface. */
+  plan: z
+    .object({
+      id: z.string(),
+      mode: z.enum(['audit', 'review', 'auto']),
+      status: z.enum([
+        'ready',
+        'awaiting_review',
+        'deciding',
+        'approved',
+        'applying',
+        'completed',
+        'partially_completed',
+        'failed',
+        'superseded',
+      ]),
+      item_id: z.string(),
+      item_status: z.enum([
+        'proposed',
+        'approved',
+        'rejected',
+        'blocked',
+        'stale',
+        'applying',
+        'applied',
+        'verification_pending',
+        'verification_failed',
+      ]),
+    })
+    .optional(),
+});
+export type AdoptOutput = z.infer<typeof AdoptOutput>;

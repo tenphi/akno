@@ -12,7 +12,7 @@ import { ERROR_CODES } from './errors.ts';
  * The maintenance work a *host* asks the writer to do: reconcile the index, file what is in
  * the inbox, run the cycle.
  *
- * Not ops, deliberately — the ten ops are what an agent calls about memory, and these are
+ * Not ops, deliberately — the registry ops are what an agent calls about memory, and these are
  * operator commands about the process. They travel the same wire for one reason: exactly one
  * process may write, so anything that writes has to be reachable *through* it or be
  * unavailable whenever the service is running. It used to be unavailable, and the nightly

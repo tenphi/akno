@@ -944,10 +944,10 @@ For bounded event pages, synthesis can add an Akno-owned temporal declaration us
 already present in the page. When an event ends, one archival assessment may reorganize later knowledge,
 but a passed date is never treated as proof that a plan happened.
 
-### Phase 5: `adopt` — make unowned documents retrievable
+### Phase 5: `adopt` — give unowned documents a durable home
 
-**Problem it solves:** extracted document text cannot appear in a page-card result when no page owns the
-document.
+**Problem it solves:** an orphan document is searchable, but it has no browsable Markdown home for authored
+notes, links, page policy, or later synthesis. Adoption adds that organization; it is not a retrieval repair.
 
 **Method:** find readable unowned documents, make a page name from the existing filename, and seal the same
 minimal page shape used by ingest: title, available summary, embeds, and extraction provenance. Each document
@@ -960,7 +960,8 @@ requires the target page not to exist. Apply creates only the sealed page, journ
 re-index of the unchanged documents, and verifies that every part is now owned by the new page. A failed
 postcondition rolls the page back. The document is never renamed, moved, or edited. A folder rule of
 `ingest: "file"` or `ingest: "ignore"` disables adoption there. If a page already occupies the intended path,
-adopt reports the collision and asks for an explicit embed instead of creating a near-duplicate.
+adopt persists a blocked item and asks for an explicit embed instead of creating a near-duplicate. The original
+document remains an orphan result, so the conflict never hides evidence.
 
 **Trust modes:** the planner itself makes no model call. `audit` persists an inspectable diff without a
 decision, `review` waits for a human, and `auto` makes one separate curator decision per item before verified
@@ -971,6 +972,13 @@ akno dream --phase adopt --mode audit
 akno dream --phase adopt --mode review
 akno dream --phase adopt --mode auto
 ```
+
+The phase above is a bounded batch for unattended maintenance. Recall also attaches
+`{ op: "adopt", args: { documentId } }` to each eligible orphan card. Calling that op—or using
+`akno adopt <document-id>`—runs the same plan, decision, apply, and verification lifecycle for exactly that
+document group. In `audit` it returns a durable diff, in `review` it returns the plan and item ids a human must
+decide, and in `auto` it returns the curator/apply result. It never uses the selected card as permission to file
+other orphans.
 
 ### Phase 6: `repair` — compatibility report for broken-link proposals
 
@@ -1138,7 +1146,9 @@ The default Unix socket is for local CLI and client calls. MCP is for compatible
 is useful when an agent runs in a container and cannot reach the host's Unix socket.
 
 All doors are generated from one operation registry. Transport does not grant trust: `server.mcp_allow`
-controls the operations exposed over MCP and defaults to the five read operations.
+controls the operations exposed over MCP and defaults to the five read operations. Adding `adopt` grants only
+the document-scoped planned operation; audit/review/auto policy still controls what follows, and plan decisions
+remain outside the agent op surface.
 
 Only one process may write to a state directory. If the service holds the write handle, operator commands such
 as `index`, `inbox`, and `dream` are sent through it. Without a running service, they execute in-process.

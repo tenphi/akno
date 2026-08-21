@@ -1331,6 +1331,76 @@ describe('adopt', () => {
     fs.writeFileSync(path.join(root, 'household/lease scan.txt'), 'The lease runs to August 2027.\n');
   });
 
+  it('adopts only the document card the caller selected', async () => {
+    fs.writeFileSync(
+      path.join(root, 'household/warranty card.txt'),
+      'The Zephyr QX-100 warranty lasts 1111 days.\n',
+    );
+    await mem.index({});
+
+    const recalled = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+    const card = recalled.results.find((entry) => entry.type === 'document');
+    expect(card?.suggested_actions).toEqual([{ op: 'adopt', args: { documentId: card.id } }]);
+
+    const result = await mem.adopt(card!.suggested_actions![0]!.args);
+
+    expect(result).toMatchObject({
+      status: 'ok',
+      outcome: 'created',
+      document_id: card!.id,
+      slug: 'household/lease-scan',
+      rel_path: 'household/lease-scan.md',
+      plan: { mode: 'auto', status: 'completed', item_status: 'applied' },
+    });
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(true);
+    expect(fs.existsSync(path.join(root, 'household/warranty-card.md'))).toBe(false);
+    const other = await mem.recall({
+      query: 'Zephyr QX-100 warranty 1111 days',
+      mode: 'lookup',
+      expand: false,
+      filter: { ownership: 'orphan' },
+    });
+    expect(other.results.some((entry) => entry.type === 'document')).toBe(true);
+  });
+
+  it('uses audit mode for a selected document without writing it', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { adopt: { mode: 'audit' } } });
+    await mem.index({});
+    const recalled = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+    const card = recalled.results.find((entry) => entry.type === 'document');
+
+    const result = await mem.adopt({ documentId: card!.id });
+
+    expect(result).toMatchObject({
+      outcome: 'planned',
+      plan: { mode: 'audit', status: 'ready', item_status: 'proposed' },
+    });
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    expect(mem.maintenanceDiff(result.plan!.id)).toContain('--- /dev/null\n+++ b/household/lease-scan.md');
+  });
+
+  it('keeps a selected review item stale-safe while it waits for a human', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { adopt: { mode: 'review' } } });
+    await mem.index({});
+    const recalled = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+    const card = recalled.results.find((entry) => entry.type === 'document');
+    const result = await mem.adopt({ documentId: card!.id });
+    expect(result).toMatchObject({
+      outcome: 'requires_review',
+      plan: { mode: 'review', status: 'awaiting_review', item_status: 'proposed' },
+    });
+
+    fs.appendFileSync(path.join(root, 'household/lease scan.txt'), 'A newer invented clause.\n');
+    mem.decidePlan(result.plan!.id, result.plan!.item_id, 'approve', 'The proposed scope is correct.');
+    const applied = await mem.applyPlan(result.plan!.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(applied.files).toEqual([]);
+    expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+  });
+
   it('turns a standalone document result into an owned page result without losing evidence', async () => {
     await mem.index({});
     expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(0);
@@ -1458,16 +1528,38 @@ describe('adopt', () => {
     });
     expect(found.results).toHaveLength(1);
     expect(found.results[0]?.type).toBe('document');
+    if (found.results[0]?.type === 'document') {
+      expect(found.results[0].suggested_actions).toBeUndefined();
+    }
   });
 
   it('leaves someone else’s page alone when one is already there', async () => {
     fs.writeFileSync(path.join(root, 'household/lease-scan.md'), '# Notes\n\nMy own page.\n', 'utf8');
     await mem.index({});
 
-    const report = await mem.dream({ phase: 'adopt' });
-    expect(report.adopted[0]!.action).toBe('skipped');
-    expect(report.adopted[0]!.reason).toMatch(/already exists/);
+    const recalled = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+    const card = recalled.results.find((entry) => entry.type === 'document');
+    const result = await mem.adopt({ documentId: card!.id });
+
+    expect(result).toMatchObject({
+      outcome: 'blocked',
+      plan: { mode: 'auto', status: 'failed', item_status: 'blocked' },
+    });
+    expect(result.reason).toMatch(/already exists/);
+    const item = mem.plan(result.plan!.id).items[0]!;
+    expect(item.checks).toContainEqual(
+      expect.objectContaining({ name: 'target page did not exist at planning time', status: 'failed' }),
+    );
+    const repeated = await mem.adopt({ documentId: card!.id });
+    expect(repeated.plan?.id).toBe(result.plan!.id);
     expect(fs.readFileSync(path.join(root, 'household/lease-scan.md'), 'utf8')).toContain('My own page.');
+    const stillOrphaned = await mem.recall({
+      query: 'lease runs to August 2027',
+      mode: 'lookup',
+      expand: false,
+      filter: { ownership: 'orphan' },
+    });
+    expect(stillOrphaned.results.some((entry) => entry.type === 'document')).toBe(true);
   });
 
   it('caps how many it writes in one run', async () => {

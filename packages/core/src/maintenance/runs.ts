@@ -109,7 +109,7 @@ export function beginDreamRun(
     mode: options.mode,
     dryRun: options.dryRun,
     requestedPhase: options.requestedPhase,
-    snapshot: captureSnapshot(ctx, options.requestedPhases, options.modelId, startedAt),
+    snapshot: captureMaintenanceSnapshot(ctx, options.requestedPhases, options.modelId, startedAt),
     phases: [],
     counts: emptyCounts(),
     durationMs: null,
@@ -138,11 +138,12 @@ export function completeDreamRun(
   report: DreamReport,
 ): DreamRunReceipt {
   const finishedAt = new Date().toISOString();
-  const plans = report.maintenancePlans.length > 0
-    ? report.maintenancePlans
-    : report.maintenancePlan
-      ? [report.maintenancePlan]
-      : [];
+  const plans =
+    report.maintenancePlans.length > 0
+      ? report.maintenancePlans
+      : report.maintenancePlan
+        ? [report.maintenancePlan]
+        : [];
   const receipt: DreamRunReceipt = {
     ...started,
     finishedAt,
@@ -249,11 +250,12 @@ export function activeDreamRuns(ctx: AknoContext): number {
   return row.n;
 }
 
-function captureSnapshot(
+/** Capture the content-free read boundary used by a run or a document-scoped maintenance action. */
+export function captureMaintenanceSnapshot(
   ctx: AknoContext,
   requestedPhases: DreamPhase[],
   modelId: string | null,
-  capturedAt: string,
+  capturedAt = new Date().toISOString(),
 ): DreamSnapshotManifest {
   const rows = ctx.store.db
     .prepare('SELECT rel_path, sha256, indexed_at FROM files ORDER BY rel_path')
@@ -321,11 +323,12 @@ function roleFingerprint(role: ResolvedModelRole | null): Record<string, unknown
 }
 
 function completedStatus(report: DreamReport): DreamRunStatus {
-  const plans = report.maintenancePlans.length > 0
-    ? report.maintenancePlans
-    : report.maintenancePlan
-      ? [report.maintenancePlan]
-      : [];
+  const plans =
+    report.maintenancePlans.length > 0
+      ? report.maintenancePlans
+      : report.maintenancePlan
+        ? [report.maintenancePlan]
+        : [];
   if (plans.some((plan) => plan.status === 'awaiting_review')) {
     return 'awaiting_review';
   }
