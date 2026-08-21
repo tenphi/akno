@@ -240,7 +240,14 @@ function orphanGroups(ctx: AknoContext, documentId?: string): OrphanGroup[] {
           .prepare(
             `SELECT id, rel_path, sha256, group_key, summary, ocr, page_count, extract_via, confidence
                FROM documents
-              WHERE page_id IS NULL AND text IS NOT NULL AND COALESCE(group_key, rel_path) = ?
+              WHERE page_id IS NULL AND text IS NOT NULL AND availability = 'available'
+                AND NOT EXISTS (
+                  SELECT 1 FROM documents peer
+                   WHERE peer.renders IS NULL
+                     AND COALESCE(peer.group_key, peer.rel_path) = COALESCE(documents.group_key, documents.rel_path)
+                     AND peer.availability = 'missing'
+                )
+                AND COALESCE(group_key, rel_path) = ?
               ORDER BY group_key, part`,
           )
           .all(selected.group_key)
@@ -248,7 +255,13 @@ function orphanGroups(ctx: AknoContext, documentId?: string): OrphanGroup[] {
           .prepare(
             `SELECT id, rel_path, sha256, group_key, summary, ocr, page_count, extract_via, confidence
                FROM documents
-              WHERE page_id IS NULL AND text IS NOT NULL
+              WHERE page_id IS NULL AND text IS NOT NULL AND availability = 'available'
+                AND NOT EXISTS (
+                  SELECT 1 FROM documents peer
+                   WHERE peer.renders IS NULL
+                     AND COALESCE(peer.group_key, peer.rel_path) = COALESCE(documents.group_key, documents.rel_path)
+                     AND peer.availability = 'missing'
+                )
               ORDER BY group_key, part`,
           )
           .all()

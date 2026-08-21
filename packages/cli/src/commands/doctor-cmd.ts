@@ -52,6 +52,7 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       [
         'documents',
         `${report.counts.documents} (${report.counts.documentsExtracted} extracted` +
+          `${report.counts.documentsMissing > 0 ? `, ${report.counts.documentsMissing} originals missing` : ''}` +
           `${report.counts.renditions > 0 ? `, ${report.counts.renditions} with text beside them` : ''})`,
       ],
       ['links', `${report.counts.links} (${report.counts.brokenLinks} broken)`],

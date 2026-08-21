@@ -1577,7 +1577,8 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     const currentGroup = ctx.store.db
       .prepare(
         `SELECT id FROM documents
-          WHERE COALESCE(group_key, rel_path) = ? AND page_id IS NULL AND text IS NOT NULL`,
+          WHERE COALESCE(group_key, rel_path) = ? AND page_id IS NULL AND text IS NOT NULL
+            AND availability = 'available'`,
       )
       .all(group) as { id: string }[];
     if (
@@ -1589,7 +1590,8 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     for (const entry of documents) {
       const row = ctx.store.db
         .prepare(
-          `SELECT rel_path, sha256, page_id, summary, ocr, page_count, extract_via, confidence
+          `SELECT rel_path, sha256, page_id, summary, ocr, page_count, extract_via, confidence,
+                  availability
              FROM documents WHERE id = ?`,
         )
         .get(entry.documentId) as
@@ -1602,6 +1604,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
             page_count: number | null;
             extract_via: string | null;
             confidence: number | null;
+            availability: 'available' | 'missing';
           }
         | undefined;
       const metadataHash = row
@@ -1609,6 +1612,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
         : null;
       if (
         !row ||
+        row.availability !== 'available' ||
         row.page_id !== null ||
         row.rel_path !== entry.documentRelPath ||
         row.sha256 !== entry.documentHash ||

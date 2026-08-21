@@ -1121,6 +1121,28 @@ describe('a text rendition', () => {
     expect(read.note).toBeUndefined();
   });
 
+  it('keeps a surviving rendition attached when the original goes missing', async () => {
+    page('lease', 'lease.pdf');
+    fs.writeFileSync(path.join(root, 'home/lease.pdf'), makePdf(LEASE));
+    await (await withRenditions()).index({});
+    await mem.index({});
+
+    fs.rmSync(path.join(root, 'home/lease.pdf'));
+    await mem.index({});
+
+    const read = await mem.read({ document: 'home/lease.txt' });
+    expect(read.status).toBe('degraded');
+    expect(read.degraded).toContain('document_source_missing');
+    expect(read.document?.rel_path).toBe('home/lease.pdf');
+    expect(read.document?.text).toContain('deposit returned in thirty days');
+    expect(read.document?.availability).toMatchObject({
+      status: 'degraded',
+      available_from: ['indexed_text', 'rendition'],
+      missing_originals: ['home/lease.pdf'],
+      available_renditions: ['home/lease.txt'],
+    });
+  });
+
   it('adopts a text file somebody extracted themselves', async () => {
     // The real case: `pdftotext contract.pdf > contract.txt`, run before Akno existed. It
     // was indexed as a document of its own, so every phrase in the contract came back twice.

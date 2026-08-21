@@ -468,6 +468,12 @@ and a handle accepted by `read({document})`. Owned document hits remain nested u
 duplicated as standalone results. Ownership still adds useful organization; it comes from a matching stem,
 Akno's content-addressed filename, or a page embedding the file with `![[filename]]`.
 
+If an original document disappears outside Akno, its identity and extracted evidence are retained instead
+of becoming “nothing recorded.” Recall and read expose a typed `availability`: a surviving indexed copy or text
+rendition is `degraded`; an identity with no readable copy is `unavailable`; restoring the original returns it
+to `available`. Exact filename recall still finds an unreadable identity. Explicit `forget({document})` remains
+the retraction boundary and removes the retained chunks as well as trashing files that are present.
+
 **A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document, not two.** Files that
 differ only by a trailing `-<n>` are read as parts of one document: one owning page, one summary, and page
 numbers that run through the whole thing — so a hit on the second file's first page is cited as page 5 of the

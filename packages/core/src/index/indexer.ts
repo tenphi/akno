@@ -470,11 +470,44 @@ export class Indexer {
         continue;
       }
 
+      // A missing attachment is not the same thing as an explicit forget. Its extracted
+      // text may be the only surviving readable copy, so keep the document and its chunks
+      // addressable while recording that the original can no longer be checked. A same-hash
+      // successor is still handled as a move below by retiring this path and registering the
+      // new one; preserving both would collide on the content-derived document id.
+      if (row.kind === 'attachment' && !successor) {
+        this.#store.transaction(() => {
+          this.#store.db
+            .prepare(
+              `UPDATE documents
+                  SET availability = 'missing', missing_since = COALESCE(missing_since, ?)
+                WHERE rel_path = ?`,
+            )
+            .run(nowIso(), row.rel_path);
+          this.#store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(row.rel_path);
+        });
+        report.warnings.push(
+          `${row.rel_path} is missing; retained indexed document evidence is now degraded`,
+        );
+        continue;
+      }
+
       this.#store.transaction(() => {
         if (row.page_id) {
-          this.deleteChunkRows(ALL_CHUNKS_FOR_PAGE, row.page_id);
+          // A page disappearing removes its own claims, not the evidence files that used
+          // to hang beneath it. Detach document chunks before the page delete so the FK
+          // cascade cannot erase a retained extraction when both files disappear together.
+          this.deleteChunkRows(BODY_CHUNKS_FOR_PAGE, row.page_id);
+          this.#store.db
+            .prepare('UPDATE chunks SET page_id = NULL WHERE page_id = ? AND document_id IS NOT NULL')
+            .run(row.page_id);
+          this.#store.db.prepare('UPDATE documents SET page_id = NULL WHERE page_id = ?').run(row.page_id);
           this.#store.db.prepare('DELETE FROM pages WHERE id = ?').run(row.page_id);
         } else {
+          const document = this.#store.db
+            .prepare('SELECT id FROM documents WHERE rel_path = ?')
+            .get(row.rel_path) as { id: string } | undefined;
+          if (document) this.deleteChunkRows(CHUNKS_FOR_DOCUMENT, document.id);
           this.#store.db.prepare('DELETE FROM documents WHERE rel_path = ?').run(row.rel_path);
         }
         this.#store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(row.rel_path);
@@ -771,7 +804,21 @@ export class Indexer {
     // belongs to whatever group and page `contract.pdf` does. Asking the part rule first would
     // give it a group of its own and make it a second document — which is the entire thing this
     // column exists to prevent.
-    const rendition = documentRendition(file.relPath, { entries: (dir) => this.entriesOf(dir) });
+    let rendition = documentRendition(file.relPath, { entries: (dir) => this.entriesOf(dir) });
+    if (!rendition) {
+      // A restored rendition cannot rediscover its source through the directory while that
+      // source is still missing. Its durable relationship is stronger evidence than today's
+      // incomplete folder listing, so keep it until the original returns or is forgotten.
+      const previous = this.#store.db
+        .prepare(
+          `SELECT rendition.renders
+             FROM documents rendition
+             JOIN documents source ON source.rel_path = rendition.renders
+            WHERE rendition.rel_path = ? AND source.availability = 'missing'`,
+        )
+        .get(file.relPath) as { renders: string } | undefined;
+      if (previous) rendition = { source: previous.renders };
+    }
     const target = rendition?.source ?? file.relPath;
 
     // Parts of one document resolve ownership through the group, so `passport-2.pdf` lands
@@ -787,12 +834,14 @@ export class Indexer {
       this.#store.db
         .prepare(
           `INSERT INTO documents(id, page_id, rel_path, mime, sha256, label, text, summary,
-                                 page_count, ocr, bytes, indexed_at, group_key, part, renders)
-           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?, ?)
+                                 page_count, ocr, bytes, indexed_at, group_key, part, renders,
+                                 availability, missing_since)
+           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?, ?, 'available', NULL)
            ON CONFLICT(rel_path) DO UPDATE SET
              page_id = excluded.page_id, sha256 = excluded.sha256,
              mime = excluded.mime, bytes = excluded.bytes, indexed_at = excluded.indexed_at,
-             group_key = excluded.group_key, part = excluded.part, renders = excluded.renders`,
+             group_key = excluded.group_key, part = excluded.part, renders = excluded.renders,
+             availability = 'available', missing_since = NULL`,
         )
         .run(
           id,
@@ -948,6 +997,7 @@ export class Indexer {
       .prepare(
         `SELECT DISTINCT d.group_key FROM documents d
           WHERE d.renders IS NULL
+            AND d.availability = 'available'
             AND (
                   d.extracted_sha IS NULL
                OR d.extracted_sha != d.sha256
@@ -964,7 +1014,7 @@ export class Indexer {
     // after it, so a group is extracted together or not at all — otherwise a citation reads
     // "page 5" against a document that has since become six pages longer at the front.
     const partsOf = this.#store.db.prepare(
-      `SELECT id, rel_path, sha256, page_id, part FROM documents
+      `SELECT id, rel_path, sha256, page_id, part, page_count, availability FROM documents
         WHERE group_key = ? AND renders IS NULL ORDER BY part`,
     );
     const groups = stale.map((row) => partsOf.all(row.group_key) as DocumentPartRow[]);
@@ -976,6 +1026,14 @@ export class Indexer {
     for (const parts of groups) {
       let pageOffset = 0;
       for (const row of parts) {
+        if (row.availability === 'missing') {
+          // Preserve the established page numbering when another part changes while this
+          // one is away. Re-extracting the later part at offset zero would make every stored
+          // citation after the gap point at the wrong page.
+          pageOffset += row.page_count ?? 0;
+          progress({ phase: 'extract', done: ++done, total, detail: row.rel_path });
+          continue;
+        }
         const absPath = path.join(this.#config.aknoPath, row.rel_path);
         try {
           const extraction = await extract({
@@ -1009,17 +1067,15 @@ export class Indexer {
                 row.id,
               );
 
-            if (extraction.text.length > 0) {
-              this.replaceDocumentChunks(
-                row.id,
-                row.page_id,
-                chunkDocument(extraction, {
-                  targetChars: this.#config.index.chunkTargetChars,
-                  maxChars: this.#config.index.chunkMaxChars,
-                }),
-                offset,
-              );
-            }
+            this.replaceDocumentChunks(
+              row.id,
+              row.page_id,
+              chunkDocument(extraction, {
+                targetChars: this.#config.index.chunkTargetChars,
+                maxChars: this.#config.index.chunkMaxChars,
+              }),
+              offset,
+            );
           });
 
           pageOffset += extraction.pageCount ?? 0;
@@ -1062,6 +1118,7 @@ export class Indexer {
                 p.slug
            FROM documents d LEFT JOIN pages p ON p.id = d.page_id
           WHERE d.renders IS NULL
+            AND d.availability = 'available'
             AND (d.rendition_sha IS NULL OR d.rendition_sha != d.sha256)
           ${scopeClause}`,
       )
@@ -1165,14 +1222,26 @@ export class Indexer {
    * with one row per attachment and nothing per note.
    */
   private reconcileRenditionClaims(report: IndexReport): void {
-    const rows = this.#store.db.prepare('SELECT id, rel_path, renders FROM documents').all() as {
+    const rows = this.#store.db
+      .prepare('SELECT id, rel_path, renders, availability FROM documents')
+      .all() as {
       id: string;
       rel_path: string;
       renders: string | null;
+      availability: 'available' | 'missing';
     }[];
 
     let changed = 0;
     for (const row of rows) {
+      // Filesystem classification cannot rediscover a file that is not there. Keep its last
+      // durable rendition relationship until the file returns or is explicitly forgotten.
+      if (row.availability === 'missing') continue;
+      if (row.renders) {
+        const source = this.#store.db
+          .prepare('SELECT availability FROM documents WHERE rel_path = ?')
+          .get(row.renders) as { availability: 'available' | 'missing' } | undefined;
+        if (source?.availability === 'missing') continue;
+      }
       const verdict = documentRendition(row.rel_path, { entries: (dir) => this.entriesOf(dir) });
       const renders = verdict?.source ?? null;
       if (renders === row.renders) continue;
@@ -1257,9 +1326,10 @@ export class Indexer {
     const groups = this.#store.db
       .prepare(
         `SELECT group_key FROM documents
-          WHERE text IS NOT NULL
+          WHERE renders IS NULL
           GROUP BY group_key
-          HAVING sum(CASE WHEN summary IS NULL THEN 1 ELSE 0 END) > 0`,
+          HAVING sum(CASE WHEN availability = 'missing' THEN 1 ELSE 0 END) = 0
+             AND sum(CASE WHEN text IS NOT NULL AND summary IS NULL THEN 1 ELSE 0 END) > 0`,
       )
       .all() as { group_key: string }[];
     if (groups.length === 0) return;
@@ -1268,7 +1338,9 @@ export class Indexer {
     // text is not a second thing to describe, and joining its text in would summarize the
     // document twice over.
     const partsOf = this.#store.db.prepare(
-      'SELECT id, text FROM documents WHERE group_key = ? AND renders IS NULL ORDER BY part',
+      `SELECT id, text FROM documents
+        WHERE group_key = ? AND renders IS NULL AND availability = 'available'
+        ORDER BY part`,
     );
     const write = this.#store.db.prepare('UPDATE documents SET summary = ? WHERE id = ?');
 
@@ -1321,7 +1393,11 @@ export class Indexer {
     const insertFts = this.#store.db.prepare(
       'INSERT INTO chunks_fts(rowid, text, heading_path) VALUES(?, ?, ?)',
     );
-    for (const chunk of chunks) {
+    // An unreadable attachment still has a stable identity. A zero-text chunk makes an
+    // exact filename lookup find that identity through `heading_path` without inventing
+    // document content or allowing an empty body to match topical queries.
+    const searchable = chunks.length > 0 ? chunks : [{ ord: 0, text: '', docPage: null }];
+    for (const chunk of searchable) {
       // The page number within the *whole* document, not within this file: page 2 of
       // `passport-2.pdf` is page 5 of the passport, and that is the one a reader can find.
       const docPage = chunk.docPage === null ? null : chunk.docPage + pageOffset;
@@ -1625,6 +1701,8 @@ interface DocumentPartRow {
   sha256: string;
   page_id: string | null;
   part: number;
+  page_count: number | null;
+  availability: 'available' | 'missing';
 }
 
 const ALL_CHUNKS_FOR_PAGE = 'SELECT id FROM chunks WHERE page_id = ?';

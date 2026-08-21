@@ -11,13 +11,14 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 14;
+export const SCHEMA_VERSION = 15;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
 export const CONFLICT_QUALIFICATION_MIGRATION_INDEX = 4;
 export const MAINTENANCE_RUNS_MIGRATION_INDEX = 5;
 export const ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX = 6;
+export const DOCUMENT_AVAILABILITY_MIGRATION_INDEX = 7;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -416,6 +417,15 @@ export const MIGRATIONS: string[] = [
     tokenize='porter unicode61 remove_diacritics 2'
   );
   INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild');
+  `,
+  // ── 8. Durable document availability ─────────────────────────────────────
+  // Extracted text may outlive an original file. Preserve that evidence and say
+  // that it is a retained copy instead of silently turning a missing file into
+  // "nothing recorded". Explicit forget remains the operation that removes rows.
+  `
+  ALTER TABLE documents ADD COLUMN availability TEXT NOT NULL DEFAULT 'available';
+  ALTER TABLE documents ADD COLUMN missing_since TEXT;
+  CREATE INDEX documents_availability ON documents(availability, page_id);
   `,
 ];
 

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
+import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
 
 /**
  * `read({slug})` returns the full body of a `source` page every time.
@@ -82,13 +83,22 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
     .all(row.id) as { slug: string }[];
 
   const documents = ctx.store.db
-    .prepare('SELECT id, rel_path, mime, label, page_count FROM documents WHERE page_id = ?')
+    .prepare(
+      `SELECT id, rel_path, mime, label, page_count, group_key, renders, text,
+              availability, missing_since
+         FROM documents WHERE page_id = ?`,
+    )
     .all(row.id) as {
     id: string;
     rel_path: string;
     mime: string | null;
     label: string | null;
     page_count: number | null;
+    group_key: string | null;
+    renders: string | null;
+    text: string | null;
+    availability: 'available' | 'missing';
+    missing_since: string | null;
   }[];
 
   const superseded = facts
@@ -126,6 +136,7 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
               ...(doc.mime ? { mime: doc.mime } : {}),
               ...(doc.label ? { label: doc.label } : {}),
               ...(doc.page_count !== null ? { pages: doc.page_count } : {}),
+              availability: availabilityForDocument(ctx, doc),
             })),
           }
         : {}),
@@ -148,10 +159,13 @@ interface DocumentRow {
   group_key: string | null;
   renders: string | null;
   slug: string | null;
+  availability: 'available' | 'missing';
+  missing_since: string | null;
 }
 
 const SELECT_DOCUMENT = `SELECT d.id, d.rel_path, d.mime, d.sha256, d.label, d.text, d.page_count,
-                                d.ocr, d.bytes, d.group_key, d.renders, p.slug
+                                d.ocr, d.bytes, d.group_key, d.renders, p.slug,
+                                d.availability, d.missing_since
                            FROM documents d LEFT JOIN pages p ON p.id = d.page_id`;
 
 /**
@@ -210,7 +224,7 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
   // be read.
   const parts = ctx.store.db
     .prepare(
-      `SELECT id, rel_path, text, page_count, ocr FROM documents
+      `SELECT id, rel_path, text, page_count, ocr, availability, missing_since FROM documents
         WHERE group_key = ? AND renders IS NULL ORDER BY part`,
     )
     .all(row.group_key ?? row.rel_path) as {
@@ -219,16 +233,27 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
     text: string | null;
     page_count: number | null;
     ocr: number;
+    availability: 'available' | 'missing';
+    missing_since: string | null;
   }[];
 
-  const readable = parts.filter((part) => part.text !== null);
-  const text = readable.length > 0 ? readable.map((part) => part.text).join('\n\n') : null;
+  const availability = documentAvailability(ctx.store.db, parts);
+  const readable = parts
+    .map((part) => ({ ...part, readableText: part.text ?? renditionTextFor(ctx, part.rel_path) }))
+    .filter((part) => part.readableText !== null);
+  const text = readable.length > 0 ? readable.map((part) => part.readableText).join('\n\n') : null;
   const pageCount = parts.reduce<number | null>(
     (sum, part) => (part.page_count === null ? sum : (sum ?? 0) + part.page_count),
     null,
   );
 
   const notes: string[] = [];
+  if (availability.status !== 'available') {
+    notes.push(
+      `original file${availability.missing_originals.length === 1 ? '' : 's'} missing: ` +
+        availability.missing_originals.join(', '),
+    );
+  }
   if (text === null) {
     notes.push(
       'nothing could be read from this file — a photo with no text in it, or a format with no extractor',
@@ -250,12 +275,22 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
     );
   }
 
+  const status =
+    availability.status === 'unavailable'
+      ? 'unavailable'
+      : availability.status === 'degraded' || readable.length < parts.length
+        ? 'degraded'
+        : 'ok';
+  const degraded = [] as ('no_document_text' | 'document_source_missing')[];
+  if (availability.status === 'degraded') degraded.push('document_source_missing');
+  if (text === null || readable.length < parts.length) degraded.push('no_document_text');
+
   return {
-    status: text === null ? 'degraded' : 'ok',
+    status,
     // Extraction is a built-in reader, not a model call — so a file nothing could be read
     // from is its own kind of degraded, and pointing at a model would send someone to
     // configure one that would not have helped.
-    ...(text === null ? { degraded: ['no_document_text' as const] } : {}),
+    ...(status === 'degraded' && degraded.length > 0 ? { degraded } : {}),
     ...(notes.length > 0 ? { note: notes.join('. ') } : {}),
     document: {
       id: row.id,
@@ -268,8 +303,43 @@ function readDocument(ctx: AknoContext, documentId: string): ReadOutput {
       ocr: parts.some((part) => part.ocr === 1),
       text,
       bytes: row.bytes,
+      availability,
     },
   };
+}
+
+function availabilityForDocument(
+  ctx: AknoContext,
+  row: Pick<DocumentRow, 'rel_path' | 'group_key' | 'renders' | 'text' | 'availability' | 'missing_since'>,
+) {
+  const source = row.renders ? resolveDocument(ctx, row.renders) : row;
+  const parts = ctx.store.db
+    .prepare(
+      `SELECT rel_path, text, availability, missing_since FROM documents
+        WHERE group_key = ? AND renders IS NULL ORDER BY part`,
+    )
+    .all(source.group_key ?? source.rel_path) as AvailabilityPart[];
+  return documentAvailability(ctx.store.db, parts.length > 0 ? parts : [source]);
+}
+
+/** Read a surviving rendition only when the indexed extraction itself is gone. */
+function renditionTextFor(ctx: AknoContext, sourcePath: string): string | null {
+  const row = ctx.store.db
+    .prepare(
+      `SELECT rel_path FROM documents
+        WHERE renders = ? AND availability = 'available'
+        ORDER BY rel_path LIMIT 1`,
+    )
+    .get(sourcePath) as { rel_path: string } | undefined;
+  if (!row) return null;
+  try {
+    const content = fs.readFileSync(path.join(ctx.config.aknoPath, row.rel_path), 'utf8');
+    if (!content.startsWith('# Extracted text of ')) return content;
+    const bodyAt = content.indexOf('\n\n');
+    return bodyAt === -1 ? content : content.slice(bodyAt + 2).replace(/\n$/, '');
+  } catch {
+    return null;
+  }
 }
 
 const SELECT_PAGE = `SELECT id, slug, rel_path, title, type, tags, role, remember_management,

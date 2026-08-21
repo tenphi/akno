@@ -494,6 +494,161 @@ describe('forget', () => {
   });
 });
 
+describe('document availability', () => {
+  it('keeps indexed evidence degraded until a missing original returns', async () => {
+    const relPath = 'documents/zephyr-calibration.txt';
+    const content = 'The Zephyr QX-100 calibration phrase is Blackwater amber.';
+    fs.mkdirSync(path.join(root, 'documents'), { recursive: true });
+    fs.writeFileSync(path.join(root, relPath), content, 'utf8');
+
+    const mem = await openAs('agent');
+    await mem.index({});
+    const first = await mem.recall({
+      query: 'Blackwater amber',
+      mode: 'lookup',
+      filter: { ownership: 'orphan' },
+    });
+    const document = first.results.find((result) => result.type === 'document');
+    expect(document?.availability?.status).toBe('available');
+
+    fs.rmSync(path.join(root, relPath));
+    const missing = await mem.index({});
+    expect(missing.warnings).toContain(
+      `${relPath} is missing; retained indexed document evidence is now degraded`,
+    );
+
+    const readMissing = await mem.read({ document: document!.id });
+    expect(readMissing.status).toBe('degraded');
+    expect(readMissing.degraded).toContain('document_source_missing');
+    expect(readMissing.document?.text).toBe(content);
+    expect(readMissing.document?.availability).toMatchObject({
+      status: 'degraded',
+      available_from: ['indexed_text'],
+      missing_originals: [relPath],
+    });
+
+    const recalledMissing = await mem.recall({
+      query: 'Blackwater amber',
+      mode: 'lookup',
+      filter: { ownership: 'orphan' },
+    });
+    const missingCard = recalledMissing.results.find((result) => result.type === 'document');
+    expect(recalledMissing.status).toBe('degraded');
+    expect(recalledMissing.degraded).toContain('document_source_missing');
+    expect(missingCard?.availability?.status).toBe('degraded');
+    expect(missingCard?.suggested_actions).toBeUndefined();
+    await expect(mem.adopt({ documentId: document!.id })).resolves.toMatchObject({
+      outcome: 'blocked',
+      reason: expect.stringContaining('original document files are missing'),
+    });
+    expect((await mem.doctor({ probeModels: false })).counts.documentsMissing).toBe(1);
+
+    fs.writeFileSync(path.join(root, relPath), content, 'utf8');
+    await mem.index({});
+    const restored = await mem.read({ document: document!.id });
+    expect(restored.status).toBe('ok');
+    expect(restored.document?.availability).toMatchObject({
+      status: 'available',
+      available_from: ['original'],
+      missing_originals: [],
+    });
+    await mem.close();
+  });
+
+  it('returns unavailable for an identity whose original and readable copies are gone', async () => {
+    const relPath = 'documents/zephyr-sealed-record.bin';
+    fs.mkdirSync(path.join(root, 'documents'), { recursive: true });
+    fs.writeFileSync(path.join(root, relPath), Buffer.from([1, 2, 3, 4]));
+
+    const mem = await openAs('agent');
+    await mem.index({});
+    const present = await mem.recall({
+      query: 'zephyr sealed record bin',
+      mode: 'lookup',
+      filter: { ownership: 'orphan' },
+    });
+    const document = present.results.find((result) => result.type === 'document');
+    expect(document?.source).toMatchObject({ kind: 'none', via: 'none' });
+
+    fs.rmSync(path.join(root, relPath));
+    await mem.index({});
+
+    const recalled = await mem.recall({
+      query: 'zephyr sealed record bin',
+      mode: 'lookup',
+      filter: { ownership: 'orphan' },
+    });
+    expect(recalled.status).toBe('unavailable');
+    expect(recalled.results[0]?.type).toBe('document');
+    expect(recalled.results[0]?.type === 'document' ? recalled.results[0].availability?.status : null).toBe(
+      'unavailable',
+    );
+
+    const readMissing = await mem.read({ document: document!.id });
+    expect(readMissing.status).toBe('unavailable');
+    expect(readMissing.document?.availability?.available_from).toEqual([]);
+    expect(readMissing.document?.text).toBeNull();
+    await mem.close();
+  });
+
+  it('retains document evidence when its owning page disappears in the same pass', async () => {
+    const pagePath = 'documents/zephyr-service.md';
+    const documentPath = 'documents/zephyr-service-1234abcd.txt';
+    fs.mkdirSync(path.join(root, 'documents'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, pagePath),
+      '# Zephyr service\n\n![[zephyr-service-1234abcd.txt]]\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, documentPath),
+      'Blackwater cobalt is the Zephyr service verification phrase.',
+      'utf8',
+    );
+
+    const mem = await openAs('agent');
+    await mem.index({});
+    fs.rmSync(path.join(root, pagePath));
+    fs.rmSync(path.join(root, documentPath));
+    await mem.index({});
+
+    const recalled = await mem.recall({ query: 'Blackwater cobalt', mode: 'lookup' });
+    const document = recalled.results.find((result) => result.type === 'document');
+    expect(document?.availability?.status).toBe('degraded');
+    expect(document?.quote).toContain('Blackwater cobalt');
+    await mem.close();
+  });
+
+  it('treats explicit forget as retraction rather than filesystem loss', async () => {
+    const relPath = 'documents/vulpine-warranty.txt';
+    const secondPart = 'documents/vulpine-warranty-2.txt';
+    fs.mkdirSync(path.join(root, 'documents'), { recursive: true });
+    fs.writeFileSync(path.join(root, relPath), 'Vulpine Mutual warranty reference 1111.', 'utf8');
+    fs.writeFileSync(path.join(root, secondPart), 'Vulpine Mutual warranty reference 2222.', 'utf8');
+
+    const mem = await openAs('user');
+    await mem.index({});
+    const found = await mem.recall({
+      query: 'Vulpine warranty reference 1111',
+      mode: 'lookup',
+      filter: { ownership: 'orphan' },
+    });
+    const document = found.results.find((result) => result.type === 'document');
+    await mem.forget({ document: document!.id });
+
+    expect(fs.existsSync(path.join(root, relPath))).toBe(false);
+    expect(fs.existsSync(path.join(root, secondPart))).toBe(false);
+    await expect(mem.read({ document: document!.id })).rejects.toThrow(/no document/);
+    const after = await mem.recall({
+      query: 'Vulpine warranty reference 1111',
+      mode: 'lookup',
+      filter: { ownership: 'orphan' },
+    });
+    expect(after.results.some((result) => result.type === 'document')).toBe(false);
+    await mem.close();
+  });
+});
+
 describe('undo', () => {
   it('reverses a write to the exact prior bytes', async () => {
     const mem = await openAs('agent');

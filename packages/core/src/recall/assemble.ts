@@ -16,6 +16,7 @@ import type { Store } from '../store/db.ts';
 import { isObservation } from '../kb/page.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { cleanSlug } from '../ingest/name.ts';
+import { documentAvailability } from '../ingest/availability.ts';
 import type { ChunkHit } from './search.ts';
 
 export interface AssembleOptions {
@@ -218,7 +219,7 @@ export class Assembler {
     const row = this.#store.db
       .prepare(
         `SELECT id, page_id, rel_path, mime, label, page_count, group_key, part, summary,
-                extract_via, confidence, ocr
+                extract_via, confidence, ocr, text, availability, missing_since
            FROM documents WHERE id = ?`,
       )
       .get(documentId) as DocumentRow | undefined;
@@ -235,7 +236,7 @@ export class Assembler {
     const rows = this.#store.db
       .prepare(
         `SELECT id, page_id, rel_path, mime, label, page_count, group_key, part, summary,
-                extract_via, confidence, ocr
+                extract_via, confidence, ocr, text, availability, missing_since
            FROM documents
           WHERE group_key = ? AND renders IS NULL AND page_id IS NULL
           ORDER BY part`,
@@ -246,6 +247,7 @@ export class Assembler {
     const bestPart = rows.find((row) => row.id === bestHit.documentId) ?? first;
     const meta = this.chunkMeta([bestHit.chunkId]).get(bestHit.chunkId);
     const via = extractionVia(bestPart);
+    const availability = documentAvailability(this.#store.db, rows);
 
     return {
       type: 'document',
@@ -268,12 +270,20 @@ export class Assembler {
           }
         : {}),
       source: {
-        kind: via === 'vision' ? 'model_description' : via === 'ocr' ? 'ocr_text' : 'original_text',
+        kind:
+          via === 'vision'
+            ? 'model_description'
+            : via === 'ocr'
+              ? 'ocr_text'
+              : via === 'none'
+                ? 'none'
+                : 'original_text',
         via,
         confidence: bestPart.confidence,
       },
+      availability,
       ownership: { status: 'orphan' },
-      ...(this.canSuggestAdoption(first.rel_path)
+      ...(availability.status === 'available' && this.canSuggestAdoption(first.rel_path)
         ? { suggested_actions: [{ op: 'adopt' as const, args: { documentId: first.id } }] }
         : {}),
       score: round(score),
@@ -442,8 +452,10 @@ export class Assembler {
 
     const rows = this.#store.db
       .prepare(
-        `SELECT id, rel_path, mime, label, page_count, group_key, part, summary FROM documents
-          WHERE page_id = ? ORDER BY group_key, part`,
+        `SELECT id, rel_path, mime, label, page_count, group_key, part, summary,
+                text, availability, missing_since
+           FROM documents
+          WHERE page_id = ? AND renders IS NULL ORDER BY group_key, part`,
       )
       .all(pageId) as DocumentRow[];
     for (const [id] of matched) {
@@ -452,7 +464,8 @@ export class Assembler {
       // a card quoting evidence it does not list is a card a reader cannot follow.
       const row = this.#store.db
         .prepare(
-          `SELECT id, rel_path, mime, label, page_count, group_key, part, summary
+          `SELECT id, rel_path, mime, label, page_count, group_key, part, summary,
+                  text, availability, missing_since
              FROM documents WHERE id = ?`,
         )
         .get(id) as DocumentRow | undefined;
@@ -481,6 +494,7 @@ export class Assembler {
         (sum, part) => (part.page_count === null ? sum : (sum ?? 0) + part.page_count),
         null,
       );
+      const availability = documentAvailability(this.#store.db, ordered);
 
       out.push({
         id: first.id,
@@ -499,6 +513,7 @@ export class Assembler {
         ...(hit && options.depth !== 'summary'
           ? { quote: quoteWindow(hit.text, this.#config.recall.sourceQuoteLines) }
           : {}),
+        availability,
       });
     }
     return out;
@@ -635,19 +650,23 @@ interface DocumentRow {
   extract_via?: string | null;
   confidence?: number | null;
   ocr?: number;
+  text: string | null;
+  availability: 'available' | 'missing';
+  missing_since: string | null;
 }
 
-function extractionVia(row: DocumentRow): 'plain' | 'textutil' | 'text-layer' | 'ocr' | 'vision' {
+function extractionVia(row: DocumentRow): 'plain' | 'textutil' | 'text-layer' | 'ocr' | 'vision' | 'none' {
   if (
     row.extract_via === 'plain' ||
     row.extract_via === 'textutil' ||
     row.extract_via === 'text-layer' ||
     row.extract_via === 'ocr' ||
-    row.extract_via === 'vision'
+    row.extract_via === 'vision' ||
+    row.extract_via === 'none'
   ) {
     return row.extract_via;
   }
-  return row.ocr === 1 ? 'ocr' : 'plain';
+  return row.ocr === 1 ? 'ocr' : row.text === null ? 'none' : 'plain';
 }
 
 interface RankedResult {

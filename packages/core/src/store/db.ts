@@ -6,6 +6,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import {
   CONFLICT_VERDICTS_MIGRATION_INDEX,
   CONFLICT_QUALIFICATION_MIGRATION_INDEX,
+  DOCUMENT_AVAILABILITY_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
   MAINTENANCE_RUNS_MIGRATION_INDEX,
@@ -152,6 +153,9 @@ function migrate(db: Database.Database): void {
       }
       if (columnIsNotNull(db, 'chunks', 'page_id')) {
         db.exec(MIGRATIONS[ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX]!);
+      }
+      if (!columnExists(db, 'documents', 'availability')) {
+        db.exec(MIGRATIONS[DOCUMENT_AVAILABILITY_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

@@ -151,6 +151,20 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     include: (input.include as PageRole[] | undefined) ?? null,
   });
 
+  const documentStates = assembled.results.flatMap((result) =>
+    result.type === 'document'
+      ? result.availability
+        ? [result.availability]
+        : []
+      : (result.documents ?? []).flatMap((document) =>
+          document.availability ? [document.availability] : [],
+        ),
+  );
+  const hasMissingDocumentEvidence = documentStates.some((state) => state.status !== 'available');
+  if (hasMissingDocumentEvidence) {
+    degraded.add('document_source_missing');
+  }
+
   for (const reason of indexDegradation(ctx.store)) degraded.add(reason);
   const reasons = [...degraded];
   const searched = dedupe(allQueries);
@@ -175,6 +189,23 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     };
   }
 
+  const unavailableOnly = assembled.results.every(
+    (result) => result.type === 'document' && result.availability?.status === 'unavailable',
+  );
+  if (unavailableOnly) {
+    return {
+      status: 'unavailable',
+      results: assembled.results,
+      cards: assembled.cards,
+      searched,
+      budget_used: assembled.budgetUsed,
+      mode,
+      scores,
+      ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
+      note: 'matching document records remain, but neither their originals nor a readable copy are available',
+    };
+  }
+
   return {
     status: reasons.length > 0 ? 'degraded' : 'ok',
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
@@ -185,6 +216,11 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     mode,
     scores,
     ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
+    ...(hasMissingDocumentEvidence
+      ? {
+          note: 'some document evidence is retained from an indexed copy or rendition because its original is missing',
+        }
+      : {}),
   };
 }
 

@@ -15,6 +15,8 @@ interface DocumentState {
   page_id: string | null;
   readable: number;
   page_slug: string | null;
+  availability: 'available' | 'missing';
+  group_missing: number;
 }
 
 /**
@@ -29,7 +31,14 @@ export async function adopt(ctx: AknoContext, rawInput: unknown): Promise<AdoptO
   const input = AdoptInput.parse(rawInput);
   const document = ctx.store.db
     .prepare(
-      `SELECT d.id, d.page_id, d.text IS NOT NULL AS readable, p.slug AS page_slug
+      `SELECT d.id, d.page_id, d.text IS NOT NULL AS readable, p.slug AS page_slug,
+              d.availability,
+              EXISTS(
+                SELECT 1 FROM documents peer
+                 WHERE peer.renders IS NULL
+                   AND COALESCE(peer.group_key, peer.rel_path) = COALESCE(d.group_key, d.rel_path)
+                   AND peer.availability = 'missing'
+              ) AS group_missing
          FROM documents d LEFT JOIN pages p ON p.id = d.page_id
         WHERE d.id = ?`,
     )
@@ -43,6 +52,14 @@ export async function adopt(ctx: AknoContext, rawInput: unknown): Promise<AdoptO
       document_id: document.id,
       ...(document.page_slug ? { slug: document.page_slug } : {}),
       reason: 'the document already belongs to a page',
+    };
+  }
+  if (document.availability !== 'available' || document.group_missing === 1) {
+    return {
+      status: 'ok',
+      outcome: 'blocked',
+      document_id: document.id,
+      reason: 'one or more original document files are missing; restore them before creating a filing page',
     };
   }
   if (document.readable !== 1) {

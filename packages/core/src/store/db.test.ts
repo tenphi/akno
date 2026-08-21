@@ -176,4 +176,38 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds durable availability without losing an indexed document', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-availability-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 7)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO documents(id, rel_path, sha256, text, indexed_at, group_key)
+         VALUES('doc-zephyr', 'documents/zephyr-qx-100.txt', 'hash-document',
+                'Zephyr QX-100 warranty: five years.', '2026-08-01T00:00:00Z',
+                'documents/zephyr-qx-100.txt')`,
+      )
+      .run();
+    legacy.pragma('user_version = 14');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(documents)') as { name: string }[];
+    const document = store.db
+      .prepare('SELECT text, availability, missing_since FROM documents WHERE id = ?')
+      .get('doc-zephyr');
+
+    expect(columns.map((row) => row.name)).toEqual(expect.arrayContaining(['availability', 'missing_since']));
+    expect(document).toEqual({
+      text: 'Zephyr QX-100 warranty: five years.',
+      availability: 'available',
+      missing_since: null,
+    });
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

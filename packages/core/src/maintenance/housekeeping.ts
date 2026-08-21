@@ -58,10 +58,10 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
   // Housekeeping reports the organizational opportunity without calling it data loss.
   const orphanRows = ctx.store.db
     .prepare(
-      `SELECT rel_path, text IS NOT NULL AS extracted FROM documents
+      `SELECT rel_path, text IS NOT NULL AS extracted, availability FROM documents
         WHERE page_id IS NULL ORDER BY rel_path LIMIT ?`,
     )
-    .all(LIST_CAP) as { rel_path: string; extracted: number }[];
+    .all(LIST_CAP) as { rel_path: string; extracted: number; availability: 'available' | 'missing' }[];
 
   const orphanTotal = count(ctx, 'SELECT count(*) AS c FROM documents WHERE page_id IS NULL');
 
@@ -76,11 +76,16 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
     })),
     orphanedDocuments: orphanRows.map((row) => ({
       relPath: row.rel_path,
-      reason: row.extracted
-        ? adoptEnabled
-          ? 'unfiled but searchable — the adopt phase will write a page beside it'
-          : 'unfiled but searchable as a document — embed it from a page with `![[filename]]`, or enable maintenance.adopt'
-        : 'unfiled and visible by filename, but nothing could be read from it',
+      reason:
+        row.availability === 'missing'
+          ? row.extracted
+            ? 'original missing; retained indexed text remains searchable, but adoption is paused'
+            : 'original missing and no readable indexed copy or rendition remains'
+          : row.extracted
+            ? adoptEnabled
+              ? 'unfiled but searchable — the adopt phase will write a page beside it'
+              : 'unfiled but searchable as a document — embed it from a page with `![[filename]]`, or enable maintenance.adopt'
+            : 'unfiled and visible by filename, but nothing could be read from it',
     })),
     drift: drift.slice(0, LIST_CAP),
     counts: { brokenLinks: brokenTotal, orphanedDocuments: orphanTotal, drift: drift.length },

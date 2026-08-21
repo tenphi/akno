@@ -115,10 +115,15 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
 
   // A page's attachments go with it. Leaving a PDF behind whose page is gone
   // produces an orphan that `doctor` reports and nobody can explain.
-  const documents = ctx.store.db.prepare('SELECT rel_path FROM documents WHERE page_id = ?').all(page.id) as {
+  const documents = ctx.store.db
+    .prepare('SELECT id, rel_path, availability FROM documents WHERE page_id = ?')
+    .all(page.id) as {
+    id: string;
     rel_path: string;
+    availability: 'available' | 'missing';
   }[];
   for (const document of documents) {
+    if (document.availability === 'missing') continue;
     const snapshot = await ctx.journal.trash(document.rel_path, token);
     files.push({ relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot });
   }
@@ -130,7 +135,12 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
     files,
   });
 
-  // Deliberately does not delete the `files` rows. `known` is built from `files`,
+  // Ordinary filesystem loss preserves indexed evidence. `forget` is the explicit
+  // retraction boundary, so remove document text and every derived search row before
+  // the indexer observes the now-missing files.
+  purgeDocuments(ctx, documents);
+
+  // Deliberately does not delete the page's `files` row. `known` is built from `files`,
   // so a path that is not there can never appear in the reconciler's vanished set —
   // the page row would survive, pointing at a file that is gone, and `read` would
   // report "indexed but could not be read" forever.
@@ -150,44 +160,92 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
 // ─── A document ─────────────────────────────────────────────────────────────
 
 async function forgetDocument(ctx: AknoContext, documentId: string): Promise<ForgetOutput> {
-  const document = ctx.store.db.prepare('SELECT id, rel_path FROM documents WHERE id = ?').get(documentId) as
-    { id: string; rel_path: string } | undefined;
-  if (!document) throw new AknoError('not_found', `no document with id ${documentId}`);
+  const selected = ctx.store.db
+    .prepare('SELECT id, rel_path, group_key, renders, availability FROM documents WHERE id = ?')
+    .get(documentId) as DocumentToPurge | undefined;
+  if (!selected) throw new AknoError('not_found', `no document with id ${documentId}`);
+
+  // Reading any part returns the whole group, so forgetting any part must retract the same
+  // reader object. A rendition is another handle for its source, not a smaller thing to delete.
+  const source = selected.renders
+    ? ((ctx.store.db
+        .prepare('SELECT id, rel_path, group_key, renders, availability FROM documents WHERE rel_path = ?')
+        .get(selected.renders) as DocumentToPurge | undefined) ?? selected)
+    : selected;
+  const originals = ctx.store.db
+    .prepare(
+      `SELECT id, rel_path, group_key, renders, availability FROM documents
+        WHERE renders IS NULL AND COALESCE(group_key, rel_path) = ? ORDER BY part`,
+    )
+    .all(source.group_key ?? source.rel_path) as DocumentToPurge[];
+  const sourceRows = originals.length > 0 ? originals : [source];
+  const primary = sourceRows[0]!;
+  const paths = sourceRows.map((row) => row.rel_path);
+  const renditions = ctx.store.db
+    .prepare(
+      `SELECT id, rel_path, group_key, renders, availability FROM documents
+        WHERE renders IN (${paths.map(() => '?').join(',')}) ORDER BY rel_path`,
+    )
+    .all(...paths) as DocumentToPurge[];
+  const documents = [...sourceRows, ...renditions];
 
   const token = newPrefixedId('trash');
-  const snapshot = await ctx.journal.trash(document.rel_path, token);
-  const files: ChangeFile[] = [
-    { relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot },
-  ];
-
-  // The text file beside a document is that document in another format. Leaving it behind
-  // would leave the whole of a forgotten contract sitting in the folder, still readable and
-  // still returned by a search of the files themselves.
-  const renditions = ctx.store.db
-    .prepare('SELECT rel_path FROM documents WHERE renders = ?')
-    .all(document.rel_path) as { rel_path: string }[];
-  for (const rendition of renditions) {
-    const held = await ctx.journal.trash(rendition.rel_path, token);
-    files.push({ relPath: rendition.rel_path, action: 'deleted', before: null, after: null, snapshot: held });
+  const files: ChangeFile[] = [];
+  let primarySnapshot: string | null = null;
+  for (const document of documents) {
+    if (document.availability === 'missing') continue;
+    const snapshot = await ctx.journal.trash(document.rel_path, token);
+    if (document.id === primary.id) primarySnapshot = snapshot;
+    files.push({ relPath: document.rel_path, action: 'deleted', before: null, after: null, snapshot });
   }
 
   const changeId = ctx.journal.record({
     actor: ctx.actor,
     op: 'forget',
-    summary: `trashed document ${document.rel_path}`,
+    summary: `trashed document ${primary.rel_path}`,
     files,
   });
 
-  // Same reasoning as above: the reconciler removes both rows once it sees the file
-  // is gone, and pre-deleting the `files` row would stop it ever noticing.
+  purgeDocuments(ctx, documents);
+
+  // The document rows were removed explicitly above; this full walk reconciles structural
+  // relationships around the files without giving the model-backed backlog any work.
   await ctx.indexer.run({ modelPaths: [] });
 
   return {
     status: 'ok',
     change_id: changeId,
-    trashed: path.join(ctx.config.trashDir, snapshot),
-    removed_from: document.rel_path,
+    ...(primarySnapshot ? { trashed: path.join(ctx.config.trashDir, primarySnapshot) } : {}),
+    removed_from: primary.rel_path,
   };
+}
+
+interface DocumentToPurge {
+  id: string;
+  rel_path: string;
+  group_key: string | null;
+  renders: string | null;
+  availability: 'available' | 'missing';
+}
+
+function purgeDocuments(ctx: AknoContext, documents: { id: string; rel_path: string }[]): void {
+  ctx.store.transaction(() => {
+    const chunks = ctx.store.db.prepare('SELECT id FROM chunks WHERE document_id = ?');
+    const deleteFts = ctx.store.db.prepare('DELETE FROM chunks_fts WHERE rowid = ?');
+    const deleteChunk = ctx.store.db.prepare('DELETE FROM chunks WHERE id = ?');
+    const deleteDocument = ctx.store.db.prepare('DELETE FROM documents WHERE id = ?');
+    const deleteFile = ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?');
+
+    for (const document of documents) {
+      for (const row of chunks.all(document.id) as { id: number }[]) {
+        deleteFts.run(row.id);
+        ctx.store.vectors.remove(row.id);
+        deleteChunk.run(row.id);
+      }
+      deleteDocument.run(document.id);
+      deleteFile.run(document.rel_path);
+    }
+  });
 }
 
 function sha256Line(text: string): string {

@@ -312,7 +312,9 @@ akno read --document household/policy-8e7705eb.pdf
 ```
 
 `read` is not a search. It returns the requested object directly and can return a complete source
-page that recall would normally quote only briefly.
+page that recall would normally quote only briefly. A document read also returns `availability`:
+`available` means the original is present, `degraded` means Akno is reading a retained extraction
+or surviving text rendition, and `unavailable` means only the document identity remains.
 
 ### `list`: browse the structure
 
@@ -444,6 +446,9 @@ akno move household/lease household/rental/lease
 - Forgetting a fact removes the sentence that produced it; there is no hidden fact store to edit
   instead of the Markdown.
 - Forgetting a page or document moves it to Akno's trash, retained for the configured period.
+- Removing a document outside `forget` does not silently retract remembered evidence. Akno keeps its
+  stable identity and indexed text, marks the original missing, and stops adoption until it returns.
+  `forget --document` is the explicit operation that removes that retained search evidence too.
 - Undo restores exact previous bytes. If a change created a file, undo removes that created file.
 - Move relocates a page and its owned documents, updates embeds within the page, and reports inbound
   links from other pages instead of silently rewriting them.
@@ -572,11 +577,12 @@ page move together. Below it, the file remains visibly in the inbox with a propo
 The inbox is the only place where Akno automatically moves an existing document. A file manually
 placed in another folder may be extracted, named, paged, and indexed, but it is not relocated.
 
-### Unowned documents are searchable too
+### Unowned and temporarily missing documents remain visible
 
 A readable document that no page owns is returned directly as a document card. It carries a stable id,
 relative path, bounded quote, extraction method (`original_text`, `ocr_text`, or `model_description`),
-and an optional page number. The same id works with `akno read --document`. Ownership is established by:
+and an optional page number. An unreadable document receives an identity-only filename entry rather than
+invented content. The same id works with `akno read --document`. Ownership is established by:
 
 - Akno's content-addressed `<page>-<8 hex>.<ext>` filename;
 - a matching page and document stem; or
@@ -584,6 +590,12 @@ and an optional page number. The same id works with `akno read --document`. Owne
 
 The dream cycle's `adopt` phase can still create a minimal owning page. That improves browsing, page-role
 policy, links, and future synthesis; it is optional organization rather than a repair required for recall.
+
+Availability is durable per original file. If an original disappears, its chunks are retained and recall/read
+return `degraded` with `available_from: ["indexed_text"]` or a surviving `rendition`. If no readable copy
+exists, exact filename recall and direct read return `unavailable`, not `empty`. Restoring the file clears the
+missing state without changing its document id. Missing groups cannot be adopted because a filing page should
+not certify source bytes that can no longer be checked.
 
 ---
 
@@ -1041,7 +1053,7 @@ defaults off. Each applied item has its own change id and can be undone independ
 Housekeeping reports:
 
 - broken non-embed wikilinks;
-- documents with no owning page, including whether their text is readable;
+- documents with no owning page, including whether their text is readable or the original is missing;
 - pages whose type, slug pattern, or nesting depth conflicts with a matching folder rule.
 
 It always reports and never writes. Lists are capped for readability, while counts show the full total.
@@ -1267,13 +1279,13 @@ ownership verification. The remaining dream outputs still do not all feed that q
 principles, report-only conflict findings, legacy repair output, and housekeeping retain their existing
 execution or reporting behavior. There is also no snooze or requested-revision decision yet.
 
-### Standalone document dates and missing originals need richer states
+### Standalone document dates still need a result type
 
 Recall now returns readable orphan documents directly, and `context` carries those results to an attached
-agent. The remaining document-retrieval gap is narrower: timeline does not yet expose dated orphan evidence,
-and a source file disappearing is reconciled as removal rather than preserving an explicit `unavailable`
-result when a rendition or prior extraction survives. Those states need durable source availability metadata;
-they should not be inferred from an error string.
+agent. Missing originals now have durable per-file state: a retained extraction or rendition is `degraded`,
+no readable surviving copy is `unavailable`, restoration returns the same identity to `available`, and only
+explicit `forget` retracts the cached evidence. The remaining document-retrieval gap is timeline: it does not
+yet expose dated orphan evidence with an explicit date basis.
 
 ### The whole dream should become a plan, apply, verify loop
 

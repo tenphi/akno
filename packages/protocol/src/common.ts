@@ -74,6 +74,23 @@ export const SupersededClaim = z.object({
 });
 export type SupersededClaim = z.infer<typeof SupersededClaim>;
 
+/**
+ * Whether document evidence can still be checked against its original bytes.
+ *
+ * Extracted text is a useful surviving copy, but it is not the original. Keeping
+ * that distinction in the result lets a caller use remembered evidence without
+ * implying that the source file is still present.
+ */
+export const DocumentAvailability = z.object({
+  status: z.enum(['available', 'degraded', 'unavailable']),
+  available_from: z.array(z.enum(['original', 'indexed_text', 'rendition'])),
+  missing_originals: z.array(z.string()),
+  available_renditions: z.array(z.string()),
+  /** Earliest time an original in this document group was observed missing. */
+  missing_since: z.string().optional(),
+});
+export type DocumentAvailability = z.infer<typeof DocumentAvailability>;
+
 /** An attachment that matched, and where inside it. */
 export const DocumentRef = z.object({
   id: z.string(),
@@ -98,13 +115,14 @@ export const DocumentRef = z.object({
    * citation on the Markdown page, which has no such line.
    */
   quote: z.string().optional(),
+  availability: DocumentAvailability.optional(),
 });
 export type DocumentRef = z.infer<typeof DocumentRef>;
 
 /** How searchable text was obtained from a standalone document. */
 export const DocumentTextSource = z.object({
-  kind: z.enum(['original_text', 'ocr_text', 'model_description']),
-  via: z.enum(['plain', 'textutil', 'text-layer', 'ocr', 'vision']),
+  kind: z.enum(['original_text', 'ocr_text', 'model_description', 'none']),
+  via: z.enum(['plain', 'textutil', 'text-layer', 'ocr', 'vision', 'none']),
   confidence: z.number().min(0).max(1).nullable().optional(),
 });
 export type DocumentTextSource = z.infer<typeof DocumentTextSource>;
@@ -163,6 +181,7 @@ export const DocumentCard = z.object({
   matched_page: z.number().int().positive().optional(),
   parts: z.array(DocumentPartRef).optional(),
   source: DocumentTextSource,
+  availability: DocumentAvailability.optional(),
   ownership: z.object({
     status: z.literal('orphan'),
   }),
@@ -207,6 +226,8 @@ export const DegradedReason = z.enum([
   'partial_index',
   /** The file yielded no text — nothing to read back, and no model involved either way. */
   'no_document_text',
+  /** The original bytes are gone; recall is using a retained extraction or rendition. */
+  'document_source_missing',
 ]);
 export type DegradedReason = z.infer<typeof DegradedReason>;
 

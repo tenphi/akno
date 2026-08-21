@@ -44,6 +44,8 @@ export interface DoctorReport {
     factsSuperseded: number;
     events: number;
     documents: number;
+    /** Originals absent from disk while their durable indexed identity is retained. */
+    documentsMissing: number;
     documentsExtracted: number;
     /** Extracted text with no searchable chunk. Ownership no longer affects this count. */
     documentsUnsearchable: number;
@@ -88,6 +90,9 @@ export async function doctor(
     // another format, not a fourteenth attachment with nothing readable in it — counting it
     // as one would report the feature working as a knowledge base full of unreadable files.
     documents: count('SELECT count(*) AS c FROM documents WHERE renders IS NULL'),
+    documentsMissing: count(
+      "SELECT count(*) AS c FROM documents WHERE renders IS NULL AND availability = 'missing'",
+    ),
     documentsExtracted: count(
       'SELECT count(*) AS c FROM documents WHERE renders IS NULL AND text IS NOT NULL',
     ),
@@ -236,6 +241,12 @@ export async function doctor(
     warnings.push(
       `${counts.documents - counts.documentsExtracted} attachments have no readable text — a photo with ` +
         'nothing written in it, or a format with no extractor. They remain visible by filename.',
+    );
+  }
+  if (counts.documentsMissing > 0) {
+    warnings.push(
+      `${counts.documentsMissing} document originals are missing — retained indexed text remains ` +
+        'searchable but is reported as degraded. Restore the files or explicitly forget them.',
     );
   }
   if (counts.documentsUnsearchable > 0) {

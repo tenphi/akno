@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { DocumentRef, Line, PageManagement, PageRole, ResultEnvelope, SupersededClaim } from '../common.ts';
+import {
+  DocumentAvailability,
+  DocumentRef,
+  Line,
+  PageManagement,
+  PageRole,
+  ResultEnvelope,
+  SupersededClaim,
+} from '../common.ts';
 
 /** One exact thing: a page by slug or id, or a document by id, path or filename. */
 export const ReadInput = z
@@ -61,6 +69,7 @@ export const DocumentBody = z.object({
   /** Extracted text. Present because extraction happens on arrival, always. */
   text: z.string().nullable(),
   bytes: z.number().int().nonnegative().optional(),
+  availability: DocumentAvailability.optional(),
 });
 export type DocumentBody = z.infer<typeof DocumentBody>;
 
