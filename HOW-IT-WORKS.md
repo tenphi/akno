@@ -629,9 +629,10 @@ flowchart LR
 
 Order matters in three places:
 
-- `conflicts` runs before every inference and transformation phase. Unresolved and unverified claims are
-  removed from observation inputs claim-by-claim; observations backed by those claims are withheld from
-  reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this prerequisite inspection.
+- `conflicts` runs before every inference and transformation phase. Unresolved, unverified, and pending
+  qualification claims are removed from observation inputs claim-by-claim; observations backed by those claims
+  are withheld from reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this
+  prerequisite inspection.
 - `reflect` reads observations, so `observe` runs first.
 - `housekeeping` runs last so its counts describe the state after adoption and enabled repairs.
 
@@ -659,17 +660,19 @@ state different values for the same subject and attribute.
 **Method:** join sufficiently confident live facts from different `knowledge` pages, find disagreeing
 values, and optionally ask the maintenance model whether they truly describe the same thing at the same time.
 
-**Output:** every candidate receives one of five typed verdicts:
+**Output:** every candidate receives one of six typed verdicts:
 
 - `not_a_conflict`: different periods, scopes, or equivalent values explain the difference;
 - `time_scoped`: both claims explicitly describe different periods and may remain true together;
 - `superseded`: one claim explicitly establishes the current value and the other can become history;
+- `qualified`: one broad claim can be narrowed by an exact scope explicitly tied to its value in another claim;
 - `unresolved`: the claims disagree and the supplied text does not prove which is current;
 - `unverified`: structural evidence exists, but no reliable model verdict was available.
 
-`unresolved` and `unverified` claims cannot support a new observation or principle. For `superseded`, only
-the explicitly current claim remains inference-eligible while its plan is pending. Verdicts are cached by
-the exact claim-pair fingerprint, model, and prompt version, so unchanged nightly runs do not reclassify them.
+`unresolved`, `unverified`, and not-yet-applied `qualified` claims cannot support a new observation or
+principle. For `superseded`, only the explicitly current claim remains inference-eligible while its plan is
+pending. Verdicts, including exact qualification evidence, are cached by the exact claim-pair fingerprint,
+model, and prompt version, so unchanged nightly runs do not reclassify them.
 
 **Write behavior:** classification never writes. With `maintenance.conflicts.resolve: true`, a plan-backed
 `curate` run can create a high-risk contradiction item, but only when every affected knowledge page declares
@@ -677,8 +680,12 @@ the exact claim-pair fingerprint, model, and prompt version, so unchanged nightl
 `superseded` rewrites only the stale line as retained history; automatic eligibility requires an exact
 `YYYY-MM-DD` boundary introduced by `as of`, `effective`, `from`, or `since` in the selected claim. That exact
 date is carried into the historical line, and no other numeric value may be added. Page order, model confidence,
-and index time are never enough. The curator, exact input hashes, information-preservation guards, journal undo,
-re-indexing, and verification are the same ones used by other curation plans.
+and index time are never enough. `qualified` deterministically prefixes one broad line with a short noun phrase
+copied exactly from a different supplied claim. That evidence claim must also contain the broad claim's exact
+value; the target must not already contain the scope. Akno does not ask a model to compose the rewrite, and
+seals the evidence page as a no-op replacement so a concurrent evidence edit makes the item stale. The curator,
+exact input hashes, information-preservation guards, journal undo, re-indexing, and verification are the same
+ones used by other curation plans.
 
 ### Phase 2: `observe` — infer patterns across authored facts
 
@@ -751,10 +758,10 @@ extraction. Merge candidates use a separate exact-alias and information-preserva
 edits, formatting churn, and pure reorganization are rejected before the verifier or curator. Plan-backed
 curation seals the resulting exact operations only after those checks.
 
-Typed `superseded` and `unresolved` conflicts join this same plan in all three trust modes. Contradiction
-items are always high risk, replace every affected opted-in page atomically, and take priority over a general
-synthesis of the same bytes in that run. This prevents two individually valid items from making the second
-one stale by construction.
+Typed `superseded`, `qualified`, and `unresolved` conflicts join this same plan in all three trust modes.
+Contradiction items are always high risk, replace every affected opted-in page atomically, and take priority
+over a general synthesis of the same bytes in that run. This prevents two individually valid items from making
+the second one stale by construction.
 
 **Write authority has three gates:**
 

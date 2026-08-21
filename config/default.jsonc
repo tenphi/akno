@@ -367,7 +367,8 @@
       // Include high-risk contradiction items in audit/review/auto curation plans.
       // Model confidence cannot authorize supersession: the current claim must
       // carry an explicit dated as-of/effective/from/since boundary, and every affected page
-      // must declare `dream: synthesize`.
+      // must declare `dream: synthesize`. Qualification requires an exact scope phrase
+      // and the broad claim's exact value in a distinct sealed evidence claim.
       "resolve": true,
       "max_pairs": 40
     },

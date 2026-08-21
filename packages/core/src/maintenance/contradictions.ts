@@ -18,7 +18,7 @@ interface ContradictionOperationDraft {
 
 export interface ContradictionDraft {
   kind: 'contradiction';
-  outcome: 'superseded' | 'unresolved';
+  outcome: 'superseded' | 'qualified' | 'unresolved';
   /** First replaced page; the generic plan contract uses it as the item subject. */
   slug: string;
   inputHash: string;
@@ -55,7 +55,7 @@ export async function planContradictions(
   const warnings: string[] = [];
 
   for (const conflict of conflicts) {
-    if (conflict.verdict !== 'superseded' && conflict.verdict !== 'unresolved') continue;
+    if (!['superseded', 'qualified', 'unresolved'].includes(conflict.verdict)) continue;
     if (alreadyHandled(ctx, conflict.fingerprint)) continue;
 
     const pages = await eligiblePages(ctx, conflict);
@@ -69,7 +69,9 @@ export async function planContradictions(
     const draft =
       conflict.verdict === 'superseded'
         ? await supersededDraft(ctx, conflict, pages)
-        : unresolvedDraft(conflict, pages);
+        : conflict.verdict === 'qualified'
+          ? qualifiedDraft(conflict, pages)
+          : unresolvedDraft(conflict, pages);
     if (!draft) {
       warnings.push(
         `contradiction ${shortFingerprint(conflict.fingerprint)} could not produce a lossless guarded rewrite`,
@@ -80,6 +82,57 @@ export async function planContradictions(
   }
 
   return { drafts, warnings };
+}
+
+function qualifiedDraft(
+  conflict: CrossPageConflict,
+  pages: Map<string, EligiblePage>,
+): ContradictionDraft | null {
+  const qualification = conflict.qualification;
+  if (!qualification) return null;
+  const target = conflict.claims.find(
+    (claim) => claim.slug === qualification.targetSlug && claim.line === qualification.targetLine,
+  );
+  const evidence = conflict.claims.find(
+    (claim) => claim.slug === qualification.evidenceSlug && claim.line === qualification.evidenceLine,
+  );
+  if (!target || !evidence || target.slug === evidence.slug) return null;
+  if (!evidence.claim.includes(qualification.scope) || !evidence.claim.includes(target.value)) return null;
+
+  const page = pages.get(target.slug);
+  if (!page) return null;
+  const lines = page.before.split('\n');
+  const beforeLine = lines[target.line - 1];
+  if (beforeLine === undefined || !beforeLine.includes(target.value)) return null;
+  const rewritten = qualifyLine(beforeLine, qualification.scope);
+  if (
+    !rewritten ||
+    rewritten === beforeLine ||
+    !rewritten.includes(qualification.scope) ||
+    !preservesValues(beforeLine, rewritten) ||
+    !preservesValues(rewritten, `${beforeLine} ${qualification.scope}`) ||
+    !preservesAuthoredTokens(beforeLine, rewritten)
+  ) {
+    return null;
+  }
+  lines[target.line - 1] = rewritten;
+
+  // Seal the distinct scope evidence as a no-op replacement. A concurrent edit to either the
+  // broad claim or the statement proving its scope must stale the whole atomic item.
+  const orderedPages = [page, ...[...pages.values()].filter((candidate) => candidate.slug !== target.slug)];
+  const operations = orderedPages.map((candidate) => ({
+    ...candidate,
+    after: candidate.slug === target.slug ? lines.join('\n') : candidate.before,
+  }));
+  return asDraft(conflict, 'qualified', operations);
+}
+
+/** Add an evidence-backed scope without paraphrasing a single authored byte. */
+function qualifyLine(line: string, scope: string): string | null {
+  if (!scope || /[\r\n]/.test(scope)) return null;
+  const match = /^(\s*(?:(?:>\s*)+)?(?:(?:[-+*]|\d+[.)])\s+)?)(\S.*)$/.exec(line);
+  if (!match) return null;
+  return `${match[1]}For ${scope}: ${match[2]}`;
 }
 
 function alreadyHandled(ctx: AknoContext, fingerprint: string): boolean {

@@ -235,7 +235,7 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
   }
 
   const actionable = report.conflicts.filter((entry) =>
-    ['superseded', 'unresolved', 'unverified'].includes(entry.verdict),
+    ['superseded', 'qualified', 'unresolved', 'unverified'].includes(entry.verdict),
   );
   const cleared = report.conflicts.length - actionable.length;
   if (report.conflicts.length > 0) {
@@ -474,6 +474,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     conflicts: {
       total: report.conflicts.length,
       superseded: conflicts.superseded ?? 0,
+      qualified: conflicts.qualified ?? 0,
       unresolved: conflicts.unresolved ?? 0,
       timeScoped: conflicts.time_scoped ?? 0,
       unverified: conflicts.unverified ?? 0,

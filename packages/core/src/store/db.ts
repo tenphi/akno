@@ -5,6 +5,7 @@ import * as sqliteVec from 'sqlite-vec';
 import { AknoError } from '@tenphi/akno-protocol';
 import {
   CONFLICT_VERDICTS_MIGRATION_INDEX,
+  CONFLICT_QUALIFICATION_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
   MIGRATIONS,
@@ -140,6 +141,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'conflict_verdicts')) {
         db.exec(MIGRATIONS[CONFLICT_VERDICTS_MIGRATION_INDEX]!);
+      }
+      if (!columnExists(db, 'conflict_verdicts', 'qualification')) {
+        db.exec(MIGRATIONS[CONFLICT_QUALIFICATION_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

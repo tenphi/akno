@@ -11,10 +11,11 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION = 12;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
+export const CONFLICT_QUALIFICATION_MIGRATION_INDEX = 4;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -352,6 +353,12 @@ export const MIGRATIONS: string[] = [
     updated_at     TEXT NOT NULL,
     PRIMARY KEY (fingerprint, model_id, prompt_version)
   );
+  `,
+  // ── 5. Evidence-backed qualified conflict verdicts ────────────────────────
+  // The JSON contains exact claim references and the verbatim scope phrase. Keeping it with the
+  // cached verdict avoids rerunning a classifier while preserving everything needed by planning.
+  `
+  ALTER TABLE conflict_verdicts ADD COLUMN qualification TEXT;
   `,
 ];
 

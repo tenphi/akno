@@ -67,10 +67,30 @@ describe('schema migration', () => {
     const conflictCache = store.db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'conflict_verdicts'")
       .get() as { name: string } | undefined;
+    const conflictColumns = store.db.pragma('table_info(conflict_verdicts)') as { name: string }[];
 
     expect(tables.map((row) => row.name)).toEqual(['maintenance_items', 'maintenance_plans']);
     expect(columns.map((row) => row.name)).toContain('evidence');
     expect(conflictCache?.name).toBe('conflict_verdicts');
+    expect(conflictColumns.map((row) => row.name)).toContain('qualification');
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds qualification evidence to a version-eleven conflict cache', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-conflict-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 4)) legacy.exec(migration);
+    legacy.pragma('user_version = 11');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(conflict_verdicts)') as { name: string }[];
+
+    expect(columns.map((row) => row.name)).toContain('qualification');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

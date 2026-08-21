@@ -498,7 +498,7 @@ unverified claims cannot feed observation, reflection, or synthesis. Selecting `
 
 | Phase          | Writes?       | What it does                                                                                                                                                                                   |
 | -------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, unresolved, or unverified; disputed claims are withheld from inference.                                             |
+| `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                  |
 | `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                  |
 | `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                   |
 | `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
@@ -545,11 +545,14 @@ deletes the duplicate in one verified, undoable transaction. Conflicts, document
 pages, ambiguous identity, or unique frontmatter without a lossless disposition block the merge.
 
 Contradictions use the same high-risk plan path. `not_a_conflict` and explicitly `time_scoped` claims need no
-edit. `unresolved` adds a managed warning while retaining both authored claims, and `superseded` may turn only
-the stale line into history. Supersession requires an explicit dated as-of/effective/from/since boundary, every
-affected page must declare `dream: synthesize`, and exact before bytes for all evidence pages are sealed. The
-same date is copied into history; no other numeric value may be added. Model confidence, page order, and
-indexing date cannot select a winner.
+edit. `unresolved` adds a managed warning while retaining both authored claims. `superseded` may turn only the
+stale line into history. `qualified` may prefix one broad claim with a short scope copied exactly from a
+different claim that also states the broad claim's value. Every affected page must declare
+`dream: synthesize`, and exact before bytes for all evidence pages are sealed. Supersession additionally
+requires an explicit dated as-of/effective/from/since boundary; the same date is copied into history and no
+other numeric value may be added. Qualification adds only the evidence phrase and fixed connective Markdown;
+it cannot invent an opposite scope or paraphrase the authored claim. Model confidence, page order, and indexing
+date cannot select a winner.
 
 Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure
 reorganization never reach the curator. Completed unchanged and rejected inputs are fingerprinted in

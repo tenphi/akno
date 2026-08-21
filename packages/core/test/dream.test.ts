@@ -50,6 +50,7 @@ async function startStubChat(): Promise<StubServer> {
   let conflictScripted: unknown = {
     outcome: 'not_a_conflict',
     current: null,
+    qualification: null,
     reason: 'The fixtures describe different appliances.',
   };
   let classified = 0;
@@ -94,7 +95,10 @@ async function startStubChat(): Promise<StubServer> {
       scripted = value;
     },
     conflict: (value) => {
-      conflictScripted = value;
+      conflictScripted =
+        value && typeof value === 'object' && !Array.isArray(value) && !('qualification' in value)
+          ? { ...value, qualification: null }
+          : value;
     },
     conflictCalls: () => classified,
     facts: (value) => {
@@ -779,6 +783,164 @@ As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
     await mem.undo({ change_id: item.changeId! });
     expect(fs.readFileSync(oldPage, 'utf8')).toContain('The Zephyr QX-100 warranty is 1111 days.');
     expect(fs.readFileSync(oldPage, 'utf8')).not.toContain('Before 2002-02-02,');
+  });
+
+  it('qualifies a broad claim only from exact sealed scope evidence', async () => {
+    await mem.close();
+    const broadPage = path.join(root, 'products/zephyr-broad.md');
+    const scopedPage = path.join(root, 'products/zephyr-coverage.md');
+    fs.mkdirSync(path.dirname(broadPage), { recursive: true });
+    fs.writeFileSync(
+      broadPage,
+      `---
+title: Zephyr QX-100 warranty
+akno:
+  management:
+    dream: synthesize
+---
+
+# Zephyr QX-100 warranty
+
+The Zephyr QX-100 warranty duration is 1111 days.
+`,
+    );
+    fs.writeFileSync(
+      scopedPage,
+      `---
+title: Zephyr QX-100 coverage terms
+akno:
+  management:
+    dream: synthesize
+---
+
+# Zephyr QX-100 coverage terms
+
+The Zephyr QX-100 warranty duration is 2222 days overall, while standard coverage retains 1111 days.
+`,
+    );
+    server.facts({
+      'products/zephyr-broad': [
+        {
+          claim: 'The Zephyr QX-100 warranty duration is 1111 days.',
+          subject: 'Zephyr QX-100 warranty',
+          attribute: 'duration',
+          value: '1111 days',
+        },
+      ],
+      'products/zephyr-coverage': [
+        {
+          claim:
+            'The Zephyr QX-100 warranty duration is 2222 days overall, while standard coverage retains 1111 days.',
+          subject: 'Zephyr QX-100 warranty',
+          attribute: 'duration',
+          value: '2222 days',
+        },
+      ],
+    });
+    server.conflict({
+      outcome: 'qualified',
+      current: null,
+      qualification: {
+        target: 'products/zephyr-broad:10',
+        evidence: 'products/zephyr-coverage:10',
+        scope: 'standard coverage',
+      },
+      reason: 'A distinct claim explicitly states the narrower scope for the broad value.',
+    });
+    mem = await openMem({ maintenance: { curate: { enabled: true, mode: 'auto', verify: true } } });
+    await mem.index({ rederive: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.conflicts[0]).toMatchObject({
+      verdict: 'qualified',
+      qualification: {
+        targetSlug: 'products/zephyr-broad',
+        evidenceSlug: 'products/zephyr-coverage',
+        scope: 'standard coverage',
+      },
+    });
+    expect(item).toMatchObject({
+      kind: 'contradiction',
+      risk: 'high',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(item.operations).toHaveLength(2);
+    expect(fs.readFileSync(broadPage, 'utf8')).toContain(
+      'For standard coverage: The Zephyr QX-100 warranty duration is 1111 days.',
+    );
+    expect(fs.readFileSync(scopedPage, 'utf8')).toContain('while standard coverage retains 1111 days.');
+
+    const after = fs.readFileSync(broadPage, 'utf8');
+    const repeated = await mem.dream({ phase: 'curate' });
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(fs.readFileSync(broadPage, 'utf8')).toBe(after);
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(broadPage, 'utf8')).toContain('The Zephyr QX-100 warranty duration is 1111 days.');
+    expect(fs.readFileSync(broadPage, 'utf8')).not.toContain('For standard coverage:');
+  });
+
+  it('downgrades qualification when evidence does not contain the target value', async () => {
+    server.facts({
+      'home/appliances': [
+        {
+          claim: 'Appliances are serviced every 3 months.',
+          subject: 'service interval',
+          attribute: 'interval',
+          value: '3 months',
+        },
+      ],
+      'home/kitchen': [
+        {
+          claim: 'For kitchen use, appliances are serviced every 6 months.',
+          subject: 'service interval',
+          attribute: 'interval',
+          value: '6 months',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+    const candidate = await mem.dream({ phase: 'conflicts' });
+    const [target, evidence] = candidate.conflicts[0]!.claims;
+    server.conflict({
+      outcome: 'qualified',
+      current: null,
+      qualification: {
+        target: `${target!.slug}:${target!.line}`,
+        evidence: `${evidence!.slug}:${evidence!.line}`,
+        scope: 'kitchen use',
+      },
+      reason: 'The second claim names a scope.',
+    });
+
+    // Change one claim byte so the first unverified/classified cache cannot answer this run.
+    server.facts({
+      'home/appliances': [
+        {
+          claim: 'Appliances are routinely serviced every 3 months.',
+          subject: 'service interval',
+          attribute: 'interval',
+          value: '3 months',
+        },
+      ],
+      'home/kitchen': [
+        {
+          claim: 'For kitchen use, appliances are serviced every 6 months.',
+          subject: 'service interval',
+          attribute: 'interval',
+          value: '6 months',
+        },
+      ],
+    });
+    await mem.index({ rederive: true });
+    const report = await mem.dream({ phase: 'conflicts' });
+
+    expect(report.conflicts[0]!.verdict).toBe('unresolved');
+    expect(report.conflicts[0]!.qualification).toBeUndefined();
   });
 
   it('represents an unresolved conflict without changing either authored claim', async () => {

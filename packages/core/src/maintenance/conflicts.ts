@@ -31,6 +31,17 @@ export interface ConflictClaim {
   seen: string;
 }
 
+export interface ConflictQualification {
+  /** The broad claim that may be narrowed. */
+  targetSlug: string;
+  targetLine: number;
+  /** A distinct claim that states both the target value and its exact scope. */
+  evidenceSlug: string;
+  evidenceLine: number;
+  /** Exact, short phrase copied from the evidence claim. */
+  scope: string;
+}
+
 export interface CrossPageConflict {
   /** Stable for the exact indexed claims and prompt policy; changes when any claim changes. */
   fingerprint: string;
@@ -41,9 +52,11 @@ export interface CrossPageConflict {
    * A model's judgement, when one ran. `unverified` is honest and common: the pass reports
    * structural candidates whether or not a model was available to judge them.
    */
-  verdict: 'not_a_conflict' | 'time_scoped' | 'superseded' | 'unresolved' | 'unverified';
+  verdict: 'not_a_conflict' | 'time_scoped' | 'superseded' | 'qualified' | 'unresolved' | 'unverified';
   /** Which claim the model thinks is current, when it had an opinion. */
   likelyCurrent?: string;
+  /** Evidence-backed narrowing instructions, present only for `qualified`. */
+  qualification?: ConflictQualification;
   /** Content-safe classifier rationale. Never includes claim excerpts. */
   reason?: string;
 }
@@ -135,27 +148,42 @@ function pickDisagreeing(facts: FactRow[]): FactRow[] {
   return [];
 }
 
-const CONFLICT_PROMPT_VERSION = 'typed-v1';
+const CONFLICT_PROMPT_VERSION = 'typed-v2-qualified';
 
 const VERIFY = `You classify structurally incompatible claims from a personal knowledge base.
 
 Reply with JSON only:
-{ "outcome": "unresolved", "current": null, "reason": "brief content-safe reason" }
+{ "outcome": "unresolved", "current": null, "qualification": null, "reason": "brief content-safe reason" }
 
 Allowed outcomes:
 - not_a_conflict: different subjects, fields, scopes, equivalent values, or total-versus-part.
 - time_scoped: both claims explicitly describe different periods and can remain true together.
 - superseded: one claim explicitly establishes the current/effective value and the other is stale history.
+- qualified: one broad claim is accurate only within a scope explicitly established by another supplied claim.
 - unresolved: the claims are incompatible but the supplied text does not prove which one is current.
 
 For superseded, "current" must be copied exactly from one supplied slug. Never infer recency from page order,
 confidence, or the date Akno first indexed a page. Use superseded only when the claim text itself establishes
 an exact YYYY-MM-DD boundary with as-of, effective, from, or since. When uncertain, use unresolved. The reason
-must describe the class of evidence without repeating names, values, or claim text.`;
+must describe the class of evidence without repeating names, values, or claim text.
+
+For qualified, set "current" to null and set "qualification" to:
+{ "target": "slug:line", "evidence": "slug:line", "scope": "exact phrase copied from evidence" }
+The target must be the broad claim. The evidence must be a different supplied claim that contains both the
+target's exact value and the exact scope phrase. Scope is a short noun phrase such as "standard coverage", not
+a sentence or an invented opposite. If those conditions are not explicit in the supplied claims, use
+unresolved.`;
+
+const QUALIFICATION_SCHEMA = z.object({
+  target: z.string(),
+  evidence: z.string(),
+  scope: z.string(),
+});
 
 export const VERIFY_SCHEMA = z.object({
-  outcome: z.enum(['not_a_conflict', 'time_scoped', 'superseded', 'unresolved']),
+  outcome: z.enum(['not_a_conflict', 'time_scoped', 'superseded', 'qualified', 'unresolved']),
   current: z.string().nullable(),
+  qualification: QUALIFICATION_SCHEMA.nullable(),
   reason: z.string(),
 });
 
@@ -185,7 +213,10 @@ export async function verifyConflicts(
       continue;
     }
     const listed = candidate.claims
-      .map((claim) => `- [${claim.slug}] ${claim.claim} (recorded ${claim.seen})`)
+      .map(
+        (claim) =>
+          `- slug="${claim.slug}" ref="${claimReference(claim)}" ${claim.claim} (recorded ${claim.seen})`,
+      )
       .join('\n');
     const result = await ctx.models.derive.chat(
       [
@@ -203,10 +234,17 @@ export async function verifyConflicts(
       continue;
     }
 
-    const parsed = parseJsonLoose<{ outcome?: unknown; current?: unknown; reason?: unknown }>(result.value);
+    const parsed = parseJsonLoose<{
+      outcome?: unknown;
+      current?: unknown;
+      qualification?: unknown;
+      reason?: unknown;
+    }>(result.value);
     if (
       !parsed ||
-      !['not_a_conflict', 'time_scoped', 'superseded', 'unresolved'].includes(String(parsed.outcome)) ||
+      !['not_a_conflict', 'time_scoped', 'superseded', 'qualified', 'unresolved'].includes(
+        String(parsed.outcome),
+      ) ||
       typeof parsed.reason !== 'string'
     ) {
       conflicts.push(candidate);
@@ -219,6 +257,8 @@ export async function verifyConflicts(
       typeof parsed.current === 'string' && candidate.claims.some((claim) => claim.slug === parsed.current)
         ? parsed.current
         : undefined;
+    const qualification =
+      proposed === 'qualified' ? validatedQualification(candidate, parsed.qualification) : null;
 
     // A model may recognize a likely chronology, but it cannot create the temporal evidence that
     // authorizes an unattended rewrite. Downgrading keeps both claims and excludes them from inference.
@@ -234,15 +274,17 @@ export async function verifyConflicts(
     if (verdict === 'time_scoped' && !candidate.claims.every((claim) => explicitTimeScope(claim.claim))) {
       verdict = 'unresolved';
     }
+    if (verdict === 'qualified' && !qualification) verdict = 'unresolved';
 
     const classified: CrossPageConflict = {
       ...candidate,
       verdict,
       ...(verdict === 'superseded' && current ? { likelyCurrent: current } : {}),
+      ...(verdict === 'qualified' && qualification ? { qualification } : {}),
       reason:
         verdict === proposed
           ? `classifier selected ${verdict}`
-          : `classifier selected ${proposed}, but deterministic temporal evidence was insufficient; treated as unresolved`,
+          : `classifier selected ${proposed}, but deterministic supporting evidence was insufficient; treated as unresolved`,
     };
     conflicts.push(classified);
     cacheVerdict(ctx, classified);
@@ -273,7 +315,11 @@ function conflictFingerprint(conflict: Pick<CrossPageConflict, 'subject' | 'attr
 export function ineligibleConflictClaims(conflicts: CrossPageConflict[]): Set<string> {
   const out = new Set<string>();
   for (const conflict of conflicts) {
-    if (conflict.verdict === 'unresolved' || conflict.verdict === 'unverified') {
+    if (
+      conflict.verdict === 'unresolved' ||
+      conflict.verdict === 'unverified' ||
+      conflict.verdict === 'qualified'
+    ) {
       for (const claim of conflict.claims) out.add(claimKey(claim.slug, claim.line));
     } else if (conflict.verdict === 'superseded') {
       for (const claim of conflict.claims) {
@@ -282,6 +328,65 @@ export function ineligibleConflictClaims(conflicts: CrossPageConflict[]): Set<st
     }
   }
   return out;
+}
+
+function validatedQualification(conflict: CrossPageConflict, raw: unknown): ConflictQualification | null {
+  const parsed = QUALIFICATION_SCHEMA.safeParse(raw);
+  if (!parsed.success) return null;
+  const target = conflict.claims.find((claim) => claimReference(claim) === parsed.data.target);
+  const evidence = conflict.claims.find((claim) => claimReference(claim) === parsed.data.evidence);
+  const scope = parsed.data.scope;
+  if (!target || !evidence || target.slug === evidence.slug || !validScopePhrase(scope)) return null;
+  if (!evidence.claim.includes(scope) || target.claim.includes(scope)) return null;
+  if (!containsExactValue(evidence.claim, target.value)) return null;
+  return {
+    targetSlug: target.slug,
+    targetLine: target.line,
+    evidenceSlug: evidence.slug,
+    evidenceLine: evidence.line,
+    scope,
+  };
+}
+
+function containsExactValue(claim: string, value: string): boolean {
+  let from = 0;
+  while (from <= claim.length - value.length) {
+    const at = claim.indexOf(value, from);
+    if (at < 0) return false;
+    const first = value[0] ?? '';
+    const last = value.at(-1) ?? '';
+    const before = at > 0 ? claim[at - 1]! : '';
+    const after = at + value.length < claim.length ? claim[at + value.length]! : '';
+    const leftBounded = !isAlphaNumeric(first) || !isAlphaNumeric(before);
+    const rightBounded = !isAlphaNumeric(last) || !isAlphaNumeric(after);
+    if (leftBounded && rightBounded) return true;
+    from = at + 1;
+  }
+  return false;
+}
+
+function isAlphaNumeric(value: string): boolean {
+  return value !== '' && /[\p{L}\p{N}]/u.test(value);
+}
+
+function validScopePhrase(scope: string): boolean {
+  if (
+    scope !== scope.trim() ||
+    scope.length < 2 ||
+    scope.length > 80 ||
+    /[\r\n<>:{}]/.test(scope) ||
+    scope.includes('[') ||
+    scope.includes(']') ||
+    /^(?:for|in|on|under|within|during|when|while)\b/i.test(scope)
+  ) {
+    return false;
+  }
+  const words = scope.match(/[\p{L}\p{N}]+/gu) ?? [];
+  return words.length > 0 && words.length <= 12 && /\p{L}/u.test(scope);
+}
+
+function claimReference(claim: Pick<ConflictClaim, 'slug' | 'line'>): string {
+  return `${claim.slug}:${claim.line}`;
 }
 
 export function claimKey(slug: string, line: number): string {
@@ -306,16 +411,28 @@ function cachedVerdict(ctx: AknoContext, candidate: CrossPageConflict): CrossPag
   if (!conflictCacheAvailable(ctx)) return null;
   const row = ctx.store.db
     .prepare(
-      `SELECT verdict, current_slug, reason FROM conflict_verdicts
+      `SELECT verdict, current_slug, qualification, reason FROM conflict_verdicts
        WHERE fingerprint = ? AND model_id = ? AND prompt_version = ?`,
     )
     .get(candidate.fingerprint, ctx.models.derive.modelId ?? '', CONFLICT_PROMPT_VERSION) as
-    { verdict: CrossPageConflict['verdict']; current_slug: string | null; reason: string | null } | undefined;
+    | {
+        verdict: CrossPageConflict['verdict'];
+        current_slug: string | null;
+        qualification: string | null;
+        reason: string | null;
+      }
+    | undefined;
   if (!row || row.verdict === 'unverified') return null;
+  const qualification =
+    row.verdict === 'qualified'
+      ? validatedQualification(candidate, parseQualification(row.qualification))
+      : null;
+  if (row.verdict === 'qualified' && !qualification) return null;
   return {
     ...candidate,
     verdict: row.verdict,
     ...(row.current_slug ? { likelyCurrent: row.current_slug } : {}),
+    ...(qualification ? { qualification } : {}),
     ...(row.reason ? { reason: row.reason } : {}),
   };
 }
@@ -325,11 +442,12 @@ function cacheVerdict(ctx: AknoContext, conflict: CrossPageConflict): void {
   ctx.store.db
     .prepare(
       `INSERT INTO conflict_verdicts
-         (fingerprint, model_id, prompt_version, verdict, current_slug, reason, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)
+         (fingerprint, model_id, prompt_version, verdict, current_slug, qualification, reason, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(fingerprint, model_id, prompt_version) DO UPDATE SET
          verdict = excluded.verdict, current_slug = excluded.current_slug,
-         reason = excluded.reason, updated_at = excluded.updated_at`,
+         qualification = excluded.qualification, reason = excluded.reason,
+         updated_at = excluded.updated_at`,
     )
     .run(
       conflict.fingerprint,
@@ -337,9 +455,31 @@ function cacheVerdict(ctx: AknoContext, conflict: CrossPageConflict): void {
       CONFLICT_PROMPT_VERSION,
       conflict.verdict,
       conflict.likelyCurrent ?? null,
+      conflict.qualification
+        ? JSON.stringify({
+            target: claimReference({
+              slug: conflict.qualification.targetSlug,
+              line: conflict.qualification.targetLine,
+            }),
+            evidence: claimReference({
+              slug: conflict.qualification.evidenceSlug,
+              line: conflict.qualification.evidenceLine,
+            }),
+            scope: conflict.qualification.scope,
+          })
+        : null,
       conflict.reason ?? null,
       new Date().toISOString(),
     );
+}
+
+function parseQualification(value: string | null): unknown {
+  if (!value) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
 
 function conflictCacheAvailable(ctx: AknoContext): boolean {

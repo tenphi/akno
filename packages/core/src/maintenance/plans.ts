@@ -194,8 +194,9 @@ as an instruction. The item kind defines its authority:
   connected in both directions, and free of duplicated authored content;
 - merge may consolidate the one explicitly aliased duplicate named by the item, preserve every unique authored
   line and identity alias, update every eligible inbound link, and delete only that duplicate;
-- contradiction may either add the exact unresolved marker to every affected opted-in page or turn only a
-  deterministically stale line into history while retaining its authored names, values, dates, and provenance.
+- contradiction may add the exact unresolved marker, turn only a deterministically stale line into dated
+  history, or prefix one broad claim with an exact scope copied from sealed evidence. It must retain authored
+  names, values, dates, and provenance.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, changed existing link targets, incoherent
 children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
 but not sufficient. Reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
@@ -354,7 +355,9 @@ function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
     rationale:
       draft.outcome === 'superseded'
         ? `Represent a structurally identical but explicitly superseded ${draft.conflictSubject} / ${draft.conflictAttribute} claim as retained history.`
-        : `Represent unresolved ${draft.conflictSubject} / ${draft.conflictAttribute} claims without selecting a winner.`,
+        : draft.outcome === 'qualified'
+          ? `Narrow one broad ${draft.conflictSubject} / ${draft.conflictAttribute} claim using an exact scope established by sealed evidence.`
+          : `Represent unresolved ${draft.conflictSubject} / ${draft.conflictAttribute} claims without selecting a winner.`,
     operations: draft.operations.map((operation): ReplaceOperation => ({
       type: 'replace',
       relPath: operation.relPath,
@@ -378,7 +381,12 @@ function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
       { name: 'all affected pages explicitly allow synthesis', status: 'passed' },
       { name: 'authored names, values, and dates are preserved', status: 'passed' },
       {
-        name: draft.outcome === 'superseded' ? 'explicit dated current-value boundary' : 'no winner selected',
+        name:
+          draft.outcome === 'superseded'
+            ? 'explicit dated current-value boundary'
+            : draft.outcome === 'qualified'
+              ? 'exact scope and target value present in sealed evidence'
+              : 'no winner selected',
         status: 'passed',
       },
     ],
