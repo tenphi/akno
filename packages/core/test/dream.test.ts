@@ -342,73 +342,216 @@ describe('reflect', () => {
 });
 
 describe('repair', () => {
-  /**
-   * The only tier that changes files on its own. What is asserted here is that it repairs the link
-   * it can be sure of, leaves the one it cannot, and puts the whole night behind a single undo.
-   */
-  async function withBrokenLinks(): Promise<void> {
+  async function withBrokenLinks(mode: 'audit' | 'auto' = 'auto'): Promise<void> {
     await mem.close();
-    // The boiler page moved into a subfolder; the links on `appliances` still point where it was.
     fs.writeFileSync(
       path.join(root, 'home/appliances.md'),
-      '---\ntitle: Appliances\n---\n\nSee [[Boiler]] and [[nothing-like-this-exists]].\n' +
+      '---\ntitle: Appliances\nakno:\n  management:\n    dream: hygiene\n---\n\n' +
+        'See [[Boiler|heating notes]] and [[nothing-like-this-exists]].\n' +
         'Also [the boiler](boiler.md) and [the web](https://example.com/boiler).\n',
       'utf8',
     );
     fs.mkdirSync(path.join(root, 'home/heating'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'home/heating/boiler.md'),
-      '---\ntitle: Boiler\n---\n\nServiced yearly.\n',
+      path.join(root, 'home/heating/furnace.md'),
+      '---\ntitle: Heating unit\nakno:\n  aliases:\n    - home/boiler\n---\n\nServiced yearly.\n',
       'utf8',
     );
-    mem = await openMem({ maintenance: { observe: { enabled: true }, repair: { enabled: true } } });
+    mem = await openMem({
+      maintenance: {
+        observe: { enabled: false },
+        curate: { enabled: true, mode, verify: true },
+        repair: { enabled: true, links: true },
+        conflicts: { enabled: false },
+      },
+    });
     await mem.index({});
   }
 
-  it('repoints a link whose page is unmistakable, and leaves the rest', async () => {
+  it('applies exact alias-backed links through a verified low-risk plan', async () => {
     await withBrokenLinks();
-    const report = await mem.dream({ phase: 'repair' });
+    const report = await mem.dream({ phase: 'curate' });
 
     const page = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
-    expect(page).toContain('[[home/heating/boiler]]');
-    // Nothing could have been meant by the other, so it stays exactly as written rather than being
-    // pointed somewhere plausible-looking.
+    expect(page).toContain('[[home/heating/furnace|heating notes]]');
     expect(page).toContain('[[nothing-like-this-exists]]');
-
-    // Two thirds of a real knowledge base's broken links are markdown, not wikilinks, and their
-    // target is a path relative to the page — so the replacement is recomputed, not pasted.
-    expect(page).toContain('[the boiler](heating/boiler.md)');
-    // An external URL is not a page reference and is never touched.
+    expect(page).toContain('[the boiler](heating/furnace.md)');
     expect(page).toContain('https://example.com/boiler');
 
-    expect(report.repaired!.links.map((entry) => entry.how)).toEqual(['unique', 'unique']);
+    const item = mem
+      .plan(report.maintenancePlan!.id)
+      .items.find((candidate) => candidate.kind === 'broken_link')!;
+    expect(item).toMatchObject({
+      risk: 'low',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(item.operations).toHaveLength(1);
+    expect(item.evidence[0]).toMatchObject({
+      targetRelPath: 'home/heating/furnace.md',
+      targetHash: expect.any(String),
+    });
+    expect(report.repaired!.links).toEqual([
+      expect.objectContaining({
+        brokenTarget: 'home/boiler',
+        newTarget: 'home/heating/furnace',
+        signal: 'alias',
+        action: 'applied',
+      }),
+    ]);
     expect(report.repaired!.declined.some((entry) => entry.reason.includes('no page'))).toBe(true);
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toContain(
+      '[[Boiler|heating notes]]',
+    );
   });
 
-  it('puts one night of repairs behind one undo', async () => {
-    await withBrokenLinks();
-    const report = await mem.dream({ phase: 'repair' });
-    expect(report.repairChangeId).toBeTruthy();
+  it('seals proposals without writing in audit mode', async () => {
+    await withBrokenLinks('audit');
+    const before = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem
+      .plan(report.maintenancePlan!.id)
+      .items.find((candidate) => candidate.kind === 'broken_link')!;
 
-    await mem.undo({ change_id: report.repairChangeId! });
-    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toContain('[[Boiler]]');
+    expect(item.status).toBe('proposed');
+    expect(report.repaired!.links).toEqual([expect.objectContaining({ action: 'planned' })]);
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
   });
 
-  it('changes nothing on a dry run', async () => {
+  it('can audit deterministic link items without a model', async () => {
+    await withBrokenLinks('audit');
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      maintenance: {
+        observe: { enabled: false },
+        curate: { enabled: true, mode: 'audit' },
+        repair: { links: true },
+        conflicts: { enabled: false },
+      },
+    });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan?.items).toEqual([
+      expect.objectContaining({ kind: 'broken_link', status: 'proposed' }),
+    ]);
+    expect(report.repaired!.links).toEqual([expect.objectContaining({ action: 'planned' })]);
+  });
+
+  it('makes an approved item stale when its destination changed after planning', async () => {
+    await withBrokenLinks('audit');
+    const before = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
+    const planned = await mem.dream({ phase: 'curate' });
+    const plan = mem.plan(planned.maintenancePlan!.id);
+    const item = plan.items.find((candidate) => candidate.kind === 'broken_link')!;
+    fs.appendFileSync(path.join(root, 'home/heating/furnace.md'), '\nA newer invented note.\n');
+
+    mem.decidePlan(plan.id, item.id, 'approve', 'The exact alias establishes the intended page.');
+    const result = await mem.applyPlan(plan.id);
+
+    expect(result.plan.items.find((candidate) => candidate.id === item.id)?.status).toBe('stale');
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
+  });
+
+  it('keeps the legacy repair phase report-only', async () => {
     await withBrokenLinks();
     const before = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
-    const report = await mem.dream({ phase: 'repair', dryRun: true });
+    const report = await mem.dream({ phase: 'repair' });
 
-    expect(report.repaired!.links).toHaveLength(2);
+    expect(report.repaired!.links).toEqual([expect.objectContaining({ action: 'planned' })]);
     expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
     expect(report.repairChangeId).toBeNull();
+    expect(report.warnings[0]).toContain('report-only');
   });
 
-  it('does nothing at all until it is switched on', async () => {
-    // It edits files while nobody is watching, so it ships off.
-    const report = await mem.dream({ phase: 'repair' });
-    expect(report.phases[0]!.skipped).toBe('disabled in config');
-    expect(report.repaired).toBeNull();
+  it('retains curate outcomes when the compatibility phase follows in a full run', async () => {
+    await withBrokenLinks();
+
+    const report = await mem.dream();
+
+    expect(report.repaired!.links).toEqual([expect.objectContaining({ action: 'applied' })]);
+    expect(report.phases.find((phase) => phase.phase === 'repair')?.ran).toBe(true);
+  });
+
+  it('uses journalled move history when the new name has no textual resemblance', async () => {
+    await mem.close();
+    fs.writeFileSync(
+      path.join(root, 'home/appliances.md'),
+      '---\ntitle: Appliances\nakno:\n  management:\n    dream: hygiene\n---\n\nSee [[home/boiler]].\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'home/boiler.md'),
+      '---\ntitle: Boiler\n---\n\nInvented fixture.\n',
+      'utf8',
+    );
+    mem = await openMem({
+      maintenance: {
+        observe: { enabled: false },
+        curate: { enabled: true, mode: 'audit' },
+        repair: { links: true },
+        conflicts: { enabled: false },
+      },
+    });
+    await mem.index({});
+    await mem.move({ from: 'home/boiler', to: 'archive/intermediate-heating-note' });
+    await mem.move({
+      from: 'archive/intermediate-heating-note',
+      to: 'archive/zephyr-heating-record',
+    });
+
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.repaired!.links).toEqual([
+      expect.objectContaining({
+        brokenTarget: 'home/boiler',
+        newTarget: 'archive/zephyr-heating-record',
+        signal: 'move_history',
+        action: 'planned',
+      }),
+    ]);
+  });
+
+  it('declines ambiguous exact identities and similarity-only guesses', async () => {
+    await mem.close();
+    fs.writeFileSync(
+      path.join(root, 'home/appliances.md'),
+      '---\ntitle: Appliances\nakno:\n  management:\n    dream: hygiene\n---\n\n' +
+        'See [[Boiler]] and [[old-zephyr-manual]].\n',
+      'utf8',
+    );
+    for (const relPath of ['home/heating/boiler.md', 'workshop/boiler.md']) {
+      fs.mkdirSync(path.join(root, path.dirname(relPath)), { recursive: true });
+      fs.writeFileSync(path.join(root, relPath), '---\ntitle: Boiler\n---\n\nInvented fixture.\n', 'utf8');
+    }
+    fs.mkdirSync(path.join(root, 'archive'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'archive/2031-old-zephyr-manual-copy.md'),
+      '---\ntitle: Archived manual copy\n---\n\nInvented fixture.\n',
+      'utf8',
+    );
+    mem = await openMem({
+      maintenance: {
+        observe: { enabled: false },
+        curate: { enabled: true, mode: 'audit' },
+        repair: { links: true },
+        conflicts: { enabled: false },
+      },
+    });
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.repaired!.links).toHaveLength(0);
+    expect(report.repaired!.declined.map((entry) => entry.reason)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('share the strongest exact identity signal'),
+        expect.stringContaining('similarity-only'),
+      ]),
+    );
   });
 });
 

@@ -17,7 +17,7 @@ import { PLACEMENT_SCHEMA } from '../write/placement.ts';
 import { NAME_SCHEMA } from '../ingest/name.ts';
 import { VERIFY_SCHEMA as CONFLICT_VERIFY_SCHEMA } from '../maintenance/conflicts.ts';
 import { OBSERVE_SCHEMA } from '../maintenance/observe.ts';
-import { CHOOSE_SCHEMA, REWRITE_SCHEMA } from '../maintenance/repair.ts';
+import { REWRITE_SCHEMA } from '../maintenance/repair.ts';
 import {
   HYGIENE_SCHEMA,
   MERGE_SCHEMA,
@@ -253,7 +253,6 @@ describe('every schema stays strict-mode safe', () => {
     NAME_SCHEMA,
     CONFLICT_VERIFY_SCHEMA,
     OBSERVE_SCHEMA,
-    CHOOSE_SCHEMA,
     REWRITE_SCHEMA,
     HYGIENE_SCHEMA,
     MERGE_SCHEMA,

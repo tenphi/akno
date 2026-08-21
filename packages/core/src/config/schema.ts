@@ -238,21 +238,16 @@ const MaintenanceDoc = z.object({
       max_pages: z.number().int().positive().optional(),
     })
     .optional(),
-  /**
-   * Acting on what the cycle finds, rather than only reporting it.
-   *
-   * Off by default and deliberately so: the other tiers describe, this one changes files while
-   * nobody is watching. Both halves are journalled as one change per night, so a run you disagree
-   * with is one `undo` away.
-   */
+  /** Broken-link proposal settings. Durable writes go through curate plans. */
   repair: z
     .object({
+      /** Retains the legacy report-only `repair` phase; it never writes knowledge-base bytes. */
       enabled: z.boolean().optional(),
-      /** Repoint `[[links]]` whose target moved or was renamed. */
+      /** Include exact, identity-backed broken-link items in plan-backed curate runs. */
       links: z.boolean().optional(),
       /** @deprecated Migration alias for maintenance.conflicts.resolve. */
       conflicts: z.boolean().optional(),
-      /** Ceiling per run, so a bad night is a small bad night. */
+      /** Ceiling on broken-link rewrites proposed in one plan. */
       max_changes: z.number().int().positive().optional(),
     })
     .optional(),

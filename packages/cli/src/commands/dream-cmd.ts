@@ -13,8 +13,7 @@ import { loadMaintenanceStatus, printMaintenanceStatus } from './plan-cmd.ts';
 const DREAM_HELP = `akno dream [options]
 akno dream status
 
-  The maintenance cycle. Phases are selectable and safe to re-run. Claim repair uses
-  conflict verdicts from the preceding phase in a full run.
+  The maintenance cycle. Phases are selectable and safe to re-run.
 
     observe        Combine repeated facts into stable patterns. Writes pages under
                    observations/ with their evidence, and never restates a fact.
@@ -26,8 +25,8 @@ akno dream status
                    text can be returned at all. Honours \`ingest: "file"\`.
     conflicts      The thorough pass inline checking cannot do: facts from different
                    pages that state different values for the same thing.
-    repair         Repoint guardable broken links and retire verified stale claims.
-                   Off by default; changes are bounded and undo together.
+    repair         Legacy report-only view of exact broken-link proposals. Durable fixes
+                   are low-risk items in curate audit, review, or auto plans.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
 
   A full/scheduled run uses maintenance.curate.mode when configured. Otherwise curate
@@ -273,12 +272,15 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
   if (report.repaired) {
     const fixed = report.repaired;
     if (fixed.links.length > 0 || fixed.claims.length > 0) {
-      heading(`Repaired — ${fixed.links.length} link(s), ${fixed.claims.length} claim(s)`);
+      const linkActions = countBy(fixed.links, (link) => link.action);
+      heading(
+        `Broken-link plans — ${linkActions.applied ?? 0} applied, ${linkActions.planned ?? 0} proposed, ${linkActions.rejected ?? 0} rejected`,
+      );
       if (privateDetails) {
         for (const link of fixed.links) {
           line(
             `  ${style.grey(link.from)}  [[${link.brokenTarget}]] ${style.green('→')} [[${link.newTarget}]]` +
-              (link.how === 'model' ? style.grey('  (chosen from several)') : ''),
+              style.grey(`  (${link.signal.replace('_', ' ')}, ${link.action})`),
           );
         }
         for (const claim of fixed.claims) {
@@ -299,11 +301,14 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
       }
     }
     if (fixed.declined.length > 0) {
-      // What it would not touch, and why. A repair tier that skips silently looks like a broken one.
+      // What it would not plan, and why. A planner that skips silently looks like a broken one.
       heading(`${fixed.declined.length} left alone`);
       if (privateDetails) {
         for (const entry of fixed.declined.slice(0, 10)) {
           line(`  ${style.grey(truncate(entry.what, 60))}  ${entry.reason}`);
+          if (entry.candidates?.length) {
+            line(`    ${style.grey(`candidates: ${entry.candidates.join(', ')}`)}`);
+          }
         }
         if (fixed.declined.length > 10) line(`  ${style.grey(`… and ${fixed.declined.length - 10} more`)}`);
       } else {
@@ -483,6 +488,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     repair: report.repaired
       ? {
           links: report.repaired.links.length,
+          linkActions: countBy(report.repaired.links, (link) => link.action),
           claims: report.repaired.claims.length,
           declined: report.repaired.declined.length,
         }

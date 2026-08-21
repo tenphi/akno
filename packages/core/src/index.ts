@@ -28,6 +28,7 @@ export {
 export type { ConflictClaim, ConflictQualification, CrossPageConflict } from './maintenance/conflicts.ts';
 export type { AdoptedDocument } from './maintenance/adopt.ts';
 export type { BrokenLink, Housekeeping, OrphanedDocument, RuleDrift } from './maintenance/housekeeping.ts';
+export type { LinkIdentitySignal, LinkRepair, RepairResult } from './maintenance/link-repairs.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 export {

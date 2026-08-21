@@ -40,7 +40,7 @@ describe('writing to the ledger', () => {
     expect(refusesLedgerProse({ slug: ledger, ledger, actor: 'user', edit: 'append' })).toBe(true);
   });
 
-  it('exempts akno, so the repair tier can still fix a link in a ledger line', () => {
+  it('exempts akno, so a planned link fix can still update a ledger line', () => {
     expect(refusesLedgerProse({ slug: ledger, ledger, actor: 'akno', edit: 'append' })).toBe(false);
   });
 

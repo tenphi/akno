@@ -3,10 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { actionable, candidatesFor, missingNumericValues, preservesValues } from './repair.ts';
 import type { CrossPageConflict } from './conflicts.ts';
 
-/**
- * The tier that changes files rather than reporting on them. Its guards are the design: every one
- * of these is a way a nightly repair turns into nightly damage.
- */
+/** Similarity candidates explain declined links; they never authorize a write. */
 describe('finding the page a broken link meant', () => {
   const slugs = [
     'travel/2031/2031-04-10-12-blackwater-bay',

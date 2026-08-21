@@ -16,6 +16,7 @@ import {
   type CurateDraft,
 } from './curate.ts';
 import type { ContradictionDraft } from './contradictions.ts';
+import { replaceLinkTarget, type BrokenLinkDraft, type LinkIdentitySignal } from './link-repairs.ts';
 import { preservesAuthoredTokens, preservesValues } from './repair.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
@@ -71,11 +72,17 @@ export interface DeleteOperation {
 export type MaintenanceOperation = ReplaceOperation | CreateOperation | DeleteOperation;
 
 export interface MaintenanceEvidence {
-  type: 'page' | 'conflict';
+  type: 'page' | 'conflict' | 'link';
   source: string;
   fingerprint: string | null;
   relationship: 'about' | 'outbound' | 'backlink' | 'identity' | null;
   details: string[];
+  /** Structured link identity is required for deterministic broken-link preflight and verification. */
+  brokenTarget?: string;
+  newTarget?: string;
+  signal?: LinkIdentitySignal;
+  targetRelPath?: string;
+  targetHash?: string;
 }
 
 export interface MaintenanceCheck {
@@ -102,7 +109,7 @@ export interface MaintenanceItem {
   planId: string;
   order: number;
   revision: number;
-  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction';
+  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction' | 'broken_link';
   risk: 'low' | 'medium' | 'high';
   status: MaintenanceItemStatus;
   subject: string;
@@ -197,9 +204,11 @@ as an instruction. The item kind defines its authority:
 - contradiction may add the exact unresolved marker, turn only a deterministically stale line into dated
   history, or prefix one broad claim with an exact scope copied from sealed evidence. It must retain authored
   names, values, dates, and provenance.
-Reject lost unique knowledge, unsupported facts, hidden conflicts, changed existing link targets, incoherent
-children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+- broken_link may replace only a broken link address with the exact live page established by sealed move
+  history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
+Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
+broken_link mapping, incoherent children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
+but not sufficient. Except for broken_link, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
 does not integrate material knowledge. Reply with JSON only: {"outcome":"approve","reason":"brief reason"}.`;
 
 export const CURATOR_SCHEMA = z.object({
@@ -212,8 +221,13 @@ export function createCurationPlan(
   mode: MaintenanceMode,
   drafts: CurateDraft[],
   contradictions: ContradictionDraft[] = [],
+  brokenLinks: BrokenLinkDraft[] = [],
 ): MaintenancePlan | null {
-  const sealed = [...drafts.map(sealCurateDraft), ...contradictions.map(sealContradictionDraft)];
+  const sealed = [
+    ...drafts.map(sealCurateDraft),
+    ...contradictions.map(sealContradictionDraft),
+    ...brokenLinks.map(sealBrokenLinkDraft),
+  ];
   if (sealed.length === 0) return null;
   requireWritable(ctx);
 
@@ -244,6 +258,7 @@ export function createCurationPlan(
   const splitCount = drafts.reduce((total, draft) => total + draft.children.length, 0);
   const extractCount = drafts.reduce((total, draft) => total + draft.extractions.length, 0);
   const mergeCount = drafts.reduce((total, draft) => total + (draft.merge ? 1 : 0), 0);
+  const linkCount = brokenLinks.reduce((total, draft) => total + draft.repairs.length, 0);
   const summary =
     `curate: ${sealed.length} item${sealed.length === 1 ? '' : 's'}` +
     (splitCount > 0 ? `, ${splitCount} split${splitCount === 1 ? '' : 's'}` : '') +
@@ -251,7 +266,8 @@ export function createCurationPlan(
     (mergeCount > 0 ? `, ${mergeCount} merge${mergeCount === 1 ? '' : 's'}` : '') +
     (contradictions.length > 0
       ? `, ${contradictions.length} contradiction${contradictions.length === 1 ? '' : 's'}`
-      : '');
+      : '') +
+    (linkCount > 0 ? `, ${linkCount} link repair${linkCount === 1 ? '' : 's'}` : '');
 
   ctx.store.transaction(() => {
     ctx.store.db
@@ -393,6 +409,45 @@ function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
   };
 }
 
+function sealBrokenLinkDraft(draft: BrokenLinkDraft): SealedDraft {
+  return {
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind: 'broken_link',
+    risk: 'low',
+    rationale:
+      'Repoint broken link addresses using exact page identity evidence without changing authored display text or knowledge.',
+    operations: draft.operations.map((operation): ReplaceOperation => ({
+      type: 'replace',
+      relPath: operation.relPath,
+      beforeHash: sha256(operation.before),
+      afterHash: sha256(operation.after),
+      before: operation.before,
+      after: operation.after,
+    })),
+    evidence: draft.repairs.map((repair): MaintenanceEvidence => {
+      const target = draft.targets.find((candidate) => candidate.slug === repair.newTarget)!;
+      return {
+        type: 'link',
+        source: repair.from,
+        fingerprint: draft.inputHash,
+        relationship: 'identity',
+        details: [`${repair.signal}: [[${repair.brokenTarget}]] -> [[${repair.newTarget}]]`],
+        brokenTarget: repair.brokenTarget,
+        newTarget: repair.newTarget,
+        signal: repair.signal,
+        targetRelPath: target.relPath,
+        targetHash: target.contentHash,
+      };
+    }),
+    checks: [
+      { name: 'source explicitly allows dream hygiene or synthesis', status: 'passed' },
+      { name: 'exact target identity and current target bytes are sealed', status: 'passed' },
+      { name: 'only matching broken link addresses change', status: 'passed' },
+    ],
+  };
+}
+
 export function listMaintenancePlans(ctx: AknoContext, limit = 20): MaintenancePlanSummary[] {
   if (!maintenanceTablesAvailable(ctx)) return [];
   const rows = ctx.store.db
@@ -446,7 +501,7 @@ export function decideMaintenanceItem(
        decision_reason = ?, decided_at = ?, updated_at = ? WHERE id = ? AND plan_id = ?`,
     )
     .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
-  if (outcome === 'reject' && item.kind !== 'contradiction') {
+  if (outcome === 'reject' && item.kind !== 'contradiction' && item.kind !== 'broken_link') {
     markCurateRejected(ctx, [{ slug: item.subject, inputHash: item.input_hash }]);
   }
   refreshDecisionStatus(ctx, planId);
@@ -743,13 +798,13 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
     const slugs = operations
       .filter((operation) => operation.type !== 'delete')
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
-    if (item.kind !== 'contradiction') markCurateApplied(ctx, slugs);
+    if (item.kind !== 'contradiction' && item.kind !== 'broken_link') markCurateApplied(ctx, slugs);
     updateItemStatus(ctx, item.id, 'applied', {
       status: 'passed',
       detail: `Exact bytes for ${operations.length} file${operations.length === 1 ? '' : 's'} are on disk and current in the structural index.`,
       at: new Date().toISOString(),
     });
-    ctx.derive.schedule(paths);
+    if (item.kind !== 'broken_link') ctx.derive.schedule(paths);
     return;
   }
 
@@ -784,7 +839,8 @@ async function verifyApplied(
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
-  const expectedMode = item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
+  const expectedMode =
+    item.kind === 'broken_link' ? null : item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
   let canonical: ReturnType<typeof parsePage> | null = null;
   let retired: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
@@ -830,7 +886,18 @@ async function verifyApplied(
       return 'The canonical operation no longer resolves to the planned subject.';
     }
     if (index === 0) canonical = parsed;
-    if (row.role !== 'knowledge' || row.dream_management !== expectedMode) {
+    if (row.role !== 'knowledge') {
+      return `${operation.relPath} is no longer live knowledge.`;
+    }
+    if (
+      item.kind === 'broken_link' &&
+      index === 0 &&
+      row.dream_management !== 'hygiene' &&
+      row.dream_management !== 'synthesize'
+    ) {
+      return `${operation.relPath} is no longer opted into hygiene or synthesis link repair.`;
+    }
+    if (expectedMode && row.dream_management !== expectedMode) {
       return `${operation.relPath} is no longer opted-in ${expectedMode} knowledge.`;
     }
     if (operation.type === 'create' && item.kind === 'split' && !parsed.about.includes(item.subject)) {
@@ -868,6 +935,26 @@ async function verifyApplied(
       .prepare("SELECT count(*) AS n FROM links WHERE lower(to_slug) = lower(?) AND kind != 'embed'")
       .get(retired.slug) as { n: number };
     if (remaining.n > 0) return `The structural index still contains links to ${retired.slug}.`;
+  }
+  if (item.kind === 'broken_link') {
+    const source = ctx.store.db.prepare('SELECT id FROM pages WHERE slug = ?').get(item.subject) as
+      { id: string } | undefined;
+    if (!source) return 'The repaired source is missing from the structural index.';
+    for (const entry of item.evidence.filter((candidate) => candidate.type === 'link')) {
+      if (!entry.brokenTarget || !entry.newTarget) return 'The link evidence became incomplete.';
+      const old = ctx.store.db
+        .prepare(
+          "SELECT count(*) AS n FROM links WHERE from_page = ? AND lower(to_slug) = lower(?) AND kind != 'embed'",
+        )
+        .get(source.id, entry.brokenTarget) as { n: number };
+      if (old.n > 0) return `The structural index still contains [[${entry.brokenTarget}]].`;
+      const fresh = ctx.store.db
+        .prepare(
+          "SELECT count(*) AS n FROM links WHERE from_page = ? AND lower(to_slug) = lower(?) AND broken = 0 AND kind != 'embed'",
+        )
+        .get(source.id, entry.newTarget) as { n: number };
+      if (fresh.n === 0) return `The replacement [[${entry.newTarget}]] is not a live indexed link.`;
+    }
   }
   return null;
 }
@@ -943,7 +1030,13 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
     if (!['replace', 'create', 'delete'].includes(operation.type)) {
       throw new AknoError('invalid', `${item.id} contains an unsupported maintenance operation`);
     }
-    if (item.kind !== 'merge' && item.kind !== 'contradiction' && index > 0 && operation.type !== 'create') {
+    if (
+      item.kind !== 'merge' &&
+      item.kind !== 'contradiction' &&
+      item.kind !== 'broken_link' &&
+      index > 0 &&
+      operation.type !== 'create'
+    ) {
       throw new AknoError('invalid', `${item.id} may only replace its canonical page`);
     }
     if (item.kind === 'merge' && operation.type === 'create') {
@@ -959,6 +1052,12 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   if (item.kind === 'contradiction' && item.operations.some((operation) => operation.type !== 'replace')) {
     throw new AknoError('invalid', `${item.id} may only replace opted-in conflict pages`);
+  }
+  if (
+    item.kind === 'broken_link' &&
+    (item.operations.length !== 1 || item.operations.some((operation) => operation.type !== 'replace'))
+  ) {
+    throw new AknoError('invalid', `${item.id} must contain exactly one source replacement`);
   }
   return item.operations;
 }
@@ -1052,6 +1151,37 @@ function operationFingerprint(operation: MaintenanceOperation): {
 
 type PreflightResult = { status: 'ready' } | { status: 'stale' | 'blocked'; detail: string };
 
+function brokenLinkOperationIssue(item: MaintenanceItem, operations: MaintenanceOperation[]): string | null {
+  const source = operations[0];
+  if (!source || source.type !== 'replace') return 'a broken-link item has no source replacement';
+  const evidence = item.evidence.filter((entry) => entry.type === 'link');
+  if (evidence.length === 0 || evidence.length !== item.evidence.length) {
+    return 'a broken-link item requires only structured link evidence';
+  }
+  let expected = source.before;
+  for (const entry of evidence) {
+    if (
+      entry.source !== item.subject ||
+      !entry.brokenTarget ||
+      !entry.newTarget ||
+      !entry.signal ||
+      !entry.targetRelPath ||
+      !entry.targetHash ||
+      !(['canonical', 'alias', 'move_history'] as LinkIdentitySignal[]).includes(entry.signal)
+    ) {
+      return 'a broken-link item contains incomplete or unsupported identity evidence';
+    }
+    const next = replaceLinkTarget(expected, item.subject, entry.brokenTarget, entry.newTarget);
+    if (next === expected) {
+      return `the sealed source does not contain [[${entry.brokenTarget}]] as indexed`;
+    }
+    expected = next;
+  }
+  if (expected !== source.after)
+    return 'the source replacement changes bytes beyond its sealed link evidence';
+  return null;
+}
+
 async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<PreflightResult> {
   let operations: MaintenanceOperation[];
   try {
@@ -1082,7 +1212,15 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'contradiction' && (creates > 0 || deletes > 0)) {
     return { status: 'blocked', detail: 'a contradiction item may only replace existing pages' };
   }
-  const expectedMode = item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
+  if (item.kind === 'broken_link' && (creates > 0 || deletes > 0)) {
+    return { status: 'blocked', detail: 'a broken-link item may only replace existing pages' };
+  }
+  if (item.kind === 'broken_link') {
+    const issue = brokenLinkOperationIssue(item, operations);
+    if (issue) return { status: 'blocked', detail: issue };
+  }
+  const expectedMode =
+    item.kind === 'broken_link' ? null : item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
   const slugs = new Set<string>();
   let canonical: ReturnType<typeof parsePage> | null = null;
   let mergeSource: ReturnType<typeof parsePage> | null = null;
@@ -1139,7 +1277,18 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     if (parsed.declaredRole && parsed.declaredRole !== 'knowledge') {
       return { status: 'blocked', detail: `${operation.relPath} is not declared as knowledge` };
     }
-    if (parsed.declaredManagement.dream !== expectedMode) {
+    if (
+      item.kind === 'broken_link' &&
+      index === 0 &&
+      parsed.declaredManagement.dream !== 'hygiene' &&
+      parsed.declaredManagement.dream !== 'synthesize'
+    ) {
+      return {
+        status: 'blocked',
+        detail: `${operation.relPath} lost its hygiene or synthesis opt-in for link repair`,
+      };
+    }
+    if (expectedMode && parsed.declaredManagement.dream !== expectedMode) {
       return { status: 'blocked', detail: `${operation.relPath} lost its ${expectedMode} curation opt-in` };
     }
     if (operation.type === 'create') {
@@ -1164,6 +1313,47 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
         }
         const incoming = await extractionIncomingHeadingIssues(ctx, item.subject, parsed.body);
         if (incoming.length > 0) return { status: 'blocked', detail: incoming[0]! };
+      }
+    }
+  }
+  if (item.kind === 'broken_link') {
+    const seenTargets = new Set<string>();
+    for (const entry of item.evidence) {
+      if (!entry.targetRelPath || !entry.targetHash || !entry.newTarget) {
+        return { status: 'blocked', detail: 'broken-link target evidence is incomplete' };
+      }
+      if (seenTargets.has(entry.targetRelPath)) continue;
+      seenTargets.add(entry.targetRelPath);
+      let targetPath: string;
+      try {
+        targetPath = await safeOperationPath(ctx, entry.targetRelPath);
+      } catch (err) {
+        return { status: 'blocked', detail: errorMessage(err) };
+      }
+      const current = await fsp.readFile(targetPath, 'utf8').catch(() => null);
+      if (current === null || sha256(current) !== entry.targetHash) {
+        return {
+          status: 'stale',
+          detail: `${entry.targetRelPath} no longer matches the sealed link destination.`,
+        };
+      }
+      let parsed: ReturnType<typeof parsePage>;
+      try {
+        parsed = parsePage(entry.targetRelPath, current);
+      } catch (err) {
+        return {
+          status: 'blocked',
+          detail: `${entry.targetRelPath} is not a valid link destination: ${errorMessage(err)}`,
+        };
+      }
+      if (parsed.slug !== entry.newTarget) {
+        return { status: 'blocked', detail: `${entry.targetRelPath} changed its planned identity` };
+      }
+      const target = ctx.store.db
+        .prepare('SELECT role FROM pages WHERE rel_path = ?')
+        .get(entry.targetRelPath) as { role: string } | undefined;
+      if (target?.role !== 'knowledge') {
+        return { status: 'blocked', detail: `${entry.targetRelPath} is not live knowledge` };
       }
     }
   }

@@ -272,7 +272,8 @@ watcher with `akno service install --no-dream` if you want background indexing w
 
 Four workflows author files, and each is journalled and reversible with `akno undo`: `write`, `remember`,
 `ingest`, and enabled maintenance phases. Dream can append observations, curate opted-in pages, adopt unowned
-documents, and apply bounded repairs; only adoption is enabled to write by default.
+documents, and apply bounded broken-link items through curation plans; only adoption is enabled to write by
+default.
 
 A separate optional output is maintained rather than journalled. `ingest.text_rendition: true` keeps the
 extracted text of each readable document as `<file>.txt` beside it — so a `grep`, an editor, a git diff or an
@@ -501,15 +502,15 @@ unverified claims cannot feed observation, reflection, or synthesis. Selecting `
 | `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                  |
 | `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                  |
 | `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                   |
-| `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
+| `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
 | `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                                     |
-| `repair`       | optional      | Applies explicitly enabled mechanical broken-link repairs as one undoable change. Contradictions never bypass the plan lifecycle here.                                                         |
+| `repair`       | no            | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                      |
 | `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                           |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
 phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
-documents searchable. `conflicts` and `housekeeping` only report; curation and repair require explicit write
-permission.
+documents searchable. `conflicts`, legacy `repair`, and `housekeeping` only report; durable curation requires
+an explicit trust policy before it writes.
 
 Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
 between summary preview and direct application. Opted-in hygiene and synthesis pages can instead use an
@@ -663,8 +664,10 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   it only considers pages whose own frontmatter opts into `hygiene` or `synthesize`. `--mode auto` is explicit
   per-run authority for opted-in curation; `maintenance.curate.mode` gives the nightly phase the same
   authority when the owner deliberately configures it.
-- **`repair`** — automatic broken-link edits. The action is guarded, bounded, journalled, and still edits
-  pages you wrote, so the phase is off. Contradiction edits are controlled by curate's audit/review/auto mode.
+- **`repair`** — the legacy standalone phase, now a report-only compatibility view and off by default.
+  `maintenance.repair.links` defaults on, but it produces durable link items only when plan-backed curate is
+  enabled. Those items require exact move, alias, or canonical identity evidence; similarity never authorizes
+  a write. Audit/review/auto controls them alongside other curation work.
 - **`maintenance.log_changes`** — a full record of every cycle run appended to
   `<state_dir>/logs/dream.jsonl`: what it applied with the lines it added, what a guardrail refused and which
   guard refused it, what was skipped and why. It is the fastest way to decide whether to trust the cycle, and

@@ -5,9 +5,8 @@ import { AknoError } from '@tenphi/akno-protocol';
 import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
-import { normalizeLinkTarget } from '../kb/page.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
-import { candidatesFor, chooseTargetForTesting as chooseTarget, type RepairResult } from './repair.ts';
+import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
   claimKey,
   findCrossPageConflicts,
@@ -51,7 +50,7 @@ export type { CuratedPage } from './curate.ts';
  * **Phases are independent and each is safe to re-run.** That is a real constraint, not a
  * nicety — a maintenance pass is the one thing that runs unattended, so a second run must not
  * duplicate the first. Observations are matched by their pattern before being written, and
- * every phase reports rather than repairs unless writing is the phase's entire purpose.
+ * every mutation is journalled and either append-only or plan-backed.
  */
 
 export type DreamPhase = 'observe' | 'reflect' | 'curate' | 'adopt' | 'conflicts' | 'repair' | 'housekeeping';
@@ -63,10 +62,9 @@ export type DreamPhase = 'observe' | 'reflect' | 'curate' | 'adopt' | 'conflicts
  * reflection, or synthesis sees it. The retention ladder remains a user-facing hierarchy, not
  * permission for a disputed claim to influence a higher tier before inspection.
  *
- * It runs **before `housekeeping`**, so the report at the end of a run describes the knowledge base
- * as it now is. The other way round you would read "48 broken links" and "9 repaired" in one report
- * and have to subtract. `housekeeping` is not repair's work queue either: its lists are capped for
- * readability, so a phase that consumed them would silently stop at twenty.
+ * `housekeeping` runs last, so its report describes the knowledge base after plan-backed curation and
+ * adoption. Broken-link planning queries the complete structural index directly; it never consumes the
+ * housekeeping list, which is capped for readability.
  */
 export const DREAM_PHASES: DreamPhase[] = [
   'conflicts',
@@ -110,9 +108,9 @@ export interface DreamReport {
   /** Documents given a page of their own, and any that were left alone. */
   adopted: AdoptedDocument[];
   conflicts: CrossPageConflict[];
-  /** What the repair phase changed, and what it refused to. */
+  /** Broken-link plan outcomes and findings that had no safe applicable target. */
   repaired: RepairResult | null;
-  /** Its own change, kept apart from the others: one night's repairs undo together. */
+  /** @deprecated Direct repair writes were retired; link item change ids live on the plan. */
   repairChangeId: string | null;
   housekeeping: Housekeeping | null;
   changeId: string | null;
@@ -235,63 +233,74 @@ async function runPhase(
     }
     case 'curate': {
       if (!ctx.config.maintenance.curate.enabled) return 'disabled in config';
-      if (!ctx.models.derive.available) {
-        return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
-      }
       // A configured mode is how a full scheduled run gets plan-backed curation without
       // turning the scheduler into a curate-only command. An explicit dry run keeps its
       // existing read-only path; creating a durable plan needs the service's write handle.
       const mode = options.mode ?? (options.dryRun ? null : ctx.config.maintenance.curate.mode);
+      if (!ctx.models.derive.available && !mode) {
+        return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
+      }
       if (mode) {
         // Reuse every unfinished plan, not only autonomous ones. Re-running audit or review must
         // not spend another model call to rediscover a decision already waiting in the queue.
         let plan = findActiveMaintenancePlan(ctx, mode);
         if (plan) {
-          report.curated = plan.items
-            .filter((item) => item.kind !== 'contradiction')
-            .map((item) => ({
-              slug: item.subject,
-              mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
-              action: 'would-update',
-              splits:
-                item.kind === 'split'
-                  ? item.operations
-                      .filter((operation) => operation.type === 'create')
-                      .map((operation) =>
-                        operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
-                      )
-                  : [],
-              extractions:
-                item.kind === 'extract'
-                  ? item.operations
-                      .filter((operation) => operation.type === 'create')
-                      .map((operation) =>
-                        operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
-                      )
-                  : [],
-              merges:
-                item.kind === 'merge'
-                  ? item.operations
-                      .filter((operation) => operation.type === 'delete')
-                      .map((operation) =>
-                        operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
-                      )
-                  : [],
-              issues: [],
-            }));
+          report.curated = plan.items.filter(isGeneralCurationItem).map((item) => ({
+            slug: item.subject,
+            mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
+            action: 'would-update',
+            splits:
+              item.kind === 'split'
+                ? item.operations
+                    .filter((operation) => operation.type === 'create')
+                    .map((operation) =>
+                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                    )
+                : [],
+            extractions:
+              item.kind === 'extract'
+                ? item.operations
+                    .filter((operation) => operation.type === 'create')
+                    .map((operation) =>
+                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                    )
+                : [],
+            merges:
+              item.kind === 'merge'
+                ? item.operations
+                    .filter((operation) => operation.type === 'delete')
+                    .map((operation) =>
+                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                    )
+                : [],
+            issues: [],
+          }));
+          report.repaired = repairResultFromPlan(plan);
         } else {
           const contradictionResult = ctx.config.maintenance.conflicts.resolve
             ? await planContradictions(ctx, report.conflicts)
             : { drafts: [], warnings: [] };
           report.warnings.push(...contradictionResult.warnings);
-          const result = await curatePages(ctx, {
-            dryRun: true,
-            // Planning may update derived curation fingerprints even though it cannot touch KB
-            // bytes. Persisting unchanged and guard-rejected inputs is what makes the next cycle
-            // converge; staged pages remain `preview` until their durable item is decided.
-            recordState: true,
-            includePreviewed: true,
-          });
+          const linkResult = ctx.config.maintenance.repair.links
+            ? await planBrokenLinks(ctx, ctx.config.maintenance.repair.maxChanges)
+            : { drafts: [], report: { links: [], claims: [], declined: [] } };
+          report.repaired = linkResult.report;
+          const result = ctx.models.derive.available
+            ? await curatePages(ctx, {
+                dryRun: true,
+                // Planning may update derived curation fingerprints even though it cannot touch KB
+                // bytes. Persisting unchanged and guard-rejected inputs is what makes the next cycle
+                // converge; staged pages remain `preview` until their durable item is decided.
+                recordState: true,
+                includePreviewed: true,
+              })
+            : {
+                pages: [],
+                drafts: [],
+                warnings: [
+                  `page transformations were skipped because no maintenance model is available: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`,
+                ],
+              };
           report.curated = result.pages;
           report.warnings.push(...result.warnings);
           // A contradiction item has priority over a general synthesis of the same page. Two
@@ -301,9 +310,32 @@ async function runPhase(
               draft.operations.map((operation) => operation.relPath),
             ),
           );
+          const linkDrafts: BrokenLinkDraft[] = [];
+          const linkMutations = new Set(contradictionPaths);
+          const linkSeals = new Set<string>();
+          for (const draft of linkResult.drafts) {
+            const mutations = draft.operations.map((operation) => operation.relPath);
+            const seals = draft.targets.map((target) => target.relPath);
+            const overlaps =
+              mutations.some((relPath) => linkMutations.has(relPath) || linkSeals.has(relPath)) ||
+              seals.some((relPath) => linkMutations.has(relPath));
+            if (overlaps) continue;
+            linkDrafts.push(draft);
+            for (const relPath of mutations) linkMutations.add(relPath);
+            for (const relPath of seals) linkSeals.add(relPath);
+          }
+          for (const draft of linkResult.drafts.filter((candidate) => !linkDrafts.includes(candidate))) {
+            for (const repair of draft.repairs) {
+              report.repaired.links = report.repaired.links.filter((entry) => entry !== repair);
+              report.repaired.declined.push({
+                what: `[[${repair.brokenTarget}]]`,
+                reason: 'deferred until an overlapping maintenance item settles',
+              });
+            }
+          }
+          const protectedPaths = new Set([...contradictionPaths, ...linkDrafts.flatMap(linkDraftPaths)]);
           const curationDrafts = result.drafts.filter(
-            (draft) =>
-              !operationsTouchedByCurateDraft(draft).some((relPath) => contradictionPaths.has(relPath)),
+            (draft) => !operationsTouchedByCurateDraft(draft).some((relPath) => protectedPaths.has(relPath)),
           );
           const deferredSlugs = new Set(
             result.drafts.filter((draft) => !curationDrafts.includes(draft)).map((draft) => draft.slug),
@@ -313,11 +345,11 @@ async function runPhase(
               ? {
                   ...page,
                   action: 'rejected',
-                  issues: ['general synthesis deferred until the higher-priority contradiction item settles'],
+                  issues: ['general synthesis deferred until a higher-priority bounded item settles'],
                 }
               : page,
           );
-          plan = createCurationPlan(ctx, mode, curationDrafts, contradictionResult.drafts);
+          plan = createCurationPlan(ctx, mode, curationDrafts, contradictionResult.drafts, linkDrafts);
         }
         if (!plan) return null;
         if (mode === 'auto') {
@@ -334,7 +366,7 @@ async function runPhase(
         }
         report.curated = report.curated.map((page) => {
           const item = plan.items.find(
-            (candidate) => candidate.kind !== 'contradiction' && candidate.subject === page.slug,
+            (candidate) => isGeneralCurationItem(candidate) && candidate.subject === page.slug,
           );
           if (!item) return page;
           if (item.status === 'applied') return { ...page, action: 'updated', issues: [] };
@@ -359,6 +391,7 @@ async function runPhase(
           }
           return page;
         });
+        report.repaired = repairResultFromPlan(plan, report.repaired?.declined ?? []);
         report.maintenancePlan = maintenancePlanForReport(plan);
         return null;
       }
@@ -413,7 +446,7 @@ async function runPhase(
     }
     case 'repair': {
       if (!ctx.config.maintenance.repair.enabled) return 'disabled in config';
-      return repairPhase(ctx, options, report, applied);
+      return repairPhase(ctx, report);
     }
     case 'housekeeping': {
       report.housekeeping = housekeeping(ctx);
@@ -441,6 +474,43 @@ function operationsTouchedByCurateDraft(draft: CurateDraft): string[] {
     ...(draft.merge?.linkUpdates.map((update) => update.relPath) ?? []),
     ...(draft.merge ? [draft.merge.sourceRelPath] : []),
   ];
+}
+
+function linkDraftPaths(draft: BrokenLinkDraft): string[] {
+  return [
+    ...draft.operations.map((operation) => operation.relPath),
+    ...draft.targets.map((target) => target.relPath),
+  ];
+}
+
+function isGeneralCurationItem(item: MaintenanceItem): boolean {
+  return item.kind !== 'contradiction' && item.kind !== 'broken_link';
+}
+
+function repairResultFromPlan(plan: MaintenancePlan, declined: RepairResult['declined'] = []): RepairResult {
+  const links: LinkRepair[] = plan.items.flatMap((item) => {
+    if (item.kind !== 'broken_link') return [];
+    const action: LinkRepair['action'] =
+      item.status === 'applied'
+        ? 'applied'
+        : ['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)
+          ? 'rejected'
+          : 'planned';
+    return item.evidence.flatMap((entry): LinkRepair[] =>
+      entry.type === 'link' && entry.brokenTarget && entry.newTarget && entry.signal
+        ? [
+            {
+              from: entry.source,
+              brokenTarget: entry.brokenTarget,
+              newTarget: entry.newTarget,
+              signal: entry.signal,
+              action,
+            },
+          ]
+        : [],
+    );
+  });
+  return { links, claims: [], declined };
 }
 
 function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
@@ -483,167 +553,16 @@ interface SubjectGroup {
  * - **Never self-feeding.** An observation is not admissible evidence for another observation.
  *   No inference cascades.
  */
-/**
- * Repoint every `[[link]]` on a page that resolves to the same target.
- *
- * Matched the way the indexer resolved it — case and separators normalized — because the file holds
- * what the author typed and the index holds what it meant. An alias (`[[target|shown]]`) keeps its
- * shown text: the address was broken, not the words around it.
- */
-function replaceLink(text: string, from: string, brokenTarget: string, newTarget: string): string {
-  const key = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const wanted = key(brokenTarget);
-
-  const wikilinks = text.replace(/\[\[([^\]|]+)(\|[^\]]*)?\]\]/g, (whole, target: string, alias?: string) =>
-    key(target) === wanted ? `[[${newTarget}${alias ?? ''}]]` : whole,
+async function repairPhase(ctx: AknoContext, report: DreamReport): Promise<string | null> {
+  if (!report.repaired) {
+    const result = ctx.config.maintenance.repair.links
+      ? await planBrokenLinks(ctx, ctx.config.maintenance.repair.maxChanges)
+      : { report: { links: [], claims: [], declined: [] } };
+    report.repaired = result.report;
+  }
+  report.warnings.push(
+    'the legacy repair phase is report-only; use the curate phase in audit, review, or auto mode to persist guarded link fixes',
   );
-
-  // Markdown links too — `[Tasty](tasty.md)`. Two thirds of this knowledge base's broken links are
-  // written that way, and a repairer that only knew wikilinks declined every one of them as "not on
-  // the page", which was true and unhelpful.
-  //
-  // Their target is a path relative to the page holding it, so the replacement has to be recomputed
-  // from where that page sits — writing the slug in verbatim would produce a link that resolves
-  // somewhere else entirely.
-  const folder = from.includes('/') ? from.slice(0, from.lastIndexOf('/')) : '';
-  return wikilinks.replace(/\]\(([^)\s]+)\)/g, (whole, target: string) => {
-    if (/^[a-z]+:/i.test(target) || target.startsWith('#')) return whole;
-    // Resolved by the indexer's own function, not a copy of it. A copy joined the page's folder
-    // onto every target, where the real rule leaves a path containing a slash alone — so a link
-    // written from the knowledge base root resolved to a slug that existed nowhere, and was
-    // declined as "not on the page" on a page it was plainly on.
-    if (key(normalizeLinkTarget(target, from)) !== wanted) return whole;
-
-    // Written back the way it was written: a target relative to its page stays relative, one
-    // written from the root stays written from the root. Rewriting the style as well as the
-    // address makes a diff nobody asked for.
-    const wasFolderRelative = target.startsWith('../') || target.startsWith('./') || !target.includes('/');
-    return `](${wasFolderRelative ? relativeTo(folder, newTarget) : newTarget}.md)`;
-  });
-}
-
-/** The path to write for `target` on a page living in `folder`. */
-function relativeTo(folder: string, target: string): string {
-  const from = folder ? folder.split('/') : [];
-  const to = target.split('/');
-  let shared = 0;
-  while (shared < from.length && shared < to.length && from[shared] === to[shared]) shared += 1;
-  const up = Array.from({ length: from.length - shared }, () => '..');
-  return [...up, ...to.slice(shared)].join('/');
-}
-
-/**
- * Apply what the cycle found: repoint links whose page moved, and retire claims a newer one replaced.
- *
- * The two halves share a change so one night's repairs undo together, and share a ceiling so a run
- * that goes wrong goes wrong in a bounded way. Everything it refuses is reported with the reason —
- * a repair tier that silently skips things is indistinguishable from one that is broken.
- */
-async function repairPhase(
-  ctx: AknoContext,
-  options: DreamOptions,
-  report: DreamReport,
-  applied: AppliedChange[],
-): Promise<string | null> {
-  const settings = ctx.config.maintenance.repair;
-  const result: RepairResult = { links: [], claims: [], declined: [] };
-  // Edits are collected per file and written once: two links repaired on one page is one rewrite,
-  // and interleaving reads and writes of the same file is how an edit gets lost.
-  const edits = new Map<string, { relPath: string; before: string; after: string }>();
-
-  const budget = () => result.links.length + result.claims.length < settings.maxChanges;
-
-  const load = async (slug: string): Promise<{ relPath: string; text: string } | null> => {
-    const row = ctx.store.db.prepare('SELECT rel_path FROM pages WHERE slug = ?').get(slug) as
-      { rel_path: string } | undefined;
-    if (!row) return null;
-    const held = edits.get(slug);
-    if (held) return { relPath: held.relPath, text: held.after };
-    const text = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
-    return text === null ? null : { relPath: row.rel_path, text };
-  };
-
-  const stage = (slug: string, relPath: string, before: string, after: string): void => {
-    const held = edits.get(slug);
-    edits.set(slug, { relPath, before: held?.before ?? before, after });
-  };
-
-  if (settings.links) {
-    const slugs = (ctx.store.db.prepare('SELECT slug FROM pages').all() as { slug: string }[]).map(
-      (r) => r.slug,
-    );
-    // The same definition `housekeeping` reports on, embeds excluded — an embed is a file, not a
-    // page reference, and repointing one at a page would be nonsense. The indexer never marks them
-    // broken today, so this changes nothing now and stops the two phases disagreeing later about
-    // what "a broken link" is.
-    const broken = ctx.store.db
-      .prepare(
-        `SELECT DISTINCT p.slug AS from_slug, l.to_slug FROM links l
-           JOIN pages p ON p.id = l.from_page
-          WHERE l.broken = 1 AND l.kind != 'embed'`,
-      )
-      .all() as { from_slug: string; to_slug: string }[];
-
-    for (const link of broken) {
-      if (!budget()) break;
-      const candidates = candidatesFor(link.to_slug, slugs);
-      if (candidates.length === 0) {
-        result.declined.push({ what: `[[${link.to_slug}]]`, reason: 'no page it could have meant' });
-        continue;
-      }
-
-      // One candidate needs no model: there is only one page it could have been. Several is exactly
-      // the judgement call a model is for — constrained to the list, so it can choose but not invent.
-      const target =
-        candidates.length === 1 ? candidates[0]! : await chooseTarget(ctx, link.to_slug, candidates);
-      if (!target) {
-        result.declined.push({
-          what: `[[${link.to_slug}]]`,
-          reason: `${candidates.length} candidates, none clearly right`,
-        });
-        continue;
-      }
-
-      const page = await load(link.from_slug);
-      if (!page) continue;
-      // The stored target is normalized; what is on the page is what the author typed —
-      // `[[Family/Travel/2026/…]]` against a slug that lost its capitals. Rewriting only exact
-      // matches left those as "not on the page", which is true and useless.
-      const next = replaceLink(page.text, link.from_slug, link.to_slug, target);
-      if (next === page.text) {
-        result.declined.push({
-          what: `[[${link.to_slug}]]`,
-          reason: 'the link text is not on the page as written',
-        });
-        continue;
-      }
-      stage(link.from_slug, page.relPath, page.text, next);
-      result.links.push({
-        from: link.from_slug,
-        brokenTarget: link.to_slug,
-        newTarget: target,
-        how: candidates.length === 1 ? 'unique' : 'model',
-      });
-    }
-  }
-
-  report.repaired = result;
-  if (edits.size === 0 || options.dryRun) return null;
-
-  const files: ChangeFile[] = [];
-  for (const edit of edits.values()) {
-    const written = await writeFileAtomic(ctx.config.aknoPath, edit.relPath, edit.after);
-    files.push({ relPath: edit.relPath, action: 'modified', before: edit.before, after: written.after });
-  }
-
-  report.repairChangeId = ctx.journal.record({
-    actor: 'agent',
-    op: 'write',
-    summary: `repair: ${result.links.length} link(s)`,
-    files,
-  });
-  for (const file of files) applied.push(asApplied('repair', file));
-  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
   return null;
 }
 

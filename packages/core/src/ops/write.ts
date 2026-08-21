@@ -306,8 +306,8 @@ interface PendingAttachment {
  * bottom, so a line that went in wrong stays correctable — which the ledger's own append-only
  * rule needs, since a wrong line is corrected rather than removed.
  *
- * `akno` is exempt: the `repair` tier rewrites link targets, and a ledger line whose page was
- * renamed is exactly the kind of thing it exists to fix.
+ * `akno` is exempt: a verified `broken_link` curation item rewrites link targets, and a ledger
+ * line whose page was renamed is exactly the kind of thing it exists to fix.
  */
 export function refusesLedgerProse(input: {
   slug: string;

@@ -372,9 +372,10 @@
       "resolve": true,
       "max_pairs": 40
     },
-    // Apply narrow broken-link fixes. Contradictions no longer bypass plans through
-    // this phase; `conflicts.resolve` routes them through curate's trust mode,
-    // curator decision, stale checks, per-item journal, and verification.
+    // Broken links use the same durable plan lifecycle as curation and contradictions:
+    // exact evidence, curator or human decision, stale checks, one journal per item,
+    // and post-write verification. `links` includes them in curate plans. `enabled`
+    // keeps the legacy `repair` phase as a report-only compatibility view.
     "repair": {
       "enabled": false,
       "links": true,

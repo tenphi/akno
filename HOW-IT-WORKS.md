@@ -634,7 +634,8 @@ Order matters in three places:
   are withheld from reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this
   prerequisite inspection.
 - `reflect` reads observations, so `observe` runs first.
-- `housekeeping` runs last so its counts describe the state after adoption and enabled repairs.
+- `housekeeping` runs last so its counts describe the state after plan-backed curation and adoption. The
+  compatibility `repair` phase is read-only.
 
 ### Phase summary
 
@@ -643,9 +644,9 @@ Order matters in three places:
 | `conflicts`    | Live facts on different knowledge pages                               | Typed verdicts and inference eligibility                | no                                  | optional verification         |
 | `observe`      | Conflict-eligible facts from at least two knowledge pages             | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive         |
 | `reflect`      | Conflict-eligible observation pages                                   | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive         |
-| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, and event state | Verified page and contradiction plans                   | no; phase and write switch disabled | maintenance or derive         |
+| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans | no; phase and write switch disabled | page/curator work yes; link audit no |
 | `adopt`        | Readable documents with no owning page                                | Minimal page beside each eligible document              | **yes**, capped at 20 per run       | no new call                   |
-| `repair`       | Broken links                                                          | Bounded link replacements                               | no; phase disabled                  | only ambiguous target choices |
+| `repair`       | Broken links                                                          | Read-only view of exact proposals and refusals          | no; phase disabled                  | no                            |
 | `housekeeping` | Links, documents, pages, and folder rules                             | Counts and actionable diagnostics                       | no                                  | no                            |
 
 The default dream therefore has one automatic write-capable phase: `adopt`. It creates pages for
@@ -813,7 +814,7 @@ For the nightly full cycle, put the same decision in configuration instead:
 ```
 
 The scheduled command remains plain `akno dream`, so observation, reflection, adoption, conflict detection,
-repair, and housekeeping keep running. Only its curate phase reads this mode. Set `mode` to `null` only when
+the compatibility repair report, and housekeeping keep running. Only its curate phase reads this mode. Set `mode` to `null` only when
 intentionally retaining the legacy curate behavior.
 
 All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its exact
@@ -952,12 +953,41 @@ instead of creating a near-duplicate.
 **Model use:** no new call. It uses extraction and summary data already in the index; if no summary exists,
 the page states only that the stored document is indexed and searchable.
 
-### Phase 6: `repair` — apply only bounded, guardable fixes
+### Phase 6: `repair` — compatibility report for broken-link proposals
 
 **Problem it solves:** a report-only cycle can accumulate the same actionable findings every night.
 
-Repair repoints a broken link when there is one credible target. If several candidates exist, the model may
-select only from that list; it cannot invent a page. Ambiguous targets are left alone with a reason.
+Durable broken-link fixing now belongs to the `curate` plan lifecycle. A link becomes a low-risk
+`broken_link` item only when Akno can establish the destination from an exact, stable identity signal:
+
+- a journalled Akno move from the broken slug to the current slug;
+- an exact alias declared by one current knowledge page; or
+- one unique canonical slug, title, or basename.
+
+Similarity is diagnostic only. A plausible-looking page name is reported as a similarity-only candidate and
+never becomes an applicable diff. Multiple pages sharing the strongest exact signal are also left alone.
+
+Each item seals the source bytes and every destination's current bytes. Its deterministic preflight
+reconstructs the entire proposed source from the structured link mappings and rejects any unrelated change.
+Changing the source or a destination after planning makes the item stale. After application, Akno reindexes
+the source and verifies that every old address is gone and every replacement resolves to live knowledge. A
+failed check rolls the journalled item back.
+
+The source page must be knowledge with `dream: hygiene` or `dream: synthesize`. Display aliases such as
+`[[old|words shown]]` are preserved, Markdown links remain relative or root-style as authored, and external
+URLs and embeds are never candidates. `maintenance.repair.max_changes` caps link rewrites proposed per plan.
+
+The standalone `repair` phase remains only as a read-only compatibility view. It discovers the same exact
+proposals and refusals but never writes. Choose the authority policy through curate:
+
+```bash
+akno dream --phase curate --mode audit   # sealed diff, no knowledge-base writes
+akno dream --phase curate --mode review  # wait for human item decisions
+akno dream --phase curate --mode auto    # independent curator decides and applies
+```
+
+Exact link discovery and audit planning need no model. Human review can decide those items without one;
+`auto` still needs a configured maintenance or derive model for its independent curator decision.
 
 Contradictions deliberately do not use this direct-write phase. They go through typed conflict inspection and
 the durable `curate` plan lifecycle above, including audit and human-review modes.
@@ -966,7 +996,7 @@ the durable `curate` plan lifecycle above, including audit and human-review mode
 {
   "maintenance": {
     "repair": {
-      "enabled": true,
+      "enabled": false, // true only if the legacy report-only phase is still wanted
       "links": true,
       "max_changes": 25,
     },
@@ -974,8 +1004,8 @@ the durable `curate` plan lifecycle above, including audit and human-review mode
 }
 ```
 
-**Default:** off. Run a full `akno dream --dry-run` before enabling it. A real repair run groups its edits
-into one change id so the night's repairs undo together.
+`links` defaults on, so configured plan-backed curate runs include eligible fixes. The compatibility phase
+defaults off. Each applied item has its own change id and can be undone independently.
 
 ### Phase 7: `housekeeping` — report the remaining structural work
 
@@ -988,7 +1018,7 @@ Housekeeping reports:
 - pages whose type, slug pattern, or nesting depth conflicts with a matching folder rule.
 
 It always reports and never writes. Lists are capped for readability, while counts show the full total.
-Because it runs last, the report reflects anything `adopt` or `repair` changed earlier in the cycle.
+Because it runs last, the report reflects anything `adopt` or plan-backed `curate` changed earlier in the cycle.
 
 ### Reviewing and undoing a dream
 
@@ -1006,8 +1036,8 @@ Default `--json` follows the same rule and returns a content-free operational re
 returns the full content-bearing report. `akno plan diff` is also explicitly content-bearing: it exists to
 show the exact private Markdown before a human decision.
 
-Writes are journalled by purpose rather than collapsed into one opaque nightly change. Observations,
-curation, adoption, and repair can therefore have separate change ids. Use the id printed beside a section:
+Writes are journalled by purpose rather than collapsed into one opaque nightly change. Observations, plan
+items (including broken links), and adoption can therefore have separate change ids. Use the id printed beside a section:
 
 ```bash
 akno undo <change-id>
@@ -1040,7 +1070,8 @@ This is off by default because the log duplicates sensitive inferences outside t
    adds a separate curator turn, stale-input checks, journalling, re-indexing, and post-write verification.
 7. Enable observe only with a model whose dry-run patterns are worth recalling later.
 8. Treat reflect as a later-stage feature, after the observation layer has real volume.
-9. Enable repair last, with a low `max_changes`, after reviewing the same full-run dry output.
+9. Keep `maintenance.repair.links` on with a low `max_changes`; audit mode will include exact broken-link
+   items. Enable the standalone `repair` phase only if a separate compatibility report is useful.
 
 ---
 
