@@ -1,0 +1,304 @@
+import { AknoError, type ErrorCode } from '@tenphi/akno-protocol';
+import type { AknoContext } from '../context.ts';
+import type { ResolvedModelRole } from '../config/schema.ts';
+import { newPrefixedId, sha256 } from '../store/ids.ts';
+import { SCHEMA_VERSION } from '../store/migrations.ts';
+import type { DreamPhase, DreamReport, PhaseReport } from './dream.ts';
+import type { MaintenanceMode } from './plans.ts';
+
+export type DreamRunStatus = 'running' | 'completed' | 'partially_completed' | 'awaiting_review' | 'failed';
+
+export type DreamRunMode = MaintenanceMode | 'legacy';
+
+/**
+ * Content-free identity of the indexed state a dream run began against.
+ *
+ * This is deliberately a manifest, not a claim that every current planner is isolated from
+ * writes made by an earlier phase. It makes that future boundary measurable: once planners are
+ * separated from apply, every item can point at this exact revision and configuration.
+ */
+export interface DreamSnapshotManifest {
+  capturedAt: string;
+  schemaVersion: number;
+  /** Changes when indexed rows or their indexing timestamps change. */
+  indexRevision: string;
+  /** Changes only when the indexed knowledge-base path/hash set changes. */
+  knowledgeBaseFingerprint: string;
+  configurationFingerprint: string;
+  indexedFiles: number;
+  requestedPhases: DreamPhase[];
+  plannerVersion: string;
+  modelId: string | null;
+}
+
+export interface DreamRunCounts {
+  observations: number;
+  curated: number;
+  rejectedByGuard: number;
+  adopted: number;
+  conflicts: number;
+  repairedLinks: number;
+  warnings: number;
+}
+
+/** A durable, content-safe lifecycle receipt. Exact proposals remain in maintenance plans. */
+export interface DreamRunReceipt {
+  id: string;
+  startedAt: string;
+  finishedAt: string | null;
+  status: DreamRunStatus;
+  mode: DreamRunMode;
+  dryRun: boolean;
+  requestedPhase: DreamPhase | null;
+  snapshot: DreamSnapshotManifest;
+  phases: { phase: DreamPhase; ran: boolean; skipped: boolean; durationMs: number }[];
+  counts: DreamRunCounts;
+  durationMs: number | null;
+  maintenancePlanId: string | null;
+  changeIds: string[];
+  errorCode: ErrorCode | null;
+  /** False only for an explicitly read-only in-process dry run. */
+  persisted: boolean;
+}
+
+interface RunRow {
+  receipt: string;
+}
+
+export function beginDreamRun(
+  ctx: AknoContext,
+  options: {
+    requestedPhase: DreamPhase | null;
+    requestedPhases: DreamPhase[];
+    mode: DreamRunMode;
+    dryRun: boolean;
+    modelId: string | null;
+  },
+): DreamRunReceipt {
+  const startedAt = new Date().toISOString();
+  const persisted = ctx.writable && runsTableAvailable(ctx);
+  const receipt: DreamRunReceipt = {
+    id: newPrefixedId('run'),
+    startedAt,
+    finishedAt: null,
+    status: 'running',
+    mode: options.mode,
+    dryRun: options.dryRun,
+    requestedPhase: options.requestedPhase,
+    snapshot: captureSnapshot(ctx, options.requestedPhases, options.modelId, startedAt),
+    phases: [],
+    counts: emptyCounts(),
+    durationMs: null,
+    maintenancePlanId: null,
+    changeIds: [],
+    errorCode: null,
+    persisted,
+  };
+
+  if (persisted) {
+    ctx.store.db
+      .prepare(
+        `INSERT INTO maintenance_runs (id, started_at, finished_at, status, receipt, error_code)
+         VALUES (?, ?, NULL, 'running', ?, NULL)`,
+      )
+      .run(receipt.id, startedAt, JSON.stringify(receipt));
+  }
+  return receipt;
+}
+
+export function completeDreamRun(
+  ctx: AknoContext,
+  started: DreamRunReceipt,
+  report: DreamReport,
+): DreamRunReceipt {
+  const finishedAt = new Date().toISOString();
+  const receipt: DreamRunReceipt = {
+    ...started,
+    finishedAt,
+    status: completedStatus(report, started.mode),
+    phases: safePhases(report.phases),
+    counts: reportCounts(report),
+    durationMs: report.durationMs,
+    maintenancePlanId: report.maintenancePlan?.id ?? null,
+    changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId]
+      .filter((id): id is string => id !== null)
+      .concat(
+        report.maintenancePlan?.items
+          .map((item) => item.changeId)
+          .filter((id): id is string => id !== null) ?? [],
+      )
+      .filter((id, index, all) => all.indexOf(id) === index),
+  };
+  persistFinished(ctx, receipt);
+  return receipt;
+}
+
+export function failDreamRun(
+  ctx: AknoContext,
+  started: DreamRunReceipt,
+  error: unknown,
+  durationMs: number,
+  phases: PhaseReport[],
+): DreamRunReceipt {
+  const receipt: DreamRunReceipt = {
+    ...started,
+    finishedAt: new Date().toISOString(),
+    status: 'failed',
+    phases: safePhases(phases),
+    durationMs,
+    errorCode: error instanceof AknoError ? error.code : 'internal',
+  };
+  persistFinished(ctx, receipt);
+  return receipt;
+}
+
+export function latestDreamRun(ctx: AknoContext): DreamRunReceipt | null {
+  if (!runsTableAvailable(ctx)) return null;
+  const row = ctx.store.db
+    .prepare('SELECT receipt FROM maintenance_runs ORDER BY rowid DESC LIMIT 1')
+    .get() as RunRow | undefined;
+  if (!row) return null;
+  try {
+    return JSON.parse(row.receipt) as DreamRunReceipt;
+  } catch {
+    return null;
+  }
+}
+
+export function activeDreamRuns(ctx: AknoContext): number {
+  if (!runsTableAvailable(ctx)) return 0;
+  const row = ctx.store.db
+    .prepare("SELECT count(*) AS n FROM maintenance_runs WHERE status = 'running'")
+    .get() as { n: number };
+  return row.n;
+}
+
+function captureSnapshot(
+  ctx: AknoContext,
+  requestedPhases: DreamPhase[],
+  modelId: string | null,
+  capturedAt: string,
+): DreamSnapshotManifest {
+  const rows = ctx.store.db
+    .prepare('SELECT rel_path, sha256, indexed_at FROM files ORDER BY rel_path')
+    .all() as { rel_path: string; sha256: string; indexed_at: string }[];
+  const knowledgeState = rows.map((row) => [row.rel_path, row.sha256]);
+  const indexState = rows.map((row) => [row.rel_path, row.sha256, row.indexed_at]);
+  return {
+    capturedAt,
+    schemaVersion: SCHEMA_VERSION,
+    indexRevision: sha256(JSON.stringify({ schema: SCHEMA_VERSION, files: indexState })),
+    knowledgeBaseFingerprint: sha256(JSON.stringify(knowledgeState)),
+    configurationFingerprint: configurationFingerprint(ctx),
+    indexedFiles: rows.length,
+    requestedPhases: [...requestedPhases],
+    plannerVersion: 'dream-lifecycle-v1',
+    modelId,
+  };
+}
+
+function configurationFingerprint(ctx: AknoContext): string {
+  const config = ctx.config;
+  // Paths, provider credentials, header values, and free-form config source locations are not
+  // receipt data. Policies and role behavior still participate in the opaque fingerprint.
+  const effective = {
+    maintenance: {
+      retain: config.maintenance.retain,
+      observe: config.maintenance.observe,
+      reflect: config.maintenance.reflect,
+      curate: config.maintenance.curate,
+      adopt: config.maintenance.adopt,
+      conflicts: config.maintenance.conflicts,
+      repair: config.maintenance.repair,
+      model: roleFingerprint(config.maintenance.model),
+    },
+    models: {
+      derive: roleFingerprint(config.models.derive),
+      embedding: roleFingerprint(config.models.embedding),
+    },
+    rules: config.rules.map(({ source: _source, ...rule }) => rule),
+    writeIds: config.writeIds,
+    pageExtensions: config.pageExtensions,
+  };
+  return sha256(JSON.stringify(effective));
+}
+
+function roleFingerprint(role: ResolvedModelRole | null): Record<string, unknown> | null {
+  if (!role) return null;
+  return {
+    role: role.role,
+    id: role.id,
+    enabled: role.enabled,
+    requested: role.requested,
+    timeoutMs: role.timeoutMs,
+    maxOutputTokens: role.maxOutputTokens,
+    concurrency: role.concurrency,
+    provider: role.provider
+      ? {
+          name: role.provider.name,
+          baseUrl: role.provider.baseUrl,
+          maxRetries: role.provider.maxRetries,
+          headerNames: Object.keys(role.provider.headers).sort(),
+        }
+      : null,
+  };
+}
+
+function completedStatus(report: DreamReport, mode: DreamRunMode): DreamRunStatus {
+  const status = report.maintenancePlan?.status;
+  if (mode === 'review' && status === 'awaiting_review') return 'awaiting_review';
+  if (status === 'failed') return 'failed';
+  if (status === 'partially_completed') return 'partially_completed';
+  return 'completed';
+}
+
+function reportCounts(report: DreamReport): DreamRunCounts {
+  return {
+    observations: report.observations.length,
+    curated: report.curated.length,
+    rejectedByGuard: report.rejected.length,
+    adopted: report.adopted.length,
+    conflicts: report.conflicts.length,
+    repairedLinks: report.repaired?.links.length ?? 0,
+    warnings: report.warnings.length,
+  };
+}
+
+function emptyCounts(): DreamRunCounts {
+  return {
+    observations: 0,
+    curated: 0,
+    rejectedByGuard: 0,
+    adopted: 0,
+    conflicts: 0,
+    repairedLinks: 0,
+    warnings: 0,
+  };
+}
+
+function safePhases(phases: PhaseReport[]): DreamRunReceipt['phases'] {
+  return phases.map((phase) => ({
+    phase: phase.phase,
+    ran: phase.ran,
+    skipped: phase.skipped !== undefined,
+    durationMs: phase.durationMs,
+  }));
+}
+
+function persistFinished(ctx: AknoContext, receipt: DreamRunReceipt): void {
+  if (!receipt.persisted) return;
+  ctx.store.db
+    .prepare(
+      `UPDATE maintenance_runs
+          SET finished_at = ?, status = ?, receipt = ?, error_code = ?
+        WHERE id = ?`,
+    )
+    .run(receipt.finishedAt, receipt.status, JSON.stringify(receipt), receipt.errorCode, receipt.id);
+}
+
+function runsTableAvailable(ctx: AknoContext): boolean {
+  const row = ctx.store.db
+    .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'maintenance_runs'")
+    .get() as { present: number } | undefined;
+  return row?.present === 1;
+}

@@ -108,6 +108,11 @@ export async function dreamCommand(argv: string[]): Promise<number> {
 
 function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolean): number {
   heading(`Dream — ${ms(report.durationMs)}${dryRun ? style.grey('  (dry run)') : ''}`);
+  kv([
+    ['run', report.run.id],
+    ['status', report.run.status],
+    ['snapshot', report.run.snapshot.indexRevision.slice(0, 12)],
+  ]);
   for (const phase of report.phases) {
     const label = phase.ran ? style.green('ran') : style.grey('skipped');
     const detail = phase.skipped ? style.grey(`  ${phase.skipped}`) : style.grey(`  ${ms(phase.durationMs)}`);
@@ -427,6 +432,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
   const adopted = countBy(report.adopted, (entry) => entry.action);
   const conflicts = countBy(report.conflicts, (entry) => entry.verdict);
   return {
+    run: report.run,
     durationMs: report.durationMs,
     phases: report.phases.map((phase) => ({
       phase: phase.phase,

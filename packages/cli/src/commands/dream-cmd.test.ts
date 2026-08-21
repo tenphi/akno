@@ -16,6 +16,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('pln_example');
     expect(safe).toContain('itm_example');
     expect(safe).toContain('chg_example');
+    expect(safe).toContain('run_example');
   });
 
   it('collapses raw source contexts into one guardrail category per page', () => {
@@ -77,6 +78,41 @@ describe('dream wait progress', () => {
 
 function privateReport(): DreamReport {
   return {
+    run: {
+      id: 'run_example',
+      startedAt: '2030-01-02T03:04:00.000Z',
+      finishedAt: '2030-01-02T03:04:01.000Z',
+      status: 'completed',
+      mode: 'auto',
+      dryRun: false,
+      requestedPhase: 'curate',
+      snapshot: {
+        capturedAt: '2030-01-02T03:04:00.000Z',
+        schemaVersion: 13,
+        indexRevision: 'index_fingerprint_example',
+        knowledgeBaseFingerprint: 'knowledge_fingerprint_example',
+        configurationFingerprint: 'configuration_fingerprint_example',
+        indexedFiles: 2,
+        requestedPhases: ['curate'],
+        plannerVersion: 'dream-lifecycle-v1',
+        modelId: 'zephyr-model',
+      },
+      phases: [{ phase: 'curate', ran: true, skipped: false, durationMs: 111 }],
+      counts: {
+        observations: 1,
+        curated: 1,
+        rejectedByGuard: 1,
+        adopted: 1,
+        conflicts: 0,
+        repairedLinks: 0,
+        warnings: 1,
+      },
+      durationMs: 111,
+      maintenancePlanId: 'pln_example',
+      changeIds: ['chg_example'],
+      errorCode: null,
+      persisted: true,
+    },
     phases: [{ phase: 'curate', ran: true, durationMs: 111 }],
     observations: [
       {
@@ -160,7 +196,14 @@ function privateReport(): DreamReport {
 }
 
 function emptyStatus(): MaintenanceStatus {
-  return { latest: null, active: 0, awaitingHuman: 0, verificationPending: 0 };
+  return {
+    latest: null,
+    latestRun: null,
+    active: 0,
+    activeRuns: 0,
+    awaitingHuman: 0,
+    verificationPending: 0,
+  };
 }
 
 function statusAt(
@@ -181,7 +224,9 @@ function statusAt(
       error: null,
       counts: itemCounts(applied),
     },
+    latestRun: null,
     active: status === 'completed' ? 0 : 1,
+    activeRuns: 0,
     awaitingHuman: 0,
     verificationPending: 0,
   };

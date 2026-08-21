@@ -18,6 +18,7 @@ import {
 import type { ContradictionDraft } from './contradictions.ts';
 import { replaceLinkTarget, type BrokenLinkDraft, type LinkIdentitySignal } from './link-repairs.ts';
 import { preservesAuthoredTokens, preservesValues } from './repair.ts';
+import { activeDreamRuns, latestDreamRun, type DreamRunReceipt } from './runs.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 
@@ -145,7 +146,9 @@ export interface MaintenancePlan extends MaintenancePlanSummary {
 
 export interface MaintenanceStatus {
   latest: MaintenancePlanSummary | null;
+  latestRun: DreamRunReceipt | null;
   active: number;
+  activeRuns: number;
   awaitingHuman: number;
   verificationPending: number;
 }
@@ -721,7 +724,14 @@ async function recoverInterruptedApply(ctx: AknoContext, item: MaintenanceItem):
 
 export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
   if (!maintenanceTablesAvailable(ctx)) {
-    return { latest: null, active: 0, awaitingHuman: 0, verificationPending: 0 };
+    return {
+      latest: null,
+      latestRun: latestDreamRun(ctx),
+      active: 0,
+      activeRuns: activeDreamRuns(ctx),
+      awaitingHuman: 0,
+      verificationPending: 0,
+    };
   }
   const latest = listMaintenancePlans(ctx, 1)[0] ?? null;
   const active = ctx.store.db
@@ -738,7 +748,9 @@ export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
     .get() as { n: number };
   return {
     latest,
+    latestRun: latestDreamRun(ctx),
     active: active.n,
+    activeRuns: activeDreamRuns(ctx),
     awaitingHuman: awaiting.n,
     verificationPending: pending.n,
   };

@@ -1202,6 +1202,40 @@ describe('housekeeping', () => {
 });
 
 describe('the cycle', () => {
+  it('persists a content-safe receipt tied to the indexed state at run start', async () => {
+    await mem.index({ structuralOnly: true });
+    const first = await mem.dream({ phase: 'housekeeping' });
+
+    expect(first.run).toMatchObject({
+      status: 'completed',
+      mode: 'legacy',
+      requestedPhase: 'housekeeping',
+      persisted: true,
+      maintenancePlanId: null,
+      errorCode: null,
+    });
+    expect(first.run.id).toMatch(/^run_[a-f0-9]{8}$/);
+    expect(first.run.finishedAt).not.toBeNull();
+    expect(first.run.snapshot).toMatchObject({
+      schemaVersion: 13,
+      requestedPhases: ['housekeeping'],
+      plannerVersion: 'dream-lifecycle-v1',
+    });
+    expect(first.run.snapshot.indexedFiles).toBeGreaterThan(0);
+    expect(first.run.snapshot.indexRevision).toMatch(/^[a-f0-9]{64}$/);
+    expect(mem.maintenanceStatus().latestRun).toEqual(first.run);
+
+    fs.appendFileSync(path.join(root, 'home/appliances.md'), '\nAn invented service note.\n', 'utf8');
+    await mem.index({ structuralOnly: true });
+    const second = await mem.dream({ phase: 'housekeeping' });
+
+    expect(second.run.id).not.toBe(first.run.id);
+    expect(second.run.snapshot.knowledgeBaseFingerprint).not.toBe(
+      first.run.snapshot.knowledgeBaseFingerprint,
+    );
+    expect(first.run.snapshot.knowledgeBaseFingerprint).toMatch(/^[a-f0-9]{64}$/);
+  });
+
   it('runs every enabled phase, and says why the others did not', async () => {
     server.reply({ observations: [] });
     const report = await mem.dream({});

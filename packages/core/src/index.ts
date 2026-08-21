@@ -25,6 +25,13 @@ export {
   type ObservationWritten,
   type PhaseReport,
 } from './maintenance/dream.ts';
+export type {
+  DreamRunCounts,
+  DreamRunMode,
+  DreamRunReceipt,
+  DreamRunStatus,
+  DreamSnapshotManifest,
+} from './maintenance/runs.ts';
 export type { ConflictClaim, ConflictQualification, CrossPageConflict } from './maintenance/conflicts.ts';
 export type { AdoptedDocument } from './maintenance/adopt.ts';
 export type { BrokenLink, Housekeeping, OrphanedDocument, RuleDrift } from './maintenance/housekeeping.ts';

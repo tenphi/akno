@@ -154,10 +154,21 @@ export async function loadMaintenanceStatus(
 export function printMaintenanceStatus(status: MaintenanceStatus): void {
   heading('Maintenance');
   kv([
+    ['active dream runs', status.activeRuns],
     ['active plans', status.active],
     ['awaiting decisions', status.awaitingHuman],
     ['verification pending', status.verificationPending],
   ]);
+  if (status.latestRun) {
+    line('\n  latest dream run');
+    kv([
+      ['id', status.latestRun.id],
+      ['status', status.latestRun.status],
+      ['mode', status.latestRun.mode],
+      ['started', status.latestRun.startedAt],
+      ['snapshot', status.latestRun.snapshot.indexRevision.slice(0, 12)],
+    ]);
+  }
   if (!status.latest) {
     line(style.grey('\n  no maintenance plans yet'));
     return;

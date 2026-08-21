@@ -69,7 +69,11 @@ describe('schema migration', () => {
       .get() as { name: string } | undefined;
     const conflictColumns = store.db.pragma('table_info(conflict_verdicts)') as { name: string }[];
 
-    expect(tables.map((row) => row.name)).toEqual(['maintenance_items', 'maintenance_plans']);
+    expect(tables.map((row) => row.name)).toEqual([
+      'maintenance_items',
+      'maintenance_plans',
+      'maintenance_runs',
+    ]);
     expect(columns.map((row) => row.name)).toContain('evidence');
     expect(conflictCache?.name).toBe('conflict_verdicts');
     expect(conflictColumns.map((row) => row.name)).toContain('qualification');
@@ -91,6 +95,31 @@ describe('schema migration', () => {
     const columns = store.db.pragma('table_info(conflict_verdicts)') as { name: string }[];
 
     expect(columns.map((row) => row.name)).toContain('qualification');
+    expect(
+      store.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'maintenance_runs'")
+        .get(),
+    ).toBeDefined();
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds lifecycle receipts to a version-twelve database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 5)) legacy.exec(migration);
+    legacy.pragma('user_version = 12');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const table = store.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'maintenance_runs'")
+      .get() as { name: string } | undefined;
+
+    expect(table?.name).toBe('maintenance_runs');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

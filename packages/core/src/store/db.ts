@@ -8,6 +8,7 @@ import {
   CONFLICT_QUALIFICATION_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
+  MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
   SCHEMA_VERSION,
 } from './migrations.ts';
@@ -144,6 +145,9 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'conflict_verdicts', 'qualification')) {
         db.exec(MIGRATIONS[CONFLICT_QUALIFICATION_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'maintenance_runs')) {
+        db.exec(MIGRATIONS[MAINTENANCE_RUNS_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

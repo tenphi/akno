@@ -1,9 +1,9 @@
 /**
  * One SQLite file. Deleting it costs one re-index and no data — that
  * property is the design, and it is why nothing here is a source of truth.
- * The journal and live maintenance plans are the durable exceptions. The journal keeps prior bytes for undo;
- * a sealed plan keeps exact proposed bytes so a decision survives a restart and never has to regenerate a
- * possibly different rewrite.
+ * The journal, live maintenance plans, and content-safe run receipts are the durable exceptions. The journal
+ * keeps prior bytes for undo; a sealed plan keeps exact proposed bytes so a decision survives a restart and
+ * never has to regenerate a possibly different rewrite; the receipt explains the lifecycle around them.
  *
  * The first entry is the canonical 0.1.0 schema, compacted from historical versions
  * 1–8. Later entries add durable state that cannot be recovered by rebuilding the index.
@@ -11,11 +11,12 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 12;
+export const SCHEMA_VERSION = 13;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
 export const CONFLICT_QUALIFICATION_MIGRATION_INDEX = 4;
+export const MAINTENANCE_RUNS_MIGRATION_INDEX = 5;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -359,6 +360,20 @@ export const MIGRATIONS: string[] = [
   // cached verdict avoids rerunning a classifier while preserving everything needed by planning.
   `
   ALTER TABLE conflict_verdicts ADD COLUMN qualification TEXT;
+  `,
+  // ── 6. Content-safe dream lifecycle receipts ─────────────────────────────
+  // Exact page content belongs in sealed plan items and the opt-in private log. This table is
+  // deliberately safe for routine status output: fingerprints, counts, ids, and typed outcomes.
+  `
+  CREATE TABLE maintenance_runs (
+    id          TEXT PRIMARY KEY,
+    started_at  TEXT NOT NULL,
+    finished_at TEXT,
+    status      TEXT NOT NULL,
+    receipt     TEXT NOT NULL,
+    error_code  TEXT
+  );
+  CREATE INDEX maintenance_runs_status ON maintenance_runs(status, started_at DESC);
   `,
 ];
 

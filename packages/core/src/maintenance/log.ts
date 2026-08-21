@@ -61,6 +61,8 @@ export async function logDreamRun(
 ): Promise<string | null> {
   const record = {
     at: new Date().toISOString(),
+    runId: report.run.id,
+    snapshot: report.run.snapshot,
     dryRun: options.dryRun,
     durationMs: report.durationMs,
     // Which model actually answered. Worth a line of its own: the tiers' output is largely a

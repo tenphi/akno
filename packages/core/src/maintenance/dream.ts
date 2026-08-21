@@ -30,6 +30,13 @@ import {
   type MaintenancePlan,
   type MaintenancePlanSummary,
 } from './plans.ts';
+import {
+  beginDreamRun,
+  completeDreamRun,
+  failDreamRun,
+  type DreamRunMode,
+  type DreamRunReceipt,
+} from './runs.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -100,6 +107,8 @@ export interface DreamMaintenancePlan extends MaintenancePlanSummary {
 }
 
 export interface DreamReport {
+  /** Durable, content-safe identity and outcome for this complete invocation. */
+  run: DreamRunReceipt;
   phases: PhaseReport[];
   observations: ObservationWritten[];
   curated: CuratedPage[];
@@ -149,7 +158,16 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   const cycle: AknoContext = ctx.config.maintenance.model
     ? { ...ctx, models: { ...ctx.models, derive: new ModelClient(ctx.config.maintenance.model) } }
     : ctx;
+  const wanted = options.phase ? [options.phase] : DREAM_PHASES;
+  const startedRun = beginDreamRun(ctx, {
+    requestedPhase: options.phase ?? null,
+    requestedPhases: wanted,
+    mode: dreamRunMode(ctx, options),
+    dryRun: options.dryRun ?? false,
+    modelId: cycle.models.derive.modelId,
+  });
   const report: DreamReport = {
+    run: startedRun,
     phases: [],
     observations: [],
     curated: [],
@@ -171,35 +189,48 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   // is and threading it out conditionally is how a debugging flag ends up logging half a run.
   const applied: AppliedChange[] = [];
 
-  const wanted = options.phase ? [options.phase] : DREAM_PHASES;
-  // A selected inference or curation phase still gets the same safety boundary as a full run.
-  // It does not add a second visible phase to the report; it supplies that phase's prerequisites.
-  if (
-    options.phase &&
-    options.phase !== 'conflicts' &&
-    ['observe', 'reflect', 'curate'].includes(options.phase) &&
-    cycle.config.maintenance.conflicts.enabled
-  ) {
-    await inspectConflicts(cycle, report);
-  }
-  for (const phase of wanted) {
-    const phaseStarted = performance.now();
-    const skipped = await runPhase(cycle, phase, options, report, applied);
-    report.phases.push({
-      phase,
-      ran: skipped === null,
-      ...(skipped ? { skipped } : {}),
-      durationMs: Math.round(performance.now() - phaseStarted),
-    });
-  }
+  try {
+    // A selected inference or curation phase still gets the same safety boundary as a full run.
+    // It does not add a second visible phase to the report; it supplies that phase's prerequisites.
+    if (
+      options.phase &&
+      options.phase !== 'conflicts' &&
+      ['observe', 'reflect', 'curate'].includes(options.phase) &&
+      cycle.config.maintenance.conflicts.enabled
+    ) {
+      await inspectConflicts(cycle, report);
+    }
+    for (const phase of wanted) {
+      const phaseStarted = performance.now();
+      const skipped = await runPhase(cycle, phase, options, report, applied);
+      report.phases.push({
+        phase,
+        ran: skipped === null,
+        ...(skipped ? { skipped } : {}),
+        durationMs: Math.round(performance.now() - phaseStarted),
+      });
+    }
 
-  report.durationMs = Math.round(performance.now() - started);
+    report.durationMs = Math.round(performance.now() - started);
 
-  if (ctx.config.maintenance.logChanges) {
-    const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });
-    if (logPath) report.logPath = logPath;
+    if (ctx.config.maintenance.logChanges) {
+      const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });
+      if (logPath) report.logPath = logPath;
+    }
+    report.run = completeDreamRun(ctx, startedRun, report);
+    return report;
+  } catch (error) {
+    report.durationMs = Math.round(performance.now() - started);
+    report.run = failDreamRun(ctx, startedRun, error, report.durationMs, report.phases);
+    throw error;
   }
-  return report;
+}
+
+function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
+  if (options.dryRun) return 'audit';
+  if (options.mode) return options.mode;
+  if (!options.phase || options.phase === 'curate') return ctx.config.maintenance.curate.mode ?? 'legacy';
+  return 'legacy';
 }
 
 async function runPhase(
