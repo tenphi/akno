@@ -3,8 +3,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { connect } from '@tenphi/akno-client';
-import { open, type Akno } from '@tenphi/akno-core';
+import { AknoError, open, type Akno } from '@tenphi/akno-core';
 import { serveSocket } from './socket.ts';
+import { runMaintenance } from '../ops-handle.ts';
 
 /**
  * **The library is the product**: one op registry, three transports over it, so the doors
@@ -119,6 +120,38 @@ describe('the socket door', () => {
       expect(status.active).toBe(0);
     } finally {
       await client.close();
+    }
+  });
+
+  it('preserves a busy lifecycle response instead of retrying it in-process', async () => {
+    const originalDream = mem.dream;
+    mem.dream = async () => {
+      throw new AknoError('busy', 'dream run run_example is already active', {
+        run_id: 'run_example',
+        started_at: '2030-01-02T03:04:00.000Z',
+      });
+    };
+    let fellBack = false;
+
+    try {
+      await expect(
+        runMaintenance(
+          'dream',
+          { phase: 'housekeeping' },
+          { json: true },
+          { aknoPath: root, stateDir },
+          async () => {
+            fellBack = true;
+            throw new Error('the busy response was incorrectly retried');
+          },
+        ),
+      ).rejects.toMatchObject({
+        code: 'busy',
+        details: { run_id: 'run_example' },
+      });
+      expect(fellBack).toBe(false);
+    } finally {
+      mem.dream = originalDream;
     }
   });
 

@@ -85,7 +85,8 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   // A second request on the same multiplexed connection reads content-free plan state while the
   // model call is pending, so a healthy multi-minute run no longer looks hung.
   const progress = values.json ? null : dreamProgressWriter(Date.now(), phase, mode);
-  let report: DreamReport;
+  let report: DreamReport | null = null;
+  let busy: AknoError | null = null;
   try {
     report = await runMaintenance(
       'dream',
@@ -95,15 +96,46 @@ export async function dreamCommand(argv: string[]): Promise<number> {
       (mem) => mem.dream(input),
       { onWait: progress?.update, waitEveryMs: 5_000 },
     );
+  } catch (error) {
+    const typed = AknoError.from(error);
+    if (typed.code !== 'busy') throw typed;
+    busy = typed;
   } finally {
     progress?.done();
   }
+
+  if (busy) return reportActiveDream(busy, values);
+  if (!report) throw new AknoError('internal', 'dream returned no report');
 
   if (values.json) {
     json(values['private-details'] ? report : safeDreamReport(report));
     return 0;
   }
   return printDream(report, values['dry-run'], values['private-details']);
+}
+
+async function reportActiveDream(
+  error: AknoError,
+  values: Parameters<typeof loadMaintenanceStatus>[0] & { json?: boolean },
+): Promise<number> {
+  const status = await loadMaintenanceStatus(values);
+  const requestedId = typeof error.details?.run_id === 'string' ? error.details.run_id : null;
+  const reportedStart =
+    typeof error.details?.started_at === 'string' ? error.details.started_at : 'unknown';
+  const run = status.latestRun?.id === requestedId ? status.latestRun : null;
+  const outcome = run?.status === 'running' ? 'already_running' : 'finished_while_waiting';
+  if (values.json) {
+    json({ outcome, run_id: requestedId, run });
+    return 0;
+  }
+  heading(outcome === 'already_running' ? 'Dream already running' : 'Dream finished while checking');
+  kv([
+    ['run', requestedId ?? 'unknown'],
+    ['status', run?.status ?? 'unknown'],
+    ['started', run?.startedAt ?? reportedStart],
+  ]);
+  line(style.grey('\n  No second maintenance run was started.'));
+  return 0;
 }
 
 function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolean): number {

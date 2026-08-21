@@ -111,6 +111,7 @@ function statusFor(code: string): number {
     case 'not_found':
       return 404;
     case 'read_only':
+    case 'busy':
       return 409;
     case 'not_implemented':
       return 501;

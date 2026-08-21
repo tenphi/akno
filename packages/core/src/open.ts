@@ -48,6 +48,7 @@ import {
   type MaintenancePlanSummary,
   type MaintenanceStatus,
 } from './maintenance/plans.ts';
+import { recoverInterruptedDreamRuns } from './maintenance/runs.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -236,6 +237,10 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     lockHeldBy,
     readOnlyReason,
   };
+
+  // The write handle proves that no predecessor is still applying. Finalize its unfinished
+  // lifecycle rows before status or scheduling can mistake a crashed run for a live one.
+  recoverInterruptedDreamRuns(ctx);
 
   if (writable && config.createReservedPaths) ensureReservedPaths(config);
 

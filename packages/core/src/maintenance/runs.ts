@@ -61,9 +61,21 @@ export interface DreamRunReceipt {
   persisted: boolean;
 }
 
-interface RunRow {
+interface ReceiptRow {
   receipt: string;
 }
+
+interface ActiveRunRow extends ReceiptRow {
+  id: string;
+  started_at: string;
+}
+
+/**
+ * Process-local ownership complements the durable `running` row. The repository already
+ * guarantees one writer process per knowledge base; this set distinguishes a live invocation
+ * in that writer from a row left behind by its predecessor.
+ */
+const ownedRunIds = new Set<string>();
 
 export function beginDreamRun(
   ctx: AknoContext,
@@ -77,6 +89,16 @@ export function beginDreamRun(
 ): DreamRunReceipt {
   const startedAt = new Date().toISOString();
   const persisted = ctx.writable && runsTableAvailable(ctx);
+  if (persisted) {
+    recoverInterruptedDreamRuns(ctx);
+    const active = activeRunRows(ctx).find((row) => ownedRunIds.has(row.id));
+    if (active) {
+      throw new AknoError('busy', `dream run ${active.id} is already active`, {
+        run_id: active.id,
+        started_at: active.started_at,
+      });
+    }
+  }
   const receipt: DreamRunReceipt = {
     id: newPrefixedId('run'),
     startedAt,
@@ -102,6 +124,7 @@ export function beginDreamRun(
          VALUES (?, ?, NULL, 'running', ?, NULL)`,
       )
       .run(receipt.id, startedAt, JSON.stringify(receipt));
+    ownedRunIds.add(receipt.id);
   }
   return receipt;
 }
@@ -156,13 +179,61 @@ export function latestDreamRun(ctx: AknoContext): DreamRunReceipt | null {
   if (!runsTableAvailable(ctx)) return null;
   const row = ctx.store.db
     .prepare('SELECT receipt FROM maintenance_runs ORDER BY rowid DESC LIMIT 1')
-    .get() as RunRow | undefined;
+    .get() as ReceiptRow | undefined;
   if (!row) return null;
   try {
     return JSON.parse(row.receipt) as DreamRunReceipt;
   } catch {
     return null;
   }
+}
+
+/**
+ * Finalize rows owned by a process that no longer exists.
+ *
+ * Called when a writable Akno opens and again immediately before a run begins. A live run in
+ * this process stays in `ownedRunIds`; every other `running` row is necessarily abandoned because
+ * no second process can hold the write handle.
+ */
+export function recoverInterruptedDreamRuns(ctx: AknoContext): DreamRunReceipt[] {
+  if (!ctx.writable || !runsTableAvailable(ctx)) return [];
+  const recovered: DreamRunReceipt[] = [];
+  const finishedAt = new Date().toISOString();
+  for (const row of activeRunRows(ctx)) {
+    if (ownedRunIds.has(row.id)) continue;
+    const started = parseReceipt(row.receipt);
+    if (!started) {
+      ctx.store.db
+        .prepare(
+          `UPDATE maintenance_runs
+              SET finished_at = ?, status = 'failed', error_code = 'interrupted'
+            WHERE id = ? AND status = 'running'`,
+        )
+        .run(finishedAt, row.id);
+      continue;
+    }
+    const startedMs = Date.parse(started.startedAt);
+    const finishedMs = Date.parse(finishedAt);
+    const receipt: DreamRunReceipt = {
+      ...started,
+      finishedAt,
+      status: 'failed',
+      durationMs:
+        Number.isFinite(startedMs) && Number.isFinite(finishedMs)
+          ? Math.max(0, finishedMs - startedMs)
+          : started.durationMs,
+      errorCode: 'interrupted',
+    };
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_runs
+            SET finished_at = ?, status = 'failed', receipt = ?, error_code = 'interrupted'
+          WHERE id = ? AND status = 'running'`,
+      )
+      .run(finishedAt, JSON.stringify(receipt), row.id);
+    recovered.push(receipt);
+  }
+  return recovered;
 }
 
 export function activeDreamRuns(ctx: AknoContext): number {
@@ -287,13 +358,34 @@ function safePhases(phases: PhaseReport[]): DreamRunReceipt['phases'] {
 
 function persistFinished(ctx: AknoContext, receipt: DreamRunReceipt): void {
   if (!receipt.persisted) return;
-  ctx.store.db
+  try {
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_runs
+            SET finished_at = ?, status = ?, receipt = ?, error_code = ?
+          WHERE id = ?`,
+      )
+      .run(receipt.finishedAt, receipt.status, JSON.stringify(receipt), receipt.errorCode, receipt.id);
+  } finally {
+    ownedRunIds.delete(receipt.id);
+  }
+}
+
+function activeRunRows(ctx: AknoContext): ActiveRunRow[] {
+  return ctx.store.db
     .prepare(
-      `UPDATE maintenance_runs
-          SET finished_at = ?, status = ?, receipt = ?, error_code = ?
-        WHERE id = ?`,
+      `SELECT id, started_at, receipt FROM maintenance_runs
+        WHERE status = 'running' ORDER BY rowid`,
     )
-    .run(receipt.finishedAt, receipt.status, JSON.stringify(receipt), receipt.errorCode, receipt.id);
+    .all() as ActiveRunRow[];
+}
+
+function parseReceipt(value: string): DreamRunReceipt | null {
+  try {
+    return JSON.parse(value) as DreamRunReceipt;
+  } catch {
+    return null;
+  }
 }
 
 function runsTableAvailable(ctx: AknoContext): boolean {

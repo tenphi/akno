@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { connect, defaultSocketPath } from '@tenphi/akno-client';
-import { loadConfig, open, type Akno, type MaintenanceStatus } from '@tenphi/akno-core';
+import { AknoError, loadConfig, open, type Akno, type MaintenanceStatus } from '@tenphi/akno-core';
 import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@tenphi/akno-protocol';
 import { style } from './output.ts';
 
@@ -135,9 +135,13 @@ export async function runMaintenance<T>(
         await client.close();
       }
     } catch (err) {
+      const error = AknoError.from(err);
+      // A command error came from a healthy service and must reach its caller intact. Falling
+      // back here used to turn a precise refusal into a second, misleading in-process attempt.
+      if (error.code !== 'unavailable') throw error;
       // `--connect` means the caller wants the service or nothing; otherwise a stale socket
       // file from a crashed service must not stop a one-off pass.
-      if (values.connect) throw err;
+      if (values.connect) throw error;
       if (!values.json) {
         process.stderr.write(style.grey(`no service on ${socketPath}; running in-process\n`));
       }

@@ -11,6 +11,10 @@ export const ERROR_CODES = [
   'degraded',
   /** The index could not be read. Say "let me check again", never "not recorded". */
   'unavailable',
+  /** The requested lifecycle is already active. Retry later or inspect the supplied run id. */
+  'busy',
+  /** A durable lifecycle record was recovered after its process ended before finalization. */
+  'interrupted',
   /** A gate blocked a write. Carries a proposal_id the user can approve. */
   'requires_approval',
   /** Two live claims on one attribute. Surfaced before the write commits. */
