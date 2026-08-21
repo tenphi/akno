@@ -835,13 +835,15 @@ export class Indexer {
         .prepare(
           `INSERT INTO documents(id, page_id, rel_path, mime, sha256, label, text, summary,
                                  page_count, ocr, bytes, indexed_at, group_key, part, renders,
-                                 availability, missing_since)
-           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?, ?, 'available', NULL)
+                                 availability, missing_since, file_created_at, file_modified_at)
+           VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL, NULL, 0, ?, ?, ?, ?, ?, 'available', NULL, ?, ?)
            ON CONFLICT(rel_path) DO UPDATE SET
              page_id = excluded.page_id, sha256 = excluded.sha256,
              mime = excluded.mime, bytes = excluded.bytes, indexed_at = excluded.indexed_at,
              group_key = excluded.group_key, part = excluded.part, renders = excluded.renders,
-             availability = 'available', missing_since = NULL`,
+             availability = 'available', missing_since = NULL,
+             file_created_at = COALESCE(documents.file_created_at, excluded.file_created_at),
+             file_modified_at = excluded.file_modified_at`,
         )
         .run(
           id,
@@ -854,6 +856,8 @@ export class Indexer {
           group.groupKey,
           rendition ? 1 : group.part,
           rendition?.source ?? null,
+          filesystemIso(file.birthtimeNs),
+          filesystemIso(file.mtimeNs),
         );
 
       // Ownership can change without the file bytes changing: adding or removing an embed
@@ -1657,6 +1661,12 @@ function nowIso(): string {
 function mtimeIso(mtimeNs: string): string {
   const ms = Number(BigInt(mtimeNs) / 1_000_000n);
   return new Date(ms).toISOString();
+}
+
+function filesystemIso(nanoseconds: string): string | null {
+  const value = BigInt(nanoseconds);
+  if (value <= 0n) return null;
+  return mtimeIso(nanoseconds);
 }
 
 function fileExists(absPath: string): boolean {

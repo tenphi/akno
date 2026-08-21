@@ -198,7 +198,7 @@ the pre-turn bundle, normally called by the host rather than by the agent.
 | `recall`   | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query.     |
 | `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                          |
 | `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |
-| `timeline` | When things happened — by range, subject, or match.                                                                                                                  |
+| `timeline` | Authored events and typed orphan-document date evidence — by range, subject, source, or match.                                                                       |
 | `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                                  |
 | `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                                  |
 | `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                                |
@@ -473,6 +473,13 @@ of becoming “nothing recorded.” Recall and read expose a typed `availability
 rendition is `degraded`; an identity with no readable copy is `unavailable`; restoring the original returns it
 to `available`. Exact filename recall still finds an unreadable identity. Explicit `forget({document})` remains
 the retraction boundary and removes the retained chunks as well as trashing files that are present.
+
+`timeline` can also return dated orphan documents as `type: "document_evidence"`. A date found in the text is
+returned with a bounded quote, page number when available, and extraction provenance. If no supported date can
+be extracted, one explicitly labelled `file_created` or `file_modified` metadata result may be used instead.
+Model-generated image descriptions cannot supply extracted dates. These are
+source observations, never authored events; `results` is the mixed view and the compatibility `events` field
+continues to contain authored events only.
 
 **A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document, not two.** Files that
 differ only by a trailing `-<n>` are read as parts of one document: one owning page, one summary, and page

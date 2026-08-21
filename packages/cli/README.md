@@ -49,6 +49,7 @@ roles resolved and what each missing one costs.
 ```
 akno recall <query>       Search memory. Returns cited page and document cards.
 akno read <slug>          One exact page or document, in full.
+akno timeline             Authored events plus typed orphan-document date evidence.
 akno adopt <document-id>  Organize one orphan document through its trust policy.
 akno context <query>      The whole pre-turn bundle against one budget.
 akno remember <text>      Hand over notes; Akno decides what to keep and where.

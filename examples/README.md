@@ -38,7 +38,7 @@ Things worth trying once it is indexed:
 | --------------------------------------------------- | -------------------------------------------------------- |
 | `recall "who services the boiler?" --mode question` | Coverage: which parts of the question the results answer |
 | `recall "what did the letting agent say?"`          | A `source` page quoted, with line addresses              |
-| `timeline`                                          | Dated lines from every page, not only the ledger         |
+| `timeline`                                          | Dated lines plus typed orphan-document date evidence     |
 | `read people/ada-marlow`                            | One page in full, with its backlinks                     |
 | `rules household/boiler.md`                         | Which rule governs a path, and why                       |
 | `list --kind tree`                                  | The folder taxonomy as Akno understands it             |

@@ -4,13 +4,14 @@ import { resolveOps } from '../ops-handle.ts';
 
 const TIMELINE_HELP = `akno timeline [options]
 
-  When things happened. Events are indexed from the ledger and from dated lines
-  on any page, so a date written where it belongs is found too.
+  When things happened. Authored events remain distinct from dated orphan
+  document evidence, whose date basis and source citation are shown explicitly.
 
   --since <YYYY[-MM[-DD]]>
   --until <YYYY[-MM[-DD]]>
   --match <text>      Substring match on the summary.
-  --subject <slug>    Events linking to, or written on, this page.
+  --subject <id>      Page slug or orphan document id/path.
+  --source <kind>     event | document | both (default)
   --order <o>         newest | oldest
   --limit <n>
   --json`;
@@ -23,6 +24,7 @@ export async function timelineCommand(argv: string[]): Promise<number> {
     subject?: string;
     order?: string;
     limit?: string;
+    source?: string;
   }>(argv, {
     since: { type: 'string' },
     until: { type: 'string' },
@@ -30,6 +32,7 @@ export async function timelineCommand(argv: string[]): Promise<number> {
     subject: { type: 'string' },
     order: { type: 'string' },
     limit: { type: 'string' },
+    source: { type: 'string' },
   });
 
   if (values.help) {
@@ -46,6 +49,7 @@ export async function timelineCommand(argv: string[]): Promise<number> {
       ...(values.subject ? { subject: values.subject } : {}),
       ...(values.order ? { order: values.order as 'newest' | 'oldest' } : {}),
       ...(values.limit ? { limit: Number(values.limit) } : {}),
+      ...(values.source ? { source: values.source as 'event' | 'document' | 'both' } : {}),
     });
 
     if (values.json) {
@@ -54,13 +58,22 @@ export async function timelineCommand(argv: string[]): Promise<number> {
     }
 
     line(
-      `${statusLabel(result.status)} ${style.grey(`${result.total} event${result.total === 1 ? '' : 's'}`)}` +
-        `${result.events.length < result.total ? style.grey(` (showing ${result.events.length})`) : ''}`,
+      `${statusLabel(result.status)} ${style.grey(`${result.total} result${result.total === 1 ? '' : 's'}`)}` +
+        `${result.results.length < result.total ? style.grey(` (showing ${result.results.length})`) : ''}`,
     );
-    for (const event of result.events) {
-      const target = event.slug ? style.cyan(` → ${event.slug}`) : '';
-      const source = style.grey(` [${event.source}${event.line ? `:${event.line}` : ''}]`);
-      line(`  ${style.bold(event.date)}  ${truncate(event.summary, 80)}${target}${source}`);
+    for (const entry of result.results) {
+      if (entry.type === 'document_evidence') {
+        const page = entry.matched_page ? ` p${entry.matched_page}` : '';
+        line(
+          `  ${style.bold(entry.date)}  ${truncate(entry.label, 80)} ` +
+            style.grey(`[${entry.date_basis}; ${entry.path}${page}]`),
+        );
+        if (entry.quote) line(`    ${truncate(entry.quote.replaceAll('\n', ' '), 100)}`);
+        continue;
+      }
+      const target = entry.slug ? style.cyan(` → ${entry.slug}`) : '';
+      const source = style.grey(` [${entry.source}${entry.line ? `:${entry.line}` : ''}]`);
+      line(`  ${style.bold(entry.date)}  ${truncate(entry.summary, 80)}${target}${source}`);
     }
     return 0;
   } finally {

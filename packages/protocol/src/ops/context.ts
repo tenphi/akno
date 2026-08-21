@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Card, RecallMode, RecallResult, ResultEnvelope } from '../common.ts';
-import { Event } from './timeline.ts';
+import { Event, TimelineResult } from './timeline.ts';
 
 /**
  * One budget, one assembly. `context` composes the whole pre-turn bundle —
@@ -27,6 +27,9 @@ export const ContextOutput = ResultEnvelope.extend({
   results: z.array(RecallResult),
   /** @deprecated Page-only compatibility view; use `results`. */
   cards: z.array(Card),
+  /** Recent authored events and typed orphan-document date evidence. */
+  timeline: z.array(TimelineResult),
+  /** @deprecated Authored-event compatibility view; use `timeline`. */
   events: z.array(Event),
   structure: z.string().optional(),
   searched: z.array(z.string()),
@@ -38,6 +41,7 @@ export const ContextOutput = ResultEnvelope.extend({
     .object({
       cards: z.number().int().nonnegative(),
       events: z.number().int().nonnegative(),
+      timeline: z.number().int().nonnegative().optional(),
     })
     .optional(),
 });

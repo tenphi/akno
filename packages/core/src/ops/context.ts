@@ -4,6 +4,7 @@ import {
   type ContextOutput,
   type Event,
   type RecallResult,
+  type TimelineResult,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { estimateTokens } from '../recall/assemble.ts';
@@ -29,6 +30,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   const degraded = new Set<NonNullable<ContextOutput['degraded']>[number]>();
   let droppedCards = 0;
   let droppedEvents = 0;
+  let droppedTimeline = 0;
 
   // ── Pinned pages first ───────────────────────────────────────────────────
   // They were pinned precisely so they do not have to compete for room.
@@ -66,7 +68,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   }
 
   // ── Recent timeline ──────────────────────────────────────────────────────
-  const events: Event[] = [];
+  const recentTimeline: TimelineResult[] = [];
   const days = input.timeline_days ?? 90;
   if (days > 0) {
     const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
@@ -74,17 +76,25 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     // The ledger is capped at a fraction of the budget: recent history is
     // context, not the answer, and a long ledger must not crowd out the cards.
     let ledgerBudget = Math.floor(remaining * 0.25);
-    for (const event of ledger.events) {
-      const cost = Math.ceil((event.summary.length + event.date.length + 20) / 4);
+    for (const [index, entry] of ledger.results.entries()) {
+      const content =
+        entry.type === 'event' ? entry.summary : `${entry.path} ${entry.quote ?? ''} ${entry.date_basis}`;
+      const cost = Math.ceil((content.length + entry.date.length + 20) / 4);
       if (cost > ledgerBudget) {
-        droppedEvents = ledger.events.length - events.length;
+        const dropped = ledger.results.slice(index);
+        droppedTimeline = dropped.length;
+        droppedEvents = dropped.filter((candidate) => candidate.type === 'event').length;
         break;
       }
-      events.push(event);
+      recentTimeline.push(entry);
       ledgerBudget -= cost;
       remaining -= cost;
     }
+    for (const reason of ledger.degraded ?? []) degraded.add(reason);
   }
+  const events: Event[] = recentTimeline
+    .filter((entry) => entry.type === 'event')
+    .map(({ type: _type, ...event }) => event);
 
   // ── This turn's recall ───────────────────────────────────────────────────
   let cards: Card[] = [];
@@ -110,21 +120,40 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   }
 
   const budgetUsed = input.budget - Math.max(0, remaining);
-  const anyDropped = droppedCards > 0 || droppedEvents > 0;
+  const anyDropped = droppedCards > 0 || droppedTimeline > 0;
+  const unavailableTimelineOnly =
+    results.length === 0 &&
+    pinned.length === 0 &&
+    recentTimeline.length > 0 &&
+    recentTimeline.every(
+      (entry) => entry.type === 'document_evidence' && entry.availability.status === 'unavailable',
+    );
 
   return {
-    status: degraded.size > 0 ? 'degraded' : results.length === 0 && pinned.length === 0 ? 'empty' : 'ok',
-    ...(degraded.size > 0 ? { degraded: [...degraded] } : {}),
+    status: unavailableTimelineOnly
+      ? 'unavailable'
+      : degraded.size > 0
+        ? 'degraded'
+        : results.length === 0 && pinned.length === 0 && recentTimeline.length === 0
+          ? 'empty'
+          : 'ok',
+    ...(!unavailableTimelineOnly && degraded.size > 0 ? { degraded: [...degraded] } : {}),
+    ...(unavailableTimelineOnly
+      ? { note: 'recent document date metadata remains, but no readable source copy is available' }
+      : {}),
     pinned,
     results,
     cards,
+    timeline: recentTimeline,
     events,
     ...(structure ? { structure } : {}),
     searched,
     ...(coverage ? { coverage } : {}),
     budget_used: budgetUsed,
     // Default to visible. A silent trim reads as "that's everything".
-    ...(anyDropped ? { dropped: { cards: droppedCards, events: droppedEvents } } : {}),
+    ...(anyDropped
+      ? { dropped: { cards: droppedCards, events: droppedEvents, timeline: droppedTimeline } }
+      : {}),
   };
 }
 

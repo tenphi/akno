@@ -210,4 +210,39 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('backfills last-modified document evidence from a version-fifteen file row', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-document-date-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 8)) legacy.exec(migration);
+    const modifiedNs = String(BigInt(Date.UTC(2031, 3, 5, 12)) * 1_000_000n);
+    legacy
+      .prepare(
+        `INSERT INTO files(rel_path, size, mtime_ns, sha256, kind, indexed_at)
+         VALUES('documents/vulpine-record.bin', 4, ?, 'hash-file', 'attachment',
+                '2031-04-05T12:00:00Z')`,
+      )
+      .run(modifiedNs);
+    legacy
+      .prepare(
+        `INSERT INTO documents(id, rel_path, sha256, indexed_at, group_key)
+         VALUES('doc-vulpine', 'documents/vulpine-record.bin', 'hash-file',
+                '2031-04-05T12:00:00Z', 'documents/vulpine-record.bin')`,
+      )
+      .run();
+    legacy.pragma('user_version = 15');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const document = store.db
+      .prepare('SELECT file_created_at, file_modified_at FROM documents WHERE id = ?')
+      .get('doc-vulpine') as { file_created_at: string | null; file_modified_at: string | null };
+    expect(document.file_created_at).toBeNull();
+    expect(document.file_modified_at).toMatch(/^2031-04-05/);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

@@ -11,6 +11,8 @@ export interface ScannedFile {
   size: number;
   /** Nanosecond mtime as a string — a float loses precision above ~2^53 ns. */
   mtimeNs: string;
+  /** Filesystem birth time, kept only as visibly labelled metadata evidence. */
+  birthtimeNs: string;
   kind: FileKind;
   /** Present only once the file has actually been hashed. */
   sha256?: string;
@@ -96,6 +98,7 @@ async function walk(
       absPath,
       size,
       mtimeNs: String(stat.mtimeNs),
+      birthtimeNs: String(stat.birthtimeNs),
       kind: isPage ? 'page' : 'attachment',
     };
     // A file that reports a size but occupies no blocks is the classic

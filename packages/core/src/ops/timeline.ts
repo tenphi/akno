@@ -1,5 +1,12 @@
-import { TimelineInput, type TimelineOutput } from '@tenphi/akno-protocol';
+import {
+  TimelineInput,
+  type Event,
+  type TimelineEvent,
+  type TimelineOutput,
+  type TimelineResult,
+} from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
+import { documentTimelineEvidence } from '../timeline/documents.ts';
 
 /**
  * When things happened. Reading is always filtered — a ledger spans years.
@@ -10,6 +17,9 @@ import type { AknoContext } from '../context.ts';
  */
 export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<TimelineOutput> {
   const input = TimelineInput.parse(rawInput);
+  const source = input.source ?? 'both';
+  const includeEvents = source === 'event' || source === 'both';
+  const includeDocuments = source === 'document' || source === 'both';
 
   const clauses: string[] = [];
   const params: unknown[] = [];
@@ -33,42 +43,87 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
     params.push(`%${input.match}%`);
   }
 
-  const order = input.order === 'oldest' ? 'ASC' : 'DESC';
   const limit = input.limit ?? 100;
 
   const where = clauses.length > 0 ? ` WHERE ${clauses.join(' AND ')}` : '';
-  const total = (
-    ctx.store.db.prepare(`SELECT count(*) AS c FROM events e${where}`).get(...params) as { c: number }
-  ).c;
+  const eventResults: TimelineEvent[] = includeEvents
+    ? (
+        ctx.store.db
+          .prepare(
+            `SELECT e.id, e.date, e.summary, e.target_slug, e.source_slug, e.line
+             FROM events e${where}`,
+          )
+          .all(...params) as {
+          id: string;
+          date: string;
+          summary: string;
+          target_slug: string | null;
+          source_slug: string;
+          line: number | null;
+        }[]
+      ).map((row) => ({
+        type: 'event',
+        id: row.id,
+        date: row.date,
+        summary: row.summary,
+        slug: row.target_slug,
+        source: row.source_slug,
+        line: row.line,
+      }))
+    : [];
 
-  const rows = ctx.store.db
-    .prepare(
-      `SELECT e.id, e.date, e.summary, e.target_slug, e.source_slug, e.line
-         FROM events e${where}
-        ORDER BY e.date ${order}, e.line ${order}
-        LIMIT ?`,
-    )
-    .all(...params, limit) as {
-    id: string;
-    date: string;
-    summary: string;
-    target_slug: string | null;
-    source_slug: string;
-    line: number | null;
-  }[];
+  const documentResults = includeDocuments
+    ? documentTimelineEvidence(ctx, {
+        ...(input.since ? { since: padLow(input.since) } : {}),
+        ...(input.until ? { until: padHigh(input.until) } : {}),
+        ...(input.match ? { match: input.match } : {}),
+        ...(input.subject ? { subject: input.subject } : {}),
+      })
+    : [];
+  const allResults: TimelineResult[] = [...eventResults, ...documentResults];
+  allResults.sort(resultOrder(input.order ?? 'newest'));
+  const results = allResults.slice(0, limit);
+  const events: Event[] = results
+    .filter((result): result is TimelineEvent => result.type === 'event')
+    .map(({ type: _type, ...event }) => event);
+
+  const documentStates = results
+    .filter((result) => result.type === 'document_evidence')
+    .map((result) => result.availability);
+  const hasMissingDocument = documentStates.some((state) => state.status !== 'available');
+  const unavailableOnly =
+    results.length > 0 &&
+    results.every(
+      (result) => result.type === 'document_evidence' && result.availability.status === 'unavailable',
+    );
+  const status =
+    results.length === 0 ? 'empty' : unavailableOnly ? 'unavailable' : hasMissingDocument ? 'degraded' : 'ok';
 
   return {
-    status: rows.length === 0 ? 'empty' : 'ok',
-    events: rows.map((row) => ({
-      id: row.id,
-      date: row.date,
-      summary: row.summary,
-      slug: row.target_slug,
-      source: row.source_slug,
-      line: row.line,
-    })),
-    total,
+    status,
+    ...(status === 'degraded' ? { degraded: ['document_source_missing'] } : {}),
+    ...(hasMissingDocument
+      ? {
+          note:
+            status === 'unavailable'
+              ? 'matching document date metadata remains, but neither the originals nor readable copies are available'
+              : 'some document timeline evidence is retained from an indexed copy because its original is missing',
+        }
+      : {}),
+    results,
+    events,
+    total: allResults.length,
     range: { since: input.since ?? null, until: input.until ?? null },
+  };
+}
+
+function resultOrder(order: 'newest' | 'oldest'): (a: TimelineResult, b: TimelineResult) => number {
+  const direction = order === 'oldest' ? 1 : -1;
+  return (a, b) => {
+    const byDate = a.date.localeCompare(b.date) * direction;
+    if (byDate !== 0) return byDate;
+    if (a.type !== b.type) return a.type === 'event' ? -1 : 1;
+    return a.id.localeCompare(b.id);
   };
 }
 

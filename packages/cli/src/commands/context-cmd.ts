@@ -49,7 +49,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
 
     line(
       `${statusLabel(result.status)} ${style.grey(`${result.budget_used} tokens used`)}` +
-        `${result.dropped ? style.yellow(`  dropped ${result.dropped.cards} cards, ${result.dropped.events} events`) : ''}`,
+        `${result.dropped ? style.yellow(`  dropped ${result.dropped.cards} cards, ${result.dropped.timeline ?? result.dropped.events} timeline results`) : ''}`,
     );
     if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
 
@@ -70,10 +70,18 @@ export async function contextCommand(argv: string[]): Promise<number> {
       );
     }
 
-    if (result.events.length > 0) {
+    if (result.timeline.length > 0) {
       heading(`Timeline — last ${values.days ?? 90} days`);
-      for (const event of result.events) {
-        line(`  ${style.bold(event.date)}  ${truncate(event.summary, 78)}`);
+      for (const entry of result.timeline) {
+        if (entry.type === 'event') {
+          line(`  ${style.bold(entry.date)}  ${truncate(entry.summary, 78)}`);
+        } else {
+          line(
+            `  ${style.bold(entry.date)}  ${truncate(entry.label, 62)} ` +
+              style.grey(`[document; ${entry.date_basis}]`),
+          );
+          if (entry.quote) line(`    ${truncate(entry.quote.replaceAll('\n', ' '), 96)}`);
+        }
       }
     }
 

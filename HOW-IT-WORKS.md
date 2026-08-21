@@ -334,10 +334,16 @@ a duplicate page or folder.
 akno timeline --since 2031-01 --until 2031-06
 akno timeline --match boiler
 akno timeline --subject people/ada-marlow
+akno timeline --source document --match warranty
 ```
 
 Events come from the configured timeline ledger and from dated lines on any page. A page can remain
-the canonical home of an event while `timeline` still finds it globally.
+the canonical home of an event while `timeline` still finds it globally. Dated orphan documents can
+appear in the same ordered result list without becoming events: `type: "document_evidence"` records
+whether the date was extracted from a quoted passage or came from visibly labelled file-created/file-modified
+metadata. Owned documents stay under their pages, and file metadata is used only when no supported date can be
+extracted. Model-generated image descriptions cannot supply extracted dates. The authoritative `results`
+field carries both variants; `events` remains the authored-event-only compatibility view.
 
 ### `context`: prepare one bounded agent turn
 
@@ -346,7 +352,7 @@ akno context "the boiler is making a noise again" \
   --budget 8000 --pin household/boiler
 ```
 
-`context` combines pinned pages, recent events, a structure outline, and this turn's recall under
+`context` combines pinned pages, recent events and document date evidence, a structure outline, and this turn's recall under
 one token budget. The parts compete for the same space, so four individually reasonable calls do not
 overflow the model's context when combined.
 
@@ -1279,13 +1285,15 @@ ownership verification. The remaining dream outputs still do not all feed that q
 principles, report-only conflict findings, legacy repair output, and housekeeping retain their existing
 execution or reporting behavior. There is also no snooze or requested-revision decision yet.
 
-### Standalone document dates still need a result type
+### Standalone document retrieval still needs a benchmark
 
 Recall now returns readable orphan documents directly, and `context` carries those results to an attached
 agent. Missing originals now have durable per-file state: a retained extraction or rendition is `degraded`,
 no readable surviving copy is `unavailable`, restoration returns the same identity to `available`, and only
-explicit `forget` retracts the cached evidence. The remaining document-retrieval gap is timeline: it does not
-yet expose dated orphan evidence with an explicit date basis.
+explicit `forget` retracts the cached evidence. Timeline now adds typed `document_evidence` for orphan sources:
+extracted dates carry bounded quotes and document pages, while filesystem fallbacks say `file_created` or
+`file_modified` and never acquire event semantics. The remaining specification gap is the invented mixed-result
+benchmark that measures orphan recall, duplicate rate, page-result regression, and lexical-only behavior.
 
 ### The whole dream should become a plan, apply, verify loop
 
@@ -1351,31 +1359,31 @@ inference so an unresolved claim cannot quietly become a new observation.
 
 ## Command reference
 
-| Command               | Purpose                                                | Writes to the knowledge base?    | Model roles                              |
-| --------------------- | ------------------------------------------------------ | -------------------------------- | ---------------------------------------- |
-| `index`               | Reconcile the index with files                         | no by default                    | embedding, derive                        |
-| `recall <query>`      | Search and return cited page/document cards            | no                               | expansion, embedding, reranker           |
-| `read <slug>`         | Read one page or document directly                     | no                               | none                                     |
-| `list`                | Browse folders, pages, or a tree                       | no                               | none                                     |
-| `timeline`            | Retrieve events by range, subject, or text             | no                               | none                                     |
-| `context <query>`     | Assemble one bounded pre-turn bundle                   | no                               | same as recall                           |
-| `write`               | Create, append, patch, or replace a page               | yes                              | vision only for textless attachments     |
-| `remember <text>`     | Retain durable knowledge and route it                  | yes                              | maintenance or derive, plus recall roles |
-| `folder`              | Declare a folder and its default policy                | yes, `akno.json`               | none                                     |
-| `approve` / `decline` | Resolve a held routing proposal                        | approve may write                | depends on held action                   |
-| `forget`              | Retract a fact or trash a page/document                | yes                              | none                                     |
-| `undo <id>`           | Restore exact bytes from a journalled change           | yes                              | none                                     |
-| `move <from> <to>`    | Move a page and its owned documents                    | yes                              | none                                     |
-| `ingest <path\|url>`  | Extract, name, route, store, and index                 | yes                              | derive; vision when needed               |
-| `inbox`               | Process arrivals in routed folders                     | yes                              | same as ingest                           |
-| `dream`               | Run the seven maintenance phases                       | depends on enabled phases        | maintenance or derive                    |
-| `plan`                | Inspect, decide, and apply durable maintenance items   | apply only                       | none after planning                      |
-| `serve`               | Run the watcher and operation doors                    | no by itself                     | none by itself                           |
-| `service`             | Install, inspect, or remove background jobs            | outside the knowledge base       | none                                     |
-| `doctor`              | Diagnose paths, index, models, and structural warnings | no                               | probes configured roles                  |
-| `rules [path]`        | Explain effective folder policy                        | no                               | none                                     |
-| `config`              | Print resolved, redacted configuration                 | no                               | none                                     |
-| `bench`               | Measure important latency budgets                      | only with explicit write testing | configured search roles                  |
-| `redeploy`            | Build, restart, and wait for the local service         | no knowledge-base write          | none                                     |
+| Command               | Purpose                                                   | Writes to the knowledge base?    | Model roles                              |
+| --------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------------------------- |
+| `index`               | Reconcile the index with files                            | no by default                    | embedding, derive                        |
+| `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker           |
+| `read <slug>`         | Read one page or document directly                        | no                               | none                                     |
+| `list`                | Browse folders, pages, or a tree                          | no                               | none                                     |
+| `timeline`            | Retrieve authored events and typed document date evidence | no                               | none                                     |
+| `context <query>`     | Assemble one bounded pre-turn bundle                      | no                               | same as recall                           |
+| `write`               | Create, append, patch, or replace a page                  | yes                              | vision only for textless attachments     |
+| `remember <text>`     | Retain durable knowledge and route it                     | yes                              | maintenance or derive, plus recall roles |
+| `folder`              | Declare a folder and its default policy                   | yes, `akno.json`               | none                                     |
+| `approve` / `decline` | Resolve a held routing proposal                           | approve may write                | depends on held action                   |
+| `forget`              | Retract a fact or trash a page/document                   | yes                              | none                                     |
+| `undo <id>`           | Restore exact bytes from a journalled change              | yes                              | none                                     |
+| `move <from> <to>`    | Move a page and its owned documents                       | yes                              | none                                     |
+| `ingest <path\|url>`  | Extract, name, route, store, and index                    | yes                              | derive; vision when needed               |
+| `inbox`               | Process arrivals in routed folders                        | yes                              | same as ingest                           |
+| `dream`               | Run the seven maintenance phases                          | depends on enabled phases        | maintenance or derive                    |
+| `plan`                | Inspect, decide, and apply durable maintenance items      | apply only                       | none after planning                      |
+| `serve`               | Run the watcher and operation doors                       | no by itself                     | none by itself                           |
+| `service`             | Install, inspect, or remove background jobs               | outside the knowledge base       | none                                     |
+| `doctor`              | Diagnose paths, index, models, and structural warnings    | no                               | probes configured roles                  |
+| `rules [path]`        | Explain effective folder policy                           | no                               | none                                     |
+| `config`              | Print resolved, redacted configuration                    | no                               | none                                     |
+| `bench`               | Measure important latency budgets                         | only with explicit write testing | configured search roles                  |
+| `redeploy`            | Build, restart, and wait for the local service            | no knowledge-base write          | none                                     |
 
 Add `--help` to a command for its flags. Commands that support structured output accept `--json`.

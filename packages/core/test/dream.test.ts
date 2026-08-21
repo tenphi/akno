@@ -1237,7 +1237,7 @@ describe('the cycle', () => {
     expect(first.run.id).toMatch(/^run_[a-f0-9]{8}$/);
     expect(first.run.finishedAt).not.toBeNull();
     expect(first.run.snapshot).toMatchObject({
-      schemaVersion: 15,
+      schemaVersion: 16,
       requestedPhases: ['housekeeping'],
       plannerVersion: 'dream-lifecycle-v1',
     });

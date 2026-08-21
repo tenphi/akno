@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 15;
+export const SCHEMA_VERSION = 16;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -19,6 +19,7 @@ export const CONFLICT_QUALIFICATION_MIGRATION_INDEX = 4;
 export const MAINTENANCE_RUNS_MIGRATION_INDEX = 5;
 export const ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX = 6;
 export const DOCUMENT_AVAILABILITY_MIGRATION_INDEX = 7;
+export const DOCUMENT_FILE_DATES_MIGRATION_INDEX = 8;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -426,6 +427,20 @@ export const MIGRATIONS: string[] = [
   ALTER TABLE documents ADD COLUMN availability TEXT NOT NULL DEFAULT 'available';
   ALTER TABLE documents ADD COLUMN missing_since TEXT;
   CREATE INDEX documents_availability ON documents(availability, page_id);
+  `,
+  // ── 9. Document filesystem date evidence ─────────────────────────────────
+  // Copied onto the document row because `files` is removed when an original
+  // disappears. Timeline can then keep saying exactly which metadata date it
+  // knows instead of turning a missing source into an empty result.
+  `
+  ALTER TABLE documents ADD COLUMN file_created_at TEXT;
+  ALTER TABLE documents ADD COLUMN file_modified_at TEXT;
+  UPDATE documents
+     SET file_modified_at = (
+       SELECT datetime(CAST(files.mtime_ns AS INTEGER) / 1000000000.0, 'unixepoch')
+         FROM files WHERE files.rel_path = documents.rel_path
+     )
+   WHERE file_modified_at IS NULL;
   `,
 ];
 

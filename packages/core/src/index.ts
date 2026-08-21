@@ -67,6 +67,7 @@ export {
   PROTOCOL_VERSION,
   type Card,
   type DegradedReason,
+  type DocumentTimelineEvidence,
   type AknoOps,
   type ErrorCode,
   type Line,
@@ -74,4 +75,5 @@ export {
   type PageRole,
   type RecallMode,
   type ResultStatus,
+  type TimelineResult,
 } from '@tenphi/akno-protocol';
