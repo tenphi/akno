@@ -546,9 +546,10 @@ pages, ambiguous identity, or unique frontmatter without a lossless disposition 
 
 Contradictions use the same high-risk plan path. `not_a_conflict` and explicitly `time_scoped` claims need no
 edit. `unresolved` adds a managed warning while retaining both authored claims, and `superseded` may turn only
-the stale line into history. Supersession requires an explicit current/as-of/effective signal, every affected
-page must declare `dream: synthesize`, and exact before bytes for all evidence pages are sealed. Model
-confidence, page order, and indexing date cannot select a winner.
+the stale line into history. Supersession requires an explicit dated as-of/effective/from/since boundary, every
+affected page must declare `dream: synthesize`, and exact before bytes for all evidence pages are sealed. The
+same date is copied into history; no other numeric value may be added. Model confidence, page order, and
+indexing date cannot select a winner.
 
 Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure
 reorganization never reach the curator. Completed unchanged and rejected inputs are fingerprinted in

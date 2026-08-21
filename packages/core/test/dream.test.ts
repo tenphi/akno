@@ -73,7 +73,7 @@ async function startStubChat(): Promise<StubServer> {
           : system.startsWith('You are the independent curator for an autonomous memory system')
             ? { outcome: 'approve', reason: 'The sealed contradiction item preserves authored knowledge.' }
             : system.startsWith('A personal knowledge base holds two claims')
-              ? { line: 'Previously, the Zephyr QX-100 warranty was 1111 days.' }
+              ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
               : scripted;
       if (!user.startsWith('Page: ')) lastObserve = user;
 
@@ -765,7 +765,7 @@ As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
     });
     expect(item.operations).toHaveLength(2);
     expect(fs.readFileSync(oldPage, 'utf8')).toContain(
-      'Previously, the Zephyr QX-100 warranty was 1111 days.',
+      'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.',
     );
     expect(fs.readFileSync(currentPage, 'utf8')).toContain(
       'As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.',
@@ -778,7 +778,7 @@ As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
 
     await mem.undo({ change_id: item.changeId! });
     expect(fs.readFileSync(oldPage, 'utf8')).toContain('The Zephyr QX-100 warranty is 1111 days.');
-    expect(fs.readFileSync(oldPage, 'utf8')).not.toContain('Previously,');
+    expect(fs.readFileSync(oldPage, 'utf8')).not.toContain('Before 2002-02-02,');
   });
 
   it('represents an unresolved conflict without changing either authored claim', async () => {

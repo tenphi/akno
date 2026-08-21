@@ -366,7 +366,7 @@
       "verify": true,
       // Include high-risk contradiction items in audit/review/auto curation plans.
       // Model confidence cannot authorize supersession: the current claim must
-      // carry an explicit current/as-of/effective signal, and every affected page
+      // carry an explicit dated as-of/effective/from/since boundary, and every affected page
       // must declare `dream: synthesize`.
       "resolve": true,
       "max_pairs": 40

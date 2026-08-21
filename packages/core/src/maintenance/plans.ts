@@ -378,7 +378,7 @@ function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
       { name: 'all affected pages explicitly allow synthesis', status: 'passed' },
       { name: 'authored names, values, and dates are preserved', status: 'passed' },
       {
-        name: draft.outcome === 'superseded' ? 'explicit current-value signal' : 'no winner selected',
+        name: draft.outcome === 'superseded' ? 'explicit dated current-value boundary' : 'no winner selected',
         status: 'passed',
       },
     ],

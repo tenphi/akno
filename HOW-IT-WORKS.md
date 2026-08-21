@@ -674,10 +674,11 @@ the exact claim-pair fingerprint, model, and prompt version, so unchanged nightl
 **Write behavior:** classification never writes. With `maintenance.conflicts.resolve: true`, a plan-backed
 `curate` run can create a high-risk contradiction item, but only when every affected knowledge page declares
 `dream: synthesize`. `unresolved` adds an Akno-managed warning block without changing either claim.
-`superseded` rewrites only the stale line as retained history; automatic eligibility requires an explicit
-`current`, `as of`, `effective`, `from`, `since`, or `now` signal in the selected claim. Page order, model
-confidence, and index time are never enough. The curator, exact input hashes, information-preservation guards,
-journal undo, re-indexing, and verification are the same ones used by other curation plans.
+`superseded` rewrites only the stale line as retained history; automatic eligibility requires an exact
+`YYYY-MM-DD` boundary introduced by `as of`, `effective`, `from`, or `since` in the selected claim. That exact
+date is carried into the historical line, and no other numeric value may be added. Page order, model confidence,
+and index time are never enough. The curator, exact input hashes, information-preservation guards, journal undo,
+re-indexing, and verification are the same ones used by other curation plans.
 
 ### Phase 2: `observe` — infer patterns across authored facts
 

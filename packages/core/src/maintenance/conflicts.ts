@@ -149,9 +149,9 @@ Allowed outcomes:
 - unresolved: the claims are incompatible but the supplied text does not prove which one is current.
 
 For superseded, "current" must be copied exactly from one supplied slug. Never infer recency from page order,
-confidence, or the date Akno first indexed a page. Use superseded only when the claim text itself says current,
-as-of, effective, from, since, or now. When uncertain, use unresolved. The reason must describe the class of
-evidence without repeating names, values, or claim text.`;
+confidence, or the date Akno first indexed a page. Use superseded only when the claim text itself establishes
+an exact YYYY-MM-DD boundary with as-of, effective, from, or since. When uncertain, use unresolved. The reason
+must describe the class of evidence without repeating names, values, or claim text.`;
 
 export const VERIFY_SCHEMA = z.object({
   outcome: z.enum(['not_a_conflict', 'time_scoped', 'superseded', 'unresolved']),
@@ -224,7 +224,10 @@ export async function verifyConflicts(
     // authorizes an unattended rewrite. Downgrading keeps both claims and excludes them from inference.
     if (
       verdict === 'superseded' &&
-      (!current || !candidate.claims.some((claim) => claim.slug === current && explicitCurrent(claim.claim)))
+      (!current ||
+        !candidate.claims.some(
+          (claim) => claim.slug === current && explicitCurrentBoundary(claim.claim) !== null,
+        ))
     ) {
       verdict = 'unresolved';
     }
@@ -285,8 +288,10 @@ export function claimKey(slug: string, line: number): string {
   return `${slug}\u0000${line}`;
 }
 
-function explicitCurrent(claim: string): boolean {
-  return /\b(?:currently|current|now|as\s+of|effective(?:ly)?|from|since)\b/i.test(claim);
+/** A dated boundary that can be copied into retained history without inventing chronology. */
+export function explicitCurrentBoundary(claim: string): string | null {
+  const match = /\b(?:as\s+of|effective(?:\s+on)?|from|since)\s*:?[ \t]*(\d{4}-\d{2}-\d{2})\b/i.exec(claim);
+  return match?.[1] ?? null;
 }
 
 function explicitTimeScope(claim: string): boolean {

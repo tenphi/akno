@@ -135,7 +135,8 @@ async function chooseTarget(
 }
 
 const REWRITE_STALE = `A personal knowledge base holds two claims about the same thing, and one of them is no longer
-current. You are given the sentence that is out of date and the claim that replaced it.
+current. You are given the sentence that is out of date, the claim that replaced it, and the exact effective
+date established by that current claim.
 
 Rewrite the out-of-date sentence so it reads as history rather than as a current fact. Reply with JSON only:
 
@@ -143,6 +144,8 @@ Rewrite the out-of-date sentence so it reads as history rather than as a current
 
 Rules:
 - Keep every number, name and date exactly as it appears. You are changing the tense, not the value.
+- State explicitly that the old claim applied before the supplied effective date. Copy that date exactly.
+- Do not add any other number or date.
 - Keep the sentence's own formatting: if it starts with "- " or "**Rent:**", keep that.
 - One line. Never add a second sentence, and never add anything that was not already known.
 - If the sentence cannot be rewritten without changing what it says, reply {"line": null}.`;
@@ -157,12 +160,22 @@ export const REWRITE_SCHEMA = z.object({ line: z.string().nullable() });
  * durable way to say "this was true once" — and it is also the least destructive, because the claim
  * and its value are still on the page for anyone reading it.
  */
-async function rewriteAsHistory(ctx: AknoContext, stale: string, current: string): Promise<string | null> {
+async function rewriteAsHistory(
+  ctx: AknoContext,
+  stale: string,
+  current: string,
+  boundary?: string,
+): Promise<string | null> {
   if (!ctx.models.derive.available) return null;
   const result = await ctx.models.derive.chat(
     [
       { role: 'system', content: REWRITE_STALE },
-      { role: 'user', content: `Out of date:\n${stale}\n\nReplaced by:\n${current}` },
+      {
+        role: 'user',
+        content:
+          `Out of date:\n${stale}\n\nReplaced by:\n${current}` +
+          (boundary ? `\n\nEffective date:\n${boundary}` : ''),
+      },
     ],
     { schema: REWRITE_SCHEMA, maxTokens: 300 },
   );

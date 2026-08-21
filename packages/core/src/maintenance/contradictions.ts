@@ -7,7 +7,7 @@ import {
   preservesValues,
   rewriteAsHistoryForTesting as rewriteAsHistory,
 } from './repair.ts';
-import type { CrossPageConflict } from './conflicts.ts';
+import { explicitCurrentBoundary, type CrossPageConflict } from './conflicts.ts';
 
 interface ContradictionOperationDraft {
   slug: string;
@@ -120,6 +120,8 @@ async function supersededDraft(
   const current = conflict.claims.filter((claim) => claim.slug === conflict.likelyCurrent);
   const stale = conflict.claims.filter((claim) => claim.slug !== conflict.likelyCurrent);
   if (current.length !== 1 || stale.length === 0) return null;
+  const boundary = explicitCurrentBoundary(current[0]!.claim);
+  if (!boundary) return null;
 
   const afterBySlug = new Map([...pages].map(([slug, page]) => [slug, page.before]));
   for (const claim of stale) {
@@ -130,11 +132,13 @@ async function supersededDraft(
     const beforeLine = lines[claim.line - 1];
     if (beforeLine === undefined || !beforeLine.includes(claim.value)) return null;
 
-    const rewritten = await rewriteAsHistory(ctx, beforeLine, current[0]!.claim);
+    const rewritten = await rewriteAsHistory(ctx, beforeLine, current[0]!.claim, boundary);
     if (
       !rewritten ||
       rewritten === beforeLine ||
+      !rewritten.includes(boundary) ||
       !preservesValues(beforeLine, rewritten) ||
+      !preservesValues(rewritten, `${beforeLine} ${boundary}`) ||
       !preservesAuthoredTokens(beforeLine, rewritten)
     ) {
       return null;
