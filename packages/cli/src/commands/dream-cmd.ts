@@ -234,30 +234,38 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
     }
   }
 
-  const real = report.conflicts.filter((entry) => entry.verdict !== 'not_a_conflict');
-  const cleared = report.conflicts.length - real.length;
+  const actionable = report.conflicts.filter((entry) =>
+    ['superseded', 'unresolved', 'unverified'].includes(entry.verdict),
+  );
+  const cleared = report.conflicts.length - actionable.length;
   if (report.conflicts.length > 0) {
     // A run that examined five candidates and cleared them must not look like a run that
     // found nothing: the second says the pass works, the first says it also judged.
     heading(
-      `${report.conflicts.length} conflict candidate(s) — ${real.length} to look at` +
-        (cleared > 0 ? `, ${cleared} judged not a conflict` : ''),
+      `${report.conflicts.length} conflict candidate(s) — ${actionable.length} need handling` +
+        (cleared > 0 ? `, ${cleared} cleared or time-scoped` : ''),
     );
     if (privateDetails) {
-      for (const conflict of real) {
-        const verdict = conflict.verdict === 'real' ? style.red('conflict') : style.yellow('unverified');
+      for (const conflict of actionable) {
+        const verdict =
+          conflict.verdict === 'superseded'
+            ? style.red('superseded')
+            : style.yellow(conflict.verdict.replaceAll('_', ' '));
         line(`  ${verdict} ${style.bold(`${conflict.subject} / ${conflict.attribute}`)}`);
         for (const claim of conflict.claims) {
           const current = conflict.likelyCurrent === claim.slug ? style.green('  ← likely current') : '';
           line(`    ${style.grey(`${claim.slug}:${claim.line}`)}  ${truncate(claim.claim, 76)}${current}`);
         }
       }
-    } else if (real.length > 0) {
+    } else if (actionable.length > 0) {
       line(`  ${style.grey('private claims and source locations omitted; rerun with --private-details')}`);
     }
-    if (real.length > 0) {
+    if (
+      actionable.length > 0 &&
+      !report.maintenancePlan?.items.some((item) => item.kind === 'contradiction')
+    ) {
       line(
-        `\n  ${style.grey('nothing was changed — decide, then')} ${style.bold('akno write … --resolve-conflict')}`,
+        `\n  ${style.grey('no contradiction item was applied; use')} ${style.bold('akno dream --phase curate --mode audit')} ${style.grey('to inspect eligible plans')}`,
       );
     }
   }
@@ -465,7 +473,9 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     },
     conflicts: {
       total: report.conflicts.length,
-      real: conflicts.real ?? 0,
+      superseded: conflicts.superseded ?? 0,
+      unresolved: conflicts.unresolved ?? 0,
+      timeScoped: conflicts.time_scoped ?? 0,
       unverified: conflicts.unverified ?? 0,
       notAConflict: conflicts.not_a_conflict ?? 0,
     },

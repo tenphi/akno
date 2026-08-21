@@ -492,19 +492,19 @@ Nothing is routed or named, because the caller already decided both.
 
 ## The maintenance cycle
 
-`akno dream` runs seven selectable, repeat-safe phases. Claim repair consumes verdicts from the preceding
-conflict phase in a full run; running `--phase repair` alone can still repair links but has no fresh conflict
-verdicts to apply.
+`akno dream` runs seven selectable, repeat-safe phases. Conflict classification runs first so unresolved or
+unverified claims cannot feed observation, reflection, or synthesis. Selecting `observe`, `reflect`, or
+`curate` alone still performs that prerequisite inspection.
 
-| Phase          | Writes?       | What it does                                                                                                                                                                                                 |
-| -------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `observe`      | appends       | Combines repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                                                  |
-| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                                 |
-| `curate`       | preview/write | Hygiene or full synthesis only for pages that explicitly opt in, including atomic splits, independent extraction, and configured exact-alias merge. Draft, verifier and deterministic guards must all agree. |
-| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                                                   |
-| `conflicts`    | no            | Facts on **different** pages stating different values for one thing — which inline checking cannot see.                                                                                                      |
-| `repair`       | optional      | Applies explicitly enabled mechanical link/conflict repairs as one undoable change.                                                                                                                          |
-| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                         |
+| Phase          | Writes?       | What it does                                                                                                                                                                                   |
+| -------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, unresolved, or unverified; disputed claims are withheld from inference.                                             |
+| `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                  |
+| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                   |
+| `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
+| `adopt`        | new pages     | A page for a document that has none, beside the file — so its text can be returned at all.                                                                                                     |
+| `repair`       | optional      | Applies explicitly enabled mechanical broken-link repairs as one undoable change. Contradictions never bypass the plan lifecycle here.                                                         |
+| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                           |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
 phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
@@ -543,6 +543,12 @@ An exact-alias merge is a high-risk plan item available only in configured `merg
 unique authored line, rewrites all eligible inbound links, records the retired slug and title as aliases, and
 deletes the duplicate in one verified, undoable transaction. Conflicts, document ownership, protected inbound
 pages, ambiguous identity, or unique frontmatter without a lossless disposition block the merge.
+
+Contradictions use the same high-risk plan path. `not_a_conflict` and explicitly `time_scoped` claims need no
+edit. `unresolved` adds a managed warning while retaining both authored claims, and `superseded` may turn only
+the stale line into history. Supersession requires an explicit current/as-of/effective signal, every affected
+page must declare `dream: synthesize`, and exact before bytes for all evidence pages are sealed. Model
+confidence, page order, and indexing date cannot select a winner.
 
 Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure
 reorganization never reach the curator. Completed unchanged and rejected inputs are fingerprinted in
@@ -653,8 +659,8 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   it only considers pages whose own frontmatter opts into `hygiene` or `synthesize`. `--mode auto` is explicit
   per-run authority for opted-in curation; `maintenance.curate.mode` gives the nightly phase the same
   authority when the owner deliberately configures it.
-- **`repair`** — automatic link and stale-claim edits. The actions are guarded, bounded, journalled, and still
-  edits to pages you wrote, so the phase is off.
+- **`repair`** — automatic broken-link edits. The action is guarded, bounded, journalled, and still edits
+  pages you wrote, so the phase is off. Contradiction edits are controlled by curate's audit/review/auto mode.
 - **`maintenance.log_changes`** — a full record of every cycle run appended to
   `<state_dir>/logs/dream.jsonl`: what it applied with the lines it added, what a guardrail refused and which
   guard refused it, what was skipped and why. It is the fastest way to decide whether to trust the cycle, and

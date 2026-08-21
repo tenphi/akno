@@ -129,8 +129,9 @@ export interface Akno extends AknoOps {
    */
   inbox(options?: { limit?: number }): Promise<InboxResult>;
   /**
-   * The maintenance cycle: observe, reflect, adopt, the thorough conflict pass, and the
-   * housekeeping report. Phases are independent and each is safe to re-run.
+   * The maintenance cycle: conflict-first inspection, inference, plan-backed curation,
+   * adoption, bounded link repair, and housekeeping. Phases are safe to re-run; selecting an
+   * inference or curation phase still performs its conflict prerequisite.
    *
    * Needs the write handle, because `observe` writes pages — and one process at a time, for
    * the same reason indexing does.

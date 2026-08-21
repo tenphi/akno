@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import { sha256 } from '../store/ids.ts';
 import { valuesConflict } from '../write/conflict.ts';
 
 /**
@@ -31,6 +32,8 @@ export interface ConflictClaim {
 }
 
 export interface CrossPageConflict {
+  /** Stable for the exact indexed claims and prompt policy; changes when any claim changes. */
+  fingerprint: string;
   subject: string;
   attribute: string;
   claims: ConflictClaim[];
@@ -38,9 +41,11 @@ export interface CrossPageConflict {
    * A model's judgement, when one ran. `unverified` is honest and common: the pass reports
    * structural candidates whether or not a model was available to judge them.
    */
-  verdict: 'real' | 'not_a_conflict' | 'unverified';
+  verdict: 'not_a_conflict' | 'time_scoped' | 'superseded' | 'unresolved' | 'unverified';
   /** Which claim the model thinks is current, when it had an opinion. */
   likelyCurrent?: string;
+  /** Content-safe classifier rationale. Never includes claim excerpts. */
+  reason?: string;
 }
 
 interface FactRow {
@@ -96,7 +101,8 @@ export function findCrossPageConflicts(ctx: AknoContext, maxPairs: number): Cros
     if (disagreeing.length < 2) continue;
 
     const [subject, attribute] = key.split('|');
-    out.push({
+    const conflict: CrossPageConflict = {
+      fingerprint: '',
       subject: subject!,
       attribute: attribute!,
       claims: disagreeing.map((fact) => ({
@@ -108,7 +114,9 @@ export function findCrossPageConflicts(ctx: AknoContext, maxPairs: number): Cros
         seen: fact.first_seen.slice(0, 10),
       })),
       verdict: 'unverified',
-    });
+    };
+    conflict.fingerprint = conflictFingerprint(conflict);
+    out.push(conflict);
     if (out.length >= maxPairs) break;
   }
   return out;
@@ -127,22 +135,29 @@ function pickDisagreeing(facts: FactRow[]): FactRow[] {
   return [];
 }
 
-const VERIFY = `You judge whether two claims from a personal knowledge base genuinely contradict each other.
+const CONFLICT_PROMPT_VERSION = 'typed-v1';
+
+const VERIFY = `You classify structurally incompatible claims from a personal knowledge base.
 
 Reply with JSON only:
-{ "conflict": true, "current": "the slug of the claim more likely to be current, or null" }
+{ "outcome": "unresolved", "current": null, "reason": "brief content-safe reason" }
 
-Two claims conflict when they state different values for the same thing at the same time. They do NOT
-conflict when:
-- They describe different things that happen to share a label.
-- They are the same value written differently, or one is a rounding of the other.
-- They are true of different periods, and both say so.
-- One is a total and the other a part of it.
+Allowed outcomes:
+- not_a_conflict: different subjects, fields, scopes, equivalent values, or total-versus-part.
+- time_scoped: both claims explicitly describe different periods and can remain true together.
+- superseded: one claim explicitly establishes the current/effective value and the other is stale history.
+- unresolved: the claims are incompatible but the supplied text does not prove which one is current.
 
-When you cannot tell, answer false. A false alarm wastes someone's afternoon looking for a contradiction
-that was never there.`;
+For superseded, "current" must be copied exactly from one supplied slug. Never infer recency from page order,
+confidence, or the date Akno first indexed a page. Use superseded only when the claim text itself says current,
+as-of, effective, from, since, or now. When uncertain, use unresolved. The reason must describe the class of
+evidence without repeating names, values, or claim text.`;
 
-export const VERIFY_SCHEMA = z.object({ conflict: z.boolean(), current: z.string().nullable() });
+export const VERIFY_SCHEMA = z.object({
+  outcome: z.enum(['not_a_conflict', 'time_scoped', 'superseded', 'unresolved']),
+  current: z.string().nullable(),
+  reason: z.string(),
+});
 
 /**
  * Asks the derive model whether each candidate really is a contradiction.
@@ -164,6 +179,11 @@ export async function verifyConflicts(
   const conflicts: CrossPageConflict[] = [];
 
   for (const candidate of candidates) {
+    const cached = cachedVerdict(ctx, candidate);
+    if (cached) {
+      conflicts.push(cached);
+      continue;
+    }
     const listed = candidate.claims
       .map((claim) => `- [${claim.slug}] ${claim.claim} (recorded ${claim.seen})`)
       .join('\n');
@@ -183,25 +203,145 @@ export async function verifyConflicts(
       continue;
     }
 
-    const parsed = parseJsonLoose<{ conflict?: unknown; current?: unknown }>(result.value);
-    if (!parsed || typeof parsed.conflict !== 'boolean') {
+    const parsed = parseJsonLoose<{ outcome?: unknown; current?: unknown; reason?: unknown }>(result.value);
+    if (
+      !parsed ||
+      !['not_a_conflict', 'time_scoped', 'superseded', 'unresolved'].includes(String(parsed.outcome)) ||
+      typeof parsed.reason !== 'string'
+    ) {
       conflicts.push(candidate);
       continue;
     }
 
+    const proposed = parsed.outcome as Exclude<CrossPageConflict['verdict'], 'unverified'>;
+    let verdict = proposed;
     const current =
       typeof parsed.current === 'string' && candidate.claims.some((claim) => claim.slug === parsed.current)
         ? parsed.current
         : undefined;
 
-    conflicts.push({
+    // A model may recognize a likely chronology, but it cannot create the temporal evidence that
+    // authorizes an unattended rewrite. Downgrading keeps both claims and excludes them from inference.
+    if (
+      verdict === 'superseded' &&
+      (!current || !candidate.claims.some((claim) => claim.slug === current && explicitCurrent(claim.claim)))
+    ) {
+      verdict = 'unresolved';
+    }
+    if (verdict === 'time_scoped' && !candidate.claims.every((claim) => explicitTimeScope(claim.claim))) {
+      verdict = 'unresolved';
+    }
+
+    const classified: CrossPageConflict = {
       ...candidate,
-      verdict: parsed.conflict ? 'real' : 'not_a_conflict',
-      ...(current ? { likelyCurrent: current } : {}),
-    });
+      verdict,
+      ...(verdict === 'superseded' && current ? { likelyCurrent: current } : {}),
+      reason:
+        verdict === proposed
+          ? `classifier selected ${verdict}`
+          : `classifier selected ${proposed}, but deterministic temporal evidence was insufficient; treated as unresolved`,
+    };
+    conflicts.push(classified);
+    cacheVerdict(ctx, classified);
   }
 
   return { conflicts, warnings };
+}
+
+function conflictFingerprint(conflict: Pick<CrossPageConflict, 'subject' | 'attribute' | 'claims'>): string {
+  return sha256(
+    JSON.stringify({
+      prompt: CONFLICT_PROMPT_VERSION,
+      subject: normalize(conflict.subject),
+      attribute: normalize(conflict.attribute),
+      claims: [...conflict.claims]
+        .map((claim) => ({
+          slug: claim.slug,
+          line: claim.line,
+          value: normalize(claim.value),
+          claim: normalize(claim.claim),
+        }))
+        .sort((a, b) => `${a.slug}:${a.line}`.localeCompare(`${b.slug}:${b.line}`)),
+    }),
+  );
+}
+
+/** Claims that must not support a new observation or principle in this run. */
+export function ineligibleConflictClaims(conflicts: CrossPageConflict[]): Set<string> {
+  const out = new Set<string>();
+  for (const conflict of conflicts) {
+    if (conflict.verdict === 'unresolved' || conflict.verdict === 'unverified') {
+      for (const claim of conflict.claims) out.add(claimKey(claim.slug, claim.line));
+    } else if (conflict.verdict === 'superseded') {
+      for (const claim of conflict.claims) {
+        if (claim.slug !== conflict.likelyCurrent) out.add(claimKey(claim.slug, claim.line));
+      }
+    }
+  }
+  return out;
+}
+
+export function claimKey(slug: string, line: number): string {
+  return `${slug}\u0000${line}`;
+}
+
+function explicitCurrent(claim: string): boolean {
+  return /\b(?:currently|current|now|as\s+of|effective(?:ly)?|from|since)\b/i.test(claim);
+}
+
+function explicitTimeScope(claim: string): boolean {
+  return (
+    /\b(?:before|after|until|during|between|from|since|previously|formerly|as\s+of|effective(?:ly)?|in\s+\d{4})\b/i.test(
+      claim,
+    ) || /\b\d{4}-\d{2}(?:-\d{2})?\b/.test(claim)
+  );
+}
+
+function cachedVerdict(ctx: AknoContext, candidate: CrossPageConflict): CrossPageConflict | null {
+  if (!conflictCacheAvailable(ctx)) return null;
+  const row = ctx.store.db
+    .prepare(
+      `SELECT verdict, current_slug, reason FROM conflict_verdicts
+       WHERE fingerprint = ? AND model_id = ? AND prompt_version = ?`,
+    )
+    .get(candidate.fingerprint, ctx.models.derive.modelId ?? '', CONFLICT_PROMPT_VERSION) as
+    { verdict: CrossPageConflict['verdict']; current_slug: string | null; reason: string | null } | undefined;
+  if (!row || row.verdict === 'unverified') return null;
+  return {
+    ...candidate,
+    verdict: row.verdict,
+    ...(row.current_slug ? { likelyCurrent: row.current_slug } : {}),
+    ...(row.reason ? { reason: row.reason } : {}),
+  };
+}
+
+function cacheVerdict(ctx: AknoContext, conflict: CrossPageConflict): void {
+  if (!ctx.writable || !conflictCacheAvailable(ctx) || conflict.verdict === 'unverified') return;
+  ctx.store.db
+    .prepare(
+      `INSERT INTO conflict_verdicts
+         (fingerprint, model_id, prompt_version, verdict, current_slug, reason, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(fingerprint, model_id, prompt_version) DO UPDATE SET
+         verdict = excluded.verdict, current_slug = excluded.current_slug,
+         reason = excluded.reason, updated_at = excluded.updated_at`,
+    )
+    .run(
+      conflict.fingerprint,
+      ctx.models.derive.modelId ?? '',
+      CONFLICT_PROMPT_VERSION,
+      conflict.verdict,
+      conflict.likelyCurrent ?? null,
+      conflict.reason ?? null,
+      new Date().toISOString(),
+    );
+}
+
+function conflictCacheAvailable(ctx: AknoContext): boolean {
+  const row = ctx.store.db
+    .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'conflict_verdicts'")
+    .get() as { present: number } | undefined;
+  return row?.present === 1;
 }
 
 function normalize(value: string): string {

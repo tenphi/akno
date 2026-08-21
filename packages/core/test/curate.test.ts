@@ -381,11 +381,11 @@ describe('plan-backed hygiene', () => {
     const report = await mem.dream();
 
     expect(report.phases.map((phase) => phase.phase)).toEqual([
+      'conflicts',
       'observe',
       'reflect',
       'curate',
       'adopt',
-      'conflicts',
       'repair',
       'housekeeping',
     ]);

@@ -13,15 +13,13 @@ import type { CrossPageConflict } from './conflicts.ts';
  *
  * So this one changes files, and everything about it is shaped by that being the dangerous part:
  *
- * - **Nothing is deleted.** A broken link is repointed, never removed. A stale claim is rewritten
- *   into the past tense, never cut — the sentence stays in the file, which is what makes it show up
- *   as *superseded* rather than vanishing.
- * - **A repair must be checkable.** Every link repoint names a page that exists; every conflict
- *   rewrite must keep the original value in the sentence, or it is refused. A model that decides a
- *   rent is now a different number is doing the one thing this must never do.
+ * - **Nothing is deleted.** A broken link is repointed, never removed.
+ * - **A repair must be checkable.** Every link repoint names a page that exists.
  * - **One change per night**, journalled, so a run you disagree with is one `undo` away.
  * - **A ceiling per run**, so a bad night is a small bad night.
  *
+ * Conflict history rewriting helpers remain here, but are used only while constructing sealed,
+ * separately curated contradiction plans. The repair phase itself no longer bypasses that lifecycle.
  * Off by default. The other tiers being wrong costs a paragraph nobody asked for; this one being
  * wrong edits your notes.
  */
@@ -44,6 +42,7 @@ interface ClaimRepair {
 
 export interface RepairResult {
   links: LinkRepair[];
+  /** Retained for report compatibility; plan-backed contradiction items own new claim rewrites. */
   claims: ClaimRepair[];
   /** What was found but deliberately not touched, and why. Reported, never silent. */
   declined: { what: string; reason: string }[];
@@ -186,6 +185,44 @@ export function preservesValues(before: string, after: string): boolean {
   return missingNumericValues(before, after).length === 0;
 }
 
+/**
+ * A history rewrite may change grammar, but it may not silently rename a subject, place, product,
+ * or other authored content. Common glue words are excluded so adding "Previously" and changing
+ * "is" to "was" remains possible; every meaningful alphanumeric token must survive.
+ */
+function missingAuthoredTokens(before: string, after: string): string[] {
+  const ignored = new Set([
+    'and',
+    'are',
+    'been',
+    'for',
+    'from',
+    'has',
+    'have',
+    'into',
+    'is',
+    'its',
+    'of',
+    'on',
+    'the',
+    'to',
+    'was',
+    'were',
+    'with',
+  ]);
+  const authoredTokens = (value: string): string[] =>
+    value
+      .toLowerCase()
+      .match(/[\p{L}\p{N}]+/gu)
+      ?.filter((token) => token.length >= 3 && !ignored.has(token)) ?? [];
+  const present = new Set(authoredTokens(after));
+  return [...new Set(authoredTokens(before).filter((token) => !present.has(token)))];
+}
+
+export function preservesAuthoredTokens(before: string, after: string): boolean {
+  return missingAuthoredTokens(before, after).length === 0;
+}
+
 /** The exact tokens behind `preservesValues`, for guardrail diagnostics and audit logs. */
 export function missingNumericValues(before: string, after: string): string[] {
   const afterValues = new Set(numericValues(after).map((value) => value.canonical));
@@ -239,7 +276,7 @@ function canonicalNumber(value: string): string {
 /** Conflicts worth acting on: judged real, with a claim the model named as current. */
 export function actionable(conflicts: CrossPageConflict[]): CrossPageConflict[] {
   return conflicts.filter(
-    (conflict) => conflict.verdict === 'real' && conflict.likelyCurrent && conflict.claims.length >= 2,
+    (conflict) => conflict.verdict === 'superseded' && conflict.likelyCurrent && conflict.claims.length >= 2,
   );
 }
 

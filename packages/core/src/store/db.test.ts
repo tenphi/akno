@@ -64,9 +64,13 @@ describe('schema migration', () => {
       )
       .all() as { name: string }[];
     const columns = store.db.pragma('table_info(maintenance_items)') as { name: string }[];
+    const conflictCache = store.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'conflict_verdicts'")
+      .get() as { name: string } | undefined;
 
     expect(tables.map((row) => row.name)).toEqual(['maintenance_items', 'maintenance_plans']);
     expect(columns.map((row) => row.name)).toContain('evidence');
+    expect(conflictCache?.name).toBe('conflict_verdicts');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

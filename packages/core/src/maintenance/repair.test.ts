@@ -98,14 +98,15 @@ describe('which conflicts are safe to act on', () => {
   });
 
   const conflict = (over: Partial<CrossPageConflict>): CrossPageConflict => ({
+    fingerprint: 'invented-conflict-fingerprint',
     subject: 'rent',
     attribute: 'amount',
     claims: [claim('household/lease', '1450'), claim('household/budget', '1495')],
-    verdict: 'real',
+    verdict: 'superseded',
     ...over,
   });
 
-  it('acts only on a conflict a model judged real and could date', () => {
+  it('acts only on a conflict classified as superseded with a current page', () => {
     expect(actionable([conflict({ likelyCurrent: 'household/budget' })])).toHaveLength(1);
   });
 

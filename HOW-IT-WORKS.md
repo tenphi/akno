@@ -624,34 +624,62 @@ depends strongly on data volume and model quality.
 
 ```mermaid
 flowchart LR
-    observe["1. observe"] --> reflect["2. reflect"] --> curate["3. curate"] --> adopt["4. adopt"] --> conflicts["5. conflicts"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
+    conflicts["1. conflicts"] --> observe["2. observe"] --> reflect["3. reflect"] --> curate["4. curate"] --> adopt["5. adopt"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
 ```
 
 Order matters in three places:
 
+- `conflicts` runs before every inference and transformation phase. Unresolved and unverified claims are
+  removed from observation inputs claim-by-claim; observations backed by those claims are withheld from
+  reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this prerequisite inspection.
 - `reflect` reads observations, so `observe` runs first.
-- Claim repair consumes conflict verdicts from the same full run, so `conflicts` runs before `repair`.
-  Running `--phase repair` alone can still repair uniquely resolvable links, but it has no fresh
-  conflict verdicts to act on.
 - `housekeeping` runs last so its counts describe the state after adoption and enabled repairs.
 
 ### Phase summary
 
-| Phase          | Reads                                                                        | Produces                                                | Writes by default?                  | Model?                          |
-| -------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------- | ------------------------------- |
-| `observe`      | Durable facts from at least two knowledge pages                              | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive           |
-| `reflect`      | Existing observation pages                                                   | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive           |
-| `curate`       | Explicitly opted-in knowledge pages, linked evidence, conflicts, event state | Verified hygiene or synthesis proposals                 | no; phase and write switch disabled | maintenance or derive           |
-| `adopt`        | Readable documents with no owning page                                       | Minimal page beside each eligible document              | **yes**, capped at 20 per run       | no new call                     |
-| `conflicts`    | Live facts on different knowledge pages                                      | Conflict candidates and optional verdicts               | no                                  | optional verification           |
-| `repair`       | Broken links and conflict verdicts                                           | Bounded link and stale-claim edits                      | no; phase disabled                  | only ambiguous choices/rewrites |
-| `housekeeping` | Links, documents, pages, and folder rules                                    | Counts and actionable diagnostics                       | no                                  | no                              |
+| Phase          | Reads                                                                 | Produces                                                | Writes by default?                  | Model?                        |
+| -------------- | --------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------- | ----------------------------- |
+| `conflicts`    | Live facts on different knowledge pages                               | Typed verdicts and inference eligibility                | no                                  | optional verification         |
+| `observe`      | Conflict-eligible facts from at least two knowledge pages             | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive         |
+| `reflect`      | Conflict-eligible observation pages                                   | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive         |
+| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, and event state | Verified page and contradiction plans                   | no; phase and write switch disabled | maintenance or derive         |
+| `adopt`        | Readable documents with no owning page                                | Minimal page beside each eligible document              | **yes**, capped at 20 per run       | no new call                   |
+| `repair`       | Broken links                                                          | Bounded link replacements                               | no; phase disabled                  | only ambiguous target choices |
+| `housekeeping` | Links, documents, pages, and folder rules                             | Counts and actionable diagnostics                       | no                                  | no                            |
 
 The default dream therefore has one automatic write-capable phase: `adopt`. It creates pages for
 otherwise unreachable documents, but never moves or edits the document itself. `conflicts` and
 `housekeeping` report. The other writing phases require explicit opt-in.
 
-### Phase 1: `observe` — infer patterns across authored facts
+### Phase 1: `conflicts` — classify disagreements before inference
+
+**Problem it solves:** the interactive write check sees only the page being changed. Two untouched pages can
+state different values for the same subject and attribute.
+
+**Method:** join sufficiently confident live facts from different `knowledge` pages, find disagreeing
+values, and optionally ask the maintenance model whether they truly describe the same thing at the same time.
+
+**Output:** every candidate receives one of five typed verdicts:
+
+- `not_a_conflict`: different periods, scopes, or equivalent values explain the difference;
+- `time_scoped`: both claims explicitly describe different periods and may remain true together;
+- `superseded`: one claim explicitly establishes the current value and the other can become history;
+- `unresolved`: the claims disagree and the supplied text does not prove which is current;
+- `unverified`: structural evidence exists, but no reliable model verdict was available.
+
+`unresolved` and `unverified` claims cannot support a new observation or principle. For `superseded`, only
+the explicitly current claim remains inference-eligible while its plan is pending. Verdicts are cached by
+the exact claim-pair fingerprint, model, and prompt version, so unchanged nightly runs do not reclassify them.
+
+**Write behavior:** classification never writes. With `maintenance.conflicts.resolve: true`, a plan-backed
+`curate` run can create a high-risk contradiction item, but only when every affected knowledge page declares
+`dream: synthesize`. `unresolved` adds an Akno-managed warning block without changing either claim.
+`superseded` rewrites only the stale line as retained history; automatic eligibility requires an explicit
+`current`, `as of`, `effective`, `from`, `since`, or `now` signal in the selected claim. Page order, model
+confidence, and index time are never enough. The curator, exact input hashes, information-preservation guards,
+journal undo, re-indexing, and verification are the same ones used by other curation plans.
+
+### Phase 2: `observe` — infer patterns across authored facts
 
 **Problem it solves:** repeated facts can imply a stable pattern that no single page states.
 
@@ -680,7 +708,7 @@ about health, relationships, finances, beliefs, or character are out of bounds.
 }
 ```
 
-### Phase 2: `reflect` — derive principles from observations
+### Phase 3: `reflect` — derive principles from observations
 
 **Problem it attempts to solve:** useful observations may support a durable decision principle or
 long-term tendency.
@@ -694,7 +722,7 @@ long-term tendency.
 pages, an apparent pattern may be one coincidence away from noise. Enable it only when `observe` already
 produces consistently valuable material and the knowledge base contains enough repeated history.
 
-### Phase 3: `curate` — maintain pages that explicitly permit it
+### Phase 4: `curate` — maintain pages that explicitly permit it
 
 **Problem it solves:** a canonical page can accumulate duplicated sections, weak formatting, unresolved
 contradictions, and scattered linked evidence.
@@ -721,6 +749,11 @@ evidence-backed knowledge, an allowed evidence link, temporal metadata, a bounde
 extraction. Merge candidates use a separate exact-alias and information-preservation contract. Heading-only
 edits, formatting churn, and pure reorganization are rejected before the verifier or curator. Plan-backed
 curation seals the resulting exact operations only after those checks.
+
+Typed `superseded` and `unresolved` conflicts join this same plan in all three trust modes. Contradiction
+items are always high risk, replace every affected opted-in page atomically, and take priority over a general
+synthesis of the same bytes in that run. This prevents two individually valid items from making the second
+one stale by construction.
 
 **Write authority has three gates:**
 
@@ -895,7 +928,7 @@ For bounded event pages, synthesis can add an Akno-owned temporal declaration us
 already present in the page. When an event ends, one archival assessment may reorganize later knowledge,
 but a passed date is never treated as proof that a plan happened.
 
-### Phase 4: `adopt` — make unowned documents retrievable
+### Phase 5: `adopt` — make unowned documents retrievable
 
 **Problem it solves:** extracted document text cannot appear in a page-card result when no page owns the
 document.
@@ -911,36 +944,15 @@ instead of creating a near-duplicate.
 **Model use:** no new call. It uses extraction and summary data already in the index; if no summary exists,
 the page states only that the stored document is indexed and searchable.
 
-### Phase 5: `conflicts` — find disagreements across pages
-
-**Problem it solves:** the interactive write check sees only the page being changed. Two untouched pages can
-state different values for the same subject and attribute.
-
-**Method:** join sufficiently confident live facts from different `knowledge` pages, find disagreeing
-values, and optionally ask the maintenance model whether they truly describe the same thing at the same time.
-
-**Output:** every candidate receives one of three honest verdicts:
-
-- `real`: the claims appear to conflict;
-- `not_a_conflict`: different periods, scopes, or equivalent values explain the difference;
-- `unverified`: structural evidence exists, but no reliable model verdict was available.
-
-**Write behavior:** never. This phase reports evidence and a likely-current page when the verifier can
-identify one. It does not choose a truth or edit a sentence.
-
 ### Phase 6: `repair` — apply only bounded, guardable fixes
 
 **Problem it solves:** a report-only cycle can accumulate the same actionable findings every night.
 
-Repair has two independently configurable actions:
+Repair repoints a broken link when there is one credible target. If several candidates exist, the model may
+select only from that list; it cannot invent a page. Ambiguous targets are left alone with a reason.
 
-- **Links:** repoint a broken wikilink when there is one credible target. If several candidates exist,
-  the model may select only from that list; it cannot invent a page.
-- **Conflicts:** when the preceding conflict phase verified a conflict and identified one current page,
-  rewrite stale lines into historical wording. Values from the original line must survive unchanged.
-
-It never deletes a claim. Ambiguous targets, changed line addresses, and rewrites that alter a value are
-left alone with a reason.
+Contradictions deliberately do not use this direct-write phase. They go through typed conflict inspection and
+the durable `curate` plan lifecycle above, including audit and human-review modes.
 
 ```jsonc
 {
@@ -948,7 +960,6 @@ left alone with a reason.
     "repair": {
       "enabled": true,
       "links": true,
-      "conflicts": true,
       "max_changes": 25,
     },
   },

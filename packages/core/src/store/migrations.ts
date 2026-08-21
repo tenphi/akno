@@ -11,9 +11,10 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
+export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -336,6 +337,21 @@ export const MIGRATIONS: string[] = [
   // evidence graph that justified new knowledge, kept in state_dir with the private plan.
   `
   ALTER TABLE maintenance_items ADD COLUMN evidence TEXT NOT NULL DEFAULT '[]';
+  `,
+  // ── 4. Content-addressed typed conflict verdicts ──────────────────────────
+  // A verdict is derived state, but caching it is what makes an unchanged nightly cycle converge
+  // instead of paying a classifier to reach the same decision forever.
+  `
+  CREATE TABLE conflict_verdicts (
+    fingerprint    TEXT NOT NULL,
+    model_id       TEXT NOT NULL,
+    prompt_version TEXT NOT NULL,
+    verdict        TEXT NOT NULL,
+    current_slug   TEXT,
+    reason         TEXT,
+    updated_at     TEXT NOT NULL,
+    PRIMARY KEY (fingerprint, model_id, prompt_version)
+  );
   `,
 ];
 

@@ -518,12 +518,12 @@ function resolve(
       conflicts: {
         enabled: doc.maintenance?.conflicts?.enabled ?? true,
         verify: doc.maintenance?.conflicts?.verify ?? true,
+        resolve: doc.maintenance?.conflicts?.resolve ?? doc.maintenance?.repair?.conflicts ?? true,
         maxPairs: doc.maintenance?.conflicts?.max_pairs ?? 40,
       },
       repair: {
         enabled: doc.maintenance?.repair?.enabled ?? false,
         links: doc.maintenance?.repair?.links ?? true,
-        conflicts: doc.maintenance?.repair?.conflicts ?? true,
         maxChanges: doc.maintenance?.repair?.max_changes ?? 25,
       },
     },

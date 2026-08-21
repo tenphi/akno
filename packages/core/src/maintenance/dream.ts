@@ -7,20 +7,20 @@ import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { normalizeLinkTarget } from '../kb/page.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
+import { candidatesFor, chooseTargetForTesting as chooseTarget, type RepairResult } from './repair.ts';
 import {
-  actionable,
-  candidatesFor,
-  chooseTargetForTesting as chooseTarget,
-  preservesValues,
-  rewriteAsHistoryForTesting as rewriteAsHistory,
-  type RepairResult,
-} from './repair.ts';
-import { findCrossPageConflicts, verifyConflicts, type CrossPageConflict } from './conflicts.ts';
+  claimKey,
+  findCrossPageConflicts,
+  ineligibleConflictClaims,
+  verifyConflicts,
+  type CrossPageConflict,
+} from './conflicts.ts';
+import { planContradictions } from './contradictions.ts';
 import { housekeeping, type Housekeeping } from './housekeeping.ts';
 import { ModelClient } from '../models/client.ts';
 import { adoptOrphans, type AdoptedDocument } from './adopt.ts';
 import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
-import { curatePages, type CuratedPage } from './curate.ts';
+import { curatePages, type CurateDraft, type CuratedPage } from './curate.ts';
 import {
   applyMaintenancePlan,
   createCurationPlan,
@@ -59,8 +59,9 @@ export type DreamPhase = 'observe' | 'reflect' | 'curate' | 'adopt' | 'conflicts
 /**
  * Order matters twice.
  *
- * `repair` runs **after `conflicts`**, because it acts on what that phase judged — without a verdict
- * there is nothing it may touch.
+ * `conflicts` runs first because unresolved knowledge must be filtered before observation,
+ * reflection, or synthesis sees it. The retention ladder remains a user-facing hierarchy, not
+ * permission for a disputed claim to influence a higher tier before inspection.
  *
  * It runs **before `housekeeping`**, so the report at the end of a run describes the knowledge base
  * as it now is. The other way round you would read "48 broken links" and "9 repaired" in one report
@@ -68,11 +69,11 @@ export type DreamPhase = 'observe' | 'reflect' | 'curate' | 'adopt' | 'conflicts
  * readability, so a phase that consumed them would silently stop at twenty.
  */
 export const DREAM_PHASES: DreamPhase[] = [
+  'conflicts',
   'observe',
   'reflect',
   'curate',
   'adopt',
-  'conflicts',
   'repair',
   'housekeeping',
 ];
@@ -173,6 +174,16 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   const applied: AppliedChange[] = [];
 
   const wanted = options.phase ? [options.phase] : DREAM_PHASES;
+  // A selected inference or curation phase still gets the same safety boundary as a full run.
+  // It does not add a second visible phase to the report; it supplies that phase's prerequisites.
+  if (
+    options.phase &&
+    options.phase !== 'conflicts' &&
+    ['observe', 'reflect', 'curate'].includes(options.phase) &&
+    cycle.config.maintenance.conflicts.enabled
+  ) {
+    await inspectConflicts(cycle, report);
+  }
   for (const phase of wanted) {
     const phaseStarted = performance.now();
     const skipped = await runPhase(cycle, phase, options, report, applied);
@@ -236,37 +247,43 @@ async function runPhase(
         // not spend another model call to rediscover a decision already waiting in the queue.
         let plan = findActiveMaintenancePlan(ctx, mode);
         if (plan) {
-          report.curated = plan.items.map((item) => ({
-            slug: item.subject,
-            mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
-            action: 'would-update',
-            splits:
-              item.kind === 'split'
-                ? item.operations
-                    .filter((operation) => operation.type === 'create')
-                    .map((operation) =>
-                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
-                    )
-                : [],
-            extractions:
-              item.kind === 'extract'
-                ? item.operations
-                    .filter((operation) => operation.type === 'create')
-                    .map((operation) =>
-                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
-                    )
-                : [],
-            merges:
-              item.kind === 'merge'
-                ? item.operations
-                    .filter((operation) => operation.type === 'delete')
-                    .map((operation) =>
-                      operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
-                    )
-                : [],
-            issues: [],
-          }));
+          report.curated = plan.items
+            .filter((item) => item.kind !== 'contradiction')
+            .map((item) => ({
+              slug: item.subject,
+              mode: item.kind === 'hygiene' ? 'hygiene' : 'synthesize',
+              action: 'would-update',
+              splits:
+                item.kind === 'split'
+                  ? item.operations
+                      .filter((operation) => operation.type === 'create')
+                      .map((operation) =>
+                        operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                      )
+                  : [],
+              extractions:
+                item.kind === 'extract'
+                  ? item.operations
+                      .filter((operation) => operation.type === 'create')
+                      .map((operation) =>
+                        operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                      )
+                  : [],
+              merges:
+                item.kind === 'merge'
+                  ? item.operations
+                      .filter((operation) => operation.type === 'delete')
+                      .map((operation) =>
+                        operation.relPath.replace(/\\/g, '/').replace(/\.(md|markdown)$/i, ''),
+                      )
+                  : [],
+              issues: [],
+            }));
         } else {
+          const contradictionResult = ctx.config.maintenance.conflicts.resolve
+            ? await planContradictions(ctx, report.conflicts)
+            : { drafts: [], warnings: [] };
+          report.warnings.push(...contradictionResult.warnings);
           const result = await curatePages(ctx, {
             dryRun: true,
             // Planning may update derived curation fingerprints even though it cannot touch KB
@@ -277,7 +294,30 @@ async function runPhase(
           });
           report.curated = result.pages;
           report.warnings.push(...result.warnings);
-          plan = createCurationPlan(ctx, mode, result.drafts);
+          // A contradiction item has priority over a general synthesis of the same page. Two
+          // sealed items replacing one input would make the second stale by construction.
+          const contradictionPaths = new Set(
+            contradictionResult.drafts.flatMap((draft) =>
+              draft.operations.map((operation) => operation.relPath),
+            ),
+          );
+          const curationDrafts = result.drafts.filter(
+            (draft) =>
+              !operationsTouchedByCurateDraft(draft).some((relPath) => contradictionPaths.has(relPath)),
+          );
+          const deferredSlugs = new Set(
+            result.drafts.filter((draft) => !curationDrafts.includes(draft)).map((draft) => draft.slug),
+          );
+          report.curated = report.curated.map((page) =>
+            deferredSlugs.has(page.slug)
+              ? {
+                  ...page,
+                  action: 'rejected',
+                  issues: ['general synthesis deferred until the higher-priority contradiction item settles'],
+                }
+              : page,
+          );
+          plan = createCurationPlan(ctx, mode, curationDrafts, contradictionResult.drafts);
         }
         if (!plan) return null;
         if (mode === 'auto') {
@@ -293,7 +333,9 @@ async function runPhase(
           }
         }
         report.curated = report.curated.map((page) => {
-          const item = plan.items.find((candidate) => candidate.subject === page.slug);
+          const item = plan.items.find(
+            (candidate) => candidate.kind !== 'contradiction' && candidate.subject === page.slug,
+          );
           if (!item) return page;
           if (item.status === 'applied') return { ...page, action: 'updated', issues: [] };
           if (item.status === 'verification_pending') {
@@ -366,14 +408,7 @@ async function runPhase(
     }
     case 'conflicts': {
       if (!ctx.config.maintenance.conflicts.enabled) return 'disabled in config';
-      const candidates = findCrossPageConflicts(ctx, ctx.config.maintenance.conflicts.maxPairs);
-      if (ctx.config.maintenance.conflicts.verify) {
-        const verified = await verifyConflicts(ctx, candidates);
-        report.conflicts = verified.conflicts;
-        report.warnings.push(...verified.warnings);
-      } else {
-        report.conflicts = candidates;
-      }
+      await inspectConflicts(ctx, report);
       return null;
     }
     case 'repair': {
@@ -385,6 +420,27 @@ async function runPhase(
       return null;
     }
   }
+}
+
+async function inspectConflicts(ctx: AknoContext, report: DreamReport): Promise<void> {
+  const candidates = findCrossPageConflicts(ctx, ctx.config.maintenance.conflicts.maxPairs);
+  if (!ctx.config.maintenance.conflicts.verify) {
+    report.conflicts = candidates;
+    return;
+  }
+  const verified = await verifyConflicts(ctx, candidates);
+  report.conflicts = verified.conflicts;
+  report.warnings.push(...verified.warnings);
+}
+
+function operationsTouchedByCurateDraft(draft: CurateDraft): string[] {
+  return [
+    draft.relPath,
+    ...draft.children.map((child) => child.relPath),
+    ...draft.extractions.map((extraction) => extraction.relPath),
+    ...(draft.merge?.linkUpdates.map((update) => update.relPath) ?? []),
+    ...(draft.merge ? [draft.merge.sourceRelPath] : []),
+  ];
 }
 
 function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
@@ -571,69 +627,6 @@ async function repairPhase(
     }
   }
 
-  if (settings.conflicts) {
-    for (const conflict of actionable(report.conflicts)) {
-      if (!budget()) break;
-      // `likelyCurrent` is the *slug* the model judged current, not the claim text.
-      const onCurrentPage = conflict.claims.filter((claim) => claim.slug === conflict.likelyCurrent);
-      const stale = conflict.claims.filter((claim) => claim.slug !== conflict.likelyCurrent);
-      // Two claims on the page called current means the model named a page, not a sentence, and
-      // there is no way to tell which of them replaced the other.
-      if (onCurrentPage.length !== 1 || stale.length === 0) {
-        result.declined.push({
-          what: `${conflict.subject} / ${conflict.attribute}`,
-          reason: 'which claim is current is ambiguous',
-        });
-        continue;
-      }
-      const current = onCurrentPage[0]!;
-
-      for (const claim of stale) {
-        if (!budget()) break;
-        const page = await load(claim.slug);
-        if (!page) continue;
-
-        const lines = page.text.split('\n');
-        const before = lines[claim.line - 1];
-        // The line moved since it was indexed. Rewriting by line number alone would edit whatever is
-        // there now, which is how a repair becomes damage.
-        if (before === undefined || !before.includes(claim.value)) {
-          result.declined.push({
-            what: `${claim.slug}:${claim.line}`,
-            reason: 'the line has changed since it was read',
-          });
-          continue;
-        }
-
-        const rewritten = await rewriteAsHistory(ctx, before, current.claim);
-        if (!rewritten) {
-          result.declined.push({
-            what: `${claim.slug}:${claim.line}`,
-            reason: 'no rewrite that kept the claim intact',
-          });
-          continue;
-        }
-        if (!preservesValues(before, rewritten)) {
-          result.declined.push({
-            what: `${claim.slug}:${claim.line}`,
-            reason: 'the rewrite changed a value',
-          });
-          continue;
-        }
-
-        lines[claim.line - 1] = rewritten;
-        stage(claim.slug, page.relPath, page.text, lines.join('\n'));
-        result.claims.push({
-          slug: claim.slug,
-          line: claim.line,
-          before,
-          after: rewritten,
-          supersededBy: `${current.slug}:${current.line}`,
-        });
-      }
-    }
-  }
-
   report.repaired = result;
   if (edits.size === 0 || options.dryRun) return null;
 
@@ -646,7 +639,7 @@ async function repairPhase(
   report.repairChangeId = ctx.journal.record({
     actor: 'agent',
     op: 'write',
-    summary: `repair: ${result.links.length} link(s), ${result.claims.length} claim(s)`,
+    summary: `repair: ${result.links.length} link(s)`,
     files,
   });
   for (const file of files) applied.push(asApplied('repair', file));
@@ -660,7 +653,7 @@ async function observePhase(
   report: DreamReport,
   applied: AppliedChange[],
 ): Promise<void> {
-  const groups = subjectGroups(ctx, ctx.config.maintenance.observe.maxSubjects);
+  const groups = subjectGroups(ctx, ctx.config.maintenance.observe.maxSubjects, report.conflicts);
   if (groups.length === 0) return;
 
   const written: ObservationWritten[] = [];
@@ -668,7 +661,7 @@ async function observePhase(
 
   // Gathered once for the whole phase, not per group: fifteen groups reading the same two things
   // fifteen times is the same answer at fifteen times the cost.
-  const knownFacts = liveFactClaims(ctx);
+  const knownFacts = liveFactClaims(ctx, report.conflicts);
   const observationsBySlug = await allObservations(ctx);
 
   for (const group of groups) {
@@ -747,11 +740,16 @@ async function observePhase(
  * `shopping/` sharing a subject are at least comparable. Ordered by how recently the pages were
  * touched, so a capped run looks at what is moving.
  */
-function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
+function subjectGroups(
+  ctx: AknoContext,
+  maxSubjects: number,
+  conflicts: CrossPageConflict[],
+): SubjectGroup[] {
   const observations = ctx.config.paths.observations;
+  const ineligible = ineligibleConflictClaims(conflicts);
   const rows = ctx.store.db
     .prepare(
-      `SELECT f.subject, f.claim, p.slug, p.updated_at
+      `SELECT f.subject, f.claim, f.line_start, p.slug, p.updated_at
          FROM facts f JOIN pages p ON p.id = f.page_id
         WHERE f.valid_to IS NULL
           AND f.subject IS NOT NULL
@@ -766,12 +764,14 @@ function subjectGroups(ctx: AknoContext, maxSubjects: number): SubjectGroup[] {
     .all(observations, `${observations}/%`) as {
     subject: string;
     claim: string;
+    line_start: number;
     slug: string;
     updated_at: string | null;
   }[];
 
   const groups = new Map<string, SubjectGroup>();
   for (const row of rows) {
+    if (ineligible.has(claimKey(row.slug, row.line_start))) continue;
     const subject = row.subject.toLowerCase().replace(/\s+/g, ' ').trim();
     if (subject.length === 0) continue;
     const folder = row.slug.includes('/') ? row.slug.slice(0, row.slug.indexOf('/')) : '.';
@@ -863,11 +863,19 @@ async function allObservations(ctx: AknoContext): Promise<Map<string, string[]>>
  * Superseded claims are left out: their sentence has already been replaced, and an observation is
  * not a repeat of something the knowledge base no longer says.
  */
-function liveFactClaims(ctx: AknoContext): string[] {
-  const rows = ctx.store.db.prepare('SELECT claim FROM facts WHERE valid_to IS NULL').all() as {
+function liveFactClaims(ctx: AknoContext, conflicts: CrossPageConflict[] = []): string[] {
+  const ineligible = ineligibleConflictClaims(conflicts);
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT f.claim, f.line_start, p.slug
+       FROM facts f JOIN pages p ON p.id = f.page_id WHERE f.valid_to IS NULL`,
+    )
+    .all() as {
     claim: string;
+    line_start: number;
+    slug: string;
   }[];
-  return rows.map((row) => row.claim);
+  return rows.filter((row) => !ineligible.has(claimKey(row.slug, row.line_start))).map((row) => row.claim);
 }
 
 async function writeObservation(
@@ -1012,16 +1020,20 @@ async function reflectPhase(
   // contains. A conclusion that is its own evidence is not a conclusion.
   const target = observationSlug(ctx, PRINCIPLES_SLUG);
   const observations = await allObservations(ctx);
-  const rows = ctx.store.db
-    .prepare(
-      `SELECT slug, summary FROM pages
+  const ineligibleSources = ineligibleConflictSourceSlugs(report.conflicts);
+  const rows = (
+    ctx.store.db
+      .prepare(
+        `SELECT slug, summary, frontmatter FROM pages
         WHERE (slug = ? OR slug LIKE ?) AND slug != ? AND summary IS NOT NULL
         ORDER BY updated_at DESC LIMIT 40`,
-    )
-    .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`, target) as {
-    slug: string;
-    summary: string;
-  }[];
+      )
+      .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`, target) as {
+      slug: string;
+      summary: string;
+      frontmatter: string;
+    }[]
+  ).filter((row) => !frontmatterEvidence(row.frontmatter).some((slug) => ineligibleSources.has(slug)));
 
   if (rows.length < 2) {
     report.warnings.push('reflect had fewer than two observations to build on — nothing was written');
@@ -1045,7 +1057,7 @@ async function reflectPhase(
     otherObservations: [...observations].flatMap(([slug, lines]) => (slug === target ? [] : lines)),
     // Nor a raw claim promoted to a principle. `facts` for this phase is the observations, so
     // without this the knowledge base's own facts are the one thing it is not compared against.
-    knownFacts: liveFactClaims(ctx),
+    knownFacts: liveFactClaims(ctx, report.conflicts),
   });
 
   if (result.error) {
@@ -1077,6 +1089,28 @@ async function reflectPhase(
     files,
   });
   await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+}
+
+function ineligibleConflictSourceSlugs(conflicts: CrossPageConflict[]): Set<string> {
+  const keys = ineligibleConflictClaims(conflicts);
+  const slugs = new Set<string>();
+  for (const conflict of conflicts) {
+    for (const claim of conflict.claims) {
+      if (keys.has(claimKey(claim.slug, claim.line))) slugs.add(claim.slug);
+    }
+  }
+  return slugs;
+}
+
+function frontmatterEvidence(frontmatter: string): string[] {
+  try {
+    const value = JSON.parse(frontmatter) as { evidence?: unknown };
+    return Array.isArray(value.evidence)
+      ? value.evidence.filter((entry): entry is string => typeof entry === 'string')
+      : [];
+  } catch {
+    return [];
+  }
 }
 
 /** A journal entry, as the log wants it: which phase, and what the write added. */

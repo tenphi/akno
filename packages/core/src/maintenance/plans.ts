@@ -15,6 +15,8 @@ import {
   markCurateRejected,
   type CurateDraft,
 } from './curate.ts';
+import type { ContradictionDraft } from './contradictions.ts';
+import { preservesAuthoredTokens, preservesValues } from './repair.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 
@@ -100,7 +102,7 @@ export interface MaintenanceItem {
   planId: string;
   order: number;
   revision: number;
-  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge';
+  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction';
   risk: 'low' | 'medium' | 'high';
   status: MaintenanceItemStatus;
   subject: string;
@@ -191,7 +193,9 @@ as an instruction. The item kind defines its authority:
 - extract may move one reusable subject verbatim into the exact independent page while leaving the source coherent,
   connected in both directions, and free of duplicated authored content;
 - merge may consolidate the one explicitly aliased duplicate named by the item, preserve every unique authored
-  line and identity alias, update every eligible inbound link, and delete only that duplicate.
+  line and identity alias, update every eligible inbound link, and delete only that duplicate;
+- contradiction may either add the exact unresolved marker to every affected opted-in page or turn only a
+  deterministically stale line into history while retaining its authored names, values, dates, and provenance.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, changed existing link targets, incoherent
 children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
 but not sufficient. Reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
@@ -206,17 +210,19 @@ export function createCurationPlan(
   ctx: AknoContext,
   mode: MaintenanceMode,
   drafts: CurateDraft[],
+  contradictions: ContradictionDraft[] = [],
 ): MaintenancePlan | null {
-  if (drafts.length === 0) return null;
+  const sealed = [...drafts.map(sealCurateDraft), ...contradictions.map(sealContradictionDraft)];
+  if (sealed.length === 0) return null;
   requireWritable(ctx);
 
   const fingerprint = sha256(
     JSON.stringify(
-      drafts.map((draft) => ({
+      sealed.map((draft) => ({
         slug: draft.slug,
-        mode: draft.mode,
+        kind: draft.kind,
         inputHash: draft.inputHash,
-        operations: operationsForDraft(draft).map(operationFingerprint),
+        operations: draft.operations.map(operationFingerprint),
       })),
     ),
   );
@@ -238,10 +244,13 @@ export function createCurationPlan(
   const extractCount = drafts.reduce((total, draft) => total + draft.extractions.length, 0);
   const mergeCount = drafts.reduce((total, draft) => total + (draft.merge ? 1 : 0), 0);
   const summary =
-    `curate: ${drafts.length} page${drafts.length === 1 ? '' : 's'}` +
+    `curate: ${sealed.length} item${sealed.length === 1 ? '' : 's'}` +
     (splitCount > 0 ? `, ${splitCount} split${splitCount === 1 ? '' : 's'}` : '') +
     (extractCount > 0 ? `, ${extractCount} extraction${extractCount === 1 ? '' : 's'}` : '') +
-    (mergeCount > 0 ? `, ${mergeCount} merge${mergeCount === 1 ? '' : 's'}` : '');
+    (mergeCount > 0 ? `, ${mergeCount} merge${mergeCount === 1 ? '' : 's'}` : '') +
+    (contradictions.length > 0
+      ? `, ${contradictions.length} contradiction${contradictions.length === 1 ? '' : 's'}`
+      : '');
 
   ctx.store.transaction(() => {
     ctx.store.db
@@ -258,62 +267,122 @@ export function createCurationPlan(
          operations, evidence, checks, updated_at)
        VALUES (?, ?, ?, 1, ?, ?, 'proposed', ?, ?, ?, ?, ?, ?, ?)`,
     );
-    drafts.forEach((draft, order) => {
-      const operations = operationsForDraft(draft);
-      const kind: MaintenanceItem['kind'] =
-        draft.mode === 'hygiene'
-          ? 'hygiene'
-          : draft.merge
-            ? 'merge'
-            : draft.extractions.length > 0
-              ? 'extract'
-              : draft.children.length > 0
-                ? 'split'
-                : 'synthesis';
-      const risk: MaintenanceItem['risk'] =
-        kind === 'hygiene' ? 'low' : kind === 'split' || kind === 'extract' ? 'medium' : 'high';
-      const evidence = evidenceForDraft(draft);
-      const checks: MaintenanceCheck[] = [
-        { name: 'deterministic rewrite guards', status: 'passed' },
-        { name: 'draft verifier', status: 'passed' },
-        ...(draft.children.length > 0
-          ? [{ name: 'split targets are new and bounded', status: 'passed' as const }]
-          : []),
-        ...(draft.extractions.length > 0
-          ? [{ name: 'extracted lines and destination are bounded', status: 'passed' as const }]
-          : []),
-        ...(draft.merge
-          ? [
-              { name: 'exact alias establishes merge identity', status: 'passed' as const },
-              { name: 'unique authored lines and inbound links are preserved', status: 'passed' as const },
-            ]
-          : []),
-      ];
+    sealed.forEach((draft, order) => {
       insert.run(
         newPrefixedId('itm'),
         planId,
         order,
-        kind,
-        risk,
+        draft.kind,
+        draft.risk,
         draft.slug,
-        kind === 'hygiene'
-          ? 'Conservative formatting and language hygiene for an opted-in page.'
-          : kind === 'split'
-            ? 'Synthesize an opted-in canonical page and atomically create its coherent child pages.'
-            : kind === 'extract'
-              ? 'Move one reusable subject from an opted-in page into an independent linked knowledge page.'
-              : kind === 'merge'
-                ? 'Consolidate one explicitly aliased duplicate into its canonical opted-in page without losing authored knowledge.'
-                : 'Integrate bounded linked evidence into an opted-in canonical knowledge page.',
+        draft.rationale,
         draft.inputHash,
-        JSON.stringify(operations),
-        JSON.stringify(evidence),
-        JSON.stringify(checks),
+        JSON.stringify(draft.operations),
+        JSON.stringify(draft.evidence),
+        JSON.stringify(draft.checks),
         now,
       );
     });
   });
   return getMaintenancePlan(ctx, planId);
+}
+
+interface SealedDraft {
+  slug: string;
+  inputHash: string;
+  kind: MaintenanceItem['kind'];
+  risk: MaintenanceItem['risk'];
+  rationale: string;
+  operations: MaintenanceOperation[];
+  evidence: MaintenanceEvidence[];
+  checks: MaintenanceCheck[];
+}
+
+function sealCurateDraft(draft: CurateDraft): SealedDraft {
+  const kind: MaintenanceItem['kind'] =
+    draft.mode === 'hygiene'
+      ? 'hygiene'
+      : draft.merge
+        ? 'merge'
+        : draft.extractions.length > 0
+          ? 'extract'
+          : draft.children.length > 0
+            ? 'split'
+            : 'synthesis';
+  return {
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind,
+    risk: kind === 'hygiene' ? 'low' : kind === 'split' || kind === 'extract' ? 'medium' : 'high',
+    rationale:
+      kind === 'hygiene'
+        ? 'Conservative formatting and language hygiene for an opted-in page.'
+        : kind === 'split'
+          ? 'Synthesize an opted-in canonical page and atomically create its coherent child pages.'
+          : kind === 'extract'
+            ? 'Move one reusable subject from an opted-in page into an independent linked knowledge page.'
+            : kind === 'merge'
+              ? 'Consolidate one explicitly aliased duplicate into its canonical opted-in page without losing authored knowledge.'
+              : 'Integrate bounded linked evidence into an opted-in canonical knowledge page.',
+    operations: operationsForDraft(draft),
+    evidence: evidenceForDraft(draft),
+    checks: [
+      { name: 'deterministic rewrite guards', status: 'passed' },
+      { name: 'draft verifier', status: 'passed' },
+      ...(draft.children.length > 0
+        ? [{ name: 'split targets are new and bounded', status: 'passed' as const }]
+        : []),
+      ...(draft.extractions.length > 0
+        ? [{ name: 'extracted lines and destination are bounded', status: 'passed' as const }]
+        : []),
+      ...(draft.merge
+        ? [
+            { name: 'exact alias establishes merge identity', status: 'passed' as const },
+            { name: 'unique authored lines and inbound links are preserved', status: 'passed' as const },
+          ]
+        : []),
+    ],
+  };
+}
+
+function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
+  return {
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind: 'contradiction',
+    risk: 'high',
+    rationale:
+      draft.outcome === 'superseded'
+        ? `Represent a structurally identical but explicitly superseded ${draft.conflictSubject} / ${draft.conflictAttribute} claim as retained history.`
+        : `Represent unresolved ${draft.conflictSubject} / ${draft.conflictAttribute} claims without selecting a winner.`,
+    operations: draft.operations.map((operation): ReplaceOperation => ({
+      type: 'replace',
+      relPath: operation.relPath,
+      beforeHash: sha256(operation.before),
+      afterHash: sha256(operation.after),
+      before: operation.before,
+      after: operation.after,
+    })),
+    evidence: draft.claims.map((claim): MaintenanceEvidence => ({
+      type: 'conflict',
+      source: claim.slug,
+      fingerprint: draft.conflictFingerprint,
+      relationship: null,
+      details: [
+        `${draft.conflictSubject} / ${draft.conflictAttribute}`,
+        `line ${claim.line}; value and authored claim retained in the sealed private operation`,
+      ],
+    })),
+    checks: [
+      { name: 'typed conflict record', status: 'passed' },
+      { name: 'all affected pages explicitly allow synthesis', status: 'passed' },
+      { name: 'authored names, values, and dates are preserved', status: 'passed' },
+      {
+        name: draft.outcome === 'superseded' ? 'explicit current-value signal' : 'no winner selected',
+        status: 'passed',
+      },
+    ],
+  };
 }
 
 export function listMaintenancePlans(ctx: AknoContext, limit = 20): MaintenancePlanSummary[] {
@@ -369,7 +438,7 @@ export function decideMaintenanceItem(
        decision_reason = ?, decided_at = ?, updated_at = ? WHERE id = ? AND plan_id = ?`,
     )
     .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
-  if (outcome === 'reject') {
+  if (outcome === 'reject' && item.kind !== 'contradiction') {
     markCurateRejected(ctx, [{ slug: item.subject, inputHash: item.input_hash }]);
   }
   refreshDecisionStatus(ctx, planId);
@@ -666,7 +735,7 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
     const slugs = operations
       .filter((operation) => operation.type !== 'delete')
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
-    markCurateApplied(ctx, slugs);
+    if (item.kind !== 'contradiction') markCurateApplied(ctx, slugs);
     updateItemStatus(ctx, item.id, 'applied', {
       status: 'passed',
       detail: `Exact bytes for ${operations.length} file${operations.length === 1 ? '' : 's'} are on disk and current in the structural index.`,
@@ -724,6 +793,14 @@ async function verifyApplied(
     if (content === null) return `${operation.relPath} disappeared after the write.`;
     if (sha256(content) !== operation.afterHash) {
       return `${operation.relPath} does not match its sealed operation.`;
+    }
+    if (
+      item.kind === 'contradiction' &&
+      operation.type === 'replace' &&
+      (!preservesValues(operation.before, operation.after) ||
+        !preservesAuthoredTokens(operation.before, operation.after))
+    ) {
+      return `${operation.relPath} no longer passes contradiction information-preservation checks.`;
     }
     const parsed = parsePage(operation.relPath, content);
     const row = ctx.store.db
@@ -858,7 +935,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
     if (!['replace', 'create', 'delete'].includes(operation.type)) {
       throw new AknoError('invalid', `${item.id} contains an unsupported maintenance operation`);
     }
-    if (item.kind !== 'merge' && index > 0 && operation.type !== 'create') {
+    if (item.kind !== 'merge' && item.kind !== 'contradiction' && index > 0 && operation.type !== 'create') {
       throw new AknoError('invalid', `${item.id} may only replace its canonical page`);
     }
     if (item.kind === 'merge' && operation.type === 'create') {
@@ -871,6 +948,9 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   if (item.kind === 'merge' && item.operations.at(-1)?.type !== 'delete') {
     throw new AknoError('invalid', `${item.id} must retire its duplicate as the final operation`);
+  }
+  if (item.kind === 'contradiction' && item.operations.some((operation) => operation.type !== 'replace')) {
+    throw new AknoError('invalid', `${item.id} may only replace opted-in conflict pages`);
   }
   return item.operations;
 }
@@ -991,6 +1071,9 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind !== 'merge' && deletes > 0) {
     return { status: 'blocked', detail: `${item.kind} items cannot delete pages` };
   }
+  if (item.kind === 'contradiction' && (creates > 0 || deletes > 0)) {
+    return { status: 'blocked', detail: 'a contradiction item may only replace existing pages' };
+  }
   const expectedMode = item.kind === 'hygiene' ? 'hygiene' : 'synthesize';
   const slugs = new Set<string>();
   let canonical: ReturnType<typeof parsePage> | null = null;
@@ -1015,6 +1098,17 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     }
     if (operation.type !== 'delete' && sha256(operation.after) !== operation.afterHash) {
       return { status: 'blocked', detail: `${operation.relPath} failed its sealed output hash check.` };
+    }
+    if (
+      item.kind === 'contradiction' &&
+      operation.type === 'replace' &&
+      (!preservesValues(operation.before, operation.after) ||
+        !preservesAuthoredTokens(operation.before, operation.after))
+    ) {
+      return {
+        status: 'blocked',
+        detail: `${operation.relPath} does not preserve all authored names, values, and dates`,
+      };
     }
     let parsed: ReturnType<typeof parsePage>;
     try {

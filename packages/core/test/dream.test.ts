@@ -31,6 +31,8 @@ interface StubServer {
   close: () => Promise<void>;
   /** What the observe mission and the conflict verifier get back. */
   reply: (value: unknown) => void;
+  conflict: (value: unknown) => void;
+  conflictCalls: () => number;
   /** Facts the deriver returns for a page, so real facts land on real lines. */
   facts: (byslug: Record<string, DerivedFact[]>) => void;
   /** The last body the observe mission was given, for asserting what it was shown. */
@@ -45,6 +47,12 @@ interface StubServer {
  */
 async function startStubChat(): Promise<StubServer> {
   let scripted: unknown = {};
+  let conflictScripted: unknown = {
+    outcome: 'not_a_conflict',
+    current: null,
+    reason: 'The fixtures describe different appliances.',
+  };
+  let classified = 0;
   let byPage: Record<string, DerivedFact[]> = {};
   let lastObserve = '';
 
@@ -56,7 +64,17 @@ async function startStubChat(): Promise<StubServer> {
         messages?: { role: string; content: string }[];
       };
       const user = body.messages?.at(-1)?.content ?? '';
-      const answer = user.startsWith('Page: ') ? derive(user, byPage) : scripted;
+      const system = body.messages?.[0]?.content ?? '';
+      if (system.startsWith('You classify structurally incompatible claims')) classified += 1;
+      const answer = user.startsWith('Page: ')
+        ? derive(user, byPage)
+        : system.startsWith('You classify structurally incompatible claims')
+          ? conflictScripted
+          : system.startsWith('You are the independent curator for an autonomous memory system')
+            ? { outcome: 'approve', reason: 'The sealed contradiction item preserves authored knowledge.' }
+            : system.startsWith('A personal knowledge base holds two claims')
+              ? { line: 'Previously, the Zephyr QX-100 warranty was 1111 days.' }
+              : scripted;
       if (!user.startsWith('Page: ')) lastObserve = user;
 
       response.writeHead(200, { 'content-type': 'application/json' });
@@ -75,6 +93,10 @@ async function startStubChat(): Promise<StubServer> {
     reply: (value) => {
       scripted = value;
     },
+    conflict: (value) => {
+      conflictScripted = value;
+    },
+    conflictCalls: () => classified,
     facts: (value) => {
       byPage = value;
     },
@@ -592,13 +614,19 @@ describe('the thorough conflict pass', () => {
     server.facts(DISAGREEING);
     await mem.index({ rederive: true });
 
-    server.reply({ conflict: true, current: 'home/kitchen' });
+    server.conflict({
+      outcome: 'superseded',
+      current: 'home/kitchen',
+      reason: 'One claim explicitly identifies the current interval.',
+    });
     const report = await mem.dream({ phase: 'conflicts' });
 
     expect(report.conflicts).toHaveLength(1);
     const conflict = report.conflicts[0]!;
-    expect(conflict.verdict).toBe('real');
-    expect(conflict.likelyCurrent).toBe('home/kitchen');
+    // Neither fixture says current/as-of, so the deterministic temporal guard downgrades the
+    // model's preference instead of rewriting on confidence alone.
+    expect(conflict.verdict).toBe('unresolved');
+    expect(conflict.likelyCurrent).toBeUndefined();
     expect(conflict.claims.map((claim) => claim.slug).sort()).toEqual(['home/appliances', 'home/kitchen']);
     // Reported, never repaired: both pages are exactly as they were.
     expect(fs.readFileSync(path.join(root, 'home/kitchen.md'), 'utf8')).toBe(PAGES['home/kitchen.md']);
@@ -608,9 +636,190 @@ describe('the thorough conflict pass', () => {
     server.facts(DISAGREEING);
     await mem.index({ rederive: true });
 
-    server.reply({ conflict: false, current: null });
+    server.conflict({
+      outcome: 'not_a_conflict',
+      current: null,
+      reason: 'The scopes differ.',
+    });
     const report = await mem.dream({ phase: 'conflicts' });
     expect(report.conflicts[0]!.verdict).toBe('not_a_conflict');
+  });
+
+  it('caches a typed verdict for unchanged claim bytes', async () => {
+    server.facts(DISAGREEING);
+    await mem.index({ rederive: true });
+    server.conflict({
+      outcome: 'unresolved',
+      current: null,
+      reason: 'The supplied text has no temporal ordering.',
+    });
+
+    await mem.dream({ phase: 'conflicts' });
+    await mem.dream({ phase: 'conflicts' });
+
+    expect(server.conflictCalls()).toBe(1);
+  });
+
+  it('inspects before observe and excludes unresolved claims from inference', async () => {
+    server.facts(DISAGREEING);
+    await mem.index({ rederive: true });
+    server.conflict({
+      outcome: 'unresolved',
+      current: null,
+      reason: 'The supplied text does not establish chronology.',
+    });
+    server.reply({
+      observations: [
+        {
+          pattern: 'Appliances follow one stable service interval.',
+          evidence: ['home/appliances', 'home/kitchen'],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(report.conflicts[0]?.verdict).toBe('unresolved');
+    expect(report.observations).toEqual([]);
+    expect(fs.existsSync(path.join(root, 'observations/home-service-interval.md'))).toBe(false);
+  });
+
+  it('plans, curates, verifies, converges, and undoes an explicit supersession', async () => {
+    await mem.close();
+    const oldPage = path.join(root, 'products/zephyr-old.md');
+    const currentPage = path.join(root, 'products/zephyr-current.md');
+    fs.mkdirSync(path.dirname(oldPage), { recursive: true });
+    fs.writeFileSync(
+      oldPage,
+      `---
+title: Zephyr QX-100 old warranty
+akno:
+  management:
+    dream: synthesize
+---
+
+# Zephyr QX-100 old warranty
+
+The Zephyr QX-100 warranty is 1111 days.
+`,
+    );
+    fs.writeFileSync(
+      currentPage,
+      `---
+title: Zephyr QX-100 current warranty
+akno:
+  management:
+    dream: synthesize
+---
+
+# Zephyr QX-100 current warranty
+
+As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
+`,
+    );
+    server.facts({
+      'products/zephyr-old': [
+        {
+          claim: 'The Zephyr QX-100 warranty is 1111 days.',
+          subject: 'Zephyr QX-100 warranty',
+          attribute: 'duration',
+          value: '1111 days',
+        },
+      ],
+      'products/zephyr-current': [
+        {
+          claim: 'As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.',
+          subject: 'Zephyr QX-100 warranty',
+          attribute: 'duration',
+          value: '2222 days',
+        },
+      ],
+    });
+    server.conflict({
+      outcome: 'superseded',
+      current: 'products/zephyr-current',
+      reason: 'One claim contains an explicit as-of date.',
+    });
+    mem = await openMem({
+      maintenance: {
+        observe: { enabled: false },
+        curate: { enabled: true, mode: 'auto', verify: true },
+      },
+    });
+    await mem.index({ rederive: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.conflicts[0]).toMatchObject({
+      verdict: 'superseded',
+      likelyCurrent: 'products/zephyr-current',
+    });
+    expect(item).toMatchObject({
+      kind: 'contradiction',
+      risk: 'high',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(item.operations).toHaveLength(2);
+    expect(fs.readFileSync(oldPage, 'utf8')).toContain(
+      'Previously, the Zephyr QX-100 warranty was 1111 days.',
+    );
+    expect(fs.readFileSync(currentPage, 'utf8')).toContain(
+      'As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.',
+    );
+
+    const after = fs.readFileSync(oldPage, 'utf8');
+    const repeated = await mem.dream({ phase: 'curate' });
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(fs.readFileSync(oldPage, 'utf8')).toBe(after);
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(oldPage, 'utf8')).toContain('The Zephyr QX-100 warranty is 1111 days.');
+    expect(fs.readFileSync(oldPage, 'utf8')).not.toContain('Previously,');
+  });
+
+  it('represents an unresolved conflict without changing either authored claim', async () => {
+    await mem.close();
+    for (const relPath of ['home/appliances.md', 'home/kitchen.md']) {
+      const absolute = path.join(root, relPath);
+      fs.writeFileSync(
+        absolute,
+        fs
+          .readFileSync(absolute, 'utf8')
+          .replace('title:', 'akno:\n  management:\n    dream: synthesize\ntitle:'),
+      );
+    }
+    server.facts(DISAGREEING);
+    server.conflict({
+      outcome: 'unresolved',
+      current: null,
+      reason: 'No temporal evidence selects one value.',
+    });
+    mem = await openMem({ maintenance: { curate: { enabled: true, mode: 'auto' } } });
+    await mem.index({ rederive: true });
+    const before = [
+      fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8'),
+      fs.readFileSync(path.join(root, 'home/kitchen.md'), 'utf8'),
+    ];
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+    const after = [
+      fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8'),
+      fs.readFileSync(path.join(root, 'home/kitchen.md'), 'utf8'),
+    ];
+
+    expect(item).toMatchObject({ kind: 'contradiction', status: 'applied' });
+    expect(after.every((page) => page.includes('[!warning] Unresolved memory conflict'))).toBe(true);
+    expect(after[0]).toContain('The dishwasher was repaired in March 2026.');
+    expect(after[1]).toContain('The oven was serviced in September 2026.');
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before[0]);
+    expect(fs.readFileSync(path.join(root, 'home/kitchen.md'), 'utf8')).toBe(before[1]);
   });
 
   it('ignores a reference page disagreeing with a claim', async () => {

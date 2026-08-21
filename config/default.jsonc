@@ -356,22 +356,27 @@
     },
     // The thorough pass: facts on different pages that state different values
     // for the same thing — which inline checking cannot see, because neither page
-    // is being written. It reports; it never rewrites a claim.
+    // is being written. Classification itself never rewrites a claim. When
+    // plan-backed curate is enabled, guarded contradiction items may represent
+    // or resolve the typed result on pages that explicitly allow synthesis.
     "conflicts": {
       "enabled": true,
       // Ask a model whether a candidate pair really conflicts. Off leaves
       // every candidate reported as `unverified`, which is honest and cheaper.
       "verify": true,
+      // Include high-risk contradiction items in audit/review/auto curation plans.
+      // Model confidence cannot authorize supersession: the current claim must
+      // carry an explicit current/as-of/effective signal, and every affected page
+      // must declare `dream: synthesize`.
+      "resolve": true,
       "max_pairs": 40
     },
-    // Apply the narrow fixes that can be guarded: repoint a broken wikilink to
-    // an existing page, or rewrite the verified stale side of a conflict as
-    // history without changing any value. Off by default because this edits
-    // pages while nobody is watching. One run is one undoable, bounded change.
+    // Apply narrow broken-link fixes. Contradictions no longer bypass plans through
+    // this phase; `conflicts.resolve` routes them through curate's trust mode,
+    // curator decision, stale checks, per-item journal, and verification.
     "repair": {
       "enabled": false,
       "links": true,
-      "conflicts": true,
       "max_changes": 25
     }
   },
