@@ -1,5 +1,6 @@
 import { performance } from 'node:perf_hooks';
 import type { Akno } from './open.ts';
+import { runMixedRetrievalBench, type MixedRetrievalBenchReport } from './bench/mixed-retrieval.ts';
 
 /**
  * **Benchmarks are part of the project.** Numbers rot, and the row that
@@ -37,7 +38,9 @@ export interface BenchResult {
 
 export interface BenchReport {
   results: BenchResult[];
-  /** Only the asserted, index-path budgets decide this. */
+  /** Accuracy and latency assertions over a fixed, invented mixed-result corpus. */
+  retrieval: MixedRetrievalBenchReport;
+  /** Asserted index-path budgets and fixed-corpus retrieval checks decide this. */
   passed: boolean;
   pages: number;
   chunks: number;
@@ -72,7 +75,10 @@ export interface BenchOptions {
 
 export async function runBench(akno: Akno, options: BenchOptions = {}): Promise<BenchReport> {
   const health = await akno.doctor({ probeModels: false });
-  const iterations = options.iterations ?? 12;
+  const iterations =
+    options.iterations !== undefined && Number.isFinite(options.iterations) && options.iterations > 0
+      ? Math.floor(options.iterations)
+      : 12;
   const notes: string[] = [];
 
   const queries = [
@@ -226,11 +232,14 @@ export async function runBench(akno: Akno, options: BenchOptions = {}): Promise<
     notes.push(`${skippedCase.name}: ${skippedCase.skipped}`);
   }
 
+  const retrieval = await runMixedRetrievalBench({ iterations });
+
   return {
     results,
-    // Only asserted budgets decide the verdict. A slow local model is not a
-    // regression in this code.
-    passed: results.every((result) => result.budgetMs === null || result.passed),
+    retrieval,
+    // Asserted index budgets and fixed-corpus quality decide the verdict. A slow
+    // configured model is still only reported, because it is not this code.
+    passed: results.every((result) => result.budgetMs === null || result.passed) && retrieval.passed,
     pages: health.counts.pages,
     chunks: health.counts.chunks,
     notes,

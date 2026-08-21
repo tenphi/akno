@@ -1246,10 +1246,14 @@ source files in precedence order.
 
 ```bash
 akno bench --write
+akno bench --retrieval-only
 ```
 
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
-because an endpoint or GPU was temporarily busy.
+because an endpoint or GPU was temporarily busy. Every normal run also builds a temporary, wholly invented
+corpus and asserts orphan recall, no owned/standalone duplication, unchanged page recall after mixed assembly,
+typed lexical degradation, and mixed budget-fitting latency. `--retrieval-only` runs that reproducible quality
+gate without opening the configured knowledge base or calling its models.
 
 ### Recovery guarantees
 
@@ -1284,16 +1288,6 @@ and journal undo. Orphan-document adoption now uses the same lifecycle, includin
 ownership verification. The remaining dream outputs still do not all feed that queue: observations,
 principles, report-only conflict findings, legacy repair output, and housekeeping retain their existing
 execution or reporting behavior. There is also no snooze or requested-revision decision yet.
-
-### Standalone document retrieval still needs a benchmark
-
-Recall now returns readable orphan documents directly, and `context` carries those results to an attached
-agent. Missing originals now have durable per-file state: a retained extraction or rendition is `degraded`,
-no readable surviving copy is `unavailable`, restoration returns the same identity to `available`, and only
-explicit `forget` retracts the cached evidence. Timeline now adds typed `document_evidence` for orphan sources:
-extracted dates carry bounded quotes and document pages, while filesystem fallbacks say `file_created` or
-`file_modified` and never acquire event semantics. The remaining specification gap is the invented mixed-result
-benchmark that measures orphan recall, duplicate rate, page-result regression, and lexical-only behavior.
 
 ### The whole dream should become a plan, apply, verify loop
 

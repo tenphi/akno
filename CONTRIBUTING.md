@@ -172,8 +172,9 @@ Changes here need more care than the line count suggests.
 - The example is documentation that runs, which is why it has a test. Nothing else in the suite would notice
   an event line in a format the indexer does not match, or a relative Markdown link pointing out of the
   folder — which indexes as a broken link _inside_ it. Both were real.
-- `akno bench` asserts the performance budgets. If you make something slower, the budget should move
-  deliberately and with a reason in the commit message, not quietly.
+- `akno bench` asserts performance budgets and runs a fixed invented mixed-retrieval corpus. If you make
+  something slower or change ranking, the threshold should move deliberately and with a reason in the commit
+  message, not quietly. `--retrieval-only` avoids the configured knowledge base and model stack.
 
 ## Toolchain
 

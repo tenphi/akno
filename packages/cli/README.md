@@ -57,6 +57,7 @@ akno write                Create, append, patch or replace a page.
 akno ingest <path|url>    Extract, OCR, name, summarize and route a file or folder.
 akno dream                The nightly maintenance cycle.
 akno plan                 Inspect, decide and apply durable curation plans.
+akno bench                Assert performance and mixed page/document retrieval quality.
 akno serve                Hold the index, watcher and models in one process.
 ```
 

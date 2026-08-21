@@ -632,9 +632,10 @@ addresses under one `location` heading. A pass that had "fixed" those would have
 
 ## Performance
 
-`akno bench` asserts these budgets so CI fails on regression rather than someone noticing months later.
-Measured against a real knowledge base — 221 indexed pages, 1,142 chunks (1,069 from page bodies and 73 from
-inside documents), Apple Silicon:
+`akno bench` asserts storage-path budgets against the configured knowledge base and retrieval quality against
+a fixed corpus of invented pages, owned documents, and orphan documents. That split catches both kinds of
+regression: a fast wrong answer and a correct slow one. The configured-base timings below were measured against
+221 indexed pages and 1,142 chunks (1,069 from page bodies and 73 from inside documents), Apple Silicon:
 
 |                              |            |                          |
 | ---------------------------- | ---------- | ------------------------ |
@@ -645,6 +646,20 @@ inside documents), Apple Silicon:
 | Point lookup by slug         | 0.3 ms     | budget 10 ms             |
 | `timeline`, 6-month window   | 0.1 ms     | budget 20 ms             |
 | `recall`, hybrid + rerank    | 2,010 ms   | _reported, not budgeted_ |
+
+The fixed mixed-result corpus is asserted on every run:
+
+| Assertion                                 | Required |
+| ----------------------------------------- | -------- |
+| Orphan recall at 3                        | 100%     |
+| Owned/standalone duplicate document rate  | 0%       |
+| Page-only recall at 2                     | 100%     |
+| Page-recall change after mixed assembly   | ≥ 0      |
+| Lexical hits with typed model degradation | 100%     |
+| Mixed assembly and budget fitting, p50    | ≤ 20 ms  |
+
+`akno bench --retrieval-only` runs only that invented corpus. It neither opens the configured knowledge base
+nor calls its models, which makes it the safe, reproducible quality gate for CI and ranking changes.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL
@@ -736,7 +751,7 @@ are `AbortSignal.timeout`, and the file walker is `node:fs` — none of that nee
 
 ```bash
 pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — 613 tests, no models required
+pnpm test          # vitest — no models required; includes the fixed mixed-retrieval corpus
 pnpm smoke         # both end-to-end scripts, through the built dist
 pnpm lint          # oxlint
 pnpm knip          # dead exports and unused dependencies
