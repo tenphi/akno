@@ -10,6 +10,7 @@ import {
   MAINTENANCE_PLANS_MIGRATION_INDEX,
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
+  ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   SCHEMA_VERSION,
 } from './migrations.ts';
 import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
@@ -149,6 +150,9 @@ function migrate(db: Database.Database): void {
       if (!tableExists(db, 'maintenance_runs')) {
         db.exec(MIGRATIONS[MAINTENANCE_RUNS_MIGRATION_INDEX]!);
       }
+      if (columnIsNotNull(db, 'chunks', 'page_id')) {
+        db.exec(MIGRATIONS[ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX]!);
+      }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   })();
@@ -164,6 +168,11 @@ function tableExists(db: Database.Database, name: string): boolean {
 function columnExists(db: Database.Database, table: string, column: string): boolean {
   const rows = db.pragma(`table_info(${JSON.stringify(table)})`) as { name: string }[];
   return rows.some((row) => row.name === column);
+}
+
+function columnIsNotNull(db: Database.Database, table: string, column: string): boolean {
+  const rows = db.pragma(`table_info(${JSON.stringify(table)})`) as { name: string; notnull: number }[];
+  return rows.some((row) => row.name === column && row.notnull === 1);
 }
 
 /**

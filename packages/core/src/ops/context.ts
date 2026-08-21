@@ -1,4 +1,10 @@
-import { ContextInput, type Card, type ContextOutput, type Event } from '@tenphi/akno-protocol';
+import {
+  ContextInput,
+  type Card,
+  type ContextOutput,
+  type Event,
+  type RecallResult,
+} from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { estimateTokens } from '../recall/assemble.ts';
 import { recall } from './recall.ts';
@@ -82,6 +88,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
 
   // ── This turn's recall ───────────────────────────────────────────────────
   let cards: Card[] = [];
+  let results: RecallResult[] = [];
   let searched: string[] = [];
   let coverage: Record<string, boolean> | undefined;
 
@@ -96,6 +103,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     if (result.coverage) coverage = result.coverage;
     for (const reason of result.degraded ?? []) degraded.add(reason);
     // A pinned page already in the bundle must not be paid for twice.
+    results = result.results.filter((entry) => entry.type === 'document' || !pinnedSlugs.has(entry.slug));
     cards = result.cards.filter((card) => !pinnedSlugs.has(card.slug));
     droppedCards += result.cards.length - cards.length;
     remaining -= result.budget_used;
@@ -105,9 +113,10 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   const anyDropped = droppedCards > 0 || droppedEvents > 0;
 
   return {
-    status: degraded.size > 0 ? 'degraded' : cards.length === 0 && pinned.length === 0 ? 'empty' : 'ok',
+    status: degraded.size > 0 ? 'degraded' : results.length === 0 && pinned.length === 0 ? 'empty' : 'ok',
     ...(degraded.size > 0 ? { degraded: [...degraded] } : {}),
     pinned,
+    results,
     cards,
     events,
     ...(structure ? { structure } : {}),

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Card, RecallMode, ResultEnvelope } from '../common.ts';
+import { Card, RecallMode, RecallResult, ResultEnvelope } from '../common.ts';
 import { Event } from './timeline.ts';
 
 /**
@@ -23,6 +23,9 @@ export type ContextInput = z.infer<typeof ContextInput>;
 
 export const ContextOutput = ResultEnvelope.extend({
   pinned: z.array(Card),
+  /** Authoritative mixed results for this turn's recall. */
+  results: z.array(RecallResult),
+  /** @deprecated Page-only compatibility view; use `results`. */
   cards: z.array(Card),
   events: z.array(Event),
   structure: z.string().optional(),

@@ -30,6 +30,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   if (chunkCount === 0) {
     return {
       status: 'empty',
+      results: [],
       cards: [],
       searched: [input.query],
       budget_used: 0,
@@ -61,16 +62,17 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     if (expansion.note) notes.push(expansion.note);
   }
 
-  const pageIds = resolveFilter(ctx, input);
-  if (pageIds !== null && pageIds.size === 0) {
+  const chunkIds = resolveFilter(ctx, input);
+  if (chunkIds !== null && chunkIds.size === 0) {
     return {
       status: 'empty',
+      results: [],
       cards: [],
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
       scores: 'relative',
-      note: 'the filter matched no pages',
+      note: 'the filter matched no indexed evidence',
     };
   }
 
@@ -81,13 +83,14 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       vectorTexts: dedupe(allVectorTexts),
       candidatesPerArm: ctx.config.recall.candidatesPerArm,
       prefilterAbove: ctx.config.index.annThresholdChunks,
-      ...(pageIds ? { pageIds } : {}),
+      ...(chunkIds ? { chunkIds } : {}),
     });
   } catch (err) {
     // The index could not be read. Say so — an agent can honestly offer to check
     // again, which it cannot do if this returns as "nothing recorded".
     return {
       status: 'unavailable',
+      results: [],
       cards: [],
       searched: dedupe(allQueries),
       budget_used: 0,
@@ -152,12 +155,13 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   const reasons = [...degraded];
   const searched = dedupe(allQueries);
 
-  if (assembled.cards.length === 0) {
+  if (assembled.results.length === 0) {
     // `empty` carries the expanded queries that found nothing. That list is the
     // proof an agent needs to say "not recorded" honestly.
     return {
       status: reasons.length > 0 ? 'degraded' : 'empty',
       ...(reasons.length > 0 ? { degraded: reasons } : {}),
+      results: [],
       cards: [],
       searched,
       budget_used: 0,
@@ -174,6 +178,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   return {
     status: reasons.length > 0 ? 'degraded' : 'ok',
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
+    results: assembled.results,
     cards: assembled.cards,
     searched,
     budget_used: assembled.budgetUsed,
@@ -183,11 +188,18 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   };
 }
 
-/** Filters are applied as a page-id restriction so both search arms honour them. */
-function resolveFilter(ctx: AknoContext, input: ReturnType<typeof RecallInput.parse>): Set<string> | null {
+/** Filters resolve to native chunk identities so both page and document evidence can participate. */
+function resolveFilter(ctx: AknoContext, input: ReturnType<typeof RecallInput.parse>): Set<number> | null {
   const filter = input.filter;
   const hasFilter = Boolean(
-    filter?.folder || filter?.type || filter?.tags?.length || filter?.role || input.since || input.until,
+    filter?.folder ||
+    filter?.type ||
+    filter?.tags?.length ||
+    filter?.role ||
+    filter?.source ||
+    filter?.ownership ||
+    input.since ||
+    input.until,
   );
   if (!hasFilter) return null;
 
@@ -195,34 +207,56 @@ function resolveFilter(ctx: AknoContext, input: ReturnType<typeof RecallInput.pa
   const params: unknown[] = [];
 
   if (filter?.folder) {
-    clauses.push('(slug = ? OR slug LIKE ?)');
-    params.push(filter.folder, `${filter.folder}/%`);
+    clauses.push(
+      `((c.document_id IS NULL AND (p.slug = ? OR p.slug LIKE ?))
+         OR (c.document_id IS NOT NULL AND (d.rel_path = ? OR d.rel_path LIKE ?)))`,
+    );
+    params.push(filter.folder, `${filter.folder}/%`, filter.folder, `${filter.folder}/%`);
   }
   if (filter?.type) {
-    clauses.push('type = ?');
+    clauses.push('p.type = ?');
     params.push(filter.type);
   }
   if (filter?.role) {
-    clauses.push('role = ?');
+    // NULL never equals a role, so orphan documents are explicitly excluded.
+    clauses.push('p.role = ?');
     params.push(filter.role);
   }
+  if (filter?.source === 'page') clauses.push('c.document_id IS NULL');
+  if (filter?.source === 'document') clauses.push('c.document_id IS NOT NULL');
+  if (filter?.ownership === 'orphan') {
+    clauses.push('c.document_id IS NOT NULL AND d.page_id IS NULL');
+  }
+  if (filter?.ownership === 'owned') clauses.push('c.page_id IS NOT NULL');
   if (input.since) {
-    clauses.push('updated_at >= ?');
+    clauses.push(
+      `(CASE WHEN c.document_id IS NULL THEN p.updated_at
+             ELSE datetime(CAST(f.mtime_ns AS INTEGER) / 1000000000, 'unixepoch') END) >= ?`,
+    );
     params.push(input.since);
   }
   if (input.until) {
     // A `YYYY-MM` bound means "through the end of that month".
-    clauses.push('updated_at <= ?');
+    clauses.push(
+      `(CASE WHEN c.document_id IS NULL THEN p.updated_at
+             ELSE datetime(CAST(f.mtime_ns AS INTEGER) / 1000000000, 'unixepoch') END) <= ?`,
+    );
     params.push(`${input.until}￿`);
   }
 
-  const sql = `SELECT id, tags FROM pages${clauses.length > 0 ? ` WHERE ${clauses.join(' AND ')}` : ''}`;
-  const rows = ctx.store.db.prepare(sql).all(...params) as { id: string; tags: string }[];
+  const sql = `SELECT c.id, p.tags
+                 FROM chunks c
+                 LEFT JOIN pages p ON p.id = c.page_id
+                 LEFT JOIN documents d ON d.id = c.document_id
+                 LEFT JOIN files f ON f.rel_path = d.rel_path
+                ${clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''}`;
+  const rows = ctx.store.db.prepare(sql).all(...params) as { id: number; tags: string | null }[];
 
   const wanted = filter?.tags?.map((tag) => tag.toLowerCase()) ?? [];
-  const ids = new Set<string>();
+  const ids = new Set<number>();
   for (const row of rows) {
     if (wanted.length > 0) {
+      if (!row.tags) continue;
       const tags = (JSON.parse(row.tags) as string[]).map((tag) => tag.toLowerCase());
       if (!wanted.every((tag) => tags.includes(tag))) continue;
     }

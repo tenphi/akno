@@ -54,8 +54,8 @@ export const OPS = {
     output: RecallOutput,
     implemented: true,
     description:
-      'Search memory. Returns page cards — a summary plus the exact lines that matched, each with the file ' +
-      'and line number it came from, so every claim can be cited. Handles both keyword lookups and natural ' +
+      'Search memory. Returns typed page and document cards with exact source citations. A readable document ' +
+      'does not need an owning Markdown page to be found. Handles both keyword lookups and natural ' +
       'language questions; the expansion strategy is inferred from the query. An empty result is proof that ' +
       'nothing matched, not a failure: check `status` for "empty" (nothing there), "degraded" (a model was ' +
       'missing, search was weaker) or "unavailable" (the index could not be read). In question mode, ' +

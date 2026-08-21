@@ -11,12 +11,13 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 13;
+export const SCHEMA_VERSION = 14;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
 export const CONFLICT_QUALIFICATION_MIGRATION_INDEX = 4;
 export const MAINTENANCE_RUNS_MIGRATION_INDEX = 5;
+export const ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX = 6;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -141,7 +142,7 @@ export const MIGRATIONS: string[] = [
   -- vector table and rank fusion all read it, so a PDF's text is searched by the same
   -- machinery as a note's with nothing new to keep in step. A document chunk carries
   -- the owning page's id as well, which is what lets a hit inside a PDF surface as a
-  -- card for the page it belongs to.
+  -- card for the page it belongs to. Migration 7 relaxes this for orphan documents.
   CREATE TABLE chunks (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     page_id       TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
@@ -374,6 +375,47 @@ export const MIGRATIONS: string[] = [
     error_code  TEXT
   );
   CREATE INDEX maintenance_runs_status ON maintenance_runs(status, started_at DESC);
+  `,
+  // ── 7. First-class orphan document chunks ────────────────────────────────
+  // Chunks are derived, but preserving their ids keeps FTS citations stable through the migration.
+  // Existing vectors are re-embedded because the fallback table follows the renamed parent table.
+  `
+  DROP TABLE IF EXISTS vec_fallback;
+  DROP TABLE chunks_fts;
+  ALTER TABLE chunks RENAME TO chunks_page_only;
+
+  CREATE TABLE chunks (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    page_id       TEXT REFERENCES pages(id) ON DELETE CASCADE,
+    ord           INTEGER NOT NULL,
+    kind          TEXT NOT NULL DEFAULT 'knowledge',
+    heading_path  TEXT NOT NULL DEFAULT '',
+    text          TEXT NOT NULL,
+    line_start    INTEGER NOT NULL,
+    line_end      INTEGER NOT NULL,
+    embedded      INTEGER NOT NULL DEFAULT 0,
+    document_id   TEXT REFERENCES documents(id) ON DELETE CASCADE,
+    doc_page      INTEGER,
+    CHECK (page_id IS NOT NULL OR document_id IS NOT NULL)
+  );
+  INSERT INTO chunks(id, page_id, ord, kind, heading_path, text, line_start, line_end,
+                     embedded, document_id, doc_page)
+       SELECT id, page_id, ord, kind, heading_path, text, line_start, line_end,
+              0, document_id, doc_page
+         FROM chunks_page_only;
+  DROP TABLE chunks_page_only;
+
+  CREATE INDEX chunks_page     ON chunks(page_id, ord);
+  CREATE INDEX chunks_embedded ON chunks(embedded);
+  CREATE INDEX chunks_document ON chunks(document_id, ord);
+  CREATE VIRTUAL TABLE chunks_fts USING fts5(
+    text,
+    heading_path,
+    content='chunks',
+    content_rowid='id',
+    tokenize='porter unicode61 remove_diacritics 2'
+  );
+  INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild');
   `,
 ];
 

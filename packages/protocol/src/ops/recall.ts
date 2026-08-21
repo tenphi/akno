@@ -1,5 +1,14 @@
 import { z } from 'zod';
-import { Card, DatePrefix, Depth, PageRole, RecallMode, ResultEnvelope, SlugFilter } from '../common.ts';
+import {
+  Card,
+  DatePrefix,
+  Depth,
+  PageRole,
+  RecallMode,
+  RecallResult,
+  ResultEnvelope,
+  SlugFilter,
+} from '../common.ts';
 
 export const RecallInput = z.object({
   query: z.string().min(1),
@@ -27,6 +36,13 @@ export const RecallInput = z.object({
 export type RecallInput = z.infer<typeof RecallInput>;
 
 export const RecallOutput = ResultEnvelope.extend({
+  /** Authoritative mixed page/document results. Use `type` to select the variant. */
+  results: z.array(RecallResult),
+  /**
+   * Page-only compatibility view. New clients should use `results`; orphan documents cannot
+   * be represented here. Kept for one compatibility cycle.
+   * @deprecated Use `results`.
+   */
   cards: z.array(Card),
   /** Every query actually issued, including expansions. On `empty` this is the
    *  proof — an agent can say "not recorded" because the layer showed its work. */

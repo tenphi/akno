@@ -807,6 +807,15 @@ export class Indexer {
           rendition?.source ?? null,
         );
 
+      // Ownership can change without the file bytes changing: adding or removing an embed
+      // changes the result container, but should not require extracting the document again.
+      const stored = this.#store.db
+        .prepare('SELECT id FROM documents WHERE rel_path = ?')
+        .get(file.relPath) as { id: string } | undefined;
+      if (stored) {
+        this.#store.db.prepare('UPDATE chunks SET page_id = ? WHERE document_id = ?').run(pageId, stored.id);
+      }
+
       // A file that has just *become* a rendition — someone's own `pdftotext` output, indexed
       // as a document of its own before the rule could recognise it — is still carrying its
       // own text and chunks, and those are the duplicate hits. Drop them: the words belong to
@@ -926,9 +935,8 @@ export class Indexer {
    * re-extract when the bytes change, and never otherwise. Extraction is local — PDFKit,
    * Vision, `textutil` — so a backlog costs seconds, not model calls.
    *
-   * A document with no page of its own is extracted but not chunked: a chunk has to belong
-   * to a card, and inventing a page for a file the rules said to keep pageless
-   * (`ingest: "file"`) would undo that decision. `doctor` reports the count.
+   * A document with no page of its own is chunked with a NULL page id and returned as a
+   * first-class document card. Organization improves the result, but is not a visibility gate.
    */
   private async extractPending(
     report: IndexReport,
@@ -945,7 +953,7 @@ export class Indexer {
                OR d.extracted_sha != d.sha256
                -- Self-healing: a page removed and restored takes its document's chunks with
                -- it, and the file hash never moved to signal that they are missing.
-               OR (d.page_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM chunks WHERE chunks.document_id = d.id))
+               OR NOT EXISTS (SELECT 1 FROM chunks WHERE chunks.document_id = d.id)
                 )
           ${scopeClause}`,
       )
@@ -1001,7 +1009,7 @@ export class Indexer {
                 row.id,
               );
 
-            if (row.page_id && extraction.text.length > 0) {
+            if (extraction.text.length > 0) {
               this.replaceDocumentChunks(
                 row.id,
                 row.page_id,
@@ -1294,16 +1302,21 @@ export class Indexer {
    */
   private replaceDocumentChunks(
     documentId: string,
-    pageId: string,
+    pageId: string | null,
     chunks: DocumentChunk[],
     pageOffset: number,
   ): void {
     this.deleteChunkRows(CHUNKS_FOR_DOCUMENT, documentId);
 
+    const identity = this.#store.db
+      .prepare('SELECT rel_path, label FROM documents WHERE id = ?')
+      .get(documentId) as { rel_path: string; label: string | null } | undefined;
+    const heading = identity ? [identity.label, identity.rel_path].filter(Boolean).join(' · ') : '';
+
     const insert = this.#store.db.prepare(
       `INSERT INTO chunks(page_id, document_id, doc_page, ord, kind, heading_path, text,
                           line_start, line_end, embedded)
-       VALUES(?, ?, ?, ?, 'source', '', ?, 0, 0, 0)`,
+       VALUES(?, ?, ?, ?, 'source', ?, ?, 0, 0, 0)`,
     );
     const insertFts = this.#store.db.prepare(
       'INSERT INTO chunks_fts(rowid, text, heading_path) VALUES(?, ?, ?)',
@@ -1312,8 +1325,8 @@ export class Indexer {
       // The page number within the *whole* document, not within this file: page 2 of
       // `passport-2.pdf` is page 5 of the passport, and that is the one a reader can find.
       const docPage = chunk.docPage === null ? null : chunk.docPage + pageOffset;
-      const result = insert.run(pageId, documentId, docPage, chunk.ord, chunk.text);
-      insertFts.run(Number(result.lastInsertRowid), chunk.text, '');
+      const result = insert.run(pageId, documentId, docPage, chunk.ord, heading, chunk.text);
+      insertFts.run(Number(result.lastInsertRowid), chunk.text, heading);
     }
   }
 

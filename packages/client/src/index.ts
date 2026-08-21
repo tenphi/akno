@@ -15,6 +15,11 @@ import {
   type OpResult,
 } from '@tenphi/akno-protocol';
 
+// Hosts normally import only the transport package. Re-exporting the guards here lets them
+// consume mixed recall results without adding a second direct dependency.
+export { isDocumentCard, isPageCard } from '@tenphi/akno-protocol';
+export type { DocumentCard, PageCard, RecallResult } from '@tenphi/akno-protocol';
+
 /**
  * `@tenphi/akno-client` has the **identical interface** to the library — same
  * ops, same schemas, generated from the same registry. Swapping `open()` for

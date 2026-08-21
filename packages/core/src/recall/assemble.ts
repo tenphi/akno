@@ -1,7 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
-import type { Card, Depth, Line, PageRole, RecallMode, SupersededClaim } from '@tenphi/akno-protocol';
+import type {
+  Card,
+  Depth,
+  DocumentCard,
+  Line,
+  PageRole,
+  RecallMode,
+  RecallResult,
+  SupersededClaim,
+} from '@tenphi/akno-protocol';
 import type { AknoConfig } from '../config/schema.ts';
 import type { Store } from '../store/db.ts';
 import { isObservation } from '../kb/page.ts';
@@ -23,6 +32,7 @@ export interface AssembleOptions {
 }
 
 export interface Assembled {
+  results: RecallResult[];
   cards: Card[];
   budgetUsed: number;
   coverage: Record<string, boolean> | null;
@@ -46,8 +56,8 @@ interface PageRow {
 type FactRow = LineFact & { claim: string };
 
 /**
- * Recall returns page cards — not chunks. A chunk boundary is an indexing
- * artifact and means nothing to a reader.
+ * Recall returns page or document cards — never chunks. A chunk boundary is an
+ * indexing artifact and means nothing to a reader.
  */
 export class Assembler {
   readonly #config: AknoConfig;
@@ -61,14 +71,18 @@ export class Assembler {
   assemble(options: AssembleOptions): Assembled {
     // Group by page, keeping each page's best-scoring chunk as its representative.
     const byPage = new Map<string, { score: number; hits: ChunkHit[]; relevance?: number }>();
+    const byDocument = new Map<string, { score: number; hits: ChunkHit[]; relevance?: number }>();
     for (const hit of options.hits) {
-      const entry = byPage.get(hit.pageId);
+      const group = hit.pageId ? byPage : hit.documentId ? byDocument : null;
+      const id = hit.pageId ?? hit.documentId;
+      if (!group || !id) continue;
+      const entry = group.get(id);
       if (entry) {
         entry.hits.push(hit);
         entry.score = Math.max(entry.score, hit.score);
         if (hit.relevance !== undefined) entry.relevance = Math.max(entry.relevance ?? 0, hit.relevance);
       } else {
-        byPage.set(hit.pageId, {
+        group.set(id, {
           score: hit.score,
           hits: [hit],
           ...(hit.relevance !== undefined ? { relevance: hit.relevance } : {}),
@@ -76,45 +90,102 @@ export class Assembler {
       }
     }
 
-    const ranked = [...byPage.entries()]
+    const rankedPages = [...byPage.entries()]
       .map(([pageId, entry]) => ({ pageId, ...entry }))
       .map((entry) => {
         const page = this.pageRow(entry.pageId);
-        return page ? { ...entry, page, ranked: entry.score * this.rankFactor(page) } : null;
+        return page
+          ? {
+              kind: 'page' as const,
+              ranked: entry.score * this.rankFactor(page),
+              result: this.pageResult(
+                page,
+                entry.hits,
+                entry.score * this.rankFactor(page),
+                entry.relevance,
+                options,
+              ),
+            }
+          : null;
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
-      .filter((entry) => !options.include || options.include.includes(entry.page.role))
-      .sort((a, b) => b.ranked - a.ranked);
+      .filter((entry) => !options.include || options.include.includes(entry.result.role));
+
+    // Orphan parts are grouped again by their durable group key. The search identity remains
+    // the matching document id; assembly is where scanner-split files become one reader object.
+    const orphanGroups = new Map<string, { score: number; hits: ChunkHit[]; relevance?: number }>();
+    for (const [documentId, entry] of byDocument) {
+      const row = this.documentRow(documentId);
+      if (!row || row.page_id !== null) continue;
+      const key = row.group_key ?? row.rel_path;
+      const group = orphanGroups.get(key);
+      if (group) {
+        group.hits.push(...entry.hits);
+        group.score = Math.max(group.score, entry.score);
+        if (entry.relevance !== undefined) group.relevance = Math.max(group.relevance ?? 0, entry.relevance);
+      } else {
+        orphanGroups.set(key, { ...entry, hits: [...entry.hits] });
+      }
+    }
+
+    const rankedDocuments = options.include
+      ? []
+      : [...orphanGroups.entries()].map(([groupKey, entry]) => {
+          const ranked = entry.score * this.#config.recall.rank.source;
+          return {
+            kind: 'document' as const,
+            ranked,
+            result: this.buildDocumentCard(groupKey, entry.hits, ranked, entry.relevance, options),
+          };
+        });
+
+    const ranked = mixedOrder(
+      [...rankedPages, ...rankedDocuments].sort((a, b) => b.ranked - a.ranked),
+      options.limit,
+    );
 
     // One budget, one assembly — whole cards first. A half-card whose lines
     // were trimmed to fit is exactly the "disconnected fragment" the layer exists
     // to stop producing.
-    const cards: Card[] = [];
+    const results: RecallResult[] = [];
     let budgetUsed = 0;
     let dropped = 0;
 
     for (const entry of ranked) {
-      if (cards.length >= options.limit) {
+      if (results.length >= options.limit) {
         dropped++;
         continue;
       }
-      const card = this.buildCard(entry.page, entry.hits, entry.ranked, options);
-      if (entry.relevance !== undefined) card.relevance = round(entry.relevance);
-      const cost = estimateTokens(card);
-      if (budgetUsed + cost > options.budget && cards.length > 0) {
+      const cost = estimateTokens(entry.result);
+      if (budgetUsed + cost > options.budget && results.length > 0) {
         dropped++;
         continue;
       }
-      cards.push(card);
+      results.push(entry.result);
       budgetUsed += cost;
     }
 
+    const cards = results.filter((result) => result.type === 'page').map(({ type: _type, ...card }) => card);
+
     return {
+      results,
       cards,
       budgetUsed,
-      coverage: options.mode === 'question' ? computeCoverage(options.concepts, cards) : null,
+      coverage: options.mode === 'question' ? computeCoverage(options.concepts, results) : null,
       droppedCards: dropped,
     };
+  }
+
+  private pageResult(
+    page: PageRow,
+    hits: ChunkHit[],
+    score: number,
+    relevance: number | undefined,
+    options: AssembleOptions,
+  ): Extract<RecallResult, { type: 'page' }> {
+    const card = this.buildCard(page, hits, score, options);
+    if (relevance !== undefined) card.relevance = round(relevance);
+    return { type: 'page', ...card };
   }
 
   /**
@@ -140,6 +211,70 @@ export class Assembler {
       )
       .get(pageId) as PageRow | undefined;
     return row ?? null;
+  }
+
+  private documentRow(documentId: string): DocumentRow | null {
+    const row = this.#store.db
+      .prepare(
+        `SELECT id, page_id, rel_path, mime, label, page_count, group_key, part, summary,
+                extract_via, confidence, ocr
+           FROM documents WHERE id = ?`,
+      )
+      .get(documentId) as DocumentRow | undefined;
+    return row ?? null;
+  }
+
+  private buildDocumentCard(
+    groupKey: string,
+    hits: ChunkHit[],
+    score: number,
+    relevance: number | undefined,
+    options: AssembleOptions,
+  ): DocumentCard {
+    const rows = this.#store.db
+      .prepare(
+        `SELECT id, page_id, rel_path, mime, label, page_count, group_key, part, summary,
+                extract_via, confidence, ocr
+           FROM documents
+          WHERE group_key = ? AND renders IS NULL AND page_id IS NULL
+          ORDER BY part`,
+      )
+      .all(groupKey) as DocumentRow[];
+    const first = rows[0]!;
+    const bestHit = [...hits].sort((a, b) => b.score - a.score)[0]!;
+    const bestPart = rows.find((row) => row.id === bestHit.documentId) ?? first;
+    const meta = this.chunkMeta([bestHit.chunkId]).get(bestHit.chunkId);
+    const via = extractionVia(bestPart);
+
+    return {
+      type: 'document',
+      id: first.id,
+      path: first.rel_path,
+      label: first.label ?? path.basename(first.rel_path),
+      mime: first.mime,
+      ...(bestPart.summary ? { summary: bestPart.summary } : {}),
+      ...(options.depth !== 'summary' && meta
+        ? { quote: quoteWindow(meta.text, this.#config.recall.sourceQuoteLines) }
+        : {}),
+      ...(meta?.doc_page !== null && meta?.doc_page !== undefined ? { matched_page: meta.doc_page } : {}),
+      ...(rows.length > 1
+        ? {
+            parts: rows.map((row) => ({
+              id: row.id,
+              path: row.rel_path,
+              pages: row.page_count,
+            })),
+          }
+        : {}),
+      source: {
+        kind: via === 'vision' ? 'model_description' : via === 'ocr' ? 'ocr_text' : 'original_text',
+        via,
+        confidence: bestPart.confidence,
+      },
+      ownership: { status: 'orphan' },
+      score: round(score),
+      ...(relevance !== undefined ? { relevance: round(relevance) } : {}),
+    };
   }
 
   private buildCard(page: PageRow, hits: ChunkHit[], score: number, options: AssembleOptions): Card {
@@ -385,11 +520,22 @@ function supersededFor(facts: FactRow[]): SupersededClaim[] {
  * first because it matches half the question, the agent reads it, and confidently
  * invents the other half.
  */
-export function computeCoverage(concepts: string[], cards: Card[]): Record<string, boolean> {
-  const haystack = cards
-    .map((card) =>
-      [card.title, card.summary ?? '', card.breadcrumb ?? '', ...card.lines.map((l) => l.text)].join(' '),
-    )
+export function computeCoverage(
+  concepts: string[],
+  results: Array<Card | RecallResult>,
+): Record<string, boolean> {
+  const haystack = results
+    .map((result) => {
+      if ('type' in result && result.type === 'document') {
+        return [result.label, result.path, result.summary ?? '', result.quote ?? ''].join(' ');
+      }
+      return [
+        result.title,
+        result.summary ?? '',
+        result.breadcrumb ?? '',
+        ...result.lines.map((line) => line.text),
+      ].join(' ');
+    })
     .join(' ')
     .toLowerCase();
 
@@ -421,7 +567,17 @@ function stem(term: string): string {
  * and a tokenizer per model would make the number precise about the wrong thing —
  * the caller's budget is a ceiling, not an accounting target.
  */
-export function estimateTokens(card: Card): number {
+export function estimateTokens(card: Card | RecallResult): number {
+  if ('type' in card && card.type === 'document') {
+    const text = [
+      card.path,
+      card.label,
+      card.summary ?? '',
+      card.quote ?? '',
+      ...(card.parts ?? []).map((part) => part.path),
+    ].join(' ');
+    return Math.ceil(text.length / 4) + 24;
+  }
   const text = [
     card.slug,
     card.title,
@@ -452,6 +608,7 @@ interface ChunkMeta {
 
 interface DocumentRow {
   id: string;
+  page_id?: string | null;
   rel_path: string;
   mime: string | null;
   label: string | null;
@@ -459,6 +616,52 @@ interface DocumentRow {
   group_key: string | null;
   part: number;
   summary: string | null;
+  extract_via?: string | null;
+  confidence?: number | null;
+  ocr?: number;
+}
+
+function extractionVia(row: DocumentRow): 'plain' | 'textutil' | 'text-layer' | 'ocr' | 'vision' {
+  if (
+    row.extract_via === 'plain' ||
+    row.extract_via === 'textutil' ||
+    row.extract_via === 'text-layer' ||
+    row.extract_via === 'ocr' ||
+    row.extract_via === 'vision'
+  ) {
+    return row.extract_via;
+  }
+  return row.ocr === 1 ? 'ocr' : 'plain';
+}
+
+interface RankedResult {
+  kind: 'page' | 'document';
+  ranked: number;
+  result: RecallResult;
+}
+
+/**
+ * A mixed result should not turn into "all pages" merely because a document ranked one place
+ * below the limit (or vice versa). Absolute candidates must clear the calibrated 0.5 boundary;
+ * a lexical-only match has no absolute scale, so matching FTS is its relevance floor.
+ */
+function mixedOrder(ranked: RankedResult[], limit: number): RankedResult[] {
+  if (limit < 2) return ranked;
+  const eligible = ranked.filter(
+    (entry) => entry.result.relevance === undefined || entry.result.relevance >= 0.5,
+  );
+  const firstPage = eligible.find((entry) => entry.kind === 'page');
+  const firstDocument = eligible.find((entry) => entry.kind === 'document');
+  if (!firstPage || !firstDocument) return ranked;
+
+  const head = ranked.slice(0, limit);
+  if (head.some((entry) => entry.kind === 'page') && head.some((entry) => entry.kind === 'document')) {
+    return ranked;
+  }
+
+  const missing = head[0]?.kind === 'page' ? firstDocument : firstPage;
+  const kept = head.slice(0, limit - 1);
+  return [...kept, missing, ...ranked.filter((entry) => !kept.includes(entry) && entry !== missing)];
 }
 
 /**

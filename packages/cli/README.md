@@ -47,7 +47,7 @@ roles resolved and what each missing one costs.
 ## What you get
 
 ```
-akno recall <query>       Search memory. Returns page cards with line addresses.
+akno recall <query>       Search memory. Returns cited page and document cards.
 akno read <slug>          One exact page or document, in full.
 akno context <query>      The whole pre-turn bundle against one budget.
 akno remember <text>      Hand over notes; Akno decides what to keep and where.

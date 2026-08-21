@@ -68,7 +68,7 @@ truth about the world. It only knows what the indexed files and documents contai
 flowchart LR
     Person["You<br/>Obsidian, vim, Finder"] -->|"edit normally"| Notes["Markdown + documents<br/>your knowledge base"]
     Notes -->|"watch and index"| Index[("Disposable index<br/>state directory")]
-    Index -->|"cards, citations, coverage"| Agent["Agent or CLI"]
+    Index -->|"page/document results, citations, coverage"| Agent["Agent or CLI"]
     Agent -->|"write, remember, ingest"| Notes
     Agent -->|"undoable changes"| Journal["Journal + trash<br/>state directory"]
 ```
@@ -252,15 +252,15 @@ household/car-insurance (knowledge, 0.93)
 
 The important fields are:
 
-| Output              | Meaning                                                                        |
-| ------------------- | ------------------------------------------------------------------------------ |
-| `mode=question`     | The retrieval strategy chosen for this query                                   |
-| `1 card 620 tokens` | The number of page cards and their approximate prompt cost                     |
-| `coverage ✓ … ✗ …`  | Which concepts the returned evidence covers                                    |
-| `knowledge`         | The page role                                                                  |
-| `0.93`              | Relevance of the page to this query                                            |
-| `slug:11`           | The exact Markdown line to inspect                                             |
-| `~0.94`             | Confidence that the line expresses a durable claim, not that the claim is true |
+| Output                | Meaning                                                                        |
+| --------------------- | ------------------------------------------------------------------------------ |
+| `mode=question`       | The retrieval strategy chosen for this query                                   |
+| `1 result 620 tokens` | The number of page/document cards and their approximate prompt cost            |
+| `coverage ✓ … ✗ …`    | Which concepts the returned evidence covers                                    |
+| `knowledge`           | The page role                                                                  |
+| `0.93`                | Relevance of the page to this query                                            |
+| `slug:11`             | The exact Markdown line to inspect                                             |
+| `~0.94`               | Confidence that the line expresses a durable claim, not that the claim is true |
 
 Coverage is a guardrail for the answer. A relevant page can still fail to answer one part of a
 compound question. The caller should answer the covered part and be explicit about the missing one.
@@ -275,11 +275,13 @@ flowchart LR
     lexical --> fuse["3. Fuse by rank"]
     semantic --> fuse
     fuse --> rerank["4. Rerank candidates<br/>optional reranker"]
-    rerank --> cards["5. Assemble page cards<br/>and fit one budget"]
+    rerank --> cards["5. Assemble page/document cards<br/>and fit one budget"]
 ```
 
 The search arms use different score scales, so they are merged by rank rather than comparing raw
-scores. The final cards are built only after fusion and optional reranking.
+scores. Owned document hits group beneath their page; ownerless document parts group into a typed
+document card. The compatibility `cards` field contains pages only, while `results` is the
+authoritative mixed list.
 
 Recall has three modes:
 
@@ -297,6 +299,7 @@ akno recall "renewal" --folder household
 akno recall "invoice" --type receipt
 akno recall "policy wording" --include source --depth full
 akno recall "rent" --tag legal,household --budget 2000
+akno recall "warranty" --source document --ownership orphan
 ```
 
 ### `read`: open one exact page or document
@@ -569,17 +572,18 @@ page move together. Below it, the file remains visibly in the inbox with a propo
 The inbox is the only place where Akno automatically moves an existing document. A file manually
 placed in another folder may be extracted, named, paged, and indexed, but it is not relocated.
 
-### Why an unowned document needs a page
+### Unowned documents are searchable too
 
-Recall returns page cards. A document that no page owns may be extracted and indexed but still have no
-card through which its matching text can be returned. Ownership is established by:
+A readable document that no page owns is returned directly as a document card. It carries a stable id,
+relative path, bounded quote, extraction method (`original_text`, `ocr_text`, or `model_description`),
+and an optional page number. The same id works with `akno read --document`. Ownership is established by:
 
 - Akno's content-addressed `<page>-<8 hex>.<ext>` filename;
 - a matching page and document stem; or
 - a `![[filename]]` embed from a page.
 
-The dream cycle's `adopt` phase creates a minimal owning page for readable documents that still have
-none.
+The dream cycle's `adopt` phase can still create a minimal owning page. That improves browsing, page-role
+policy, links, and future synthesis; it is optional organization rather than a repair required for recall.
 
 ---
 
@@ -640,15 +644,15 @@ Order matters in three places:
 
 ### Phase summary
 
-| Phase          | Reads                                                                 | Produces                                                | Writes by default?                  | Model?                        |
-| -------------- | --------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------- | ----------------------------- |
-| `conflicts`    | Live facts on different knowledge pages                               | Typed verdicts and inference eligibility                | no                                  | optional verification         |
-| `observe`      | Conflict-eligible facts from at least two knowledge pages             | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive         |
-| `reflect`      | Conflict-eligible observation pages                                   | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive         |
-| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans | no; phase and write switch disabled | page/curator work yes; link audit no |
-| `adopt`        | Readable documents with no owning page                                | Exact low-risk filing-page plans                         | auto, capped at 20 per run          | planner no; auto curator yes  |
-| `repair`       | Broken links                                                          | Read-only view of exact proposals and refusals          | no; phase disabled                  | no                            |
-| `housekeeping` | Links, documents, pages, and folder rules                             | Counts and actionable diagnostics                       | no                                  | no                            |
+| Phase          | Reads                                                                               | Produces                                                | Writes by default?                  | Model?                               |
+| -------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------- | ------------------------------------ |
+| `conflicts`    | Live facts on different knowledge pages                                             | Typed verdicts and inference eligibility                | no                                  | optional verification                |
+| `observe`      | Conflict-eligible facts from at least two knowledge pages                           | Evidence-linked patterns under `observations/`          | no; phase disabled                  | maintenance or derive                |
+| `reflect`      | Conflict-eligible observation pages                                                 | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive                |
+| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans            | no; phase and write switch disabled | page/curator work yes; link audit no |
+| `adopt`        | Readable documents with no owning page                                              | Exact low-risk filing-page plans                        | auto, capped at 20 per run          | planner no; auto curator yes         |
+| `repair`       | Broken links                                                                        | Read-only view of exact proposals and refusals          | no; phase disabled                  | no                                   |
+| `housekeeping` | Links, documents, pages, and folder rules                                           | Counts and actionable diagnostics                       | no                                  | no                                   |
 
 The default dream therefore has one automatic write-capable phase: `adopt`. It first seals exact page
 creations, then asks the independent curator and applies only accepted items. It never moves or edits the
@@ -1253,16 +1257,13 @@ ownership verification. The remaining dream outputs still do not all feed that q
 principles, report-only conflict findings, legacy repair output, and housekeeping retain their existing
 execution or reporting behavior. There is also no snooze or requested-revision decision yet.
 
-### Searchability should not depend on an overnight write
+### Standalone document dates and missing originals need richer states
 
-An extracted document with no owning page is currently absent from recall because recall returns page cards.
-The default `adopt` phase repairs that by creating a Markdown page later. This is internally coherent but
-surprising from a user's perspective: indexing can report success while a document remains unanswerable, then
-a scheduled maintenance run creates a file to make retrieval work.
-
-Recall should be able to return an orphan document card directly, with document-page citations and a
-`needs_home` state. Adoption could then become an optional filing action instead of a default write required
-for search correctness.
+Recall now returns readable orphan documents directly, and `context` carries those results to an attached
+agent. The remaining document-retrieval gap is narrower: timeline does not yet expose dated orphan evidence,
+and a source file disappearing is reconciled as removal rather than preserving an explicit `unavailable`
+result when a rendition or prior extraction survives. Those states need durable source availability metadata;
+they should not be inferred from an error string.
 
 ### The whole dream should become a plan, apply, verify loop
 
@@ -1331,7 +1332,7 @@ inference so an unresolved claim cannot quietly become a new observation.
 | Command               | Purpose                                                | Writes to the knowledge base?    | Model roles                              |
 | --------------------- | ------------------------------------------------------ | -------------------------------- | ---------------------------------------- |
 | `index`               | Reconcile the index with files                         | no by default                    | embedding, derive                        |
-| `recall <query>`      | Search and return cited page cards                     | no                               | expansion, embedding, reranker           |
+| `recall <query>`      | Search and return cited page/document cards            | no                               | expansion, embedding, reranker           |
 | `read <slug>`         | Read one page or document directly                     | no                               | none                                     |
 | `list`                | Browse folders, pages, or a tree                       | no                               | none                                     |
 | `timeline`            | Retrieve events by range, subject, or text             | no                               | none                                     |

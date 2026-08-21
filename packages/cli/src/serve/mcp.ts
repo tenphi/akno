@@ -28,8 +28,8 @@ export async function serveMcp(
       // and what the status fields mean.
       instructions:
         'This is the user’s long-term memory, stored as a Markdown knowledge base. Retrieve with ' +
-        '`recall` before answering anything about the user, their history, or their files — its results carry file ' +
-        'and line addresses, so a claim you take from them can be cited and a claim you cannot find ' +
+        '`recall` before answering anything about the user, their history, or their files — its typed page and ' +
+        'document results carry source addresses, so a claim you take from them can be cited and a claim you cannot find ' +
         'in them should not be made. Read `status` on every result: "empty" means the knowledge base ' +
         'genuinely has nothing and you may say so; "degraded" means part of the search stack was ' +
         'missing, so absence is not proven; "unavailable" means the index could not be read. In ' +

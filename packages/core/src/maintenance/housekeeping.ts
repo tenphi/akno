@@ -54,8 +54,8 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
 
   const brokenTotal = count(ctx, "SELECT count(*) AS c FROM links WHERE broken = 1 AND kind != 'embed'");
 
-  // A document with no page has nowhere to be returned, since recall returns page cards.
-  // Reported here with the fix, rather than left to be noticed by its absence from results.
+  // An orphan is searchable, but still lacks page policy, links, and a place for authored context.
+  // Housekeeping reports the organizational opportunity without calling it data loss.
   const orphanRows = ctx.store.db
     .prepare(
       `SELECT rel_path, text IS NOT NULL AS extracted FROM documents
@@ -78,9 +78,9 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
       relPath: row.rel_path,
       reason: row.extracted
         ? adoptEnabled
-          ? 'no page owns it — the adopt phase will write one beside it'
-          : 'no page owns it, so its text cannot be returned — embed it from a page with `![[filename]]`, or enable maintenance.adopt'
-        : 'no page owns it, and nothing could be read from it',
+          ? 'unfiled but searchable — the adopt phase will write a page beside it'
+          : 'unfiled but searchable as a document — embed it from a page with `![[filename]]`, or enable maintenance.adopt'
+        : 'unfiled and visible by filename, but nothing could be read from it',
     })),
     drift: drift.slice(0, LIST_CAP),
     counts: { brokenLinks: brokenTotal, orphanedDocuments: orphanTotal, drift: drift.length },

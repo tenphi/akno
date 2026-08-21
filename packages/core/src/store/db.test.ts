@@ -125,4 +125,55 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('preserves page chunks while allowing a document chunk without a page', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-orphan-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 6)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO pages(id, slug, rel_path, title, role, frontmatter, body_hash, indexed_at)
+         VALUES('page-ada', 'people/ada-marlow', 'people/ada-marlow.md', 'Ada Marlow',
+                'knowledge', '{}', 'hash-page', '2026-08-01T00:00:00Z')`,
+      )
+      .run();
+    legacy
+      .prepare(
+        `INSERT INTO documents(id, rel_path, sha256, indexed_at, group_key)
+         VALUES('doc-zephyr', 'documents/zephyr-qx-100.txt', 'hash-document',
+                '2026-08-01T00:00:00Z', 'documents/zephyr-qx-100.txt')`,
+      )
+      .run();
+    const inserted = legacy
+      .prepare(
+        `INSERT INTO chunks(page_id, ord, text, line_start, line_end)
+         VALUES('page-ada', 0, 'Ada keeps the manual.', 1, 1)`,
+      )
+      .run();
+    legacy
+      .prepare('INSERT INTO chunks_fts(rowid, text, heading_path) VALUES(?, ?, ?)')
+      .run(inserted.lastInsertRowid, 'Ada keeps the manual.', '');
+    legacy.pragma('user_version = 13');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    expect(store.db.prepare('SELECT text FROM chunks WHERE id = ?').get(inserted.lastInsertRowid)).toEqual({
+      text: 'Ada keeps the manual.',
+    });
+    expect(
+      store.db
+        .prepare(
+          `INSERT INTO chunks(page_id, document_id, ord, kind, text, line_start, line_end)
+           VALUES(NULL, 'doc-zephyr', 0, 'source', 'Zephyr warranty.', 0, 0)`,
+        )
+        .run().changes,
+    ).toBe(1);
+    expect(store.db.prepare("SELECT rowid FROM chunks_fts WHERE chunks_fts MATCH 'Ada'").all()).toHaveLength(
+      1,
+    );
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

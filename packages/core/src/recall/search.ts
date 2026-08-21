@@ -4,7 +4,9 @@ import type { ModelClient } from '../models/client.ts';
 
 export interface ChunkHit {
   chunkId: number;
-  pageId: string;
+  pageId: string | null;
+  /** Native evidence identity. Present for both owned and orphan document chunks. */
+  documentId?: string | null;
   score: number;
   /** Which arms found it. Used by fusion to merge duplicates across arms. */
   from: ('vector' | 'lexical')[];
@@ -22,8 +24,8 @@ export interface SearchOptions {
   /** Texts for the vector arm — in question mode, hypothetical answers. */
   vectorTexts: string[];
   candidatesPerArm: number;
-  /** Restrict to these page ids. Used by filters and by `context` pinning. */
-  pageIds?: Set<string>;
+  /** Restrict both arms to these native chunk identities. Used by recall filters. */
+  chunkIds?: Set<number>;
   /** Above this many vectors, restrict the vector arm to lexical candidates. */
   prefilterAbove?: number;
 }
@@ -51,7 +53,7 @@ export async function hybridSearch(
   const degraded: DegradedReason[] = [];
   const notes: string[] = [];
 
-  const lexical = lexicalSearch(store, options.queries, options.candidatesPerArm, options.pageIds);
+  const lexical = lexicalSearch(store, options.queries, options.candidatesPerArm, options.chunkIds);
 
   let vector: ChunkHit[] = [];
   if (embedding.available) {
@@ -63,12 +65,14 @@ export async function hybridSearch(
       // is a fallback for a knowledge base past the brute-force threshold, not
       // the default. Below the threshold, an exact scan of everything is both
       // faster than it needs to be and strictly more accurate.
-      const prefilter =
+      const lexicalPrefilter =
         options.prefilterAbove !== undefined && store.vectors.count() > options.prefilterAbove
           ? new Set(lexical.map((hit) => hit.chunkId))
           : undefined;
-      if (prefilter) notes.push(`vector scan pre-filtered to ${prefilter.size} lexical candidates`);
-      vector = vectorSearch(store, embedded.value, options.candidatesPerArm, options.pageIds, prefilter);
+      const prefilter = intersect(options.chunkIds, lexicalPrefilter);
+      if (lexicalPrefilter)
+        notes.push(`vector scan pre-filtered to ${prefilter?.size ?? 0} lexical candidates`);
+      vector = vectorSearch(store, embedded.value, options.candidatesPerArm, prefilter);
     } else {
       degraded.push(embedding.degradedReason(embedded));
       if (embedded.error) notes.push(embedded.error);
@@ -87,7 +91,7 @@ export async function hybridSearch(
  * with eight alternatives ranks a chunk matching one weak term above a chunk
  * matching the original phrase.
  */
-function lexicalSearch(store: Store, queries: string[], limit: number, pageIds?: Set<string>): ChunkHit[] {
+function lexicalSearch(store: Store, queries: string[], limit: number, chunkIds?: Set<number>): ChunkHit[] {
   const perQuery: ChunkHit[][] = [];
 
   for (const query of queries) {
@@ -96,23 +100,29 @@ function lexicalSearch(store: Store, queries: string[], limit: number, pageIds?:
     try {
       const rows = store.db
         .prepare(
-          `SELECT c.id AS chunk_id, c.page_id,
+          `SELECT c.id AS chunk_id, c.page_id, c.document_id,
                   bm25(chunks_fts, 1.0, 2.0) AS rank
              FROM chunks_fts
              JOIN chunks c ON c.id = chunks_fts.rowid
             WHERE chunks_fts MATCH ?
+              ${chunkIds ? 'AND c.id IN (SELECT value FROM json_each(?))' : ''}
             ORDER BY rank
             LIMIT ?`,
         )
-        .all(match, limit) as { chunk_id: number; page_id: string; rank: number }[];
+        .all(match, ...(chunkIds ? [JSON.stringify([...chunkIds])] : []), limit) as {
+        chunk_id: number;
+        page_id: string | null;
+        document_id: string | null;
+        rank: number;
+      }[];
 
       perQuery.push(
         rows
-          .filter((row) => !pageIds || pageIds.has(row.page_id))
           // bm25 returns negative numbers, more negative being better.
           .map((row) => ({
             chunkId: row.chunk_id,
             pageId: row.page_id,
+            documentId: row.document_id,
             score: -row.rank,
             from: ['lexical' as const],
           })),
@@ -130,23 +140,23 @@ function vectorSearch(
   store: Store,
   vectors: Float32Array[],
   limit: number,
-  pageIds?: Set<string>,
   prefilter?: Set<number>,
 ): ChunkHit[] {
   const perVector: ChunkHit[][] = [];
-  const pageOf = store.db.prepare('SELECT page_id FROM chunks WHERE id = ?');
+  const identityOf = store.db.prepare('SELECT page_id, document_id FROM chunks WHERE id = ?');
 
   for (const vector of vectors) {
     if (vector.length !== store.vectors.dimensions) continue;
     const hits = store.vectors.search(vector, limit, prefilter);
     const mapped: ChunkHit[] = [];
     for (const hit of hits) {
-      const row = pageOf.get(hit.chunkId) as { page_id: string } | undefined;
+      const row = identityOf.get(hit.chunkId) as
+        { page_id: string | null; document_id: string | null } | undefined;
       if (!row) continue;
-      if (pageIds && !pageIds.has(row.page_id)) continue;
       mapped.push({
         chunkId: hit.chunkId,
         pageId: row.page_id,
+        documentId: row.document_id,
         score: hit.score,
         from: ['vector'],
         // Cosine is already an absolute similarity, so it survives fusion as the
@@ -158,6 +168,15 @@ function vectorSearch(
   }
 
   return fuse(perVector);
+}
+
+/** Undefined means unrestricted; when both restrictions exist, both must hold. */
+function intersect(left?: Set<number>, right?: Set<number>): Set<number> | undefined {
+  if (!left) return right;
+  if (!right) return left;
+  const out = new Set<number>();
+  for (const value of left) if (right.has(value)) out.add(value);
+  return out;
 }
 
 /**

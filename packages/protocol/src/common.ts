@@ -101,6 +101,21 @@ export const DocumentRef = z.object({
 });
 export type DocumentRef = z.infer<typeof DocumentRef>;
 
+/** How searchable text was obtained from a standalone document. */
+export const DocumentTextSource = z.object({
+  kind: z.enum(['original_text', 'ocr_text', 'model_description']),
+  via: z.enum(['plain', 'textutil', 'text-layer', 'ocr', 'vision']),
+  confidence: z.number().min(0).max(1).nullable().optional(),
+});
+export type DocumentTextSource = z.infer<typeof DocumentTextSource>;
+
+export const DocumentPartRef = z.object({
+  id: z.string(),
+  path: z.string(),
+  pages: z.number().int().nonnegative().nullable().optional(),
+});
+export type DocumentPartRef = z.infer<typeof DocumentPartRef>;
+
 /**
  * Recall returns page cards, not chunks — a chunk boundary is an indexing
  * artifact and means nothing to a reader.
@@ -131,6 +146,49 @@ export const Card = z.object({
   truncated: z.boolean().optional(),
 });
 export type Card = z.infer<typeof Card>;
+
+/** The page variant in the authoritative mixed recall result list. */
+export const PageCard = Card.extend({ type: z.literal('page') });
+export type PageCard = z.infer<typeof PageCard>;
+
+/** Searchable evidence that has not been filed beneath a Markdown page. */
+export const DocumentCard = z.object({
+  type: z.literal('document'),
+  id: z.string(),
+  path: z.string(),
+  label: z.string(),
+  mime: z.string().nullable(),
+  summary: z.string().optional(),
+  quote: z.string().optional(),
+  matched_page: z.number().int().positive().optional(),
+  parts: z.array(DocumentPartRef).optional(),
+  source: DocumentTextSource,
+  ownership: z.object({
+    status: z.literal('orphan'),
+  }),
+  suggested_actions: z
+    .array(
+      z.object({
+        op: z.literal('adopt'),
+        args: z.object({ documentId: z.string() }),
+      }),
+    )
+    .optional(),
+  score: z.number(),
+  relevance: z.number().min(0).max(1).optional(),
+});
+export type DocumentCard = z.infer<typeof DocumentCard>;
+
+export const RecallResult = z.discriminatedUnion('type', [PageCard, DocumentCard]);
+export type RecallResult = z.infer<typeof RecallResult>;
+
+export function isPageCard(result: RecallResult): result is PageCard {
+  return result.type === 'page';
+}
+
+export function isDocumentCard(result: RecallResult): result is DocumentCard {
+  return result.type === 'document';
+}
 
 /**
  * Named, machine-readable reasons a result is `degraded`. A rule that quietly
@@ -166,6 +224,10 @@ export const SlugFilter = z.object({
   type: z.string().optional(),
   tags: z.array(z.string()).optional(),
   role: PageRole.optional(),
+  /** Restrict evidence to Markdown pages, stored documents, or both. */
+  source: z.enum(['page', 'document', 'both']).optional(),
+  /** Orphans have no page role; `orphan` therefore selects document evidence only. */
+  ownership: z.enum(['orphan', 'owned', 'any']).optional(),
 });
 export type SlugFilter = z.infer<typeof SlugFilter>;
 

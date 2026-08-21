@@ -10,11 +10,10 @@ import { sha256 } from '../store/ids.ts';
 /**
  * A page for a document that has none, written beside the file.
  *
- * An attachment nobody's page points at is extracted like any other — its text is read on
- * arrival — and then has nowhere to be returned from, because recall returns page cards. It
- * is findable by nothing and reported by `doctor` forever.
+ * An attachment nobody's page points at is already returned as a standalone document card.
+ * Adoption gives that evidence a durable, browsable home with page policy and links.
  *
- * The fix is the one `ingest` already applies to every arrival: give it a page that says what
+ * The filing operation is the one `ingest` already applies to every arrival: give it a page that says what
  * it is and embeds it. An orphan is simply an arrival nobody ran `ingest` on, so it gets the
  * same shape of page, from the summary the extraction pass already produced — no model call of
  * its own, and no inference beyond what the document says about itself.
@@ -143,13 +142,7 @@ export async function planOrphanAdoptions(
       relPath: part.relPath,
       sha256: part.sha256,
       metadataHash: sha256(
-        JSON.stringify([
-          part.summary,
-          part.ocr,
-          part.pageCount,
-          part.extractVia,
-          part.confidence,
-        ]),
+        JSON.stringify([part.summary, part.ocr, part.pageCount, part.extractVia, part.confidence]),
       ),
       groupKey: group.groupKey,
     }));
@@ -176,9 +169,7 @@ export async function planOrphanAdoptions(
       slug,
       files: group.parts.map((part) => part.relPath),
       action: rejectedBy ? 'rejected' : 'planned',
-      ...(rejectedBy
-        ? { reason: `the unchanged filing page was previously rejected as ${rejectedBy}` }
-        : {}),
+      ...(rejectedBy ? { reason: `the unchanged filing page was previously rejected as ${rejectedBy}` } : {}),
     });
     if (!rejectedBy) drafts.push(draft);
   }

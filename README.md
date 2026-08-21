@@ -28,7 +28,7 @@ The usual answer is a longer prompt — "always retrieve first", "never claim it
 value is superseded". A prompt is a suggestion. Akno's position is that this belongs in the memory layer,
 where it runs every time:
 
-- Retrieval returns **page cards with line addresses**, so every claim traces to a sentence in a file.
+- Retrieval returns **page and document cards with citations**, so every claim traces to its source.
 - Absence is **a result** — and it distinguishes _nothing matched_ from _the index is unavailable_.
 - A superseded value comes back **labelled as superseded**, not as a competing current claim.
 - `question` mode reports **coverage**: which concepts of the question the results actually cover.
@@ -68,7 +68,7 @@ akno recall "when does the car insurance renew?"
 ```
 
 ```
-ok mode=question 2 cards 1180 tokens
+ok mode=question 2 results 1180 tokens
   coverage ✓ car insurance  ✗ renewal date
   nothing returned covers "renewal date" — do not answer that part
 
@@ -216,7 +216,7 @@ rather than being told in prose.
 ```ts
 import { open } from '@tenphi/akno-core';
 const mem = await open({ aknoPath: '~/Notes' });
-const { cards } = await mem.recall({ query: 'car insurance renewal', budget: 8000 });
+const { results } = await mem.recall({ query: 'car insurance renewal', budget: 8000 });
 ```
 
 ```ts
@@ -461,10 +461,11 @@ page is a copy no later change to the file can ever correct. The page says what 
 lives — what a person would have written — and recall quotes the document as a quote, attributed to the document
 and its page, never as a line citation on a page that has no such line.
 
-A document with no page has nowhere to be returned, since recall returns page cards. Ownership comes from the
-filename (`<page-basename>-<8 hex>.<ext>`), from a matching stem (`passport.pdf` beside `passport.md`), or from a
-page embedding it with `![[filename]]` — the author saying which file belongs where. Anything still unowned gets
-a page of its own from the [maintenance cycle](#the-maintenance-cycle).
+A document does not need an owning page to be found. Readable orphan documents are indexed under their own
+stable identity and returned as `type: "document"`, with their relative path, bounded quote, extraction method,
+and a handle accepted by `read({document})`. Owned document hits remain nested under their page and are never
+duplicated as standalone results. Ownership still adds useful organization; it comes from a matching stem,
+Akno's content-addressed filename, or a page embedding the file with `![[filename]]`.
 
 **A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document, not two.** Files that
 differ only by a trailing `-<n>` are read as parts of one document: one owning page, one summary, and page
@@ -498,15 +499,15 @@ Nothing is routed or named, because the caller already decided both.
 unverified claims cannot feed observation, reflection, or synthesis. Selecting `observe`, `reflect`, or
 `curate` alone still performs that prerequisite inspection.
 
-| Phase          | Writes?       | What it does                                                                                                                                                                                   |
-| -------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                  |
-| `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                  |
-| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                   |
+| Phase          | Writes?       | What it does                                                                                                                                                                                                      |
+| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                                     |
+| `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                                     |
+| `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                                      |
 | `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
-| `adopt`        | plan/write    | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                         |
-| `repair`       | no            | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                      |
-| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                           |
+| `adopt`        | plan/write    | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                                             |
+| `repair`       | no            | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                                         |
+| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                              |
 
 `observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
 phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
@@ -577,14 +578,14 @@ the restart. Hosts importing `@tenphi/akno-client` also read package `dist` outp
 `--no-restart` builds only. A failed build restarts nothing, so a deploy never reports success with the previous
 code back in service.
 
-**`adopt` is the one thing the cycle repairs by default.** Recall returns page cards, so an attachment nobody's
-page points at is extracted, indexed, and unreachable. `adopt` plans the page `ingest` would have written — the
-title from the filename, the body from the summary extraction already produced, then the embed that makes the
-link hold. One document group is one low-risk item. Apply re-hashes every source, confirms it is still unowned,
-creates and journals only the sealed page, forces ownership re-indexing, and verifies the relationship. It
-honours a folder rule of `ingest: "file"`, leaves a page that is already there alone, and is capped per run so a
-folder of 500 unowned PDFs does not become 500 pages before anyone has read the first report. Audit and review
-make the same exact proposals without autonomous writes; auto requires a separate curator decision.
+**`adopt` files documents; it does not make them searchable.** An orphan is already returned as a document card.
+`adopt` plans the page `ingest` would have written — the title from the filename, the body from the summary
+extraction already produced, then the embed that gives the document a browsable home. One document group is one
+low-risk item. Apply re-hashes every source, confirms it is still unowned, creates and journals only the sealed
+page, forces ownership re-indexing, and verifies the relationship. It honours a folder rule of `ingest: "file"`,
+leaves a page that is already there alone, and is capped per run so a folder of 500 unowned PDFs does not become
+500 pages before anyone has read the first report. Audit and review make the same exact proposals without
+autonomous writes; auto requires a separate curator decision.
 
 **`observe` ships off, and what it produces is almost entirely a function of the model behind it.** Its
 guardrails are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug

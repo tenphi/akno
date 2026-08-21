@@ -45,7 +45,7 @@ export interface DoctorReport {
     events: number;
     documents: number;
     documentsExtracted: number;
-    /** Extracted, but owned by no page — so nothing recall can return. */
+    /** Extracted text with no searchable chunk. Ownership no longer affects this count. */
     documentsUnsearchable: number;
     /** `<file>.txt` written beside a document. Counted apart: they are not documents of their own. */
     renditions: number;
@@ -92,7 +92,9 @@ export async function doctor(
       'SELECT count(*) AS c FROM documents WHERE renders IS NULL AND text IS NOT NULL',
     ),
     documentsUnsearchable: count(
-      'SELECT count(*) AS c FROM documents WHERE renders IS NULL AND text IS NOT NULL AND page_id IS NULL',
+      `SELECT count(*) AS c FROM documents d
+        WHERE d.renders IS NULL AND d.text IS NOT NULL
+          AND NOT EXISTS (SELECT 1 FROM chunks c WHERE c.document_id = d.id)`,
     ),
     renditions: count('SELECT count(*) AS c FROM documents WHERE renders IS NOT NULL'),
     links: count('SELECT count(*) AS c FROM links'),
@@ -233,15 +235,13 @@ export async function doctor(
   if (counts.documents > counts.documentsExtracted) {
     warnings.push(
       `${counts.documents - counts.documentsExtracted} attachments have no readable text — a photo with ` +
-        'nothing written in it, or a format with no extractor. They are still listed on their page.',
+        'nothing written in it, or a format with no extractor. They remain visible by filename.',
     );
   }
   if (counts.documentsUnsearchable > 0) {
-    // Extracted, but with no page to hang a card on: recall returns page cards, so a
-    // document nothing points at has nowhere to be returned. Say so, and say the fix.
     warnings.push(
-      `${counts.documentsUnsearchable} attachments have text that recall cannot reach, because no page ` +
-        'owns them. Embed one from a page with `![[filename]]`, or name it `<page>-<8 hex>.<ext>`.',
+      `${counts.documentsUnsearchable} attachments have extracted text but no search chunks. ` +
+        'Run `akno index` to repair the derived index.',
     );
   }
   if (extraction.note) warnings.push(extraction.note);
@@ -261,7 +261,7 @@ export async function doctor(
         'Correct, but slower on a large knowledge base.',
     );
   }
-  if (counts.pages === 0) {
+  if (counts.chunks === 0) {
     warnings.push('the index is empty — run `akno index`.');
   }
   const stale = staleBuild();

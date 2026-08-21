@@ -77,10 +77,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
       }
     }
 
-    for (const [label, cards] of [
-      ['Pinned', result.pinned],
-      ['Recalled', result.cards],
-    ] as const) {
+    for (const [label, cards] of [['Pinned', result.pinned]] as const) {
       if (cards.length === 0) continue;
       heading(label);
       for (const card of cards) {
@@ -88,6 +85,25 @@ export async function contextCommand(argv: string[]): Promise<number> {
         if (card.summary) line(`    ${truncate(card.summary, 100)}`);
         for (const bodyLine of card.lines.slice(0, 6)) {
           line(`    ${style.grey(`${card.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}`);
+        }
+      }
+    }
+
+    if (result.results.length > 0) {
+      heading('Recalled');
+      for (const entry of result.results) {
+        if (entry.type === 'document') {
+          line(`  ${style.bold(entry.path)} ${style.grey('(unfiled document)')}`);
+          if (entry.summary) line(`    ${truncate(entry.summary, 100)}`);
+          for (const quoted of entry.quote?.split('\n').slice(0, 6) ?? []) {
+            line(`    ${truncate(quoted, 96)}`);
+          }
+          continue;
+        }
+        line(`  ${style.bold(entry.slug)} ${style.grey(`(${entry.role})`)}`);
+        if (entry.summary) line(`    ${truncate(entry.summary, 100)}`);
+        for (const bodyLine of entry.lines.slice(0, 6)) {
+          line(`    ${style.grey(`${entry.slug}:${bodyLine.n}`)}  ${truncate(bodyLine.text, 96)}`);
         }
       }
     }

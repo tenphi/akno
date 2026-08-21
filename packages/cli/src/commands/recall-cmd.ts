@@ -1,12 +1,11 @@
-import type { Card, RecallMode } from '@tenphi/akno-protocol';
+import type { RecallMode, RecallResult } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
 
 const RECALL_HELP = `akno recall <query> [options]
 
-  Search memory. Returns page cards: a summary plus the lines that matched, each
-  with the file and line it came from.
+  Search memory. Returns cited page and standalone document cards.
 
   --mode <m>          lookup | question | explore. Inferred from the query by
                       default; passing it explicitly always wins.
@@ -18,6 +17,9 @@ const RECALL_HELP = `akno recall <query> [options]
   --folder <path>     Restrict to a folder.
   --type <t>          Restrict to a frontmatter type.
   --tag <t,...>       Restrict to pages carrying all of these tags.
+  --source <s>        page | document | both
+  --ownership <o>     orphan | owned | any
+  --no-expand         Search the exact words given; useful for filenames.
   --json              Machine-readable response.`;
 
 export async function recallCommand(argv: string[]): Promise<number> {
@@ -30,6 +32,9 @@ export async function recallCommand(argv: string[]): Promise<number> {
     folder?: string;
     type?: string;
     tag?: string;
+    source?: string;
+    ownership?: string;
+    expand: boolean;
   }>(argv, {
     mode: { type: 'string' },
     depth: { type: 'string' },
@@ -39,6 +44,9 @@ export async function recallCommand(argv: string[]): Promise<number> {
     folder: { type: 'string' },
     type: { type: 'string' },
     tag: { type: 'string' },
+    source: { type: 'string' },
+    ownership: { type: 'string' },
+    expand: { type: 'boolean', default: true },
   });
 
   if (values.help || positionals.length === 0) {
@@ -54,6 +62,8 @@ export async function recallCommand(argv: string[]): Promise<number> {
       ...(values.folder ? { folder: values.folder } : {}),
       ...(values.type ? { type: values.type } : {}),
       ...(values.tag ? { tags: values.tag.split(',').map((t) => t.trim()) } : {}),
+      ...(values.source ? { source: values.source as 'page' | 'document' | 'both' } : {}),
+      ...(values.ownership ? { ownership: values.ownership as 'orphan' | 'owned' | 'any' } : {}),
     };
 
     const result = await handle.ops.recall({
@@ -69,6 +79,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
             )[],
           }
         : {}),
+      expand: values.expand,
       ...(Object.keys(filter).length > 0 ? { filter } : {}),
     });
 
@@ -92,7 +103,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
 function printRecall(result: {
   status: string;
   degraded?: string[];
-  cards: Card[];
+  results: RecallResult[];
   searched: string[];
   budget_used: number;
   coverage?: Record<string, boolean>;
@@ -101,7 +112,7 @@ function printRecall(result: {
 }): void {
   line(
     `${statusLabel(result.status)} ${style.grey(`mode=${result.mode}`)} ` +
-      `${style.grey(`${result.cards.length} card${result.cards.length === 1 ? '' : 's'}`)} ` +
+      `${style.grey(`${result.results.length} result${result.results.length === 1 ? '' : 's'}`)} ` +
       `${style.grey(`${result.budget_used} tokens`)}`,
   );
   if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
@@ -124,7 +135,20 @@ function printRecall(result: {
     }
   }
 
-  for (const card of result.cards) {
+  for (const resultCard of result.results) {
+    if (resultCard.type === 'document') {
+      heading(`${resultCard.path} ${style.grey(`(unfiled document, ${resultCard.score.toFixed(3)})`)}`);
+      if (resultCard.summary) line(`  ${truncate(resultCard.summary, 150)}`);
+      const where = resultCard.matched_page ? `page ${resultCard.matched_page}` : 'extracted text';
+      line(`  ${style.grey(`${resultCard.source.kind} via ${resultCard.source.via}; ${where}`)}`);
+      for (const quoted of resultCard.quote?.split('\n') ?? []) line(`  ${truncate(quoted, 110)}`);
+      if (resultCard.parts?.length) {
+        line(style.grey(`  parts: ${resultCard.parts.map((part) => part.path).join(', ')}`));
+      }
+      line(style.grey(`  read: akno read --document ${resultCard.id}`));
+      continue;
+    }
+    const card = resultCard;
     heading(`${card.slug} ${style.grey(`(${card.role}, ${card.score.toFixed(3)})`)}`);
     if (card.breadcrumb) line(`  ${style.cyan(card.breadcrumb)}`);
     if (card.summary) line(`  ${truncate(card.summary, 150)}`);
@@ -159,7 +183,7 @@ function printRecall(result: {
     if (card.links?.length) line(style.grey(`  links: ${card.links.slice(0, 8).join(', ')}`));
   }
 
-  if (result.searched.length > 1 || result.cards.length === 0) {
+  if (result.searched.length > 1 || result.results.length === 0) {
     line(`\n${style.grey(`searched: ${result.searched.map((q) => `"${q}"`).join(', ')}`)}`);
   }
 }

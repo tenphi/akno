@@ -1237,7 +1237,7 @@ describe('the cycle', () => {
     expect(first.run.id).toMatch(/^run_[a-f0-9]{8}$/);
     expect(first.run.finishedAt).not.toBeNull();
     expect(first.run.snapshot).toMatchObject({
-      schemaVersion: 13,
+      schemaVersion: 14,
       requestedPhases: ['housekeeping'],
       plannerVersion: 'dream-lifecycle-v1',
     });
@@ -1324,20 +1324,35 @@ describe('observe when a knowledge base has not asked for it', () => {
   });
 });
 
-/**
- * An attachment nobody's page points at is extracted like any other and then has nowhere
- * to be returned from, because recall returns page cards. `adopt` gives it the page `ingest`
- * would have given it — an orphan is an arrival nobody ran `ingest` on.
- */
+/** An orphan is immediately searchable; `adopt` adds organization, not visibility. */
 describe('adopt', () => {
   beforeEach(() => {
     fs.mkdirSync(path.join(root, 'household'), { recursive: true });
     fs.writeFileSync(path.join(root, 'household/lease scan.txt'), 'The lease runs to August 2027.\n');
   });
 
-  it('writes a page beside the file, and the document becomes searchable', async () => {
+  it('turns a standalone document result into an owned page result without losing evidence', async () => {
     await mem.index({});
-    expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(1);
+    expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(0);
+
+    const before = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
+    const standalone = before.results.find((entry) => entry.type === 'document');
+    expect(standalone).toMatchObject({
+      type: 'document',
+      path: 'household/lease scan.txt',
+      ownership: { status: 'orphan' },
+      source: { kind: 'original_text', via: 'plain' },
+    });
+    expect(before.cards).toHaveLength(0);
+    const read = await mem.read({ document: standalone!.id });
+    expect(read.document?.text).toContain('August 2027');
+    const bundle = await mem.context({
+      query: 'lease runs to August 2027',
+      budget: 2000,
+      timeline_days: 0,
+      structure: false,
+    });
+    expect(bundle.results.some((entry) => entry.type === 'document')).toBe(true);
 
     const report = await mem.dream({ phase: 'adopt' });
     expect(report.adopted).toHaveLength(1);
@@ -1375,6 +1390,7 @@ describe('adopt', () => {
     const found = await mem.recall({ query: 'lease runs to August 2027', mode: 'lookup' });
     const card = found.cards.find((entry) => entry.slug === 'household/lease-scan');
     expect(card?.documents?.[0]?.quote).toContain('August 2027');
+    expect(found.results.filter((entry) => entry.type === 'document')).toHaveLength(0);
   });
 
   it('gives the parts of one document a single page', async () => {
@@ -1391,6 +1407,38 @@ describe('adopt', () => {
     expect(page).toContain('![[permit-2.txt]]');
   });
 
+  it('keeps both result types in a mixed budget and applies source filters before ranking', async () => {
+    fs.writeFileSync(
+      path.join(root, 'household/service card.txt'),
+      'Service the appliance every 6 months.\n',
+    );
+    await mem.index({});
+
+    const mixed = await mem.recall({
+      query: 'service the appliance every 6 months',
+      mode: 'lookup',
+      expand: false,
+      limit: 2,
+    });
+    expect(new Set(mixed.results.map((entry) => entry.type))).toEqual(new Set(['page', 'document']));
+
+    const documents = await mem.recall({
+      query: 'service the appliance every 6 months',
+      mode: 'lookup',
+      expand: false,
+      filter: { source: 'document' },
+    });
+    expect(documents.results.every((entry) => entry.type === 'document')).toBe(true);
+
+    const roleFiltered = await mem.recall({
+      query: 'service the appliance every 6 months',
+      mode: 'lookup',
+      expand: false,
+      filter: { role: 'source' },
+    });
+    expect(roleFiltered.results.every((entry) => entry.type === 'page')).toBe(true);
+  });
+
   it('honours the rule that says this folder wants no pages', async () => {
     // `ingest: "file"` exists for a folder of media where a stub page per file would be noise
     // rather than memory, and this is the behaviour it turns off.
@@ -1402,6 +1450,14 @@ describe('adopt', () => {
     expect(report.adopted[0]!.action).toBe('skipped');
     expect(report.adopted[0]!.reason).toMatch(/ingest: file/);
     expect(fs.existsSync(path.join(root, 'household/lease-scan.md'))).toBe(false);
+    const found = await mem.recall({
+      query: 'lease runs to August 2027',
+      mode: 'lookup',
+      expand: false,
+      filter: { ownership: 'orphan' },
+    });
+    expect(found.results).toHaveLength(1);
+    expect(found.results[0]?.type).toBe('document');
   });
 
   it('leaves someone else’s page alone when one is already there', async () => {
@@ -1502,12 +1558,7 @@ describe('adopt', () => {
     await mem.index({});
     const report = await mem.dream({ phase: 'adopt', mode: 'review' });
     const item = report.maintenancePlan!.items[0]!;
-    mem.decidePlan(
-      report.maintenancePlan!.id,
-      item.id,
-      'reject',
-      'This document should remain unfiled.',
-    );
+    mem.decidePlan(report.maintenancePlan!.id, item.id, 'reject', 'This document should remain unfiled.');
 
     const repeated = await mem.dream({ phase: 'adopt', mode: 'review' });
 

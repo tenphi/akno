@@ -26,7 +26,7 @@ const VERSION = '0.1.0';
 const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a Markdown knowledge base
 
   ${style.bold('Reading')}
-    recall <query>       Search memory. Returns page cards with line addresses.
+    recall <query>       Search memory. Returns cited page and document cards.
     read <slug>          One exact page or document, in full.
     list                 Browse folders, pages, or a tree outline.
     timeline             When things happened.
