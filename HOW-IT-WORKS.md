@@ -1220,22 +1220,18 @@ currently says `independentlyReviewed: false`, and a development split can never
 selected prompt and schema must also equal the current runtime versions, preventing an old artifact from
 authorizing changed ranking code. Development artifacts remain tuning evidence rather than a recommended preset.
 
-The most recent full five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.955
-mean nDCG@10, 100% median top-three overlap, 99.67% valid responses, 100% direct-answer retention, and 2.17-second
-aggregate p95 latency. One invalid response fell back to the exact fusion order. At 20 and 40 candidates, `none`
-measured 0.952/0.893 nDCG and 3.20/5.74-second p95; `low` at 20 measured 0.943 nDCG and 5.45-second p95. The
-smallest no-reasoning window therefore wins the matrix's quality-equivalence and latency tradeoff.
+The current full five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.962 mean
+nDCG@10, 100% median top-three overlap, 100% valid responses, 100% direct-answer and instruction-negative
+retention/rejection, zero fallbacks, and 2.26-second aggregate p95 latency. At 20 and 40 candidates, `none`
+measured 0.958/0.941 nDCG and 3.71/9.82-second p95; the 40-candidate variant had 12 fallbacks. `low` at 20 measured
+0.943 nDCG and 5.65-second p95 with one fallback. The smallest no-reasoning window therefore wins the matrix's
+quality-equivalence, reliability, and latency tradeoff.
 
 This v4 run uses compact id/grade entries, a per-request enum of permitted ids, and an explicit grade-0 rule for
 instruction-only text with no answer evidence. OpenAI completion limits cover hidden reasoning and visible JSON
 together, so reasoning-enabled calls receive an additional task-level reserve; the configured role ceiling
 still wins when it is lower. Without that reserve, the first full v4 attempt exhausted every `low` response
 before visible JSON and correctly produced no selection. The corrected matrix verifies both effort modes.
-
-Under its measured `compact-entries-v2` contract, the matrix passed the persisted-contract, five-run, quality,
-validity, fallback-integrity, top-three-stability, latency, and cheapest-equivalent checks. It missed perfect
-instruction-negative rejection at 99.67%. The runtime now uses `compact-entries-v3`, so that artifact is stale
-by design and no longer passes the current-contract check.
 
 The v3 live schema adds exact array cardinality to the per-request id enum. This prevents structured decoding
 from returning a valid prefix, while semantic validation still detects duplicates and invented ids. One bounded
@@ -1245,10 +1241,11 @@ degradation. Latency sums both attempts so a recovered response does not hide it
 
 Five targeted v3 development runs at the selected 10-candidate/no-reasoning shape produced 300/300 valid
 responses, perfect instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run
-p95 from 2.08 to 2.53 seconds. A fresh full v3 matrix remains necessary. The corpus also needs independent
-review, the held-out split is untouched, and matching end-to-end evidence is absent. An older end-to-end run
-stopped when its configured embedding role produced 0 of 120 vectors; that proves honest prerequisite handling
-but cannot authorize the current runtime contract.
+p95 from 2.08 to 2.53 seconds. The subsequent full v3 matrix reproduced 300/300 selected-variant responses with
+no fallback and now passes every internal release check. The remaining blockers are external evidence: the
+corpus needs independent review, the held-out split is untouched, and matching end-to-end evidence is absent.
+An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors; that proves honest
+prerequisite handling but cannot authorize the current runtime contract.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

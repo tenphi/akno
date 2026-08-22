@@ -776,19 +776,20 @@ rejection, stable top-three results, and the latency budget. The selected prompt
 current runtime contract, so refreshing an old artifact cannot authorize unbenchmarked code. A useful
 development result can therefore recommend the next experiment without silently authorizing the setup preset.
 
-The most recent full [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
-selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.955 mean nDCG@10, 100%
-median top-three overlap, 99.67% valid responses, 100% direct-answer retention, and 2.17 s aggregate p95
-latency. Its one invalid response preserved the original fusion order. The optional native reference reached
-0.907 nDCG and 1.37 s p95; `none` at 20 and 40 candidates reached 0.952/0.893 nDCG and 3.20/5.74 s p95; `low`
-at 20 reached 0.943 nDCG and 5.45 s p95. The smallest window without reasoning is therefore both the selected
-quality-equivalent configuration and the fastest prompted-ranking variant tested.
+The current [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
+selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.962 mean nDCG@10, 100%
+median top-three overlap, 100% valid responses, 100% direct-answer and instruction-negative retention/rejection,
+zero fallbacks, and 2.26 s aggregate p95 latency. The optional native reference reached 0.907 nDCG and 1.13 s
+p95. `none` at 20 and 40 candidates reached 0.958/0.941 nDCG and 3.71/9.82 s p95; the 40-candidate variant had
+12 fallbacks. `low` at 20 reached 0.943 nDCG and 5.65 s p95 with one fallback. The smallest window without
+reasoning is therefore both the selected quality-equivalent configuration and the fastest prompted-ranking
+variant tested.
 
-That matrix was tuning evidence, not release authorization. Under its measured contract it passed the
-persisted-contract, five-run, quality, response-validity, fallback, stability, latency, and cheapest-equivalent
-checks, but missed perfect instruction-negative rejection at 99.67%. The runtime schema has since advanced, so
-the artifact is intentionally stale and no longer passes the current-contract check. The corpus also remains
-unreviewed, the held-out split is untouched, and no matching end-to-end evidence is attached.
+Every internal release check now passes: current persisted contract, five runs, overall and category quality,
+exact-entity MRR, response validity, fallback preservation, instruction safety, top-three stability, latency,
+and cheapest-equivalent selection. This is still development evidence rather than release authorization. The
+corpus is not independently reviewed, the held-out split is untouched, and no matching end-to-end evidence is
+attached.
 
 The current `akno-listwise-v4` / `compact-entries-v3` contract uses per-request candidate-id enums, requires
 the output array to have exactly the candidate count, and explicitly grades instruction-only excerpts as 0.
@@ -796,7 +797,8 @@ Semantic validation still rejects duplicates and invented ids. A complete but in
 bounded retry; transport, configuration, and output-budget failures do not retry, and a second invalid response
 falls back to fusion. Five targeted 10-candidate development runs under v3 produced 300/300 valid responses,
 100% instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run p95 latency
-from 2.08 to 2.53 seconds. A fresh full v3 matrix is required to replace the stale artifact.
+from 2.08 to 2.53 seconds. The full matrix above confirms the same reliability and safety over another 300
+selected-variant responses.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The
