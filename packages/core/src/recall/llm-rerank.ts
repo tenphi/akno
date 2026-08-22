@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { ModelClient, ModelOutcome } from '../models/client.ts';
 import { parseJsonLoose } from '../models/client.ts';
 
-export const LLM_RERANK_PROMPT_VERSION = 'akno-listwise-v1';
+export const LLM_RERANK_PROMPT_VERSION = 'akno-listwise-v2';
 export const LLM_RERANK_SCHEMA_VERSION = 'complete-order-v1';
 
 export interface LlmRerankCandidate {
@@ -91,7 +91,6 @@ export async function rerankWithLlm(
 
   const seen = new Set<string>();
   const ranked: LlmRerankEntry[] = [];
-  let previousRelevance = 3;
   for (const entry of parsed.data.order) {
     const index = expected.get(entry.candidate_id);
     if (index === undefined) {
@@ -100,14 +99,14 @@ export async function rerankWithLlm(
     if (seen.has(entry.candidate_id)) {
       return badResponse(response.latencyMs, 'LLM reranker returned a duplicate candidate id');
     }
-    if (entry.relevance > previousRelevance) {
-      return badResponse(response.latencyMs, 'LLM reranker order contradicts its relevance labels');
-    }
     seen.add(entry.candidate_id);
-    previousRelevance = entry.relevance;
     ranked.push({ index, relevance: entry.relevance });
   }
 
+  // Structured decoding guarantees the ids and grades, but small models occasionally disagree with
+  // themselves about whether ordering or grading is authoritative. Grades drive qualification, so make
+  // them authoritative for the coarse order as well; stable sorting preserves model order within a grade.
+  ranked.sort((a, b) => b.relevance - a.relevance);
   return { ok: true, value: ranked, latencyMs: response.latencyMs };
 }
 

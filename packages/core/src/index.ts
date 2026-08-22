@@ -29,6 +29,14 @@ export {
   type LlmRankingProbeOptions,
   type LlmRankingProbeReport,
 } from './bench/llm-ranking-probe.ts';
+export {
+  runRankingBench,
+  type RankingBenchOptions,
+  type RankingBenchReport,
+  type RankingBenchSystem,
+  type RankingQualityMetrics,
+  type RankingQualificationMetrics,
+} from './bench/ranking.ts';
 export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.ts';
 export type { WatcherEvents } from './watch/watcher.ts';
 export type { AknoWatchEvents } from './open.ts';

@@ -153,8 +153,9 @@ general-purpose model may cover generation, expansion, vision, maintenance, and 
 The reranker supports two explicit modes. `mode: "endpoint"` calls a native cross-encoder at `/rerank`.
 `mode: "llm"` sends a bounded listwise request through the ordinary generative endpoint. The latter uses opaque
 per-request candidate ids, treats candidate text as untrusted JSON data, requires every candidate exactly once,
-and preserves the untouched fusion order with typed `rerank_failed` degradation if the response is missing,
-duplicated, invented, malformed, or internally inconsistent.
+canonicalizes the coarse relevance grades, and preserves the untouched fusion order with typed `rerank_failed`
+degradation if the response is missing, duplicated, invented, or malformed. The model's ordering is preserved
+within each grade; grades are authoritative across grades because the same grades decide qualification.
 
 Successful reranking also qualifies results. LLM grade `0` candidates are removed; native candidates below their
 calibrated relevance boundary are removed. Candidates outside the bounded `top_k` window are reported as
@@ -163,10 +164,11 @@ candidate is rejected, recall returns honest `empty`. A failed reranker still pr
 degradation—the filter is never applied to a response Akno could not validate.
 
 Native score scales are learned automatically by default. `score_offset: "auto"` runs a small wholly invented
-anchor suite, chooses a conservative boundary that rejects no related anchor, and caches it in derived state for
+anchor suite, chooses a conservative boundary that rejects no positive anchor, and caches it in derived state for
 seven days. If the model cannot separate the anchors, `qualification.basis` is `calibration_failed` and Akno
 keeps all candidates. A measured numeric `score_offset` remains an explicit override; users do not need to guess
-one during setup.
+one during setup. `akno bench ranking --system native` reports how that portable boundary transfers to a
+larger invented corpus, including direct-answer, supporting, marginal, irrelevant, and adversarial retention.
 
 **`derive` and `expansion` are split because their constraints are opposite.** Derive runs off the hot path —
 during indexing, on arrival, at night — and what it produces ends up in the notes, so it is allowed to be slow
@@ -690,6 +692,23 @@ nor calls its models, which makes it the safe, reproducible quality gate for CI 
 invented excerpts—including one instruction-bearing irrelevant passage—to the selected provider, and reports
 transport, schema, order, labels, and latency. It never opens the index. Passing verifies the integration, not
 the larger relevance release gate.
+
+`akno bench ranking` runs a 12-query, 96-judgment invented development corpus without opening the knowledge
+base. It compares the same frozen pools across rank fusion, the configured native reranker, or a prompted LLM:
+
+```bash
+akno bench ranking --system fusion
+akno bench ranking --system native
+akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning none
+akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning low
+```
+
+The report covers nDCG, reciprocal rank, top-result success, hard-negative inversions, response validity,
+latency, and qualification separately. Qualification distinguishes retained direct answers, strong support,
+marginal context, rejected grade-0 candidates, and instruction-bearing negatives. Its development gate requires
+a valid response for every query, no nDCG regression from fusion, every direct answer retained, and every
+instruction-bearing negative rejected. Reports always carry `releaseEligible: false`: this small corpus is a
+regression and tuning tool, not the held-out 80-query evidence required to recommend a setup preset.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

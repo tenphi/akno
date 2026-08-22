@@ -67,15 +67,6 @@ describe('prompted LLM reranking', () => {
       },
     ],
     ['a missing candidate', { order: [{ candidate_id: 'c_K7vJ3pQx', relevance: 3 }] }],
-    [
-      'labels that contradict the order',
-      {
-        order: [
-          { candidate_id: 'c_K7vJ3pQx', relevance: 1 },
-          { candidate_id: 'c_M2rT8nWa', relevance: 3 },
-        ],
-      },
-    ],
   ])('rejects %s', async (_case, body) => {
     const result = await rerankWithLlm(
       fakeModel(JSON.stringify(body)),
@@ -83,6 +74,29 @@ describe('prompted LLM reranking', () => {
       candidates,
     );
     expect(result).toMatchObject({ ok: false, value: null, reason: 'bad_response' });
+  });
+
+  it('canonicalizes coarse relevance while preserving model order within a grade', async () => {
+    const result = await rerankWithLlm(
+      fakeModel(
+        JSON.stringify({
+          order: [
+            { candidate_id: 'c_K7vJ3pQx', relevance: 1 },
+            { candidate_id: 'c_M2rT8nWa', relevance: 3 },
+          ],
+        }),
+      ),
+      'Which warranty applies?',
+      candidates,
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: [
+        { index: 1, relevance: 3 },
+        { index: 0, relevance: 1 },
+      ],
+    });
   });
 
   it('serializes candidate instructions as data under a fixed untrusted-content rule', () => {

@@ -1,13 +1,13 @@
 import type { ModelClient, ModelOutcome } from '../models/client.ts';
 import type { Store } from '../store/db.ts';
 
-export const RERANKER_CALIBRATION_VERSION = 'invented-anchors-v1';
+const RERANKER_CALIBRATION_VERSION = 'invented-anchors-v1';
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface CalibrationCase {
   query: string;
   documents: string[];
-  /** Related evidence stays positive: auto-calibration is allowed to remove grade 0, not grade 1. */
+  /** Direct and strongly supporting evidence stay positive; clearly misleading or unrelated evidence does not. */
   relevant: boolean[];
 }
 
@@ -62,7 +62,7 @@ const running = new WeakMap<ModelClient, Promise<ModelOutcome<NativeRerankerCali
 
 /**
  * Finds a conservative native-score boundary from wholly invented anchors and caches it in derived state.
- * Every labelled positive, including merely related evidence, must stay above the boundary. Hard negatives
+ * Every labelled positive, including strong supporting evidence, must stay above the boundary. Hard negatives
  * that overlap those positives are retained rather than trading false rejection for a prettier probe score.
  */
 export async function nativeRerankerCalibration(

@@ -3,8 +3,11 @@ import {
   runBench,
   runLlmRankingProbe,
   runMixedRetrievalBench,
+  runRankingBench,
   type Akno,
   type MixedRetrievalBenchReport,
+  type RankingBenchReport,
+  type RankingBenchSystem,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
@@ -25,6 +28,8 @@ const BENCH_HELP = `akno bench [options]
                       open or query the configured knowledge base.
   ranking --probe     Send one invented three-candidate smoke probe to a live
                       generative endpoint. This is not the ranking release gate.
+  ranking --system <s> Run the invented development corpus with fusion, native,
+                      or llm (default fusion).
     --provider <name> Configured provider (default openai).
     --model <id>      Generative model (default gpt-5.6-luna).
     --reasoning <v>   none, low, medium, high, xhigh, or max (default none).
@@ -41,6 +46,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     provider?: string;
     model?: string;
     reasoning?: string;
+    system?: string;
   }>(argv, {
     iterations: { type: 'string' },
     'retrieval-only': { type: 'boolean', default: false },
@@ -49,6 +55,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     provider: { type: 'string' },
     model: { type: 'string' },
     reasoning: { type: 'string' },
+    system: { type: 'string' },
   });
 
   if (values.help) {
@@ -57,35 +64,51 @@ export async function benchCommand(argv: string[]): Promise<number> {
   }
 
   if (positionals[0] === 'ranking') {
-    if (!values.probe) {
-      fail('ranking benchmark corpus is not implemented yet; use --probe for the invented live smoke check');
-      return 2;
-    }
     const reasoning = parseReasoningEffort(values.reasoning);
     if (!reasoning) {
       fail(`invalid reasoning effort: ${values.reasoning}`);
       return 2;
     }
     const { loadConfig } = await import('@tenphi/akno-core');
-    const report = await runLlmRankingProbe(loadConfig(openOptionsFrom(values)), {
+    const config = loadConfig(openOptionsFrom(values));
+    if (values.probe) {
+      const report = await runLlmRankingProbe(config, {
+        ...(values.provider ? { provider: values.provider } : {}),
+        ...(values.model ? { model: values.model } : {}),
+        reasoningEffort: reasoning,
+      });
+      if (values.json) json(report);
+      else {
+        heading('LLM ranking — invented live smoke probe');
+        line(`  provider    ${report.provider}`);
+        line(`  model       ${report.model}`);
+        line(`  reasoning   ${report.reasoningEffort}`);
+        line(`  latency     ${Math.round(report.latencyMs)}ms`);
+        line(`  order       ${report.order.join(' → ') || 'none'}`);
+        line(`  relevance   ${report.relevance.join(', ') || 'none'}`);
+        line(`\n${report.passed ? style.green('probe passed') : style.red(report.error ?? 'probe failed')}`);
+        line(
+          style.grey(
+            'This verifies transport, schema, and one safety case; it is not the release benchmark.',
+          ),
+        );
+      }
+      return report.passed ? 0 : 1;
+    }
+
+    const system = parseRankingSystem(values.system);
+    if (!system) {
+      fail(`invalid ranking system: ${values.system}`);
+      return 2;
+    }
+    const report = await runRankingBench(config, {
+      system,
       ...(values.provider ? { provider: values.provider } : {}),
       ...(values.model ? { model: values.model } : {}),
       reasoningEffort: reasoning,
     });
     if (values.json) json(report);
-    else {
-      heading('LLM ranking — invented live smoke probe');
-      line(`  provider    ${report.provider}`);
-      line(`  model       ${report.model}`);
-      line(`  reasoning   ${report.reasoningEffort}`);
-      line(`  latency     ${Math.round(report.latencyMs)}ms`);
-      line(`  order       ${report.order.join(' → ') || 'none'}`);
-      line(`  relevance   ${report.relevance.join(', ') || 'none'}`);
-      line(`\n${report.passed ? style.green('probe passed') : style.red(report.error ?? 'probe failed')}`);
-      line(
-        style.grey('This verifies transport, schema, and one safety case; it is not the release benchmark.'),
-      );
-    }
+    else renderRanking(report);
     return report.passed ? 0 : 1;
   }
 
@@ -192,6 +215,11 @@ function parseReasoningEffort(
     : null;
 }
 
+function parseRankingSystem(value: string | undefined): RankingBenchSystem | null {
+  const system = value ?? 'fusion';
+  return system === 'fusion' || system === 'native' || system === 'llm' ? system : null;
+}
+
 function renderRetrieval(report: MixedRetrievalBenchReport): void {
   heading(
     `Mixed retrieval — invented corpus, ${report.corpus.pages} pages, ` +
@@ -211,8 +239,64 @@ function renderRetrieval(report: MixedRetrievalBenchReport): void {
   }
 }
 
+function renderRanking(report: RankingBenchReport): void {
+  heading(
+    `Ranking development corpus — ${report.system}, ${report.corpus.queries} queries, ` +
+      `${report.corpus.candidates} judgments`,
+  );
+  if (report.model) {
+    line(`  model                 ${report.provider}/${report.model}`);
+    if (report.reasoningEffort) line(`  reasoning             ${report.reasoningEffort}`);
+  }
+  line(`  nDCG@10               ${fixed(report.quality.ndcgAt10)}`);
+  line(`  delta from fusion     ${signed(report.ndcgDeltaFromFusion)}`);
+  line(`  MRR@10                ${fixed(report.quality.mrrAt10)}`);
+  line(
+    `  success@1 / @3        ${percent(report.quality.successAt1)} / ${percent(report.quality.successAt3)}`,
+  );
+  line(`  precision@5           ${percent(report.quality.precisionAt5)}`);
+  line(`  zero-over-direct      ${fixed(report.quality.gradeZeroAboveGradeThree)}`);
+  line(`  valid responses       ${percent(report.validResponseRate)}`);
+  if (report.qualification) {
+    line(`  direct answers kept   ${percent(report.qualification.answerRetention)}`);
+    line(`  support retained      ${percent(report.qualification.supportRetention)}`);
+    line(`  marginal retained     ${percent(report.qualification.marginalRetention)}`);
+    line(`  irrelevant rejected   ${percent(report.qualification.irrelevantRejection)}`);
+    line(`  retained precision    ${percent(report.qualification.retainedPrecision)}`);
+    line(`  injection rejected    ${percent(report.qualification.instructionNegativeRejection)}`);
+  }
+  if (report.calibration.basis === 'auto') {
+    line(`  native threshold      ${report.calibration.threshold ?? 'unavailable'}`);
+    line(
+      `  observed score bounds ${report.calibration.lowestAnswerScore ?? 'n/a'} answer / ` +
+        `${report.calibration.lowestSupportScore ?? 'n/a'} support / ` +
+        `${report.calibration.highestIrrelevantScore ?? 'n/a'} irrelevant`,
+    );
+  }
+  if (report.p95LatencyMs > 0) {
+    line(
+      `  latency p50 / p95     ${Math.round(report.p50LatencyMs)}ms / ${Math.round(report.p95LatencyMs)}ms`,
+    );
+  }
+  for (const failure of report.failures) line(`  ${style.red(failure.queryId)}  ${failure.error}`);
+  line(`\n${report.passed ? style.green('development gate passed') : style.red('development gate failed')}`);
+  line(style.grey('This corpus catches regressions but is too small for the preset release decision.'));
+}
+
 function metricValue(value: number, unit: RetrievalBenchResult['unit']): string {
   if (unit === 'ratio') return `${Math.round(value * 100)}%`;
   if (unit === 'milliseconds') return `${value}ms`;
   return String(value);
+}
+
+function fixed(value: number): string {
+  return value.toFixed(3);
+}
+
+function signed(value: number): string {
+  return `${value >= 0 ? '+' : ''}${fixed(value)}`;
+}
+
+function percent(value: number): string {
+  return `${Math.round(value * 1000) / 10}%`;
 }

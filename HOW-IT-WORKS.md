@@ -1142,8 +1142,10 @@ The reranker has two implementations. `mode: "endpoint"` calls a native `/rerank
 uses a versioned listwise prompt over the same generative transport as other model-backed work. Every candidate
 gets a fresh opaque id; the query, metadata, and excerpts are JSON-serialized; and the fixed instruction says
 candidate content is untrusted data. Akno accepts the result only if it is a complete permutation of the
-supplied ids with `0..3` relevance labels consistent with the returned order. Any malformed, missing,
-duplicated, or invented id produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
+supplied ids with `0..3` relevance labels. It then sorts grade groups from `3` to `0` while preserving the
+model's order within each group. This makes the labels authoritative for both qualification and coarse ordering
+when a small model contradicts its own labels. Any malformed, missing, duplicated, or invented id produces typed
+`rerank_failed` degradation and leaves fusion order exactly intact.
 
 On a valid response, reranking may also qualify candidates out. LLM grade `0` means irrelevant and is removed.
 A native cross-encoder uses its calibrated raw-score boundary. In both cases, candidates beyond `top_k` are
@@ -1153,7 +1155,7 @@ counts. Rejecting every judged candidate yields `empty`; a failed reranker yield
 
 Native models do not share a score scale, so the default `score_offset: "auto"` calibrates against a fixed suite
 of invented direct, related, wrong-identity, stale, and unrelated excerpts. The selected boundary must retain
-every direct or related anchor; ambiguous hard negatives are allowed through instead of risking false rejection.
+every labelled positive anchor; ambiguous hard negatives are allowed through instead of risking false rejection.
 It is cached in derived state for seven days. Calibration failure disables qualification and is visible as
 `qualification.basis: "calibration_failed"`; it never guesses. A numeric offset overrides automatic calibration.
 
@@ -1166,6 +1168,17 @@ Use `akno bench ranking --probe --provider openai --model gpt-5.6-luna --reasoni
 smoke check. The command sends only three invented excerpts and never opens the configured index. It proves the
 provider accepts the prompt, schema, and reasoning setting; it is not the relevance benchmark that qualifies a
 recommended preset.
+
+`akno bench ranking --system fusion|native|llm` is the larger development check. It uses the same 12 invented
+queries and 96 relevance judgments for every system, never opens the knowledge base, and reports ordering,
+validity, latency, and qualification independently. The qualification report separates grade-3 direct answers,
+grade-2 support, grade-1 marginal context, grade-0 rejection, and instruction-bearing negatives. A native
+automatic threshold therefore cannot look safe merely because it removed many candidates: lost direct answers
+are a gate failure, while lost support and marginal context remain visible tradeoffs.
+
+This corpus is deliberately too small to authorize the OpenAI minimum preset. Every report says
+`development: true` and `releaseEligible: false`; the release decision still requires the larger held-out corpus,
+repeatability matrix, stored artifact, and mechanical preset gate described by the ranking specification.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the
