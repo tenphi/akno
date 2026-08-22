@@ -574,6 +574,20 @@ phases are journalled by purpose, so reversing a night's inferences does not als
 documents searchable. `conflicts`, legacy `repair`, and `housekeeping` only report; durable curation requires
 an explicit trust policy before it writes. Adoption has its own audit/review/auto policy and defaults to auto.
 
+For a coherent scheduled policy, set one profile:
+
+```jsonc
+{
+  "maintenance": { "profile": "audit" }, // or review, autonomous, custom
+}
+```
+
+`audit` seals plans without applying them. `review` waits for human decisions. `autonomous` uses a separate
+curator call and applies only accepted, verified items. Both audit and review keep the still-legacy observation
+and reflection phases in preview mode. `custom` is the compatibility default and preserves the lower-level
+phase settings. Named profiles enable the plan-backed curate/adopt surface but do not override page opt-ins,
+folder restrictions, merge allowlists, guards, or limits, and do not enable observe or reflect.
+
 Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
 between summary preview and direct application. Opted-in hygiene and synthesis pages can instead use an
 explicit trust mode:
@@ -597,9 +611,9 @@ akno dream status
 All three modes seal the same exact operations. Apply refuses changed inputs, journals each item separately,
 re-indexes it, verifies disk and index state, and rolls back a proven failed result. Synthesis items retain the
 bounded evidence graph given to the independent curator. A split is one atomic item: it replaces the canonical
-page and creates every child together, or changes nothing. A command-line mode is explicitly invoked with
-`--phase curate` or `--phase adopt`; the same policy can be set at `maintenance.curate.mode` or
-`maintenance.adopt.mode` so a full nightly cycle uses it without skipping other phases. Stable item markers and provenance survive rewrites and moves,
+page and creates every child together, or changes nothing. A command-line mode can cover the full run or one
+selected phase and may lower, but never raise, configured authority. Under `custom`, the same policy can be set
+at `maintenance.curate.mode` or `maintenance.adopt.mode`. Stable item markers and provenance survive rewrites and moves,
 and a split keeps the canonical `page.md` while adding children under `page/`. An extraction instead moves
 one exact source section of authored Markdown verbatim into an independent page, leaves a managed source bridge
 and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
@@ -853,8 +867,8 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   one coincidence.
 - **`curate`** — off globally, with both its trust mode and legacy write switch unset/off. Even when enabled,
   it only considers pages whose own frontmatter opts into `hygiene` or `synthesize`. `--mode auto` is explicit
-  per-run authority for opted-in curation; `maintenance.curate.mode` gives the nightly phase the same
-  authority when the owner deliberately configures it.
+  per-run authority for opted-in curation under a compatible ceiling; a named profile enables its planner, and
+  `maintenance.curate.mode` gives the nightly phase the same authority under `custom`.
 - **`repair`** — the legacy standalone phase, now a report-only compatibility view and off by default.
   `maintenance.repair.links` defaults on, but it produces durable link items only when plan-backed curate is
   enabled. Those items require exact move, alias, or canonical identity evidence; similarity never authorizes

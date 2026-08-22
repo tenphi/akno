@@ -196,7 +196,16 @@ const TierDoc = z.object({
   mission: z.string().nullable().optional(),
 });
 
+export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous', 'custom'] as const;
+export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
+
 const MaintenanceDoc = z.object({
+  /**
+   * One understandable authority choice for the complete scheduled cycle. `custom` preserves
+   * the phase-level switches below, which is also the compatibility profile for installations
+   * created before named profiles existed.
+   */
+  profile: z.enum(MAINTENANCE_PROFILES).optional(),
   /**
    * The model the cycle uses, when it should not be the one indexing uses.
    *
@@ -423,6 +432,8 @@ export interface AknoConfig {
     textRenditionMinChars: number;
   };
   maintenance: {
+    /** Named authority policy for the complete cycle; `custom` preserves phase-level settings. */
+    profile: MaintenanceProfile;
     /** Null when the cycle uses the `derive` role, which is the default. */
     model: ResolvedModelRole | null;
     /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */

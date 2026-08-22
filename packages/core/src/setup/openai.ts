@@ -41,7 +41,6 @@ export interface OpenAiLunaPreflightReport {
  * development evidence and remains explicitly experimental until the release artifact passes.
  */
 export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
-  const trustMode = options.maintenance === 'autonomous' ? 'auto' : options.maintenance;
   return {
     akno_path: options.aknoPath,
     providers: {
@@ -85,13 +84,12 @@ export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
       },
     },
     maintenance: {
+      profile: options.maintenance,
       model: {
         provider: 'openai',
         id: OPENAI_LUNA_GENERATIVE_MODEL,
         reasoning_effort: 'medium',
       },
-      curate: { enabled: true, mode: trustMode },
-      adopt: { enabled: true, mode: trustMode },
     },
   };
 }

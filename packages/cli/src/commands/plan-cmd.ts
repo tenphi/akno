@@ -154,6 +154,12 @@ export async function loadMaintenanceStatus(
 export function printMaintenanceStatus(status: MaintenanceStatus): void {
   heading('Maintenance');
   kv([
+    ['profile', status.authority.profile],
+    ['cycle authority', status.authority.mode],
+    ['automatic KB writes', status.authority.automaticKnowledgeBaseWrites ? 'allowed' : 'not allowed'],
+    ['observe / reflect', status.authority.inference],
+    ['curate', status.authority.curate],
+    ['adopt', status.authority.adopt],
     ['active dream runs', status.activeRuns],
     ['active plans', status.active],
     ['awaiting decisions', status.awaitingHuman],
@@ -164,6 +170,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     kv([
       ['id', status.latestRun.id],
       ['status', status.latestRun.status],
+      ['profile', status.latestRun.profile],
       ['mode', status.latestRun.mode],
       ['started', status.latestRun.startedAt],
       ['snapshot', status.latestRun.snapshot.indexRevision.slice(0, 12)],

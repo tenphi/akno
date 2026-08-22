@@ -124,6 +124,14 @@ export function loadConfig(options: LoadOptions = {}): AknoConfig {
   return resolve(doc, sources, ruleLayers, env);
 }
 
+function namedMaintenanceMode(
+  profile: AknoConfig['maintenance']['profile'],
+): 'audit' | 'review' | 'auto' | null {
+  if (profile === 'audit' || profile === 'review') return profile;
+  if (profile === 'autonomous') return 'auto';
+  return null;
+}
+
 // ─── Layer discovery ────────────────────────────────────────────────────────
 
 function findDefaultConfig(): string {
@@ -390,6 +398,8 @@ function resolve(
 
   const stateDir = resolveUserPath(doc.state_dir ?? '~/.akno');
   const providers = resolveProviders(doc.providers, env);
+  const maintenanceProfile = doc.maintenance?.profile ?? 'custom';
+  const namedMode = namedMaintenanceMode(maintenanceProfile);
 
   // Rules found in the knowledge base win over machine config, so they can be
   // versioned with the notes and survive a move to another machine.
@@ -481,6 +491,7 @@ function resolve(
       textRenditionMinChars: doc.ingest?.text_rendition_min_chars ?? 1000,
     },
     maintenance: {
+      profile: maintenanceProfile,
       // Resolved through the same path as any role, so a typo in the provider name fails the
       // same way and `doctor` can probe it like the rest.
       model: doc.maintenance?.model
@@ -510,8 +521,10 @@ function resolve(
         mission: doc.maintenance?.reflect?.mission ?? null,
       },
       curate: {
-        enabled: doc.maintenance?.curate?.enabled ?? false,
-        mode: doc.maintenance?.curate?.mode ?? null,
+        // Named profiles are a coherent product choice. `custom` alone exposes the historical
+        // bag of phase switches, so adding this field cannot silently change an installation.
+        enabled: namedMode !== null ? true : (doc.maintenance?.curate?.enabled ?? false),
+        mode: namedMode ?? doc.maintenance?.curate?.mode ?? null,
         write: doc.maintenance?.curate?.write ?? false,
         verify: doc.maintenance?.curate?.verify ?? true,
         maxPages: doc.maintenance?.curate?.max_pages ?? 8,
@@ -526,21 +539,24 @@ function resolve(
         extractSectionBytes: doc.maintenance?.curate?.extract_section_bytes ?? 1_024,
       },
       adopt: {
-        enabled: doc.maintenance?.adopt?.enabled ?? true,
+        enabled: namedMode !== null ? true : (doc.maintenance?.adopt?.enabled ?? true),
         // Adoption already ran autonomously before it became plan-backed. Keep that product
         // behavior while adding a separate curator decision, exact diff, and verification.
-        mode: doc.maintenance?.adopt?.mode === undefined ? 'auto' : doc.maintenance.adopt.mode,
+        mode: namedMode ?? (doc.maintenance?.adopt?.mode === undefined ? 'auto' : doc.maintenance.adopt.mode),
         maxPages: doc.maintenance?.adopt?.max_pages ?? 20,
       },
       conflicts: {
-        enabled: doc.maintenance?.conflicts?.enabled ?? true,
+        enabled: namedMode !== null ? true : (doc.maintenance?.conflicts?.enabled ?? true),
         verify: doc.maintenance?.conflicts?.verify ?? true,
-        resolve: doc.maintenance?.conflicts?.resolve ?? doc.maintenance?.repair?.conflicts ?? true,
+        resolve:
+          namedMode !== null
+            ? true
+            : (doc.maintenance?.conflicts?.resolve ?? doc.maintenance?.repair?.conflicts ?? true),
         maxPairs: doc.maintenance?.conflicts?.max_pairs ?? 40,
       },
       repair: {
         enabled: doc.maintenance?.repair?.enabled ?? false,
-        links: doc.maintenance?.repair?.links ?? true,
+        links: namedMode !== null ? true : (doc.maintenance?.repair?.links ?? true),
         maxChanges: doc.maintenance?.repair?.max_changes ?? 25,
       },
     },

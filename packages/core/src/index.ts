@@ -10,10 +10,17 @@ export { loadConfig, type LoadOptions } from './config/load.ts';
 export type {
   AknoConfig,
   FolderRule,
+  MaintenanceProfile,
   ReasoningEffort,
   ResolvedModelRole,
   ResolvedProvider,
 } from './config/schema.ts';
+export {
+  configuredMaintenanceAuthority,
+  profileMode,
+  type MaintenanceAuthority,
+  type MaintenancePhaseAuthority,
+} from './maintenance/profile.ts';
 export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
 export {
   OPENAI_LUNA_EMBEDDING_DIMENSIONS,

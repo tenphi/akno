@@ -38,6 +38,7 @@ import {
   type DreamRunMode,
   type DreamRunReceipt,
 } from './runs.ts';
+import { assertMaintenanceModeAllowed, inferenceDryRun, profileMode } from './profile.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -147,12 +148,10 @@ export interface DreamOptions {
 }
 
 export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promise<DreamReport> {
-  if (options.mode && options.phase !== 'curate' && options.phase !== 'adopt') {
-    throw new AknoError('invalid', 'a maintenance mode requires `phase: curate` or `phase: adopt`');
-  }
   if (options.mode && options.dryRun) {
     throw new AknoError('invalid', 'choose `mode: audit` instead of combining a mode with dryRun');
   }
+  assertMaintenanceModeAllowed(ctx.config, options);
   const started = performance.now();
   // The tiers run unattended and are worth a better model than indexing needs — measured:
   // the same observe pass over one knowledge base produced 15 candidates worth about four with a
@@ -233,6 +232,8 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
 function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
   if (options.dryRun) return 'audit';
   if (options.mode) return options.mode;
+  const configuredProfileMode = profileMode(ctx.config.maintenance.profile);
+  if (configuredProfileMode) return configuredProfileMode;
   if (options.phase === 'adopt') return ctx.config.maintenance.adopt.mode ?? 'legacy';
   if (!options.phase) {
     return ctx.config.maintenance.curate.mode ?? ctx.config.maintenance.adopt.mode ?? 'legacy';
@@ -254,7 +255,7 @@ async function runPhase(
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await observePhase(ctx, options, report, applied);
+      await observePhase(ctx, { ...options, dryRun: inferenceDryRun(ctx.config, options) }, report, applied);
       return null;
     }
     case 'reflect': {
@@ -267,7 +268,7 @@ async function runPhase(
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await reflectPhase(ctx, options, report, applied);
+      await reflectPhase(ctx, { ...options, dryRun: inferenceDryRun(ctx.config, options) }, report, applied);
       return null;
     }
     case 'curate': {

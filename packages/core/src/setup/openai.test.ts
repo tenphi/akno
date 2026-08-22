@@ -43,9 +43,8 @@ describe('experimental OpenAI minimum setup', () => {
       derive: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'low' },
     });
     expect(preset.maintenance).toMatchObject({
+      profile: 'autonomous',
       model: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'medium' },
-      curate: { enabled: true, mode: 'auto' },
-      adopt: { enabled: true, mode: 'auto' },
     });
     expect(JSON.stringify(preset)).not.toContain('sk-');
   });

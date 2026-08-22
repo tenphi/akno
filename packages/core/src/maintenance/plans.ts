@@ -21,6 +21,7 @@ import { preservesAuthoredTokens, preservesValues } from './repair.ts';
 import { activeDreamRuns, latestDreamRun, type DreamRunReceipt } from './runs.ts';
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { effectiveRule } from '../rules/compile.ts';
+import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'curate' | 'adopt';
@@ -154,6 +155,7 @@ export interface MaintenancePlan extends MaintenancePlanSummary {
 }
 
 export interface MaintenanceStatus {
+  authority: MaintenanceAuthority;
   latest: MaintenancePlanSummary | null;
   latestRun: DreamRunReceipt | null;
   active: number;
@@ -830,6 +832,7 @@ async function recoverInterruptedApply(ctx: AknoContext, item: MaintenanceItem):
 export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
   if (!maintenanceTablesAvailable(ctx)) {
     return {
+      authority: configuredMaintenanceAuthority(ctx.config),
       latest: null,
       latestRun: latestDreamRun(ctx),
       active: 0,
@@ -852,6 +855,7 @@ export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
     .prepare("SELECT count(*) AS n FROM maintenance_items WHERE status = 'verification_pending'")
     .get() as { n: number };
   return {
+    authority: configuredMaintenanceAuthority(ctx.config),
     latest,
     latestRun: latestDreamRun(ctx),
     active: active.n,

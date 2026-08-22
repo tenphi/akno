@@ -752,6 +752,26 @@ describe('observe', () => {
     expect(report.changeId).toBeNull();
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
+
+  it('keeps legacy inference read-only under the review profile', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(report.run).toMatchObject({ profile: 'review', mode: 'review' });
+    expect(report.observations[0]).toMatchObject({ action: 'created' });
+    expect(report.changeId).toBeNull();
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(mem.maintenanceStatus().authority).toMatchObject({
+      profile: 'review',
+      mode: 'review',
+      inference: 'preview',
+      automaticKnowledgeBaseWrites: false,
+    });
+  });
 });
 
 describe('the thorough conflict pass', () => {

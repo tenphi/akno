@@ -29,11 +29,13 @@ akno dream status
                    are low-risk items in curate audit, review, or auto plans.
     housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
 
-  A full/scheduled run uses each plan-backed phase's configured trust mode. Curate can
-  retain its legacy write behavior when no mode is configured; adopt defaults to auto.
+  A full/scheduled run resolves the configured maintenance profile. audit plans only,
+  review waits for human decisions, autonomous uses a separate curator and applies only
+  accepted work, and custom preserves the phase-level settings.
 
   --phase <name>   Run one phase instead of every enabled one.
-  --mode <policy>  audit | review | auto. Requires --phase curate or --phase adopt.
+  --mode <policy>  audit | review | auto. May lower configured authority for one run;
+                   it cannot raise it.
   --dry-run        Run selected checks and proposals; change no knowledge-base files.
   --private-details
                    Include page names, source excerpts, URLs and other private content in
@@ -71,9 +73,6 @@ export async function dreamCommand(argv: string[]): Promise<number> {
 
   const phase = values.phase ? parsePhase(values.phase) : undefined;
   const mode = values.mode ? parseMode(values.mode) : undefined;
-  if (mode && phase !== 'curate' && phase !== 'adopt') {
-    throw new AknoError('invalid', '--mode requires --phase curate or --phase adopt');
-  }
   const input = {
     ...(phase ? { phase } : {}),
     ...(mode ? { mode } : {}),
@@ -110,7 +109,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     json(values['private-details'] ? report : safeDreamReport(report));
     return 0;
   }
-  return printDream(report, values['dry-run'], values['private-details']);
+  return printDream(report, values['private-details']);
 }
 
 async function reportActiveDream(
@@ -136,11 +135,17 @@ async function reportActiveDream(
   return 0;
 }
 
-function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolean): number {
-  heading(`Dream — ${ms(report.durationMs)}${dryRun ? style.grey('  (dry run)') : ''}`);
+function printDream(report: DreamReport, privateDetails: boolean): number {
+  const readOnly = dreamRunIsReadOnly(report);
+  const authorityLabel = readOnly
+    ? style.grey(`  (${report.run.dryRun ? 'dry run' : report.run.mode}; no KB writes)`)
+    : '';
+  heading(`Dream — ${ms(report.durationMs)}${authorityLabel}`);
   kv([
     ['run', report.run.id],
     ['status', report.run.status],
+    ['profile', report.run.profile],
+    ['authority', report.run.mode],
     ['snapshot', report.run.snapshot.indexRevision.slice(0, 12)],
   ]);
   for (const phase of report.phases) {
@@ -151,7 +156,7 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
 
   if (report.observations.length > 0) {
     const wrote = report.observations.filter((entry) => entry.action !== 'unchanged');
-    heading(`${wrote.length} observation(s)${dryRun ? ' would be written' : ' written'}`);
+    heading(`${wrote.length} observation(s)${readOnly ? ' would be written' : ' written'}`);
     if (privateDetails) {
       for (const entry of report.observations) {
         const mark =
@@ -424,6 +429,10 @@ function printDream(report: DreamReport, dryRun: boolean, privateDetails: boolea
     if (id) line(`\n  ${style.grey(`reverse ${what} with`)} ${style.bold(`akno undo ${id}`)}`);
   }
   return 0;
+}
+
+export function dreamRunIsReadOnly(report: Pick<DreamReport, 'run'>): boolean {
+  return report.run.dryRun || report.run.mode === 'audit' || report.run.mode === 'review';
 }
 
 interface GuardrailSummary {

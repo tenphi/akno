@@ -613,6 +613,8 @@ run containing seven bounded phases with different inputs, permissions, and side
 ```bash
 akno dream
 akno dream --dry-run
+akno dream --mode audit
+akno dream --mode review
 akno dream --phase housekeeping
 akno dream --phase curate
 akno dream --phase curate --mode audit
@@ -622,6 +624,37 @@ akno dream status
 
 `--dry-run` executes the selected checks and model decisions but does not change knowledge-base files.
 The phases are designed to be safe to repeat: unchanged input should not create duplicate output.
+
+### Profiles answer “what may the cycle do?”
+
+The scheduled command stays deliberately plain: `akno dream`. At run time it resolves one profile from
+`maintenance.profile`, so changing authority does not require reinstalling the scheduler:
+
+```jsonc
+{
+  "maintenance": {
+    "profile": "autonomous",
+  },
+}
+```
+
+| Profile      | Plan-backed curation and adoption                  | `observe` / `reflect`                        |
+| ------------ | -------------------------------------------------- | -------------------------------------------- |
+| `audit`      | seal audit plans; never apply                      | preview only                                 |
+| `review`     | seal plans and wait for human decisions            | preview only until these phases become plans |
+| `autonomous` | separate curator decision, then verified apply     | write when the phase is explicitly enabled   |
+| `custom`     | preserve `curate`, `adopt`, and legacy write flags | preserve existing phase behavior             |
+
+`custom` is the compatibility default, so an existing installation does not gain or lose authority after an
+upgrade. A named profile enables both plan-backed planners, conflict resolution, and exact-identity link
+repair; page frontmatter, folder rules, merge allowlists, deterministic guards, and per-run caps remain more
+restrictive boundaries. It does not automatically enable the model-sensitive `observe` or `reflect` phases.
+
+`akno config` prints the profile plus its expanded `curate.mode` and `adopt.mode`. `akno dream status`
+summarizes the profile, cycle authority, phase authority, and whether an ordinary scheduled run may write.
+A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
+authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
+`--mode auto` cannot promote a configured review profile.
 
 ### The retention ladder is not the execution order
 
@@ -792,8 +825,8 @@ the second one stale by construction.
 **Write authority has three gates:**
 
 1. The page opts in with `dream: hygiene` or `dream: synthesize`.
-2. `maintenance.curate.enabled` includes the phase in scheduled runs.
-3. A configured or command-line trust mode authorizes plan-backed curation; when no mode is set,
+2. A named profile includes the plan-backed phase, or `maintenance.curate.enabled` does so under `custom`.
+3. The profile or a lower command-line trust mode authorizes plan-backed curation; when `custom` has no mode,
    the legacy `maintenance.curate.write` switch controls previews and writes.
 
 With `enabled: true` and `write: false`, scheduled runs are summary previews: they report that a page would
@@ -824,23 +857,24 @@ Long model calls report a content-free stage and elapsed time while they run: ca
 curator, application, and verification. The progress line also says whether a knowledge-base write has begun.
 
 The selected mode is explicit authority for that run, so it replaces the legacy `maintenance.curate.write`
-choice for these curation items. It still requires `maintenance.curate.enabled`, an available maintenance or
-derive model, and page-level `dream: hygiene` or `dream: synthesize`. A command-line `--mode` requires
-`--phase curate` or `--phase adopt`; it does not run the other phases.
+choice for these curation items. It still requires an enabled planner, an available maintenance or derive
+model for model-backed transformations, and page-level `dream: hygiene` or `dream: synthesize`. A
+command-line `--mode` can govern the full cycle or one selected phase and cannot exceed the configured
+profile.
 
-For the nightly full cycle, put the same decision in configuration instead:
+For the nightly full cycle, prefer a named profile:
 
 ```jsonc
 {
   "maintenance": {
-    "curate": { "enabled": true, "mode": "auto", "write": false },
+    "profile": "autonomous",
   },
 }
 ```
 
 The scheduled command remains plain `akno dream`, so observation, reflection, adoption, conflict detection,
-the compatibility repair report, and housekeeping keep running. Only its curate phase reads this mode. Set `mode` to `null` only when
-intentionally retaining the legacy curate behavior.
+the compatibility repair report, and housekeeping keep running. Use `profile: "custom"` only when intentionally
+retaining or composing the lower-level phase behavior.
 
 All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its exact
 operation, input hash, completed guards, decision, journal change id, and verification result. `audit` leaves
@@ -1300,7 +1334,9 @@ akno service uninstall
 ```
 
 The installation includes the watcher service and, unless disabled, a nightly dream schedule at 03:00. Use
-`--dream-hour` to choose another hour or `--no-dream` to omit the scheduled cycle.
+`--dream-hour` to choose another hour or `--no-dream` to omit the scheduled cycle. The job runs plain
+`akno dream` and resolves the current `maintenance.profile` at start-up, so an authority change does not
+require reinstalling the scheduler.
 
 For an agent host, choose one integration:
 
@@ -1424,28 +1460,24 @@ The named phases can remain as internal methods, but the operator would reason a
 Conflict analysis should also precede `observe` and `reflect`, or unresolved claim groups should be excluded,
 so higher-level inference is not built from facts the same run later identifies as contradictory.
 
-### Maintenance permission is powerful but hard to reason about
+### Maintenance profiles do not have per-transformation policy yet
 
-Dream currently combines global phase switches, a separate curate write switch, page-level policy, folder
-rules, dry-run behavior, and per-run caps. The safeguards are valuable; the interaction is difficult to hold
-in one mental model.
+`audit`, `review`, `autonomous`, and compatibility `custom` now resolve one authority ceiling for the complete
+cycle. That removes the most dangerous ambiguity: review cannot write legacy inference output, a one-run mode
+cannot promote configured authority, and the scheduler resolves the current profile instead of embedding stale
+flags.
 
-The curation and adoption paths expose `audit`, `review`, and `auto` both per command and through their own
-configured modes, so a full scheduled run can use durable plans without dropping the other phases. The next
-operator step is still a named profile that resolves authority across every transformation. Expert config can
-remain underneath. Setup must say plainly when it schedules knowledge-base writes. `adopt` is enabled in auto
-mode by default, so installing background operation can eventually add curator-approved Markdown pages unless
-the user passes `--no-dream`, disables adoption, or selects audit/review.
+The remaining gap is finer-grained policy. A user cannot yet say “automate hygiene and broken links, queue
+merges for review, and turn contradiction edits off” without dropping to lower-level phase and limit settings.
+Profiles also lack whole-run item/file/byte/high-risk budgets and failure policies. Page and folder restrictions,
+per-transformation deterministic guards, and existing phase caps still apply, but they are not summarized as one
+path-specific policy explanation.
 
-The intended profile depends on how Akno is used: a trusted agent-connected installation should recommend
-`autonomous`, with a separate model curator and automatic verified application; a standalone installation should
-recommend `review`, where a human makes the final decision. `audit` remains the no-write option for either case.
+### The scheduled cycle still lacks schedule and history visibility
 
-### The scheduled cycle has weak visibility
-
-`akno dream status` now shows active plans, proposed items, pending verification, and the latest plan.
-It still does not show the last full-cycle run, next scheduled run, resolved permissions, model in use, or
-phase-level failures.
+`akno dream status` now shows resolved profile authority, active plans, proposed items, pending verification,
+and the latest content-safe full-cycle receipt with phase outcomes. It still does not inspect launchd to show
+whether the schedule is loaded, the next run time, older run history, model usage, or typed degradation.
 
 ### Setup assumes too much infrastructure knowledge
 

@@ -1,6 +1,11 @@
 import type { DreamReport, MaintenanceStatus } from '@tenphi/akno-core';
 import { describe, expect, it } from 'vitest';
-import { curationGuardSummary, dreamProgressDescription, safeDreamReport } from './dream-cmd.ts';
+import {
+  curationGuardSummary,
+  dreamProgressDescription,
+  dreamRunIsReadOnly,
+  safeDreamReport,
+} from './dream-cmd.ts';
 
 describe('dream output privacy', () => {
   it('reduces a content-bearing report to a shareable operational receipt', () => {
@@ -25,6 +30,16 @@ describe('dream output privacy', () => {
       pages: 1,
       issues: 2,
     });
+  });
+});
+
+describe('dream authority output', () => {
+  it('labels audit and review modes as read-only even without the legacy dry-run flag', () => {
+    const report = privateReport();
+
+    expect(dreamRunIsReadOnly({ run: { ...report.run, mode: 'audit', dryRun: false } })).toBe(true);
+    expect(dreamRunIsReadOnly({ run: { ...report.run, mode: 'review', dryRun: false } })).toBe(true);
+    expect(dreamRunIsReadOnly(report)).toBe(false);
   });
 });
 
@@ -83,6 +98,7 @@ function privateReport(): DreamReport {
       startedAt: '2030-01-02T03:04:00.000Z',
       finishedAt: '2030-01-02T03:04:01.000Z',
       status: 'completed',
+      profile: 'autonomous',
       mode: 'auto',
       dryRun: false,
       requestedPhase: 'curate',
@@ -199,6 +215,7 @@ function privateReport(): DreamReport {
 
 function emptyStatus(): MaintenanceStatus {
   return {
+    authority: fixtureAuthority(),
     latest: null,
     latestRun: null,
     active: 0,
@@ -214,6 +231,7 @@ function statusAt(
   applied: number,
 ): MaintenanceStatus {
   return {
+    authority: fixtureAuthority(),
     latest: {
       id: 'pln_example',
       createdAt: new Date(startedAt).toISOString(),
@@ -231,6 +249,17 @@ function statusAt(
     activeRuns: 0,
     awaitingHuman: 0,
     verificationPending: 0,
+  };
+}
+
+function fixtureAuthority(): MaintenanceStatus['authority'] {
+  return {
+    profile: 'autonomous',
+    mode: 'auto',
+    automaticKnowledgeBaseWrites: true,
+    inference: 'write-when-enabled',
+    curate: 'auto',
+    adopt: 'auto',
   };
 }
 

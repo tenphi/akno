@@ -276,6 +276,11 @@
   // inference engine honest lives in the fixed part, and a replaceable prompt is
   // how they all get lost at once.
   "maintenance": {
+    // A named profile is the authority ceiling for the complete scheduled cycle:
+    // audit plans only, review waits for a human, autonomous uses the separate curator
+    // and applies accepted work. `custom` preserves the phase settings below and is the
+    // compatibility default for installations created before profiles existed.
+    "profile": "custom",
     // The model the cycle uses, when it should not be the one indexing uses.
     // Not a role of its own — the same capability as `derive`, pointed somewhere
     // else for the one caller that runs unattended.

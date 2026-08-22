@@ -227,7 +227,8 @@ const SERVICE_HELP = `akno service <install | uninstall | status> [options]
     dev.akno        KeepAlive — the index, watcher and models in one process, which
                       is why it outlives every host that talks to it.
     dev.akno.dream  Nightly — the maintenance cycle. Observe runs on a schedule,
-                      and this is that schedule.
+                      and this is that schedule. It resolves maintenance.profile at
+                      run time, so changing authority does not require reinstalling it.
 
   --http <addr>       Serve loopback HTTP as well as the socket.
   --dream-hour <0-23> When the nightly cycle runs. Default 3.
@@ -333,6 +334,8 @@ export async function serviceCommand(argv: string[]): Promise<number> {
         label: DREAM_LABEL,
         node: process.execPath,
         script: binary,
+        // Keep the job unqualified: `dream` resolves the current named profile every night.
+        // Baking a mode into this plist would leave stale authority after a config change.
         args: ['dream'],
         logDir: config.logDir,
         logName: 'dream',
@@ -341,6 +344,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
       'utf8',
     );
     line(`wrote ${dreamPath}  ${style.grey(`(daily at ${String(hour).padStart(2, '0')}:00)`)}`);
+    line(style.grey(`  maintenance profile: ${config.maintenance.profile} (resolved at run time)`));
     line(style.grey(`run: launchctl bootstrap gui/$(id -u) ${dreamPath}`));
   }
 

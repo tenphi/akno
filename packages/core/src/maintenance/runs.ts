@@ -1,6 +1,6 @@
 import { AknoError, type ErrorCode } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
-import type { ResolvedModelRole } from '../config/schema.ts';
+import type { MaintenanceProfile, ResolvedModelRole } from '../config/schema.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { SCHEMA_VERSION } from '../store/migrations.ts';
 import type { DreamPhase, DreamReport, PhaseReport } from './dream.ts';
@@ -47,6 +47,8 @@ export interface DreamRunReceipt {
   startedAt: string;
   finishedAt: string | null;
   status: DreamRunStatus;
+  /** Configured profile at the start of the run; old receipts migrate to `custom` on read. */
+  profile: MaintenanceProfile;
   mode: DreamRunMode;
   dryRun: boolean;
   requestedPhase: DreamPhase | null;
@@ -106,6 +108,7 @@ export function beginDreamRun(
     startedAt,
     finishedAt: null,
     status: 'running',
+    profile: ctx.config.maintenance.profile,
     mode: options.mode,
     dryRun: options.dryRun,
     requestedPhase: options.requestedPhase,
@@ -281,6 +284,7 @@ function configurationFingerprint(ctx: AknoContext): string {
   // receipt data. Policies and role behavior still participate in the opaque fingerprint.
   const effective = {
     maintenance: {
+      profile: config.maintenance.profile,
       retain: config.maintenance.retain,
       observe: config.maintenance.observe,
       reflect: config.maintenance.reflect,
@@ -400,6 +404,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
     const receipt = JSON.parse(value) as DreamRunReceipt & { maintenancePlanIds?: unknown };
     return {
       ...receipt,
+      profile: receipt.profile ?? 'custom',
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')
         : receipt.maintenancePlanId
