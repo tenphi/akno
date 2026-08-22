@@ -127,6 +127,20 @@ So a config file is always safe to read, diff and paste into an issue. `akno con
 configuration with secrets redacted, and tells you which files it came from — the fastest way to check that
 your `local.jsonc` is actually being read.
 
+The first guided setup slice exposes the OpenAI minimum as an **experimental, non-writing preview**. It prints
+the exact one-endpoint/two-model overlay and, with `--check`, sends only invented fixtures to verify both
+embedding access and Luna's ranking transport/schema:
+
+```bash
+akno init --preset openai-luna --akno-path /path/to/markdown \
+  --maintenance autonomous --dry-run --check
+```
+
+The command never writes configuration, installs a service, indexes, schedules maintenance, or changes the
+knowledge base. Configuration writing remains mechanically blocked until the checked-in ranking release gate
+passes. This is deliberate: a valid credential may allow Luna while the same OpenAI project denies every
+embedding model, and writing that preset would silently replace semantic recall with lexical degradation.
+
 Rules can also travel with the notes: if `<akno_path>/akno.json` exists, its `folders` block wins over both
 config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as
 configuration and never indexed as a note.
@@ -181,6 +195,9 @@ therefore uses one OpenAI endpoint and credential, `text-embedding-3-small` for 
 `gpt-5.6-luna` for generative roles and prompted reranking. Expansion and reranking can use
 `reasoning_effort: "none"`; slower derivation or maintenance can choose a higher effort independently. The
 prompted reranker remains experimental until the relevance benchmark meets its release threshold.
+`akno init --preset openai-luna --akno-path /path/to/markdown --dry-run --check` verifies the two required
+model roles separately before setup, so “the provider works” cannot hide an embedding-specific access
+restriction.
 
 **Every prompt that asks for JSON also sends the shape as a JSON Schema**, so the endpoint constrains decoding
 rather than the prompt requesting it politely — a llama-server compiles it to a GBNF grammar, and OpenAI's

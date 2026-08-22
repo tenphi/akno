@@ -1423,9 +1423,16 @@ The first useful result currently requires editing JSON, knowing an OpenAI-compa
 roles, indexing, diagnosing, and then connecting an agent host. The graceful no-model path helps, but the user
 still has to discover it from prose.
 
-A guided `akno init` should select the knowledge-base folder, perform a read-only scan, detect reachable
-models, explain degraded choices, run one recall, and optionally install the service. That would shorten the
-distance between “I have notes” and “my agent can cite them” without weakening any safety rule.
+A first guided `akno init` slice now previews the exact OpenAI overlay and checks the knowledge-base path.
+`--check` sends one invented embedding input and the existing three-candidate invented ranking probe through
+the same provider, reporting the roles separately. This catches the otherwise confusing case where a project
+can call Luna but cannot call its configured embedding model. The receipt contains no credential, raw response,
+or private knowledge-base content.
+
+The preset is still mechanically preview-only. `--dry-run` is required, and the command changes no
+configuration, service, schedule, index, or knowledge-base file. Interactive questions, atomic config writing,
+a first recall, and optional service installation remain future slices; configuration writing stays blocked
+until the ranking release gate passes.
 
 A minimum hosted setup should add a single-endpoint OpenAI preset: one endpoint and credential,
 `text-embedding-3-small` for semantic candidate generation, and `gpt-5.6-luna` for generative work and prompted
@@ -1445,6 +1452,7 @@ inference so an unresolved claim cannot quietly become a new observation.
 
 | Command               | Purpose                                                   | Writes to the knowledge base?    | Model roles                              |
 | --------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------------------------- |
+| `init`                | Preview/check an experimental guided setup                | no                               | embedding, reranker with `--check`       |
 | `index`               | Reconcile the index with files                            | no by default                    | embedding, derive                        |
 | `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker           |
 | `read <slug>`         | Read one page or document directly                        | no                               | none                                     |

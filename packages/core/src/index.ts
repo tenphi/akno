@@ -15,6 +15,19 @@ export type {
   ResolvedProvider,
 } from './config/schema.ts';
 export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
+export {
+  OPENAI_LUNA_EMBEDDING_DIMENSIONS,
+  OPENAI_LUNA_EMBEDDING_MODEL,
+  OPENAI_LUNA_GENERATIVE_MODEL,
+  OPENAI_LUNA_PRESET,
+  OPENAI_LUNA_PRESET_STATUS,
+  openAiLunaPreset,
+  preflightOpenAiLuna,
+  type OpenAiLunaPreflightReport,
+  type OpenAiLunaPresetOptions,
+  type SetupMaintenanceMode,
+  type SetupRolePreflight,
+} from './setup/openai.ts';
 export { runBench, type BenchOptions, type BenchReport, type BenchResult } from './bench.ts';
 export {
   runMixedRetrievalBench,

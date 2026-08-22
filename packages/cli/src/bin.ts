@@ -21,6 +21,7 @@ import { inboxCommand } from './commands/inbox-cmd.ts';
 import { dreamCommand } from './commands/dream-cmd.ts';
 import { planCommand } from './commands/plan-cmd.ts';
 import { adoptCommand } from './commands/adopt-cmd.ts';
+import { initCommand } from './commands/init-cmd.ts';
 
 const VERSION = '0.1.0';
 
@@ -46,6 +47,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     adopt <document_id>  Organize one orphan document through its trust policy.
 
   ${style.bold('Admin')}
+    init                 Preview/check a guided setup preset. Never guesses or writes silently.
     dream                Seven maintenance phases: infer, curate, adopt, inspect, repair.
     plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.
@@ -85,6 +87,7 @@ const COMMANDS: Record<string, Command> = {
   ingest: ingestCommand,
   inbox: inboxCommand,
   adopt: adoptCommand,
+  init: initCommand,
   dream: dreamCommand,
   plan: planCommand,
   approve: approveCommand,

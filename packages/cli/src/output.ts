@@ -67,6 +67,8 @@ export function statusLabel(status: string): string {
       return style.yellow(status);
     case 'unavailable':
       return style.red('unavailable');
+    case 'failed':
+      return style.red('failed');
     default:
       return status;
   }

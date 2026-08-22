@@ -62,8 +62,15 @@
   },
 
   // Minimum hosted setup uses one OpenAI endpoint and credential, but still two
-  // models because semantic recall requires an embedding model. Replace the
-  // `providers` and `models` blocks above with this shape:
+  // models because semantic recall requires an embedding model. Preview and
+  // preflight the exact experimental overlay before copying it:
+  //
+  //   akno init --preset openai-luna --akno-path /path/to/markdown \
+  //     --maintenance autonomous --dry-run --check
+  //
+  // The command cannot write this preset until its ranking release gate passes.
+  // Replace the `providers` and `models` blocks above manually only when you
+  // deliberately accept that experimental status:
   //
   // "providers": {
   //   "openai": {
@@ -82,6 +89,10 @@
   //     "id": "gpt-5.6-luna",
   //     "enabled": true,
   //     "mode": "llm",
+  //     "exclude_irrelevant": true,
+  //     "top_k": 10,
+  //     "max_chars": 800,
+  //     "max_output_tokens": 448,
   //     "reasoning_effort": "none"
   //   },
   //   "derive": {
@@ -93,6 +104,12 @@
   //     "provider": "openai",
   //     "id": "gpt-5.6-luna",
   //     "reasoning_effort": "none"
+  //   },
+  //   "vision": {
+  //     "provider": "openai",
+  //     "id": "gpt-5.6-luna",
+  //     "enabled": true,
+  //     "reasoning_effort": "low"
   //   }
   // },
 
