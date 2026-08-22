@@ -1220,23 +1220,24 @@ currently says `independentlyReviewed: false`, and a development split can never
 selected prompt and schema must also equal the current runtime versions, preventing an old artifact from
 authorizing changed ranking code. Development artifacts remain tuning evidence rather than a recommended preset.
 
-The first persisted five-run development matrix selected Luna `none` with 10 candidates. Its 0.965 nDCG@10 and
-100% median top-three overlap passed the quality and stability checks, and every fallback preserved fusion
-order. It still missed response validity and instruction safety at 99.33% each, plus the 2.5-second latency gate
-with a 2.89-second p95. Its first single-endpoint end-to-end run embedded 0 of 120 chunks because the configured
-provider did not make the selected embedding model available; the benchmark therefore stopped without scoring
-candidate or ranked recall. Twenty and 40 frozen candidates were slower and less accurate; `low` reasoning at
-20 was also slower and less accurate. At that point the remaining measured runtime targets were response
-reliability and hot-path latency, alongside the external and release-process blockers.
+The current persisted five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.955
+mean nDCG@10, 100% median top-three overlap, 99.67% valid responses, 100% direct-answer retention, and 2.17-second
+aggregate p95 latency. One invalid response fell back to the exact fusion order. At 20 and 40 candidates, `none`
+measured 0.952/0.893 nDCG and 3.20/5.74-second p95; `low` at 20 measured 0.943 nDCG and 5.45-second p95. The
+smallest no-reasoning window therefore wins the matrix's quality-equivalence and latency tradeoff.
 
-The next development-only tuning pass introduced `akno-listwise-v4` with the `compact-entries-v2` schema:
-short id/grade entries, a per-request enum of permitted ids, a leaner prompt, and an explicit grade-0 rule for
-instruction-only text with no answer evidence. Five targeted 10-candidate repetitions produced 300/300 valid
-responses, perfect instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run
-p95 between 1.84 and 2.07 seconds. This removes the three measured runtime blockers on that development slice.
-It is deliberately not release evidence: the full matrix must be persisted again under v4, the corpus still
-needs independent review, the held-out split remains untouched, and embedding access still blocks end-to-end
-recall evidence.
+This v4 run uses compact id/grade entries, a per-request enum of permitted ids, and an explicit grade-0 rule for
+instruction-only text with no answer evidence. OpenAI completion limits cover hidden reasoning and visible JSON
+together, so reasoning-enabled calls receive an additional task-level reserve; the configured role ceiling
+still wins when it is lower. Without that reserve, the first full v4 attempt exhausted every `low` response
+before visible JSON and correctly produced no selection. The corrected matrix verifies both effort modes.
+
+The matrix now passes the development checks for a current persisted contract, five runs, quality, validity,
+fallback integrity, top-three stability, latency, and cheapest-equivalent selection. It remains non-release
+evidence: aggregate instruction-negative rejection was 99.67% rather than the required 100%, the corpus needs
+independent review, the held-out split remains untouched, and matching end-to-end evidence is absent. An older
+end-to-end run stopped when its configured embedding role produced 0 of 120 vectors; that proves honest
+prerequisite handling but cannot authorize the changed v4 runtime contract.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

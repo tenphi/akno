@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ReasoningEffort } from '../config/schema.ts';
 import type { ModelClient, ModelOutcome } from '../models/client.ts';
 import { parseJsonLoose } from '../models/client.ts';
 
@@ -34,6 +35,17 @@ export function llmRerankSchema(candidates: LlmRerankCandidate[]) {
   const ids = candidates.map((candidate) => candidate.id);
   if (ids.length === 0) return LLM_RERANK_SCHEMA;
   return rankingSchema(z.enum(ids as [string, ...string[]]));
+}
+
+/**
+ * Completion tokens cover both hidden reasoning and the visible JSON on OpenAI reasoning models.
+ * Keep the cheap compact allowance when reasoning is disabled, but reserve enough headroom for a
+ * low-effort model to reach the answer. A configured role ceiling remains authoritative.
+ */
+export function llmRerankTokenBudget(candidateCount: number, effort?: ReasoningEffort): number {
+  const compact = Math.max(128, Math.min(1024, candidateCount * 16 + 64));
+  if (!effort || effort === 'none') return compact;
+  return Math.max(compact, Math.min(2048, candidateCount * 24 + 288));
 }
 
 const SYSTEM_PROMPT = `You rank memory excerpts for retrieval.
@@ -83,7 +95,7 @@ export async function rerankWithLlm(
     schema: llmRerankSchema(candidates),
     // Short entry fields reduce generated structure without separating an id from its semantic
     // grade. The role-level output ceiling remains a hard cap over this task estimate.
-    maxTokens: Math.max(128, Math.min(1024, candidates.length * 16 + 64)),
+    maxTokens: llmRerankTokenBudget(candidates.length, model.reasoningEffort),
   });
   if (!response.ok || response.value === null) return { ...response, value: null };
 

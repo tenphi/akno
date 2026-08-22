@@ -776,24 +776,25 @@ rejection, stable top-three results, and the latency budget. The selected prompt
 current runtime contract, so refreshing an old artifact cannot authorize unbenchmarked code. A useful
 development result can therefore recommend the next experiment without silently authorizing the setup preset.
 
-The checked-in [development matrix](benchmarks/ranking/results/development-openai-luna-2026-08-22.json)
-selects Luna with `none` reasoning and 10 candidates: 0.965 nDCG@10, 100% median top-three overlap, and 2.89 s
-p95 latency across five runs. It is not release evidence. Response validity and instruction-negative rejection
-were both 99.33%, just below their gates; latency missed 2.5 s; the corpus is unreviewed; and the held-out split
-remains untouched. The attached end-to-end run stopped honestly at its prerequisite: the selected OpenAI
-embedding model produced 0 of 120 vectors in the configured environment, so candidate and ranked recall were
-not scored and the configuration gate failed. Increasing the frozen window to 20 or 40 reduced quality and
-raised p95 to 3.48 s and 6.24 s; `low` reasoning at 20 reached 0.937 nDCG and 7.12 s p95. The optional native
-reference reached 0.907 nDCG and 1.20 s p95.
+The current checked-in [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
+selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.955 mean nDCG@10, 100%
+median top-three overlap, 99.67% valid responses, 100% direct-answer retention, and 2.17 s aggregate p95
+latency. Its one invalid response preserved the original fusion order. The optional native reference reached
+0.907 nDCG and 1.37 s p95; `none` at 20 and 40 candidates reached 0.952/0.893 nDCG and 3.20/5.74 s p95; `low`
+at 20 reached 0.943 nDCG and 5.45 s p95. The smallest window without reasoning is therefore both the selected
+quality-equivalent configuration and the fastest prompted-ranking variant tested.
 
-A subsequent development-only tuning pass replaced the verbose response entries with the versioned
-`akno-listwise-v4` / `compact-entries-v2` contract. Candidate ids are a per-request schema enum, and the prompt
-explicitly assigns grade 0 to instruction-only excerpts that carry no answer evidence. Across five targeted
-10-candidate repetitions, all 300 responses were valid, every instruction-bearing negative was rejected, every
-direct answer was retained, mean nDCG@10 was 0.959, and per-run p95 stayed between 1.84 s and 2.07 s. This clears
-the former response, instruction-safety, and latency blockers on the development slice, but it is not a persisted
-matrix and does not replace independent review, a fresh full matrix, held-out evidence, or end-to-end embedding
-evidence.
+This is tuning evidence, not release authorization. The v4 matrix passes the persisted-contract, five-run,
+quality, response-validity, fallback, stability, latency, and cheapest-equivalent checks. It still misses the
+perfect instruction-negative gate at 99.67%; the corpus is not independently reviewed; the held-out split is
+untouched; and no matching v4 end-to-end evidence is attached. The earlier end-to-end development run remains
+useful failure-handling evidence—it stopped when the selected embedding model produced 0 of 120 vectors—but it
+does not match the new prompt contract and cannot satisfy this matrix's release gate.
+
+The compact `akno-listwise-v4` / `compact-entries-v2` contract uses per-request candidate-id enums and an
+explicit grade-0 rule for instruction-only excerpts. Completion limits also reserve extra space when reasoning
+is enabled, because OpenAI's completion budget includes hidden reasoning tokens as well as visible JSON. A role's
+configured output ceiling remains the hard cap.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

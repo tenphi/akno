@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
-import { llmRerankMessages, llmRerankSchema, rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
+import {
+  llmRerankMessages,
+  llmRerankSchema,
+  llmRerankTokenBudget,
+  rerankWithLlm,
+  type LlmRerankCandidate,
+} from './llm-rerank.ts';
 
 const candidates: LlmRerankCandidate[] = [
   {
@@ -24,6 +30,13 @@ function fakeModel(value: string): ModelClient {
 }
 
 describe('prompted LLM reranking', () => {
+  it('reserves completion tokens for hidden reasoning without inflating reasoning-free calls', () => {
+    expect(llmRerankTokenBudget(10, 'none')).toBe(224);
+    expect(llmRerankTokenBudget(20, 'none')).toBe(384);
+    expect(llmRerankTokenBudget(20, 'low')).toBe(768);
+    expect(llmRerankTokenBudget(100, 'low')).toBe(2048);
+  });
+
   it('maps a complete validated permutation back to input positions', async () => {
     const result = await rerankWithLlm(
       fakeModel(
