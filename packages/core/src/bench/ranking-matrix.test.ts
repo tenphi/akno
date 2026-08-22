@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AknoConfig } from '../config/schema.ts';
+import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
 import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import {
   attachRankingEndToEndEvidence,
@@ -39,6 +40,12 @@ describe('ranking benchmark matrix', () => {
     };
     expect(evaluateRankingRelease(unreviewed).blockers).toContain('independent_review');
 
+    const staleContract = {
+      ...persisted,
+      variants: persisted.variants.map((entry) => ({ ...entry, promptVersion: 'invented-stale-prompt' })),
+    };
+    expect(evaluateRankingRelease(staleContract).blockers).toContain('runtime_contract');
+
     const expensiveSelection = {
       ...persisted,
       selection: {
@@ -63,7 +70,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v2');
+    expect(report.schemaVersion).toBe('ranking-matrix-v3');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -113,7 +120,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v2',
+    schemaVersion: 'ranking-matrix-v3',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -151,8 +158,8 @@ function passingReport(): RankingMatrixReport {
       rerankerModel: 'invented-model',
       rerankerAvailable: true,
       reasoningEffort: 'none',
-      promptVersion: 'invented-prompt-v1',
-      schemaVersion: 'invented-schema-v1',
+      promptVersion: LLM_RERANK_PROMPT_VERSION,
+      schemaVersion: LLM_RERANK_SCHEMA_VERSION,
     },
     artifactPersisted: false,
     releaseEligible: false,
@@ -176,8 +183,8 @@ function variant(id: string, reasoningEffort: 'none' | 'low', ndcgAt10: number):
     provider: 'invented-provider',
     model: 'invented-model',
     reasoningEffort,
-    promptVersion: 'invented-prompt-v1',
-    schemaVersion: 'invented-schema-v1',
+    promptVersion: LLM_RERANK_PROMPT_VERSION,
+    schemaVersion: LLM_RERANK_SCHEMA_VERSION,
     candidateCount: 20,
     excerptChars: 800,
     runCount: 5,
@@ -255,8 +262,8 @@ function passingEndToEndReport(): RankingEndToEndReport {
       provider: 'invented-provider',
       model: 'invented-model',
       reasoningEffort: 'none',
-      promptVersion: 'invented-prompt-v1',
-      schemaVersion: 'invented-schema-v1',
+      promptVersion: LLM_RERANK_PROMPT_VERSION,
+      schemaVersion: LLM_RERANK_SCHEMA_VERSION,
       available: true,
     },
     candidateGeneration: stage,

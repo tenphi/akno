@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
-import { llmRerankMessages, rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
+import { llmRerankMessages, llmRerankSchema, rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
 
 const candidates: LlmRerankCandidate[] = [
   {
@@ -29,8 +29,8 @@ describe('prompted LLM reranking', () => {
       fakeModel(
         JSON.stringify({
           order: [
-            { candidate_id: 'c_M2rT8nWa', relevance: 3 },
-            { candidate_id: 'c_K7vJ3pQx', relevance: 1 },
+            { id: 'c_M2rT8nWa', grade: 3 },
+            { id: 'c_K7vJ3pQx', grade: 1 },
           ],
         }),
       ),
@@ -52,8 +52,8 @@ describe('prompted LLM reranking', () => {
       'an invented id',
       {
         order: [
-          { candidate_id: 'c_unknown', relevance: 3 },
-          { candidate_id: 'c_K7vJ3pQx', relevance: 1 },
+          { id: 'c_unknown', grade: 3 },
+          { id: 'c_K7vJ3pQx', grade: 1 },
         ],
       },
     ],
@@ -61,12 +61,12 @@ describe('prompted LLM reranking', () => {
       'a duplicate id',
       {
         order: [
-          { candidate_id: 'c_K7vJ3pQx', relevance: 3 },
-          { candidate_id: 'c_K7vJ3pQx', relevance: 1 },
+          { id: 'c_K7vJ3pQx', grade: 3 },
+          { id: 'c_K7vJ3pQx', grade: 1 },
         ],
       },
     ],
-    ['a missing candidate', { order: [{ candidate_id: 'c_K7vJ3pQx', relevance: 3 }] }],
+    ['a missing candidate', { order: [{ id: 'c_K7vJ3pQx', grade: 3 }] }],
   ])('rejects %s', async (_case, body) => {
     const result = await rerankWithLlm(
       fakeModel(JSON.stringify(body)),
@@ -81,8 +81,8 @@ describe('prompted LLM reranking', () => {
       fakeModel(
         JSON.stringify({
           order: [
-            { candidate_id: 'c_K7vJ3pQx', relevance: 1 },
-            { candidate_id: 'c_M2rT8nWa', relevance: 3 },
+            { id: 'c_K7vJ3pQx', grade: 1 },
+            { id: 'c_M2rT8nWa', grade: 3 },
           ],
         }),
       ),
@@ -97,6 +97,26 @@ describe('prompted LLM reranking', () => {
         { index: 0, relevance: 1 },
       ],
     });
+  });
+
+  it('constrains strict decoding to ids from this request', () => {
+    const schema = llmRerankSchema(candidates);
+    expect(
+      schema.safeParse({
+        order: [
+          { id: 'c_M2rT8nWa', grade: 3 },
+          { id: 'c_K7vJ3pQx', grade: 1 },
+        ],
+      }).success,
+    ).toBe(true);
+    expect(
+      schema.safeParse({
+        order: [
+          { id: 'c_unknown', grade: 3 },
+          { id: 'c_K7vJ3pQx', grade: 1 },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
   it('serializes candidate instructions as data under a fixed untrusted-content rule', () => {

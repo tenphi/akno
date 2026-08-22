@@ -110,10 +110,11 @@ describe('rerankHits', () => {
         const payload = JSON.parse(messages.at(-1)!.content) as {
           candidates: { candidate_id: string }[];
         };
+        const entries = order(payload.candidates.map((candidate) => candidate.candidate_id));
         return {
           ok: true,
           value: JSON.stringify({
-            order: order(payload.candidates.map((candidate) => candidate.candidate_id)),
+            order: entries.map((entry) => ({ id: entry.candidate_id, grade: entry.relevance })),
           }),
           latencyMs: 1,
         };

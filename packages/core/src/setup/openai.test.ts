@@ -32,7 +32,13 @@ describe('experimental OpenAI minimum setup', () => {
         id: 'text-embedding-3-small',
         dimensions: OPENAI_LUNA_EMBEDDING_DIMENSIONS,
       },
-      reranker: { provider: 'openai', id: 'gpt-5.6-luna', mode: 'llm', reasoning_effort: 'none' },
+      reranker: {
+        provider: 'openai',
+        id: 'gpt-5.6-luna',
+        mode: 'llm',
+        max_output_tokens: 256,
+        reasoning_effort: 'none',
+      },
       expansion: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'none' },
       derive: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'low' },
     });
@@ -103,8 +109,8 @@ describe('experimental OpenAI minimum setup', () => {
                 message: {
                   content: JSON.stringify({
                     order: requestBody.candidates.map((candidate, index) => ({
-                      candidate_id: candidate.candidate_id,
-                      relevance: [3, 1, 0][index],
+                      id: candidate.candidate_id,
+                      grade: [3, 1, 0][index],
                     })),
                   }),
                 },
@@ -133,7 +139,11 @@ describe('experimental OpenAI minimum setup', () => {
         passed: true,
         credentialPresent: true,
         embedding: { status: 'ok', dimensions: OPENAI_LUNA_EMBEDDING_DIMENSIONS },
-        generative: { status: 'ok' },
+        generative: {
+          status: 'ok',
+          promptVersion: 'akno-listwise-v4',
+          schemaVersion: 'compact-entries-v2',
+        },
       });
       expect(JSON.stringify(report)).not.toContain('sk-invented-fixture-key');
     } finally {

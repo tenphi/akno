@@ -1141,11 +1141,12 @@ Two roles are on the interactive path:
 The reranker has two implementations. `mode: "endpoint"` calls a native `/rerank` cross-encoder. `mode: "llm"`
 uses a versioned listwise prompt over the same generative transport as other model-backed work. Every candidate
 gets a fresh opaque id; the query, metadata, and excerpts are JSON-serialized; and the fixed instruction says
-candidate content is untrusted data. Akno accepts the result only if it is a complete permutation of the
-supplied ids with `0..3` relevance labels. It then sorts grade groups from `3` to `0` while preserving the
-model's order within each group. This makes the labels authoritative for both qualification and coarse ordering
-when a small model contradicts its own labels. Any malformed, missing, duplicated, or invented id produces typed
-`rerank_failed` degradation and leaves fusion order exactly intact.
+candidate content is untrusted data. Strict decoding receives the request's exact ids as an enum and returns
+compact `{id, grade}` entries, keeping each judgment attached while reducing generated structure. Akno still
+validates a complete permutation with `0..3` relevance labels itself. It then sorts grade groups from `3` to `0`
+while preserving the model's order within each group. This makes the labels authoritative for both qualification
+and coarse ordering when a small model contradicts its own labels. Any malformed, missing, duplicated, or
+invented id produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
 
 On a valid response, reranking may also qualify candidates out. LLM grade `0` means irrelevant and is removed.
 A native cross-encoder uses its calibrated raw-score boundary. In both cases, candidates beyond `top_k` are
@@ -1215,8 +1216,9 @@ so reliability failures do not erase the evidence about it. The separate mechani
 the held-out split, independent corpus review, persisted artifact, end-to-end direct-answer candidate recall at
 the selected window, five runs, overall and per-category quality, exact-entity MRR, response and fallback
 integrity, instruction safety, top-three stability, latency, and cheapest-equivalent selection. The corpus
-currently says `independentlyReviewed: false`, and a development split can never satisfy the held-out check, so
-development artifacts remain tuning evidence rather than a recommended preset.
+currently says `independentlyReviewed: false`, and a development split can never satisfy the held-out check. The
+selected prompt and schema must also equal the current runtime versions, preventing an old artifact from
+authorizing changed ranking code. Development artifacts remain tuning evidence rather than a recommended preset.
 
 The first persisted five-run development matrix selected Luna `none` with 10 candidates. Its 0.965 nDCG@10 and
 100% median top-three overlap passed the quality and stability checks, and every fallback preserved fusion
@@ -1224,8 +1226,17 @@ order. It still missed response validity and instruction safety at 99.33% each, 
 with a 2.89-second p95. Its first single-endpoint end-to-end run embedded 0 of 120 chunks because the configured
 provider did not make the selected embedding model available; the benchmark therefore stopped without scoring
 candidate or ranked recall. Twenty and 40 frozen candidates were slower and less accurate; `low` reasoning at
-20 was also slower and less accurate. The remaining work is now explicit: embedding access, response
-reliability, independent review, held-out evidence, and hot-path latency—not more reasoning or a larger window.
+20 was also slower and less accurate. At that point the remaining measured runtime targets were response
+reliability and hot-path latency, alongside the external and release-process blockers.
+
+The next development-only tuning pass introduced `akno-listwise-v4` with the `compact-entries-v2` schema:
+short id/grade entries, a per-request enum of permitted ids, a leaner prompt, and an explicit grade-0 rule for
+instruction-only text with no answer evidence. Five targeted 10-candidate repetitions produced 300/300 valid
+responses, perfect instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run
+p95 between 1.84 and 2.07 seconds. This removes the three measured runtime blockers on that development slice.
+It is deliberately not release evidence: the full matrix must be persisted again under v4, the corpus still
+needs independent review, the held-out split remains untouched, and embedding access still blocks end-to-end
+recall evidence.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

@@ -166,10 +166,12 @@ general-purpose model may cover generation, expansion, vision, maintenance, and 
 
 The reranker supports two explicit modes. `mode: "endpoint"` calls a native cross-encoder at `/rerank`.
 `mode: "llm"` sends a bounded listwise request through the ordinary generative endpoint. The latter uses opaque
-per-request candidate ids, treats candidate text as untrusted JSON data, requires every candidate exactly once,
-canonicalizes the coarse relevance grades, and preserves the untouched fusion order with typed `rerank_failed`
-degradation if the response is missing, duplicated, invented, or malformed. The model's ordering is preserved
-within each grade; grades are authoritative across grades because the same grades decide qualification.
+per-request candidate ids, constrains strict decoding to that request's exact id set, treats candidate text as
+untrusted JSON data, requires every candidate exactly once, canonicalizes the coarse relevance grades, and
+preserves the untouched fusion order with typed `rerank_failed` degradation if the response is missing,
+duplicated, invented, or malformed. The compact response keeps each id attached to its grade; the model's
+ordering is preserved within each grade, while grades remain authoritative across grades because they also
+decide qualification.
 
 Successful reranking also qualifies results. LLM grade `0` candidates are removed; native candidates below their
 calibrated relevance boundary are removed. Candidates outside the bounded `top_k` window are reported as
@@ -770,8 +772,9 @@ Matrix selection is deliberately separate from release. It chooses the least exp
 wins. The mechanical release gate still requires an explicitly selected held-out run, independent corpus
 review, a persisted artifact, end-to-end direct-answer candidate recall at the selected window, five
 repetitions, quality and exact-entity floors, valid/fallback-safe responses, perfect instruction-negative
-rejection, stable top-three results, and the latency budget. A useful development result can therefore
-recommend the next experiment without silently authorizing the setup preset.
+rejection, stable top-three results, and the latency budget. The selected prompt and schema must also match the
+current runtime contract, so refreshing an old artifact cannot authorize unbenchmarked code. A useful
+development result can therefore recommend the next experiment without silently authorizing the setup preset.
 
 The checked-in [development matrix](benchmarks/ranking/results/development-openai-luna-2026-08-22.json)
 selects Luna with `none` reasoning and 10 candidates: 0.965 nDCG@10, 100% median top-three overlap, and 2.89 s
@@ -782,6 +785,15 @@ embedding model produced 0 of 120 vectors in the configured environment, so cand
 not scored and the configuration gate failed. Increasing the frozen window to 20 or 40 reduced quality and
 raised p95 to 3.48 s and 6.24 s; `low` reasoning at 20 reached 0.937 nDCG and 7.12 s p95. The optional native
 reference reached 0.907 nDCG and 1.20 s p95.
+
+A subsequent development-only tuning pass replaced the verbose response entries with the versioned
+`akno-listwise-v4` / `compact-entries-v2` contract. Candidate ids are a per-request schema enum, and the prompt
+explicitly assigns grade 0 to instruction-only excerpts that carry no answer evidence. Across five targeted
+10-candidate repetitions, all 300 responses were valid, every instruction-bearing negative was rejected, every
+direct answer was retained, mean nDCG@10 was 0.959, and per-run p95 stayed between 1.84 s and 2.07 s. This clears
+the former response, instruction-safety, and latency blockers on the development slice, but it is not a persisted
+matrix and does not replace independent review, a fresh full matrix, held-out evidence, or end-to-end embedding
+evidence.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

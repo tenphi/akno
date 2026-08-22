@@ -1,4 +1,5 @@
 import type { AknoConfig, ReasoningEffort } from '../config/schema.ts';
+import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
 import { rankingCorpusCases } from './ranking-corpus.ts';
 import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import {
@@ -12,7 +13,7 @@ import {
   type RankingQualificationMetrics,
 } from './ranking.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v2';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v3';
 
 export interface RankingMatrixOptions {
   split?: RankingBenchSplit;
@@ -102,6 +103,7 @@ export interface RankingReleaseCheck {
     | 'held_out_split'
     | 'independent_review'
     | 'persisted_artifact'
+    | 'runtime_contract'
     | 'end_to_end_configuration'
     | 'end_to_end_candidate_recall'
     | 'end_to_end_ranked_recall'
@@ -318,6 +320,13 @@ export function evaluateRankingRelease(report: RankingMatrixReport): RankingRele
       'true',
     ),
     check('persisted_artifact', report.artifactPersisted, report.artifactPersisted, 'true'),
+    check(
+      'runtime_contract',
+      selected?.promptVersion === LLM_RERANK_PROMPT_VERSION &&
+        selected?.schemaVersion === LLM_RERANK_SCHEMA_VERSION,
+      selected ? `${selected.promptVersion}/${selected.schemaVersion}` : null,
+      `${LLM_RERANK_PROMPT_VERSION}/${LLM_RERANK_SCHEMA_VERSION}`,
+    ),
     check(
       'end_to_end_configuration',
       endToEndConfigurationMatches(report, selected),

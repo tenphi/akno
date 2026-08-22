@@ -64,7 +64,7 @@ export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
         exclude_irrelevant: true,
         top_k: 10,
         max_chars: 800,
-        max_output_tokens: 448,
+        max_output_tokens: 256,
         reasoning_effort: 'none',
       },
       expansion: {
