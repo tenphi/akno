@@ -81,6 +81,14 @@ const UNSUPPORTED_SCHEMA = /response_format|unsupported.*schema|unknown paramete
  *  second identical request will reproduce exactly. */
 const RETRYABLE_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
+/** Provider errors are useful diagnostics but may echo credentials or tenant identifiers. */
+export function redactProviderError(value: string): string {
+  return value
+    .replace(/\bBearer\s+[^\s"']+/gi, 'Bearer <redacted>')
+    .replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, '<redacted>')
+    .replace(/\b(proj|org|user|acct)_[A-Za-z0-9_-]+\b/g, '$1_<redacted>');
+}
+
 export class ModelClient {
   readonly #role: ResolvedModelRole;
   /** Learned on first rejection, then reused. Per client, so per role. */
@@ -212,7 +220,7 @@ export class ModelClient {
 
         status = response.status;
         retryAfter = response.headers.get('retry-after');
-        const detail = (await response.text().catch(() => '')).slice(0, 300);
+        const detail = redactProviderError(await response.text().catch(() => '')).slice(0, 300);
         last = {
           ok: false,
           value: null,

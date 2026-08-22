@@ -1,0 +1,1632 @@
+{
+  "kind": "ranking_end_to_end",
+  "schemaVersion": "ranking-end-to-end-v1",
+  "createdAt": "2026-08-22T11:25:50.819Z",
+  "development": true,
+  "releaseEligible": false,
+  "passed": false,
+  "split": "development",
+  "corpus": {
+    "queries": 60,
+    "sources": 120,
+    "categories": 8,
+    "version": "invented-ranking-v2",
+    "independentlyReviewed": false
+  },
+  "system": "llm",
+  "candidateCount": 10,
+  "excerptChars": 800,
+  "concurrency": 4,
+  "embedding": {
+    "provider": "openai",
+    "model": "text-embedding-3-small",
+    "available": false,
+    "totalChunks": 120,
+    "embeddedChunks": 0
+  },
+  "reranker": {
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "none",
+    "promptVersion": "akno-listwise-v2",
+    "schemaVersion": "complete-order-v1",
+    "available": false
+  },
+  "candidateGeneration": {
+    "directAnswerRecall": 0,
+    "mrrAt10": 0,
+    "successAt1": 0,
+    "successAt3": 0,
+    "byCategory": [
+      {
+        "category": "exact_entity",
+        "queries": 9,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "paraphrased_attribute",
+        "queries": 12,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "direct_answer",
+        "queries": 9,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "temporal",
+        "queries": 9,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "negation",
+        "queries": 6,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "ambiguous_identity",
+        "queries": 6,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "provenance",
+        "queries": 6,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "instruction_bearing",
+        "queries": 3,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      }
+    ],
+    "degradedQueries": 60,
+    "unavailableQueries": 60,
+    "p50LatencyMs": 0,
+    "p95LatencyMs": 0,
+    "maxLatencyMs": 0
+  },
+  "rankedRecall": {
+    "directAnswerRecall": 0,
+    "mrrAt10": 0,
+    "successAt1": 0,
+    "successAt3": 0,
+    "byCategory": [
+      {
+        "category": "exact_entity",
+        "queries": 9,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "paraphrased_attribute",
+        "queries": 12,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "direct_answer",
+        "queries": 9,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "temporal",
+        "queries": 9,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "negation",
+        "queries": 6,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "ambiguous_identity",
+        "queries": 6,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "provenance",
+        "queries": 6,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      },
+      {
+        "category": "instruction_bearing",
+        "queries": 3,
+        "directAnswerRecall": 0,
+        "mrrAt10": 0,
+        "successAt1": 0,
+        "successAt3": 0
+      }
+    ],
+    "degradedQueries": 60,
+    "unavailableQueries": 60,
+    "p50LatencyMs": 0,
+    "p95LatencyMs": 0,
+    "maxLatencyMs": 0
+  },
+  "rerankFallbackRate": 0,
+  "queries": [
+    {
+      "queryId": "bo-policy-issuer-paraphrased_attribute-05",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "bo-policy-issuer-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-policy-issuer-temporal-04",
+      "category": "temporal",
+      "directAnswerId": "bo-policy-issuer-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-policy-issuer-ambiguous_identity-03",
+      "category": "ambiguous_identity",
+      "directAnswerId": "bo-policy-issuer-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-policy-issuer-exact_entity-04",
+      "category": "exact_entity",
+      "directAnswerId": "bo-policy-issuer-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-renewal-amount-paraphrased_attribute-06",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "vulpine-renewal-amount-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-renewal-amount-temporal-05",
+      "category": "temporal",
+      "directAnswerId": "vulpine-renewal-amount-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-renewal-amount-ambiguous_identity-04",
+      "category": "ambiguous_identity",
+      "directAnswerId": "vulpine-renewal-amount-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-renewal-amount-exact_entity-05",
+      "category": "exact_entity",
+      "directAnswerId": "vulpine-renewal-amount-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-start-direct_answer-04",
+      "category": "direct_answer",
+      "directAnswerId": "vulpine-coverage-start-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-start-temporal-06",
+      "category": "temporal",
+      "directAnswerId": "vulpine-coverage-start-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-start-provenance-03",
+      "category": "provenance",
+      "directAnswerId": "vulpine-coverage-start-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-start-exact_entity-06",
+      "category": "exact_entity",
+      "directAnswerId": "vulpine-coverage-start-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-place-direct_answer-05",
+      "category": "direct_answer",
+      "directAnswerId": "blackwater-meeting-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-place-negation-03",
+      "category": "negation",
+      "directAnswerId": "blackwater-meeting-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-place-provenance-04",
+      "category": "provenance",
+      "directAnswerId": "blackwater-meeting-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-place-paraphrased_attribute-07",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "blackwater-meeting-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-date-direct_answer-06",
+      "category": "direct_answer",
+      "directAnswerId": "blackwater-meeting-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-date-negation-04",
+      "category": "negation",
+      "directAnswerId": "blackwater-meeting-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-date-instruction_bearing-02",
+      "category": "instruction_bearing",
+      "directAnswerId": "blackwater-meeting-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-meeting-date-paraphrased_attribute-08",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "blackwater-meeting-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-ferry-time-temporal-07",
+      "category": "temporal",
+      "directAnswerId": "blackwater-ferry-time-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-ferry-time-ambiguous_identity-05",
+      "category": "ambiguous_identity",
+      "directAnswerId": "blackwater-ferry-time-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-ferry-time-exact_entity-07",
+      "category": "exact_entity",
+      "directAnswerId": "blackwater-ferry-time-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "blackwater-ferry-time-paraphrased_attribute-09",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "blackwater-ferry-time-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "ada-renewal-date-temporal-08",
+      "category": "temporal",
+      "directAnswerId": "ada-renewal-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "ada-renewal-date-ambiguous_identity-06",
+      "category": "ambiguous_identity",
+      "directAnswerId": "ada-renewal-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "ada-renewal-date-exact_entity-08",
+      "category": "exact_entity",
+      "directAnswerId": "ada-renewal-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "ada-renewal-date-paraphrased_attribute-10",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "ada-renewal-date-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-deductible-temporal-09",
+      "category": "temporal",
+      "directAnswerId": "bo-deductible-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-deductible-provenance-05",
+      "category": "provenance",
+      "directAnswerId": "bo-deductible-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-deductible-exact_entity-09",
+      "category": "exact_entity",
+      "directAnswerId": "bo-deductible-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-deductible-direct_answer-07",
+      "category": "direct_answer",
+      "directAnswerId": "bo-deductible-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-payment-frequency-negation-05",
+      "category": "negation",
+      "directAnswerId": "vulpine-payment-frequency-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-payment-frequency-provenance-06",
+      "category": "provenance",
+      "directAnswerId": "vulpine-payment-frequency-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-payment-frequency-paraphrased_attribute-11",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "vulpine-payment-frequency-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-payment-frequency-direct_answer-08",
+      "category": "direct_answer",
+      "directAnswerId": "vulpine-payment-frequency-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-manual-revision-negation-06",
+      "category": "negation",
+      "directAnswerId": "qx100-manual-revision-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-manual-revision-instruction_bearing-03",
+      "category": "instruction_bearing",
+      "directAnswerId": "qx100-manual-revision-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-manual-revision-paraphrased_attribute-12",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "qx100-manual-revision-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-manual-revision-direct_answer-09",
+      "category": "direct_answer",
+      "directAnswerId": "qx100-manual-revision-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-ambiguous_identity-07",
+      "category": "ambiguous_identity",
+      "directAnswerId": "vulpine-lantern-exclusion-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-exact_entity-10",
+      "category": "exact_entity",
+      "directAnswerId": "vulpine-lantern-exclusion-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-paraphrased_attribute-13",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "vulpine-lantern-exclusion-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-temporal-10",
+      "category": "temporal",
+      "directAnswerId": "vulpine-lantern-exclusion-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-service-place-ambiguous_identity-08",
+      "category": "ambiguous_identity",
+      "directAnswerId": "qx100-service-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-service-place-exact_entity-11",
+      "category": "exact_entity",
+      "directAnswerId": "qx100-service-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-service-place-paraphrased_attribute-14",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "qx100-service-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-service-place-temporal-11",
+      "category": "temporal",
+      "directAnswerId": "qx100-service-place-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-end-provenance-07",
+      "category": "provenance",
+      "directAnswerId": "vulpine-coverage-end-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-end-exact_entity-12",
+      "category": "exact_entity",
+      "directAnswerId": "vulpine-coverage-end-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-end-direct_answer-10",
+      "category": "direct_answer",
+      "directAnswerId": "vulpine-coverage-end-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "vulpine-coverage-end-temporal-12",
+      "category": "temporal",
+      "directAnswerId": "vulpine-coverage-end-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-source-provenance-provenance-08",
+      "category": "provenance",
+      "directAnswerId": "qx100-source-provenance-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-source-provenance-paraphrased_attribute-15",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "qx100-source-provenance-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-source-provenance-direct_answer-11",
+      "category": "direct_answer",
+      "directAnswerId": "qx100-source-provenance-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "qx100-source-provenance-negation-07",
+      "category": "negation",
+      "directAnswerId": "qx100-source-provenance-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-receipt-owner-instruction_bearing-04",
+      "category": "instruction_bearing",
+      "directAnswerId": "bo-receipt-owner-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-receipt-owner-paraphrased_attribute-16",
+      "category": "paraphrased_attribute",
+      "directAnswerId": "bo-receipt-owner-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-receipt-owner-direct_answer-12",
+      "category": "direct_answer",
+      "directAnswerId": "bo-receipt-owner-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    },
+    {
+      "queryId": "bo-receipt-owner-negation-08",
+      "category": "negation",
+      "directAnswerId": "bo-receipt-owner-direct",
+      "candidateOrder": [],
+      "candidateRank": null,
+      "candidateStatus": "unavailable",
+      "candidateDegraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "candidateLatencyMs": 0,
+      "rankedOrder": [],
+      "rankedRank": null,
+      "rankedStatus": "unavailable",
+      "degraded": [
+        "embedding_failed",
+        "partial_index",
+        "no_vector_index"
+      ],
+      "rerankFallback": false,
+      "rankedLatencyMs": 0
+    }
+  ]
+}

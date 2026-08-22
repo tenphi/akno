@@ -1193,6 +1193,23 @@ The median pairwise top-three overlap measures whether the user-visible head of 
 runs. The selector prefers `none` unless `low` gains more than 0.01 nDCG@10, then prefers the smallest
 equivalent candidate window.
 
+`akno bench ranking --track end-to-end --matrix-artifact <matrix> --output <result>` closes the gap between
+the frozen pool and real recall. It writes the invented 120-source corpus to a temporary knowledge base, indexes
+it with the selected embedding role, measures direct-answer recall at the candidate-window boundary, reopens the
+same derived index read-only with the selected LLM reranker, and measures the final assembled result. The
+configured knowledge base is never opened or copied.
+
+When a matrix selects OpenAI, the track defaults to `text-embedding-3-small` at 1,536 dimensions and uses the
+matrix's `gpt-5.6-luna` selection on that same provider. Its artifact binds both model receipts to the corpus,
+split, candidate count, excerpt size, reasoning effort, prompt, and schema. The embedding model must produce a
+vector for every indexed chunk before recall begins. A disabled, denied, or partial embedding pass records the
+embedded/total counts, marks the role unavailable, and stops before 60 repeated query calls. In particular,
+lexical degradation cannot masquerade as end-to-end evidence for a model that did not run.
+
+Candidate generation and final ranking have separate recall, MRR, success, degradation, availability, and
+latency fields. Stable failed-case ids show whether an answer never entered the candidate window or entered and
+was later lost. Reports contain no query text, source text, provider response body, endpoint, or credential.
+
 Selection is not authorization. A variant with at least one valid response can remain in the tuning comparison
 so reliability failures do not erase the evidence about it. The separate mechanical release gate then checks
 the held-out split, independent corpus review, persisted artifact, end-to-end direct-answer candidate recall at
@@ -1204,10 +1221,11 @@ development artifacts remain tuning evidence rather than a recommended preset.
 The first persisted five-run development matrix selected Luna `none` with 10 candidates. Its 0.965 nDCG@10 and
 100% median top-three overlap passed the quality and stability checks, and every fallback preserved fusion
 order. It still missed response validity and instruction safety at 99.33% each, plus the 2.5-second latency gate
-with a 2.89-second p95; end-to-end direct-answer candidate recall is not measured yet. Twenty and 40 candidates
-were slower and less accurate; `low` reasoning at 20 was also slower and less accurate. These measurements
-narrow the next work to response reliability, candidate-generation coverage, and hot-path latency—not more
-reasoning or a larger candidate window.
+with a 2.89-second p95. Its first single-endpoint end-to-end run embedded 0 of 120 chunks because the configured
+provider did not make the selected embedding model available; the benchmark therefore stopped without scoring
+candidate or ranked recall. Twenty and 40 frozen candidates were slower and less accurate; `low` reasoning at
+20 was also slower and less accurate. The remaining work is now explicit: embedding access, response
+reliability, independent review, held-out evidence, and hot-path latency—not more reasoning or a larger window.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

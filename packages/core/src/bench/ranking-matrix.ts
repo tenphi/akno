@@ -1,5 +1,6 @@
 import type { AknoConfig, ReasoningEffort } from '../config/schema.ts';
 import { rankingCorpusCases } from './ranking-corpus.ts';
+import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import {
   runRankingBench,
   type RankingBenchReport,
@@ -11,7 +12,7 @@ import {
   type RankingQualificationMetrics,
 } from './ranking.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v1';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v2';
 
 export interface RankingMatrixOptions {
   split?: RankingBenchSplit;
@@ -75,8 +76,25 @@ export interface RankingMatrixSelection {
 }
 
 export interface RankingEndToEndEvidence {
+  split: RankingBenchSplit;
+  corpusVersion: string;
   candidateCount: RankingCandidateCount;
-  directAnswerRecall: number;
+  directAnswerCandidateRecall: number;
+  directAnswerRankedRecall: number;
+  candidateDegradedQueries: number;
+  rankedDegradedQueries: number;
+  rerankFallbackRate: number;
+  embeddingProvider: string | null;
+  embeddingModel: string | null;
+  embeddingAvailable: boolean;
+  totalChunks: number;
+  embeddedChunks: number;
+  rerankerProvider: string | null;
+  rerankerModel: string | null;
+  rerankerAvailable: boolean;
+  reasoningEffort: ReasoningEffort;
+  promptVersion: string;
+  schemaVersion: string;
 }
 
 export interface RankingReleaseCheck {
@@ -84,7 +102,10 @@ export interface RankingReleaseCheck {
     | 'held_out_split'
     | 'independent_review'
     | 'persisted_artifact'
+    | 'end_to_end_configuration'
     | 'end_to_end_candidate_recall'
+    | 'end_to_end_ranked_recall'
+    | 'end_to_end_integrity'
     | 'five_runs'
     | 'ndcg_gain'
     | 'category_regression'
@@ -211,6 +232,55 @@ export function markRankingMatrixPersisted(report: RankingMatrixReport): Ranking
   });
 }
 
+export function attachRankingEndToEndEvidence(
+  matrix: RankingMatrixReport,
+  report: RankingEndToEndReport,
+): RankingMatrixReport {
+  if (report.system !== 'llm') throw new Error('end-to-end release evidence must exercise the LLM reranker');
+  if (report.schemaVersion !== 'ranking-end-to-end-v1') {
+    throw new Error('unsupported end-to-end artifact schema');
+  }
+  if (matrix.split !== report.split) throw new Error('matrix and end-to-end splits do not match');
+  const selected = matrix.selection
+    ? (matrix.variants.find((variant) => variant.id === matrix.selection!.variantId) ?? null)
+    : null;
+  if (!selected) throw new Error('matrix has no selected ranking configuration');
+  if (
+    selected.candidateCount !== report.candidateCount ||
+    selected.reasoningEffort !== report.reranker.reasoningEffort ||
+    selected.provider !== report.reranker.provider ||
+    selected.model !== report.reranker.model ||
+    selected.promptVersion !== report.reranker.promptVersion ||
+    selected.schemaVersion !== report.reranker.schemaVersion
+  ) {
+    throw new Error('end-to-end run does not match the selected ranking configuration');
+  }
+  return refreshRankingMatrixReport({
+    ...matrix,
+    endToEndEvidence: {
+      split: report.split,
+      corpusVersion: report.corpus.version,
+      candidateCount: report.candidateCount,
+      directAnswerCandidateRecall: report.candidateGeneration.directAnswerRecall,
+      directAnswerRankedRecall: report.rankedRecall.directAnswerRecall,
+      candidateDegradedQueries: report.candidateGeneration.degradedQueries,
+      rankedDegradedQueries: report.rankedRecall.degradedQueries,
+      rerankFallbackRate: report.rerankFallbackRate,
+      embeddingProvider: report.embedding.provider,
+      embeddingModel: report.embedding.model,
+      embeddingAvailable: report.embedding.available,
+      totalChunks: report.embedding.totalChunks,
+      embeddedChunks: report.embedding.embeddedChunks,
+      rerankerProvider: report.reranker.provider,
+      rerankerModel: report.reranker.model,
+      rerankerAvailable: report.reranker.available,
+      reasoningEffort: report.reranker.reasoningEffort!,
+      promptVersion: report.reranker.promptVersion!,
+      schemaVersion: report.reranker.schemaVersion!,
+    },
+  });
+}
+
 /** Re-derive every decision field from stored measurements after a gate implementation changes. */
 export function refreshRankingMatrixReport(report: RankingMatrixReport): RankingMatrixReport {
   const variants = report.variants.map((variant) => ({
@@ -219,6 +289,7 @@ export function refreshRankingMatrixReport(report: RankingMatrixReport): Ranking
   }));
   const refreshed: RankingMatrixReport = {
     ...report,
+    schemaVersion: RANKING_MATRIX_SCHEMA_VERSION,
     variants,
     selection: selectConfiguration(variants),
     endToEndEvidence: report.endToEndEvidence ?? null,
@@ -248,11 +319,34 @@ export function evaluateRankingRelease(report: RankingMatrixReport): RankingRele
     ),
     check('persisted_artifact', report.artifactPersisted, report.artifactPersisted, 'true'),
     check(
+      'end_to_end_configuration',
+      endToEndConfigurationMatches(report, selected),
+      report.endToEndEvidence !== null,
+      'same split, corpus, and selected configuration with a fully embedded index and both models available',
+    ),
+    check(
       'end_to_end_candidate_recall',
       report.endToEndEvidence?.candidateCount === report.selection?.candidateCount &&
-        report.endToEndEvidence?.directAnswerRecall === 1,
-      report.endToEndEvidence?.directAnswerRecall ?? null,
+        report.endToEndEvidence?.directAnswerCandidateRecall === 1,
+      report.endToEndEvidence?.directAnswerCandidateRecall ?? null,
       '1.0 at the selected candidate count',
+    ),
+    check(
+      'end_to_end_ranked_recall',
+      report.endToEndEvidence?.candidateCount === report.selection?.candidateCount &&
+        report.endToEndEvidence?.directAnswerRankedRecall === 1,
+      report.endToEndEvidence?.directAnswerRankedRecall ?? null,
+      '1.0 after reranking and assembly',
+    ),
+    check(
+      'end_to_end_integrity',
+      report.endToEndEvidence?.candidateDegradedQueries === 0 &&
+        report.endToEndEvidence?.rankedDegradedQueries === 0 &&
+        report.endToEndEvidence?.rerankFallbackRate === 0,
+      report.endToEndEvidence
+        ? report.endToEndEvidence.candidateDegradedQueries + report.endToEndEvidence.rankedDegradedQueries
+        : null,
+      'zero degraded queries and zero rerank fallbacks',
     ),
     check('five_runs', (selected?.runCount ?? 0) >= 5, selected?.runCount ?? 0, 'at least 5'),
     check(
@@ -404,6 +498,31 @@ function hasComparableMeasurements(variant: RankingMatrixVariant): boolean {
 function selectionUsesCheapestEquivalent(report: RankingMatrixReport): boolean {
   const expected = selectConfiguration(report.variants);
   return expected !== null && report.selection?.variantId === expected.variantId;
+}
+
+function endToEndConfigurationMatches(
+  report: RankingMatrixReport,
+  selected: RankingMatrixVariant | null,
+): boolean {
+  const evidence = report.endToEndEvidence;
+  return Boolean(
+    evidence &&
+    selected &&
+    evidence.split === report.split &&
+    evidence.corpusVersion === report.corpus.version &&
+    evidence.candidateCount === selected.candidateCount &&
+    evidence.embeddingAvailable &&
+    evidence.totalChunks > 0 &&
+    evidence.embeddedChunks === evidence.totalChunks &&
+    evidence.embeddingProvider === selected.provider &&
+    evidence.embeddingModel !== null &&
+    evidence.rerankerAvailable &&
+    evidence.rerankerProvider === selected.provider &&
+    evidence.rerankerModel === selected.model &&
+    evidence.reasoningEffort === selected.reasoningEffort &&
+    evidence.promptVersion === selected.promptVersion &&
+    evidence.schemaVersion === selected.schemaVersion,
+  );
 }
 
 function stabilityFor(reports: RankingBenchReport[]): number | null {

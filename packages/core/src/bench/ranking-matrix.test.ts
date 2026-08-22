@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { AknoConfig } from '../config/schema.ts';
+import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import {
+  attachRankingEndToEndEvidence,
   evaluateRankingRelease,
   markRankingMatrixPersisted,
   medianTop3Overlap,
@@ -47,6 +49,12 @@ describe('ranking benchmark matrix', () => {
       },
     };
     expect(evaluateRankingRelease(expensiveSelection).blockers).toContain('cheapest_equivalent_effort');
+
+    const partialIndex = {
+      ...persisted,
+      endToEndEvidence: { ...persisted.endToEndEvidence!, embeddedChunks: 119 },
+    };
+    expect(evaluateRankingRelease(partialIndex).blockers).toContain('end_to_end_configuration');
   });
 
   it('can exercise the matrix without network when every model is unavailable', async () => {
@@ -55,7 +63,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v1');
+    expect(report.schemaVersion).toBe('ranking-matrix-v2');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -78,6 +86,26 @@ describe('ranking benchmark matrix', () => {
       reasoningEffort: 'none',
     });
   });
+
+  it('attaches only end-to-end evidence for the selected configuration', () => {
+    const matrix = { ...passingReport(), endToEndEvidence: null };
+    const endToEnd = passingEndToEndReport();
+
+    const attached = attachRankingEndToEndEvidence(matrix, endToEnd);
+
+    expect(attached.endToEndEvidence).toMatchObject({
+      candidateCount: 20,
+      directAnswerCandidateRecall: 1,
+      directAnswerRankedRecall: 1,
+      candidateDegradedQueries: 0,
+      rankedDegradedQueries: 0,
+      rerankFallbackRate: 0,
+    });
+    expect(attached.releaseGate.blockers).toEqual(['persisted_artifact']);
+    expect(() => attachRankingEndToEndEvidence(matrix, { ...endToEnd, candidateCount: 10 })).toThrow(
+      'does not match',
+    );
+  });
 });
 
 function passingReport(): RankingMatrixReport {
@@ -85,7 +113,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v1',
+    schemaVersion: 'ranking-matrix-v2',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -105,7 +133,27 @@ function passingReport(): RankingMatrixReport {
       reasoningEffort: 'none',
       rationale: 'Invented passing fixture.',
     },
-    endToEndEvidence: { candidateCount: 20, directAnswerRecall: 1 },
+    endToEndEvidence: {
+      split: 'test',
+      corpusVersion: 'invented-ranking-v2',
+      candidateCount: 20,
+      directAnswerCandidateRecall: 1,
+      directAnswerRankedRecall: 1,
+      candidateDegradedQueries: 0,
+      rankedDegradedQueries: 0,
+      rerankFallbackRate: 0,
+      embeddingProvider: 'invented-provider',
+      embeddingModel: 'invented-embedding-model',
+      embeddingAvailable: true,
+      totalChunks: 120,
+      embeddedChunks: 120,
+      rerankerProvider: 'invented-provider',
+      rerankerModel: 'invented-model',
+      rerankerAvailable: true,
+      reasoningEffort: 'none',
+      promptVersion: 'invented-prompt-v1',
+      schemaVersion: 'invented-schema-v1',
+    },
     artifactPersisted: false,
     releaseEligible: false,
     releaseGate: { passed: false, checks: [], blockers: [] },
@@ -161,5 +209,59 @@ function variant(id: string, reasoningEffort: 'none' | 'low', ndcgAt10: number):
     maxLatencyMs: 2222,
     medianTop3Overlap: 1,
     runs: [],
+  };
+}
+
+function passingEndToEndReport(): RankingEndToEndReport {
+  const stage = {
+    directAnswerRecall: 1,
+    mrrAt10: 1,
+    successAt1: 1,
+    successAt3: 1,
+    byCategory: [],
+    degradedQueries: 0,
+    unavailableQueries: 0,
+    p50LatencyMs: 1111,
+    p95LatencyMs: 2222,
+    maxLatencyMs: 2222,
+  };
+  return {
+    kind: 'ranking_end_to_end',
+    schemaVersion: 'ranking-end-to-end-v1',
+    createdAt: '2027-01-02T03:04:05.000Z',
+    development: true,
+    releaseEligible: false,
+    passed: true,
+    split: 'test',
+    corpus: {
+      queries: 20,
+      sources: 120,
+      categories: 8,
+      version: 'invented-ranking-v2',
+      independentlyReviewed: true,
+    },
+    system: 'llm',
+    candidateCount: 20,
+    excerptChars: 800,
+    concurrency: 4,
+    embedding: {
+      provider: 'invented-provider',
+      model: 'invented-embedding-model',
+      available: true,
+      totalChunks: 120,
+      embeddedChunks: 120,
+    },
+    reranker: {
+      provider: 'invented-provider',
+      model: 'invented-model',
+      reasoningEffort: 'none',
+      promptVersion: 'invented-prompt-v1',
+      schemaVersion: 'invented-schema-v1',
+      available: true,
+    },
+    candidateGeneration: stage,
+    rankedRecall: stage,
+    rerankFallbackRate: 0,
+    queries: [],
   };
 }

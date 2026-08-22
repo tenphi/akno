@@ -719,6 +719,25 @@ The artifact contains aggregate metrics, prompt/schema identifiers, and stable i
 top three results. It contains no knowledge-base text, endpoint URL, credential, or raw model request. Writes
 are atomic, so an interrupted benchmark cannot leave a result that appears complete.
 
+The end-to-end track then tests the matrix selection through the production index and recall path. It creates a
+temporary knowledge base containing the same invented 120 sources, embeds it, measures whether each direct
+answer reaches the selected candidate window, and separately measures the final assembled order after
+reranking. It never opens the configured knowledge base. Passing `--matrix-artifact` binds the run to that
+matrix's exact split, candidate count, excerpt limit, provider, model, reasoning effort, prompt, and schema, then
+attaches the evidence atomically:
+
+```bash
+akno bench ranking --track end-to-end \
+  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json \
+  --output benchmarks/ranking/results/development-end-to-end-openai-luna.json
+```
+
+For an OpenAI matrix selection, the single-endpoint defaults are `text-embedding-3-small` at 1,536 dimensions
+plus `gpt-5.6-luna`; both roles must use the same provider. The report records embedded/total chunks and fails
+before candidate queries when the embedding role is disabled, denied, or incomplete. This prevents lexical
+fallback from being reported as evidence for an embedding model that never ran. Candidate misses and ranking
+misses remain separate because a reranker cannot recover evidence absent from its input window.
+
 Development is the default. `--split test` explicitly selects the held-out 20 queries; prompt work must use the
 default split so test evidence is not quietly turned into tuning data. Only generic distractors and adversarial
 snippets cross the boundary—answer, support, marginal, and stale fact sources do not.
@@ -741,10 +760,11 @@ The checked-in [development matrix](benchmarks/ranking/results/development-opena
 selects Luna with `none` reasoning and 10 candidates: 0.965 nDCG@10, 100% median top-three overlap, and 2.89 s
 p95 latency across five runs. It is not release evidence. Response validity and instruction-negative rejection
 were both 99.33%, just below their gates; latency missed 2.5 s; the corpus is unreviewed; and the held-out split
-remains untouched. End-to-end retrieval has not yet proved that the direct answer reaches the selected
-10-candidate window. Increasing the window to 20 or 40 reduced quality and raised p95 to 3.48 s and 6.24 s;
-`low` reasoning at 20 reached 0.937 nDCG and 7.12 s p95. The optional native reference reached 0.907 nDCG and
-1.20 s p95.
+remains untouched. The attached end-to-end run stopped honestly at its prerequisite: the selected OpenAI
+embedding model produced 0 of 120 vectors in the configured environment, so candidate and ranked recall were
+not scored and the configuration gate failed. Increasing the frozen window to 20 or 40 reduced quality and
+raised p95 to 3.48 s and 6.24 s; `low` reasoning at 20 reached 0.937 nDCG and 7.12 s p95. The optional native
+reference reached 0.907 nDCG and 1.20 s p95.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

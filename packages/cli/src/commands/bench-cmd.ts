@@ -2,12 +2,15 @@ import { randomUUID } from 'node:crypto';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
+  attachRankingEndToEndEvidence,
   markRankingMatrixPersisted,
   open,
+  refreshRankingMatrixReport,
   runBench,
   runLlmRankingProbe,
   runMixedRetrievalBench,
   runRankingBench,
+  runRankingEndToEnd,
   runRankingMatrix,
   type Akno,
   type MixedRetrievalBenchReport,
@@ -16,6 +19,7 @@ import {
   type RankingBenchSystem,
   type RankingCandidateCount,
   type RankingExcerptChars,
+  type RankingEndToEndReport,
   type RankingMatrixReport,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
@@ -41,6 +45,9 @@ const BENCH_HELP = `akno bench [options]
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
                       Luna low at 20 candidates with repeated stability checks.
+  ranking --track end-to-end
+                      Index the invented corpus, measure candidate-window recall,
+                      then run reranking and assembly over the same derived index.
     --split <name>    development, test, or all (default development). Test is
                       held out from prompt tuning and must be selected explicitly.
     --candidates <n>  10, 20, or 40 for a single-system run (default 20).
@@ -49,9 +56,18 @@ const BENCH_HELP = `akno bench [options]
                       matrix default 4). Latency remains per request.
     --runs <n>        Repetitions per LLM matrix variant, 1..10 (default 5).
     --skip-native     Omit the optional native reference from a matrix.
-    --output <path>   Atomically persist the content-safe matrix artifact.
+    --matrix-artifact <path>
+                      Use its selected configuration and atomically attach
+                      end-to-end evidence to that matrix artifact.
+    --output <path>   Atomically persist the content-safe result artifact.
     --provider <name> Configured provider (default openai).
     --model <id>      Generative model (default gpt-5.6-luna).
+    --embedding-provider <name>
+                      Embedding provider for end-to-end recall.
+    --embedding-model <id>
+                      Embedding model for end-to-end recall.
+    --embedding-dimensions <n>
+                      Stored vector dimensions for that embedding model.
     --reasoning <v>   none, low, medium, high, xhigh, or max (default none).
   --write             Also measure the restart sweep, which needs the write
                       handle. Skipped otherwise rather than measured wrongly.
@@ -65,8 +81,13 @@ export async function benchCommand(argv: string[]): Promise<number> {
     probe: boolean;
     matrix: boolean;
     'skip-native': boolean;
+    track?: string;
+    'matrix-artifact'?: string;
     provider?: string;
     model?: string;
+    'embedding-provider'?: string;
+    'embedding-model'?: string;
+    'embedding-dimensions'?: string;
     reasoning?: string;
     split?: string;
     system?: string;
@@ -82,8 +103,13 @@ export async function benchCommand(argv: string[]): Promise<number> {
     probe: { type: 'boolean', default: false },
     matrix: { type: 'boolean', default: false },
     'skip-native': { type: 'boolean', default: false },
+    track: { type: 'string' },
+    'matrix-artifact': { type: 'string' },
     provider: { type: 'string' },
     model: { type: 'string' },
+    'embedding-provider': { type: 'string' },
+    'embedding-model': { type: 'string' },
+    'embedding-dimensions': { type: 'string' },
     reasoning: { type: 'string' },
     split: { type: 'string' },
     system: { type: 'string' },
@@ -107,9 +133,115 @@ export async function benchCommand(argv: string[]): Promise<number> {
     }
     const { loadConfig } = await import('@tenphi/akno-core');
     const config = loadConfig(openOptionsFrom(values));
+    if (values.track) {
+      if (values.track !== 'end-to-end') {
+        fail(`invalid ranking track: ${values.track}`);
+        return 2;
+      }
+      if (values.matrix || values.probe || values.system || values.runs || values['skip-native']) {
+        fail('--track cannot be combined with --matrix, --probe, --system, --runs, or --skip-native');
+        return 2;
+      }
+      let matrix: RankingMatrixReport | null = null;
+      if (values['matrix-artifact']) {
+        matrix = refreshRankingMatrixReport(await readRankingMatrixArtifact(values['matrix-artifact']));
+        if (!matrix.selection) {
+          fail('the matrix artifact has no selected configuration');
+          return 2;
+        }
+        if (values.split && values.split !== matrix.split) {
+          fail(`--split ${values.split} does not match the matrix split ${matrix.split}`);
+          return 2;
+        }
+      }
+      const selection = matrix?.selection ?? null;
+      const selectedVariant = selection
+        ? (matrix!.variants.find((variant) => variant.id === selection.variantId) ?? null)
+        : null;
+      const split = parseRankingSplit(values.split ?? matrix?.split);
+      const candidateCount = parseCandidateCount(
+        values.candidates ?? (selection ? String(selection.candidateCount) : undefined),
+      );
+      const excerptChars = parseExcerptChars(
+        values['excerpt-chars'] ?? (selectedVariant ? String(selectedVariant.excerptChars) : undefined),
+      );
+      const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
+      const openAiPreset = selectedVariant?.provider === 'openai';
+      const embeddingDimensions = parseBoundedInteger(
+        values['embedding-dimensions'] ??
+          (openAiPreset ? '1536' : String(config.models.embedding.dimensions ?? 1024)),
+        1,
+        65_536,
+        'embedding dimensions',
+      );
+      if (
+        !split ||
+        !candidateCount ||
+        !excerptChars ||
+        concurrency === null ||
+        embeddingDimensions === null
+      ) {
+        return 2;
+      }
+      if (selection && values.candidates && candidateCount !== selection.candidateCount) {
+        fail('--candidates does not match the matrix selection');
+        return 2;
+      }
+      if (selectedVariant && values['excerpt-chars'] && excerptChars !== selectedVariant.excerptChars) {
+        fail('--excerpt-chars does not match the matrix selection');
+        return 2;
+      }
+      if (selection && values.reasoning && reasoning !== selection.reasoningEffort) {
+        fail('--reasoning does not match the matrix selection');
+        return 2;
+      }
+      if (selectedVariant && values.provider && values.provider !== selectedVariant.provider) {
+        fail('--provider does not match the matrix selection');
+        return 2;
+      }
+      if (selectedVariant && values.model && values.model !== selectedVariant.model) {
+        fail('--model does not match the matrix selection');
+        return 2;
+      }
+      const report = await runRankingEndToEnd(config, {
+        split,
+        candidateCount,
+        excerptChars,
+        ...(values.concurrency ? { concurrency } : {}),
+        embeddingProvider:
+          values['embedding-provider'] ??
+          (openAiPreset ? 'openai' : (config.models.embedding.provider?.name ?? 'local')),
+        embeddingModel:
+          values['embedding-model'] ??
+          (openAiPreset ? 'text-embedding-3-small' : (config.models.embedding.id ?? undefined)),
+        embeddingDimensions,
+        provider: values.provider ?? selectedVariant?.provider ?? 'openai',
+        model: values.model ?? selectedVariant?.model ?? 'gpt-5.6-luna',
+        reasoningEffort: values.reasoning ? reasoning : (selection?.reasoningEffort ?? reasoning),
+        ...(!values.json ? { onProgress: renderRankingEndToEndProgress() } : {}),
+      });
+      let artifactPath: string | null = null;
+      if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+      let matrixPath: string | null = null;
+      if (matrix && values['matrix-artifact']) {
+        matrix = attachRankingEndToEndEvidence(matrix, report);
+        matrixPath = await writeJsonArtifact(values['matrix-artifact'], matrix);
+      }
+      if (values.json) json(report);
+      else renderRankingEndToEnd(report, artifactPath, matrixPath, matrix);
+      return report.passed ? 0 : 1;
+    }
     if (values.matrix) {
-      if (values.probe || values.system || values.candidates || values.reasoning) {
-        fail('--matrix cannot be combined with --probe, --system, --candidates, or --reasoning');
+      if (
+        values.probe ||
+        values.system ||
+        values.candidates ||
+        values.reasoning ||
+        values['matrix-artifact']
+      ) {
+        fail(
+          '--matrix cannot be combined with --probe, --system, --candidates, --reasoning, or --matrix-artifact',
+        );
         return 2;
       }
       const split = parseRankingSplit(values.split);
@@ -135,7 +267,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
       let artifactPath: string | null = null;
       if (values.output) {
         report = markRankingMatrixPersisted(report);
-        artifactPath = await writeRankingArtifact(values.output, report);
+        artifactPath = await writeJsonArtifact(values.output, report);
       }
       if (values.json) json(report);
       else renderRankingMatrix(report, artifactPath);
@@ -184,8 +316,8 @@ export async function benchCommand(argv: string[]): Promise<number> {
     const excerptChars = parseExcerptChars(values['excerpt-chars']);
     const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
     if (!candidateCount || !excerptChars || concurrency === null) return 2;
-    if (values.output || values.runs || values['skip-native']) {
-      fail('--output, --runs, and --skip-native require --matrix');
+    if (values.output || values.runs || values['skip-native'] || values['matrix-artifact']) {
+      fail('--output, --runs, --skip-native, and --matrix-artifact require --matrix or --track');
       return 2;
     }
     const report = await runRankingBench(config, {
@@ -452,7 +584,99 @@ function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string |
   );
 }
 
-async function writeRankingArtifact(target: string, report: RankingMatrixReport): Promise<string> {
+function renderRankingEndToEnd(
+  report: RankingEndToEndReport,
+  artifactPath: string | null,
+  matrixPath: string | null,
+  matrix: RankingMatrixReport | null,
+): void {
+  heading(
+    `Ranking end-to-end — ${report.split}, ${report.corpus.queries} queries, ` +
+      `${report.candidateCount}-candidate window`,
+  );
+  line(
+    `  embedding              ${report.embedding.provider ?? 'unavailable'}/${report.embedding.model ?? 'unavailable'}` +
+      `${report.embedding.available ? '' : ' [unavailable]'}`,
+  );
+  line(`  embedded chunks        ${report.embedding.embeddedChunks}/${report.embedding.totalChunks}`);
+  line(
+    `  reranker               ${report.reranker.provider ?? 'unavailable'}/${report.reranker.model ?? 'unavailable'} ` +
+      `(${report.reranker.reasoningEffort ?? 'none'})${report.reranker.available ? '' : ' [unavailable]'}`,
+  );
+  if (report.embedding.available) {
+    line(`  candidate answer recall ${percent(report.candidateGeneration.directAnswerRecall)}`);
+    line(`  ranked answer recall    ${percent(report.rankedRecall.directAnswerRecall)}`);
+    line(
+      `  ranked success@1 / @3  ${percent(report.rankedRecall.successAt1)} / ${percent(report.rankedRecall.successAt3)}`,
+    );
+    line(`  ranked MRR@10           ${fixed(report.rankedRecall.mrrAt10)}`);
+    line(
+      `  candidate p50 / p95     ${Math.round(report.candidateGeneration.p50LatencyMs)}ms / ` +
+        `${Math.round(report.candidateGeneration.p95LatencyMs)}ms`,
+    );
+    line(
+      `  ranked p50 / p95        ${Math.round(report.rankedRecall.p50LatencyMs)}ms / ` +
+        `${Math.round(report.rankedRecall.p95LatencyMs)}ms`,
+    );
+    line(`  rerank fallback rate    ${percent(report.rerankFallbackRate)}`);
+  } else {
+    line('  recall                  not run — a complete embedding index is required');
+  }
+  line(
+    `  degraded queries        ${report.candidateGeneration.degradedQueries} candidate / ` +
+      `${report.rankedRecall.degradedQueries} ranked`,
+  );
+  const candidateMisses = report.queries.filter((query) => query.candidateRank === null);
+  const rankedMisses = report.queries.filter((query) => query.rankedRank === null);
+  if (report.embedding.available && candidateMisses.length > 0) {
+    line(
+      `  candidate misses        ${candidateMisses
+        .slice(0, 5)
+        .map((query) => query.queryId)
+        .join(', ')}`,
+    );
+  }
+  if (report.embedding.available && rankedMisses.length > 0) {
+    line(
+      `  ranked misses           ${rankedMisses
+        .slice(0, 5)
+        .map((query) => query.queryId)
+        .join(', ')}`,
+    );
+  }
+  if (artifactPath) line(`  artifact                ${artifactPath}`);
+  if (matrixPath) line(`  matrix updated           ${matrixPath}`);
+  if (matrix && matrix.releaseGate.blockers.length > 0) {
+    line(`  release blockers        ${matrix.releaseGate.blockers.join(', ')}`);
+  }
+  line(
+    `\n${report.passed ? style.green('end-to-end recall gate passed') : style.red('end-to-end recall gate failed')}`,
+  );
+  line(style.grey('Development evidence cannot substitute for independent review or a held-out run.'));
+}
+
+function renderRankingEndToEndProgress(): (progress: {
+  phase: 'index' | 'candidate_generation' | 'ranked_recall';
+  done: number;
+  total: number;
+}) => void {
+  return (progress) => {
+    if (progress.done !== 0 && progress.done !== progress.total) return;
+    const label = progress.phase.replaceAll('_', ' ');
+    line(`  ${label}  ${progress.done}/${progress.total}`);
+  };
+}
+
+async function readRankingMatrixArtifact(target: string): Promise<RankingMatrixReport> {
+  const absolute = path.resolve(target);
+  const parsed = JSON.parse(await fsp.readFile(absolute, 'utf8')) as Partial<RankingMatrixReport>;
+  if (parsed.kind !== 'ranking_matrix' || !Array.isArray(parsed.variants)) {
+    throw new Error(`${absolute} is not a ranking matrix artifact`);
+  }
+  return parsed as RankingMatrixReport;
+}
+
+async function writeJsonArtifact(target: string, report: unknown): Promise<string> {
   const absolute = path.resolve(target);
   await fsp.mkdir(path.dirname(absolute), { recursive: true });
   const temporary = `${absolute}.${process.pid}.${randomUUID()}.tmp`;

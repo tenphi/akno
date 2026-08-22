@@ -6,6 +6,7 @@ import {
   closeTruncatedJson,
   parseJsonLoose,
   parseRetryAfter,
+  redactProviderError,
   strictModeViolations,
   toEndpointSchema,
 } from './client.ts';
@@ -393,6 +394,33 @@ describe('retrying a rate limit', () => {
     const { requests, result } = await withServer([{ status: 401 }], {}, ask);
     expect(requests).toHaveLength(1);
     expect(result).toMatchObject({ ok: false, reason: 'request_failed' });
+  });
+
+  it('redacts provider resource identifiers and credentials from an error body', async () => {
+    const { result } = await withServer(
+      [
+        {
+          status: 403,
+          body: {
+            error: {
+              message:
+                'Project proj_inventedfixture123 in org_inventedfixture456 rejected Bearer invented-token and sk-inventedfixturesecret.',
+            },
+          },
+        },
+      ],
+      {},
+      ask,
+    );
+    const error = (result as { error: string }).error;
+    expect(error).toContain('proj_<redacted>');
+    expect(error).toContain('org_<redacted>');
+    expect(error).toContain('Bearer <redacted>');
+    expect(error).toContain('<redacted>');
+    expect(error).not.toContain('inventedfixture');
+    expect(redactProviderError('acct_inventedfixture789 user_inventedfixture000')).toBe(
+      'acct_<redacted> user_<redacted>',
+    );
   });
 
   it('does not retry when a caller-supplied budget has no room for the backoff', async () => {

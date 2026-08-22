@@ -1,6 +1,6 @@
 {
   "kind": "ranking_matrix",
-  "schemaVersion": "ranking-matrix-v1",
+  "schemaVersion": "ranking-matrix-v2",
   "createdAt": "2026-08-22T10:37:35.621Z",
   "split": "development",
   "corpus": {
@@ -8375,10 +8375,28 @@
         "target": "true"
       },
       {
+        "id": "end_to_end_configuration",
+        "passed": false,
+        "actual": true,
+        "target": "same split, corpus, and selected configuration with a fully embedded index and both models available"
+      },
+      {
         "id": "end_to_end_candidate_recall",
         "passed": false,
-        "actual": null,
+        "actual": 0,
         "target": "1.0 at the selected candidate count"
+      },
+      {
+        "id": "end_to_end_ranked_recall",
+        "passed": false,
+        "actual": 0,
+        "target": "1.0 after reranking and assembly"
+      },
+      {
+        "id": "end_to_end_integrity",
+        "passed": false,
+        "actual": 120,
+        "target": "zero degraded queries and zero rerank fallbacks"
       },
       {
         "id": "five_runs",
@@ -8444,11 +8462,34 @@
     "blockers": [
       "held_out_split",
       "independent_review",
+      "end_to_end_configuration",
       "end_to_end_candidate_recall",
+      "end_to_end_ranked_recall",
+      "end_to_end_integrity",
       "valid_responses",
       "instruction_safety",
       "latency"
     ]
   },
-  "endToEndEvidence": null
+  "endToEndEvidence": {
+    "split": "development",
+    "corpusVersion": "invented-ranking-v2",
+    "candidateCount": 10,
+    "directAnswerCandidateRecall": 0,
+    "directAnswerRankedRecall": 0,
+    "candidateDegradedQueries": 60,
+    "rankedDegradedQueries": 60,
+    "rerankFallbackRate": 0,
+    "embeddingProvider": "openai",
+    "embeddingModel": "text-embedding-3-small",
+    "embeddingAvailable": false,
+    "totalChunks": 120,
+    "embeddedChunks": 0,
+    "rerankerProvider": "openai",
+    "rerankerModel": "gpt-5.6-luna",
+    "rerankerAvailable": false,
+    "reasoningEffort": "none",
+    "promptVersion": "akno-listwise-v2",
+    "schemaVersion": "complete-order-v1"
+  }
 }

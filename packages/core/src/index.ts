@@ -45,6 +45,18 @@ export {
   type RankingQueryReport,
 } from './bench/ranking.ts';
 export {
+  RANKING_END_TO_END_SCHEMA_VERSION,
+  runRankingEndToEnd,
+  type RankingEndToEndCategoryReport,
+  type RankingEndToEndOptions,
+  type RankingEndToEndProgress,
+  type RankingEndToEndQueryReport,
+  type RankingEndToEndReport,
+  type RankingEndToEndStageReport,
+  type RankingEndToEndSystem,
+} from './bench/ranking-end-to-end.ts';
+export {
+  attachRankingEndToEndEvidence,
   evaluateRankingRelease,
   markRankingMatrixPersisted,
   refreshRankingMatrixReport,
