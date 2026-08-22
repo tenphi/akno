@@ -1220,7 +1220,7 @@ currently says `independentlyReviewed: false`, and a development split can never
 selected prompt and schema must also equal the current runtime versions, preventing an old artifact from
 authorizing changed ranking code. Development artifacts remain tuning evidence rather than a recommended preset.
 
-The current persisted five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.955
+The most recent full five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.955
 mean nDCG@10, 100% median top-three overlap, 99.67% valid responses, 100% direct-answer retention, and 2.17-second
 aggregate p95 latency. One invalid response fell back to the exact fusion order. At 20 and 40 candidates, `none`
 measured 0.952/0.893 nDCG and 3.20/5.74-second p95; `low` at 20 measured 0.943 nDCG and 5.45-second p95. The
@@ -1232,12 +1232,23 @@ together, so reasoning-enabled calls receive an additional task-level reserve; t
 still wins when it is lower. Without that reserve, the first full v4 attempt exhausted every `low` response
 before visible JSON and correctly produced no selection. The corrected matrix verifies both effort modes.
 
-The matrix now passes the development checks for a current persisted contract, five runs, quality, validity,
-fallback integrity, top-three stability, latency, and cheapest-equivalent selection. It remains non-release
-evidence: aggregate instruction-negative rejection was 99.67% rather than the required 100%, the corpus needs
-independent review, the held-out split remains untouched, and matching end-to-end evidence is absent. An older
-end-to-end run stopped when its configured embedding role produced 0 of 120 vectors; that proves honest
-prerequisite handling but cannot authorize the changed v4 runtime contract.
+Under its measured `compact-entries-v2` contract, the matrix passed the persisted-contract, five-run, quality,
+validity, fallback-integrity, top-three-stability, latency, and cheapest-equivalent checks. It missed perfect
+instruction-negative rejection at 99.67%. The runtime now uses `compact-entries-v3`, so that artifact is stale
+by design and no longer passes the current-contract check.
+
+The v3 live schema adds exact array cardinality to the per-request id enum. This prevents structured decoding
+from returning a valid prefix, while semantic validation still detects duplicates and invented ids. One bounded
+retry is allowed only after a complete response violates that permutation contract. Transport, configuration,
+and output-budget failures return immediately; a second semantic failure preserves exact fusion order and typed
+degradation. Latency sums both attempts so a recovered response does not hide its cost.
+
+Five targeted v3 development runs at the selected 10-candidate/no-reasoning shape produced 300/300 valid
+responses, perfect instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run
+p95 from 2.08 to 2.53 seconds. A fresh full v3 matrix remains necessary. The corpus also needs independent
+review, the held-out split is untouched, and matching end-to-end evidence is absent. An older end-to-end run
+stopped when its configured embedding role produced 0 of 120 vectors; that proves honest prerequisite handling
+but cannot authorize the current runtime contract.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

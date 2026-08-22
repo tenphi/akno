@@ -142,7 +142,7 @@ describe('experimental OpenAI minimum setup', () => {
         generative: {
           status: 'ok',
           promptVersion: 'akno-listwise-v4',
-          schemaVersion: 'compact-entries-v2',
+          schemaVersion: 'compact-entries-v3',
         },
       });
       expect(JSON.stringify(report)).not.toContain('sk-invented-fixture-key');

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ModelClient } from '../models/client.ts';
+import { toEndpointSchema, type ModelClient } from '../models/client.ts';
 import {
   llmRerankMessages,
   llmRerankSchema,
@@ -58,6 +58,72 @@ describe('prompted LLM reranking', () => {
         { index: 0, relevance: 1 },
       ],
     });
+  });
+
+  it('retries one invalid permutation and reports the total latency', async () => {
+    let calls = 0;
+    const model = {
+      chat: async () => {
+        calls++;
+        return {
+          ok: true,
+          value: JSON.stringify({
+            order:
+              calls === 1
+                ? [
+                    { id: 'c_K7vJ3pQx', grade: 3 },
+                    { id: 'c_K7vJ3pQx', grade: 1 },
+                  ]
+                : [
+                    { id: 'c_K7vJ3pQx', grade: 3 },
+                    { id: 'c_M2rT8nWa', grade: 1 },
+                  ],
+          }),
+          latencyMs: 11,
+        };
+      },
+    } as unknown as ModelClient;
+
+    const result = await rerankWithLlm(model, 'Which warranty applies?', candidates);
+
+    expect(calls).toBe(2);
+    expect(result).toMatchObject({ ok: true, latencyMs: 22 });
+  });
+
+  it('does not retry a transport failure', async () => {
+    let calls = 0;
+    const model = {
+      chat: async () => {
+        calls++;
+        return {
+          ok: false,
+          value: null,
+          reason: 'request_failed',
+          error: 'invented endpoint failure',
+          latencyMs: 11,
+        };
+      },
+    } as unknown as ModelClient;
+
+    const result = await rerankWithLlm(model, 'Which warranty applies?', candidates);
+
+    expect(calls).toBe(1);
+    expect(result).toMatchObject({ ok: false, reason: 'request_failed', latencyMs: 11 });
+  });
+
+  it('does not retry a syntactically invalid response', async () => {
+    let calls = 0;
+    const model = {
+      chat: async () => {
+        calls++;
+        return { ok: true, value: 'not json', latencyMs: 11 };
+      },
+    } as unknown as ModelClient;
+
+    const result = await rerankWithLlm(model, 'Which warranty applies?', candidates);
+
+    expect(calls).toBe(1);
+    expect(result).toMatchObject({ ok: false, reason: 'bad_response', latencyMs: 11 });
   });
 
   it.each([
@@ -130,6 +196,14 @@ describe('prompted LLM reranking', () => {
         ],
       }).success,
     ).toBe(false);
+    expect(
+      schema.safeParse({
+        order: [{ id: 'c_K7vJ3pQx', grade: 3 }],
+      }).success,
+    ).toBe(false);
+    expect(toEndpointSchema(schema)).toMatchObject({
+      properties: { order: { minItems: 2, maxItems: 2 } },
+    });
   });
 
   it('serializes candidate instructions as data under a fixed untrusted-content rule', () => {

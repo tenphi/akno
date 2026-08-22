@@ -776,7 +776,7 @@ rejection, stable top-three results, and the latency budget. The selected prompt
 current runtime contract, so refreshing an old artifact cannot authorize unbenchmarked code. A useful
 development result can therefore recommend the next experiment without silently authorizing the setup preset.
 
-The current checked-in [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
+The most recent full [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
 selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.955 mean nDCG@10, 100%
 median top-three overlap, 99.67% valid responses, 100% direct-answer retention, and 2.17 s aggregate p95
 latency. Its one invalid response preserved the original fusion order. The optional native reference reached
@@ -784,17 +784,24 @@ latency. Its one invalid response preserved the original fusion order. The optio
 at 20 reached 0.943 nDCG and 5.45 s p95. The smallest window without reasoning is therefore both the selected
 quality-equivalent configuration and the fastest prompted-ranking variant tested.
 
-This is tuning evidence, not release authorization. The v4 matrix passes the persisted-contract, five-run,
-quality, response-validity, fallback, stability, latency, and cheapest-equivalent checks. It still misses the
-perfect instruction-negative gate at 99.67%; the corpus is not independently reviewed; the held-out split is
-untouched; and no matching v4 end-to-end evidence is attached. The earlier end-to-end development run remains
-useful failure-handling evidence—it stopped when the selected embedding model produced 0 of 120 vectors—but it
-does not match the new prompt contract and cannot satisfy this matrix's release gate.
+That matrix was tuning evidence, not release authorization. Under its measured contract it passed the
+persisted-contract, five-run, quality, response-validity, fallback, stability, latency, and cheapest-equivalent
+checks, but missed perfect instruction-negative rejection at 99.67%. The runtime schema has since advanced, so
+the artifact is intentionally stale and no longer passes the current-contract check. The corpus also remains
+unreviewed, the held-out split is untouched, and no matching end-to-end evidence is attached.
 
-The compact `akno-listwise-v4` / `compact-entries-v2` contract uses per-request candidate-id enums and an
-explicit grade-0 rule for instruction-only excerpts. Completion limits also reserve extra space when reasoning
-is enabled, because OpenAI's completion budget includes hidden reasoning tokens as well as visible JSON. A role's
-configured output ceiling remains the hard cap.
+The current `akno-listwise-v4` / `compact-entries-v3` contract uses per-request candidate-id enums, requires
+the output array to have exactly the candidate count, and explicitly grades instruction-only excerpts as 0.
+Semantic validation still rejects duplicates and invented ids. A complete but invalid permutation receives one
+bounded retry; transport, configuration, and output-budget failures do not retry, and a second invalid response
+falls back to fusion. Five targeted 10-candidate development runs under v3 produced 300/300 valid responses,
+100% instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run p95 latency
+from 2.08 to 2.53 seconds. A fresh full v3 matrix is required to replace the stale artifact.
+
+Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
+hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The
+earlier end-to-end development run remains useful failure-handling evidence—it stopped when the selected
+embedding model produced 0 of 120 vectors—but it cannot satisfy the current contract's release gate.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

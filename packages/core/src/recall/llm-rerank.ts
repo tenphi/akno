@@ -4,7 +4,7 @@ import type { ModelClient, ModelOutcome } from '../models/client.ts';
 import { parseJsonLoose } from '../models/client.ts';
 
 export const LLM_RERANK_PROMPT_VERSION = 'akno-listwise-v4';
-export const LLM_RERANK_SCHEMA_VERSION = 'compact-entries-v2';
+export const LLM_RERANK_SCHEMA_VERSION = 'compact-entries-v3';
 
 export interface LlmRerankCandidate {
   /** Opaque, per-request identifier. It must reveal neither source identity nor initial rank. */
@@ -22,9 +22,12 @@ export interface LlmRerankEntry {
 
 const RELEVANCE_GRADE_SCHEMA = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
-function rankingSchema(candidateId: z.ZodType<string>) {
+function rankingSchema(candidateId: z.ZodType<string>, candidateCount?: number) {
+  const entries = z.array(z.object({ id: candidateId, grade: RELEVANCE_GRADE_SCHEMA }));
   return z.object({
-    order: z.array(z.object({ id: candidateId, grade: RELEVANCE_GRADE_SCHEMA })),
+    // The live schema fixes both minItems and maxItems. This prevents structured decoding from
+    // stopping after a valid prefix; semantic validation below still rejects duplicate ids.
+    order: candidateCount === undefined ? entries : entries.length(candidateCount),
   });
 }
 
@@ -34,7 +37,7 @@ export const LLM_RERANK_SCHEMA = rankingSchema(z.string());
 export function llmRerankSchema(candidates: LlmRerankCandidate[]) {
   const ids = candidates.map((candidate) => candidate.id);
   if (ids.length === 0) return LLM_RERANK_SCHEMA;
-  return rankingSchema(z.enum(ids as [string, ...string[]]));
+  return rankingSchema(z.enum(ids as [string, ...string[]]), ids.length);
 }
 
 /**
@@ -90,34 +93,60 @@ export async function rerankWithLlm(
   candidates: LlmRerankCandidate[],
 ): Promise<ModelOutcome<LlmRerankEntry[]>> {
   if (candidates.length === 0) return { ok: true, value: [], latencyMs: 0 };
+  if (new Set(candidates.map((candidate) => candidate.id)).size !== candidates.length) {
+    return badResponse(0, 'LLM reranker request contained duplicate candidate ids');
+  }
 
-  const response = await model.chat(llmRerankMessages(query, candidates), {
-    schema: llmRerankSchema(candidates),
-    // Short entry fields reduce generated structure without separating an id from its semantic
-    // grade. The role-level output ceiling remains a hard cap over this task estimate.
-    maxTokens: llmRerankTokenBudget(candidates.length, model.reasoningEffort),
-  });
-  if (!response.ok || response.value === null) return { ...response, value: null };
+  const messages = llmRerankMessages(query, candidates);
+  const schema = llmRerankSchema(candidates);
+  let latencyMs = 0;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await model.chat(messages, {
+      schema,
+      // Short entry fields reduce generated structure without separating an id from its semantic
+      // grade. The role-level output ceiling remains a hard cap over this task estimate.
+      maxTokens: llmRerankTokenBudget(candidates.length, model.reasoningEffort),
+    });
+    latencyMs += response.latencyMs;
+    // A retry cannot repair transport, configuration, or output-budget failure. Only a complete
+    // JSON response that violates the permutation contract gets one more independent attempt.
+    if (!response.ok || response.value === null) return { ...response, value: null, latencyMs };
 
-  const parsed = LLM_RERANK_SCHEMA.safeParse(parseJsonLoose<unknown>(response.value));
-  if (!parsed.success) return badResponse(response.latencyMs, 'LLM reranker returned invalid JSON');
+    const validation = validateRanking(response.value, candidates, latencyMs);
+    if (validation.outcome.ok || !validation.retryable || attempt === 1) return validation.outcome;
+  }
+  return badResponse(latencyMs, 'LLM reranker exhausted semantic validation attempts');
+}
+
+function validateRanking(
+  value: string,
+  candidates: LlmRerankCandidate[],
+  latencyMs: number,
+): { outcome: ModelOutcome<LlmRerankEntry[]>; retryable: boolean } {
+  const parsed = LLM_RERANK_SCHEMA.safeParse(parseJsonLoose<unknown>(value));
+  if (!parsed.success) {
+    return { outcome: badResponse(latencyMs, 'LLM reranker returned invalid JSON'), retryable: false };
+  }
 
   const expected = new Map(candidates.map((candidate, index) => [candidate.id, index]));
-  if (expected.size !== candidates.length) {
-    return badResponse(response.latencyMs, 'LLM reranker request contained duplicate candidate ids');
-  }
   if (parsed.data.order.length !== candidates.length) {
-    return badResponse(response.latencyMs, 'LLM reranker did not return every candidate');
+    return {
+      outcome: badResponse(latencyMs, 'LLM reranker did not return every candidate'),
+      retryable: true,
+    };
   }
   const seen = new Set<string>();
   const ranked: LlmRerankEntry[] = [];
   for (const entry of parsed.data.order) {
     const index = expected.get(entry.id);
     if (index === undefined) {
-      return badResponse(response.latencyMs, 'LLM reranker invented a candidate id');
+      return { outcome: badResponse(latencyMs, 'LLM reranker invented a candidate id'), retryable: true };
     }
     if (seen.has(entry.id)) {
-      return badResponse(response.latencyMs, 'LLM reranker returned a duplicate candidate id');
+      return {
+        outcome: badResponse(latencyMs, 'LLM reranker returned a duplicate candidate id'),
+        retryable: true,
+      };
     }
     seen.add(entry.id);
     ranked.push({ index, relevance: entry.grade });
@@ -127,7 +156,7 @@ export async function rerankWithLlm(
   // themselves about whether ordering or grading is authoritative. Grades drive qualification, so make
   // them authoritative for the coarse order as well; stable sorting preserves model order within a grade.
   ranked.sort((a, b) => b.relevance - a.relevance);
-  return { ok: true, value: ranked, latencyMs: response.latencyMs };
+  return { outcome: { ok: true, value: ranked, latencyMs }, retryable: false };
 }
 
 function badResponse(latencyMs: number, error: string): ModelOutcome<LlmRerankEntry[]> {
