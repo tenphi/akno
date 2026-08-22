@@ -35,6 +35,9 @@ const modelRoleBase = {
   timeout_ms: z.number().int().positive().optional(),
 };
 
+export const ReasoningEffort = z.enum(['none', 'low', 'medium', 'high', 'xhigh', 'max']);
+export type ReasoningEffort = z.infer<typeof ReasoningEffort>;
+
 const EmbeddingRoleDoc = z.object({
   ...modelRoleBase,
   dimensions: z.number().int().positive().optional(),
@@ -42,8 +45,13 @@ const EmbeddingRoleDoc = z.object({
 });
 const RerankerRoleDoc = z.object({
   ...modelRoleBase,
+  /** A native `/rerank` endpoint, or a generative model using Akno's ranking prompt. */
+  mode: z.enum(['endpoint', 'llm']).optional(),
   top_k: z.number().int().positive().optional(),
   max_chars: z.number().int().positive().optional(),
+  /** Output budget and thinking level used only by `mode: "llm"`. */
+  max_output_tokens: z.number().int().positive().optional(),
+  reasoning_effort: ReasoningEffort.nullable().optional(),
   /**
    * Where this model's "relevant" boundary sits on its own logit scale. Subtracted before the
    * sigmoid that turns a raw score into `relevance`, so the boundary lands on 0.5.
@@ -71,8 +79,12 @@ const TextRoleDoc = z.object({
   ...modelRoleBase,
   max_output_tokens: z.number().int().positive().optional(),
   concurrency: z.number().int().positive().optional(),
+  reasoning_effort: ReasoningEffort.nullable().optional(),
 });
-const VisionRoleDoc = z.object({ ...modelRoleBase });
+const VisionRoleDoc = z.object({
+  ...modelRoleBase,
+  reasoning_effort: ReasoningEffort.nullable().optional(),
+});
 
 const ModelsDoc = z.object({
   embedding: EmbeddingRoleDoc.optional(),
@@ -326,12 +338,16 @@ export interface ResolvedModelRole {
   dimensions?: number;
   batch?: number;
   topK?: number;
+  /** How the reranker role is called. Absent outside that role. */
+  rerankerMode?: 'endpoint' | 'llm';
   /** Characters of each candidate sent to the reranker. Cost scales with tokens. */
   maxChars?: number;
   /** Logit subtracted before the sigmoid, so this model's relevant/irrelevant boundary lands on 0.5. */
   scoreOffset?: number;
   maxOutputTokens?: number;
   concurrency?: number;
+  /** Explicit provider reasoning level. Omitted means use the provider default. */
+  reasoningEffort?: ReasoningEffort;
   /** Why the role is unusable, when it is. Reported verbatim by `doctor`. */
   unavailableReason: string | null;
 }

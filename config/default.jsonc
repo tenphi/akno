@@ -128,6 +128,9 @@
       "provider": "local",
       "id": null,
       "enabled": false,
+      // "endpoint" calls a native cross-encoder at /rerank. "llm" uses the
+      // versioned Akno listwise prompt over the provider's chat endpoint.
+      "mode": "endpoint",
       // Candidates re-scored. This is the reranker's whole latency dial: cost is
       // per candidate, not per character. Measured on 223 pages against a local
       // bge-reranker-v2-m3, over 8 queries, compared to top_k 40:
@@ -145,6 +148,10 @@
       // because it bounds the request payload and costs nothing: a cross-encoder's
       // relevance signal is front-loaded.
       "max_chars": 800,
+      // Used only by mode "llm". Set reasoning explicitly for hosted reasoning
+      // models so ranking latency and cost do not inherit a provider default.
+      "max_output_tokens": 1600,
+      "reasoning_effort": null,
       "timeout_ms": 30000
     },
     // The quality role: page summaries, keywords, fact derivation, `remember`,
@@ -163,6 +170,9 @@
       // cheaper caller already asks for less and is unaffected: 700 for an observation, 500 to name
       // an arrival, 200 for a conflict verdict.
       "max_output_tokens": 2400,
+      // null uses the provider default. Hosted reasoning models can set one of
+      // "none", "low", "medium", "high", "xhigh", or "max" per role.
+      "reasoning_effort": null,
       // Pages derived at once during a sweep. Raise it for a bigger endpoint;
       // a single local server usually does no better than 2.
       "concurrency": 2,
@@ -179,6 +189,7 @@
       "id": null,
       // Expansion asks for 400; this only has to be above it.
       "max_output_tokens": 1024,
+      "reasoning_effort": null,
       "concurrency": 2,
       // A backstop, not the deadline — `recall.expansion_timeout_ms` governs a
       // call. This one only catches an endpoint that accepts and goes quiet.
@@ -189,6 +200,7 @@
       "provider": "local",
       "id": null,
       "enabled": false,
+      "reasoning_effort": null,
       "timeout_ms": 120000
     }
   },

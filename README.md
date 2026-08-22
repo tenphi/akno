@@ -138,8 +138,9 @@ bugs found here.
 
 ## Models
 
-Five roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint; one local server
-can host all of them.
+Five roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint can host multiple
+roles. “One endpoint” does not mean “one model”: semantic retrieval still needs an embedding model, while one
+general-purpose model may cover generation, expansion, vision, maintenance, and prompted reranking.
 
 | Role      | Without it                                                                                        |
 | --------- | ------------------------------------------------------------------------------------------------- |
@@ -149,11 +150,23 @@ can host all of them.
 | Expansion | recall searches the words you typed and nothing more                                              |
 | Vision    | photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals |
 
+The reranker supports two explicit modes. `mode: "endpoint"` calls a native cross-encoder at `/rerank`.
+`mode: "llm"` sends a bounded listwise request through the ordinary generative endpoint. The latter uses opaque
+per-request candidate ids, treats candidate text as untrusted JSON data, requires every candidate exactly once,
+and preserves the untouched fusion order with typed `rerank_failed` degradation if the response is missing,
+duplicated, invented, malformed, or internally inconsistent.
+
 **`derive` and `expansion` are split because their constraints are opposite.** Derive runs off the hot path —
 during indexing, on arrival, at night — and what it produces ends up in the notes, so it is allowed to be slow
 and good. Expansion runs on every recall that asks for it, where a second of latency is felt in the answer.
 Pointing both at one model is a perfectly good answer; pointing `derive` at a 12B and `expansion` at a 3B is
 what a laptop wants, and it is what `config/local.example.jsonc` shows.
+
+Reasoning effort is configurable per generative role and sent explicitly when set. A practical hosted minimum
+therefore uses one OpenAI endpoint and credential, `text-embedding-3-small` for embeddings, and
+`gpt-5.6-luna` for generative roles and prompted reranking. Expansion and reranking can use
+`reasoning_effort: "none"`; slower derivation or maintenance can choose a higher effort independently. The
+prompted reranker remains experimental until the relevance benchmark meets its release threshold.
 
 **Every prompt that asks for JSON also sends the shape as a JSON Schema**, so the endpoint constrains decoding
 rather than the prompt requesting it politely — a llama-server compiles it to a GBNF grammar, and OpenAI's
@@ -660,6 +673,11 @@ The fixed mixed-result corpus is asserted on every run:
 
 `akno bench --retrieval-only` runs only that invented corpus. It neither opens the configured knowledge base
 nor calls its models, which makes it the safe, reproducible quality gate for CI and ranking changes.
+
+`akno bench ranking --probe` is the separate opt-in live smoke check for prompted reranking. It sends three
+invented excerpts—including one instruction-bearing irrelevant passage—to the selected provider, and reports
+transport, schema, order, labels, and latency. It never opens the index. Passing verifies the integration, not
+the larger relevance release gate.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

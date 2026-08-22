@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { DegradedReason } from '@tenphi/akno-protocol';
-import type { ResolvedModelRole } from '../config/schema.ts';
+import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 
 /**
  * Any OpenAI-compatible endpoint, per role. One local server can host all
@@ -105,6 +105,15 @@ export class ModelClient {
 
   get role(): ResolvedModelRole['role'] {
     return this.#role.role;
+  }
+
+  /** Native cross-encoder endpoint unless the role explicitly opts into prompted ranking. */
+  get rerankerMode(): 'endpoint' | 'llm' {
+    return this.#role.rerankerMode ?? 'endpoint';
+  }
+
+  get reasoningEffort(): ReasoningEffort | undefined {
+    return this.#role.reasoningEffort;
   }
 
   /** True when the user asked for this role, whether or not it resolved. */
@@ -319,6 +328,8 @@ export class ModelClient {
       maxTokens?: number;
       temperature?: number;
       timeoutMs?: number;
+      /** Per-task override; otherwise the resolved role's setting is sent. */
+      reasoningEffort?: ReasoningEffort;
       /** Attached to the last user message as image parts. */
       images?: ImagePart[];
     } = {},
@@ -334,6 +345,8 @@ export class ModelClient {
         messages: options.images?.length ? withImages(messages, options.images) : messages,
         [tokenParam]: tokenCeiling(options.maxTokens, this.#role.maxOutputTokens),
       };
+      const reasoningEffort = options.reasoningEffort ?? this.#role.reasoningEffort;
+      if (reasoningEffort) body.reasoning_effort = reasoningEffort;
       // Some reasoning models reject a non-default temperature outright, and the
       // value buys nothing here — every prompt in this codebase wants determinism.
       if (tokenParam === 'max_tokens') body.temperature = options.temperature ?? 0;
@@ -429,6 +442,19 @@ export class ModelClient {
       };
     }
     if (this.#role.role === 'reranker') {
+      if (this.rerankerMode === 'llm') {
+        const result = await this.chat(
+          [{ role: 'user', content: 'Return JSON with exactly one field: {"ok":true}' }],
+          { schema: z.object({ ok: z.boolean() }), maxTokens: 64 },
+        );
+        return {
+          ok: result.ok,
+          value: result.ok ? result.latencyMs : null,
+          ...(result.reason ? { reason: result.reason } : {}),
+          ...(result.error ? { error: result.error } : {}),
+          latencyMs: result.latencyMs,
+        };
+      }
       const result = await this.rerank('ping', ['ping'], 1);
       return {
         ok: result.ok,

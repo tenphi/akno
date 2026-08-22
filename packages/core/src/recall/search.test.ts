@@ -101,6 +101,26 @@ describe('rerankHits', () => {
     } as unknown as Partial<ModelClient>);
   }
 
+  function fakeLlmReranker(
+    order: (candidateIds: string[]) => { candidate_id: string; relevance: 0 | 1 | 2 | 3 }[],
+  ): ModelClient {
+    return stubReranker({
+      rerankerMode: 'llm',
+      chat: async (messages) => {
+        const payload = JSON.parse(messages.at(-1)!.content) as {
+          candidates: { candidate_id: string }[];
+        };
+        return {
+          ok: true,
+          value: JSON.stringify({
+            order: order(payload.candidates.map((candidate) => candidate.candidate_id)),
+          }),
+          latencyMs: 1,
+        };
+      },
+    } as unknown as Partial<ModelClient>);
+  }
+
   const hits: ChunkHit[] = Array.from({ length: 5 }, (_, i) => ({
     chunkId: i + 1,
     pageId: `page-${i + 1}`,
@@ -140,6 +160,30 @@ describe('rerankHits', () => {
     const withZero = await rerankHits(store, fakeReranker([4.2, -11]), 'q', hits.slice(0, 2), 2, 800, 0);
     const without = await rerankHits(store, fakeReranker([4.2, -11]), 'q', hits.slice(0, 2), 2);
     expect(withZero.hits.map((hit) => hit.relevance)).toEqual(without.hits.map((hit) => hit.relevance));
+  });
+
+  it('uses the LLM total order while keeping relevance labels as the absolute signal', async () => {
+    const model = fakeLlmReranker(([first, second]) => [
+      { candidate_id: second!, relevance: 3 },
+      { candidate_id: first!, relevance: 1 },
+    ]);
+    const result = await rerankHits(store, model, 'Zephyr warranty', hits, 2);
+    expect(result.degraded).toBeNull();
+    expect(result.hits.map((hit) => hit.chunkId)).toEqual([2, 1, 3, 4, 5]);
+    expect(result.hits[0]!.relevance).toBe(1);
+    expect(result.hits[1]!.relevance).toBeCloseTo(1 / 3);
+    expect(result.hits[2]!.score).toBeLessThan(result.hits[1]!.score);
+  });
+
+  it('preserves exact fusion order when the LLM returns an invalid permutation', async () => {
+    const model = fakeLlmReranker(([first]) => [
+      { candidate_id: first!, relevance: 3 },
+      { candidate_id: first!, relevance: 2 },
+    ]);
+    const result = await rerankHits(store, model, 'Zephyr warranty', hits, 2);
+    expect(result.hits).toEqual(hits);
+    expect(result.degraded).toBe('rerank_failed');
+    expect(result.note).toContain('duplicate candidate id');
   });
 
   it('keeps a judged hit above every un-judged one, whatever its logit', async () => {

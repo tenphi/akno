@@ -7,7 +7,13 @@
 
 export { open, readOnlyExplanation, type Akno, type OpenOptions } from './open.ts';
 export { loadConfig, type LoadOptions } from './config/load.ts';
-export type { AknoConfig, FolderRule, ResolvedModelRole, ResolvedProvider } from './config/schema.ts';
+export type {
+  AknoConfig,
+  FolderRule,
+  ReasoningEffort,
+  ResolvedModelRole,
+  ResolvedProvider,
+} from './config/schema.ts';
 export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
 export { runBench, type BenchOptions, type BenchReport, type BenchResult } from './bench.ts';
 export {
@@ -18,6 +24,11 @@ export {
   type RetrievalBenchResult,
   type RetrievalBenchUnit,
 } from './bench/mixed-retrieval.ts';
+export {
+  runLlmRankingProbe,
+  type LlmRankingProbeOptions,
+  type LlmRankingProbeReport,
+} from './bench/llm-ranking-probe.ts';
 export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.ts';
 export type { WatcherEvents } from './watch/watcher.ts';
 export type { AknoWatchEvents } from './open.ts';

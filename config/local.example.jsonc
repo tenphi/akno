@@ -40,7 +40,8 @@
     "reranker": {
       "provider": "local",
       "id": "bge-reranker-v2-m3",
-      "enabled": true
+      "enabled": true,
+      "mode": "endpoint"
     },
     // Summaries, facts, `remember`, naming, and the nightly cycle. Off the recall
     // path, so the bigger model belongs here.
@@ -55,6 +56,41 @@
       "id": "llama-3.2-3b-instruct"
     }
   },
+
+  // Minimum hosted setup uses one OpenAI endpoint and credential, but still two
+  // models because semantic recall requires an embedding model. Replace the
+  // `providers` and `models` blocks above with this shape:
+  //
+  // "providers": {
+  //   "openai": {
+  //     "base_url": "https://api.openai.com/v1",
+  //     "api_key": { "env": "AKNO_OPENAI_API_KEY" }
+  //   }
+  // },
+  // "models": {
+  //   "embedding": {
+  //     "provider": "openai",
+  //     "id": "text-embedding-3-small",
+  //     "dimensions": 1536
+  //   },
+  //   "reranker": {
+  //     "provider": "openai",
+  //     "id": "gpt-5.6-luna",
+  //     "enabled": true,
+  //     "mode": "llm",
+  //     "reasoning_effort": "none"
+  //   },
+  //   "derive": {
+  //     "provider": "openai",
+  //     "id": "gpt-5.6-luna",
+  //     "reasoning_effort": "low"
+  //   },
+  //   "expansion": {
+  //     "provider": "openai",
+  //     "id": "gpt-5.6-luna",
+  //     "reasoning_effort": "none"
+  //   }
+  // },
 
   // Rules can live here, or travel with the notes at <akno_path>/akno.json —
   // which wins over both config files. Glob-scoped, most-specific-wins.

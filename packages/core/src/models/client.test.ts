@@ -12,6 +12,7 @@ import {
 import type { ResolvedModelRole } from '../config/schema.ts';
 import { DERIVED_SCHEMA, DOCUMENT_SUMMARY_SCHEMA, SUMMARY_ONLY_SCHEMA } from '../index/derive.ts';
 import { QUERIES_SCHEMA, QUESTION_SCHEMA } from '../recall/expand.ts';
+import { LLM_RERANK_SCHEMA } from '../recall/llm-rerank.ts';
 import { RETAIN_SCHEMA } from '../write/retain.ts';
 import { PLACEMENT_SCHEMA } from '../write/placement.ts';
 import { NAME_SCHEMA } from '../ingest/name.ts';
@@ -121,6 +122,8 @@ describe('the token ceiling', () => {
   async function sentBody(
     roleCap: number | undefined,
     callCap: number | undefined,
+    reasoningEffort?: ResolvedModelRole['reasoningEffort'],
+    callReasoningEffort?: ResolvedModelRole['reasoningEffort'],
   ): Promise<Record<string, unknown>> {
     server.calls = [];
     const instance = http.createServer((request, response) => {
@@ -150,11 +153,12 @@ describe('the token ceiling', () => {
         timeoutMs: 5_000,
         unavailableReason: null,
         ...(roleCap === undefined ? {} : { maxOutputTokens: roleCap }),
+        ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
       });
-      await client.chat(
-        [{ role: 'user', content: 'hi' }],
-        callCap === undefined ? {} : { maxTokens: callCap },
-      );
+      await client.chat([{ role: 'user', content: 'hi' }], {
+        ...(callCap === undefined ? {} : { maxTokens: callCap }),
+        ...(callReasoningEffort === undefined ? {} : { reasoningEffort: callReasoningEffort }),
+      });
       return server.calls[0]!;
     } finally {
       instance.close();
@@ -184,6 +188,11 @@ describe('the token ceiling', () => {
     // return nothing, with no error to explain why.
     expect((await sentBody(0, 500)).max_tokens).toBe(500);
     expect((await sentBody(-1, undefined)).max_tokens).toBe(1024);
+  });
+
+  it('sends an explicit reasoning effort and permits a task override', async () => {
+    expect((await sentBody(undefined, undefined, 'none')).reasoning_effort).toBe('none');
+    expect((await sentBody(undefined, undefined, 'medium', 'low')).reasoning_effort).toBe('low');
   });
 });
 
@@ -248,6 +257,7 @@ describe('every schema stays strict-mode safe', () => {
     DOCUMENT_SUMMARY_SCHEMA,
     QUERIES_SCHEMA,
     QUESTION_SCHEMA,
+    LLM_RERANK_SCHEMA,
     RETAIN_SCHEMA,
     PLACEMENT_SCHEMA,
     NAME_SCHEMA,

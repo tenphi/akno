@@ -1138,6 +1138,23 @@ Two roles are on the interactive path:
 - `expansion` should be fast because a person is waiting for it.
 - `reranker` should be sized for the configured candidate count.
 
+The reranker has two implementations. `mode: "endpoint"` calls a native `/rerank` cross-encoder. `mode: "llm"`
+uses a versioned listwise prompt over the same generative transport as other model-backed work. Every candidate
+gets a fresh opaque id; the query, metadata, and excerpts are JSON-serialized; and the fixed instruction says
+candidate content is untrusted data. Akno accepts the result only if it is a complete permutation of the
+supplied ids with `0..3` relevance labels consistent with the returned order. Any malformed, missing,
+duplicated, or invented id produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
+
+`reasoning_effort` may be set independently on generative roles and LLM reranking. Akno sends the value rather
+than inheriting an endpoint default, so an interactive ranker can use `none` while maintenance uses more work.
+That setting controls calls, not capabilities: a separate embedding model is still required for semantic
+candidate generation.
+
+Use `akno bench ranking --probe --provider openai --model gpt-5.6-luna --reasoning none` for an opt-in live
+smoke check. The command sends only three invented excerpts and never opens the configured index. It proves the
+provider accepts the prompt, schema, and reasoning setting; it is not the relevance benchmark that qualifies a
+recommended preset.
+
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the
 rest of the system.
@@ -1338,9 +1355,10 @@ A guided `akno init` should select the knowledge-base folder, perform a read-onl
 models, explain degraded choices, run one recall, and optionally install the service. That would shorten the
 distance between “I have notes” and “my agent can cite them” without weakening any safety rule.
 
-A single-model setup could add a one-provider OpenAI preset using `gpt-5.6-luna` for generative work and
-prompted reranking, with lexical retrieval when no separate embedding model is configured. That recommendation
-should be gated by a ranking benchmark, including an explicit comparison of disabled and low reasoning effort.
+A minimum hosted setup should add a single-endpoint OpenAI preset: one endpoint and credential,
+`text-embedding-3-small` for semantic candidate generation, and `gpt-5.6-luna` for generative work and prompted
+reranking. This is deliberately not described as one model. The prompted-ranker recommendation remains gated
+by a relevance benchmark, including an explicit comparison of `none` and `low` reasoning effort.
 
 ### Inference should remain visibly separate from authored memory
 

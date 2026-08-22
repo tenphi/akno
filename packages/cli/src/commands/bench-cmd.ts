@@ -1,13 +1,14 @@
 import {
   open,
   runBench,
+  runLlmRankingProbe,
   runMixedRetrievalBench,
   type Akno,
   type MixedRetrievalBenchReport,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, line, style } from '../output.ts';
+import { fail, heading, json, line, style } from '../output.ts';
 
 const BENCH_HELP = `akno bench [options]
 
@@ -22,20 +23,75 @@ const BENCH_HELP = `akno bench [options]
   --iterations <n>    Samples per measurement (default 12).
   --retrieval-only    Run only the invented mixed-retrieval corpus. Does not
                       open or query the configured knowledge base.
+  ranking --probe     Send one invented three-candidate smoke probe to a live
+                      generative endpoint. This is not the ranking release gate.
+    --provider <name> Configured provider (default openai).
+    --model <id>      Generative model (default gpt-5.6-luna).
+    --reasoning <v>   none, low, medium, high, xhigh, or max (default none).
   --write             Also measure the restart sweep, which needs the write
                       handle. Skipped otherwise rather than measured wrongly.
   --json`;
 
 export async function benchCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ iterations?: string; 'retrieval-only': boolean; write: boolean }>(argv, {
+  const { values, positionals } = parse<{
+    iterations?: string;
+    'retrieval-only': boolean;
+    write: boolean;
+    probe: boolean;
+    provider?: string;
+    model?: string;
+    reasoning?: string;
+  }>(argv, {
     iterations: { type: 'string' },
     'retrieval-only': { type: 'boolean', default: false },
     write: { type: 'boolean', default: false },
+    probe: { type: 'boolean', default: false },
+    provider: { type: 'string' },
+    model: { type: 'string' },
+    reasoning: { type: 'string' },
   });
 
   if (values.help) {
     line(BENCH_HELP);
     return 0;
+  }
+
+  if (positionals[0] === 'ranking') {
+    if (!values.probe) {
+      fail('ranking benchmark corpus is not implemented yet; use --probe for the invented live smoke check');
+      return 2;
+    }
+    const reasoning = parseReasoningEffort(values.reasoning);
+    if (!reasoning) {
+      fail(`invalid reasoning effort: ${values.reasoning}`);
+      return 2;
+    }
+    const { loadConfig } = await import('@tenphi/akno-core');
+    const report = await runLlmRankingProbe(loadConfig(openOptionsFrom(values)), {
+      ...(values.provider ? { provider: values.provider } : {}),
+      ...(values.model ? { model: values.model } : {}),
+      reasoningEffort: reasoning,
+    });
+    if (values.json) json(report);
+    else {
+      heading('LLM ranking — invented live smoke probe');
+      line(`  provider    ${report.provider}`);
+      line(`  model       ${report.model}`);
+      line(`  reasoning   ${report.reasoningEffort}`);
+      line(`  latency     ${Math.round(report.latencyMs)}ms`);
+      line(`  order       ${report.order.join(' → ') || 'none'}`);
+      line(`  relevance   ${report.relevance.join(', ') || 'none'}`);
+      line(`\n${report.passed ? style.green('probe passed') : style.red(report.error ?? 'probe failed')}`);
+      line(
+        style.grey('This verifies transport, schema, and one safety case; it is not the release benchmark.'),
+      );
+    }
+    return report.passed ? 0 : 1;
+  }
+
+  if (positionals.length > 0) {
+    fail(`unknown bench target: ${positionals[0]}`);
+    return 2;
   }
 
   if (values['retrieval-only']) {
@@ -120,6 +176,20 @@ export async function benchCommand(argv: string[]): Promise<number> {
     await lexical?.close();
     await mem.close();
   }
+}
+
+function parseReasoningEffort(
+  value: string | undefined,
+): 'none' | 'low' | 'medium' | 'high' | 'xhigh' | 'max' | null {
+  const effort = value ?? 'none';
+  return effort === 'none' ||
+    effort === 'low' ||
+    effort === 'medium' ||
+    effort === 'high' ||
+    effort === 'xhigh' ||
+    effort === 'max'
+    ? effort
+    : null;
 }
 
 function renderRetrieval(report: MixedRetrievalBenchReport): void {

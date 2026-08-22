@@ -345,10 +345,21 @@ function resolveRole(
   if (typeof doc?.dimensions === 'number') resolved.dimensions = doc.dimensions;
   if (typeof doc?.batch === 'number') resolved.batch = doc.batch;
   if (typeof doc?.top_k === 'number') resolved.topK = doc.top_k;
+  if (doc?.mode === 'endpoint' || doc?.mode === 'llm') resolved.rerankerMode = doc.mode;
   if (typeof doc?.max_chars === 'number') resolved.maxChars = doc.max_chars;
   if (typeof doc?.score_offset === 'number') resolved.scoreOffset = doc.score_offset;
   if (typeof doc?.max_output_tokens === 'number') resolved.maxOutputTokens = doc.max_output_tokens;
   if (typeof doc?.concurrency === 'number') resolved.concurrency = doc.concurrency;
+  if (
+    doc?.reasoning_effort === 'none' ||
+    doc?.reasoning_effort === 'low' ||
+    doc?.reasoning_effort === 'medium' ||
+    doc?.reasoning_effort === 'high' ||
+    doc?.reasoning_effort === 'xhigh' ||
+    doc?.reasoning_effort === 'max'
+  ) {
+    resolved.reasoningEffort = doc.reasoning_effort;
+  }
   return resolved;
 }
 

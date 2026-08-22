@@ -1,6 +1,8 @@
+import { randomBytes } from 'node:crypto';
 import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
+import { rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
 
 export interface ChunkHit {
   chunkId: number;
@@ -238,8 +240,8 @@ export function toMatchExpression(query: string): string | null {
 
 /**
  * Without a reranker, hybrid score ordering stands. With one, the top
- * candidates are re-scored against the original query — which is where a
- * cross-encoder earns its cost, since it sees the query and the passage together.
+ * candidates are re-scored against the original query. A native cross-encoder
+ * sees each query/passage pair; LLM mode applies one guarded listwise prompt.
  *
  * Two measured facts about cost, since they are counter-intuitive: the reranker is
  * by far the most expensive stage in the pipeline (≈1s against ≈33ms for embedding
@@ -289,6 +291,38 @@ export async function rerankHits(
     return full.length > maxChars ? full.slice(0, maxChars) : full;
   });
 
+  if (reranker.rerankerMode === 'llm') {
+    const ids = new Set<string>();
+    const llmCandidates: LlmRerankCandidate[] = candidates.map((hit, index) => {
+      let id: string;
+      do id = `c_${randomBytes(9).toString('base64url')}`;
+      while (ids.has(id));
+      ids.add(id);
+      return {
+        id,
+        text: texts[index] ?? '',
+        sourceKind: hit.pageId ? 'page' : 'document',
+        matchedBy: hit.from,
+      };
+    });
+    const result = await rerankWithLlm(reranker, query, llmCandidates);
+    if (!result.ok || !result.value) {
+      return { hits, degraded: reranker.degradedReason(result), note: result.error ?? null };
+    }
+
+    // The listwise model supplies the order. Scores encode only that order; the separately
+    // returned relevance label is the absolute signal consumers may threshold.
+    const reordered = result.value.map((entry, rank) => {
+      const hit = candidates[entry.index]!;
+      return {
+        ...hit,
+        score: (candidates.length - rank) / candidates.length,
+        relevance: entry.relevance / 3,
+      };
+    });
+    return withRescaledTail(hits, reordered);
+  }
+
   const result = await reranker.rerank(query, texts, candidates.length);
   if (!result.ok || !result.value) {
     return { hits, degraded: reranker.degradedReason(result), note: result.error ?? null };
@@ -318,6 +352,13 @@ export async function rerankHits(
   }
   reordered.sort((a, b) => b.score - a.score);
 
+  return withRescaledTail(hits, reordered);
+}
+
+function withRescaledTail(
+  hits: ChunkHit[],
+  reordered: ChunkHit[],
+): { hits: ChunkHit[]; degraded: null; note: null } {
   const seen = new Set(reordered.map((hit) => hit.chunkId));
   const tail = hits.filter((hit) => !seen.has(hit.chunkId));
 

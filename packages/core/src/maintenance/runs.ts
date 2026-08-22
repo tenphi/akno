@@ -311,6 +311,7 @@ function roleFingerprint(role: ResolvedModelRole | null): Record<string, unknown
     timeoutMs: role.timeoutMs,
     maxOutputTokens: role.maxOutputTokens,
     concurrency: role.concurrency,
+    reasoningEffort: role.reasoningEffort,
     provider: role.provider
       ? {
           name: role.provider.name,
