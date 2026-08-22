@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Card, RecallMode, RecallResult, ResultEnvelope } from '../common.ts';
+import { Card, RecallMode, RecallQualification, RecallResult, ResultEnvelope } from '../common.ts';
 import { Event, TimelineResult } from './timeline.ts';
 
 /**
@@ -34,6 +34,7 @@ export const ContextOutput = ResultEnvelope.extend({
   structure: z.string().optional(),
   searched: z.array(z.string()),
   coverage: z.record(z.string(), z.boolean()).optional(),
+  qualification: RecallQualification.optional(),
   budget_used: z.number().int().nonnegative(),
   /** What was dropped to fit, and how much of it. A silent trim reads as
    *  "that's everything" when it wasn't — default to visible. */

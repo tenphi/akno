@@ -4,6 +4,7 @@ import {
   type ContextOutput,
   type Event,
   type RecallResult,
+  type RecallQualification,
   type TimelineResult,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
@@ -101,6 +102,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   let results: RecallResult[] = [];
   let searched: string[] = [];
   let coverage: Record<string, boolean> | undefined;
+  let qualification: RecallQualification | undefined;
 
   if (input.query) {
     const pinnedSlugs = new Set(pinned.map((card) => card.slug));
@@ -111,6 +113,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     });
     searched = result.searched;
     if (result.coverage) coverage = result.coverage;
+    if (result.qualification) qualification = result.qualification;
     for (const reason of result.degraded ?? []) degraded.add(reason);
     // A pinned page already in the bundle must not be paid for twice.
     results = result.results.filter((entry) => entry.type === 'document' || !pinnedSlugs.has(entry.slug));
@@ -149,6 +152,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     ...(structure ? { structure } : {}),
     searched,
     ...(coverage ? { coverage } : {}),
+    ...(qualification ? { qualification } : {}),
     budget_used: budgetUsed,
     // Default to visible. A silent trim reads as "that's everything".
     ...(anyDropped

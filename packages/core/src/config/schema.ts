@@ -47,6 +47,8 @@ const RerankerRoleDoc = z.object({
   ...modelRoleBase,
   /** A native `/rerank` endpoint, or a generative model using Akno's ranking prompt. */
   mode: z.enum(['endpoint', 'llm']).optional(),
+  /** Remove candidates the configured reranker confidently judges irrelevant. */
+  exclude_irrelevant: z.boolean().optional(),
   top_k: z.number().int().positive().optional(),
   max_chars: z.number().int().positive().optional(),
   /** Output budget and thinking level used only by `mode: "llm"`. */
@@ -66,7 +68,7 @@ const RerankerRoleDoc = z.object({
    * single point where a logit becomes a relevance, so every consumer downstream keeps working
    * unchanged and `relevance` keeps meaning the same thing whichever model produced it.
    */
-  score_offset: z.number().optional(),
+  score_offset: z.union([z.number(), z.literal('auto')]).optional(),
 });
 /**
  * The shape shared by the two roles that generate text. They differ in what they are *for*,
@@ -340,10 +342,12 @@ export interface ResolvedModelRole {
   topK?: number;
   /** How the reranker role is called. Absent outside that role. */
   rerankerMode?: 'endpoint' | 'llm';
+  /** Whether a successful reranker may qualify candidates out of the response. */
+  excludeIrrelevant?: boolean;
   /** Characters of each candidate sent to the reranker. Cost scales with tokens. */
   maxChars?: number;
   /** Logit subtracted before the sigmoid, so this model's relevant/irrelevant boundary lands on 0.5. */
-  scoreOffset?: number;
+  scoreOffset?: number | 'auto';
   maxOutputTokens?: number;
   concurrency?: number;
   /** Explicit provider reasoning level. Omitted means use the provider default. */

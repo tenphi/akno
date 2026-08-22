@@ -240,6 +240,20 @@ export const ResultEnvelope = z.object({
 });
 export type ResultEnvelope = z.infer<typeof ResultEnvelope>;
 
+/** What the reranker was allowed to remove, kept visible so fewer results never looks accidental. */
+export const RecallQualification = z.object({
+  model: z.enum(['llm', 'native']),
+  applied: z.boolean(),
+  judged: z.number().int().nonnegative(),
+  rejected: z.number().int().nonnegative(),
+  /** Candidates outside the bounded rerank window. Omitted when qualification is applied. */
+  unjudged: z.number().int().nonnegative(),
+  basis: z.enum(['llm_grade', 'native_auto', 'native_manual', 'disabled', 'calibration_failed']),
+  /** Native raw-score boundary; null for LLM grades or when calibration failed. */
+  threshold: z.number().nullable(),
+});
+export type RecallQualification = z.infer<typeof RecallQualification>;
+
 export const SlugFilter = z.object({
   folder: z.string().optional(),
   type: z.string().optional(),

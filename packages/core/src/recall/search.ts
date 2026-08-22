@@ -1,8 +1,9 @@
 import { randomBytes } from 'node:crypto';
-import type { DegradedReason } from '@tenphi/akno-protocol';
+import type { DegradedReason, RecallQualification } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 import { rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
+import { nativeRerankerCalibration } from './reranker-calibration.ts';
 
 export interface ChunkHit {
   chunkId: number;
@@ -267,12 +268,23 @@ export async function rerankHits(
    * before the sigmoid so that boundary lands on 0.5, which is what every threshold downstream
    * already assumes. 0 leaves a model already centred there untouched.
    */
-  scoreOffset = 0,
-): Promise<{ hits: ChunkHit[]; degraded: DegradedReason | null; note: string | null }> {
-  if (!reranker.available || hits.length <= 1) {
+  scoreOffset: number | 'auto' = 0,
+  excludeIrrelevant = false,
+): Promise<{
+  hits: ChunkHit[];
+  degraded: DegradedReason | null;
+  note: string | null;
+  qualification: RecallQualification | null;
+}> {
+  if (!reranker.available || hits.length === 0) {
     return reranker.available
-      ? { hits, degraded: null, note: null }
-      : { hits, degraded: reranker.degradedReason({}), note: reranker.unavailableReason };
+      ? { hits, degraded: null, note: null, qualification: null }
+      : {
+          hits,
+          degraded: reranker.degradedReason({}),
+          note: reranker.unavailableReason,
+          qualification: null,
+        };
   }
 
   const candidates = hits.slice(0, topK);
@@ -307,35 +319,96 @@ export async function rerankHits(
     });
     const result = await rerankWithLlm(reranker, query, llmCandidates);
     if (!result.ok || !result.value) {
-      return { hits, degraded: reranker.degradedReason(result), note: result.error ?? null };
+      return {
+        hits,
+        degraded: reranker.degradedReason(result),
+        note: result.error ?? null,
+        qualification: null,
+      };
     }
 
     // The listwise model supplies the order. Scores encode only that order; the separately
     // returned relevance label is the absolute signal consumers may threshold.
-    const reordered = result.value.map((entry, rank) => {
-      const hit = candidates[entry.index]!;
-      return {
-        ...hit,
-        score: (candidates.length - rank) / candidates.length,
-        relevance: entry.relevance / 3,
-      };
+    const rejected = result.value.filter((entry) => excludeIrrelevant && entry.relevance === 0).length;
+    const reordered = result.value
+      .map((entry, rank) => ({ entry, rank }))
+      .filter(({ entry }) => !excludeIrrelevant || entry.relevance > 0)
+      .map(({ entry, rank }) => {
+        const hit = candidates[entry.index]!;
+        return {
+          ...hit,
+          score: (candidates.length - rank) / candidates.length,
+          relevance: entry.relevance / 3,
+        };
+      });
+    return finishRerank(hits, candidates.length, reordered, {
+      model: 'llm',
+      applied: excludeIrrelevant,
+      judged: candidates.length,
+      rejected,
+      unjudged: hits.length - candidates.length,
+      basis: excludeIrrelevant ? 'llm_grade' : 'disabled',
+      threshold: null,
     });
-    return withRescaledTail(hits, reordered);
   }
 
   const result = await reranker.rerank(query, texts, candidates.length);
   if (!result.ok || !result.value) {
-    return { hits, degraded: reranker.degradedReason(result), note: result.error ?? null };
+    return {
+      hits,
+      degraded: reranker.degradedReason(result),
+      note: result.error ?? null,
+      qualification: null,
+    };
   }
-  if (result.value.length === 0) {
-    // An endpoint that answers 200 with no results has not reranked anything.
-    // Reporting that is the difference between "coarser ordering" and a silent
-    // regression nobody notices for months.
-    return { hits, degraded: 'rerank_failed', note: 'rerank returned no results' };
+  const entries = completeNativeRerank(result.value, candidates.length);
+  if (!entries) {
+    return {
+      hits,
+      degraded: 'rerank_failed',
+      note: 'rerank returned an incomplete or invalid candidate permutation',
+      qualification: null,
+    };
   }
 
-  const reordered: ChunkHit[] = [];
-  for (const entry of result.value) {
+  let resolvedOffset: number;
+  let calibration: RecallQualification['basis'];
+  if (scoreOffset === 'auto') {
+    const outcome = await nativeRerankerCalibration(store, reranker);
+    if (!outcome.ok || !outcome.value) {
+      // Ordering remains useful, but without a trustworthy boundary these are relative ranks and
+      // qualification must stay off. Guessing here is how an unfamiliar model erases good recall.
+      const reordered = entries
+        .sort((a, b) => b.score - a.score)
+        .map((entry, rank) => ({
+          ...candidates[entry.index]!,
+          score: (candidates.length - rank) / candidates.length,
+        }));
+      return finishRerank(
+        hits,
+        candidates.length,
+        reordered,
+        {
+          model: 'native',
+          applied: false,
+          judged: candidates.length,
+          rejected: 0,
+          unjudged: hits.length - candidates.length,
+          basis: 'calibration_failed',
+          threshold: null,
+        },
+        outcome.error ?? 'native reranker auto-calibration failed; qualification was not applied',
+      );
+    }
+    resolvedOffset = outcome.value.scoreOffset;
+    calibration = 'native_auto';
+  } else {
+    resolvedOffset = scoreOffset;
+    calibration = 'native_manual';
+  }
+
+  const judged: ChunkHit[] = [];
+  for (const entry of entries) {
     const hit = candidates[entry.index];
     // A logit through a sigmoid is a relevance in (0, 1) — comparable across
     // queries, and readable as a score rather than as a model internal.
@@ -347,20 +420,42 @@ export async function rerankHits(
     // here, an irrelevant pair scores ~−11 on bge-reranker-v2-m3 and ~−0.3 on
     // gte-reranker-modernbert-base, so the same 0.5 cutoff admits 0.8% of irrelevant pairs on
     // one and 42.5% on the other. Recentring here keeps every threshold downstream honest.
-    const relevance = sigmoid(entry.score - scoreOffset);
-    if (hit) reordered.push({ ...hit, score: relevance, relevance });
+    const relevance = sigmoid(entry.score - resolvedOffset);
+    if (hit) judged.push({ ...hit, score: relevance, relevance });
   }
-  reordered.sort((a, b) => b.score - a.score);
+  judged.sort((a, b) => b.score - a.score);
+  const reordered = excludeIrrelevant ? judged.filter((hit) => (hit.relevance ?? 0) >= 0.5) : judged;
 
-  return withRescaledTail(hits, reordered);
+  return finishRerank(hits, candidates.length, reordered, {
+    model: 'native',
+    applied: excludeIrrelevant,
+    judged: candidates.length,
+    rejected: excludeIrrelevant ? judged.length - reordered.length : 0,
+    unjudged: hits.length - candidates.length,
+    basis: excludeIrrelevant ? calibration : 'disabled',
+    threshold: resolvedOffset,
+  });
 }
 
-function withRescaledTail(
+function finishRerank(
   hits: ChunkHit[],
+  judgedCount: number,
   reordered: ChunkHit[],
-): { hits: ChunkHit[]; degraded: null; note: null } {
+  qualification: RecallQualification,
+  note: string | null = null,
+): {
+  hits: ChunkHit[];
+  degraded: null;
+  note: string | null;
+  qualification: RecallQualification;
+} {
+  // Qualification is a claim about what may be shown. Candidates outside the bounded window
+  // were not judged, so filling empty slots from that tail would silently undo the filter.
+  if (qualification.applied) return { hits: reordered, degraded: null, note, qualification };
+
   const seen = new Set(reordered.map((hit) => hit.chunkId));
-  const tail = hits.filter((hit) => !seen.has(hit.chunkId));
+  const judgedIds = new Set(hits.slice(0, judgedCount).map((hit) => hit.chunkId));
+  const tail = hits.filter((hit) => !seen.has(hit.chunkId) && !judgedIds.has(hit.chunkId));
 
   // The reranker judged the top K; the tail was never looked at, so it cannot
   // outrank a judged hit. Compress it into the band below the weakest judged one,
@@ -371,7 +466,28 @@ function withRescaledTail(
     score: (floor * (tail.length - index)) / (tail.length + 1),
   }));
 
-  return { hits: [...reordered, ...rescaledTail], degraded: null, note: null };
+  return { hits: [...reordered, ...rescaledTail], degraded: null, note, qualification };
+}
+
+function completeNativeRerank(
+  entries: { index: number; score: number }[],
+  count: number,
+): { index: number; score: number }[] | null {
+  if (entries.length !== count) return null;
+  const seen = new Set<number>();
+  for (const entry of entries) {
+    if (
+      !Number.isInteger(entry.index) ||
+      entry.index < 0 ||
+      entry.index >= count ||
+      !Number.isFinite(entry.score) ||
+      seen.has(entry.index)
+    ) {
+      return null;
+    }
+    seen.add(entry.index);
+  }
+  return entries;
 }
 
 function sigmoid(logit: number): number {

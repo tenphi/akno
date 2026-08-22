@@ -5,6 +5,7 @@ import {
   Depth,
   PageRole,
   RecallMode,
+  RecallQualification,
   RecallResult,
   ResultEnvelope,
   SlugFilter,
@@ -58,6 +59,8 @@ export const RecallOutput = ResultEnvelope.extend({
    * every query appears to succeed.
    */
   scores: z.enum(['absolute', 'relative']),
+  /** Present when a reranker judged candidates, including when filtering was disabled or unavailable. */
+  qualification: RecallQualification.optional(),
   /**
    * `question` mode only. Which concepts from the question the results
    * actually cover. Deterministic — did the key terms appear in what came back —

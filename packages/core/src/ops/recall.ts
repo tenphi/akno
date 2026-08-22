@@ -1,4 +1,10 @@
-import { RecallInput, type DegradedReason, type PageRole, type RecallOutput } from '@tenphi/akno-protocol';
+import {
+  RecallInput,
+  type DegradedReason,
+  type PageRole,
+  type RecallOutput,
+  type RecallQualification,
+} from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { indexDegradation } from '../context.ts';
 import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
@@ -104,7 +110,8 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
 
   let hits: ChunkHit[] = search.hits;
   let reranked = false;
-  if (hits.length > 1 && ctx.models.reranker.available) {
+  let qualification: RecallQualification | null = null;
+  if (hits.length > 0 && ctx.models.reranker.available) {
     const result = await rerankHits(
       ctx.store,
       ctx.models.reranker,
@@ -112,9 +119,11 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       hits,
       ctx.config.models.reranker.topK ?? 40,
       ctx.config.models.reranker.maxChars ?? 800,
-      ctx.config.models.reranker.scoreOffset ?? 0,
+      ctx.config.models.reranker.scoreOffset ?? 'auto',
+      ctx.config.models.reranker.excludeIrrelevant ?? true,
     );
     hits = result.hits;
+    qualification = result.qualification;
     reranked = result.degraded === null;
     if (result.degraded) degraded.add(result.degraded);
     if (result.note) notes.push(result.note);
@@ -182,10 +191,13 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       mode,
       scores,
       ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
+      ...(qualification ? { qualification } : {}),
       note:
         reasons.length > 0
           ? 'nothing matched, and the search ran without part of its model stack — this is not proof of absence'
-          : 'nothing matched any of the queries listed in `searched`',
+          : qualification?.applied && qualification.rejected > 0
+            ? `the reranker disqualified all ${qualification.rejected} judged candidates as irrelevant`
+            : 'nothing matched any of the queries listed in `searched`',
     };
   }
 
@@ -202,6 +214,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       mode,
       scores,
       ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
+      ...(qualification ? { qualification } : {}),
       note: 'matching document records remain, but neither their originals nor a readable copy are available',
     };
   }
@@ -216,6 +229,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     mode,
     scores,
     ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
+    ...(qualification ? { qualification } : {}),
     ...(hasMissingDocumentEvidence
       ? {
           note: 'some document evidence is retained from an indexed copy or rendition because its original is missing',

@@ -346,8 +346,11 @@ function resolveRole(
   if (typeof doc?.batch === 'number') resolved.batch = doc.batch;
   if (typeof doc?.top_k === 'number') resolved.topK = doc.top_k;
   if (doc?.mode === 'endpoint' || doc?.mode === 'llm') resolved.rerankerMode = doc.mode;
+  if (typeof doc?.exclude_irrelevant === 'boolean') resolved.excludeIrrelevant = doc.exclude_irrelevant;
   if (typeof doc?.max_chars === 'number') resolved.maxChars = doc.max_chars;
-  if (typeof doc?.score_offset === 'number') resolved.scoreOffset = doc.score_offset;
+  if (typeof doc?.score_offset === 'number' || doc?.score_offset === 'auto') {
+    resolved.scoreOffset = doc.score_offset;
+  }
   if (typeof doc?.max_output_tokens === 'number') resolved.maxOutputTokens = doc.max_output_tokens;
   if (typeof doc?.concurrency === 'number') resolved.concurrency = doc.concurrency;
   if (

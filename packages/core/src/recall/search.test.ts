@@ -173,6 +173,46 @@ describe('rerankHits', () => {
     expect(result.hits[0]!.relevance).toBe(1);
     expect(result.hits[1]!.relevance).toBeCloseTo(1 / 3);
     expect(result.hits[2]!.score).toBeLessThan(result.hits[1]!.score);
+    expect(result.qualification).toMatchObject({ applied: false, basis: 'disabled', rejected: 0 });
+  });
+
+  it('removes LLM grade-zero candidates and never fills from the unjudged tail', async () => {
+    const model = fakeLlmReranker(([first, second, third]) => [
+      { candidate_id: first!, relevance: 3 },
+      { candidate_id: second!, relevance: 1 },
+      { candidate_id: third!, relevance: 0 },
+    ]);
+    const result = await rerankHits(store, model, 'Zephyr warranty', hits, 3, 800, 0, true);
+    expect(result.hits.map((hit) => hit.chunkId)).toEqual([1, 2]);
+    expect(result.qualification).toEqual({
+      model: 'llm',
+      applied: true,
+      judged: 3,
+      rejected: 1,
+      unjudged: 2,
+      basis: 'llm_grade',
+      threshold: null,
+    });
+  });
+
+  it('can disqualify the only candidate instead of skipping reranking', async () => {
+    const model = fakeLlmReranker(([only]) => [{ candidate_id: only!, relevance: 0 }]);
+    const result = await rerankHits(store, model, 'Unrecorded warranty', hits.slice(0, 1), 3, 800, 0, true);
+    expect(result.hits).toEqual([]);
+    expect(result.qualification).toMatchObject({ judged: 1, rejected: 1, applied: true });
+  });
+
+  it('uses a manual native boundary to reject candidates and omit the unjudged tail', async () => {
+    const result = await rerankHits(store, fakeReranker([2, -2]), 'q', hits, 2, 800, 0, true);
+    expect(result.hits.map((hit) => hit.chunkId)).toEqual([1]);
+    expect(result.qualification).toMatchObject({
+      model: 'native',
+      applied: true,
+      basis: 'native_manual',
+      threshold: 0,
+      rejected: 1,
+      unjudged: 3,
+    });
   });
 
   it('preserves exact fusion order when the LLM returns an invalid permutation', async () => {
@@ -210,7 +250,7 @@ describe('rerankHits', () => {
     } as unknown as Partial<ModelClient>);
     const result = await rerankHits(store, empty, 'q', hits, 3);
     expect(result.degraded).toBe('rerank_failed');
-    expect(result.note).toBe('rerank returned no results');
+    expect(result.note).toBe('rerank returned an incomplete or invalid candidate permutation');
   });
 
   it('degrades rather than throwing when the endpoint fails', async () => {

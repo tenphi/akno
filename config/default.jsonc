@@ -131,6 +131,10 @@
       // "endpoint" calls a native cross-encoder at /rerank. "llm" uses the
       // versioned Akno listwise prompt over the provider's chat endpoint.
       "mode": "endpoint",
+      // A successful reranker may remove confidently irrelevant candidates.
+      // Unjudged candidates outside top_k are omitted rather than used to fill
+      // the holes, because the model made no qualification claim about them.
+      "exclude_irrelevant": true,
       // Candidates re-scored. This is the reranker's whole latency dial: cost is
       // per candidate, not per character. Measured on 223 pages against a local
       // bge-reranker-v2-m3, over 8 queries, compared to top_k 40:
@@ -148,6 +152,10 @@
       // because it bounds the request payload and costs nothing: a cross-encoder's
       // relevance signal is front-loaded.
       "max_chars": 800,
+      // Native endpoints do not share a score scale. "auto" learns a conservative
+      // boundary from invented anchors, caches it for seven days, and refuses to
+      // filter if those anchors do not separate. A measured number overrides it.
+      "score_offset": "auto",
       // Used only by mode "llm". Set reasoning explicitly for hosted reasoning
       // models so ranking latency and cost do not inherit a provider default.
       "max_output_tokens": 1600,

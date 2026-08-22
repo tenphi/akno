@@ -1145,6 +1145,18 @@ candidate content is untrusted data. Akno accepts the result only if it is a com
 supplied ids with `0..3` relevance labels consistent with the returned order. Any malformed, missing,
 duplicated, or invented id produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
 
+On a valid response, reranking may also qualify candidates out. LLM grade `0` means irrelevant and is removed.
+A native cross-encoder uses its calibrated raw-score boundary. In both cases, candidates beyond `top_k` are
+counted as unjudged and omitted rather than silently promoted to replace rejected hits. The recall response
+includes a typed `qualification` receipt with the model kind, boundary basis, judged, rejected, and unjudged
+counts. Rejecting every judged candidate yields `empty`; a failed reranker yields degraded fusion fallback.
+
+Native models do not share a score scale, so the default `score_offset: "auto"` calibrates against a fixed suite
+of invented direct, related, wrong-identity, stale, and unrelated excerpts. The selected boundary must retain
+every direct or related anchor; ambiguous hard negatives are allowed through instead of risking false rejection.
+It is cached in derived state for seven days. Calibration failure disables qualification and is visible as
+`qualification.basis: "calibration_failed"`; it never guesses. A numeric offset overrides automatic calibration.
+
 `reasoning_effort` may be set independently on generative roles and LLM reranking. Akno sends the value rather
 than inheriting an endpoint default, so an interactive ranker can use `none` while maintenance uses more work.
 That setting controls calls, not capabilities: a separate embedding model is still required for semantic

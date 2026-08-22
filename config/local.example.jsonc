@@ -41,7 +41,11 @@
       "provider": "local",
       "id": "bge-reranker-v2-m3",
       "enabled": true,
-      "mode": "endpoint"
+      "mode": "endpoint",
+      // Learns the model's relevance boundary from invented anchors. Set a
+      // measured number only when you deliberately want to override it.
+      "score_offset": "auto",
+      "exclude_irrelevant": true
     },
     // Summaries, facts, `remember`, naming, and the nightly cycle. Off the recall
     // path, so the bigger model belongs here.

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
@@ -114,6 +115,16 @@ export class ModelClient {
 
   get reasoningEffort(): ReasoningEffort | undefined {
     return this.#role.reasoningEffort;
+  }
+
+  /** Stable without including credentials; used only to key derived calibration data. */
+  get endpointFingerprint(): string | null {
+    if (!this.#role.provider || !this.#role.id) return null;
+    return createHash('sha256')
+      .update(
+        [this.#role.role, this.#role.provider.name, this.#role.provider.baseUrl, this.#role.id].join('\0'),
+      )
+      .digest('hex');
   }
 
   /** True when the user asked for this role, whether or not it resolved. */

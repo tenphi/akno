@@ -156,6 +156,18 @@ per-request candidate ids, treats candidate text as untrusted JSON data, require
 and preserves the untouched fusion order with typed `rerank_failed` degradation if the response is missing,
 duplicated, invented, malformed, or internally inconsistent.
 
+Successful reranking also qualifies results. LLM grade `0` candidates are removed; native candidates below their
+calibrated relevance boundary are removed. Candidates outside the bounded `top_k` window are reported as
+`qualification.unjudged` and omitted rather than used to fill holes the ranker never approved. If every judged
+candidate is rejected, recall returns honest `empty`. A failed reranker still preserves fusion order and reports
+degradation—the filter is never applied to a response Akno could not validate.
+
+Native score scales are learned automatically by default. `score_offset: "auto"` runs a small wholly invented
+anchor suite, chooses a conservative boundary that rejects no related anchor, and caches it in derived state for
+seven days. If the model cannot separate the anchors, `qualification.basis` is `calibration_failed` and Akno
+keeps all candidates. A measured numeric `score_offset` remains an explicit override; users do not need to guess
+one during setup.
+
 **`derive` and `expansion` are split because their constraints are opposite.** Derive runs off the hot path —
 during indexing, on arrival, at night — and what it produces ends up in the notes, so it is allowed to be slow
 and good. Expansion runs on every recall that asks for it, where a second of latency is felt in the answer.
