@@ -1169,16 +1169,22 @@ smoke check. The command sends only three invented excerpts and never opens the 
 provider accepts the prompt, schema, and reasoning setting; it is not the relevance benchmark that qualifies a
 recommended preset.
 
-`akno bench ranking --system fusion|native|llm` is the larger development check. It uses the same 12 invented
-queries and 96 relevance judgments for every system, never opens the knowledge base, and reports ordering,
-validity, latency, and qualification independently. The qualification report separates grade-3 direct answers,
-grade-2 support, grade-1 marginal context, grade-0 rejection, and instruction-bearing negatives. A native
-automatic threshold therefore cannot look safe merely because it removed many candidates: lost direct answers
-are a gate failure, while lost support and marginal context remain visible tradeoffs.
+`akno bench ranking --system fusion|native|llm` is the larger development check. Its corpus contains 80
+invented queries, 120 sources, and a fixed 20-candidate pool per query. The default selects 60 development
+queries; `--split test` explicitly selects the 20 held-out queries. The split is stratified by category and by
+fact family, so target evidence cannot appear as a development answer and a held-out answer. Generic
+distractors and adversarial text may be shared because they are not the fact being judged.
 
-This corpus is deliberately too small to authorize the OpenAI minimum preset. Every report says
-`development: true` and `releaseEligible: false`; the release decision still requires the larger held-out corpus,
-repeatability matrix, stored artifact, and mechanical preset gate described by the ranking specification.
+Every system receives the same stable-id judgments. The report shows overall and per-category ordering,
+validity, latency, and qualification independently. Qualification separates grade-3 direct answers, grade-2
+support, grade-1 marginal context, grade-0 rejection, and instruction-bearing negatives. A native automatic
+threshold therefore cannot look safe merely because it removed many candidates: lost direct answers are a gate
+failure, while lost support and marginal context remain visible tradeoffs.
+
+The corpus currently says `independentlyReviewed: false`, so every report also says `development: true` and
+`releaseEligible: false`. Another reviewer must audit its invented content and judgments. The release decision
+additionally requires the repeatability matrix, stored artifact, and mechanical preset gate described by the
+ranking specification.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

@@ -7,6 +7,7 @@ import {
   type Akno,
   type MixedRetrievalBenchReport,
   type RankingBenchReport,
+  type RankingBenchSplit,
   type RankingBenchSystem,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
@@ -28,8 +29,10 @@ const BENCH_HELP = `akno bench [options]
                       open or query the configured knowledge base.
   ranking --probe     Send one invented three-candidate smoke probe to a live
                       generative endpoint. This is not the ranking release gate.
-  ranking --system <s> Run the invented development corpus with fusion, native,
-                      or llm (default fusion).
+  ranking --system <s> Run frozen pools with fusion, native, or llm (default
+                      fusion).
+    --split <name>    development, test, or all (default development). Test is
+                      held out from prompt tuning and must be selected explicitly.
     --provider <name> Configured provider (default openai).
     --model <id>      Generative model (default gpt-5.6-luna).
     --reasoning <v>   none, low, medium, high, xhigh, or max (default none).
@@ -46,6 +49,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     provider?: string;
     model?: string;
     reasoning?: string;
+    split?: string;
     system?: string;
   }>(argv, {
     iterations: { type: 'string' },
@@ -55,6 +59,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     provider: { type: 'string' },
     model: { type: 'string' },
     reasoning: { type: 'string' },
+    split: { type: 'string' },
     system: { type: 'string' },
   });
 
@@ -101,8 +106,14 @@ export async function benchCommand(argv: string[]): Promise<number> {
       fail(`invalid ranking system: ${values.system}`);
       return 2;
     }
+    const split = parseRankingSplit(values.split);
+    if (!split) {
+      fail(`invalid ranking split: ${values.split}`);
+      return 2;
+    }
     const report = await runRankingBench(config, {
       system,
+      split,
       ...(values.provider ? { provider: values.provider } : {}),
       ...(values.model ? { model: values.model } : {}),
       reasoningEffort: reasoning,
@@ -220,6 +231,11 @@ function parseRankingSystem(value: string | undefined): RankingBenchSystem | nul
   return system === 'fusion' || system === 'native' || system === 'llm' ? system : null;
 }
 
+function parseRankingSplit(value: string | undefined): RankingBenchSplit | null {
+  const split = value ?? 'development';
+  return split === 'development' || split === 'test' || split === 'all' ? split : null;
+}
+
 function renderRetrieval(report: MixedRetrievalBenchReport): void {
   heading(
     `Mixed retrieval — invented corpus, ${report.corpus.pages} pages, ` +
@@ -241,8 +257,8 @@ function renderRetrieval(report: MixedRetrievalBenchReport): void {
 
 function renderRanking(report: RankingBenchReport): void {
   heading(
-    `Ranking development corpus — ${report.system}, ${report.corpus.queries} queries, ` +
-      `${report.corpus.candidates} judgments`,
+    `Ranking ${report.split} corpus — ${report.system}, ${report.corpus.queries} queries, ` +
+      `${report.corpus.judgments} judgments over ${report.corpus.sources} invented sources`,
   );
   if (report.model) {
     line(`  model                 ${report.provider}/${report.model}`);
@@ -257,6 +273,10 @@ function renderRanking(report: RankingBenchReport): void {
   line(`  precision@5           ${percent(report.quality.precisionAt5)}`);
   line(`  zero-over-direct      ${fixed(report.quality.gradeZeroAboveGradeThree)}`);
   line(`  valid responses       ${percent(report.validResponseRate)}`);
+  line('  category nDCG Δ');
+  for (const category of report.byCategory) {
+    line(`    ${category.category.padEnd(24)} ${signed(category.ndcgDeltaFromFusion)}`);
+  }
   if (report.qualification) {
     line(`  direct answers kept   ${percent(report.qualification.answerRetention)}`);
     line(`  support retained      ${percent(report.qualification.supportRetention)}`);
@@ -280,7 +300,13 @@ function renderRanking(report: RankingBenchReport): void {
   }
   for (const failure of report.failures) line(`  ${style.red(failure.queryId)}  ${failure.error}`);
   line(`\n${report.passed ? style.green('development gate passed') : style.red('development gate failed')}`);
-  line(style.grey('This corpus catches regressions but is too small for the preset release decision.'));
+  line(
+    style.grey(
+      report.corpus.independentlyReviewed
+        ? 'Release eligibility still requires repeatability and a stored result artifact.'
+        : 'The corpus awaits independent review and cannot authorize a preset release.',
+    ),
+  );
 }
 
 function metricValue(value: number, unit: RetrievalBenchResult['unit']): string {

@@ -693,8 +693,10 @@ invented excerpts—including one instruction-bearing irrelevant passage—to th
 transport, schema, order, labels, and latency. It never opens the index. Passing verifies the integration, not
 the larger relevance release gate.
 
-`akno bench ranking` runs a 12-query, 96-judgment invented development corpus without opening the knowledge
-base. It compares the same frozen pools across rank fusion, the configured native reranker, or a prompted LLM:
+`akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
+knowledge base. The corpus has 120 sources, 20 candidates per query, 1,600 stable-id judgments, and a fact-level
+60/20 development/test split that preserves all eight categories on both sides. It compares the same frozen
+pools across rank fusion, the configured native reranker, or a prompted LLM:
 
 ```bash
 akno bench ranking --system fusion
@@ -703,12 +705,20 @@ akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoni
 akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning low
 ```
 
-The report covers nDCG, reciprocal rank, top-result success, hard-negative inversions, response validity,
-latency, and qualification separately. Qualification distinguishes retained direct answers, strong support,
-marginal context, rejected grade-0 candidates, and instruction-bearing negatives. Its development gate requires
-a valid response for every query, no nDCG regression from fusion, every direct answer retained, and every
-instruction-bearing negative rejected. Reports always carry `releaseEligible: false`: this small corpus is a
-regression and tuning tool, not the held-out 80-query evidence required to recommend a setup preset.
+Development is the default. `--split test` explicitly selects the held-out 20 queries; prompt work must use the
+default split so test evidence is not quietly turned into tuning data. Only generic distractors and adversarial
+snippets cross the boundary—answer, support, marginal, and stale fact sources do not.
+
+The report covers overall and category-level nDCG, reciprocal rank, top-result success, hard-negative inversions,
+response validity, latency, and qualification separately. Qualification distinguishes retained direct answers,
+strong support, marginal context, rejected grade-0 candidates, and instruction-bearing negatives. Its
+development gate requires a valid response for every query, no nDCG regression from fusion, every direct answer
+retained, and every instruction-bearing negative rejected.
+
+Reports still carry `releaseEligible: false`. The corpus is authored but deliberately marked
+`independentlyReviewed: false`; another reviewer must audit its sources, intents, pools, and judgments. Release
+also needs the repeated-run matrix and a stored result artifact. This keeps a good development result from
+silently becoming the evidence used to recommend the setup.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

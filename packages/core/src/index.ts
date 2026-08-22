@@ -31,9 +31,13 @@ export {
 } from './bench/llm-ranking-probe.ts';
 export {
   runRankingBench,
+  validateRankingCorpus,
   type RankingBenchOptions,
   type RankingBenchReport,
+  type RankingBenchSplit,
   type RankingBenchSystem,
+  type RankingCategory,
+  type RankingCategoryReport,
   type RankingQualityMetrics,
   type RankingQualificationMetrics,
 } from './bench/ranking.ts';
