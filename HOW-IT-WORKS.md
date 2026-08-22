@@ -1242,10 +1242,20 @@ degradation. Latency sums both attempts so a recovered response does not hide it
 Five targeted v3 development runs at the selected 10-candidate/no-reasoning shape produced 300/300 valid
 responses, perfect instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run
 p95 from 2.08 to 2.53 seconds. The subsequent full v3 matrix reproduced 300/300 selected-variant responses with
-no fallback and now passes every internal release check. The remaining blockers are external evidence: the
-corpus needs independent review, the held-out split is untouched, and matching end-to-end evidence is absent.
-An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors; that proves honest
-prerequisite handling but cannot authorize the current runtime contract.
+no fallback and now passes every development-side release check.
+
+The frozen held-out matrix is now recorded without further prompt tuning. It selected the same 10-candidate,
+no-reasoning shape at 0.921 mean nDCG@10 versus fusion's 0.483, with complete direct-answer retention, 100%
+median top-three overlap, and 1.90-second p95. One of 100 responses remained invalid after the bounded retry and
+fell back exactly to fusion, so validity and instruction-negative rejection are both 99%, below their 99.5%
+and 100% gates. The fully valid 20-candidate variant missed latency at 3.36 seconds. The preset therefore stays
+experimental; the held-out result is evidence to preserve, not a test set to tune against.
+
+Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
+role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call
+Luna but receives a redacted 403 for `text-embedding-3-small`, and `/v1/models` exposes no embedding model id.
+That proves honest prerequisite handling and a provider-capability gap; it cannot authorize lexical fallback or
+a second endpoint under the single-endpoint preset. Independent corpus review also remains open.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

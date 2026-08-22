@@ -16,6 +16,15 @@ akno bench ranking --matrix --runs 5 --concurrency 4 \
   --output benchmarks/ranking/results/development-openai-luna.json
 ```
 
+The checked-in development and held-out artifacts for the current
+`akno-listwise-v4` / `compact-entries-v3` contract are:
+
+- `development-openai-luna-v4-2026-08-22.json`
+- `test-openai-luna-v4-2026-08-22.json`
+
+The held-out artifact is immutable release evidence. Do not replace it with another run merely because a
+stochastic response missed a gate; a later contract needs a new version and a new pre-declared evaluation.
+
 After the matrix selects a configuration, attach production-pipeline evidence over a temporary, entirely
 invented knowledge base:
 

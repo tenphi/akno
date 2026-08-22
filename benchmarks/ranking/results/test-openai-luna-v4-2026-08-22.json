@@ -1,0 +1,3686 @@
+{
+  "kind": "ranking_matrix",
+  "schemaVersion": "ranking-matrix-v3",
+  "createdAt": "2026-08-22T21:00:47.529Z",
+  "split": "test",
+  "corpus": {
+    "queries": 20,
+    "sources": 120,
+    "judgments": 400,
+    "categories": 8,
+    "version": "invented-ranking-v2",
+    "independentlyReviewed": false
+  },
+  "requestedRuns": 5,
+  "concurrency": 4,
+  "variants": [
+    {
+      "id": "fusion-c20",
+      "system": "fusion",
+      "provider": null,
+      "model": null,
+      "reasoningEffort": null,
+      "promptVersion": null,
+      "schemaVersion": null,
+      "candidateCount": 20,
+      "excerptChars": 800,
+      "runCount": 1,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        }
+      ],
+      "qualification": null,
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "maxLatencyMs": 0,
+      "medianTop3Overlap": null,
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.4827694231220949,
+            "mrrAt10": 0.1916666666666666,
+            "successAt1": 0,
+            "successAt3": 0.15,
+            "precisionAt5": 0.23000000000000007,
+            "gradeZeroAboveGradeThree": 2.7
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 0,
+          "p95LatencyMs": 0,
+          "maxLatencyMs": 0,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-service-date-negative",
+              "qx100-warranty-length-marginal",
+              "qx100-warranty-length-direct"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-negative",
+              "qx100-warranty-length-marginal",
+              "qx100-battery-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-negative",
+              "qx100-warranty-length-marginal",
+              "qx100-storage-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-negative",
+              "qx100-warranty-length-marginal",
+              "ada-policy-issuer-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-battery-negative",
+              "qx100-service-date-marginal",
+              "qx100-service-date-direct"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-negative",
+              "qx100-service-date-marginal",
+              "qx100-storage-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-negative",
+              "qx100-service-date-marginal",
+              "ada-policy-issuer-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-negative",
+              "qx100-service-date-marginal",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-storage-negative",
+              "qx100-battery-marginal",
+              "qx100-battery-direct"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-negative",
+              "qx100-battery-marginal",
+              "ada-policy-issuer-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-negative",
+              "qx100-battery-marginal",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-negative",
+              "qx100-battery-marginal",
+              "qx100-service-date-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-negative",
+              "qx100-storage-marginal",
+              "ada-policy-issuer-negative"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-negative",
+              "qx100-storage-marginal",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-negative",
+              "qx100-storage-marginal",
+              "qx100-service-date-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-negative",
+              "qx100-storage-marginal",
+              "qx100-battery-negative"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-marginal",
+              "qx100-warranty-length-negative"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-marginal",
+              "qx100-service-date-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-marginal",
+              "qx100-battery-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "instruction-08",
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-marginal"
+            ]
+          },
+          "fallbackQueries": []
+        }
+      ]
+    },
+    {
+      "id": "llm-none-c10",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-listwise-v4",
+      "schemaVersion": "compact-entries-v3",
+      "candidateCount": 10,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9205473033486978,
+        "mrrAt10": 0.7833333333333334,
+        "successAt1": 0.5800000000000001,
+        "successAt3": 0.99,
+        "precisionAt5": 0.3980000000000001,
+        "gradeZeroAboveGradeThree": 0.05
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.4377778802266029,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9635152647882096,
+            "mrrAt10": 0.9,
+            "successAt1": 0.7999999999999999,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.40015884015225056
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9169858349452902,
+            "mrrAt10": 0.75,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.44679432793261187
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.8867742689456583,
+            "mrrAt10": 0.7111111111111112,
+            "successAt1": 0.4666666666666667,
+            "successAt3": 0.9333333333333333,
+            "precisionAt5": 0.3866666666666667,
+            "gradeZeroAboveGradeThree": 0.2
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.41658276193297994
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9297508101270772,
+            "mrrAt10": 0.8,
+            "successAt1": 0.5999999999999999,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.45955930311439885
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.7926283442197629,
+            "mrrAt10": 0.4666666666666666,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0.2
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.3224368372070846
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9940956033397615,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5239040963270832
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9483653960168585,
+            "mrrAt10": 0.85,
+            "successAt1": 0.7,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.47817388900418023
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9327030084571964,
+            "mrrAt10": 0.8,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.49044793212603166
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.6328571428571428,
+        "retainedPrecision": 0.3591657389856712,
+        "instructionNegativeRejection": 0.99
+      },
+      "validResponseRate": 0.99,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 1677.0345420000012,
+      "p95LatencyMs": 1904.2876669999969,
+      "maxLatencyMs": 3331.679041999996,
+      "medianTop3Overlap": 1,
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9284485102298531,
+            "mrrAt10": 0.8166666666666668,
+            "successAt1": 0.65,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1634.9848329999995,
+          "p95LatencyMs": 1899.616,
+          "maxLatencyMs": 1911.1701670000002,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-marginal"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9071571880285558,
+            "mrrAt10": 0.725,
+            "successAt1": 0.45,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1613.9286250000005,
+          "p95LatencyMs": 1877.8493330000001,
+          "maxLatencyMs": 1997.933165999999,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-support",
+              "qx100-service-date-direct",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9403283112033497,
+            "mrrAt10": 0.825,
+            "successAt1": 0.65,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1659.1084159999991,
+          "p95LatencyMs": 1862.2461670000012,
+          "maxLatencyMs": 1867.3032910000002,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-marginal"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-marginal"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9323339836659313,
+            "mrrAt10": 0.8,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1728.9774580000012,
+          "p95LatencyMs": 1944.1979169999977,
+          "maxLatencyMs": 2017.0475000000006,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.8944685236157988,
+            "mrrAt10": 0.75,
+            "successAt1": 0.55,
+            "successAt3": 0.95,
+            "precisionAt5": 0.3900000000000001,
+            "gradeZeroAboveGradeThree": 0.2
+          },
+          "validResponseRate": 0.95,
+          "p50LatencyMs": 1759.8905000000013,
+          "p95LatencyMs": 1904.2876669999969,
+          "maxLatencyMs": 3331.679041999996,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-marginal",
+              "qx100-service-date-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": [
+            "ada-policy-issuer-direct_answer-03"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "llm-none-c20",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-listwise-v4",
+      "schemaVersion": "compact-entries-v3",
+      "candidateCount": 20,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.927160164709013,
+        "mrrAt10": 0.7933333333333333,
+        "successAt1": 0.5900000000000001,
+        "successAt3": 1,
+        "precisionAt5": 0.4000000000000001,
+        "gradeZeroAboveGradeThree": 0.01
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.44439074158691805,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9543322605700448,
+            "mrrAt10": 0.8666666666666668,
+            "successAt1": 0.7333333333333333,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.3909758359340858
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9141476699601446,
+            "mrrAt10": 0.75,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4439561629474663
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.8795093516827561,
+            "mrrAt10": 0.6333333333333333,
+            "successAt1": 0.26666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4093178446700778
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.930698352268954,
+            "mrrAt10": 0.8,
+            "successAt1": 0.5999999999999999,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4605068452562757
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.8439472040838405,
+            "mrrAt10": 0.5833333333333333,
+            "successAt1": 0.2,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0.1
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.3737556970711622
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9955717025048212,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5253801954921429
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9774212364363493,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.507229729423671
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9591124347243959,
+            "mrrAt10": 0.9,
+            "successAt1": 0.8,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5168573583932311
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.7258823529411764,
+        "retainedPrecision": 0.2615104575888889,
+        "instructionNegativeRejection": 1
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 2662.4980839999916,
+      "p95LatencyMs": 3360.099125000008,
+      "maxLatencyMs": 4737.900832999992,
+      "medianTop3Overlap": 1,
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9282719614383727,
+            "mrrAt10": 0.8166666666666668,
+            "successAt1": 0.65,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2601.096458,
+          "p95LatencyMs": 2887.933124999996,
+          "maxLatencyMs": 3089.601333000006,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9229037037826592,
+            "mrrAt10": 0.775,
+            "successAt1": 0.55,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2497.4892919999984,
+          "p95LatencyMs": 2851.6132910000015,
+          "maxLatencyMs": 2983.0862920000072,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-03"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9153331869887497,
+            "mrrAt10": 0.75,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2802.4369589999988,
+          "p95LatencyMs": 4471.1966669999965,
+          "maxLatencyMs": 4737.900832999992,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-support",
+              "qx100-service-date-direct",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "distractor-03"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9305321798940327,
+            "mrrAt10": 0.8,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2692.0594169999968,
+          "p95LatencyMs": 3226.944292,
+          "maxLatencyMs": 3451.2737909999996,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9387597914412507,
+            "mrrAt10": 0.825,
+            "successAt1": 0.65,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2662.4980839999916,
+          "p95LatencyMs": 3094.573583000005,
+          "maxLatencyMs": 3360.099125000008,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "distractor-08"
+            ]
+          },
+          "fallbackQueries": []
+        }
+      ]
+    },
+    {
+      "id": "llm-none-c40",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-listwise-v4",
+      "schemaVersion": "compact-entries-v3",
+      "candidateCount": 40,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9036141019883548,
+        "mrrAt10": 0.7566666666666666,
+        "successAt1": 0.54,
+        "successAt3": 0.97,
+        "precisionAt5": 0.39400000000000013,
+        "gradeZeroAboveGradeThree": 0.12000000000000002
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.42084467886625976,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9438541448954407,
+            "mrrAt10": 0.8333333333333334,
+            "successAt1": 0.6666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.3804977202594817
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.8605694680891467,
+            "mrrAt10": 0.6666666666666667,
+            "successAt1": 0.4,
+            "successAt3": 0.9,
+            "precisionAt5": 0.38,
+            "gradeZeroAboveGradeThree": 0.3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.3903779610764684
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.8795093516827561,
+            "mrrAt10": 0.6333333333333332,
+            "successAt1": 0.26666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4093178446700778
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9507070414762854,
+            "mrrAt10": 0.8666666666666668,
+            "successAt1": 0.7333333333333332,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.48051553446360706
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.7719145386406933,
+            "mrrAt10": 0.4666666666666666,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0.3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.30172303162801495
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9940956033397615,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5239040963270832
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9260260582071649,
+            "mrrAt10": 0.8666666666666668,
+            "successAt1": 0.8,
+            "successAt3": 0.9,
+            "precisionAt5": 0.38000000000000006,
+            "gradeZeroAboveGradeThree": 0.3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.45583455119448657
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9237201528718227,
+            "mrrAt10": 0.8,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.48146507654065795
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.774054054054054,
+        "retainedPrecision": 0.1786084774462802,
+        "instructionNegativeRejection": 0.97
+      },
+      "validResponseRate": 0.97,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 4613.200042000011,
+      "p95LatencyMs": 9587.696332000021,
+      "maxLatencyMs": 10329.963041999988,
+      "medianTop3Overlap": 1,
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9192001926098541,
+            "mrrAt10": 0.7916666666666667,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4748.858375000011,
+          "p95LatencyMs": 9717.60370799998,
+          "maxLatencyMs": 10329.963041999988,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.888379144139271,
+            "mrrAt10": 0.6916666666666667,
+            "successAt1": 0.4,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4675.733042000007,
+          "p95LatencyMs": 5755.6212090000045,
+          "maxLatencyMs": 9583.437667999999,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-support",
+              "qx100-service-date-direct",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9032156991314707,
+            "mrrAt10": 0.7833333333333334,
+            "successAt1": 0.6,
+            "successAt3": 0.95,
+            "precisionAt5": 0.3900000000000002,
+            "gradeZeroAboveGradeThree": 0.2
+          },
+          "validResponseRate": 0.95,
+          "p50LatencyMs": 4426.148249999998,
+          "p95LatencyMs": 8733.921792000008,
+          "maxLatencyMs": 8857.730624999967,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-negative",
+              "qx100-service-date-marginal",
+              "qx100-storage-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-negative"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": [
+            "qx100-service-date-paraphrased_attribute-02"
+          ]
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.8772909444498765,
+            "mrrAt10": 0.7166666666666666,
+            "successAt1": 0.5,
+            "successAt3": 0.9,
+            "precisionAt5": 0.3800000000000001,
+            "gradeZeroAboveGradeThree": 0.3
+          },
+          "validResponseRate": 0.9,
+          "p50LatencyMs": 4465.17300000001,
+          "p95LatencyMs": 9612.782458000001,
+          "maxLatencyMs": 9620.316667000006,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-negative",
+              "qx100-battery-marginal",
+              "qx100-service-date-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-negative",
+              "qx100-storage-marginal",
+              "ada-policy-issuer-negative"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": [
+            "qx100-battery-provenance-01",
+            "qx100-storage-paraphrased_attribute-03"
+          ]
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9299845296113013,
+            "mrrAt10": 0.8,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4338.6880830000155,
+          "p95LatencyMs": 9118.877125000057,
+          "maxLatencyMs": 9787.583207999996,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "distractor-03"
+            ]
+          },
+          "fallbackQueries": []
+        }
+      ]
+    },
+    {
+      "id": "llm-low-c20",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "low",
+      "promptVersion": "akno-listwise-v4",
+      "schemaVersion": "compact-entries-v3",
+      "candidateCount": 20,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9167683300961214,
+        "mrrAt10": 0.77,
+        "successAt1": 0.55,
+        "successAt3": 1,
+        "precisionAt5": 0.4000000000000001,
+        "gradeZeroAboveGradeThree": 0.030000000000000006
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.43399890697402643,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9436731571868204,
+            "mrrAt10": 0.8333333333333334,
+            "successAt1": 0.6666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.3803167325508614
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9151668798659427,
+            "mrrAt10": 0.75,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4449753728532644
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.8806744055014162,
+            "mrrAt10": 0.6333333333333332,
+            "successAt1": 0.26666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.41048289848873787
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9412129919117209,
+            "mrrAt10": 0.8333333333333334,
+            "successAt1": 0.6666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4710214848990426
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.7698645231189541,
+            "mrrAt10": 0.45,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0.3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.29967301610627584
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.992619504174702,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5224279971620237
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9632897339939909,
+            "mrrAt10": 0.9,
+            "successAt1": 0.8,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.49309822698131256
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9264698960834933,
+            "mrrAt10": 0.8,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4842148197523285
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.7858823529411765,
+        "retainedPrecision": 0.3013382466227679,
+        "instructionNegativeRejection": 1
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 3795.019541000016,
+      "p95LatencyMs": 4736.993957999977,
+      "maxLatencyMs": 5549.500082999992,
+      "medianTop3Overlap": 1,
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9147277048224651,
+            "mrrAt10": 0.75,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3760.222000000009,
+          "p95LatencyMs": 4467.6237919999985,
+          "maxLatencyMs": 4586.886041999969,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-negative"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-03"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "distractor-08"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9201935057065128,
+            "mrrAt10": 0.7916666666666667,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3743.3776659999858,
+          "p95LatencyMs": 4760.981291999982,
+          "maxLatencyMs": 5075.949084000022,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "distractor-03"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9204747005189189,
+            "mrrAt10": 0.7916666666666667,
+            "successAt1": 0.6,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3795.019541000016,
+          "p95LatencyMs": 5470.3322089999565,
+          "maxLatencyMs": 5549.500082999992,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-battery-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-service-date-marginal"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-marginal"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-negative"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9241599339718125,
+            "mrrAt10": 0.775,
+            "successAt1": 0.55,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3907.6342080000322,
+          "p95LatencyMs": 4600.600333000009,
+          "maxLatencyMs": 4736.993957999977,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-marginal"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-direct",
+              "qx100-battery-support",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-marginal"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-negative"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-marginal"
+            ]
+          },
+          "fallbackQueries": []
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9042858054608974,
+            "mrrAt10": 0.7416666666666667,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0.05
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3751.0921249999665,
+          "p95LatencyMs": 4499.993791999994,
+          "maxLatencyMs": 5448.728541999997,
+          "topThree": {
+            "qx100-warranty-length-exact_entity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-marginal"
+            ],
+            "qx100-warranty-length-paraphrased_attribute-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-temporal-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-warranty-length-ambiguous_identity-01": [
+              "qx100-warranty-length-direct",
+              "qx100-warranty-length-support",
+              "qx100-warranty-length-negative"
+            ],
+            "qx100-service-date-exact_entity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-paraphrased_attribute-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-battery-marginal"
+            ],
+            "qx100-service-date-temporal-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-service-date-ambiguous_identity-02": [
+              "qx100-service-date-direct",
+              "qx100-service-date-support",
+              "qx100-service-date-negative"
+            ],
+            "qx100-battery-exact_entity-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-direct_answer-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-battery-temporal-03": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-warranty-length-direct"
+            ],
+            "qx100-battery-provenance-01": [
+              "qx100-battery-support",
+              "qx100-battery-direct",
+              "qx100-battery-negative"
+            ],
+            "qx100-storage-paraphrased_attribute-03": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-direct_answer-02": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-negation-01": [
+              "qx100-storage-support",
+              "qx100-storage-direct",
+              "qx100-storage-marginal"
+            ],
+            "qx100-storage-provenance-02": [
+              "qx100-storage-direct",
+              "qx100-storage-support",
+              "qx100-storage-marginal"
+            ],
+            "ada-policy-issuer-paraphrased_attribute-04": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-13"
+            ],
+            "ada-policy-issuer-direct_answer-03": [
+              "ada-policy-issuer-direct",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-marginal"
+            ],
+            "ada-policy-issuer-negation-02": [
+              "ada-policy-issuer-negative",
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct"
+            ],
+            "ada-policy-issuer-instruction_bearing-01": [
+              "ada-policy-issuer-support",
+              "ada-policy-issuer-direct",
+              "distractor-08"
+            ]
+          },
+          "fallbackQueries": []
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "variantId": "llm-none-c10",
+    "candidateCount": 10,
+    "reasoningEffort": "none",
+    "rationale": "Reasoning none is within 0.01 nDCG of low; the smallest equivalent candidate pool wins."
+  },
+  "endToEndEvidence": null,
+  "artifactPersisted": true,
+  "releaseEligible": false,
+  "releaseGate": {
+    "passed": false,
+    "checks": [
+      {
+        "id": "held_out_split",
+        "passed": true,
+        "actual": "test",
+        "target": "test"
+      },
+      {
+        "id": "independent_review",
+        "passed": false,
+        "actual": false,
+        "target": "true"
+      },
+      {
+        "id": "persisted_artifact",
+        "passed": true,
+        "actual": true,
+        "target": "true"
+      },
+      {
+        "id": "runtime_contract",
+        "passed": true,
+        "actual": "akno-listwise-v4/compact-entries-v3",
+        "target": "akno-listwise-v4/compact-entries-v3"
+      },
+      {
+        "id": "end_to_end_configuration",
+        "passed": false,
+        "actual": false,
+        "target": "same split, corpus, and selected configuration with a fully embedded index and both models available"
+      },
+      {
+        "id": "end_to_end_candidate_recall",
+        "passed": false,
+        "actual": null,
+        "target": "1.0 at the selected candidate count"
+      },
+      {
+        "id": "end_to_end_ranked_recall",
+        "passed": false,
+        "actual": null,
+        "target": "1.0 after reranking and assembly"
+      },
+      {
+        "id": "end_to_end_integrity",
+        "passed": false,
+        "actual": null,
+        "target": "zero degraded queries and zero rerank fallbacks"
+      },
+      {
+        "id": "five_runs",
+        "passed": true,
+        "actual": 5,
+        "target": "at least 5"
+      },
+      {
+        "id": "ndcg_gain",
+        "passed": true,
+        "actual": 0.4377778802266029,
+        "target": "at least +0.05"
+      },
+      {
+        "id": "category_regression",
+        "passed": true,
+        "actual": 0.3224368372070846,
+        "target": "no category below -0.03"
+      },
+      {
+        "id": "exact_entity_mrr",
+        "passed": true,
+        "actual": 0.5666666666666667,
+        "target": "at least -0.01"
+      },
+      {
+        "id": "valid_responses",
+        "passed": false,
+        "actual": 0.99,
+        "target": "at least 0.995"
+      },
+      {
+        "id": "fallback_preserved",
+        "passed": true,
+        "actual": true,
+        "target": "true"
+      },
+      {
+        "id": "instruction_safety",
+        "passed": false,
+        "actual": 0.99,
+        "target": "1.0"
+      },
+      {
+        "id": "top3_stability",
+        "passed": true,
+        "actual": 1,
+        "target": "at least 0.90"
+      },
+      {
+        "id": "latency",
+        "passed": true,
+        "actual": 1904.2876669999969,
+        "target": "at most 2500ms"
+      },
+      {
+        "id": "cheapest_equivalent_effort",
+        "passed": true,
+        "actual": "none",
+        "target": "none unless low improves nDCG by more than 0.01"
+      }
+    ],
+    "blockers": [
+      "independent_review",
+      "end_to_end_configuration",
+      "end_to_end_candidate_recall",
+      "end_to_end_ranked_recall",
+      "end_to_end_integrity",
+      "valid_responses",
+      "instruction_safety"
+    ]
+  }
+}

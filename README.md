@@ -785,11 +785,18 @@ p95. `none` at 20 and 40 candidates reached 0.958/0.941 nDCG and 3.71/9.82 s p95
 reasoning is therefore both the selected quality-equivalent configuration and the fastest prompted-ranking
 variant tested.
 
-Every internal release check now passes: current persisted contract, five runs, overall and category quality,
-exact-entity MRR, response validity, fallback preservation, instruction safety, top-three stability, latency,
-and cheapest-equivalent selection. This is still development evidence rather than release authorization. The
-corpus is not independently reviewed, the held-out split is untouched, and no matching end-to-end evidence is
-attached.
+Every development-side release check now passes: current persisted contract, five runs, overall and category
+quality, exact-entity MRR, response validity, fallback preservation, instruction safety, top-three stability,
+latency, and cheapest-equivalent selection. This is still tuning evidence rather than release authorization.
+
+The current [held-out v4/v3 matrix](benchmarks/ranking/results/test-openai-luna-v4-2026-08-22.json) also selects
+Luna with `none` reasoning and 10 candidates. It reached 0.921 mean nDCG@10 against fusion's 0.483, 100% median
+top-three overlap, complete direct-answer retention, and 1.90 s p95 latency. One of its 100 responses remained
+invalid after the bounded semantic retry and fell back exactly to fusion, leaving response validity and
+instruction-negative rejection at 99%. The 20-candidate `none` variant was 100% valid and reached 0.927 nDCG,
+but its 3.36 s p95 missed the latency gate; `low` at 20 was slower still at 4.74 s. No tested held-out variant
+therefore satisfies both reliability and latency. This artifact is final test evidence, not another prompt-tuning
+input, and the preset remains experimental.
 
 The current `akno-listwise-v4` / `compact-entries-v3` contract uses per-request candidate-id enums, requires
 the output array to have exactly the candidate count, and explicitly grades instruction-only excerpts as 0.
@@ -803,7 +810,10 @@ selected-variant responses.
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The
 earlier end-to-end development run remains useful failure-handling evidence—it stopped when the selected
-embedding model produced 0 of 120 vectors—but it cannot satisfy the current contract's release gate.
+embedding model produced 0 of 120 vectors—but it cannot satisfy the current contract's release gate. A fresh
+setup preflight confirms the configured OpenAI project can call Luna but receives a redacted 403 for
+`text-embedding-3-small`; its model list exposes no embedding model id. End-to-end single-endpoint evidence is
+therefore blocked on provider capability, not replaced with lexical fallback or a second endpoint.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL
