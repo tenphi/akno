@@ -21,10 +21,15 @@ import {
 
 export type { RankingBenchSplit, RankingCategory } from './ranking-corpus.ts';
 export type RankingBenchSystem = 'fusion' | 'native' | 'llm';
+export type RankingCandidateCount = 10 | 20 | 40;
+export type RankingExcerptChars = 400 | 800 | 1600;
 
 export interface RankingBenchOptions {
   system: RankingBenchSystem;
   split?: RankingBenchSplit;
+  candidateCount?: RankingCandidateCount;
+  excerptChars?: RankingExcerptChars;
+  concurrency?: number;
   provider?: string;
   model?: string;
   reasoningEffort?: ReasoningEffort;
@@ -56,6 +61,15 @@ export interface RankingCategoryReport {
   ndcgDeltaFromFusion: number;
 }
 
+export interface RankingQueryReport {
+  queryId: string;
+  category: RankingCategory;
+  order: string[];
+  rejected: string[] | null;
+  latencyMs: number;
+  fallback: string | null;
+}
+
 export interface RankingBenchReport {
   passed: boolean;
   development: true;
@@ -79,6 +93,7 @@ export interface RankingBenchReport {
   fusionBaseline: RankingQualityMetrics;
   ndcgDeltaFromFusion: number;
   byCategory: RankingCategoryReport[];
+  queries: RankingQueryReport[];
   qualification: RankingQualificationMetrics | null;
   validResponseRate: number;
   fallbackQueries: string[];
@@ -87,7 +102,9 @@ export interface RankingBenchReport {
   maxLatencyMs: number;
   execution: {
     requests: number;
-    concurrency: 1;
+    concurrency: number;
+    candidateCount: RankingCandidateCount;
+    excerptChars: RankingExcerptChars;
     maxExcerptChars: number;
     tokenUsage: null;
   };
@@ -127,7 +144,10 @@ export async function runRankingBench(
 ): Promise<RankingBenchReport> {
   validateRankingCorpus();
   const split = options.split ?? 'development';
-  const cases = rankingCorpusCases(split);
+  const candidateCount = options.candidateCount ?? 20;
+  const excerptChars = options.excerptChars ?? 800;
+  const concurrency = normalizeConcurrency(options.concurrency ?? 1);
+  const cases = rankingCorpusCases(split).map((benchCase) => selectPool(benchCase, candidateCount));
   const baselineOutcomes: QueryOutcome[] = cases.map((benchCase) => ({
     order: benchCase.pool.map((_, index) => index),
     rejected: null,
@@ -154,9 +174,10 @@ export async function runRankingBench(
     provider = options.provider ?? 'openai';
     model = options.model ?? 'gpt-5.6-luna';
     reasoningEffort = options.reasoningEffort ?? 'none';
-    const client = liveClient(config, provider, model, reasoningEffort);
-    outcomes = [];
-    for (const benchCase of cases) outcomes.push(await runLlmCase(client, benchCase));
+    const client = liveClient(config, provider, model, reasoningEffort, candidateCount);
+    outcomes = await mapModelCases(cases, concurrency, (benchCase) =>
+      runLlmCase(client, benchCase, excerptChars),
+    );
   } else if (options.system === 'native') {
     const role = nativeRole(config, options);
     provider = role.provider?.name ?? options.provider ?? null;
@@ -187,10 +208,9 @@ export async function runRankingBench(
             highestIrrelevantScore: null,
             error: calibrated.error ?? 'calibration failed',
           };
-    outcomes = [];
-    for (const benchCase of cases) {
-      outcomes.push(await runNativeCase(client, benchCase, calibration.threshold));
-    }
+    outcomes = await mapConcurrent(cases, concurrency, (benchCase) =>
+      runNativeCase(client, benchCase, calibration.threshold, excerptChars),
+    );
     const observed = nativeScoreDiagnostics(cases, outcomes);
     calibration.lowestAnswerScore = observed?.lowestAnswerScore ?? null;
     calibration.lowestSupportScore = observed?.lowestSupportScore ?? null;
@@ -234,6 +254,7 @@ export async function runRankingBench(
     fusionBaseline,
     ndcgDeltaFromFusion: quality.ndcgAt10 - fusionBaseline.ndcgAt10,
     byCategory: categoryReports(cases, outcomes, baselineOutcomes),
+    queries: cases.map((benchCase, index) => queryReport(benchCase, outcomes[index]!)),
     qualification,
     validResponseRate,
     fallbackQueries: failures.map((failure) => failure.queryId),
@@ -242,10 +263,12 @@ export async function runRankingBench(
     maxLatencyMs: latencies.length === 0 ? 0 : Math.max(...latencies),
     execution: {
       requests: options.system === 'fusion' ? 0 : cases.length,
-      concurrency: 1,
+      concurrency,
+      candidateCount,
+      excerptChars,
       maxExcerptChars: Math.max(
         ...cases.flatMap((benchCase) =>
-          benchCase.pool.map((id) => RANKING_CORPUS.candidates[id]!.text.length),
+          benchCase.pool.map((id) => Math.min(excerptChars, RANKING_CORPUS.candidates[id]!.text.length)),
         ),
       ),
       tokenUsage: null,
@@ -282,7 +305,7 @@ export function validateRankingCorpus(): void {
     splitCategories.get(benchCase.split)!.add(benchCase.category);
     for (const id of benchCase.pool) splitCandidateIds.get(benchCase.split)!.add(id);
     if (!benchCase.intent.trim()) throw new Error(`${benchCase.id}: intent is empty`);
-    if (benchCase.pool.length !== 20) throw new Error(`${benchCase.id}: frozen pool must have 20 candidates`);
+    if (benchCase.pool.length !== 40) throw new Error(`${benchCase.id}: matrix pool must have 40 candidates`);
     if (new Set(benchCase.pool).size !== benchCase.pool.length)
       throw new Error(`${benchCase.id}: duplicate candidate`);
     const judgedIds = Object.keys(benchCase.judgments);
@@ -296,6 +319,8 @@ export function validateRankingCorpus(): void {
       return grade;
     });
     if (!grades.includes(3)) throw new Error(`${benchCase.id}: no direct answer`);
+    if (![1, 2, 3].every((grade) => grades.slice(0, 10).includes(grade as RelevanceGrade)))
+      throw new Error(`${benchCase.id}: smallest matrix pool must contain every relevant grade`);
     if (grades.filter((grade) => grade === 0).length < 3)
       throw new Error(`${benchCase.id}: too few hard negatives`);
     if (
@@ -323,11 +348,66 @@ export function validateRankingCorpus(): void {
   if (heldOutLeak) throw new Error(`${heldOutLeak}: fact source crosses the development/test boundary`);
 }
 
+function selectPool(benchCase: RankingCase, candidateCount: RankingCandidateCount): RankingCase {
+  const pool = benchCase.pool.slice(0, candidateCount);
+  return {
+    ...benchCase,
+    pool,
+    judgments: Object.fromEntries(pool.map((id) => [id, benchCase.judgments[id]!])),
+  };
+}
+
+function queryReport(benchCase: RankingCase, outcome: QueryOutcome): RankingQueryReport {
+  return {
+    queryId: benchCase.id,
+    category: benchCase.category,
+    order: outcome.order.map((index) => benchCase.pool[index]!),
+    rejected:
+      outcome.rejected === null ? null : [...outcome.rejected].map((index) => benchCase.pool[index]!).sort(),
+    latencyMs: outcome.latencyMs,
+    fallback: outcome.error,
+  };
+}
+
+async function mapModelCases(
+  cases: RankingCase[],
+  concurrency: number,
+  run: (benchCase: RankingCase) => Promise<QueryOutcome>,
+): Promise<QueryOutcome[]> {
+  if (cases.length === 0) return [];
+  // Let the client negotiate its structured-output dialect once before parallel requests share its cache.
+  const first = await run(cases[0]!);
+  const rest = await mapConcurrent(cases.slice(1), concurrency, run);
+  return [first, ...rest];
+}
+
+async function mapConcurrent<T, R>(
+  values: T[],
+  concurrency: number,
+  run: (value: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(values.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(concurrency, values.length) }, async () => {
+    while (next < values.length) {
+      const index = next++;
+      results[index] = await run(values[index]!);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
+function normalizeConcurrency(value: number): number {
+  return Number.isFinite(value) ? Math.max(1, Math.min(16, Math.floor(value))) : 1;
+}
+
 function liveClient(
   config: AknoConfig,
   providerName: string,
   modelId: string,
   reasoningEffort: ReasoningEffort,
+  candidateCount: RankingCandidateCount,
 ): ModelClient {
   const provider = config.providers[providerName] ?? null;
   return new ModelClient({
@@ -338,7 +418,7 @@ function liveClient(
     requested: true,
     timeoutMs: 60_000,
     rerankerMode: 'llm',
-    maxOutputTokens: 800,
+    maxOutputTokens: Math.max(256, Math.min(2048, candidateCount * 32 + 128)),
     reasoningEffort,
     unavailableReason: provider ? null : `provider "${providerName}" is not configured`,
   });
@@ -365,12 +445,16 @@ function nativeRole(config: AknoConfig, options: RankingBenchOptions): ResolvedM
   };
 }
 
-async function runLlmCase(model: ModelClient, benchCase: RankingCase): Promise<QueryOutcome> {
+async function runLlmCase(
+  model: ModelClient,
+  benchCase: RankingCase,
+  excerptChars: RankingExcerptChars,
+): Promise<QueryOutcome> {
   const candidates: LlmRerankCandidate[] = benchCase.pool.map((id) => {
     const candidate = RANKING_CORPUS.candidates[id]!;
     return {
       id: `c_${randomBytes(9).toString('base64url')}`,
-      text: candidate.text,
+      text: candidate.text.slice(0, excerptChars),
       sourceKind: candidate.sourceKind,
       matchedBy: ['lexical'],
     };
@@ -391,10 +475,11 @@ async function runNativeCase(
   model: ModelClient,
   benchCase: RankingCase,
   threshold: number | null,
+  excerptChars: RankingExcerptChars,
 ): Promise<QueryOutcome> {
   const result = await model.rerank(
     benchCase.query,
-    benchCase.pool.map((id) => RANKING_CORPUS.candidates[id]!.text),
+    benchCase.pool.map((id) => RANKING_CORPUS.candidates[id]!.text.slice(0, excerptChars)),
     benchCase.pool.length,
   );
   if (!result.ok || !result.value)

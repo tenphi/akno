@@ -80,6 +80,19 @@ describe('ranking benchmark metrics', () => {
     expect(report.releaseEligible).toBe(false);
   });
 
+  it('selects a frozen candidate-count slice and records bounded execution settings', async () => {
+    const report = await runRankingBench({} as AknoConfig, {
+      system: 'fusion',
+      candidateCount: 40,
+      excerptChars: 400,
+      concurrency: 99,
+    });
+
+    expect(report.corpus.judgments).toBe(2400);
+    expect(report.execution).toMatchObject({ candidateCount: 40, excerptChars: 400, concurrency: 16 });
+    expect(report.queries.every((query) => query.order.length === 40)).toBe(true);
+  });
+
   it('reports qualification separately at each relevance grade', () => {
     expect(
       qualificationFor([

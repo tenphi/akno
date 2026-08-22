@@ -1170,10 +1170,11 @@ provider accepts the prompt, schema, and reasoning setting; it is not the releva
 recommended preset.
 
 `akno bench ranking --system fusion|native|llm` is the larger development check. Its corpus contains 80
-invented queries, 120 sources, and a fixed 20-candidate pool per query. The default selects 60 development
-queries; `--split test` explicitly selects the 20 held-out queries. The split is stratified by category and by
-fact family, so target evidence cannot appear as a development answer and a held-out answer. Generic
-distractors and adversarial text may be shared because they are not the fact being judged.
+invented queries, 120 sources, and a fixed 40-candidate pool per query. A single run uses 20 candidates by
+default; `--candidates 10|20|40` takes a prefix of that same pool. The default selects 60 development queries;
+`--split test` explicitly selects the 20 held-out queries. The split is stratified by category and by fact
+family, so target evidence cannot appear as a development answer and a held-out answer. Generic distractors
+and adversarial text may be shared because they are not the fact being judged.
 
 Every system receives the same stable-id judgments. The report shows overall and per-category ordering,
 validity, latency, and qualification independently. Qualification separates grade-3 direct answers, grade-2
@@ -1181,10 +1182,32 @@ support, grade-1 marginal context, grade-0 rejection, and instruction-bearing ne
 threshold therefore cannot look safe merely because it removed many candidates: lost direct answers are a gate
 failure, while lost support and marginal context remain visible tradeoffs.
 
-The corpus currently says `independentlyReviewed: false`, so every report also says `development: true` and
-`releaseEligible: false`. Another reviewer must audit its invented content and judgments. The release decision
-additionally requires the repeatability matrix, stored artifact, and mechanical preset gate described by the
-ranking specification.
+`akno bench ranking --matrix` automates the tuning comparison. It runs the fusion baseline and optional
+native reference once, then repeats LLM `none` at 10, 20, and 40 candidates and `low` at 20. The defaults are
+five repetitions, 800 characters per candidate, and four concurrent requests; all are bounded CLI options.
+Concurrency shortens the run but does not change the per-request p50/p95/max measurements.
+
+With `--output <path>`, Akno atomically writes a content-safe artifact containing metrics and the stable ids
+of each query's top three results—not raw excerpts, private knowledge-base content, endpoints, or credentials.
+The median pairwise top-three overlap measures whether the user-visible head of the ranking changes between
+runs. The selector prefers `none` unless `low` gains more than 0.01 nDCG@10, then prefers the smallest
+equivalent candidate window.
+
+Selection is not authorization. A variant with at least one valid response can remain in the tuning comparison
+so reliability failures do not erase the evidence about it. The separate mechanical release gate then checks
+the held-out split, independent corpus review, persisted artifact, end-to-end direct-answer candidate recall at
+the selected window, five runs, overall and per-category quality, exact-entity MRR, response and fallback
+integrity, instruction safety, top-three stability, latency, and cheapest-equivalent selection. The corpus
+currently says `independentlyReviewed: false`, and a development split can never satisfy the held-out check, so
+development artifacts remain tuning evidence rather than a recommended preset.
+
+The first persisted five-run development matrix selected Luna `none` with 10 candidates. Its 0.965 nDCG@10 and
+100% median top-three overlap passed the quality and stability checks, and every fallback preserved fusion
+order. It still missed response validity and instruction safety at 99.33% each, plus the 2.5-second latency gate
+with a 2.89-second p95; end-to-end direct-answer candidate recall is not measured yet. Twenty and 40 candidates
+were slower and less accurate; `low` reasoning at 20 was also slower and less accurate. These measurements
+narrow the next work to response reliability, candidate-generation coverage, and hot-path latency—not more
+reasoning or a larger candidate window.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

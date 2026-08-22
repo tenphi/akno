@@ -36,11 +36,31 @@ export {
   type RankingBenchReport,
   type RankingBenchSplit,
   type RankingBenchSystem,
+  type RankingCandidateCount,
   type RankingCategory,
   type RankingCategoryReport,
+  type RankingExcerptChars,
   type RankingQualityMetrics,
   type RankingQualificationMetrics,
+  type RankingQueryReport,
 } from './bench/ranking.ts';
+export {
+  evaluateRankingRelease,
+  markRankingMatrixPersisted,
+  refreshRankingMatrixReport,
+  medianTop3Overlap,
+  RANKING_MATRIX_SCHEMA_VERSION,
+  runRankingMatrix,
+  type RankingEndToEndEvidence,
+  type RankingMatrixOptions,
+  type RankingMatrixProgress,
+  type RankingMatrixReport,
+  type RankingMatrixRun,
+  type RankingMatrixSelection,
+  type RankingMatrixVariant,
+  type RankingReleaseCheck,
+  type RankingReleaseGate,
+} from './bench/ranking-matrix.ts';
 export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.ts';
 export type { WatcherEvents } from './watch/watcher.ts';
 export type { AknoWatchEvents } from './open.ts';

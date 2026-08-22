@@ -694,9 +694,10 @@ transport, schema, order, labels, and latency. It never opens the index. Passing
 the larger relevance release gate.
 
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
-knowledge base. The corpus has 120 sources, 20 candidates per query, 1,600 stable-id judgments, and a fact-level
-60/20 development/test split that preserves all eight categories on both sides. It compares the same frozen
-pools across rank fusion, the configured native reranker, or a prompted LLM:
+knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level
+60/20 development/test split that preserves all eight categories on both sides. A normal run selects the first
+20 candidates; `--candidates 10|20|40` changes that window without changing the frozen pool. It compares the
+same candidates across rank fusion, the configured native reranker, or a prompted LLM:
 
 ```bash
 akno bench ranking --system fusion
@@ -704,6 +705,19 @@ akno bench ranking --system native
 akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning none
 akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning low
 ```
+
+The repeatability matrix compares no reasoning at 10, 20, and 40 candidates with low reasoning at 20. Fusion
+and an available native reranker provide references. LLM variants run five times by default, with bounded
+request concurrency; reported latency remains per request rather than hiding it behind wall-clock parallelism.
+
+```bash
+akno bench ranking --matrix --concurrency 4 \
+  --output benchmarks/ranking/results/development-openai-luna.json
+```
+
+The artifact contains aggregate metrics, prompt/schema identifiers, and stable invented candidate ids for the
+top three results. It contains no knowledge-base text, endpoint URL, credential, or raw model request. Writes
+are atomic, so an interrupted benchmark cannot leave a result that appears complete.
 
 Development is the default. `--split test` explicitly selects the held-out 20 queries; prompt work must use the
 default split so test evidence is not quietly turned into tuning data. Only generic distractors and adversarial
@@ -715,10 +729,22 @@ strong support, marginal context, rejected grade-0 candidates, and instruction-b
 development gate requires a valid response for every query, no nDCG regression from fusion, every direct answer
 retained, and every instruction-bearing negative rejected.
 
-Reports still carry `releaseEligible: false`. The corpus is authored but deliberately marked
-`independentlyReviewed: false`; another reviewer must audit its sources, intents, pools, and judgments. Release
-also needs the repeated-run matrix and a stored result artifact. This keeps a good development result from
-silently becoming the evidence used to recommend the setup.
+Matrix selection is deliberately separate from release. It chooses the least expensive comparable variant:
+`none` wins unless `low` improves nDCG@10 by more than 0.01, then the smallest equivalent candidate window
+wins. The mechanical release gate still requires an explicitly selected held-out run, independent corpus
+review, a persisted artifact, end-to-end direct-answer candidate recall at the selected window, five
+repetitions, quality and exact-entity floors, valid/fallback-safe responses, perfect instruction-negative
+rejection, stable top-three results, and the latency budget. A useful development result can therefore
+recommend the next experiment without silently authorizing the setup preset.
+
+The checked-in [development matrix](benchmarks/ranking/results/development-openai-luna-2026-08-22.json)
+selects Luna with `none` reasoning and 10 candidates: 0.965 nDCG@10, 100% median top-three overlap, and 2.89 s
+p95 latency across five runs. It is not release evidence. Response validity and instruction-negative rejection
+were both 99.33%, just below their gates; latency missed 2.5 s; the corpus is unreviewed; and the held-out split
+remains untouched. End-to-end retrieval has not yet proved that the direct answer reaches the selected
+10-candidate window. Increasing the window to 20 or 40 reduced quality and raised p95 to 3.48 s and 6.24 s;
+`low` reasoning at 20 reached 0.937 nDCG and 7.12 s p95. The optional native reference reached 0.907 nDCG and
+1.20 s p95.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL

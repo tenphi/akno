@@ -1,14 +1,22 @@
+import { randomUUID } from 'node:crypto';
+import fsp from 'node:fs/promises';
+import path from 'node:path';
 import {
+  markRankingMatrixPersisted,
   open,
   runBench,
   runLlmRankingProbe,
   runMixedRetrievalBench,
   runRankingBench,
+  runRankingMatrix,
   type Akno,
   type MixedRetrievalBenchReport,
   type RankingBenchReport,
   type RankingBenchSplit,
   type RankingBenchSystem,
+  type RankingCandidateCount,
+  type RankingExcerptChars,
+  type RankingMatrixReport,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
@@ -31,8 +39,17 @@ const BENCH_HELP = `akno bench [options]
                       generative endpoint. This is not the ranking release gate.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
+  ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
+                      Luna low at 20 candidates with repeated stability checks.
     --split <name>    development, test, or all (default development). Test is
                       held out from prompt tuning and must be selected explicitly.
+    --candidates <n>  10, 20, or 40 for a single-system run (default 20).
+    --excerpt-chars <n> 400, 800, or 1600 (default 800).
+    --concurrency <n> Simultaneous model requests, 1..16 (single default 1,
+                      matrix default 4). Latency remains per request.
+    --runs <n>        Repetitions per LLM matrix variant, 1..10 (default 5).
+    --skip-native     Omit the optional native reference from a matrix.
+    --output <path>   Atomically persist the content-safe matrix artifact.
     --provider <name> Configured provider (default openai).
     --model <id>      Generative model (default gpt-5.6-luna).
     --reasoning <v>   none, low, medium, high, xhigh, or max (default none).
@@ -46,21 +63,35 @@ export async function benchCommand(argv: string[]): Promise<number> {
     'retrieval-only': boolean;
     write: boolean;
     probe: boolean;
+    matrix: boolean;
+    'skip-native': boolean;
     provider?: string;
     model?: string;
     reasoning?: string;
     split?: string;
     system?: string;
+    candidates?: string;
+    'excerpt-chars'?: string;
+    concurrency?: string;
+    runs?: string;
+    output?: string;
   }>(argv, {
     iterations: { type: 'string' },
     'retrieval-only': { type: 'boolean', default: false },
     write: { type: 'boolean', default: false },
     probe: { type: 'boolean', default: false },
+    matrix: { type: 'boolean', default: false },
+    'skip-native': { type: 'boolean', default: false },
     provider: { type: 'string' },
     model: { type: 'string' },
     reasoning: { type: 'string' },
     split: { type: 'string' },
     system: { type: 'string' },
+    candidates: { type: 'string' },
+    'excerpt-chars': { type: 'string' },
+    concurrency: { type: 'string' },
+    runs: { type: 'string' },
+    output: { type: 'string' },
   });
 
   if (values.help) {
@@ -76,6 +107,44 @@ export async function benchCommand(argv: string[]): Promise<number> {
     }
     const { loadConfig } = await import('@tenphi/akno-core');
     const config = loadConfig(openOptionsFrom(values));
+    if (values.matrix) {
+      if (values.probe || values.system || values.candidates || values.reasoning) {
+        fail('--matrix cannot be combined with --probe, --system, --candidates, or --reasoning');
+        return 2;
+      }
+      const split = parseRankingSplit(values.split);
+      const excerptChars = parseExcerptChars(values['excerpt-chars']);
+      const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
+      const runs = parseBoundedInteger(values.runs, 1, 10, 'runs');
+      if (!split || !excerptChars || concurrency === null || runs === null) return 2;
+      let report = await runRankingMatrix(config, {
+        split,
+        excerptChars,
+        ...(values.provider ? { provider: values.provider } : {}),
+        ...(values.model ? { model: values.model } : {}),
+        ...(values.concurrency ? { concurrency } : {}),
+        ...(values.runs ? { runs } : {}),
+        ...(values['skip-native'] ? { includeNative: false } : {}),
+        ...(!values.json
+          ? {
+              onProgress: ({ variant, run, runs: total }: { variant: string; run: number; runs: number }) =>
+                line(`  ${variant}  run ${run}/${total}`),
+            }
+          : {}),
+      });
+      let artifactPath: string | null = null;
+      if (values.output) {
+        report = markRankingMatrixPersisted(report);
+        artifactPath = await writeRankingArtifact(values.output, report);
+      }
+      if (values.json) json(report);
+      else renderRankingMatrix(report, artifactPath);
+      return report.variants
+        .filter((variant) => variant.system === 'llm')
+        .every((variant) => variant.comparisonEligible)
+        ? 0
+        : 1;
+    }
     if (values.probe) {
       const report = await runLlmRankingProbe(config, {
         ...(values.provider ? { provider: values.provider } : {}),
@@ -111,9 +180,20 @@ export async function benchCommand(argv: string[]): Promise<number> {
       fail(`invalid ranking split: ${values.split}`);
       return 2;
     }
+    const candidateCount = parseCandidateCount(values.candidates);
+    const excerptChars = parseExcerptChars(values['excerpt-chars']);
+    const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
+    if (!candidateCount || !excerptChars || concurrency === null) return 2;
+    if (values.output || values.runs || values['skip-native']) {
+      fail('--output, --runs, and --skip-native require --matrix');
+      return 2;
+    }
     const report = await runRankingBench(config, {
       system,
       split,
+      candidateCount,
+      excerptChars,
+      ...(values.concurrency ? { concurrency } : {}),
       ...(values.provider ? { provider: values.provider } : {}),
       ...(values.model ? { model: values.model } : {}),
       reasoningEffort: reasoning,
@@ -236,6 +316,33 @@ function parseRankingSplit(value: string | undefined): RankingBenchSplit | null 
   return split === 'development' || split === 'test' || split === 'all' ? split : null;
 }
 
+function parseCandidateCount(value: string | undefined): RankingCandidateCount | null {
+  const count = Number(value ?? 20);
+  if (count === 10 || count === 20 || count === 40) return count;
+  fail(`invalid candidate count: ${value}`);
+  return null;
+}
+
+function parseExcerptChars(value: string | undefined): RankingExcerptChars | null {
+  const chars = Number(value ?? 800);
+  if (chars === 400 || chars === 800 || chars === 1600) return chars;
+  fail(`invalid excerpt length: ${value}`);
+  return null;
+}
+
+function parseBoundedInteger(
+  value: string | undefined,
+  minimum: number,
+  maximum: number,
+  label: string,
+): number | null {
+  if (value === undefined) return minimum;
+  const parsed = Number(value);
+  if (Number.isInteger(parsed) && parsed >= minimum && parsed <= maximum) return parsed;
+  fail(`invalid ${label}: ${value} (expected ${minimum}..${maximum})`);
+  return null;
+}
+
 function renderRetrieval(report: MixedRetrievalBenchReport): void {
   heading(
     `Mixed retrieval — invented corpus, ${report.corpus.pages} pages, ` +
@@ -307,6 +414,56 @@ function renderRanking(report: RankingBenchReport): void {
         : 'The corpus awaits independent review and cannot authorize a preset release.',
     ),
   );
+}
+
+function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string | null): void {
+  heading(
+    `Ranking matrix — ${report.split}, ${report.requestedRuns} repeated runs, concurrency ${report.concurrency}`,
+  );
+  for (const variant of report.variants) {
+    const stability = variant.medianTop3Overlap === null ? 'n/a' : percent(variant.medianTop3Overlap);
+    line(
+      `  ${variant.id.padEnd(16)} ${variant.comparisonEligible ? style.green('measured') : style.red('UNAVAILABLE')}  ` +
+        `nDCG ${fixed(variant.quality.ndcgAt10)}  Δ ${signed(variant.ndcgDeltaFromFusion)}  ` +
+        `top3 ${stability}  p95 ${Math.round(variant.p95LatencyMs)}ms`,
+    );
+  }
+  if (report.selection) {
+    line(
+      `\n  selected  ${report.selection.variantId}: ${report.selection.candidateCount} candidates, ` +
+        `${report.selection.reasoningEffort} reasoning`,
+    );
+    line(`  ${style.grey(report.selection.rationale)}`);
+  }
+  if (artifactPath) line(`  artifact  ${artifactPath}`);
+  if (report.releaseGate.blockers.length > 0) {
+    line(`  release blockers  ${report.releaseGate.blockers.join(', ')}`);
+  }
+  const measurementsComplete = report.variants
+    .filter((variant) => variant.system === 'llm')
+    .every((variant) => variant.comparisonEligible);
+  line(
+    `\n${measurementsComplete ? style.green('matrix measurements complete') : style.red('matrix measurements incomplete')}`,
+  );
+  line(
+    report.releaseEligible
+      ? style.green('Stored held-out evidence satisfies every release gate.')
+      : style.grey('The preset remains blocked until every release gate is evidenced.'),
+  );
+}
+
+async function writeRankingArtifact(target: string, report: RankingMatrixReport): Promise<string> {
+  const absolute = path.resolve(target);
+  await fsp.mkdir(path.dirname(absolute), { recursive: true });
+  const temporary = `${absolute}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await fsp.writeFile(temporary, `${JSON.stringify(report, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+    await fsp.rename(temporary, absolute);
+  } catch (error) {
+    await fsp.unlink(temporary).catch(() => undefined);
+    throw error;
+  }
+  return absolute;
 }
 
 function metricValue(value: number, unit: RetrievalBenchResult['unit']): string {

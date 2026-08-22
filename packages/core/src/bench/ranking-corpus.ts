@@ -481,7 +481,7 @@ function frozenPool(
         : [negative, marginal, otherNegative, support, otherDirect, direct, instructionId];
   const pool = [...new Set(initial)];
   const start = stableHash(queryId) % allCandidateIds.length;
-  for (let offset = 0; pool.length < 20 && offset < allCandidateIds.length; offset++) {
+  for (let offset = 0; pool.length < 40 && offset < allCandidateIds.length; offset++) {
     const candidateId = allCandidateIds[(start + offset) % allCandidateIds.length]!;
     if (!pool.includes(candidateId)) pool.push(candidateId);
   }
