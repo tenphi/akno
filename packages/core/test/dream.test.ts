@@ -808,7 +808,24 @@ describe('observe', () => {
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
 
-  it('keeps legacy inference read-only under the review profile', async () => {
+  it('seals an exact audit plan without writing or making a decision', async () => {
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe', mode: 'audit' });
+
+    expect(report.observations[0]).toMatchObject({ action: 'would-create' });
+    expect(report.maintenancePlan).toMatchObject({ phase: 'observe', mode: 'audit', status: 'ready' });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      kind: 'observe',
+      policy: 'audit',
+      status: 'proposed',
+      decision: null,
+    });
+    expect(mem.maintenanceDiff(report.maintenancePlan!.id)).toContain(PATTERN);
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+  });
+
+  it('seals observations for human review under the review profile', async () => {
     await mem.close();
     mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
     await mem.index({});
@@ -817,15 +834,132 @@ describe('observe', () => {
     const report = await mem.dream({ phase: 'observe' });
 
     expect(report.run).toMatchObject({ profile: 'review', mode: 'review' });
-    expect(report.observations[0]).toMatchObject({ action: 'created' });
+    expect(report.observations[0]).toMatchObject({ action: 'would-create' });
+    expect(report.maintenancePlan).toMatchObject({ phase: 'observe', status: 'awaiting_review' });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      kind: 'observe',
+      policy: 'review',
+      status: 'proposed',
+    });
     expect(report.changeId).toBeNull();
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
     expect(mem.maintenanceStatus().authority).toMatchObject({
       profile: 'review',
       mode: 'review',
       inference: 'preview',
+      observe: 'review',
       automaticKnowledgeBaseWrites: false,
     });
+
+    const item = report.maintenancePlan!.items[0]!;
+    mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'The invented pattern is well supported.');
+    const applied = await mem.applyPlan(report.maintenancePlan!.id);
+    expect(applied.plan.items[0]).toMatchObject({ status: 'applied', verification: { status: 'passed' } });
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
+      PATTERN,
+    );
+  });
+
+  it('does not resubmit an unchanged human-rejected observation', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const first = await mem.dream({ phase: 'observe' });
+    const item = first.maintenancePlan!.items[0]!;
+    mem.decidePlan(first.maintenancePlan!.id, item.id, 'reject', 'This invented pattern is not useful.');
+
+    const repeated = await mem.dream({ phase: 'observe' });
+
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(repeated.observations[0]).toMatchObject({ action: 'rejected' });
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+  });
+
+  it('refuses an approved observation when sealed evidence changes before apply', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+    const item = report.maintenancePlan!.items[0]!;
+    fs.appendFileSync(path.join(root, 'home/appliances.md'), '\nAn invented later note.\n');
+    mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'Approved before evidence changed.');
+
+    const applied = await mem.applyPlan(report.maintenancePlan!.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(applied.files).toEqual([]);
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+  });
+
+  it('uses a separate curator and verified plan apply under the autonomous profile', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'autonomous', observe: { enabled: true } } });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.run).toMatchObject({ profile: 'autonomous', mode: 'auto', status: 'completed' });
+    expect(report.observations[0]).toMatchObject({ action: 'created' });
+    expect(item).toMatchObject({
+      kind: 'observe',
+      policy: 'auto',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(report.budget.used).toMatchObject({ items: 1, filesChanged: 1, highRiskItems: 0 });
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
+      PATTERN,
+    );
+
+    server.reply({
+      observations: [
+        {
+          pattern: 'Household appliances are serviced every four months, in rotation.',
+          evidence: ['home/laundry', 'home/kitchen'],
+          confidence: 0.8,
+        },
+      ],
+    });
+    const refined = await mem.dream({ phase: 'observe' });
+    const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    expect(refined.observations[0]).toMatchObject({ action: 'refined' });
+    expect(page).toContain(PATTERN);
+    expect(page).toContain('every four months');
+    expect(page.match(/^- \d{4}-\d{2}-\d{2} —/gm)).toHaveLength(2);
+  });
+
+  it('defers an approved autonomous observation before writing when the run budget is zero', async () => {
+    await mem.close();
+    mem = await openMem({
+      maintenance: {
+        profile: 'autonomous',
+        observe: { enabled: true },
+        limits: { max_items: 0 },
+      },
+    });
+    await mem.index({});
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(report.run).toMatchObject({
+      status: 'partially_completed',
+      budget: { used: { items: 0, filesChanged: 0 }, deferredItems: 1 },
+    });
+    expect(report.observations[0]).toMatchObject({ action: 'would-create' });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      decision: null,
+    });
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
 });
 

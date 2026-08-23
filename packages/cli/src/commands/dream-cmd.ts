@@ -155,8 +155,10 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
   }
 
   if (report.observations.length > 0) {
-    const wrote = report.observations.filter((entry) => entry.action !== 'unchanged');
-    heading(`${wrote.length} observation(s)${readOnly ? ' would be written' : ' written'}`);
+    const changed = report.observations.filter(
+      (entry) => entry.action !== 'unchanged' && entry.action !== 'rejected',
+    );
+    heading(`${changed.length} observation proposal/result(s)`);
     if (privateDetails) {
       for (const entry of report.observations) {
         const mark =
@@ -164,7 +166,11 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
             ? style.green('new    ')
             : entry.action === 'refined'
               ? style.cyan('refined')
-              : style.grey('same   ');
+              : entry.action === 'would-create' || entry.action === 'would-refine'
+                ? style.cyan('planned')
+                : entry.action === 'rejected'
+                  ? style.yellow('rejected')
+                  : style.grey('same   ');
         line(`  ${mark} ${entry.slug}`);
         line(`          ${truncate(entry.pattern, 96)}`);
         line(`          ${style.grey(`evidence: ${entry.evidence.join(', ')}`)}`);
@@ -174,6 +180,8 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       kv([
         ['created', counts.created ?? 0],
         ['refined', counts.refined ?? 0],
+        ['planned', (counts['would-create'] ?? 0) + (counts['would-refine'] ?? 0)],
+        ['rejected', counts.rejected ?? 0],
         ['unchanged', counts.unchanged ?? 0],
       ]);
     }
@@ -502,6 +510,8 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       total: report.observations.length,
       created: observations.created ?? 0,
       refined: observations.refined ?? 0,
+      planned: (observations['would-create'] ?? 0) + (observations['would-refine'] ?? 0),
+      rejected: observations.rejected ?? 0,
       unchanged: observations.unchanged ?? 0,
     },
     curation: {

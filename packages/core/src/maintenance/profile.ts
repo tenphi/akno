@@ -18,8 +18,9 @@ export interface MaintenanceAuthority {
   profile: MaintenanceProfile;
   mode: MaintenanceMode | 'custom';
   automaticKnowledgeBaseWrites: boolean;
-  /** Observe and reflect are not plan-backed yet, so review deliberately lowers them to preview. */
+  /** Reflect is not plan-backed yet, so review deliberately lowers it to preview. */
   inference: 'preview' | 'write-when-enabled';
+  observe: MaintenancePhaseAuthority;
   curate: MaintenancePhaseAuthority;
   adopt: MaintenancePhaseAuthority;
   policies: Record<MaintenanceTransform, EffectiveMaintenancePolicy>;
@@ -29,17 +30,20 @@ export interface MaintenanceAuthority {
 export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceAuthority {
   const mode = profileMode(config.maintenance.profile) ?? 'custom';
   const inference = mode === 'audit' || mode === 'review' ? 'preview' : 'write-when-enabled';
-  const inferenceWrites =
-    inference === 'write-when-enabled' &&
-    (config.maintenance.observe.enabled || config.maintenance.reflect.enabled);
+  const inferenceWrites = inference === 'write-when-enabled' && config.maintenance.reflect.enabled;
   const policies = Object.fromEntries(
     MAINTENANCE_TRANSFORMS.map((kind) => [kind, configuredTransformPolicy(config, kind)]),
   ) as Record<MaintenanceTransform, EffectiveMaintenancePolicy>;
   const policyMatrix = config.maintenance.profile !== 'custom' || config.maintenance.policiesConfigured;
+  const observe = policyMatrix
+    ? policyPhaseAuthority(config.maintenance.observe.enabled, [policies.observe])
+    : phaseAuthority(config.maintenance.observe.enabled, null, true);
   const curate = policyMatrix
     ? policyPhaseAuthority(
         config.maintenance.curate.enabled,
-        MAINTENANCE_TRANSFORMS.filter((kind) => kind !== 'adopt').map((kind) => policies[kind]),
+        MAINTENANCE_TRANSFORMS.filter((kind) => kind !== 'observe' && kind !== 'adopt').map(
+          (kind) => policies[kind],
+        ),
       )
     : phaseAuthority(
         config.maintenance.curate.enabled,
@@ -51,6 +55,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
     : phaseAuthority(config.maintenance.adopt.enabled, config.maintenance.adopt.mode, false);
   const planWrites = MAINTENANCE_TRANSFORMS.some((kind) => {
     if (policies[kind] !== 'auto') return false;
+    if (kind === 'observe') return config.maintenance.observe.enabled;
     if (kind === 'adopt') return config.maintenance.adopt.enabled;
     if (!config.maintenance.curate.enabled) return false;
     if (kind === 'contradiction') return config.maintenance.conflicts.resolve;
@@ -62,6 +67,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
     mode,
     automaticKnowledgeBaseWrites: inferenceWrites || planWrites || curate === 'legacy-write',
     inference,
+    observe,
     curate,
     adopt,
     policies,
@@ -77,6 +83,9 @@ export function configuredTransformPolicy(
   const configured = config.maintenance.policies[kind];
   if (configured) return configured;
   if (config.maintenance.policiesConfigured) return 'off';
+  if (kind === 'observe') {
+    return config.maintenance.observe.enabled ? 'legacy-write' : 'off';
+  }
   if (kind === 'adopt') {
     return config.maintenance.adopt.enabled ? (config.maintenance.adopt.mode ?? 'off') : 'off';
   }
@@ -121,21 +130,25 @@ export function assertMaintenanceModeAllowed(config: AknoConfig, options: DreamO
   }
 
   if (config.maintenance.profile !== 'custom') return;
-  const phases: DreamPhase[] = options.phase ? [options.phase] : ['curate', 'adopt'];
+  const phases: DreamPhase[] = options.phase ? [options.phase] : ['observe', 'curate', 'adopt'];
   for (const phase of phases) {
     const enabled =
-      phase === 'curate'
-        ? config.maintenance.curate.enabled
-        : phase === 'adopt'
-          ? config.maintenance.adopt.enabled
-          : false;
+      phase === 'observe'
+        ? config.maintenance.observe.enabled
+        : phase === 'curate'
+          ? config.maintenance.curate.enabled
+          : phase === 'adopt'
+            ? config.maintenance.adopt.enabled
+            : false;
     if (!enabled) continue;
     const configured =
-      phase === 'curate'
-        ? config.maintenance.curate.mode
-        : phase === 'adopt'
-          ? config.maintenance.adopt.mode
-          : null;
+      phase === 'observe'
+        ? null
+        : phase === 'curate'
+          ? config.maintenance.curate.mode
+          : phase === 'adopt'
+            ? config.maintenance.adopt.mode
+            : null;
     if (configured && authorityRank(options.mode) > authorityRank(configured)) {
       throw authorityError(options.mode, `configured ${phase} mode`, configured);
     }

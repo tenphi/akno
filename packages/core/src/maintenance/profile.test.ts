@@ -67,18 +67,22 @@ describe('maintenance profiles', () => {
       mode,
       automaticKnowledgeBaseWrites: automaticWrites,
       inference: profile === 'autonomous' ? 'write-when-enabled' : 'preview',
+      observe: 'disabled',
       curate: mode,
       adopt: mode,
     });
   });
 
-  it('previews legacy inference in review and accepts a lower one-run mode in autonomous', () => {
+  it('plans observe under named profiles while reflect keeps its legacy preview ceiling', () => {
     const review = fixtureConfig({ profile: 'review', observe: { enabled: true } });
     const autonomous = fixtureConfig({ profile: 'autonomous', observe: { enabled: true } });
 
     expect(inferenceDryRun(review, {})).toBe(true);
     expect(inferenceDryRun(autonomous, {})).toBe(false);
     expect(inferenceDryRun(autonomous, { mode: 'audit' })).toBe(true);
+    expect(configuredMaintenanceAuthority(review).observe).toBe('review');
+    expect(configuredMaintenanceAuthority(autonomous).observe).toBe('auto');
+    expect(effectiveTransformPolicy(autonomous, 'observe', 'audit')).toBe('audit');
     expect(() => assertMaintenanceModeAllowed(autonomous, { mode: 'audit' })).not.toThrow();
     expect(() => assertMaintenanceModeAllowed(review, { mode: 'auto' })).toThrow(
       "mode 'auto' exceeds the review profile authority 'review'",
@@ -117,6 +121,7 @@ describe('maintenance profiles', () => {
       curate: 'auto',
       adopt: 'disabled',
       policies: {
+        observe: 'off',
         hygiene: 'auto',
         merge: 'review',
         synthesis: 'off',

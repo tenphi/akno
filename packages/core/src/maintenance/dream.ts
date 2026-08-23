@@ -6,6 +6,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
+import { sha256 } from '../store/ids.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
@@ -25,12 +26,14 @@ import {
   applyMaintenancePlan,
   createAdoptionPlan,
   createCurationPlan,
+  createObservationPlan,
   decideMaintenancePlanWithCurator,
   findActiveMaintenancePlan,
   type MaintenanceItem,
   type MaintenanceMode,
   type MaintenancePlan,
   type MaintenancePlanSummary,
+  type ObservationPlanDraft,
 } from './plans.ts';
 import {
   beginDreamRun,
@@ -99,7 +102,7 @@ export const DREAM_PHASES: DreamPhase[] = [
   'housekeeping',
 ];
 
-const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'adopt'>[] = [
+const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'observe' | 'adopt'>[] = [
   'hygiene',
   'synthesis',
   'split',
@@ -113,7 +116,7 @@ export interface ObservationWritten {
   slug: string;
   pattern: string;
   evidence: string[];
-  action: 'created' | 'refined' | 'unchanged';
+  action: 'created' | 'refined' | 'would-create' | 'would-refine' | 'rejected' | 'unchanged';
 }
 
 export interface PhaseReport {
@@ -158,11 +161,12 @@ export interface DreamReport {
   /** @deprecated Direct repair writes were retired; link item change ids live on the plan. */
   repairChangeId: string | null;
   housekeeping: Housekeeping | null;
+  /** @deprecated One legacy observe change, or one plan-backed observation item for compatibility. */
   changeId: string | null;
-  /** The `adopt` phase's change, kept apart from observe's. */
+  /** The `adopt` phase's compatibility change id, kept apart from observations. */
   adoptChangeId: string | null;
   curateChangeId: string | null;
-  /** The sealed artifact produced by plan-backed curation, when a mode was selected. */
+  /** Most recently touched sealed maintenance plan, retained for older single-plan callers. */
   maintenancePlan: DreamMaintenancePlan | null;
   /** Every phase-specific plan touched by this run. */
   maintenancePlans: DreamMaintenancePlan[];
@@ -179,7 +183,7 @@ export interface DreamOptions {
   phase?: DreamPhase;
   /** Report what would be written without touching disk. */
   dryRun?: boolean;
-  /** Authority policy for a durable curate or adopt plan. */
+  /** Authority policy for a durable observe, curate, or adopt plan. */
   mode?: MaintenanceMode;
 }
 
@@ -276,12 +280,17 @@ function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
   if (configuredProfileMode) return configuredProfileMode;
   if (ctx.config.maintenance.policiesConfigured) {
     const kinds: MaintenanceTransform[] =
-      options.phase === 'adopt'
-        ? ['adopt']
-        : options.phase === 'curate'
-          ? CURATE_POLICY_KINDS
-          : [...CURATE_POLICY_KINDS, 'adopt'];
+      options.phase === 'observe'
+        ? ['observe']
+        : options.phase === 'adopt'
+          ? ['adopt']
+          : options.phase === 'curate'
+            ? CURATE_POLICY_KINDS
+            : ['observe', ...CURATE_POLICY_KINDS, 'adopt'];
     return highestPolicyMode(kinds.map((kind) => effectiveTransformPolicy(ctx.config, kind))) ?? 'legacy';
+  }
+  if (options.phase === 'observe') {
+    return policyMode(effectiveTransformPolicy(ctx.config, 'observe')) ?? 'legacy';
   }
   if (options.phase === 'adopt') return ctx.config.maintenance.adopt.mode ?? 'legacy';
   if (!options.phase) {
@@ -303,13 +312,13 @@ function usesPolicyMatrix(ctx: AknoContext, options: DreamOptions): boolean {
 function curationPolicies(
   ctx: AknoContext,
   options: DreamOptions,
-): Record<Exclude<MaintenanceTransform, 'adopt'>, MaintenancePolicy> {
+): Record<Exclude<MaintenanceTransform, 'observe' | 'adopt'>, MaintenancePolicy> {
   return Object.fromEntries(
     CURATE_POLICY_KINDS.map((kind) => {
       const effective = effectiveTransformPolicy(ctx.config, kind, options.mode);
       return [kind, policyMode(effective) ?? 'off'];
     }),
-  ) as Record<Exclude<MaintenanceTransform, 'adopt'>, MaintenancePolicy>;
+  ) as Record<Exclude<MaintenanceTransform, 'observe' | 'adopt'>, MaintenancePolicy>;
 }
 
 function planMatchesPolicies(
@@ -330,10 +339,16 @@ async function runPhase(
   switch (phase) {
     case 'observe': {
       if (!ctx.config.maintenance.observe.enabled) return 'disabled in config';
+      if (
+        usesPolicyMatrix(ctx, options) &&
+        !policyMode(effectiveTransformPolicy(ctx.config, 'observe', options.mode))
+      ) {
+        return 'observe policy is off';
+      }
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await observePhase(ctx, { ...options, dryRun: inferenceDryRun(ctx.config, options) }, report, applied);
+      await observePhase(ctx, options, report, applied, budget);
       return null;
     }
     case 'reflect': {
@@ -658,7 +673,12 @@ function linkDraftPaths(draft: BrokenLinkDraft): string[] {
 }
 
 function isGeneralCurationItem(item: MaintenanceItem): boolean {
-  return item.kind !== 'contradiction' && item.kind !== 'broken_link' && item.kind !== 'adopt';
+  return (
+    item.kind !== 'observe' &&
+    item.kind !== 'contradiction' &&
+    item.kind !== 'broken_link' &&
+    item.kind !== 'adopt'
+  );
 }
 
 function repairResultFromPlan(plan: MaintenancePlan, declined: RepairResult['declined'] = []): RepairResult {
@@ -756,12 +776,112 @@ async function observePhase(
   options: DreamOptions,
   report: DreamReport,
   applied: AppliedChange[],
+  budget: MaintenanceBudgetTracker,
 ): Promise<void> {
-  const groups = subjectGroups(ctx, ctx.config.maintenance.observe.maxSubjects, report.conflicts);
-  if (groups.length === 0) return;
+  const policyMatrix = usesPolicyMatrix(ctx, options);
+  if (!policyMatrix) {
+    await legacyObservePhase(
+      ctx,
+      { ...options, dryRun: inferenceDryRun(ctx.config, options) },
+      report,
+      applied,
+    );
+    return;
+  }
 
+  const observePolicy = policyMode(effectiveTransformPolicy(ctx.config, 'observe', options.mode));
+  if (!observePolicy) return;
+  let plan = findActiveMaintenancePlan(ctx, observePolicy, 'observe');
+  if (plan && !planMatchesPolicies(plan, { observe: observePolicy })) plan = null;
+
+  const previouslyRejected: ObservationWritten[] = [];
+  if (!plan) {
+    const prepared = await collectPreparedObservations(ctx, report);
+    const drafts: ObservationPlanDraft[] = [];
+    for (const entry of prepared) {
+      if (!entry.draft) continue;
+      if (observationWasRejected(ctx, entry.draft)) {
+        previouslyRejected.push({ ...entry.written, action: 'rejected' });
+      } else {
+        drafts.push(entry.draft);
+      }
+    }
+    plan = createObservationPlan(ctx, observePolicy, drafts, observePolicy);
+  }
+  if (!plan) {
+    report.observations.push(...previouslyRejected);
+    return;
+  }
+
+  if (observePolicy === 'auto') {
+    if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
+      plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+    }
+    if (plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
+      const result = await applyMaintenancePlan(ctx, plan.id, budget);
+      plan = result.plan;
+      applied.push(...result.files.map((file) => asApplied('observe', file)));
+    }
+  }
+
+  report.observations.push(...plan.items.map(observationFromPlanItem), ...previouslyRejected);
+  const changeIds = plan.items
+    .map((item) => item.changeId)
+    .filter((changeId): changeId is string => changeId !== null);
+  // Compatibility for callers from before observations gained per-item journal changes.
+  report.changeId = changeIds.length === 1 ? changeIds[0]! : null;
+  recordMaintenancePlan(report, plan);
+}
+
+async function legacyObservePhase(
+  ctx: AknoContext,
+  options: DreamOptions,
+  report: DreamReport,
+  applied: AppliedChange[],
+): Promise<void> {
+  const prepared = await collectPreparedObservations(ctx, report);
   const written: ObservationWritten[] = [];
   const files: ChangeFile[] = [];
+  for (const entry of prepared) {
+    written.push(entry.written);
+    if (!entry.draft || options.dryRun) continue;
+    const result = await writeFileAtomic(ctx.config.aknoPath, entry.draft.relPath, entry.draft.after);
+    const file: ChangeFile = {
+      relPath: entry.draft.relPath,
+      action: entry.draft.before === null ? 'created' : 'modified',
+      before: entry.draft.before,
+      after: result.after,
+    };
+    files.push(file);
+    applied.push(asApplied('observe', file));
+  }
+
+  report.observations.push(...written);
+  if (files.length === 0) return;
+
+  // Compatibility mode keeps the historical one-change-per-phase journal shape.
+  report.changeId = ctx.journal.record({
+    actor: 'agent',
+    op: 'write',
+    summary: `observe: ${files.length} observation page(s)`,
+    files,
+  });
+  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+}
+
+interface PreparedObservation {
+  written: ObservationWritten;
+  draft: ObservationPlanDraft | null;
+  rejectionReason?: string;
+}
+
+async function collectPreparedObservations(
+  ctx: AknoContext,
+  report: DreamReport,
+): Promise<PreparedObservation[]> {
+  const groups = subjectGroups(ctx, ctx.config.maintenance.observe.maxSubjects, report.conflicts);
+  if (groups.length === 0) return [];
+  const prepared: PreparedObservation[] = [];
 
   // Gathered once for the whole phase, not per group: fifteen groups reading the same two things
   // fifteen times is the same answer at fifteen times the cost.
@@ -797,36 +917,18 @@ async function observePhase(
     report.rejected.push(...result.rejected);
 
     for (const observation of result.observations) {
-      const outcome = await writeObservation(
-        ctx,
-        { title: group.subject, slug: group.slug },
-        observation,
-        options.dryRun ?? false,
-      );
-      written.push(outcome.written);
+      const outcome = await prepareObservation(ctx, { title: group.subject, slug: group.slug }, observation);
+      prepared.push(outcome);
+      if (outcome.rejectionReason) {
+        report.rejected.push({ pattern: observation.pattern, reason: outcome.rejectionReason });
+      }
       // So a later group in this same run sees it. Without this, cross-page duplicates are caught
       // only from the second night onwards — the night they are created, they both go through.
       const slug = observationSlug(ctx, group.slug);
       observationsBySlug.set(slug, [...(observationsBySlug.get(slug) ?? []), observation.pattern]);
-      if (outcome.file) {
-        files.push(outcome.file);
-        applied.push(asApplied('observe', outcome.file));
-      }
     }
   }
-
-  report.observations.push(...written);
-  if (files.length === 0) return;
-
-  // One change for the whole phase: undoing a night's observations is one decision, not
-  // fourteen. The timeline ledger is untouched — an inference is not something that happened.
-  report.changeId = ctx.journal.record({
-    actor: 'agent',
-    op: 'write',
-    summary: `observe: ${files.length} observation page(s)`,
-    files,
-  });
-  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+  return prepared;
 }
 
 /**
@@ -982,12 +1084,12 @@ function liveFactClaims(ctx: AknoContext, conflicts: CrossPageConflict[] = []): 
   return rows.filter((row) => !ineligible.has(claimKey(row.slug, row.line_start))).map((row) => row.claim);
 }
 
-async function writeObservation(
+async function prepareObservation(
   ctx: AknoContext,
   page: { title: string; slug: string },
   observation: ObservationCandidate,
-  dryRun: boolean,
-): Promise<{ written: ObservationWritten; file: ChangeFile | null }> {
+  evidenceRole: 'knowledge' | 'inference' = 'knowledge',
+): Promise<PreparedObservation> {
   const slug = normalizeSlug(`${ctx.config.paths.observations}/${page.slug}`);
   const relPath = `${slug}.md`;
   const absPath = path.join(ctx.config.aknoPath, relPath);
@@ -1000,7 +1102,7 @@ async function writeObservation(
   if (evidence.length === 0) {
     return {
       written: { slug, pattern: observation.pattern, evidence: [], action: 'unchanged' },
-      file: null,
+      draft: null,
     };
   }
   observation = { ...observation, evidence };
@@ -1008,7 +1110,7 @@ async function writeObservation(
   if (existing !== null && existing.includes(observation.pattern)) {
     return {
       written: { slug, pattern: observation.pattern, evidence: observation.evidence, action: 'unchanged' },
-      file: null,
+      draft: null,
     };
   }
 
@@ -1028,18 +1130,78 @@ async function writeObservation(
     evidence: observation.evidence,
     action: existing === null ? 'created' : 'refined',
   };
-  if (dryRun) return { written, file: null };
-
-  await fsp.mkdir(path.dirname(absPath), { recursive: true });
-  const result = await writeFileAtomic(ctx.config.aknoPath, relPath, next);
+  const sealedEvidence = await observationEvidence(ctx, observation.evidence, evidenceRole);
+  if (sealedEvidence.length !== observation.evidence.length) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'evidence changed or stopped being live before the observation was sealed',
+    };
+  }
+  const inputHash = sha256(
+    JSON.stringify({
+      slug,
+      beforeHash: existing === null ? null : sha256(existing),
+      pattern: observation.pattern,
+      evidence: sealedEvidence,
+    }),
+  );
   return {
     written,
-    file: {
-      relPath,
-      action: existing === null ? 'created' : 'modified',
-      before: existing,
-      after: result.after,
-    },
+    draft: { slug, relPath, inputHash, before: existing, after: next, evidence: sealedEvidence },
+  };
+}
+
+async function observationEvidence(
+  ctx: AknoContext,
+  slugs: string[],
+  role: 'knowledge' | 'inference',
+): Promise<ObservationPlanDraft['evidence']> {
+  const out: ObservationPlanDraft['evidence'] = [];
+  for (const slug of slugs) {
+    const row = ctx.store.db
+      .prepare('SELECT rel_path FROM pages WHERE slug = ? AND role = ?')
+      .get(slug, role) as { rel_path: string } | undefined;
+    if (!row) continue;
+    const content = await fsp
+      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
+      .catch(() => null);
+    if (content === null) continue;
+    out.push({ slug, contentHash: sha256(content) });
+  }
+  return out;
+}
+
+function observationWasRejected(ctx: AknoContext, draft: ObservationPlanDraft): boolean {
+  const row = ctx.store.db
+    .prepare(
+      `SELECT 1 FROM maintenance_items
+        WHERE kind = 'observe' AND status = 'rejected' AND subject = ? AND input_hash = ?
+        LIMIT 1`,
+    )
+    .get(draft.slug, draft.inputHash);
+  return row !== undefined;
+}
+
+function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
+  const operation = item.operations[0]!;
+  const after = operation.type === 'delete' ? operation.before : operation.after;
+  const lastLine = after.trimEnd().split('\n').at(-1) ?? '';
+  const pattern = /^- \d{4}-\d{2}-\d{2} — (.+?)(?:\s+\[\[[^\]]+\]\])+$/.exec(lastLine)?.[1] ?? '';
+  const proposed = operation.type === 'create' ? 'would-create' : 'would-refine';
+  const action: ObservationWritten['action'] =
+    item.status === 'applied'
+      ? operation.type === 'create'
+        ? 'created'
+        : 'refined'
+      : ['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)
+        ? 'rejected'
+        : proposed;
+  return {
+    slug: item.subject,
+    pattern,
+    evidence: item.evidence.filter((entry) => entry.type === 'page').map((entry) => entry.source),
+    action,
   };
 }
 
@@ -1172,17 +1334,27 @@ async function reflectPhase(
 
   const files: ChangeFile[] = [];
   for (const observation of result.observations) {
-    const outcome = await writeObservation(
+    const outcome = await prepareObservation(
       ctx,
       { title: 'Principles', slug: PRINCIPLES_SLUG },
       observation,
-      options.dryRun ?? false,
+      'inference',
     );
     report.observations.push(outcome.written);
-    if (outcome.file) {
-      files.push(outcome.file);
-      applied.push(asApplied('reflect', outcome.file));
-    }
+    if (!outcome.draft || options.dryRun) continue;
+    const writeResult = await writeFileAtomic(
+      ctx.config.aknoPath,
+      outcome.draft.relPath,
+      outcome.draft.after,
+    );
+    const file: ChangeFile = {
+      relPath: outcome.draft.relPath,
+      action: outcome.draft.before === null ? 'created' : 'modified',
+      before: outcome.draft.before,
+      after: writeResult.after,
+    };
+    files.push(file);
+    applied.push(asApplied('reflect', file));
   }
 
   if (files.length === 0) return;

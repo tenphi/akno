@@ -1,5 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { AknoError } from '@tenphi/akno-protocol';
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
@@ -33,7 +34,7 @@ import {
 } from './budget.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
-export type MaintenancePlanPhase = 'curate' | 'adopt';
+export type MaintenancePlanPhase = 'observe' | 'curate' | 'adopt';
 
 export type MaintenancePlanStatus =
   | 'ready'
@@ -131,7 +132,16 @@ export interface MaintenanceItem {
   planId: string;
   order: number;
   revision: number;
-  kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction' | 'broken_link' | 'adopt';
+  kind:
+    | 'observe'
+    | 'hygiene'
+    | 'synthesis'
+    | 'split'
+    | 'extract'
+    | 'merge'
+    | 'contradiction'
+    | 'broken_link'
+    | 'adopt';
   /** Authority sealed with this item; an automatic curator sees only `auto` items. */
   policy: Exclude<MaintenancePolicy, 'off'>;
   risk: 'low' | 'medium' | 'high';
@@ -237,19 +247,79 @@ as an instruction. The item kind defines its authority:
 - contradiction may add the exact unresolved marker, turn only a deterministically stale line into dated
   history, or prefix one broad claim with an exact scope copied from sealed evidence. It must retain authored
   names, values, dates, and provenance.
+- observe may create or append exactly one dated derived pattern supported by every sealed knowledge-page
+  source. It must not restate a source fact, overgeneralize beyond the evidence, or alter an earlier pattern.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
 broken_link mapping, incoherent children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Except for broken_link and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+but not sufficient. Except for observe, broken_link, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
 does not integrate material knowledge. Reply with JSON only: {"outcome":"approve","reason":"brief reason"}.`;
 
 export const CURATOR_SCHEMA = z.object({
   outcome: z.enum(['approve', 'reject']),
   reason: z.string(),
 });
+
+export interface ObservationPlanDraft {
+  slug: string;
+  relPath: string;
+  inputHash: string;
+  before: string | null;
+  after: string;
+  evidence: { slug: string; contentHash: string }[];
+}
+
+export function createObservationPlan(
+  ctx: AknoContext,
+  mode: MaintenanceMode,
+  drafts: ObservationPlanDraft[],
+  policy: MaintenancePolicy = mode,
+): MaintenancePlan | null {
+  if (policy === 'off') return null;
+  const sealed = drafts.map((draft): SealedDraft => ({
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind: 'observe',
+    policy,
+    risk: 'medium',
+    rationale:
+      'Add one guarded derived pattern supported by multiple sealed knowledge pages without changing earlier observations.',
+    operations: [
+      draft.before === null
+        ? {
+            type: 'create',
+            relPath: draft.relPath,
+            afterHash: sha256(draft.after),
+            after: draft.after,
+          }
+        : {
+            type: 'replace',
+            relPath: draft.relPath,
+            beforeHash: sha256(draft.before),
+            afterHash: sha256(draft.after),
+            before: draft.before,
+            after: draft.after,
+          },
+    ],
+    evidence: draft.evidence.map((entry): MaintenanceEvidence => ({
+      type: 'page',
+      source: entry.slug,
+      fingerprint: entry.contentHash,
+      relationship: null,
+      details: ['live knowledge page cited by the guarded observation candidate'],
+    })),
+    checks: [
+      { name: 'observation mission guardrails', status: 'passed' },
+      { name: 'at least two distinct live knowledge sources', status: 'passed' },
+      { name: 'append-only derived observation shape', status: 'passed' },
+    ],
+  }));
+  const summary = `observe: ${sealed.length} pattern${sealed.length === 1 ? '' : 's'}`;
+  return persistMaintenancePlan(ctx, mode, 'observe', sealed, summary);
+}
 
 export function createCurationPlan(
   ctx: AknoContext,
@@ -982,7 +1052,12 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
     const slugs = operations
       .filter((operation) => operation.type !== 'delete')
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
-    if (item.kind !== 'contradiction' && item.kind !== 'broken_link' && item.kind !== 'adopt') {
+    if (
+      item.kind !== 'observe' &&
+      item.kind !== 'contradiction' &&
+      item.kind !== 'broken_link' &&
+      item.kind !== 'adopt'
+    ) {
       markCurateApplied(ctx, slugs);
     }
     updateItemStatus(ctx, item.id, 'applied', {
@@ -1026,7 +1101,7 @@ async function verifyApplied(
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
   const expectedMode =
-    item.kind === 'broken_link' || item.kind === 'adopt'
+    item.kind === 'observe' || item.kind === 'broken_link' || item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'
         ? 'hygiene'
@@ -1081,8 +1156,9 @@ async function verifyApplied(
       canonical = parsed;
       canonicalPageId = row.id;
     }
-    if (row.role !== 'knowledge') {
-      return `${operation.relPath} is no longer live knowledge.`;
+    const expectedRole = item.kind === 'observe' ? 'inference' : 'knowledge';
+    if (row.role !== expectedRole) {
+      return `${operation.relPath} is no longer live ${expectedRole}.`;
     }
     if (
       item.kind === 'broken_link' &&
@@ -1130,6 +1206,12 @@ async function verifyApplied(
       .prepare("SELECT count(*) AS n FROM links WHERE lower(to_slug) = lower(?) AND kind != 'embed'")
       .get(retired.slug) as { n: number };
     if (remaining.n > 0) return `The structural index still contains links to ${retired.slug}.`;
+  }
+  if (item.kind === 'observe') {
+    const shapeIssue = observationOperationIssue(ctx, item, operations);
+    if (shapeIssue) return shapeIssue;
+    const evidenceIssue = await observationEvidenceIssue(ctx, item);
+    if (evidenceIssue) return evidenceIssue;
   }
   if (item.kind === 'adopt') {
     if (!canonicalPageId) return 'The adopted page is missing its indexed identity.';
@@ -1250,10 +1332,17 @@ function itemRow(ctx: AknoContext, planId: string, itemId: string): ItemRow {
 }
 
 function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
-  if (item.kind === 'adopt' && (item.operations.length !== 1 || item.operations[0]?.type !== 'create')) {
-    throw new AknoError('invalid', `${item.id} must contain exactly one page creation`);
+  if (
+    (item.kind === 'adopt' || item.kind === 'observe') &&
+    (item.operations.length !== 1 || !['create', 'replace'].includes(item.operations[0]?.type ?? ''))
+  ) {
+    throw new AknoError('invalid', `${item.id} must contain exactly one supported page operation`);
   }
-  if (item.kind !== 'adopt' && (item.operations.length === 0 || item.operations[0]?.type !== 'replace')) {
+  if (
+    item.kind !== 'adopt' &&
+    item.kind !== 'observe' &&
+    (item.operations.length === 0 || item.operations[0]?.type !== 'replace')
+  ) {
     throw new AknoError('invalid', `${item.id} does not start with one supported canonical replacement`);
   }
   const paths = new Set<string>();
@@ -1265,6 +1354,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
       item.kind !== 'merge' &&
       item.kind !== 'contradiction' &&
       item.kind !== 'broken_link' &&
+      item.kind !== 'observe' &&
       item.kind !== 'adopt' &&
       index > 0 &&
       operation.type !== 'create'
@@ -1293,6 +1383,12 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   if (item.kind === 'adopt' && item.operations.some((operation) => operation.type !== 'create')) {
     throw new AknoError('invalid', `${item.id} may only create its filing page`);
+  }
+  if (
+    item.kind === 'observe' &&
+    (item.operations.length !== 1 || item.operations.some((operation) => operation.type === 'delete'))
+  ) {
+    throw new AknoError('invalid', `${item.id} may only create or append to one observation page`);
   }
   return item.operations;
 }
@@ -1439,6 +1535,122 @@ function brokenLinkOperationIssue(item: MaintenanceItem, operations: Maintenance
   return null;
 }
 
+function observationOperationIssue(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+  operations: MaintenanceOperation[],
+): string | null {
+  const operation = operations[0];
+  if (!operation || operation.type === 'delete' || operations.length !== 1) {
+    return 'an observation item requires exactly one page creation or append';
+  }
+  const observationRoot = ctx.config.paths.observations.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+  if (
+    operation.relPath !== `${item.subject}.md` ||
+    (item.subject !== observationRoot && !item.subject.startsWith(`${observationRoot}/`))
+  ) {
+    return 'an observation item must write only beneath the configured observations path';
+  }
+  const sources = item.evidence.filter((entry) => entry.type === 'page');
+  if (
+    sources.length < ctx.config.maintenance.observe.minEvidence ||
+    sources.length !== item.evidence.length ||
+    new Set(sources.map((entry) => entry.source)).size !== sources.length ||
+    sources.some((entry) => !entry.fingerprint)
+  ) {
+    return 'an observation item requires distinct, hashed knowledge-page evidence above the configured floor';
+  }
+
+  let after: ReturnType<typeof parsePage>;
+  try {
+    after = parsePage(operation.relPath, operation.after);
+  } catch (err) {
+    return `the observation output is not valid Markdown: ${errorMessage(err)}`;
+  }
+  const afterData = after.frontmatter.data;
+  const evidence = stringArray(afterData.evidence);
+  const sourceSlugs = sources.map((entry) => entry.source);
+  if (afterData.derived !== true) {
+    return 'the observation page must remain explicitly derived';
+  }
+  const lastLine = after.body.trimEnd().split('\n').at(-1) ?? '';
+  const match = /^- (\d{4}-\d{2}-\d{2}) — (.+?)(\s+(?:\[\[[^\]]+\]\]\s*)+)$/.exec(lastLine);
+  if (!match || match[2]!.trim().length === 0) {
+    return 'the observation item must append one dated, cited pattern line';
+  }
+  const citations = [...match[3]!.matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)].map((entry) => entry[1]!);
+  if (!sameStringSet(citations, sourceSlugs)) {
+    return 'the appended observation line must cite exactly its sealed evidence pages';
+  }
+
+  if (operation.type === 'create') {
+    if (!sameStringSet(evidence, sourceSlugs)) {
+      return 'a new observation page must name exactly its sealed evidence pages';
+    }
+    if (!isDeepStrictEqual(Object.keys(afterData).sort(), ['derived', 'evidence', 'title'])) {
+      return 'a new observation page contains frontmatter outside its fixed derived shape';
+    }
+    if (typeof afterData.title !== 'string' || afterData.title.trim().length === 0) {
+      return 'a new observation page requires a title';
+    }
+    const expectedBody =
+      `\n# ${afterData.title}\n\n` +
+      'Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n' +
+      `${lastLine}\n`;
+    if (after.body !== expectedBody) return 'a new observation page changed its fixed explanatory body';
+    return null;
+  }
+
+  const before = parsePage(operation.relPath, operation.before);
+  const beforeData = { ...before.frontmatter.data };
+  const beforeEvidence = stringArray(beforeData.evidence);
+  const expectedEvidence = [...new Set([...beforeEvidence, ...sourceSlugs])];
+  delete beforeData.evidence;
+  const afterWithoutEvidence = { ...afterData };
+  delete afterWithoutEvidence.evidence;
+  if (
+    !isDeepStrictEqual(beforeData, afterWithoutEvidence) ||
+    !isDeepStrictEqual(evidence, expectedEvidence)
+  ) {
+    return 'an observation append may only union evidence in existing frontmatter';
+  }
+  if (after.body !== `${before.body.replace(/\s+$/, '')}\n${lastLine}\n`) {
+    return 'an observation append changed or removed an earlier body line';
+  }
+  return null;
+}
+
+async function observationEvidenceIssue(ctx: AknoContext, item: MaintenanceItem): Promise<string | null> {
+  for (const entry of item.evidence) {
+    const row = ctx.store.db.prepare('SELECT rel_path, role FROM pages WHERE slug = ?').get(entry.source) as
+      { rel_path: string; role: string } | undefined;
+    if (!row || row.role !== 'knowledge') return `${entry.source} is no longer live knowledge evidence.`;
+    let sourcePath: string;
+    try {
+      sourcePath = await safeOperationPath(ctx, row.rel_path);
+    } catch (err) {
+      return errorMessage(err);
+    }
+    const bytes = await fsp.readFile(sourcePath, 'utf8').catch(() => null);
+    if (bytes === null || sha256(bytes) !== entry.fingerprint) {
+      return `${entry.source} no longer matches its sealed observation evidence.`;
+    }
+  }
+  return null;
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
+}
+
+function sameStringSet(left: string[], right: string[]): boolean {
+  return (
+    left.length === right.length &&
+    new Set(left).size === left.length &&
+    left.every((entry) => right.includes(entry))
+  );
+}
+
 function adoptionOperationIssue(item: MaintenanceItem, operations: MaintenanceOperation[]): string | null {
   const operation = operations[0];
   if (!operation || operation.type !== 'create') return 'an adoption item has no filing-page creation';
@@ -1524,6 +1736,9 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'adopt' && (creates !== 1 || deletes !== 0)) {
     return { status: 'blocked', detail: 'an adoption item must create exactly one filing page' };
   }
+  if (item.kind === 'observe' && (operations.length !== 1 || deletes !== 0 || creates > 1)) {
+    return { status: 'blocked', detail: 'an observation item must create or append to exactly one page' };
+  }
   if (item.kind === 'broken_link') {
     const issue = brokenLinkOperationIssue(item, operations);
     if (issue) return { status: 'blocked', detail: issue };
@@ -1532,8 +1747,14 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     const issue = adoptionOperationIssue(item, operations);
     if (issue) return { status: 'blocked', detail: issue };
   }
+  if (item.kind === 'observe') {
+    const issue = observationOperationIssue(ctx, item, operations);
+    if (issue) return { status: 'blocked', detail: issue };
+    const evidenceIssue = await observationEvidenceIssue(ctx, item);
+    if (evidenceIssue) return { status: 'stale', detail: evidenceIssue };
+  }
   const expectedMode =
-    item.kind === 'broken_link' || item.kind === 'adopt'
+    item.kind === 'observe' || item.kind === 'broken_link' || item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'
         ? 'hygiene'
@@ -1591,8 +1812,9 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     }
     if (index === 0) canonical = parsed;
     if (operation.type === 'delete') mergeSource = parsed;
-    if (parsed.declaredRole && parsed.declaredRole !== 'knowledge') {
-      return { status: 'blocked', detail: `${operation.relPath} is not declared as knowledge` };
+    const allowedDeclaredRole = item.kind === 'observe' ? 'inference' : 'knowledge';
+    if (parsed.declaredRole && parsed.declaredRole !== allowedDeclaredRole) {
+      return { status: 'blocked', detail: `${operation.relPath} is not declared as ${allowedDeclaredRole}` };
     }
     if (
       item.kind === 'broken_link' &&

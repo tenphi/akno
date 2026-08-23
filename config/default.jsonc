@@ -286,7 +286,8 @@
     // lower it. Under custom, an explicit map is allowlist-shaped: omitted classes
     // are off. Empty preserves the phase-level compatibility behavior below.
     "policies": {},
-    // Cumulative apply ceilings shared by curate and adopt in one invocation.
+    // Cumulative apply ceilings shared by plan-backed observe, curate, and adopt
+    // in one invocation.
     // Planning remains complete; an indivisible item that would cross a ceiling
     // stays proposed with a typed budget_exhausted reason for a later run.
     "limits": {

@@ -562,17 +562,18 @@ unverified claims cannot feed observation, reflection, or synthesis. Selecting `
 | Phase          | Writes?       | What it does                                                                                                                                                                                                      |
 | -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                                     |
-| `observe`      | appends       | Combines conflict-eligible repeated facts into stable patterns, under `observations/` with the evidence used. Off by default.                                                                                     |
+| `observe`      | plan/write    | Combines conflict-eligible repeated facts into stable patterns, then seals exact append-only items with source hashes. Off by default.                                                                            |
 | `reflect`      | appends       | Decision principles built on the tier above. Off by default.                                                                                                                                                      |
 | `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
 | `adopt`        | plan/write    | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                                             |
 | `repair`       | no            | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                                         |
 | `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                              |
 
-`observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Writing
-phases are journalled by purpose, so reversing a night's inferences does not also reverse the pages that made
-documents searchable. `conflicts`, legacy `repair`, and `housekeeping` only report; durable curation requires
-an explicit trust policy before it writes. Adoption has its own audit/review/auto policy and defaults to auto.
+`observe` and `reflect` only ever append: a changed pattern gets a new dated line, nothing is deleted. Under a
+named profile or explicit mode/policy, observe uses durable per-pattern plans; compatibility `custom` without a
+policy retains its historical direct append. Writing phases are journalled by purpose, so reversing a night's
+inferences does not also reverse the pages that made documents searchable. `conflicts`, legacy `repair`, and
+`housekeeping` only report. Reflect remains a legacy inference phase.
 
 For a coherent scheduled policy, set one profile:
 
@@ -583,10 +584,11 @@ For a coherent scheduled policy, set one profile:
 ```
 
 `audit` seals plans without applying them. `review` waits for human decisions. `autonomous` uses a separate
-curator call and applies only accepted, verified items. Both audit and review keep the still-legacy observation
-and reflection phases in preview mode. `custom` is the compatibility default and preserves the lower-level
-phase settings. Named profiles enable the plan-backed curate/adopt surface but do not override page opt-ins,
-folder restrictions, merge allowlists, guards, or limits, and do not enable observe or reflect.
+curator call and applies only accepted, verified items. Enabled observations follow that lifecycle; audit and
+review keep the still-legacy reflection phase in preview mode. `custom` is the compatibility default and
+preserves the lower-level phase settings. Named profiles enable plan-backed observe/curate/adopt behavior but
+do not override page opt-ins, folder restrictions, merge allowlists, guards, or limits, and do not enable the
+model-sensitive observe or reflect phases themselves.
 
 Individual transformation classes can be stricter than the profile:
 
@@ -595,6 +597,7 @@ Individual transformation classes can be stricter than the profile:
   "maintenance": {
     "profile": "autonomous",
     "policies": {
+      "observe": "auto",
       "hygiene": "auto",
       "broken_link": "auto",
       "merge": "review",
@@ -610,14 +613,27 @@ Individual transformation classes can be stricter than the profile:
 }
 ```
 
-Policy keys are `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and
-`adopt`; values are `off`, `audit`, `review`, or `auto`. Omitted keys inherit a named profile. A non-empty map
+Policy keys are `observe`, `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`,
+and `adopt`; values are `off`, `audit`, `review`, or `auto`. Omitted keys inherit a named profile. A non-empty map
 under `custom` is an allowlist, so omitted keys are off; an empty map retains the legacy phase behavior. Policy
 is sealed per item, allowing one plan to apply autonomous repairs while leaving higher-risk proposals for human
 review. Under `custom`, the corresponding phase must still be enabled. A command-line mode can only lower every
 effective item policy.
 
-The `limits` block is one cumulative apply budget. A full `akno dream` shares it across curate and adopt;
+Observe uses the same modes when it is enabled:
+
+```bash
+akno dream --phase observe --mode audit   # exact append/create diff; no observation write
+akno dream --phase observe --mode review  # wait for a human decision per pattern
+akno dream --phase observe --mode auto    # separate curator, append, reindex, verify
+```
+
+Each observation item seals the exact output plus the current hash of every cited knowledge page. Apply refuses
+changed evidence, never edits an earlier pattern, journals each accepted pattern independently, and verifies
+that the result is indexed as derived inference with exactly the sealed citations. An unchanged human or
+curator rejection is not resubmitted until the pattern, evidence, or destination input changes.
+
+The `limits` block is one cumulative apply budget. A full `akno dream` shares it across observe, curate, and adopt;
 `akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are
 not truncated. Instead, apply reserves a complete item before its first write. `max_items` counts items,
 `max_files_changed` counts distinct paths, `max_bytes_written` counts the full UTF-8 output of creates and
@@ -900,8 +916,10 @@ build time, recall accuracy and a second structure to keep in sync, to save mill
 Named plainly, because a README that implies more than exists is the same failure mode Akno is built to
 prevent. These defaults keep inference and unattended edits behind explicit permission:
 
-- **`observe`** — the tier that infers patterns and writes them as prose. Its guardrails hold; the quality of
-  what survives them is the model's, and on a small local model most of it was not worth keeping.
+- **`observe`** — the tier that infers patterns and can write them as derived prose. Under named profiles or an
+  explicit policy/mode, every accepted pattern goes through a sealed evidence-backed plan, separate curator or
+  human decision, budgeted append, reindex, and verification. Its guardrails hold; the quality of what survives
+  them is the model's, and on a small local model most of it was not worth keeping.
 - **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
   one coincidence.
 - **`curate`** — off globally, with both its trust mode and legacy write switch unset/off. Even when enabled,

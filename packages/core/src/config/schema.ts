@@ -199,6 +199,7 @@ const TierDoc = z.object({
 export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous', 'custom'] as const;
 export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
 export const MAINTENANCE_TRANSFORMS = [
+  'observe',
   'hygiene',
   'synthesis',
   'split',
@@ -220,6 +221,7 @@ export interface MaintenanceLimits {
 
 const MaintenancePolicyDoc = z.enum(MAINTENANCE_POLICIES);
 const MaintenancePoliciesDoc = z.object({
+  observe: MaintenancePolicyDoc.optional(),
   hygiene: MaintenancePolicyDoc.optional(),
   synthesis: MaintenancePolicyDoc.optional(),
   split: MaintenancePolicyDoc.optional(),

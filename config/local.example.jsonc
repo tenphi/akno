@@ -127,8 +127,9 @@
   },
 
   // Prefer one named profile for a scheduled cycle: `audit`, `review`, or `autonomous`.
-  // A named profile enables plan-backed curation/adoption and supplies the default policy
-  // for every transformation. Individual `policies` may lower a class to off/audit/review.
+  // A named profile enables plan-backed curation/adoption, routes an enabled observe phase
+  // through the same lifecycle, and supplies the default policy for every transformation.
+  // Individual `policies` may lower a class to off/audit/review.
   // Under `custom`, a non-empty map is an allowlist and the phase still has to be enabled;
   // an empty map preserves the phase-level compatibility behavior shown below.
   //
@@ -144,6 +145,7 @@
   // curator/apply/verify path; choose `review` or `audit` for less authority.
   "maintenance": {
     "profile": "custom",
+    // Add "observe": "audit" | "review" | "auto" when enabling that phase under custom.
     "policies": {},
     "limits": {
       "max_items": 30,
