@@ -194,10 +194,10 @@ flowchart TD
     hash --> parse["4. Parse pages, roles, links, and dates"]
     parse --> chunk["5. Split pages on headings"]
     chunk --> docs["6. Discover and extract documents"]
-    docs --> graph["7. Rebuild exact evidence graph"]
-    graph --> embed["8. Embed searchable chunks"]
-    embed --> derive["9. Derive summaries, keywords, and facts"]
-    derive --> store["10. Commit the new reading to the index"]
+    docs --> embed["7. Embed searchable chunks"]
+    embed --> derive["8. Derive summaries, keywords, and facts"]
+    derive --> graph["9. Rebuild exact evidence graph"]
+    graph --> store["10. Commit the new reading to the index"]
 ```
 
 | Pass                | Method                                                                 | Model         |
@@ -208,7 +208,7 @@ flowchart TD
 | Parse               | Read frontmatter, headings, wikilinks, dates, roles, and source fences | none          |
 | Chunk               | Follow headings and configured size limits                             | none          |
 | Extract             | Read PDF text, OCR scans, and convert supported Office files           | none on macOS |
-| Evidence graph      | Rebuild structural paths, canonical entities, and exact mentions       | none          |
+| Evidence graph      | Rebuild structural paths, entities, mentions, and eligible fact edges  | none          |
 | Embed               | Turn chunks into vectors for semantic search                           | embedding     |
 | Derive              | Produce page summaries, keywords, and durable fact candidates          | derive        |
 | Summarize documents | Describe each document without copying its body into Markdown          | derive        |
@@ -1584,10 +1584,23 @@ on the next transactional rebuild. Valid authored links to knowledge pages also 
 All nodes, names, outcomes, and edges live only in disposable SQLite state, carry current source hashes and
 exact line/frontmatter/document locators, and require neither a model call nor a knowledge-base write.
 
-This is still a foundation, not multi-hop retrieval. Akno does not yet derive fact subject/object edges,
-expose `akno graph`, traverse bounded paths, contextually disambiguate same-name candidates, or feed graph
-candidates into recall. Until those slices ship, related evidence still has to be discovered by
-lexical/semantic recall or authored links rather than deliberate graph traversal.
+Facts are projected after the model-backed derivation pass, so a newly derived fact is visible in the same
+index run. Every knowledge fact gets an inspectable fact node and typed status. A fact becomes a current edge
+only when its subject resolves exactly, its attribute normalizes to a predicate, its confidence is at least
+`0.5`, and current conflict analysis permits it. A scalar value stays attached to the fact; a value that
+exactly resolves to an entity also produces a direct entity relationship. Ambiguous subjects or objects retain
+candidate ids without choosing one.
+
+Conflict eligibility uses the same content-addressed candidates and configured derive-model verdict cache as
+the dream cycle. Unverified, unresolved, and qualified conflicts produce no fact edges; a superseded verdict
+excludes every non-current claim. Changing a claim or the configured model invalidates that verdict. An
+authored fact already marked `valid_to` may remain as a historical edge, but its status is non-traversable by
+default. Conflict verification refreshes the graph immediately, including during an audit-only cycle.
+
+This is still a foundation, not multi-hop retrieval. Akno does not yet expose `akno graph`, traverse
+bounded paths, contextually disambiguate same-name candidates, or feed graph candidates into recall. Until
+those slices ship, related evidence still has to be discovered by lexical/semantic recall or authored links
+rather than deliberate graph traversal.
 
 ### The durable review queue does not cover every phase yet
 

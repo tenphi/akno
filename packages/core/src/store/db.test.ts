@@ -341,6 +341,7 @@ describe('schema migration', () => {
       'graph_edges',
       'graph_entities',
       'graph_entity_names',
+      'graph_fact_status',
       'graph_mentions',
       'graph_nodes',
     ]);
@@ -367,9 +368,34 @@ describe('schema migration', () => {
       'graph_edges',
       'graph_entities',
       'graph_entity_names',
+      'graph_fact_status',
       'graph_mentions',
       'graph_nodes',
     ]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds provenance-bound fact relationships to a version-twenty database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-fact-graph-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 13)) legacy.exec(migration);
+    legacy.pragma('user_version = 20');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const edgeColumns = store.db.pragma('table_info(graph_edges)') as { name: string }[];
+    const factStatus = store.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'graph_fact_status'")
+      .get() as { name: string } | undefined;
+
+    expect(edgeColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['source_fact', 'valid_from', 'valid_to']),
+    );
+    expect(factStatus?.name).toBe('graph_fact_status');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

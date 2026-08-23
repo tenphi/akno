@@ -118,7 +118,10 @@ describe('fact lifecycle', () => {
         value: '1111 EUR',
       },
     ]);
-    await mem.index({});
+    const indexed = await mem.index({});
+
+    // The graph pass follows derivation, so a fact produced now is not one index cycle behind.
+    expect(indexed).toMatchObject({ graphFacts: 1, graphFactEdges: 1, graphNonTraversableFacts: 0 });
 
     const page = await mem.read({ slug: 'lease' });
     const line = page.page!.lines.find((entry) => entry.text.includes('1111'));

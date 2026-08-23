@@ -6,6 +6,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { sha256 } from '../store/ids.ts';
+import { rebuildEvidenceGraph } from '../index/graph.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
@@ -586,6 +587,11 @@ async function inspectConflicts(ctx: AknoContext, report: DreamReport): Promise<
   const verified = await verifyConflicts(ctx, candidates);
   report.conflicts = verified.conflicts;
   report.warnings.push(...verified.warnings);
+  // Conflict verdicts are content-addressed graph eligibility. Refresh immediately after
+  // caching them so an audit-only cycle does not leave relationship edges one night behind.
+  if (ctx.writable) {
+    rebuildEvidenceGraph(ctx.store, { conflictModelId: ctx.models.derive.modelId });
+  }
 }
 
 function operationsTouchedByCurateDraft(draft: CurateDraft): string[] {

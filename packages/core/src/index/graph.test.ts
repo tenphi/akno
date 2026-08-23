@@ -4,7 +4,10 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, describe, expect, it } from 'vitest';
 import { open } from '../open.ts';
-import { normalizeEntityName, resolveExactEntity } from './graph.ts';
+import { CONFLICT_PROMPT_VERSION, findCrossPageConflictsInStore } from '../maintenance/conflicts.ts';
+import { openStore } from '../store/db.ts';
+import { sha256 } from '../store/ids.ts';
+import { normalizeEntityName, rebuildEvidenceGraph, resolveExactEntity } from './graph.ts';
 
 const temporary: string[] = [];
 
@@ -273,7 +276,262 @@ An invented design record.
     });
     db.close();
   });
+
+  it('projects only exact, current, conflict-eligible facts into traversable relationships', async () => {
+    const root = factFixtureCorpus();
+    const stateDir = temporaryDirectory('akno-fact-graph-state-');
+    const memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+
+    const store = openStore({ dbPath: path.join(stateDir, 'akno.db'), embeddingDimensions: 1024 });
+    insertFact(store.db, {
+      id: 'fac_employer',
+      slug: 'people/ada-marlow',
+      line: 10,
+      claim: 'Ada Marlow works with Vulpine Mutual.',
+      subject: 'ADA',
+      attribute: 'Works With',
+      value: 'Vulpine Mutual',
+    });
+    insertFact(store.db, {
+      id: 'fac_scalar',
+      slug: 'people/ada-marlow',
+      line: 11,
+      claim: 'Ada Marlow has a five year warranty.',
+      subject: 'Ada',
+      attribute: 'Warranty Period',
+      value: 'five years',
+    });
+    insertFact(store.db, {
+      id: 'fac_low',
+      slug: 'people/ada-marlow',
+      line: 12,
+      claim: 'Ada Marlow might be at Blackwater Bay.',
+      subject: 'Ada',
+      attribute: 'Location',
+      value: 'Blackwater Bay',
+      confidence: 0.4,
+    });
+    insertFact(store.db, {
+      id: 'fac_history',
+      slug: 'people/ada-marlow',
+      line: 13,
+      claim: 'Ada Marlow was at Blackwater Bay.',
+      subject: 'Ada',
+      attribute: 'Previous Location',
+      value: 'Blackwater Bay',
+      validTo: '2030-05-01',
+    });
+    insertFact(store.db, {
+      id: 'fac_ambiguous',
+      slug: 'people/ada-marlow',
+      line: 14,
+      claim: 'Zephyr belongs to Ada Marlow.',
+      subject: 'Zephyr',
+      attribute: 'Owner',
+      value: 'Ada',
+    });
+    insertFact(store.db, {
+      id: 'fac_unresolved',
+      slug: 'people/ada-marlow',
+      line: 15,
+      claim: 'Bo Winters has an invented record.',
+      subject: 'Bo Winters',
+      attribute: 'Status',
+      value: 'recorded',
+    });
+    insertFact(store.db, {
+      id: 'fac_status_a',
+      slug: 'people/ada-marlow',
+      line: 16,
+      claim: 'Ada Marlow has status code 1111.',
+      subject: 'Ada',
+      attribute: 'Status',
+      value: '1111',
+    });
+    insertFact(store.db, {
+      id: 'fac_tier_a',
+      slug: 'people/ada-marlow',
+      line: 17,
+      claim: 'Ada Marlow has tier code 3333.',
+      subject: 'Ada',
+      attribute: 'Tier',
+      value: '3333',
+    });
+    insertFact(store.db, {
+      id: 'fac_status_b',
+      slug: 'notes/ada-status',
+      line: 8,
+      claim: 'Ada Marlow has status code 2222.',
+      subject: 'Ada',
+      attribute: 'Status',
+      value: '2222',
+    });
+    insertFact(store.db, {
+      id: 'fac_tier_b',
+      slug: 'notes/ada-status',
+      line: 9,
+      claim: 'Ada Marlow has tier code 4444.',
+      subject: 'Ada',
+      attribute: 'Tier',
+      value: '4444',
+    });
+
+    const candidates = findCrossPageConflictsInStore(store, Number.MAX_SAFE_INTEGER);
+    const tier = candidates.find((candidate) => candidate.attribute === 'tier')!;
+    expect(tier).toBeDefined();
+    store.db
+      .prepare(
+        `INSERT INTO conflict_verdicts(
+           fingerprint, model_id, prompt_version, verdict, current_slug,
+           qualification, reason, updated_at
+         ) VALUES(?, ?, ?, 'not_a_conflict', NULL, NULL, 'different scopes', ?)`,
+      )
+      .run(tier.fingerprint, 'fixture-derive', CONFLICT_PROMPT_VERSION, '2031-01-01T00:00:00.000Z');
+
+    const report = rebuildEvidenceGraph(store, { conflictModelId: 'fixture-derive' });
+    expect(report).toMatchObject({
+      facts: 10,
+      factEdges: 7,
+      nonTraversableFacts: 6,
+      ambiguousMentions: 1,
+      unresolvedMentions: 1,
+    });
+
+    const statuses = store.db
+      .prepare(
+        `SELECT fact_id, subject_resolution, object_resolution, predicate,
+                eligibility, traversable, conflict_fingerprint
+           FROM graph_fact_status
+          ORDER BY fact_id`,
+      )
+      .all() as FactStatusRow[];
+    expect(statuses.find((row) => row.fact_id === 'fac_employer')).toMatchObject({
+      subject_resolution: 'exact',
+      object_resolution: 'exact',
+      predicate: 'works_with',
+      eligibility: 'eligible',
+      traversable: 1,
+    });
+    expect(statuses.find((row) => row.fact_id === 'fac_scalar')).toMatchObject({
+      object_resolution: 'scalar',
+      eligibility: 'eligible',
+      traversable: 1,
+    });
+    expect(statuses.find((row) => row.fact_id === 'fac_ambiguous')).toMatchObject({
+      subject_resolution: 'ambiguous',
+      eligibility: 'eligible',
+      traversable: 0,
+    });
+    expect(statuses.find((row) => row.fact_id === 'fac_unresolved')).toMatchObject({
+      subject_resolution: 'unresolved',
+      traversable: 0,
+    });
+    expect(statuses.find((row) => row.fact_id === 'fac_low')).toMatchObject({
+      eligibility: 'low_confidence',
+      traversable: 0,
+    });
+    expect(statuses.find((row) => row.fact_id === 'fac_history')).toMatchObject({
+      eligibility: 'superseded',
+      traversable: 0,
+    });
+    expect(statuses.filter((row) => row.fact_id.startsWith('fac_status_'))).toEqual([
+      expect.objectContaining({ eligibility: 'conflict_unverified', traversable: 0 }),
+      expect.objectContaining({ eligibility: 'conflict_unverified', traversable: 0 }),
+    ]);
+    expect(statuses.filter((row) => row.fact_id.startsWith('fac_tier_'))).toEqual([
+      expect.objectContaining({ eligibility: 'eligible', traversable: 1 }),
+      expect.objectContaining({ eligibility: 'eligible', traversable: 1 }),
+    ]);
+    expect(statuses.filter((row) => row.conflict_fingerprint !== null)).toHaveLength(4);
+
+    const factEdges = store.db
+      .prepare(
+        `SELECT relation, predicate, source_fact, source_hash, derivation,
+                resolution, confidence, valid_from, valid_to
+           FROM graph_edges
+          WHERE derivation = 'fact'
+          ORDER BY source_fact, relation`,
+      )
+      .all() as FactEdgeRow[];
+    expect(factEdges.map((edge) => `${edge.source_fact}:${edge.relation}`)).toEqual([
+      'fac_employer:has_attribute',
+      'fac_employer:related_entity',
+      'fac_history:has_attribute',
+      'fac_history:related_entity',
+      'fac_scalar:has_attribute',
+      'fac_tier_a:has_attribute',
+      'fac_tier_b:has_attribute',
+    ]);
+    expect(factEdges.every((edge) => edge.derivation === 'fact' && edge.resolution === 'exact')).toBe(true);
+    expect(factEdges.every((edge) => /^[a-f0-9]{64}$/.test(edge.source_hash))).toBe(true);
+    expect(factEdges.filter((edge) => edge.source_fact === 'fac_history')).toEqual([
+      expect.objectContaining({ valid_to: '2030-05-01' }),
+      expect.objectContaining({ valid_to: '2030-05-01' }),
+    ]);
+
+    const otherModel = rebuildEvidenceGraph(store, { conflictModelId: 'different-derive' });
+    expect(otherModel).toMatchObject({ factEdges: 5, nonTraversableFacts: 8 });
+    expect(
+      store.db.prepare("SELECT eligibility FROM graph_fact_status WHERE fact_id = 'fac_tier_a'").get(),
+    ).toEqual({ eligibility: 'conflict_unverified' });
+
+    const status = candidates.find((candidate) => candidate.attribute === 'status')!;
+    store.db
+      .prepare(
+        `INSERT INTO conflict_verdicts(
+           fingerprint, model_id, prompt_version, verdict, current_slug,
+           qualification, reason, updated_at
+         ) VALUES(?, ?, ?, 'unresolved', NULL, NULL, 'insufficient evidence', ?)`,
+      )
+      .run(status.fingerprint, 'fixture-derive', CONFLICT_PROMPT_VERSION, '2031-01-01T00:00:00.000Z');
+    const unresolved = rebuildEvidenceGraph(store, { conflictModelId: 'fixture-derive' });
+    expect(unresolved).toMatchObject({ factEdges: 7, nonTraversableFacts: 6 });
+    expect(
+      store.db.prepare("SELECT eligibility FROM graph_fact_status WHERE fact_id = 'fac_status_a'").get(),
+    ).toEqual({ eligibility: 'conflict_unresolved' });
+
+    store.db
+      .prepare(
+        `UPDATE facts
+            SET claim = ?, value = ?, source_line_hash = ?
+          WHERE id = 'fac_tier_b'`,
+      )
+      .run('Ada Marlow has tier code 5555.', '5555', sha256('Ada Marlow has tier code 5555.'));
+    const changed = rebuildEvidenceGraph(store, { conflictModelId: 'fixture-derive' });
+    expect(changed).toMatchObject({ factEdges: 5, nonTraversableFacts: 8 });
+    expect(
+      store.db.prepare("SELECT eligibility FROM graph_fact_status WHERE fact_id = 'fac_tier_a'").get(),
+    ).toEqual({ eligibility: 'conflict_unverified' });
+    expect(
+      store.db.prepare("SELECT count(*) AS count FROM graph_edges WHERE source_fact LIKE 'fac_tier_%'").get(),
+    ).toEqual({ count: 0 });
+    store.close();
+  });
 });
+
+interface FactStatusRow {
+  fact_id: string;
+  subject_resolution: string;
+  object_resolution: string;
+  predicate: string | null;
+  eligibility: string;
+  traversable: number;
+  conflict_fingerprint: string | null;
+}
+
+interface FactEdgeRow {
+  relation: string;
+  predicate: string | null;
+  source_fact: string;
+  source_hash: string;
+  derivation: string;
+  resolution: string;
+  confidence: number;
+  valid_from: string | null;
+  valid_to: string | null;
+}
 
 interface EdgeRow {
   relation: string;
@@ -418,6 +676,109 @@ See [[people/ada-marlow]].
 `,
   );
   return root;
+}
+
+function factFixtureCorpus(): string {
+  const root = temporaryDirectory('akno-fact-graph-kb-');
+  write(
+    root,
+    'people/ada-marlow.md',
+    `---
+title: Ada Marlow
+type: person
+akno:
+  aliases: [Ada]
+---
+
+# Ada Marlow
+
+- Works with Vulpine Mutual.
+- Warranty period is five years.
+- Location may be Blackwater Bay.
+- Previous location was Blackwater Bay.
+- Zephyr belongs to Ada Marlow.
+- Bo Winters has an invented record.
+- Status code is 1111.
+- Tier code is 3333.
+`,
+  );
+  write(
+    root,
+    'notes/ada-status.md',
+    `---
+title: Ada Status Note
+---
+
+# Ada Status Note
+
+- Status code is 2222.
+- Tier code is 4444.
+`,
+  );
+  write(root, 'organizations/vulpine-mutual.md', '# Vulpine Mutual\n\nAn invented organization.\n');
+  write(root, 'places/blackwater-bay.md', '# Blackwater Bay\n\nAn invented place.\n');
+  write(
+    root,
+    'products/zephyr-one.md',
+    `---
+title: Zephyr One
+akno:
+  aliases: [Zephyr]
+---
+
+# Zephyr One
+`,
+  );
+  write(
+    root,
+    'products/zephyr-two.md',
+    `---
+title: Zephyr Two
+akno:
+  aliases: [Zephyr]
+---
+
+# Zephyr Two
+`,
+  );
+  return root;
+}
+
+function insertFact(
+  db: Database.Database,
+  input: {
+    id: string;
+    slug: string;
+    line: number;
+    claim: string;
+    subject: string;
+    attribute: string;
+    value: string;
+    confidence?: number;
+    validTo?: string;
+  },
+): void {
+  const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get(input.slug) as { id: string };
+  db.prepare(
+    `INSERT INTO facts(
+       id, page_id, claim, subject, attribute, value, line_start, line_end,
+       source_line_hash, confidence, valid_from, valid_to, first_seen, last_seen
+     ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '2029-01-01', ?, ?, ?)`,
+  ).run(
+    input.id,
+    page.id,
+    input.claim,
+    input.subject,
+    input.attribute,
+    input.value,
+    input.line,
+    input.line,
+    sha256(input.claim),
+    input.confidence ?? 0.9,
+    input.validTo ?? null,
+    '2029-01-01T00:00:00.000Z',
+    '2031-01-01T00:00:00.000Z',
+  );
 }
 
 function write(root: string, relPath: string, content: string): void {

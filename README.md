@@ -409,8 +409,13 @@ recorded as exact, ambiguous, or unresolved, but only an exact result becomes a 
 to knowledge pages also produce exact mention edges.
 
 Every edge retains a current source hash and a line, frontmatter field, document, or event locator. This graph
-is still internal derived state: fact subject/object edges, graph inspection, bounded multi-hop traversal,
-contextual disambiguation, and graph-assisted recall are not implemented yet.
+also projects derived facts whose subjects resolve exactly. Scalar values remain attribute facts; values that
+resolve exactly to another entity create entity-to-entity relationships. Low-confidence, unresolved,
+unverified, qualified, and non-current conflict claims do not become current traversable edges. Superseded
+authored facts may remain as explicitly historical edges with their original validity bounds.
+
+The graph is still internal derived state: graph inspection, bounded multi-hop traversal, contextual
+disambiguation, and graph-assisted recall are not implemented yet.
 
 ## Documents
 

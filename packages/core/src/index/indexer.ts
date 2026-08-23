@@ -30,7 +30,7 @@ import { bodyItemIds, bodyLineHashes, derivePage, summarizeDocument, type Derive
 import { eventId, factId, managedFactId, newPageId, sha256 } from '../store/ids.ts';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
-import { rebuildStructuralGraph } from './graph.ts';
+import { rebuildEvidenceGraph } from './graph.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -106,6 +106,9 @@ export interface IndexReport {
   graphMentions: number;
   graphAmbiguousMentions: number;
   graphUnresolvedMentions: number;
+  graphFacts: number;
+  graphFactEdges: number;
+  graphNonTraversableFacts: number;
   ignored: number;
   /** Non-fatal problems worth reporting rather than throwing. `doctor` prints these. */
   warnings: string[];
@@ -167,6 +170,9 @@ export class Indexer {
       graphMentions: 0,
       graphAmbiguousMentions: 0,
       graphUnresolvedMentions: 0,
+      graphFacts: 0,
+      graphFactEdges: 0,
+      graphNonTraversableFacts: 0,
       ignored: 0,
       warnings: [],
       durationMs: 0,
@@ -293,18 +299,6 @@ export class Indexer {
     // nothing worth the inconsistency.
     this.resolveLinks();
 
-    // Structural graph rows are cheap, private derived state. Rebuilding the complete graph
-    // after every pass also reconciles edges whose target changed in a scoped index operation.
-    progress({ phase: 'graph', done: 0, total: 1 });
-    const graph = rebuildStructuralGraph(this.#store);
-    report.graphNodes = graph.nodes;
-    report.graphEdges = graph.edges;
-    report.graphEntities = graph.entities;
-    report.graphMentions = graph.mentions;
-    report.graphAmbiguousMentions = graph.ambiguousMentions;
-    report.graphUnresolvedMentions = graph.unresolvedMentions;
-    progress({ phase: 'graph', done: 1, total: 1 });
-
     // ── Model-backed passes ────────────────────────────────────────────────
     // Scoped to the pages this pass touched when the caller named files. Without
     // that scope, a single `write` into a knowledge base with an embedding backlog
@@ -324,6 +318,24 @@ export class Indexer {
       await this.summarizeDocuments(report, progress);
       await this.derivePending(report, progress, options.rederive ?? false, scope);
     }
+
+    // Graph rows are cheap, private derived state. Build after derivation so facts produced
+    // by this pass become relationships immediately, while structural-only passes still
+    // reconcile the complete graph from the facts already present.
+    progress({ phase: 'graph', done: 0, total: 1 });
+    const graph = rebuildEvidenceGraph(this.#store, {
+      conflictModelId: this.#models.derive.modelId,
+    });
+    report.graphNodes = graph.nodes;
+    report.graphEdges = graph.edges;
+    report.graphEntities = graph.entities;
+    report.graphMentions = graph.mentions;
+    report.graphAmbiguousMentions = graph.ambiguousMentions;
+    report.graphUnresolvedMentions = graph.unresolvedMentions;
+    report.graphFacts = graph.facts;
+    report.graphFactEdges = graph.factEdges;
+    report.graphNonTraversableFacts = graph.nonTraversableFacts;
+    progress({ phase: 'graph', done: 1, total: 1 });
 
     report.durationMs = performance.now() - started;
     progress({ phase: 'done', done: 1, total: 1 });

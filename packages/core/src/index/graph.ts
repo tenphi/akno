@@ -1,16 +1,30 @@
 import type { Store } from '../store/db.ts';
 import { sha256 } from '../store/ids.ts';
+import {
+  cachedConflictVerdict,
+  claimKey,
+  conflictClaimIneligibility,
+  findCrossPageConflictsInStore,
+} from '../maintenance/conflicts.ts';
 
 export const STRUCTURAL_GRAPH_VERSION = 'structural-v1';
 export const ENTITY_RESOLUTION_VERSION = 'entity-exact-v1';
+export const FACT_GRAPH_VERSION = 'fact-relationships-v1';
 
-export interface StructuralGraphReport {
+export interface EvidenceGraphOptions {
+  conflictModelId?: string | null;
+}
+
+export interface EvidenceGraphReport {
   nodes: number;
   edges: number;
   entities: number;
   mentions: number;
   ambiguousMentions: number;
   unresolvedMentions: number;
+  facts: number;
+  factEdges: number;
+  nonTraversableFacts: number;
 }
 
 export type EntityNameSignal = 'canonical_slug' | 'alias' | 'title' | 'basename';
@@ -31,7 +45,7 @@ export type ExactEntityResolution =
     }
   | { status: 'unresolved'; normalized: string; candidates: [] };
 
-type NodeKind = 'entity' | 'page' | 'document' | 'event';
+type NodeKind = 'entity' | 'page' | 'document' | 'fact' | 'event';
 type EntityType = 'person' | 'organization' | 'place' | 'product' | 'event' | 'concept' | 'other';
 
 interface PageRow {
@@ -81,6 +95,34 @@ interface NameRow {
   signal: EntityNameSignal;
 }
 
+interface IndexedNameRow extends NameRow {
+  normalized_name: string;
+}
+
+interface FactRow {
+  id: string;
+  page_id: string;
+  slug: string;
+  subject: string | null;
+  attribute: string | null;
+  value: string | null;
+  line_start: number;
+  line_end: number;
+  source_line_hash: string;
+  confidence: number;
+  valid_from: string | null;
+  valid_to: string | null;
+}
+
+type FactEligibility =
+  | 'eligible'
+  | 'superseded'
+  | 'low_confidence'
+  | 'conflict_unverified'
+  | 'conflict_unresolved'
+  | 'conflict_qualified'
+  | 'conflict_superseded';
+
 /**
  * Replace the complete model-free graph from canonical index rows.
  *
@@ -88,10 +130,11 @@ interface NameRow {
  * trying to patch generic incident edges after every page move, link resolution, or document
  * ownership change. Nothing here reads or writes knowledge-base files.
  */
-export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
+export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions = {}): EvidenceGraphReport {
   return store.transaction(() => {
     // Mention rows use SET NULL for a removed resolution so they can survive an ordinary entity
     // deletion. A graph rebuild replaces them, so remove them explicitly before their entities.
+    store.db.prepare('DELETE FROM graph_fact_status').run();
     store.db.prepare('DELETE FROM graph_mentions').run();
     store.db.prepare('DELETE FROM graph_entity_names').run();
     store.db.prepare('DELETE FROM graph_entities').run();
@@ -117,12 +160,19 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
          resolved_entity, resolution, signal, candidates, derivation_version
        ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
+    const insertFactStatus = store.db.prepare(
+      `INSERT INTO graph_fact_status(
+         fact_id, subject_entity, object_entity, subject_resolution, subject_candidates,
+         object_resolution, object_candidates, predicate, eligibility, traversable,
+         conflict_fingerprint, source_hash, derivation_version
+       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
     const insertEdge = store.db.prepare(
       `INSERT OR IGNORE INTO graph_edges(
          id, from_node, to_node, relation, predicate, source_kind,
-         source_page, source_document, source_event, line_start, line_end, source_field,
-         source_hash, derivation, resolution, confidence, derivation_version
-       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'structural', 'exact', 1, ?)`,
+         source_page, source_document, source_event, source_fact, line_start, line_end, source_field,
+         source_hash, derivation, resolution, confidence, derivation_version, valid_from, valid_to
+       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'exact', ?, ?, ?, ?)`,
     );
 
     const pages = store.db
@@ -159,6 +209,17 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
           ORDER BY e.id`,
       )
       .all() as EventRow[];
+    const facts = store.db
+      .prepare(
+        `SELECT f.id, f.page_id, p.slug, f.subject, f.attribute, f.value,
+                f.line_start, f.line_end, f.source_line_hash, f.confidence,
+                f.valid_from, f.valid_to
+           FROM facts f
+           JOIN pages p ON p.id = f.page_id
+          WHERE p.role = 'knowledge'
+          ORDER BY f.id`,
+      )
+      .all() as FactRow[];
 
     const nodeIds = new Map<string, string>();
     const addNode = (
@@ -173,6 +234,7 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
     };
     for (const page of pages) addNode('page', page.id, page.source_hash);
     for (const document of documents) addNode('document', document.id, document.sha256);
+    for (const fact of facts) addNode('fact', fact.id, fact.source_line_hash, FACT_GRAPH_VERSION);
     for (const event of events) addNode('event', event.id, event.source_hash);
 
     const entities: EntityRow[] = pages
@@ -210,6 +272,7 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
         );
       }
     }
+    const resolveEntity = exactEntityResolver(store.db);
 
     let edges = 0;
     const addEdge = (edge: {
@@ -217,20 +280,27 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
       to: string;
       relation: string;
       predicate: string | null;
-      sourceKind: 'page_line' | 'frontmatter' | 'document';
+      sourceKind: 'page_line' | 'fact_line' | 'frontmatter' | 'document';
       sourcePage: string | null;
       sourceDocument: string | null;
       sourceEvent: string | null;
+      sourceFact?: string | null;
       line: number | null;
+      lineEnd?: number | null;
       sourceField: string | null;
       sourceHash: string;
+      derivation?: 'structural' | 'fact';
+      confidence?: number;
       version?: string;
-    }): void => {
+      validFrom?: string | null;
+      validTo?: string | null;
+    }): number => {
       const locator = [
         edge.sourceKind,
         edge.sourcePage,
         edge.sourceDocument,
         edge.sourceEvent,
+        edge.sourceFact,
         edge.line,
         edge.sourceField,
       ].join('\0');
@@ -247,13 +317,19 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
         edge.sourcePage,
         edge.sourceDocument,
         edge.sourceEvent,
+        edge.sourceFact ?? null,
         edge.line,
-        edge.line,
+        edge.lineEnd ?? edge.line,
         edge.sourceField,
         edge.sourceHash,
+        edge.derivation ?? 'structural',
+        edge.confidence ?? 1,
         edge.version ?? STRUCTURAL_GRAPH_VERSION,
+        edge.validFrom ?? null,
+        edge.validTo ?? null,
       );
       edges += result.changes;
+      return result.changes;
     };
 
     for (const entity of entities) {
@@ -372,7 +448,7 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
 
     for (const page of pages) {
       for (const mention of new Set(parseStringArray(page.about))) {
-        const resolution = resolveExactEntity(store.db, mention);
+        const resolution = resolveEntity(mention);
         addMention({
           mention,
           sourcePage: page.id,
@@ -397,6 +473,130 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
           version: ENTITY_RESOLUTION_VERSION,
         });
       }
+    }
+
+    const conflictCandidates = findCrossPageConflictsInStore(store, Number.MAX_SAFE_INTEGER);
+    const classifiedConflicts = conflictCandidates.map(
+      (candidate) => cachedConflictVerdict(store, candidate, options.conflictModelId ?? null) ?? candidate,
+    );
+    const conflictReasons = conflictClaimIneligibility(classifiedConflicts);
+    const conflictFingerprints = new Map<string, string>();
+    for (const conflict of classifiedConflicts) {
+      for (const claim of conflict.claims) {
+        conflictFingerprints.set(claimKey(claim.slug, claim.line), conflict.fingerprint);
+      }
+    }
+
+    let factEdges = 0;
+    let nonTraversableFacts = 0;
+    for (const fact of facts) {
+      const subjectResolution = fact.subject ? resolveEntity(fact.subject) : null;
+      if (fact.subject && subjectResolution) {
+        addMention({
+          mention: fact.subject,
+          sourcePage: fact.page_id,
+          sourceField: 'fact.subject',
+          sourceLine: fact.line_start,
+          sourceHash: fact.source_line_hash,
+          resolution: subjectResolution,
+        });
+      }
+
+      const attemptedObject = fact.value ? resolveEntity(fact.value) : null;
+      const objectResolution = attemptedObject?.status === 'unresolved' ? null : attemptedObject;
+      if (fact.value && objectResolution) {
+        addMention({
+          mention: fact.value,
+          sourcePage: fact.page_id,
+          sourceField: 'fact.value',
+          sourceLine: fact.line_start,
+          sourceHash: fact.source_line_hash,
+          resolution: objectResolution,
+        });
+      }
+
+      const key = claimKey(fact.slug, fact.line_start);
+      const conflictReason = conflictReasons.get(key);
+      const eligibility: FactEligibility = fact.valid_to
+        ? 'superseded'
+        : fact.confidence < 0.5
+          ? 'low_confidence'
+          : (conflictReason ?? 'eligible');
+      const predicate = normalizePredicate(fact.attribute);
+      const subjectEntity = subjectResolution?.status === 'resolved' ? subjectResolution.entityId : null;
+      const objectEntity = objectResolution?.status === 'resolved' ? objectResolution.entityId : null;
+      const traversable = eligibility === 'eligible' && subjectEntity !== null && predicate !== null;
+      if (!traversable) nonTraversableFacts++;
+
+      insertFactStatus.run(
+        fact.id,
+        subjectEntity,
+        objectEntity,
+        !subjectResolution
+          ? 'missing'
+          : subjectResolution.status === 'resolved'
+            ? 'exact'
+            : subjectResolution.status,
+        JSON.stringify(subjectResolution?.candidates ?? []),
+        !objectResolution
+          ? 'scalar'
+          : objectResolution.status === 'resolved'
+            ? 'exact'
+            : objectResolution.status,
+        JSON.stringify(objectResolution?.candidates ?? []),
+        predicate,
+        eligibility,
+        traversable ? 1 : 0,
+        conflictFingerprints.get(key) ?? null,
+        fact.source_line_hash,
+        FACT_GRAPH_VERSION,
+      );
+
+      // Superseded authored facts remain as explicitly historical edges. Conflict-ineligible
+      // live claims do not: a classifier verdict is a gate, not another historical assertion.
+      if ((!traversable && eligibility !== 'superseded') || !subjectEntity || !predicate) continue;
+      const confidence = Math.max(0, Math.min(1, fact.confidence));
+      factEdges += addEdge({
+        from: requiredNode(nodeIds, 'entity', subjectEntity),
+        to: requiredNode(nodeIds, 'fact', fact.id),
+        relation: 'has_attribute',
+        predicate,
+        sourceKind: 'fact_line',
+        sourcePage: fact.page_id,
+        sourceDocument: null,
+        sourceEvent: null,
+        sourceFact: fact.id,
+        line: fact.line_start,
+        lineEnd: fact.line_end,
+        sourceField: 'fact.attribute',
+        sourceHash: fact.source_line_hash,
+        derivation: 'fact',
+        confidence,
+        version: FACT_GRAPH_VERSION,
+        validFrom: fact.valid_from,
+        validTo: fact.valid_to,
+      });
+      if (!objectEntity) continue;
+      factEdges += addEdge({
+        from: requiredNode(nodeIds, 'entity', subjectEntity),
+        to: requiredNode(nodeIds, 'entity', objectEntity),
+        relation: 'related_entity',
+        predicate,
+        sourceKind: 'fact_line',
+        sourcePage: fact.page_id,
+        sourceDocument: null,
+        sourceEvent: null,
+        sourceFact: fact.id,
+        line: fact.line_start,
+        lineEnd: fact.line_end,
+        sourceField: 'fact.value',
+        sourceHash: fact.source_line_hash,
+        derivation: 'fact',
+        confidence,
+        version: FACT_GRAPH_VERSION,
+        validFrom: fact.valid_from,
+        validTo: fact.valid_to,
+      });
     }
 
     for (const document of documents) {
@@ -456,6 +656,9 @@ export function rebuildStructuralGraph(store: Store): StructuralGraphReport {
       mentions,
       ambiguousMentions,
       unresolvedMentions,
+      facts: facts.length,
+      factEdges,
+      nonTraversableFacts,
     };
   });
 }
@@ -472,6 +675,31 @@ export function resolveExactEntity(db: Store['db'], mention: string): ExactEntit
         ORDER BY entity_id`,
     )
     .all(normalized) as NameRow[];
+  return resolutionFromRows(normalized, rows);
+}
+
+function exactEntityResolver(db: Store['db']): (mention: string) => ExactEntityResolution {
+  const rows = db
+    .prepare(
+      `SELECT normalized_name, entity_id, signal
+         FROM graph_entity_names
+        ORDER BY normalized_name, entity_id`,
+    )
+    .all() as IndexedNameRow[];
+  const byName = new Map<string, NameRow[]>();
+  for (const row of rows) {
+    const bucket = byName.get(row.normalized_name);
+    if (bucket) bucket.push(row);
+    else byName.set(row.normalized_name, [row]);
+  }
+  return (mention): ExactEntityResolution => {
+    const normalized = normalizeEntityName(canonicalMention(mention));
+    if (!normalized) return { status: 'unresolved', normalized, candidates: [] };
+    return resolutionFromRows(normalized, byName.get(normalized) ?? []);
+  };
+}
+
+function resolutionFromRows(normalized: string, rows: NameRow[]): ExactEntityResolution {
   const priorities: EntityNameSignal[] = ['canonical_slug', 'alias', 'title', 'basename'];
   for (const signal of priorities) {
     const candidates = [...new Set(rows.filter((row) => row.signal === signal).map((row) => row.entity_id))];
@@ -543,6 +771,11 @@ function entityType(value: string | null): EntityType {
   }
 }
 
+function normalizePredicate(value: string | null): string | null {
+  const normalized = normalizeEntityName(value ?? '');
+  return normalized ? normalized.replaceAll(' ', '_') : null;
+}
+
 function entityId(pageId: string): string {
   return `ent_${sha256(`page\0${pageId}`).slice(0, 24)}`;
 }
@@ -557,7 +790,7 @@ function nodeKey(kind: NodeKind, sourceId: string): string {
 
 function requiredNode(nodes: Map<string, string>, kind: NodeKind, sourceId: string): string {
   const id = nodes.get(nodeKey(kind, sourceId));
-  if (!id) throw new Error(`structural graph is missing its ${kind} node`);
+  if (!id) throw new Error(`evidence graph is missing its ${kind} node`);
   return id;
 }
 

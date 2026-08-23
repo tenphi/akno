@@ -9,6 +9,7 @@ import {
   DOCUMENT_AVAILABILITY_MIGRATION_INDEX,
   DOCUMENT_FILE_DATES_MIGRATION_INDEX,
   ENTITY_GRAPH_MIGRATION_INDEX,
+  FACT_GRAPH_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
   MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX,
   MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX,
@@ -176,6 +177,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'graph_entities')) {
         db.exec(MIGRATIONS[ENTITY_GRAPH_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'graph_fact_status')) {
+        db.exec(MIGRATIONS[FACT_GRAPH_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

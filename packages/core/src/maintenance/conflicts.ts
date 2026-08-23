@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import type { Store } from '../store/db.ts';
 import { sha256 } from '../store/ids.ts';
 import { valuesConflict } from '../write/conflict.ts';
 
@@ -80,7 +81,12 @@ interface FactRow {
  * runnable on a machine with no model at all, and a candidate list is useful on its own.
  */
 export function findCrossPageConflicts(ctx: AknoContext, maxPairs: number): CrossPageConflict[] {
-  const rows = ctx.store.db
+  return findCrossPageConflictsInStore(ctx.store, maxPairs);
+}
+
+/** The model-free candidate pass, shared with graph eligibility rebuilding. */
+export function findCrossPageConflictsInStore(store: Store, maxPairs: number): CrossPageConflict[] {
+  const rows = store.db
     .prepare(
       `SELECT p.slug, f.line_start, f.subject, f.attribute, f.value, f.claim, f.confidence, f.first_seen
          FROM facts f JOIN pages p ON p.id = f.page_id
@@ -148,7 +154,7 @@ function pickDisagreeing(facts: FactRow[]): FactRow[] {
   return [];
 }
 
-const CONFLICT_PROMPT_VERSION = 'typed-v2-qualified';
+export const CONFLICT_PROMPT_VERSION = 'typed-v2-qualified';
 
 const VERIFY = `You classify structurally incompatible claims from a personal knowledge base.
 
@@ -207,7 +213,7 @@ export async function verifyConflicts(
   const conflicts: CrossPageConflict[] = [];
 
   for (const candidate of candidates) {
-    const cached = cachedVerdict(ctx, candidate);
+    const cached = cachedConflictVerdict(ctx.store, candidate, ctx.models.derive.modelId);
     if (cached) {
       conflicts.push(cached);
       continue;
@@ -293,7 +299,9 @@ export async function verifyConflicts(
   return { conflicts, warnings };
 }
 
-function conflictFingerprint(conflict: Pick<CrossPageConflict, 'subject' | 'attribute' | 'claims'>): string {
+export function conflictFingerprint(
+  conflict: Pick<CrossPageConflict, 'subject' | 'attribute' | 'claims'>,
+): string {
   return sha256(
     JSON.stringify({
       prompt: CONFLICT_PROMPT_VERSION,
@@ -313,17 +321,29 @@ function conflictFingerprint(conflict: Pick<CrossPageConflict, 'subject' | 'attr
 
 /** Claims that must not support a new observation or principle in this run. */
 export function ineligibleConflictClaims(conflicts: CrossPageConflict[]): Set<string> {
-  const out = new Set<string>();
+  return new Set(conflictClaimIneligibility(conflicts).keys());
+}
+
+export type ConflictClaimIneligibility =
+  'conflict_unverified' | 'conflict_unresolved' | 'conflict_qualified' | 'conflict_superseded';
+
+/** Typed reasons shared by inference and the evidence graph; callers never parse verdict prose. */
+export function conflictClaimIneligibility(
+  conflicts: CrossPageConflict[],
+): Map<string, ConflictClaimIneligibility> {
+  const out = new Map<string, ConflictClaimIneligibility>();
   for (const conflict of conflicts) {
-    if (
-      conflict.verdict === 'unresolved' ||
-      conflict.verdict === 'unverified' ||
-      conflict.verdict === 'qualified'
-    ) {
-      for (const claim of conflict.claims) out.add(claimKey(claim.slug, claim.line));
+    if (conflict.verdict === 'unresolved' || conflict.verdict === 'unverified') {
+      for (const claim of conflict.claims) {
+        out.set(claimKey(claim.slug, claim.line), `conflict_${conflict.verdict}`);
+      }
+    } else if (conflict.verdict === 'qualified') {
+      for (const claim of conflict.claims) out.set(claimKey(claim.slug, claim.line), 'conflict_qualified');
     } else if (conflict.verdict === 'superseded') {
       for (const claim of conflict.claims) {
-        if (claim.slug !== conflict.likelyCurrent) out.add(claimKey(claim.slug, claim.line));
+        if (claim.slug !== conflict.likelyCurrent) {
+          out.set(claimKey(claim.slug, claim.line), 'conflict_superseded');
+        }
       }
     }
   }
@@ -407,14 +427,18 @@ function explicitTimeScope(claim: string): boolean {
   );
 }
 
-function cachedVerdict(ctx: AknoContext, candidate: CrossPageConflict): CrossPageConflict | null {
-  if (!conflictCacheAvailable(ctx)) return null;
-  const row = ctx.store.db
+export function cachedConflictVerdict(
+  store: Store,
+  candidate: CrossPageConflict,
+  modelId: string | null,
+): CrossPageConflict | null {
+  if (!conflictCacheAvailable(store)) return null;
+  const row = store.db
     .prepare(
       `SELECT verdict, current_slug, qualification, reason FROM conflict_verdicts
        WHERE fingerprint = ? AND model_id = ? AND prompt_version = ?`,
     )
-    .get(candidate.fingerprint, ctx.models.derive.modelId ?? '', CONFLICT_PROMPT_VERSION) as
+    .get(candidate.fingerprint, modelId ?? '', CONFLICT_PROMPT_VERSION) as
     | {
         verdict: CrossPageConflict['verdict'];
         current_slug: string | null;
@@ -438,7 +462,7 @@ function cachedVerdict(ctx: AknoContext, candidate: CrossPageConflict): CrossPag
 }
 
 function cacheVerdict(ctx: AknoContext, conflict: CrossPageConflict): void {
-  if (!ctx.writable || !conflictCacheAvailable(ctx) || conflict.verdict === 'unverified') return;
+  if (!ctx.writable || !conflictCacheAvailable(ctx.store) || conflict.verdict === 'unverified') return;
   ctx.store.db
     .prepare(
       `INSERT INTO conflict_verdicts
@@ -482,8 +506,8 @@ function parseQualification(value: string | null): unknown {
   }
 }
 
-function conflictCacheAvailable(ctx: AknoContext): boolean {
-  const row = ctx.store.db
+function conflictCacheAvailable(store: Store): boolean {
+  const row = store.db
     .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'conflict_verdicts'")
     .get() as { present: number } | undefined;
   return row?.present === 1;

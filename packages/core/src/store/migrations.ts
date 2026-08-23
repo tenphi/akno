@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 20;
+export const SCHEMA_VERSION = 21;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -24,6 +24,7 @@ export const MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX = 9;
 export const MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX = 10;
 export const STRUCTURAL_GRAPH_MIGRATION_INDEX = 11;
 export const ENTITY_GRAPH_MIGRATION_INDEX = 12;
+export const FACT_GRAPH_MIGRATION_INDEX = 13;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -548,6 +549,42 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX graph_mentions_source ON graph_mentions(source_page, source_field);
   CREATE INDEX graph_mentions_entity ON graph_mentions(resolved_entity);
   CREATE INDEX graph_mentions_normalized ON graph_mentions(normalized_mention, resolution);
+  `,
+  // ── 14. Provenance-bound fact relationships and eligibility ────────────
+  // All derived facts remain inspectable, but only exact, current, conflict-eligible claims
+  // become default-traversable edges. Direct entity relationships retain their fact locator.
+  `
+  ALTER TABLE graph_edges ADD COLUMN source_fact TEXT REFERENCES facts(id) ON DELETE CASCADE;
+  ALTER TABLE graph_edges ADD COLUMN valid_from TEXT;
+  ALTER TABLE graph_edges ADD COLUMN valid_to TEXT;
+  CREATE INDEX graph_edges_source_fact ON graph_edges(source_fact);
+  CREATE INDEX graph_edges_current ON graph_edges(valid_to, relation);
+
+  CREATE TABLE graph_fact_status (
+    fact_id              TEXT PRIMARY KEY REFERENCES facts(id) ON DELETE CASCADE,
+    subject_entity       TEXT REFERENCES graph_entities(id) ON DELETE SET NULL,
+    object_entity        TEXT REFERENCES graph_entities(id) ON DELETE SET NULL,
+    subject_resolution   TEXT NOT NULL,
+    subject_candidates   TEXT NOT NULL DEFAULT '[]',
+    object_resolution    TEXT NOT NULL,
+    object_candidates    TEXT NOT NULL DEFAULT '[]',
+    predicate            TEXT,
+    eligibility          TEXT NOT NULL,
+    traversable          INTEGER NOT NULL DEFAULT 0,
+    conflict_fingerprint TEXT,
+    source_hash          TEXT NOT NULL,
+    derivation_version   TEXT NOT NULL,
+    CHECK (subject_resolution IN ('missing', 'exact', 'ambiguous', 'unresolved')),
+    CHECK (object_resolution IN ('scalar', 'exact', 'ambiguous')),
+    CHECK (eligibility IN (
+      'eligible', 'superseded', 'low_confidence', 'conflict_unverified',
+      'conflict_unresolved', 'conflict_qualified', 'conflict_superseded'
+    )),
+    CHECK (traversable IN (0, 1))
+  );
+  CREATE INDEX graph_fact_status_subject ON graph_fact_status(subject_entity, traversable);
+  CREATE INDEX graph_fact_status_object ON graph_fact_status(object_entity, traversable);
+  CREATE INDEX graph_fact_status_eligibility ON graph_fact_status(eligibility, traversable);
   `,
 ];
 
