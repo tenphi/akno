@@ -106,6 +106,27 @@ try {
   const listed = JSON.parse(run('list', '--kind', 'pages', '--type', 'contract'));
   check('filters pages by type', listed.pages.length === 1 && listed.pages[0].slug === 'home/lease');
 
+  const graph = JSON.parse(run('graph', '--slug', 'home/lease', '--hops', '1'));
+  check(
+    'inspects an exact evidence path',
+    graph.status === 'ok' &&
+      graph.edges.some(
+        (edge) =>
+          edge.relation === 'links_to' &&
+          edge.evidence.slug === 'home/lease' &&
+          Number.isInteger(edge.evidence.line_start),
+      ),
+  );
+  check(
+    'graph returns locators without copying claims',
+    !JSON.stringify(graph).includes('1111 EUR per month'),
+  );
+  const emptyGraph = JSON.parse(run('graph', '--slug', 'missing/invented-page'));
+  check(
+    'graph distinguishes a complete miss',
+    emptyGraph.status === 'empty' && emptyGraph.reason === 'seed_not_found',
+  );
+
   const bundle = JSON.parse(run('context', 'what is the rent?', '--budget', '3000'));
   check('context fits its budget', bundle.budget_used <= 3000, `used ${bundle.budget_used}`);
   check('context includes the ledger', bundle.events.length >= 0);

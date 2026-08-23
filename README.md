@@ -414,8 +414,12 @@ resolve exactly to another entity create entity-to-entity relationships. Low-con
 unverified, qualified, and non-current conflict claims do not become current traversable edges. Superseded
 authored facts may remain as explicitly historical edges with their original validity bounds.
 
-The graph is still internal derived state: graph inspection, bounded multi-hop traversal, contextual
-disambiguation, and graph-assisted recall are not implemented yet.
+`akno graph` exposes this derived state as bounded, read-only evidence paths. Seed one exact page slug,
+canonical entity id, or query containing exact declared entity names; restrict direction or relation; and
+traverse one to three hops. Results contain compact node identities and source locators, never page bodies or
+copied claims. Ambiguity, partial indexing, unavailable document evidence, and safety-cap truncation remain
+typed rather than becoming guessed paths or false proof of absence. Contextual disambiguation and a
+rank-fused graph candidate arm inside `recall` are not implemented yet.
 
 ## Documents
 

@@ -9,6 +9,7 @@ export * from './ops/read.ts';
 export * from './ops/list.ts';
 export * from './ops/timeline.ts';
 export * from './ops/context.ts';
+export * from './ops/graph.ts';
 export * from './ops/write.ts';
 export * from './ops/folder.ts';
 export * from './ops/mutate.ts';

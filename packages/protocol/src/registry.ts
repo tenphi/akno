@@ -4,6 +4,7 @@ import { ReadInput, ReadOutput } from './ops/read.ts';
 import { ListInput, ListOutput } from './ops/list.ts';
 import { TimelineInput, TimelineOutput } from './ops/timeline.ts';
 import { ContextInput, ContextOutput } from './ops/context.ts';
+import { GraphInput, GraphOutput } from './ops/graph.ts';
 import { WriteInput, WriteOutput } from './ops/write.ts';
 import { FolderInput, FolderOutput } from './ops/folder.ts';
 import {
@@ -105,6 +106,18 @@ export const OPS = {
     description:
       'The whole pre-turn bundle against one budget: pinned pages, recent timeline, a structure outline, and ' +
       "this turn's recall. Normally called by the host before the model sees the turn, not by the agent.",
+  }),
+  graph: op({
+    name: 'graph',
+    kind: 'read',
+    input: GraphInput,
+    output: GraphOutput,
+    implemented: true,
+    description:
+      'Inspect bounded evidence paths from one exact page slug, entity id, or query. Returns compact nodes, ' +
+      'typed relationships, and line/frontmatter/document/event locators but no page bodies or copied claims. ' +
+      'Traversal is limited to three hops, excludes historical facts by default, and reports ambiguity or ' +
+      'truncation as typed degradation rather than guessing or claiming absence.',
   }),
 
   write: op({

@@ -27,6 +27,7 @@ import { read } from './ops/read.ts';
 import { list } from './ops/list.ts';
 import { timeline } from './ops/timeline.ts';
 import { context as contextOp } from './ops/context.ts';
+import { graph as graphOp } from './ops/graph.ts';
 import { write as writeOp } from './ops/write.ts';
 import { folder as folderOp } from './ops/folder.ts';
 import { remember as rememberOp } from './ops/remember.ts';
@@ -270,6 +271,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     list,
     timeline,
     context: contextOp,
+    graph: graphOp,
     write: writeOp,
     folder: folderOp,
     remember: rememberOp,
@@ -333,6 +335,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     list: (input) => call('list', input),
     timeline: (input) => call('timeline', input),
     context: (input) => call('context', input),
+    graph: (input) => call('graph', input),
     write: (input) => call('write', input),
     folder: (input) => call('folder', input),
     remember: (input) => call('remember', input),

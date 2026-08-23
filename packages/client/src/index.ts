@@ -328,4 +328,15 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, error: Error): Pr
 }
 
 export { PROTOCOL_VERSION, AknoError } from '@tenphi/akno-protocol';
-export type { Card, AknoOps, Line, OpName, RecallMode } from '@tenphi/akno-protocol';
+export type {
+  Card,
+  AknoOps,
+  GraphEdgeRef,
+  GraphInput,
+  GraphNodeRef,
+  GraphOutput,
+  GraphPath,
+  Line,
+  OpName,
+  RecallMode,
+} from '@tenphi/akno-protocol';

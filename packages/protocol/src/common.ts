@@ -228,6 +228,14 @@ export const DegradedReason = z.enum([
   'no_document_text',
   /** The original bytes are gone; recall is using a retained extraction or rendition. */
   'document_source_missing',
+  /** Canonical entity names are not completely available for exact seeding. */
+  'no_entity_index',
+  /** One or more query names were ambiguous and Akno abstained. */
+  'entity_resolution_failed',
+  /** Base index rows and their rebuildable graph projection are out of step. */
+  'partial_graph_index',
+  /** A path, seed, or per-node fan-out safety cap stopped traversal. */
+  'graph_traversal_limited',
 ]);
 export type DegradedReason = z.infer<typeof DegradedReason>;
 

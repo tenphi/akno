@@ -3,7 +3,7 @@
  * absorb. `connect()` handshakes on it and refuses a server it cannot speak to,
  * rather than failing subtly on the third call.
  */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 /** Advertised MCP server name. The spec calls for `memory`, not `akno`. */
 export const MCP_SERVER_NAME = 'memory';

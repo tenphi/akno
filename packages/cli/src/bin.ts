@@ -14,6 +14,7 @@ import { benchCommand } from './commands/bench-cmd.ts';
 import { configCommand } from './commands/config-cmd.ts';
 import { serveCommand, serviceCommand } from './commands/serve-cmd.ts';
 import { contextCommand } from './commands/context-cmd.ts';
+import { graphCommand } from './commands/graph-cmd.ts';
 import { rememberCommand, writeCommand } from './commands/write-cmd.ts';
 import { approveCommand, forgetCommand, moveCommand, undoCommand } from './commands/mutate-cmd.ts';
 import { ingestCommand } from './commands/ingest-cmd.ts';
@@ -33,6 +34,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     list                 Browse folders, pages, or a tree outline.
     timeline             When things happened.
     context <query>      The whole pre-turn bundle against one budget.
+    graph [seed]         Inspect bounded evidence paths; no page bodies.
 
   ${style.bold('Writing')}
     write                Create, append, patch or replace a page.
@@ -78,6 +80,7 @@ const COMMANDS: Record<string, Command> = {
   list: listCommand,
   timeline: timelineCommand,
   context: contextCommand,
+  graph: graphCommand,
   write: writeCommand,
   remember: rememberCommand,
   forget: forgetCommand,

@@ -121,6 +121,7 @@ much you already know about the answer or change.
 | Ask a fuzzy or natural-language question    | `recall`                 | Finds relevant pages and reports coverage                       | no               |
 | Open a page or document you already know    | `read`                   | No ranking or truncation policy                                 | no               |
 | Browse the shape of the knowledge base      | `list`                   | Shows folders, pages, or a tree                                 | no               |
+| Inspect how exact records are connected     | `graph`                  | Returns bounded evidence paths and locators, without bodies     | no               |
 | Ask what happened in a period               | `timeline`               | Uses structured events and dated lines                          | no               |
 | Prepare everything an agent turn needs      | `context`                | Fits pins, recent events, structure, and recall into one budget | no               |
 | Put exact wording on an exact page          | `write`                  | The caller controls destination and text                        | yes              |
@@ -135,7 +136,8 @@ Two rules of thumb prevent most misuse:
 
 - If you know the destination and wording, use `write`; if you are handing over raw material,
   use `remember`.
-- If you know the slug, use `read`; if you only know the subject, use `recall`.
+- If you know the slug, use `read`; if you only know the subject, use `recall`. Use `graph` when the
+  relationship between exact records is itself what you need to inspect.
 
 The CLI exposes these methods to a person. The in-process, socket, HTTP, and MCP interfaces expose
 the same operations to an agent from one registry, with the same schemas and errors.
@@ -329,6 +331,39 @@ akno list --type receipt --order recent
 
 This is useful before writing. A caller that can see the existing taxonomy is less likely to invent
 a duplicate page or folder.
+
+### `graph`: inspect exact evidence paths
+
+```bash
+akno graph --slug people/ada-marlow --hops 2
+akno graph --query "Zephyr QX-100 warranty" --relation related_entity
+akno graph --entity ent_01JEXAMPLE --direction out --hops 1
+```
+
+`graph` is relationship inspection, not fuzzy search and not question answering. A slug starts at that exact
+page. An entity id starts at one canonical entity. A query extracts only exact entity names declared by
+canonical slugs, aliases, titles, or basenames; lexical similarity never becomes identity. If an exact name
+belongs to more than one entity, the result is `degraded` and lists the candidates instead of choosing one.
+
+Traversal goes both directions and at most two hops by default. `--direction`, `--relation`, and `--hops`
+narrow it; three hops is the hard maximum. Current eligible evidence is the default. `--history` includes
+superseded fact edges and labels them historical. A call returns at most 100 paths, and each visited node has a
+separate fan-out cap. Hitting either cap sets `truncated` and `graph_traversal_limited`, so a partial result never
+looks like proof that no other path exists.
+
+The result contains compact page/entity/document/fact/event identities, typed edges, and paths. Every edge has
+a line, frontmatter field, document, event, or fact locator. It deliberately contains no page body, document
+excerpt, or copied fact claim; follow a locator with `read` when the evidence itself is needed. Missing document
+originals remain visible as node availability and make the result degraded rather than implying that their
+contents were read.
+
+Path confidence is the product of the edge derivation confidences along that path. It describes how strongly
+the index derived that path, not whether the relationship is true. It is not comparable to BM25, cosine,
+rank-fusion, or reranker scores.
+
+The outcome is `empty` only when the complete graph had no exact seed or eligible path. An ambiguous name, a
+partial graph rebuild, unavailable document evidence, or a safety cap is `degraded`; an unreadable graph index
+is `unavailable`. These distinctions tell an agent whether “not recorded” is justified.
 
 ### `timeline`: retrieve events by time
 
@@ -1570,7 +1605,7 @@ or document was forgotten, recover it from Akno's trash within the configured re
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### The evidence graph is entity-aware but not queryable yet
+### The evidence graph is inspectable but does not expand recall yet
 
 Indexing now rebuilds a local evidence graph from exact page links, `akno.about`, document ownership, and
 dated event relationships. Each knowledge page anchors a separate canonical entity node. Its canonical slug,
@@ -1597,10 +1632,15 @@ excludes every non-current claim. Changing a claim or the configured model inval
 authored fact already marked `valid_to` may remain as a historical edge, but its status is non-traversable by
 default. Conflict verification refreshes the graph immediately, including during an audit-only cycle.
 
-This is still a foundation, not multi-hop retrieval. Akno does not yet expose `akno graph`, traverse
-bounded paths, contextually disambiguate same-name candidates, or feed graph candidates into recall. Until
-those slices ship, related evidence still has to be discovered by lexical/semantic recall or authored links
-rather than deliberate graph traversal.
+`akno graph` now exposes this derived state as exact, bounded one-to-three-hop paths. It accepts one page
+slug, entity id, or exact-name query seed; supports relation, direction, history, and path limits; returns
+compact source locators without copied content; caps hubs; and preserves typed empty, degraded, and unavailable
+outcomes. Ambiguous exact names return their candidates and stop rather than becoming edges.
+
+This is inspection, not graph-assisted recall yet. Akno does not contextually disambiguate same-name
+candidates or feed graph paths into recall's candidate set. Until those slices ship, `recall` still discovers
+evidence through lexical and semantic retrieval, while `graph` is the explicit tool for deliberate path
+inspection.
 
 ### The durable review queue does not cover every phase yet
 
@@ -1702,6 +1742,7 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 | `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker           |
 | `read <slug>`         | Read one page or document directly                        | no                               | none                                     |
 | `list`                | Browse folders, pages, or a tree                          | no                               | none                                     |
+| `graph`               | Inspect bounded exact evidence paths and locators         | no                               | none                                     |
 | `timeline`            | Retrieve authored events and typed document date evidence | no                               | none                                     |
 | `context <query>`     | Assemble one bounded pre-turn bundle                      | no                               | same as recall                           |
 | `write`               | Create, append, patch, or replace a page                  | yes                              | vision only for textless attachments     |
