@@ -9,7 +9,9 @@ import type { MaintenanceBudgetReceipt } from './budget.ts';
 
 export type DreamRunStatus = 'running' | 'completed' | 'partially_completed' | 'awaiting_review' | 'failed';
 
+/** `legacy` is read-only history; new runs write only a MaintenanceMode. */
 export type DreamRunMode = MaintenanceMode | 'legacy';
+export type DreamRunProfile = MaintenanceProfile | 'legacy-custom';
 
 /**
  * Content-free identity of the indexed state a dream run began against.
@@ -48,8 +50,8 @@ export interface DreamRunReceipt {
   startedAt: string;
   finishedAt: string | null;
   status: DreamRunStatus;
-  /** Configured profile at the start of the run; old receipts migrate to `custom` on read. */
-  profile: MaintenanceProfile;
+  /** Configured profile at the start of the run; historical compatibility runs are labelled. */
+  profile: DreamRunProfile;
   mode: DreamRunMode;
   dryRun: boolean;
   requestedPhase: DreamPhase | null;
@@ -434,10 +436,19 @@ function activeRunRows(ctx: AknoContext): ActiveRunRow[] {
 
 function parseReceipt(value: string): DreamRunReceipt | null {
   try {
-    const receipt = JSON.parse(value) as DreamRunReceipt & { maintenancePlanIds?: unknown };
+    const receipt = JSON.parse(value) as Omit<DreamRunReceipt, 'profile'> & {
+      profile?: MaintenanceProfile | 'custom' | 'legacy-custom';
+      maintenancePlanIds?: unknown;
+    };
     return {
       ...receipt,
-      profile: receipt.profile ?? 'custom',
+      profile:
+        receipt.profile === 'audit' ||
+        receipt.profile === 'review' ||
+        receipt.profile === 'autonomous' ||
+        receipt.profile === 'legacy-custom'
+          ? receipt.profile
+          : 'legacy-custom',
       budget: receipt.budget ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')

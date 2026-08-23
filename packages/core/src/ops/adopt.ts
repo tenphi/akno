@@ -72,19 +72,14 @@ export async function adopt(ctx: AknoContext, rawInput: unknown): Promise<AdoptO
     };
   }
 
-  const { enabled } = ctx.config.maintenance.adopt;
-  const policyMatrix =
-    ctx.config.maintenance.profile !== 'custom' || ctx.config.maintenance.policiesConfigured;
   const itemPolicy = policyMode(effectiveTransformPolicy(ctx.config, 'adopt'));
-  const mode = policyMatrix ? itemPolicy : ctx.config.maintenance.adopt.mode;
-  if (!enabled || !mode) {
+  const mode = itemPolicy;
+  if (!mode) {
     return {
       status: 'ok',
       outcome: 'disabled',
       document_id: document.id,
-      reason: !enabled
-        ? 'document adoption is disabled in configuration'
-        : 'document adoption has no configured trust mode',
+      reason: 'document adoption policy is off',
     };
   }
 
@@ -107,7 +102,7 @@ export async function adopt(ctx: AknoContext, rawInput: unknown): Promise<AdoptO
     mode,
     [draft],
     captureMaintenanceSnapshot(ctx, ['adopt'], modelId),
-    itemPolicy ?? mode,
+    itemPolicy,
   );
   if (!plan) {
     throw new AknoError('internal', 'the selected adoption produced no maintenance plan');

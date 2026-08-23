@@ -87,7 +87,8 @@ describe('curate', () => {
     expect(logged.curated).toMatchObject([{ slug: 'people/ada-marlow', action: 'would-update' }]);
 
     const unchangedInputs = await mem.dream({ phase: 'curate' });
-    expect(unchangedInputs.curated).toEqual([]);
+    expect(unchangedInputs.maintenancePlan?.id).toBe(report.maintenancePlan?.id);
+    expect(unchangedInputs.curated).toHaveLength(1);
     expect(server.calls()).toBe(2);
   });
 
@@ -115,8 +116,14 @@ describe('curate', () => {
   });
 
   it('reconsiders hygiene after body or frontmatter changes', async () => {
-    await mem.dream({ phase: 'curate' });
+    const initial = await mem.dream({ phase: 'curate' });
     expect(server.calls()).toBe(2);
+    mem.decidePlan(
+      initial.maintenancePlan!.id,
+      initial.maintenancePlan!.items[0]!.id,
+      'reject',
+      'Fixture reset.',
+    );
 
     fs.appendFileSync(path.join(root, 'people/ada-marlow.md'), '\nA short personal note.\n');
     await mem.index({ structuralOnly: true });
@@ -125,6 +132,12 @@ describe('curate', () => {
     expect(report.curated).toHaveLength(1);
     expect(report.curated[0]?.slug).toBe('people/ada-marlow');
     expect(server.calls()).toBe(4);
+    mem.decidePlan(
+      report.maintenancePlan!.id,
+      report.maintenancePlan!.items[0]!.id,
+      'reject',
+      'Fixture reset.',
+    );
 
     const page = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(page, fs.readFileSync(page, 'utf8').replace('title: Ada Marlow', 'title: Ada profile'));
@@ -156,8 +169,9 @@ Ada described her work. [[people/ada-marlow]]
     );
     await mem.index({ structuralOnly: true });
 
-    await mem.dream({ phase: 'curate' });
+    const initial = await mem.dream({ phase: 'curate' });
     expect(server.calls()).toBe(1);
+    expect(initial.maintenancePlan).toBeNull();
     expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
 
     fs.appendFileSync(evidence, '\nShe later added another detail.\n');
@@ -177,7 +191,8 @@ Ada described her work. [[people/ada-marlow]]
 
     const applied = await mem.dream({ phase: 'curate' });
     expect(applied.curated[0]?.action).toBe('updated');
-    expect(applied.curateChangeId).not.toBeNull();
+    expect(applied.curateChangeId).toBeNull();
+    expect(applied.maintenancePlan?.items[0]?.changeId).not.toBeNull();
     const callsAfterApply = server.calls();
 
     const current = await mem.dream({ phase: 'curate' });
@@ -253,6 +268,12 @@ The gathering ended with a confirmed ferry ride.
 });
 
 describe('plan-backed hygiene', () => {
+  beforeEach(async () => {
+    await mem.close();
+    mem = await openMem(false, undefined, { profile: 'autonomous' });
+    await mem.index({ structuralOnly: true });
+  });
+
   it('persists an audit plan without changing the knowledge base', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const before = fs.readFileSync(page, 'utf8');
@@ -592,7 +613,7 @@ describe('plan-backed hygiene', () => {
     server.extractDraft(true);
     server.invalidExtractionHeading(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowExtracts: true });
+    mem = await openMem(false, 'review', { allowExtracts: true });
     await mem.index({ structuralOnly: true });
 
     const report = await mem.dream({ phase: 'curate' });
@@ -611,7 +632,7 @@ describe('plan-backed hygiene', () => {
     server.extractDraft(true);
     server.invalidExtractionTarget(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowExtracts: true });
+    mem = await openMem(false, 'review', { allowExtracts: true });
     await mem.index({ structuralOnly: true });
 
     const report = await mem.dream({ phase: 'curate' });
@@ -650,7 +671,7 @@ describe('plan-backed hygiene', () => {
     const before = fs.readFileSync(canonical, 'utf8');
     server.extractDraft(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowExtracts: true });
+    mem = await openMem(false, 'review', { allowExtracts: true });
     await mem.index({ structuralOnly: true });
 
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
@@ -782,7 +803,7 @@ describe('plan-backed hygiene', () => {
     const inboundBefore = fs.readFileSync(paths.inbound, 'utf8');
     server.mergeDraft(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowMerges: true });
+    mem = await openMem(false, 'review', { allowMerges: true });
     await mem.index({ structuralOnly: true });
 
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
@@ -1023,7 +1044,7 @@ An invented interview record.
     const item = mem.plan(planned.id).items[0]!;
     mem.decidePlan(planned.id, item.id, 'approve', 'Exercise exact composition crash recovery.');
     const db = new Database(mem.config.dbPath);
-    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(item.id);
     db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
     db.close();
     const first = item.operations[0]!;
@@ -1058,7 +1079,7 @@ An invented interview record.
     const before = fs.readFileSync(canonical, 'utf8');
     server.splitDraft(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowSplits: true });
+    mem = await openMem(false, 'review', { allowSplits: true });
     await mem.index({ structuralOnly: true });
 
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
@@ -1089,7 +1110,7 @@ An invented interview record.
     db.close();
     fs.writeFileSync(page, item.operations[0]!.after);
     await mem.close();
-    mem = await openMem(false);
+    mem = await openMem(false, 'auto');
 
     const recovered = await mem.dream({ phase: 'curate', mode: 'auto' });
     expect(recovered.maintenancePlan).toMatchObject({ status: 'completed' });
@@ -1112,14 +1133,14 @@ An invented interview record.
     const before = fs.readFileSync(canonical, 'utf8');
     server.splitDraft(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowSplits: true });
+    mem = await openMem(false, 'review', { allowSplits: true });
     await mem.index({ structuralOnly: true });
 
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
     const item = mem.plan(planned.id).items[0]!;
     mem.decidePlan(planned.id, item.id, 'approve', 'The complete split is safe.');
     const db = new Database(mem.config.dbPath);
-    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(item.id);
     db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
     db.close();
     fs.writeFileSync(canonical, item.operations[0]!.after);
@@ -1147,14 +1168,14 @@ An invented interview record.
     );
     server.mergeDraft(true);
     await mem.close();
-    mem = await openMem(false, undefined, { allowMerges: true });
+    mem = await openMem(false, 'review', { allowMerges: true });
     await mem.index({ structuralOnly: true });
 
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
     const item = mem.plan(planned.id).items[0]!;
     mem.decidePlan(planned.id, item.id, 'approve', 'Exercise exact merge crash recovery.');
     const db = new Database(mem.config.dbPath);
-    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(item.id);
     db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
     db.close();
     for (const operation of item.operations) {
@@ -1243,6 +1264,15 @@ async function openMem(
     };
   } = {},
 ): Promise<Akno> {
+  const profile =
+    options.profile ??
+    (mode === 'auto'
+      ? 'autonomous'
+      : mode === 'audit' || mode === 'review'
+        ? mode
+        : write
+          ? 'autonomous'
+          : 'audit');
   return open({
     aknoPath: root,
     stateDir,
@@ -1259,14 +1289,11 @@ async function openMem(
         derive: { provider: 'stub', id: 'stub' },
       },
       maintenance: {
-        ...(options.profile ? { profile: options.profile } : {}),
+        profile,
         ...(options.policies ? { policies: options.policies } : {}),
         ...(options.limits ? { limits: options.limits } : {}),
         log_changes: true,
         curate: {
-          enabled: true,
-          ...(mode ? { mode } : {}),
-          write,
           verify: true,
           ...(options.allowSplits ? { split_after_bytes: 1, split_section_bytes: 1 } : {}),
           ...(options.allowExtracts ? { extract_after_bytes: 1, extract_section_bytes: 1 } : {}),

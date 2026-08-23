@@ -31,7 +31,7 @@ akno dream status
 
   A full/scheduled run resolves the configured maintenance profile. audit plans only,
   review waits for human decisions, autonomous uses a separate curator and applies only
-  accepted work, and custom preserves the phase-level settings.
+  accepted work. Per-transformation policies may only lower that profile authority.
 
   --phase <name>   Run one phase instead of every enabled one.
   --mode <policy>  audit | review | auto. May lower configured authority for one run;

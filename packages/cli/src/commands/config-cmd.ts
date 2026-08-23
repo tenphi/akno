@@ -1,17 +1,51 @@
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, line } from '../output.ts';
-import type { AknoConfig, ResolvedModelRole, ResolvedProvider } from '@tenphi/akno-core';
+import { heading, json, kv, line } from '../output.ts';
+import type {
+  AknoConfig,
+  MaintenanceMigrationPlan,
+  ResolvedModelRole,
+  ResolvedProvider,
+} from '@tenphi/akno-core';
 
 const CONFIG_HELP = `akno config
+akno config migrate --remove-custom [--check]
 
   The resolved configuration and the files it came from, with secrets redacted.
-  Use this to check that config/local.jsonc is actually being read.`;
+  Use this to check that config/local.jsonc is actually being read.
+
+  migrate --remove-custom
+        Convert removed phase authority into an explicit profile and complete policy
+        matrix. The preview is content-safe and never changes knowledge-base files.
+  --check
+        Inspect and print the migration without writing configuration.`;
 
 export async function configCommand(argv: string[]): Promise<number> {
-  const { values } = parse(argv);
+  const { values, positionals } = parse<{ 'remove-custom': boolean; check: boolean }>(argv, {
+    'remove-custom': { type: 'boolean', default: false },
+    check: { type: 'boolean', default: false },
+  });
   if (values.help) {
     line(CONFIG_HELP);
     return 0;
+  }
+
+  if (positionals[0] === 'migrate') {
+    if (positionals.length !== 1 || !values['remove-custom']) {
+      line(CONFIG_HELP);
+      return 1;
+    }
+    const { applyMaintenanceConfigMigration, planMaintenanceConfigMigration } =
+      await import('@tenphi/akno-core');
+    const plan = planMaintenanceConfigMigration({ stateDir: values['state-dir'] });
+    if (!values.check && plan.required) await applyMaintenanceConfigMigration(plan);
+    const output = migrationForOutput(plan, values.check);
+    if (values.json) json(output);
+    else printMigration(output);
+    return 0;
+  }
+  if (positionals.length > 0 || values['remove-custom'] || values.check) {
+    line(CONFIG_HELP);
+    return 1;
   }
 
   const { loadConfig } = await import('@tenphi/akno-core');
@@ -31,6 +65,56 @@ export async function configCommand(argv: string[]): Promise<number> {
   heading('Resolved');
   json(redacted);
   return 0;
+}
+
+interface MaintenanceMigrationOutput {
+  outcome: 'not_required' | 'migration_required' | 'migrated';
+  resulting_profile: MaintenanceMigrationPlan['profile'];
+  policies: MaintenanceMigrationPlan['policies'];
+  policy_counts: MaintenanceMigrationPlan['policyCounts'];
+  legacy_keys: string[];
+  source_files: number;
+  changed_files: number;
+  converted_direct_writes: string[];
+  knowledge_base_files_changed: 0;
+}
+
+export function migrationForOutput(
+  plan: MaintenanceMigrationPlan,
+  check: boolean,
+): MaintenanceMigrationOutput {
+  return {
+    outcome: !plan.required ? 'not_required' : check ? 'migration_required' : 'migrated',
+    resulting_profile: plan.profile,
+    policies: plan.policies,
+    policy_counts: plan.policyCounts,
+    legacy_keys: plan.legacyKeys,
+    source_files: plan.sourceFiles,
+    changed_files: plan.changedFiles,
+    converted_direct_writes: plan.convertedDirectWrites,
+    knowledge_base_files_changed: 0,
+  };
+}
+
+function printMigration(output: MaintenanceMigrationOutput): void {
+  heading('Maintenance configuration migration');
+  if (output.outcome === 'not_required') {
+    line('  No removed maintenance authority was found.');
+    return;
+  }
+  kv([
+    ['outcome', output.outcome],
+    ['resulting profile', output.resulting_profile],
+    ['configuration files', output.changed_files],
+    ['knowledge-base files', 0],
+  ]);
+  line(
+    `  policies  ${output.policy_counts.auto} auto · ${output.policy_counts.review} review · ` +
+      `${output.policy_counts.audit} audit · ${output.policy_counts.off} off`,
+  );
+  if (output.converted_direct_writes.length > 0) {
+    line(`  direct writes moved behind plans  ${output.converted_direct_writes.join(', ')}`);
+  }
 }
 
 /** Redaction is not optional: this output is routinely pasted into bug reports. */

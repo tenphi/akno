@@ -3,7 +3,6 @@ import path from 'node:path';
 import type { AknoContext } from '../context.ts';
 import type { MaintenancePolicy, MaintenanceTransform } from '../config/schema.ts';
 import { AknoError } from '@tenphi/akno-protocol';
-import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { sha256 } from '../store/ids.ts';
@@ -54,7 +53,6 @@ import {
   assertMaintenanceModeAllowed,
   effectiveTransformPolicy,
   highestPolicyMode,
-  inferenceDryRun,
   policyMode,
   profileMode,
 } from './profile.ts';
@@ -242,7 +240,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   // is and threading it out conditionally is how a debugging flag ends up logging half a run.
   const applied: AppliedChange[] = [];
   const budget = createMaintenanceBudget(ctx.config.maintenance.limits);
-  const deferAutomaticApply = !options.phase && usesPolicyMatrix(cycle, options);
+  const deferAutomaticApply = !options.phase && !options.dryRun;
   const lastWritablePlanner = Math.max(
     ...(['observe', 'reflect', 'curate', 'adopt'] as DreamPhase[]).map((phase) => wanted.lastIndexOf(phase)),
   );
@@ -294,42 +292,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
 function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
   if (options.dryRun) return 'audit';
   if (options.mode) return options.mode;
-  const configuredProfileMode = profileMode(ctx.config.maintenance.profile);
-  if (configuredProfileMode) return configuredProfileMode;
-  if (ctx.config.maintenance.policiesConfigured) {
-    const kinds: MaintenanceTransform[] =
-      options.phase === 'observe'
-        ? ['observe']
-        : options.phase === 'reflect'
-          ? ['reflect']
-          : options.phase === 'adopt'
-            ? ['adopt']
-            : options.phase === 'curate'
-              ? CURATE_POLICY_KINDS
-              : ['observe', 'reflect', ...CURATE_POLICY_KINDS, 'adopt'];
-    return highestPolicyMode(kinds.map((kind) => effectiveTransformPolicy(ctx.config, kind))) ?? 'legacy';
-  }
-  if (options.phase === 'observe') {
-    return policyMode(effectiveTransformPolicy(ctx.config, 'observe')) ?? 'legacy';
-  }
-  if (options.phase === 'reflect') {
-    return policyMode(effectiveTransformPolicy(ctx.config, 'reflect')) ?? 'legacy';
-  }
-  if (options.phase === 'adopt') return ctx.config.maintenance.adopt.mode ?? 'legacy';
-  if (!options.phase) {
-    return ctx.config.maintenance.curate.mode ?? ctx.config.maintenance.adopt.mode ?? 'legacy';
-  }
-  if (options.phase === 'curate') return ctx.config.maintenance.curate.mode ?? 'legacy';
-  return 'legacy';
-}
-
-function usesPolicyMatrix(ctx: AknoContext, options: DreamOptions): boolean {
-  return (
-    !options.dryRun &&
-    (options.mode !== undefined ||
-      ctx.config.maintenance.profile !== 'custom' ||
-      ctx.config.maintenance.policiesConfigured)
-  );
+  return profileMode(ctx.config.maintenance.profile);
 }
 
 function curationPolicies(
@@ -363,10 +326,7 @@ async function runPhase(
   switch (phase) {
     case 'observe': {
       if (!ctx.config.maintenance.observe.enabled) return 'disabled in config';
-      if (
-        usesPolicyMatrix(ctx, options) &&
-        !policyMode(effectiveTransformPolicy(ctx.config, 'observe', options.mode))
-      ) {
+      if (!policyMode(effectiveTransformPolicy(ctx.config, 'observe', options.mode))) {
         return 'observe policy is off';
       }
       if (!ctx.models.derive.available) {
@@ -382,10 +342,7 @@ async function runPhase(
       if (!ctx.config.maintenance.reflect.enabled) {
         return 'off by default — enable it once the knowledge base has the volume for it';
       }
-      if (
-        usesPolicyMatrix(ctx, options) &&
-        !policyMode(effectiveTransformPolicy(ctx.config, 'reflect', options.mode))
-      ) {
+      if (!policyMode(effectiveTransformPolicy(ctx.config, 'reflect', options.mode))) {
         return 'reflect policy is off';
       }
       if (!ctx.models.derive.available) {
@@ -395,8 +352,7 @@ async function runPhase(
       return null;
     }
     case 'curate': {
-      if (!ctx.config.maintenance.curate.enabled) return 'disabled in config';
-      const policyMatrix = usesPolicyMatrix(ctx, options);
+      const policyMatrix = !options.dryRun;
       const policies = curationPolicies(ctx, options);
       const allowedKinds = new Set<CurateTransformationKind>(
         (['hygiene', 'synthesis', 'split', 'extract', 'merge'] as const).filter(
@@ -406,9 +362,7 @@ async function runPhase(
       // A configured mode is how a full scheduled run gets plan-backed curation without
       // turning the scheduler into a curate-only command. An explicit dry run keeps its
       // existing read-only path; creating a durable plan needs the service's write handle.
-      const mode = policyMatrix
-        ? highestPolicyMode(Object.values(policies))
-        : (options.mode ?? (options.dryRun ? null : ctx.config.maintenance.curate.mode));
+      const mode = policyMatrix ? highestPolicyMode(Object.values(policies)) : null;
       if (policyMatrix && !mode) return 'all curation policies are off';
       if (!ctx.models.derive.available && !mode) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
@@ -553,12 +507,7 @@ async function runPhase(
         recordMaintenancePlan(report, plan);
         return null;
       }
-      const result = await curatePages(ctx, {
-        dryRun: (options.dryRun ?? false) || !ctx.config.maintenance.curate.write,
-        // An explicit dry run is observational. A scheduled preview, however, records that its
-        // exact inputs were considered so the same page is not sent to the model every night.
-        recordState: !(options.dryRun ?? false),
-      });
+      const result = await curatePages(ctx, { dryRun: true, recordState: false, allowedKinds });
       report.curated = result.pages;
       report.curateChangeId = result.changeId;
       report.warnings.push(...result.warnings);
@@ -566,22 +515,19 @@ async function runPhase(
       return null;
     }
     case 'adopt': {
-      if (!ctx.config.maintenance.adopt.enabled) return 'disabled in config';
-      const policyMatrix = usesPolicyMatrix(ctx, options);
       const adoptPolicy = policyMode(effectiveTransformPolicy(ctx.config, 'adopt', options.mode));
-      if (policyMatrix && !adoptPolicy) return 'adopt policy is off';
+      if (!adoptPolicy) return 'adopt policy is off';
       const result = await planOrphanAdoptions(ctx, {
         limit: ctx.config.maintenance.adopt.maxPages,
       });
       report.adopted = result.adopted;
       if (options.dryRun) return null;
-      const mode = policyMatrix ? adoptPolicy : (options.mode ?? ctx.config.maintenance.adopt.mode);
-      if (!mode) return null;
+      const mode = adoptPolicy;
 
       let plan = findActiveMaintenancePlan(ctx, mode, 'adopt');
-      if (plan && policyMatrix && !planMatchesPolicies(plan, { adopt: adoptPolicy ?? 'off' })) plan = null;
+      if (plan && !planMatchesPolicies(plan, { adopt: adoptPolicy })) plan = null;
       if (!plan && result.drafts.length > 0) {
-        plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot, adoptPolicy ?? mode);
+        plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot, adoptPolicy);
       }
       if (!plan) return null;
       for (const item of plan.items.filter((candidate) => candidate.kind === 'adopt')) {
@@ -1017,14 +963,8 @@ async function observePhase(
   budget: MaintenanceBudgetTracker,
   deferAutomaticApply: boolean,
 ): Promise<void> {
-  const policyMatrix = usesPolicyMatrix(ctx, options);
-  if (!policyMatrix) {
-    await legacyObservePhase(
-      ctx,
-      { ...options, dryRun: inferenceDryRun(ctx.config, options) },
-      report,
-      applied,
-    );
+  if (options.dryRun) {
+    await previewObservePhase(ctx, report);
     return;
   }
 
@@ -1072,40 +1012,17 @@ async function observePhase(
   recordMaintenancePlan(report, plan);
 }
 
-async function legacyObservePhase(
-  ctx: AknoContext,
-  options: DreamOptions,
-  report: DreamReport,
-  applied: AppliedChange[],
-): Promise<void> {
+async function previewObservePhase(ctx: AknoContext, report: DreamReport): Promise<void> {
   const prepared = await collectPreparedObservations(ctx, report);
-  const written: ObservationWritten[] = [];
-  const files: ChangeFile[] = [];
   for (const entry of prepared) {
-    written.push(entry.written);
-    if (!entry.draft || options.dryRun) continue;
-    const result = await writeFileAtomic(ctx.config.aknoPath, entry.draft.relPath, entry.draft.after);
-    const file: ChangeFile = {
-      relPath: entry.draft.relPath,
-      action: entry.draft.before === null ? 'created' : 'modified',
-      before: entry.draft.before,
-      after: result.after,
-    };
-    files.push(file);
-    applied.push(asApplied('observe', file));
+    report.observations.push(asPreviewObservation(entry.written));
   }
+}
 
-  report.observations.push(...written);
-  if (files.length === 0) return;
-
-  // Compatibility mode keeps the historical one-change-per-phase journal shape.
-  report.changeId = ctx.journal.record({
-    actor: 'agent',
-    op: 'write',
-    summary: `observe: ${files.length} observation page(s)`,
-    files,
-  });
-  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+function asPreviewObservation(entry: ObservationWritten): ObservationWritten {
+  if (entry.action === 'created') return { ...entry, action: 'would-create' };
+  if (entry.action === 'refined') return { ...entry, action: 'would-refine' };
+  return entry;
 }
 
 interface PreparedObservation {
@@ -1525,14 +1442,8 @@ async function reflectPhase(
   budget: MaintenanceBudgetTracker,
   deferAutomaticApply: boolean,
 ): Promise<void> {
-  const policyMatrix = usesPolicyMatrix(ctx, options);
-  if (!policyMatrix) {
-    await legacyReflectPhase(
-      ctx,
-      { ...options, dryRun: inferenceDryRun(ctx.config, options) },
-      report,
-      applied,
-    );
+  if (options.dryRun) {
+    await previewReflectPhase(ctx, report);
     return;
   }
 
@@ -1579,40 +1490,11 @@ async function reflectPhase(
   recordMaintenancePlan(report, plan);
 }
 
-async function legacyReflectPhase(
-  ctx: AknoContext,
-  options: DreamOptions,
-  report: DreamReport,
-  applied: AppliedChange[],
-): Promise<void> {
+async function previewReflectPhase(ctx: AknoContext, report: DreamReport): Promise<void> {
   const prepared = await collectPreparedReflections(ctx, report);
-  const files: ChangeFile[] = [];
   for (const outcome of prepared) {
-    report.observations.push(outcome.written);
-    if (!outcome.draft || options.dryRun) continue;
-    const writeResult = await writeFileAtomic(
-      ctx.config.aknoPath,
-      outcome.draft.relPath,
-      outcome.draft.after,
-    );
-    const file: ChangeFile = {
-      relPath: outcome.draft.relPath,
-      action: outcome.draft.before === null ? 'created' : 'modified',
-      before: outcome.draft.before,
-      after: writeResult.after,
-    };
-    files.push(file);
-    applied.push(asApplied('reflect', file));
+    report.observations.push(asPreviewObservation(outcome.written));
   }
-
-  if (files.length === 0) return;
-  report.changeId = ctx.journal.record({
-    actor: 'agent',
-    op: 'write',
-    summary: `reflect: ${files.length} page(s)`,
-    files,
-  });
-  await ctx.indexer.run({ only: files.map((file) => file.relPath) });
 }
 
 async function collectPreparedReflections(

@@ -1,4 +1,5 @@
 import type { AknoContext } from '../context.ts';
+import { configuredTransformPolicy } from './profile.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
 
 /**
@@ -66,7 +67,7 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
   const orphanTotal = count(ctx, 'SELECT count(*) AS c FROM documents WHERE page_id IS NULL');
 
   const drift = findDrift(ctx);
-  const adoptEnabled = ctx.config.maintenance.adopt.enabled;
+  const adoptEnabled = configuredTransformPolicy(ctx.config, 'adopt') !== 'off';
 
   return {
     brokenLinks: brokenRows.map((row) => ({

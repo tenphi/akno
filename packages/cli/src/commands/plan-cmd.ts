@@ -168,7 +168,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['budget deferred', status.budgetDeferred],
   ]);
   line('\n  transformation policies');
-  for (const policy of ['auto', 'review', 'audit', 'off', 'legacy-write', 'legacy-preview'] as const) {
+  for (const policy of ['auto', 'review', 'audit', 'off'] as const) {
     const kinds = Object.entries(status.authority.policies)
       .filter(([, effective]) => effective === policy)
       .map(([kind]) => kind);

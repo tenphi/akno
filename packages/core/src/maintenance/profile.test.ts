@@ -18,28 +18,20 @@ afterEach(() => {
 });
 
 describe('maintenance profiles', () => {
-  it('preserves phase-level behavior under the compatibility profile', () => {
-    const config = fixtureConfig({
-      profile: 'custom',
-      curate: { enabled: true, mode: null, write: true },
-      adopt: { enabled: false, mode: 'review' },
-      conflicts: { enabled: false, resolve: false },
-      repair: { links: false },
-    });
+  it('rejects the removed compatibility profile before unknown keys can be stripped', () => {
+    expect(() => fixtureConfig({ profile: 'custom' } as never)).toThrow(
+      'uses removed maintenance configuration',
+    );
+  });
 
-    expect(config.maintenance).toMatchObject({
-      profile: 'custom',
-      curate: { enabled: true, mode: null, write: true },
-      adopt: { enabled: false, mode: 'review' },
-      conflicts: { enabled: false, resolve: false },
-      repair: { links: false },
-    });
-    expect(configuredMaintenanceAuthority(config)).toMatchObject({
-      profile: 'custom',
-      mode: 'custom',
-      curate: 'legacy-write',
-      adopt: 'disabled',
-    });
+  it.each([
+    ['curate enabled', { profile: 'audit', curate: { enabled: false } }],
+    ['curate mode', { profile: 'audit', curate: { mode: 'audit' } }],
+    ['curate write', { profile: 'audit', curate: { write: false } }],
+    ['adopt enabled', { profile: 'audit', adopt: { enabled: false } }],
+    ['adopt mode', { profile: 'audit', adopt: { mode: 'audit' } }],
+  ])('rejects removed %s authority instead of silently stripping it', (_label, maintenance) => {
+    expect(() => fixtureConfig(maintenance as never)).toThrow('uses removed maintenance configuration');
   });
 
   it.each([
@@ -49,18 +41,14 @@ describe('maintenance profiles', () => {
   ] as const)('expands %s across every plan-backed phase', (profile, mode, automaticWrites) => {
     const config = fixtureConfig({
       profile,
-      curate: { enabled: false, mode: null },
-      adopt: { enabled: false, mode: null },
       conflicts: { enabled: false, resolve: false },
       repair: { links: false },
     });
 
     expect(config.maintenance).toMatchObject({
       profile,
-      curate: { enabled: true, mode },
-      adopt: { enabled: true, mode },
-      conflicts: { enabled: true, resolve: true },
-      repair: { links: true },
+      conflicts: { enabled: false, resolve: false },
+      repair: { links: false },
     });
     expect(configuredMaintenanceAuthority(config)).toMatchObject({
       profile,
@@ -122,43 +110,32 @@ describe('maintenance profiles', () => {
     expect(review.maintenance.policies.hygiene).toBe('review');
   });
 
-  it('treats an explicit custom policy map as an allowlist and lowers it for one run', () => {
+  it('lets explicit off policies disable planners without a second authority switch', () => {
     const config = fixtureConfig({
-      profile: 'custom',
-      policies: { reflect: 'review', hygiene: 'auto', merge: 'review' },
-      reflect: { enabled: true },
-      curate: { enabled: true },
-    });
-
-    expect(configuredMaintenanceAuthority(config)).toMatchObject({
-      curate: 'auto',
-      reflect: 'review',
-      adopt: 'disabled',
+      profile: 'autonomous',
       policies: {
         observe: 'off',
-        reflect: 'review',
-        hygiene: 'auto',
-        merge: 'review',
+        reflect: 'off',
+        hygiene: 'off',
         synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'off',
+        contradiction: 'off',
         broken_link: 'off',
         adopt: 'off',
       },
-    });
-    expect(effectiveTransformPolicy(config, 'hygiene', 'audit')).toBe('audit');
-    expect(effectiveTransformPolicy(config, 'merge', 'auto')).toBe('review');
-    expect(effectiveTransformPolicy(config, 'synthesis', 'auto')).toBe('off');
-  });
-
-  it('does not report automatic writes when a custom policy names a disabled planner', () => {
-    const config = fixtureConfig({
-      profile: 'custom',
-      policies: { reflect: 'auto', hygiene: 'auto', adopt: 'auto' },
-      reflect: { enabled: false },
-      curate: { enabled: false },
-      adopt: { enabled: false },
+      observe: { enabled: true },
+      reflect: { enabled: true },
     });
 
-    expect(configuredMaintenanceAuthority(config).automaticKnowledgeBaseWrites).toBe(false);
+    expect(configuredMaintenanceAuthority(config)).toMatchObject({
+      curate: 'disabled',
+      reflect: 'disabled',
+      adopt: 'disabled',
+      automaticKnowledgeBaseWrites: false,
+    });
+    expect(effectiveTransformPolicy(config, 'hygiene', 'audit')).toBe('off');
   });
 
   it('resolves whole-run limits, including an explicit zero high-risk allowance', () => {

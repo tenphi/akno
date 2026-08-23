@@ -127,25 +127,21 @@ export function loadConfig(options: LoadOptions = {}): AknoConfig {
   return resolve(doc, sources, ruleLayers, env);
 }
 
-function namedMaintenanceMode(
-  profile: AknoConfig['maintenance']['profile'],
-): 'audit' | 'review' | 'auto' | null {
+function namedMaintenanceMode(profile: AknoConfig['maintenance']['profile']): 'audit' | 'review' | 'auto' {
   if (profile === 'audit' || profile === 'review') return profile;
-  if (profile === 'autonomous') return 'auto';
-  return null;
+  return 'auto';
 }
 
 function resolvedMaintenancePolicies(
   configured: Partial<Record<MaintenanceTransform, MaintenancePolicy>>,
-  namedMode: 'audit' | 'review' | 'auto' | null,
-): Partial<Record<MaintenanceTransform, MaintenancePolicy>> {
-  if (!namedMode) return { ...configured };
+  namedMode: 'audit' | 'review' | 'auto',
+): Record<MaintenanceTransform, MaintenancePolicy> {
   return Object.fromEntries(
     MAINTENANCE_TRANSFORMS.map((kind) => [
       kind,
       lowerMaintenancePolicy(configured[kind] ?? namedMode, namedMode),
     ]),
-  );
+  ) as Record<MaintenanceTransform, MaintenancePolicy>;
 }
 
 function lowerMaintenancePolicy(
@@ -186,6 +182,15 @@ function repoLocalConfigPath(): string | null {
 }
 
 function parseLayer(raw: unknown, label: string): ConfigDoc {
+  const legacyKeys = legacyMaintenanceKeys(raw);
+  if (legacyKeys.length > 0) {
+    throw new AknoError(
+      'invalid',
+      `${label} uses removed maintenance configuration (${legacyKeys.join(', ')}); ` +
+        'run `akno config migrate --remove-custom --check` and then apply the migration',
+      { reason: 'configuration_migration_required', keys: legacyKeys },
+    );
+  }
   const parsed = ConfigDoc.safeParse(raw);
   if (!parsed.success) {
     const issues = parsed.error.issues
@@ -194,6 +199,25 @@ function parseLayer(raw: unknown, label: string): ConfigDoc {
     throw new AknoError('invalid', `${label} has invalid config:\n${issues}`);
   }
   return parsed.data;
+}
+
+/** Removed authority keys are rejected before Zod can silently strip them. */
+export function legacyMaintenanceKeys(raw: unknown): string[] {
+  if (!isPlainObject(raw) || !isPlainObject(raw.maintenance)) return [];
+  const maintenance = raw.maintenance;
+  const keys: string[] = [];
+  if (maintenance.profile === 'custom') keys.push('maintenance.profile=custom');
+  if (isPlainObject(maintenance.curate)) {
+    for (const key of ['enabled', 'mode', 'write'] as const) {
+      if (Object.hasOwn(maintenance.curate, key)) keys.push(`maintenance.curate.${key}`);
+    }
+  }
+  if (isPlainObject(maintenance.adopt)) {
+    for (const key of ['enabled', 'mode'] as const) {
+      if (Object.hasOwn(maintenance.adopt, key)) keys.push(`maintenance.adopt.${key}`);
+    }
+  }
+  return keys;
 }
 
 /**
@@ -423,7 +447,7 @@ function resolve(
 
   const stateDir = resolveUserPath(doc.state_dir ?? '~/.akno');
   const providers = resolveProviders(doc.providers, env);
-  const maintenanceProfile = doc.maintenance?.profile ?? 'custom';
+  const maintenanceProfile = doc.maintenance?.profile ?? 'audit';
   const namedMode = namedMaintenanceMode(maintenanceProfile);
   const configuredPolicies = doc.maintenance?.policies ?? {};
 
@@ -518,7 +542,6 @@ function resolve(
     },
     maintenance: {
       profile: maintenanceProfile,
-      policiesConfigured: Object.keys(configuredPolicies).length > 0,
       policies: resolvedMaintenancePolicies(configuredPolicies, namedMode),
       limits: {
         maxItems: doc.maintenance?.limits?.max_items ?? 30,
@@ -555,11 +578,6 @@ function resolve(
         mission: doc.maintenance?.reflect?.mission ?? null,
       },
       curate: {
-        // Named profiles are a coherent product choice. `custom` alone exposes the historical
-        // bag of phase switches, so adding this field cannot silently change an installation.
-        enabled: namedMode !== null ? true : (doc.maintenance?.curate?.enabled ?? false),
-        mode: namedMode ?? doc.maintenance?.curate?.mode ?? null,
-        write: doc.maintenance?.curate?.write ?? false,
         verify: doc.maintenance?.curate?.verify ?? true,
         maxPages: doc.maintenance?.curate?.max_pages ?? 8,
         maxSplits: doc.maintenance?.curate?.max_splits ?? 3,
@@ -573,24 +591,17 @@ function resolve(
         extractSectionBytes: doc.maintenance?.curate?.extract_section_bytes ?? 1_024,
       },
       adopt: {
-        enabled: namedMode !== null ? true : (doc.maintenance?.adopt?.enabled ?? true),
-        // Adoption already ran autonomously before it became plan-backed. Keep that product
-        // behavior while adding a separate curator decision, exact diff, and verification.
-        mode: namedMode ?? (doc.maintenance?.adopt?.mode === undefined ? 'auto' : doc.maintenance.adopt.mode),
         maxPages: doc.maintenance?.adopt?.max_pages ?? 20,
       },
       conflicts: {
-        enabled: namedMode !== null ? true : (doc.maintenance?.conflicts?.enabled ?? true),
+        enabled: doc.maintenance?.conflicts?.enabled ?? true,
         verify: doc.maintenance?.conflicts?.verify ?? true,
-        resolve:
-          namedMode !== null
-            ? true
-            : (doc.maintenance?.conflicts?.resolve ?? doc.maintenance?.repair?.conflicts ?? true),
+        resolve: doc.maintenance?.conflicts?.resolve ?? doc.maintenance?.repair?.conflicts ?? true,
         maxPairs: doc.maintenance?.conflicts?.max_pairs ?? 40,
       },
       repair: {
         enabled: doc.maintenance?.repair?.enabled ?? false,
-        links: namedMode !== null ? true : (doc.maintenance?.repair?.links ?? true),
+        links: doc.maintenance?.repair?.links ?? true,
         maxChanges: doc.maintenance?.repair?.max_changes ?? 25,
       },
     },

@@ -320,8 +320,8 @@ background indexing without scheduled writes.
 
 Four workflows author files, and each is journalled and reversible with `akno undo`: `write`, `remember`,
 `ingest`, and enabled maintenance phases. Dream can append observations, curate opted-in pages, adopt unowned
-documents, and apply bounded broken-link items through maintenance plans; only adoption is enabled in automatic
-mode by default.
+documents, and apply bounded broken-link items through maintenance plans. The default `audit` profile allows no
+automatic maintenance write.
 
 A separate optional output is maintained rather than journalled. `ingest.text_rendition: true` keeps the
 extracted text of each readable document as `<file>.txt` beside it — so a `grep`, an editor, a git diff or an
@@ -361,9 +361,10 @@ page into an independent page in an existing or declared eligible knowledge fold
 same subject”; an extraction says “this deserves its own subject and can be reused elsewhere.”
 
 Opt-in is permission, not a nightly work order. Hygiene runs again only after the page or its policy changes.
-Synthesis also watches its linked evidence and unresolved conflicts. Accepted previews, unchanged drafts and
-rejected rewrites are fingerprinted in the disposable index; they are reconsidered only when those inputs
-change. Turning the curate write switch on re-runs an accepted preview once so it can actually be applied.
+Synthesis also watches its linked evidence and unresolved conflicts. Unchanged drafts and guard-rejected
+rewrites are fingerprinted in the disposable index; they are reconsidered only when those inputs change. An
+unfinished plan is reused at the same authority; changing authority can reseal the current exact input through
+the newly authorized lifecycle.
 
 Bounded event pages are time-aware. Curation first uses explicit date fields and structured event slugs, then
 lets the model select only from complete dates actually present in an ambiguous page. With writes enabled it
@@ -559,19 +560,19 @@ Nothing is routed or named, because the caller already decided both.
 unverified claims cannot feed observation, reflection, or synthesis. Selecting `observe`, `reflect`, or
 `curate` alone still performs that prerequisite inspection.
 
-| Phase          | Writes?       | What it does                                                                                                                                                                                                      |
-| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conflicts`    | no            | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                                     |
-| `observe`      | plan/write    | Combines conflict-eligible repeated facts into stable patterns, then seals exact append-only items with source hashes. Off by default.                                                                            |
-| `reflect`      | plan/write    | Decision principles built from sealed observation-page evidence, with append-only verified plans. Off by default.                                                                                                 |
-| `curate`       | preview/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
-| `adopt`        | plan/write    | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                                             |
-| `repair`       | no            | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                                         |
-| `housekeeping` | no            | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                              |
+| Phase          | Writes?    | What it does                                                                                                                                                                                                      |
+| -------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conflicts`    | no         | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                                     |
+| `observe`      | plan/write | Combines conflict-eligible repeated facts into stable patterns, then seals exact append-only items with source hashes. Off by default.                                                                            |
+| `reflect`      | plan/write | Decision principles built from sealed observation-page evidence, with append-only verified plans. Off by default.                                                                                                 |
+| `curate`       | plan/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
+| `adopt`        | plan/write | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                                             |
+| `repair`       | no         | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                                         |
+| `housekeeping` | no         | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                              |
 
-`observe` and `reflect` only ever append: a changed conclusion gets a new dated line, nothing is deleted. Under a
-named profile or explicit mode/policy, both use durable per-conclusion plans; compatibility `custom` without a
-policy retains their historical direct append. Writing phases are journalled by purpose, so reversing a night's
+`observe` and `reflect` only ever append: a changed conclusion gets a new dated line, nothing is deleted. Both
+use durable per-conclusion plans under their resolved transformation policy. Writing phases are journalled by
+purpose, so reversing a night's
 inferences does not also reverse the pages that made documents searchable. `conflicts`, legacy `repair`, and
 `housekeeping` only report.
 
@@ -579,14 +580,13 @@ For a coherent scheduled policy, set one profile:
 
 ```jsonc
 {
-  "maintenance": { "profile": "audit" }, // or review, autonomous, custom
+  "maintenance": { "profile": "audit" }, // or review, autonomous
 }
 ```
 
 `audit` seals plans without applying them. `review` waits for human decisions. `autonomous` uses a separate
 curator call and applies only accepted, verified items. Enabled observation and reflection phases follow that
-lifecycle. `custom` is the compatibility default and preserves the lower-level phase settings. Named profiles
-enable plan-backed observe/reflect/curate/adopt behavior but
+lifecycle. Profiles enable plan-backed observe/reflect/curate/adopt behavior but
 do not override page opt-ins, folder restrictions, merge allowlists, guards, or limits, and do not enable the
 model-sensitive observe or reflect phases themselves.
 
@@ -615,11 +615,9 @@ Individual transformation classes can be stricter than the profile:
 ```
 
 Policy keys are `observe`, `reflect`, `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`,
-`broken_link`, and `adopt`; values are `off`, `audit`, `review`, or `auto`. Omitted keys inherit a named profile. A non-empty map
-under `custom` is an allowlist, so omitted keys are off; an empty map retains the legacy phase behavior. Policy
-is sealed per item, allowing one plan to apply autonomous repairs while leaving higher-risk proposals for human
-review. Under `custom`, the corresponding phase must still be enabled. A command-line mode can only lower every
-effective item policy.
+`broken_link`, and `adopt`; values are `off`, `audit`, `review`, or `auto`. Omitted keys inherit the profile.
+Policy is sealed per item, allowing one plan to apply autonomous repairs while leaving higher-risk proposals
+for human review. A command-line mode can only lower every effective item policy.
 
 Both inference tiers use the same modes when enabled:
 
@@ -643,7 +641,7 @@ A full named-profile or explicit-policy run has a planning barrier: conflicts an
 planner seal their phase plans before the first curator call or knowledge-base write. Automatic plans are then
 decided in `observe` → `reflect` → `curate` → `adopt` order, then accepted items apply in stable dependency
 order with one shared budget; repair and housekeeping inspect the resulting state. A selected `--phase` remains
-immediate, and compatibility `custom` with no policy map retains its historical phase behavior.
+immediate while using the same policy and plan lifecycle.
 
 Before the curation plan is sealed, Akno can resolve one narrow dependency cycle without guessing at a merged
 document. If two to four independently drafted `hygiene` or `synthesis` replacements target different pages
@@ -686,9 +684,8 @@ An item that would cross any ceiling changes nothing, returns to `proposed` with
 `budget_exhausted` reason, and can be reconsidered with a fresh budget on a later run. `akno dream status`
 shows both configured ceilings and any budget-deferred backlog; each run receipt records exact usage.
 
-Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
-between summary preview and direct application. Opted-in hygiene and synthesis pages can instead use an
-explicit trust mode:
+Curate is included whenever at least one curation transformation policy is not `off`. Opted-in hygiene and
+synthesis pages use the profile, a lower per-transformation policy, or a lower one-run mode:
 
 ```bash
 akno dream --phase curate --mode audit   # persistent exact diffs; no note changes
@@ -711,8 +708,7 @@ Apply refuses changed inputs, journals each item separately,
 re-indexes it, verifies disk and index state, and rolls back a proven failed result. Synthesis items retain the
 bounded evidence graph given to the independent curator. A split is one atomic item: it replaces the canonical
 page and creates every child together, or changes nothing. A command-line mode can cover the full run or one
-selected phase and may lower, but never raise, configured authority. Under `custom`, the same policy can be set
-at `maintenance.curate.mode` or `maintenance.adopt.mode`. Stable item markers and provenance survive rewrites and moves,
+selected phase and may lower, but never raise, configured authority. Stable item markers and provenance survive rewrites and moves,
 and a split keeps the canonical `page.md` while adding children under `page/`. An extraction instead moves
 one exact source section of authored Markdown verbatim into an independent page, leaves a managed source bridge
 and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
@@ -970,11 +966,9 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
 - **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
   one coincidence. When enabled under a named profile or policy, each principle seals exact observation-page
   hashes, receives a separate decision, and is appended and verified through the same plan lifecycle.
-- **`curate`** — off globally, with both its trust mode and legacy write switch unset/off. Even when enabled,
-  it only considers pages whose own frontmatter opts into `hygiene` or `synthesize`. `--mode auto` is explicit
-  per-run authority for opted-in curation under a compatible ceiling; a named profile enables its planner, and
-  `maintenance.curate.mode` gives the nightly phase the same authority under legacy `custom` configuration.
-  A non-empty `maintenance.policies` map instead controls each transformation class independently.
+- **automatic `curate` writes** — off under the default `audit` profile. Curate only considers pages whose own
+  frontmatter opts into `hygiene` or `synthesize`; set a stricter transformation to `off` to skip even planning.
+  `review` waits for a human and `autonomous` uses the independent curator before any verified write.
 - **`repair`** — the legacy standalone phase, now a report-only compatibility view and off by default.
   `maintenance.repair.links` defaults on, but it produces durable link items only when plan-backed curate is
   enabled. Those items require exact move, alias, or canonical identity evidence; similarity never authorizes
@@ -985,8 +979,8 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   it is off by default because a log of inferences drawn from private notes is a second copy of the sensitive
   part, kept outside the notes. That is the owner's call, not a default.
 
-Everything else is on: extraction for every attachment including the ones that predate Akno, plan-backed
-`adopt` in auto mode, the cross-page conflict pass, and the housekeeping report.
+Everything else is on: extraction for every attachment including the ones that predate Akno, audit-mode
+`adopt` planning, the cross-page conflict pass, and the housekeeping report.
 
 ## Platform
 

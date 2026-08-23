@@ -131,22 +131,15 @@
   // phases through the same lifecycle, and supplies the default policy for every transformation.
   // A full policy-backed run seals every enabled phase plan before its first curator call/write.
   // Individual `policies` may lower a class to off/audit/review.
-  // Under `custom`, a non-empty map is an allowlist and the phase still has to be enabled;
-  // an empty map preserves the phase-level compatibility behavior shown below.
-  //
   // Curate only considers pages that explicitly opt in through their own frontmatter.
-  // Set `mode` to `audit`, `review`, or `auto` to use durable exact plans for opted-in
-  // hygiene and synthesis pages. Splits, extractions, merges, and contradiction
-  // handling use the same atomic item and curator path. Contradiction writes require
+  // Splits, extractions, merges, and contradiction handling use the same atomic item
+  // and curator path. Contradiction writes require
   // every affected page to opt into `dream: synthesize`; qualified rewrites additionally
-  // require exact scope evidence. Null preserves the legacy `write` preview/apply path.
+  // require exact scope evidence.
   //
-  // The separate `adopt` phase is enabled by default and plans minimal filing pages
-  // for readable documents with no owner. Its default `auto` mode uses the same separate
-  // curator/apply/verify path; choose `review` or `audit` for less authority.
+  // The separate `adopt` phase plans minimal filing pages for readable documents with no owner.
   "maintenance": {
-    "profile": "custom",
-    // Add observe/reflect policies when enabling either inference phase under custom.
+    "profile": "audit",
     "policies": {},
     "limits": {
       "max_items": 30,
@@ -154,8 +147,8 @@
       "max_bytes_written": 500000,
       "max_high_risk_items": 3
     },
-    "curate": { "enabled": false, "mode": null, "write": false, "verify": true },
+    "curate": { "verify": true },
     "conflicts": { "enabled": true, "verify": true, "resolve": true },
-    "adopt": { "enabled": true, "mode": "auto" }
+    "adopt": { "max_pages": 20 }
   }
 }

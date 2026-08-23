@@ -212,6 +212,37 @@ const SERVICING: Record<string, DerivedFact[]> = {
 };
 
 async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
+  const requestedMaintenance =
+    overrides.maintenance && typeof overrides.maintenance === 'object'
+      ? (overrides.maintenance as Record<string, unknown>)
+      : null;
+  const legacyFixturePolicies = {
+    observe: 'auto',
+    reflect: 'auto',
+    hygiene: 'off',
+    synthesis: 'off',
+    split: 'off',
+    extract: 'off',
+    merge: 'off',
+    contradiction: 'off',
+    broken_link: 'off',
+    adopt: 'auto',
+  } as const;
+  const maintenance = requestedMaintenance?.profile
+    ? requestedMaintenance
+    : {
+        profile: 'autonomous',
+        ...requestedMaintenance,
+        policies: {
+          ...legacyFixturePolicies,
+          ...(requestedMaintenance?.policies as Record<string, unknown> | undefined),
+        },
+        observe: {
+          enabled: true,
+          ...(requestedMaintenance?.observe as Record<string, unknown> | undefined),
+        },
+      };
+  const { maintenance: _maintenance, ...otherOverrides } = overrides;
   return open({
     aknoPath: root,
     stateDir,
@@ -229,8 +260,8 @@ async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
       },
       // Observe ships off (see config/default.jsonc); these tests are about what it does when
       // a knowledge base turns it on.
-      maintenance: { observe: { enabled: true } },
-      ...overrides,
+      maintenance,
+      ...otherOverrides,
     },
   });
 }
@@ -532,13 +563,22 @@ describe('the full-run planning barrier', () => {
     }
     mem = await openMem({
       maintenance: {
-        profile: 'custom',
-        policies: { observe: 'auto', reflect: 'auto' },
+        profile: 'autonomous',
+        policies: {
+          observe: 'auto',
+          reflect: 'auto',
+          hygiene: 'off',
+          synthesis: 'off',
+          split: 'off',
+          extract: 'off',
+          merge: 'off',
+          contradiction: 'off',
+          broken_link: 'off',
+          adopt: 'off',
+        },
         observe: { enabled: true },
         reflect: { enabled: true },
         ...(limits ? { limits } : {}),
-        curate: { enabled: false },
-        adopt: { enabled: false },
         conflicts: { enabled: false },
       },
     });
@@ -807,9 +847,22 @@ describe('repair', () => {
     );
     mem = await openMem({
       maintenance: {
+        profile: 'autonomous',
+        policies: {
+          observe: 'off',
+          reflect: 'off',
+          hygiene: mode,
+          synthesis: mode,
+          split: mode,
+          extract: mode,
+          merge: mode,
+          contradiction: mode,
+          broken_link: mode,
+          adopt: 'auto',
+        },
         ...(limits ? { limits } : {}),
         observe: { enabled: false },
-        curate: { enabled: true, mode, verify: true },
+        curate: { verify: true },
         repair: { enabled: true, links: true },
         conflicts: { enabled: false },
       },
@@ -876,8 +929,8 @@ describe('repair', () => {
     mem = await openMem({
       models: { derive: { id: null } },
       maintenance: {
+        profile: 'audit',
         observe: { enabled: false },
-        curate: { enabled: true, mode: 'audit' },
         repair: { links: true },
         conflicts: { enabled: false },
       },
@@ -955,14 +1008,24 @@ describe('repair', () => {
     );
     mem = await openMem({
       maintenance: {
-        profile: 'custom',
-        policies: { broken_link: 'auto', adopt: 'auto' },
+        profile: 'autonomous',
+        policies: {
+          observe: 'off',
+          reflect: 'off',
+          hygiene: 'off',
+          synthesis: 'off',
+          split: 'off',
+          extract: 'off',
+          merge: 'off',
+          contradiction: 'off',
+          broken_link: 'auto',
+          adopt: 'auto',
+        },
         observe: { enabled: false },
         reflect: { enabled: false },
-        curate: { enabled: true, verify: true },
+        curate: { verify: true },
         repair: { enabled: true, links: true },
         conflicts: { enabled: false },
-        adopt: { enabled: true },
       },
     });
     await mem.index({});
@@ -1055,8 +1118,8 @@ describe('repair', () => {
     );
     mem = await openMem({
       maintenance: {
+        profile: 'audit',
         observe: { enabled: false },
-        curate: { enabled: true, mode: 'audit' },
         repair: { links: true },
         conflicts: { enabled: false },
       },
@@ -1099,8 +1162,8 @@ describe('repair', () => {
     );
     mem = await openMem({
       maintenance: {
+        profile: 'audit',
         observe: { enabled: false },
-        curate: { enabled: true, mode: 'audit' },
         repair: { links: true },
         conflicts: { enabled: false },
       },
@@ -1293,7 +1356,7 @@ describe('observe', () => {
   it('writes nothing on a dry run', async () => {
     server.reply(OBSERVED);
     const report = await mem.dream({ phase: 'observe', dryRun: true });
-    expect(report.observations[0]!.action).toBe('created');
+    expect(report.observations[0]!.action).toBe('would-create');
     expect(report.changeId).toBeNull();
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
@@ -1608,8 +1671,9 @@ As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
     });
     mem = await openMem({
       maintenance: {
+        profile: 'autonomous',
         observe: { enabled: false },
-        curate: { enabled: true, mode: 'auto', verify: true },
+        curate: { verify: true },
       },
     });
     await mem.index({ rederive: true });
@@ -1708,7 +1772,7 @@ The Zephyr QX-100 warranty duration is 2222 days overall, while standard coverag
       },
       reason: 'A distinct claim explicitly states the narrower scope for the broad value.',
     });
-    mem = await openMem({ maintenance: { curate: { enabled: true, mode: 'auto', verify: true } } });
+    mem = await openMem({ maintenance: { profile: 'autonomous', curate: { verify: true } } });
     await mem.index({ rederive: true });
 
     const report = await mem.dream({ phase: 'curate' });
@@ -1821,7 +1885,7 @@ The Zephyr QX-100 warranty duration is 2222 days overall, while standard coverag
       current: null,
       reason: 'No temporal evidence selects one value.',
     });
-    mem = await openMem({ maintenance: { curate: { enabled: true, mode: 'auto' } } });
+    mem = await openMem({ maintenance: { profile: 'autonomous' } });
     await mem.index({ rederive: true });
     const before = [
       fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8'),
@@ -1926,7 +1990,7 @@ describe('the cycle', () => {
 
     expect(first.run).toMatchObject({
       status: 'completed',
-      mode: 'legacy',
+      mode: 'auto',
       requestedPhase: 'housekeeping',
       persisted: true,
       maintenancePlanIds: [],
@@ -2064,7 +2128,7 @@ describe('adopt', () => {
 
   it('uses audit mode for a selected document without writing it', async () => {
     await mem.close();
-    mem = await openMem({ maintenance: { adopt: { mode: 'audit' } } });
+    mem = await openMem({ maintenance: { profile: 'audit' } });
     await mem.index({});
     const recalled = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
     const card = recalled.results.find((entry) => entry.type === 'document');
@@ -2081,7 +2145,7 @@ describe('adopt', () => {
 
   it('keeps a selected review item stale-safe while it waits for a human', async () => {
     await mem.close();
-    mem = await openMem({ maintenance: { adopt: { mode: 'review' } } });
+    mem = await openMem({ maintenance: { profile: 'review' } });
     await mem.index({});
     const recalled = await mem.recall({ query: 'lease scan.txt', mode: 'lookup', expand: false });
     const card = recalled.results.find((entry) => entry.type === 'document');
@@ -2301,7 +2365,7 @@ describe('adopt', () => {
     await mem.close();
     mem = await openMem({
       models: { derive: { id: null } },
-      maintenance: { adopt: { mode: 'audit' } },
+      maintenance: { profile: 'audit' },
     });
     await mem.index({});
 

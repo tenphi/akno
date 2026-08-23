@@ -8,7 +8,7 @@ const ADOPT_HELP = `akno adopt <document_id>
   \`akno recall --json\` or \`akno read --document …\`.
 
   This never starts a bulk adoption pass. It seals only the selected document
-  group and follows maintenance.adopt.mode:
+  group and follows the configured maintenance.policies.adopt authority:
 
     audit    save an exact diff for inspection
     review   wait for a human plan decision

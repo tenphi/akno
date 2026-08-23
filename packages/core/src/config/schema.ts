@@ -196,7 +196,7 @@ const TierDoc = z.object({
   mission: z.string().nullable().optional(),
 });
 
-export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous', 'custom'] as const;
+export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous'] as const;
 export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
 export const MAINTENANCE_TRANSFORMS = [
   'observe',
@@ -242,13 +242,9 @@ const MaintenanceLimitsDoc = z.object({
 });
 
 const MaintenanceDoc = z.object({
-  /**
-   * One understandable authority choice for the complete scheduled cycle. `custom` preserves
-   * the phase-level switches below, which is also the compatibility profile for installations
-   * created before named profiles existed.
-   */
+  /** One understandable authority choice for the complete scheduled cycle. */
   profile: z.enum(MAINTENANCE_PROFILES).optional(),
-  /** Per-transformation authority; absent values inherit a named profile and are off under explicit custom. */
+  /** Per-transformation authority; omitted values inherit the selected profile. */
   policies: MaintenancePoliciesDoc.optional(),
   /** Cumulative apply ceilings shared by every plan-backed phase in one dream invocation. */
   limits: MaintenanceLimitsDoc.optional(),
@@ -281,11 +277,6 @@ const MaintenanceDoc = z.object({
   reflect: TierDoc.optional(),
   curate: z
     .object({
-      enabled: z.boolean().optional(),
-      /** Trust mode used by the curate phase inside an otherwise complete scheduled dream run. */
-      mode: z.enum(['audit', 'review', 'auto']).nullable().optional(),
-      /** Explicit write switch; enabled curate may still run as a scheduled preview. */
-      write: z.boolean().optional(),
       verify: z.boolean().optional(),
       max_pages: z.number().int().positive().optional(),
       max_splits: z.number().int().nonnegative().optional(),
@@ -302,9 +293,6 @@ const MaintenanceDoc = z.object({
     .optional(),
   adopt: z
     .object({
-      enabled: z.boolean().optional(),
-      /** Trust mode for deterministic orphan filing pages. Null disables durable adoption. */
-      mode: z.enum(['audit', 'review', 'auto']).nullable().optional(),
       /** Pages created per run. A folder of media should not become 500 pages overnight. */
       max_pages: z.number().int().positive().optional(),
     })
@@ -478,12 +466,10 @@ export interface AknoConfig {
     textRenditionMinChars: number;
   };
   maintenance: {
-    /** Named authority policy for the complete cycle; `custom` preserves phase-level settings. */
+    /** Named authority policy for the complete cycle. */
     profile: MaintenanceProfile;
-    /** True only when the user supplied a policy map; used to preserve legacy custom behavior. */
-    policiesConfigured: boolean;
-    /** Named profiles resolve all keys; custom retains only explicitly configured keys. */
-    policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
+    /** Every transformation has one policy after profile inheritance and ceiling enforcement. */
+    policies: Record<MaintenanceTransform, MaintenancePolicy>;
     /** Cumulative apply ceilings for one maintenance invocation. */
     limits: MaintenanceLimits;
     /** Null when the cycle uses the `derive` role, which is the default. */
@@ -500,10 +486,6 @@ export interface AknoConfig {
     /** Ships as an extension point, off by default. */
     reflect: { enabled: boolean; mission: string | null };
     curate: {
-      enabled: boolean;
-      /** Null preserves the legacy preview/write switches. */
-      mode: 'audit' | 'review' | 'auto' | null;
-      write: boolean;
       verify: boolean;
       maxPages: number;
       maxSplits: number;
@@ -516,7 +498,7 @@ export interface AknoConfig {
       extractAfterBytes: number;
       extractSectionBytes: number;
     };
-    adopt: { enabled: boolean; mode: 'audit' | 'review' | 'auto' | null; maxPages: number };
+    adopt: { maxPages: number };
     conflicts: { enabled: boolean; verify: boolean; resolve: boolean; maxPairs: number };
     repair: { enabled: boolean; links: boolean; maxChanges: number };
   };

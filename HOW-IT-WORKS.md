@@ -643,16 +643,13 @@ The scheduled command stays deliberately plain: `akno dream`. At run time it res
 | `audit`      | seal audit plans; never apply                  | seal audit plans; never apply           | seal audit plans; never apply    |
 | `review`     | seal plans and wait for human decisions        | seal plans and wait for human decisions | wait for human decisions         |
 | `autonomous` | separate curator decision, then verified apply | separate curator, append, then verify   | separate curator, append, verify |
-| `custom`     | preserve phase modes and legacy write flags    | legacy append unless an explicit policy | same compatibility behavior      |
 
-`custom` is the compatibility default, so an existing installation does not gain or lose authority after an
-upgrade. A named profile enables plan-backed curation/adoption, routes enabled observe and reflect phases through
-the same lifecycle, and enables conflict resolution and exact-identity link repair. Page frontmatter, folder rules,
-merge allowlists, deterministic guards, and per-run caps remain more restrictive boundaries. A profile does
-not automatically enable the model-sensitive `observe` or `reflect` phases.
+Every profile uses the same plan-backed lifecycle. Page frontmatter, folder rules, merge allowlists,
+deterministic guards, and per-run caps remain more restrictive boundaries. A profile does not automatically
+enable the model-sensitive `observe` or `reflect` phases.
 
-`akno config` prints the profile plus its expanded `curate.mode`, `adopt.mode`, policies, and limits. `akno
-dream status` summarizes the profile, cycle authority, phase authority, every transformation policy, the
+`akno config` prints the profile plus its expanded policies and limits. `akno dream status` summarizes the
+profile, cycle authority, phase authority, every transformation policy, the
 whole-run ceilings and latest usage, and whether an ordinary scheduled run may write.
 A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
@@ -687,10 +684,17 @@ The supported keys are `observe`, `reflect`, `hygiene`, `synthesis`, `split`, `e
 | `review` | keep proposals waiting for a human decision                              |
 | `auto`   | ask the separate curator and apply only accepted, verified items         |
 
-Under `audit`, `review`, or `autonomous`, an omitted key inherits the profile. An explicit key can only lower
-that profile's authority. Under `custom`, a non-empty policy map is an allowlist: omitted classes are `off`.
-An empty map preserves the older phase-level configuration exactly. `custom` still uses the corresponding
-phase `enabled` switches; a policy grants authority to an enabled planner, but does not silently enable it.
+An omitted key inherits the profile. An explicit key can only lower that profile's authority. Set a class to
+`off` when it should not be inspected or planned. The separate `observe.enabled` and `reflect.enabled` settings
+control whether those model-sensitive inference tiers run at all; they do not grant write authority.
+
+Installations with the removed `custom`, `curate.enabled/mode/write`, or `adopt.enabled/mode` keys must migrate
+explicitly. Preview first, then apply the content-safe configuration-only rewrite:
+
+```bash
+akno config migrate --remove-custom --check
+akno config migrate --remove-custom
+```
 
 The effective policy is stored immutably on every plan item. One plan may therefore apply an automatic broken
 link repair while leaving a merge in human review and a synthesis proposal in audit. The plan's `mode` is only
@@ -765,8 +769,8 @@ Order matters at several boundaries:
   however, the bounded post-apply retry may replan reflection from that now-applied and verified observation.
 - A full named-profile or explicit-policy run seals every writable phase plan before any automatic curator call
   or knowledge-base write. It decides plans in phase order, then applies accepted items in a stable dependency
-  order with the shared budget. Selecting one `--phase` remains immediate; empty-policy `custom` keeps its
-  compatibility behavior.
+  order with the shared budget. Selecting one `--phase` remains immediate while using the same resolved policy
+  and durable plan lifecycle.
 - Before sealing its plan, `curate` composes a narrow class of reciprocal evidence dependencies. Two to four
   independently verified `hygiene` or `synthesis` drafts may become one item when they replace distinct pages,
   have the same effective policy and risk, and each component reads another component page as sealed evidence.
@@ -805,21 +809,20 @@ Order matters at several boundaries:
 
 ### Phase summary
 
-| Phase          | Reads                                                                               | Produces                                       | Writes by default?                  | Model?                               |
-| -------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------- | ------------------------------------ |
-| `conflicts`    | Live facts on different knowledge pages                                             | Typed verdicts and inference eligibility       | no                                  | optional verification                |
-| `observe`      | Conflict-eligible facts from at least two knowledge pages                           | Exact evidence-linked pattern plans            | no; phase disabled                  | planner and automatic curator        |
-| `reflect`      | Conflict-eligible observation pages                                                 | Exact higher-level principle plans             | no; phase disabled                  | planner and automatic curator        |
-| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans   | no; phase and write switch disabled | page/curator work yes; link audit no |
-| `adopt`        | Readable documents with no owning page                                              | Exact low-risk filing-page plans               | auto, capped at 20 per run          | planner no; auto curator yes         |
-| `repair`       | Broken links                                                                        | Read-only view of exact proposals and refusals | no; phase disabled                  | no                                   |
-| `housekeeping` | Links, documents, pages, and folder rules                                           | Counts and actionable diagnostics              | no                                  | no                                   |
+| Phase          | Reads                                                                               | Produces                                       | Writes by default?                | Model?                               |
+| -------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------------ |
+| `conflicts`    | Live facts on different knowledge pages                                             | Typed verdicts and inference eligibility       | no                                | optional verification                |
+| `observe`      | Conflict-eligible facts from at least two knowledge pages                           | Exact evidence-linked pattern plans            | no; phase disabled                | planner and automatic curator        |
+| `reflect`      | Conflict-eligible observation pages                                                 | Exact higher-level principle plans             | no; phase disabled                | planner and automatic curator        |
+| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans   | no; audit proposals only          | page/curator work yes; link audit no |
+| `adopt`        | Readable documents with no owning page                                              | Exact low-risk filing-page plans               | no; audit proposals, capped at 20 | planner no; auto curator yes         |
+| `repair`       | Broken links                                                                        | Read-only view of exact proposals and refusals | no; phase disabled                | no                                   |
+| `housekeeping` | Links, documents, pages, and folder rules                                           | Counts and actionable diagnostics              | no                                | no                                   |
 
-The default dream therefore has one automatic write-capable phase: `adopt`. It first seals exact page
-creations, then asks the independent curator and applies only accepted items. It never moves or edits the
-document itself. Without an available curator model, its items remain blocked rather than becoming
-policy-approved writes. `conflicts` and `housekeeping` report. The other writing phases require explicit
-opt-in.
+The default `audit` profile has no automatic write-capable phase. It may seal curation and adoption proposals,
+but never decides or applies them. `conflicts` and `housekeeping` report; `observe` and `reflect` remain disabled
+until explicitly enabled. Moving to `review` or `autonomous` changes authority without bypassing plans, page
+opt-ins, guards, or limits.
 
 ### Phase 1: `conflicts` — classify disagreements before inference
 
@@ -873,7 +876,6 @@ knowledge page. `audit` exposes the diff, `review` waits for a human, and `auto`
 applying. Apply rechecks every evidence hash, journals accepted patterns independently, reindexes the output,
 and verifies that it is derived inference with the sealed citations. A changed pattern adds one new dated line;
 it never deletes or overwrites an old one. Repeated wording and unchanged rejected items are not resubmitted.
-Compatibility `custom` with no explicit observation policy retains the historical direct append.
 
 **Guards:** source pages cannot become evidence, observations cannot feed other observations, every
 cited slug must have been shown to the model, hedged patterns are refused, and sensitive conclusions
@@ -914,7 +916,7 @@ page. Apply refuses missing, authored, self-referential, or changed evidence; it
 principles page, may only union frontmatter evidence, and cannot alter an earlier line. `audit` exposes the
 exact diff, `review` waits for a human, and `auto` asks the separate curator before a budgeted append, reindex,
 and derived-inference verification. An unchanged rejected principle is not proposed again until its semantic
-input changes. Compatibility `custom` with no policy map preserves the direct append path.
+input changes.
 
 ```bash
 akno dream --phase reflect --mode audit
@@ -959,18 +961,12 @@ Contradiction items are always high risk, replace every affected opted-in page a
 over a general synthesis of the same bytes in that run. This prevents two individually valid items from making
 the second one stale by construction.
 
-**Write authority has four gates:**
+**Write authority has three gates:**
 
 1. The page opts in with `dream: hygiene` or `dream: synthesize`.
-2. A named profile includes the plan-backed phase, or `maintenance.curate.enabled` does so under `custom`.
-3. The transformation's effective `maintenance.policies` value permits the item to reach review or auto.
-4. The profile or a lower command-line trust mode authorizes plan-backed curation; when `custom` has no mode,
-   the legacy `maintenance.curate.write` switch controls previews and writes.
-
-With `enabled: true` and `write: false`, scheduled runs are summary previews: they report that a page would
-change, its mode, verification issues, proposed child slugs, and temporal handling. They do **not** currently
-return the proposed body or a diff. Input fingerprints are recorded so unchanged pages do not spend model
-calls every night. An explicit `--dry-run` is observational and does not record that state.
+2. The transformation's effective `maintenance.policies` value is not `off` and every narrower structural
+   restriction—such as `merge_folders`—permits the candidate.
+3. The profile or a lower command-line trust mode authorizes audit, human review, or automatic curation.
 
 Plan-backed runs record the same terminal fingerprints for unchanged drafts and deterministic rejections,
 even when no plan item is created. Provider and transport failures are not cached and retry later. An
@@ -994,9 +990,9 @@ akno dream --phase curate --mode auto
 Long model calls report a content-free stage and elapsed time while they run: candidate planning, independent
 curator, application, and verification. The progress line also says whether a knowledge-base write has begun.
 
-The selected mode is explicit authority for that run, so it replaces the legacy `maintenance.curate.write`
-choice for these curation items. It still requires an enabled planner, an available maintenance or derive
-model for model-backed transformations, and page-level `dream: hygiene` or `dream: synthesize`. A
+The selected mode is explicit authority for that run. It still requires a non-`off` transformation policy, an
+available maintenance or derive model for model-backed transformations, and page-level `dream: hygiene` or
+`dream: synthesize`. A
 command-line `--mode` can govern the full cycle or one selected phase and cannot exceed the configured
 profile.
 
@@ -1011,8 +1007,7 @@ For the nightly full cycle, prefer a named profile:
 ```
 
 The scheduled command remains plain `akno dream`, so observation, reflection, adoption, conflict detection,
-the compatibility repair report, and housekeeping keep running. Use `profile: "custom"` only when intentionally
-retaining or composing the lower-level phase behavior.
+the report-only repair phase, and housekeeping keep running under the same resolved authority.
 
 All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its immutable
 policy, exact operation, input hash, completed guards, decision, typed nonterminal status, journal change id,
@@ -1107,16 +1102,14 @@ are sealed before the first write. A new inbound link or any changed input makes
 one high-risk journal change, verifies that the duplicate is absent from disk and the index, and confirms that
 no link still targets its slug. One `undo` restores the canonical, every inbound page, and the duplicate.
 
-Merge deliberately runs only through `audit`, `review`, or `auto`. The legacy `maintenance.curate.write`
-switch cannot authorize it because that path has no durable, separately decided deletion artifact.
+Merge deliberately runs only through the ordinary `audit`, `review`, or `auto` plan lifecycle. No direct-write
+path can authorize a deletion.
 
 ```jsonc
 {
   "maintenance": {
+    "profile": "review",
     "curate": {
-      "enabled": true,
-      "mode": "review",
-      "write": false,
       "verify": true,
       "max_pages": 8,
       "max_splits": 3,
@@ -1149,7 +1142,8 @@ minimal page shape used by ingest: title, available summary, embeds, and extract
 group becomes one low-risk maintenance item. The plan records the run-start index/configuration manifest,
 the exact page bytes, and every document id, path, and source hash.
 
-**Write behavior:** enabled in `auto` mode by default and capped at 20 planned pages per run. Before apply,
+**Write behavior:** governed by the `adopt` transformation policy and capped at 20 planned pages per run. The
+default `audit` profile records proposals without creating pages. Before apply,
 Akno re-hashes the actual document bytes, confirms every indexed part is still readable and unowned, and
 requires the target page not to exist. Apply creates only the sealed page, journals it, forces a structural
 re-index of the unchanged documents, and verifies that every part is now owned by the new page. A failed
@@ -1604,9 +1598,9 @@ verified before its dependants, and only then do repair and housekeeping report 
 7. **Retry dependants once:** replan dependency-deferred phases from verified post-apply state, then use one final
    decision/apply barrier and the remaining shared budget.
 
-The barrier is intentionally limited to the policy-backed full command. A selected phase remains useful for
-immediate testing or recovery, and compatibility `custom` with no policies preserves its older behavior. Plans
-remain phase-specific, but the barrier builds one deterministic access graph across their automatic items.
+The barrier is intentionally limited to the full command. A selected phase remains useful for immediate
+testing or recovery and still uses the same resolved policy and plan lifecycle. Plans remain phase-specific,
+but the barrier builds one deterministic access graph across their automatic items.
 Same-path writes and earlier-write/later-sealed-read edges are explicit; ambiguous items get one post-apply
 replanning wave. Canonical create-before-link/`akno.about` edges are topologically ordered, and incompatible
 delete/reference proposals are deferred. A first virtual composition slice groups reciprocal, distinct-page
@@ -1616,8 +1610,8 @@ file changes remain future work.
 
 ### Maintenance profiles still need a complete failure policy and path explanation
 
-`audit`, `review`, `autonomous`, and compatibility `custom` resolve one authority ceiling for the complete cycle,
-and per-transformation policies can independently select `off`, `audit`, `review`, or `auto`. Each sealed item
+`audit`, `review`, and `autonomous` resolve one authority ceiling for the complete cycle, and
+per-transformation policies can independently select `off`, `audit`, `review`, or `auto`. Each sealed item
 retains that policy, and mixed plans apply only their automatic subset. This removes the dangerous ambiguity
 around whether a high-authority run can promote a lower-authority class.
 

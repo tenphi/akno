@@ -278,14 +278,12 @@
   "maintenance": {
     // A named profile is the authority ceiling for the complete scheduled cycle:
     // audit plans only, review waits for a human, autonomous uses the separate curator
-    // and applies accepted work. `custom` preserves the phase settings below and is the
-    // compatibility default for installations created before profiles existed.
+    // and applies accepted work. New installations start in audit until the owner chooses
+    // a more authoritative profile.
     // In a full named-profile/policy run, every phase plan is sealed before automatic apply.
-    "profile": "custom",
-    // Optional per-class authority: off, audit, review, or auto. Under a named
-    // profile, omitted classes inherit the profile and explicit values may only
-    // lower it. Under custom, an explicit map is allowlist-shaped: omitted classes
-    // are off. Empty preserves the phase-level compatibility behavior below.
+    "profile": "audit",
+    // Optional per-class authority: off, audit, review, or auto. Omitted classes
+    // inherit the profile and explicit values may only lower it.
     "policies": {},
     // Cumulative apply ceilings shared by plan-backed observe, reflect, curate, and adopt
     // in one invocation.
@@ -357,16 +355,10 @@
     // events gain a journalled `akno.temporal` boundary; after it passes, only strong
     // post-event evidence wakes one archival assessment instead of another planning pass.
     // The draft is checked by a second model pass and deterministic guards.
-    // `mode` opts scheduled/full runs into durable exact plans for hygiene and
-    // synthesis pages, including atomic canonical-page splits, extraction of a
-    // reusable subject into an independent page, and exact-alias merge inside an
-    // explicitly eligible folder:
-    // audit records proposals, review waits for human decisions, and auto asks an
-    // independent curator before applying. Null preserves the legacy `write` switch.
+    // The profile/policy matrix controls durable exact plans for hygiene and synthesis
+    // pages, including atomic canonical-page splits, extraction of a reusable subject
+    // into an independent page, and exact-alias merge inside an eligible folder.
     "curate": {
-      "enabled": false,
-      "mode": null,
-      "write": false,
       "verify": true,
       "max_pages": 8,
       // Structural operations are separately bounded across the whole run.
@@ -390,10 +382,6 @@
     // `ingest: "file"`, which exists for exactly the case where a stub page per
     // file would be noise — and never touches the file itself.
     "adopt": {
-      "enabled": true,
-      // Adoption is deterministic but still goes through an exact plan and separate curator
-      // decision. Use "review" for manual approval or "audit" to keep proposals read-only.
-      "mode": "auto",
       // A folder of 500 unowned PDFs should not become 500 pages overnight before
       // anyone has read the first report.
       "max_pages": 20
@@ -419,7 +407,7 @@
     // Broken links use the same durable plan lifecycle as curation and contradictions:
     // exact evidence, curator or human decision, stale checks, one journal per item,
     // and post-write verification. `links` includes them in curate plans. `enabled`
-    // keeps the legacy `repair` phase as a report-only compatibility view.
+    // keeps the report-only `repair` phase available for compatibility.
     "repair": {
       "enabled": false,
       "links": true,

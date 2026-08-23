@@ -53,6 +53,35 @@ describe('durable dream runs', () => {
     }
   });
 
+  it('keeps removed custom-profile receipts readable as legacy history', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-legacy-run-kb-'));
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-legacy-run-state-'));
+    const config = loadConfig({ aknoPath: root, stateDir, isolated: true, env: {} });
+    const store = openStore({ dbPath: config.dbPath, embeddingDimensions: 8 });
+    const ctx = { config, store, writable: true } as AknoContext;
+    const started = beginDreamRun(ctx, {
+      requestedPhase: 'curate',
+      requestedPhases: ['curate'],
+      mode: 'auto',
+      dryRun: false,
+      modelId: 'zephyr-model',
+    });
+
+    try {
+      const historical = { ...started, profile: 'custom' };
+      store.db
+        .prepare('UPDATE maintenance_runs SET receipt = ? WHERE id = ?')
+        .run(JSON.stringify(historical), started.id);
+
+      expect(latestDreamRun(ctx)).toMatchObject({ id: started.id, profile: 'legacy-custom' });
+    } finally {
+      failDreamRun(ctx, started, new AknoError('interrupted', 'Invented test cleanup.'), 1, []);
+      store.close();
+      fs.rmSync(root, { recursive: true, force: true });
+      fs.rmSync(stateDir, { recursive: true, force: true });
+    }
+  });
+
   it('refuses a concurrent invocation with the active run identity', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-busy-kb-'));
     const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-busy-state-'));
