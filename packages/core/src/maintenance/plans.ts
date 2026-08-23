@@ -58,7 +58,7 @@ export type MaintenanceItemStatus =
   | 'verification_pending'
   | 'verification_failed';
 
-export type MaintenanceItemStatusCode = 'budget_exhausted';
+export type MaintenanceItemStatusCode = 'budget_exhausted' | 'dependency_conflict';
 
 export interface ReplaceOperation {
   type: 'replace';
@@ -199,6 +199,12 @@ export interface ApplyMaintenanceResult {
   plan: MaintenancePlan;
   files: ChangeFile[];
   budget: MaintenanceBudgetReceipt;
+}
+
+export interface MaintenanceDependencyConflict {
+  planId: string;
+  itemId: string;
+  kind: 'write_write' | 'sealed_input';
 }
 
 interface PlanRow {
@@ -722,6 +728,131 @@ export function getMaintenancePlan(ctx: AknoContext, planId: string): Maintenanc
     .prepare('SELECT * FROM maintenance_items WHERE plan_id = ? ORDER BY ord, rowid')
     .all(planId) as ItemRow[];
   return { ...planSummary(ctx, row), items: items.map(itemFromRow) };
+}
+
+/**
+ * Prevent an earlier automatic write from invalidating a later item that was sealed from the
+ * pre-write snapshot. Recovery items take priority because their write may already have happened;
+ * among new items, phase and item order determine which proposal proceeds first.
+ */
+export function blockMaintenanceDependencies(ctx: AknoContext, planIds: string[]): number {
+  requireWritable(ctx);
+  const plans = planIds.map((planId) => getMaintenancePlan(ctx, planId));
+  const pagePaths = new Map(
+    (
+      ctx.store.db.prepare('SELECT slug, rel_path FROM pages').all() as {
+        slug: string;
+        rel_path: string;
+      }[]
+    ).map((row) => [row.slug, row.rel_path]),
+  );
+  const conflicts = findMaintenanceDependencyConflicts(plans, pagePaths);
+  const touchedPlans = new Set<string>();
+  for (const conflict of conflicts) {
+    blockItem(
+      ctx,
+      conflict.planId,
+      conflict.itemId,
+      "Deferred because another automatic maintenance item changes this item's sealed input or output. Replan it against the resulting knowledge-base snapshot in a later run.",
+      'dependency_conflict',
+    );
+    touchedPlans.add(conflict.planId);
+  }
+  for (const planId of touchedPlans) refreshDecisionStatus(ctx, planId);
+  return conflicts.length;
+}
+
+export function findMaintenanceDependencyConflicts(
+  plans: MaintenancePlan[],
+  pagePaths: ReadonlyMap<string, string>,
+): MaintenanceDependencyConflict[] {
+  const entries = plans.flatMap((plan) =>
+    plan.mode === 'auto'
+      ? plan.items.flatMap((item) => {
+          const scheduled =
+            (item.status === 'proposed' && item.policy === 'auto') ||
+            ['approved', 'applying', 'verification_pending'].includes(item.status);
+          if (!scheduled) return [];
+          const writes = new Set(
+            item.operations.flatMap((operation) =>
+              operation.type !== 'replace' || operation.beforeHash !== operation.afterHash
+                ? [operation.relPath]
+                : [],
+            ),
+          );
+          const reads = new Set(
+            item.operations.flatMap((operation) => (operation.type === 'create' ? [] : [operation.relPath])),
+          );
+          for (const evidence of item.evidence) {
+            const relPath = evidence.targetRelPath ?? pagePaths.get(evidence.source);
+            if (relPath) reads.add(relPath);
+          }
+          return [
+            {
+              planId: plan.id,
+              itemId: item.id,
+              status: item.status,
+              reads,
+              writes,
+            },
+          ];
+        })
+      : [],
+  );
+  const recoveries = entries.filter((entry) => ['applying', 'verification_pending'].includes(entry.status));
+  const pending = entries.filter((entry) => ['proposed', 'approved'].includes(entry.status));
+  const blocked = new Map<string, MaintenanceDependencyConflict>();
+  const keyFor = (entry: (typeof entries)[number]): string => `${entry.planId}\0${entry.itemId}`;
+
+  // A write may already be present for a recovery item, so recovery always wins over a proposal,
+  // even when the proposal belongs to an earlier phase.
+  for (const candidate of pending) {
+    for (const recovery of recoveries) {
+      if (!accessesConflict(candidate, recovery) || keyFor(candidate) === keyFor(recovery)) continue;
+      blocked.set(keyFor(candidate), {
+        planId: candidate.planId,
+        itemId: candidate.itemId,
+        kind: intersects(candidate.writes, recovery.writes) ? 'write_write' : 'sealed_input',
+      });
+      break;
+    }
+  }
+
+  const preceding: typeof pending = [];
+  for (const candidate of pending) {
+    if (blocked.has(keyFor(candidate))) continue;
+    const conflict = preceding.find(
+      (earlier) =>
+        intersects(earlier.writes, candidate.writes) || intersects(earlier.writes, candidate.reads),
+    );
+    if (conflict) {
+      blocked.set(keyFor(candidate), {
+        planId: candidate.planId,
+        itemId: candidate.itemId,
+        kind: intersects(conflict.writes, candidate.writes) ? 'write_write' : 'sealed_input',
+      });
+      continue;
+    }
+    preceding.push(candidate);
+  }
+
+  return [...blocked.values()];
+}
+
+function accessesConflict(
+  left: { reads: ReadonlySet<string>; writes: ReadonlySet<string> },
+  right: { reads: ReadonlySet<string>; writes: ReadonlySet<string> },
+): boolean {
+  return (
+    intersects(left.writes, right.writes) ||
+    intersects(left.writes, right.reads) ||
+    intersects(right.writes, left.reads)
+  );
+}
+
+function intersects(left: ReadonlySet<string>, right: ReadonlySet<string>): boolean {
+  for (const value of left) if (right.has(value)) return true;
+  return false;
 }
 
 /** Oldest unfinished plan for restart recovery; fresh planning waits until it is resolved. */
@@ -2239,15 +2370,21 @@ function setPlanStatus(ctx: AknoContext, planId: string, status: MaintenancePlan
     .run(status, new Date().toISOString(), planId);
 }
 
-function blockItem(ctx: AknoContext, planId: string, itemId: string, reason: string): void {
+function blockItem(
+  ctx: AknoContext,
+  planId: string,
+  itemId: string,
+  reason: string,
+  statusCode: MaintenanceItemStatusCode | null = null,
+): void {
   const now = new Date().toISOString();
   ctx.store.db
     .prepare(
-      `UPDATE maintenance_items SET status = 'blocked', status_code = NULL, decision_actor = NULL,
+      `UPDATE maintenance_items SET status = 'blocked', status_code = ?, decision_actor = NULL,
        decision_outcome = NULL, decision_reason = ?, decided_at = ?, updated_at = ?
        WHERE id = ? AND plan_id = ?`,
     )
-    .run(reason, now, now, itemId, planId);
+    .run(statusCode, reason, now, now, itemId, planId);
 }
 
 function deferBudgetItem(

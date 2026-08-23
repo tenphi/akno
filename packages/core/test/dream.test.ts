@@ -499,13 +499,21 @@ describe('reflect', () => {
 });
 
 describe('the full-run planning barrier', () => {
-  async function withInferencePolicies(limits?: { max_items: number }): Promise<void> {
+  async function withInferencePolicies(
+    limits?: { max_items: number },
+    seedObserveTarget = false,
+  ): Promise<void> {
     await mem.close();
     fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
     for (const [name, body] of [
       ['travel-lunch', 'Travel itineraries treat lunch as a scheduled part of the day.'],
       ['banking-review-period', 'Banking review periods cover the full calendar month.'],
       ['home-servicing', 'Household appliances are serviced on a regular cadence.'],
+      ...(seedObserveTarget
+        ? ([
+            ['home-appliance-servicing', 'Household maintenance is recorded after each completed service.'],
+          ] as const)
+        : []),
     ] as const) {
       fs.writeFileSync(
         path.join(root, `observations/${name}.md`),
@@ -608,6 +616,52 @@ describe('the full-run planning barrier', () => {
     expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'curator']);
     expect(resumed.items[0]).toMatchObject({ status: 'applied', statusCode: null });
     expect(second.run.budget).toMatchObject({ used: { items: 1 }, deferredItems: 0 });
+    expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
+  });
+
+  it('defers a later item whose sealed evidence is changed by an earlier plan, then replans it', async () => {
+    await withInferencePolicies(undefined, true);
+    const principle = 'Maintenance records support deliberate household planning.';
+    server.reply(OBSERVED);
+    server.reflection({
+      observations: [
+        {
+          pattern: principle,
+          evidence: [
+            'observations/home-appliance-servicing',
+            'observations/travel-lunch',
+            'observations/banking-review-period',
+          ],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const first = await mem.dream();
+    const reflection = first.maintenancePlans.find((plan) => plan.phase === 'reflect')!;
+
+    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator']);
+    expect(first.run.status).toBe('partially_completed');
+    expect(reflection.status).toBe('failed');
+    expect(reflection.items[0]).toMatchObject({
+      status: 'blocked',
+      statusCode: 'dependency_conflict',
+      decision: null,
+    });
+    expect(reflection.items[0]!.statusReason).not.toContain('observations/');
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
+      PATTERN,
+    );
+
+    const beforeSecond = server.requestKinds().length;
+    server.reply({ observations: [] });
+    const second = await mem.dream();
+    const replanned = second.maintenancePlans.find((plan) => plan.phase === 'reflect')!;
+
+    expect(replanned.id).not.toBe(reflection.id);
+    expect(replanned.items[0]).toMatchObject({ status: 'applied', statusCode: null });
+    expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'reflect', 'curator']);
     expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
   });
 });

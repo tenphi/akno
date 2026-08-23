@@ -763,6 +763,12 @@ Order matters in three places:
 - A full named-profile or explicit-policy run seals every writable phase plan before any automatic curator call
   or knowledge-base write. It then decides and applies accepted plans in phase order with the shared budget.
   Selecting one `--phase` remains immediate; empty-policy `custom` keeps its compatibility behavior.
+- At that barrier, Akno compares the file access sealed by pending automatic items. A later item is blocked if
+  it would write the same path as an earlier item, or if an earlier write would invalidate its input or evidence.
+  It skips the curator and all writes with typed status `dependency_conflict`; unrelated work continues and the
+  full run is `partially_completed`. The next full cycle replans the item from the resulting snapshot. An item
+  already recovering an interrupted apply takes priority over a new proposal. Audit and review proposals are
+  not in the automatic apply set, so they do not block it.
 - `housekeeping` runs last so its counts describe the state after plan-backed observation, reflection, curation, and adoption. The
   compatibility `repair` phase is read-only.
 

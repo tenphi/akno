@@ -239,6 +239,12 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     line(`  ${style.bold(plan.id)}  ${plan.mode}/${plan.phase}  ${style.grey(plan.summary)}`);
     const proposed = plan.items.filter((item) => item.status === 'proposed').length;
     const approved = plan.items.filter((item) => item.status === 'approved').length;
+    const dependencyDeferred = plan.items.filter((item) => item.statusCode === 'dependency_conflict').length;
+    if (dependencyDeferred > 0) {
+      line(
+        `  ${style.grey(`${dependencyDeferred} dependent item(s) deferred; they will be replanned on the next run`)}`,
+      );
+    }
     if (proposed > 0) {
       line(`  ${style.grey('inspect:')} ${style.bold(`akno plan diff ${plan.id}`)}`);
       line(

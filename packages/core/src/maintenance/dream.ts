@@ -24,6 +24,7 @@ import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 import { curatePages, type CurateDraft, type CuratedPage, type CurateTransformationKind } from './curate.ts';
 import {
   applyMaintenancePlan,
+  blockMaintenanceDependencies,
   createAdoptionPlan,
   createCurationPlan,
   createObservationPlan,
@@ -728,6 +729,7 @@ async function decideAndApplyPlannedPhases(
   budget: MaintenanceBudgetTracker,
 ): Promise<void> {
   const planIds = report.maintenancePlans.map((plan) => plan.id);
+  blockMaintenanceDependencies(ctx, planIds);
   for (const planId of planIds) {
     let plan = getMaintenancePlan(ctx, planId);
     if (plan.mode === 'auto') {

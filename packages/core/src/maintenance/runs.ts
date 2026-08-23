@@ -346,7 +346,19 @@ function completedStatus(report: DreamReport): DreamRunStatus {
   if (plans.some((plan) => plan.status === 'awaiting_review')) {
     return 'awaiting_review';
   }
-  if (plans.some((plan) => plan.status === 'failed')) return 'failed';
+  const failed = plans.filter((plan) => plan.status === 'failed');
+  if (failed.length > 0) {
+    const onlyDependencyDeferrals = failed.every(
+      (plan) =>
+        plan.items.some((item) => item.statusCode === 'dependency_conflict') &&
+        plan.items.every(
+          (item) =>
+            !['blocked', 'stale', 'verification_failed'].includes(item.status) ||
+            (item.status === 'blocked' && item.statusCode === 'dependency_conflict'),
+        ),
+    );
+    return onlyDependencyDeferrals ? 'partially_completed' : 'failed';
+  }
   if (plans.some((plan) => plan.status === 'partially_completed')) return 'partially_completed';
   return 'completed';
 }

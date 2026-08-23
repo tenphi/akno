@@ -645,6 +645,10 @@ decided and applied in `observe` → `reflect` → `curate` → `adopt` order wi
 housekeeping inspect the resulting state. A selected `--phase` remains immediate, and compatibility `custom`
 with no policy map retains its historical phase behavior.
 
+At that barrier Akno blocks a later automatic item if it would write the same path as an earlier item, or if
+an earlier write would invalidate its sealed input. The item skips its curator call and all writes, reports
+`dependency_conflict`, and is replanned from the new snapshot on the next full cycle; unrelated work continues.
+
 The `limits` block is one cumulative apply budget. A full `akno dream` shares it across observe, reflect, curate, and adopt;
 `akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are
 not truncated. Instead, apply reserves a complete item before its first write. `max_items` counts items,
