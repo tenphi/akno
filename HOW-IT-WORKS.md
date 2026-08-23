@@ -714,9 +714,11 @@ Profiles answer what may happen; `maintenance.limits` bounds how much may happen
 
 A full `akno dream` shares one tracker across observe, reflect, curate, and adopt. A manual `akno plan apply` or direct
 `akno adopt` starts a fresh tracker. Planning is not capped, so audit and review still expose the complete
-proposal. Immediately before writing an approved item, Akno reserves the item as a unit: items count once,
-files count once per distinct path in the invocation, bytes are the complete UTF-8 output of creates and
-replacements, and a delete consumes a file slot but writes zero bytes. Zero is a valid limit.
+proposal. Immediately before writing an approved item, Akno reserves the item as a unit. `max_items` counts
+logical transformations: normally one per item, but each independently drafted component in a composed
+curation item still consumes one. High-risk components are counted the same way. Files count once per distinct
+path in the invocation, bytes are the complete UTF-8 output of creates and replacements, and a delete consumes
+a file slot but writes zero bytes. Zero is a valid limit.
 
 If any ceiling would be crossed, none of that item's operations start. The item returns to `proposed`, its
 prior decision is cleared, and its machine-readable status is `budget_exhausted`; unrelated later items may
@@ -752,7 +754,7 @@ flowchart LR
     conflicts["1. conflicts"] --> observe["2. plan observe"] --> reflect["3. plan reflect"] --> curate["4. plan curate"] --> adopt["5. plan adopt"] --> barrier["decision/apply barrier"] --> retry["one bounded dependency retry"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
 ```
 
-Order matters in three places:
+Order matters at several boundaries:
 
 - `conflicts` runs before every inference and transformation phase. Unresolved, unverified, and pending
   qualification claims are removed from observation inputs claim-by-claim; observations backed by those claims
@@ -765,6 +767,13 @@ Order matters in three places:
   or knowledge-base write. It decides plans in phase order, then applies accepted items in a stable dependency
   order with the shared budget. Selecting one `--phase` remains immediate; empty-policy `custom` keeps its
   compatibility behavior.
+- Before sealing its plan, `curate` composes a narrow class of reciprocal evidence dependencies. Two to four
+  independently verified `hygiene` or `synthesis` drafts may become one item when they replace distinct pages,
+  have the same effective policy and risk, and each component reads another component page as sealed evidence.
+  Akno preserves every exact proposed replacement rather than merging prose. One curator decides the complete
+  composition; all input hashes, writes, reindexing, verification, rollback, restart recovery, and undo are
+  atomic. A rejection is cached for every unchanged component, while budgets charge every logical component.
+  Same-path writes and anything outside this bounded shape are not composed.
 - At that barrier, Akno compares the file access sealed by pending automatic items. A later item is blocked if
   it would write the same path as an earlier item, or if an earlier write would invalidate its input or evidence.
   It skips the curator and all writes with typed status `dependency_conflict`; unrelated work continues and the
@@ -1600,8 +1609,10 @@ immediate testing or recovery, and compatibility `custom` with no policies prese
 remain phase-specific, but the barrier builds one deterministic access graph across their automatic items.
 Same-path writes and earlier-write/later-sealed-read edges are explicit; ambiguous items get one post-apply
 replanning wave. Canonical create-before-link/`akno.about` edges are topologically ordered, and incompatible
-delete/reference proposals are deferred. Document-attachment dependencies, virtual post-plan composition, and
-pinning planner reads to one database revision against concurrent external file changes remain future work.
+delete/reference proposals are deferred. A first virtual composition slice groups reciprocal, distinct-page
+curation replacements without changing any drafted bytes. Cross-phase composition, same-path revision merging,
+document-attachment dependencies, and pinning planner reads to one database revision against concurrent external
+file changes remain future work.
 
 ### Maintenance profiles still need a complete failure policy and path explanation
 

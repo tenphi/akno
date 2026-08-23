@@ -591,6 +591,7 @@ function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Rec
       kind: item.kind,
       policy: item.policy,
       risk: item.risk,
+      componentCount: item.componentCount,
       status: item.status,
       statusCode: item.statusCode,
       decision: item.decision

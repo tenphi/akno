@@ -230,9 +230,10 @@ function printPlan(plan: MaintenancePlan): void {
     ['summary', plan.summary],
   ]);
   for (const item of plan.items) {
+    const components = (item.componentCount ?? 1) > 1 ? `  ${item.componentCount} components` : '';
     line(
       `\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.kind}/${item.risk}  ` +
-        `${style.grey(item.policy)}  ${item.subject}`,
+        `${style.grey(item.policy)}${components}  ${item.subject}`,
     );
     line(`    ${style.grey(item.rationale)}`);
     if (item.decision) {
@@ -261,7 +262,8 @@ function printPlanSummary(plan: MaintenancePlanSummary): void {
 function printApplyResult(result: ApplyMaintenanceResult): void {
   heading(`${result.plan.id} — ${result.plan.status}`);
   for (const item of result.plan.items) {
-    line(`  ${itemStatus(item.status)}  ${item.id}  ${item.subject}`);
+    const components = (item.componentCount ?? 1) > 1 ? `  ${item.componentCount} components` : '';
+    line(`  ${itemStatus(item.status)}  ${item.id}${components}  ${item.subject}`);
     if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
     if (!item.decision && item.statusReason) line(`    ${style.grey(item.statusReason)}`);
     if (item.changeId)

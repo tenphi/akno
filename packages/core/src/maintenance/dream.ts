@@ -143,6 +143,7 @@ export interface DreamMaintenancePlan extends MaintenancePlanSummary {
     | 'kind'
     | 'policy'
     | 'risk'
+    | 'componentCount'
     | 'subject'
     | 'status'
     | 'statusCode'
@@ -703,6 +704,7 @@ function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
       kind: item.kind,
       policy: item.policy,
       risk: item.risk,
+      componentCount: item.componentCount,
       subject: item.subject,
       status: item.status,
       statusCode: item.statusCode,
@@ -917,7 +919,7 @@ function refreshReportFromPlan(report: DreamReport, plan: MaintenancePlan): void
 function curationReportFromPlan(pages: CuratedPage[], plan: MaintenancePlan): CuratedPage[] {
   return pages.map((page) => {
     const item = plan.items.find(
-      (candidate) => isGeneralCurationItem(candidate) && candidate.subject === page.slug,
+      (candidate) => isGeneralCurationItem(candidate) && maintenanceItemCoversSlug(candidate, page.slug),
     );
     if (!item) return page;
     if (item.status === 'applied') return { ...page, action: 'updated', issues: [] };
@@ -942,6 +944,13 @@ function curationReportFromPlan(pages: CuratedPage[], plan: MaintenancePlan): Cu
     }
     return page;
   });
+}
+
+function maintenanceItemCoversSlug(item: MaintenanceItem, slug: string): boolean {
+  return (
+    item.subject === slug ||
+    item.evidence.some((entry) => entry.type === 'component' && entry.source === slug)
+  );
 }
 
 function adoptionReportFromPlan(entries: AdoptedDocument[], plan: MaintenancePlan): AdoptedDocument[] {

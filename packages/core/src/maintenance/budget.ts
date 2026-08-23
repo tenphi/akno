@@ -28,6 +28,8 @@ export interface MaintenanceBudgetTracker {
 export interface MaintenanceBudgetItem {
   risk: 'low' | 'medium' | 'high';
   operations: { type: 'replace' | 'create' | 'delete'; relPath: string; after?: string }[];
+  /** Logical independently drafted transformations in one atomic item. Defaults to one. */
+  items?: number;
 }
 
 export interface MaintenanceBudgetExceeded {
@@ -69,9 +71,10 @@ export function reserveMaintenanceBudget(
       bytes + (operation.type === 'delete' ? 0 : Buffer.byteLength(operation.after ?? '')),
     0,
   );
-  const highRiskItems = item.risk === 'high' ? 1 : 0;
+  const items = Math.max(1, Math.floor(item.items ?? 1));
+  const highRiskItems = item.risk === 'high' ? items : 0;
   const exceeded: MaintenanceBudgetExceeded[] = [];
-  check(exceeded, 'max_items', tracker.items, 1, tracker.limits.maxItems);
+  check(exceeded, 'max_items', tracker.items, items, tracker.limits.maxItems);
   check(
     exceeded,
     'max_files_changed',
@@ -92,7 +95,7 @@ export function reserveMaintenanceBudget(
     return { allowed: false, exceeded };
   }
 
-  tracker.items += 1;
+  tracker.items += items;
   for (const relPath of paths) tracker.files.add(relPath);
   tracker.bytesWritten += bytesWritten;
   tracker.highRiskItems += highRiskItems;

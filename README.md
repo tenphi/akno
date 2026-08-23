@@ -645,7 +645,16 @@ decided in `observe` → `reflect` → `curate` → `adopt` order, then accepted
 order with one shared budget; repair and housekeeping inspect the resulting state. A selected `--phase` remains
 immediate, and compatibility `custom` with no policy map retains its historical phase behavior.
 
-At that barrier Akno blocks a later automatic item if it would write the same path as an earlier item, or if
+Before the curation plan is sealed, Akno can resolve one narrow dependency cycle without guessing at a merged
+document. If two to four independently drafted `hygiene` or `synthesis` replacements target different pages
+and each page was evidence for another replacement, compatible drafts with the same policy and risk become one
+atomic plan item. Their exact proposed bytes are not regenerated or text-merged: one curator sees every complete
+before/after operation and all sealed evidence, then all preimages are rechecked and every page applies,
+reindexes, verifies, rolls back, recovers, and undoes as one unit. A rejection suppresses every unchanged
+component. Same-path edits, mixed transformation classes or policies, more than four components, and oversized
+review payloads remain separate and use the ordinary dependency/replan path.
+
+At the barrier Akno blocks a remaining later automatic item if it would write the same path as an earlier item, or if
 an earlier write would invalidate its sealed input. The item skips its curator call and all writes, reports
 `dependency_conflict`, and unrelated work continues. After those independent items apply and reindex, Akno
 replans every affected phase once from the resulting state, seals all of those retry plans, and passes them
@@ -668,9 +677,11 @@ repeats the check after approval in case a later edit arrives.
 
 The `limits` block is one cumulative apply budget. A full `akno dream` shares it across observe, reflect, curate, and adopt;
 `akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are
-not truncated. Instead, apply reserves a complete item before its first write. `max_items` counts items,
+not truncated. Instead, apply reserves a complete atomic item before its first write. `max_items` counts logical
+transformations—normally one per plan item, but every independently drafted component in a composed curation
+item still counts. `max_high_risk_items` follows the same rule for high-risk components.
 `max_files_changed` counts distinct paths, `max_bytes_written` counts the full UTF-8 output of creates and
-replacements, and `max_high_risk_items` counts high-risk items. Zero is valid, including zero high-risk writes.
+replacements. Zero is valid, including zero high-risk writes.
 An item that would cross any ceiling changes nothing, returns to `proposed` with the typed
 `budget_exhausted` reason, and can be reconsidered with a fresh budget on a later run. `akno dream status`
 shows both configured ceilings and any budget-deferred backlog; each run receipt records exact usage.

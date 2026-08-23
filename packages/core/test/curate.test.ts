@@ -27,6 +27,7 @@ let server: {
   echoDraft: (value: boolean) => void;
   exactDraft: (value: boolean) => void;
   synthesisDraft: (value: boolean) => void;
+  crossPageDraft: (value: boolean) => void;
   cosmeticDraft: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
   extractDraft: (value: boolean) => void;
@@ -907,6 +908,147 @@ An invented interview record.
     expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
   });
 
+  it('composes reciprocal synthesis drafts into one exact atomic item', async () => {
+    const paths = writeCompositionFixture();
+    const before = {
+      ada: fs.readFileSync(paths.ada, 'utf8'),
+      bo: fs.readFileSync(paths.bo, 'utf8'),
+    };
+    server.crossPageDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto');
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    const item = plan.items[0]!;
+
+    expect(plan).toMatchObject({
+      status: 'completed',
+      summary: 'curate: 2 transformations in 1 atomic item',
+    });
+    expect(plan.items).toHaveLength(1);
+    expect(item).toMatchObject({
+      kind: 'synthesis',
+      status: 'applied',
+      componentCount: 2,
+      verification: { status: 'passed' },
+    });
+    expect(item.operations).toHaveLength(2);
+    expect(item.evidence.filter((entry) => entry.type === 'component')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ source: 'people/ada-marlow', fingerprint: expect.any(String) }),
+        expect.objectContaining({ source: 'people/bo-winters', fingerprint: expect.any(String) }),
+      ]),
+    );
+    expect(report.curated).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ slug: 'people/ada-marlow', action: 'updated' }),
+        expect.objectContaining({ slug: 'people/bo-winters', action: 'updated' }),
+      ]),
+    );
+    expect(report.budget.used).toMatchObject({ items: 2, filesChanged: 2, highRiskItems: 2 });
+    expect(server.curatorCalls()).toBe(1);
+    expect(fs.readFileSync(paths.ada, 'utf8')).toContain('Bo Winters files');
+    expect(fs.readFileSync(paths.bo, 'utf8')).toContain('Ada Marlow calibrates');
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(paths.ada, 'utf8')).toBe(before.ada);
+    expect(fs.readFileSync(paths.bo, 'utf8')).toBe(before.bo);
+  });
+
+  it('caches rejection for every component of a composed item', async () => {
+    const paths = writeCompositionFixture();
+    const before = {
+      ada: fs.readFileSync(paths.ada, 'utf8'),
+      bo: fs.readFileSync(paths.bo, 'utf8'),
+    };
+    server.crossPageDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'review');
+    await mem.index({ structuralOnly: true });
+
+    const first = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(first.maintenancePlan!.id).items[0]!;
+    expect(item.componentCount).toBe(2);
+    mem.decidePlan(first.maintenancePlan!.id, item.id, 'reject', 'The invented composition is too broad.');
+    const calls = server.calls();
+
+    const repeated = await mem.dream({ phase: 'curate' });
+
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(server.calls()).toBe(calls);
+    expect(fs.readFileSync(paths.ada, 'utf8')).toBe(before.ada);
+    expect(fs.readFileSync(paths.bo, 'utf8')).toBe(before.bo);
+  });
+
+  it('reserves composed risk and item budgets without partially writing', async () => {
+    const paths = writeCompositionFixture();
+    const before = {
+      ada: fs.readFileSync(paths.ada, 'utf8'),
+      bo: fs.readFileSync(paths.bo, 'utf8'),
+    };
+    server.crossPageDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { limits: { max_high_risk_items: 1 } });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.run).toMatchObject({
+      status: 'partially_completed',
+      budget: { used: { items: 0, filesChanged: 0, highRiskItems: 0 }, deferredItems: 1 },
+    });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      componentCount: 2,
+    });
+    expect(fs.readFileSync(paths.ada, 'utf8')).toBe(before.ada);
+    expect(fs.readFileSync(paths.bo, 'utf8')).toBe(before.bo);
+  });
+
+  it('restores and reapplies an interrupted partial composition as one item', async () => {
+    const paths = writeCompositionFixture();
+    const before = {
+      ada: fs.readFileSync(paths.ada, 'utf8'),
+      bo: fs.readFileSync(paths.bo, 'utf8'),
+    };
+    server.crossPageDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'review');
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    mem.decidePlan(planned.id, item.id, 'approve', 'Exercise exact composition crash recovery.');
+    const db = new Database(mem.config.dbPath);
+    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
+    db.close();
+    const first = item.operations[0]!;
+    if (first.type === 'delete') throw new Error('invented composition unexpectedly deletes');
+    fs.writeFileSync(path.join(root, first.relPath), first.after);
+    await mem.close();
+    mem = await openMem(false, 'auto');
+
+    const recovered = await mem.dream({ phase: 'curate' });
+    const recoveredItem = recovered.maintenancePlan!.items[0]!;
+
+    expect(recoveredItem).toMatchObject({
+      status: 'applied',
+      componentCount: 2,
+      verification: { status: 'passed' },
+    });
+    expect(fs.readFileSync(paths.ada, 'utf8')).toContain('Bo Winters files');
+    expect(fs.readFileSync(paths.bo, 'utf8')).toContain('Ada Marlow calibrates');
+    expect(mem.changes().filter((change) => change.op === 'maintenance')).toHaveLength(1);
+
+    await mem.undo({ change_id: recoveredItem.changeId! });
+    expect(fs.readFileSync(paths.ada, 'utf8')).toBe(before.ada);
+    expect(fs.readFileSync(paths.bo, 'utf8')).toBe(before.bo);
+  });
+
   it('makes a whole split item stale when its child target appears before apply', async () => {
     const canonical = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(
@@ -1093,6 +1235,12 @@ async function openMem(
     folders?: Record<string, { role: 'ignored' }>;
     profile?: MaintenanceProfile;
     policies?: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
+    limits?: {
+      max_items?: number;
+      max_files_changed?: number;
+      max_bytes_written?: number;
+      max_high_risk_items?: number;
+    };
   } = {},
 ): Promise<Akno> {
   return open({
@@ -1113,6 +1261,7 @@ async function openMem(
       maintenance: {
         ...(options.profile ? { profile: options.profile } : {}),
         ...(options.policies ? { policies: options.policies } : {}),
+        ...(options.limits ? { limits: options.limits } : {}),
         log_changes: true,
         curate: {
           enabled: true,
@@ -1137,6 +1286,7 @@ async function startStub(): Promise<typeof server> {
   let echoDraft = false;
   let exactDraft = false;
   let synthesisDraft = false;
+  let crossPageDraft = false;
   let cosmeticDraft = false;
   let splitDraft = false;
   let extractDraft = false;
@@ -1198,28 +1348,37 @@ async function startStub(): Promise<typeof server> {
                       extracts: [],
                       temporal: false,
                     })
-                  : synthesisDraft && system.includes('synthesize one canonical')
-                    ? JSON.stringify({
-                        body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
-                        splits: [],
-                        extracts: [],
-                        temporal: false,
-                      })
-                    : exactDraft
-                      ? JSON.stringify({ body: currentBody(user), splits: [], extracts: [], temporal: false })
-                      : echoDraft
+                  : crossPageDraft && system.includes('synthesize one canonical')
+                    ? crossPageDraftResponse(user)
+                    : synthesisDraft && system.includes('synthesize one canonical')
+                      ? JSON.stringify({
+                          body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                          splits: [],
+                          extracts: [],
+                          temporal: false,
+                        })
+                      : exactDraft
                         ? JSON.stringify({
-                            body: currentBody(user).replace(/^\n(?=#)/, ''),
+                            body: currentBody(user),
                             splits: [],
                             extracts: [],
                             temporal: false,
                           })
-                        : JSON.stringify({
-                            body:
-                              '# Ada Marlow\n\n## Details\n\n' +
-                              (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                              `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                          });
+                        : echoDraft
+                          ? JSON.stringify({
+                              body: currentBody(user).replace(/^\n(?=#)/, ''),
+                              splits: [],
+                              extracts: [],
+                              temporal: false,
+                            })
+                          : JSON.stringify({
+                              body:
+                                '# Ada Marlow\n\n## Details\n\n' +
+                                (drop
+                                  ? ''
+                                  : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                                `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                            });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -1249,6 +1408,9 @@ async function startStub(): Promise<typeof server> {
     },
     synthesisDraft: (value) => {
       synthesisDraft = value;
+    },
+    crossPageDraft: (value) => {
+      crossPageDraft = value;
     },
     cosmeticDraft: (value) => {
       cosmeticDraft = value;
@@ -1332,6 +1494,42 @@ See [[people/ada-field-notes#Equipment|Ada’s equipment notes]].
   return { canonical, duplicate, inbound };
 }
 
+function writeCompositionFixture(): { ada: string; bo: string } {
+  const ada = path.join(root, 'people/ada-marlow.md');
+  const bo = path.join(root, 'people/bo-winters.md');
+  fs.writeFileSync(
+    ada,
+    `---
+title: Ada Marlow
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow
+
+<!-- akno:item itm_ada source=conversation origin=user -->
+Ada Marlow calibrates a brass compass at Blackwater Bay before maintaining the Zephyr QX-100 checklist. See [[people/bo-winters]].
+`,
+  );
+  fs.writeFileSync(
+    bo,
+    `---
+title: Bo Winters
+akno:
+  management:
+    dream: synthesize
+---
+
+# Bo Winters
+
+<!-- akno:item itm_bo source=conversation origin=user -->
+Bo Winters files a five-year warranty note after reviewing the Zephyr QX-100 checklist. See [[people/ada-marlow]].
+`,
+  );
+  return { ada, bo };
+}
+
 function extractionSource(): string {
   return `---
 title: Ada Marlow
@@ -1383,6 +1581,19 @@ function currentBody(user: string): string {
     .map((suffix) => body.indexOf(suffix))
     .filter((index) => index >= 0);
   return cuts.length ? body.slice(0, Math.min(...cuts)) : body;
+}
+
+function crossPageDraftResponse(user: string): string {
+  const current = currentBody(user).trimEnd();
+  const addition = user.includes('Slug: people/ada-marlow')
+    ? 'Bo Winters files a five-year warranty note after reviewing the Zephyr QX-100 checklist.'
+    : 'Ada Marlow calibrates a brass compass at Blackwater Bay before maintaining the Zephyr QX-100 checklist.';
+  return JSON.stringify({
+    body: `${current}\n\n## Shared checklist\n\n${addition}\n`,
+    splits: [],
+    extracts: [],
+    temporal: false,
+  });
 }
 
 function mergeDraftResponse(user: string, lossy: boolean): string {

@@ -22,6 +22,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('itm_example');
     expect(safe).toContain('chg_example');
     expect(safe).toContain('run_example');
+    expect(safe).toContain('"componentCount":2');
   });
 
   it('collapses raw source contexts into one guardrail category per page', () => {
@@ -194,6 +195,7 @@ function privateReport(): DreamReport {
           kind: 'synthesis',
           policy: 'auto',
           risk: 'high',
+          componentCount: 2,
           subject: 'people/ada-marlow',
           status: 'applied',
           statusCode: null,
