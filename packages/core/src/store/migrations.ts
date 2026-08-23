@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 16;
+export const SCHEMA_VERSION = 17;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -20,6 +20,7 @@ export const MAINTENANCE_RUNS_MIGRATION_INDEX = 5;
 export const ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX = 6;
 export const DOCUMENT_AVAILABILITY_MIGRATION_INDEX = 7;
 export const DOCUMENT_FILE_DATES_MIGRATION_INDEX = 8;
+export const MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX = 9;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -441,6 +442,17 @@ export const MIGRATIONS: string[] = [
          FROM files WHERE files.rel_path = documents.rel_path
      )
    WHERE file_modified_at IS NULL;
+  `,
+  // ── 10. Per-item maintenance authority ──────────────────────────────────
+  // Mixed plans need the curator and recovery path to know which exact items are autonomous.
+  // Existing sealed items inherit their plan's historical mode byte-for-byte.
+  `
+  ALTER TABLE maintenance_items ADD COLUMN policy TEXT NOT NULL DEFAULT 'audit';
+  UPDATE maintenance_items
+     SET policy = COALESCE(
+       (SELECT mode FROM maintenance_plans WHERE maintenance_plans.id = maintenance_items.plan_id),
+       'audit'
+     );
   `,
 ];
 

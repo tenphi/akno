@@ -1,9 +1,16 @@
 import { AknoError } from '@tenphi/akno-protocol';
-import type { AknoConfig, MaintenanceProfile } from '../config/schema.ts';
+import {
+  MAINTENANCE_TRANSFORMS,
+  type AknoConfig,
+  type MaintenancePolicy,
+  type MaintenanceProfile,
+  type MaintenanceTransform,
+} from '../config/schema.ts';
 import type { DreamOptions, DreamPhase } from './dream.ts';
 import type { MaintenanceMode } from './plans.ts';
 
 export type MaintenancePhaseAuthority = 'disabled' | 'preview' | 'legacy-write' | MaintenanceMode;
+export type EffectiveMaintenancePolicy = MaintenancePolicy | 'legacy-preview' | 'legacy-write';
 
 /** Content-safe explanation of what an unqualified `akno dream` is allowed to do. */
 export interface MaintenanceAuthority {
@@ -14,29 +21,92 @@ export interface MaintenanceAuthority {
   inference: 'preview' | 'write-when-enabled';
   curate: MaintenancePhaseAuthority;
   adopt: MaintenancePhaseAuthority;
+  policies: Record<MaintenanceTransform, EffectiveMaintenancePolicy>;
 }
 
 export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceAuthority {
   const mode = profileMode(config.maintenance.profile) ?? 'custom';
   const inference = mode === 'audit' || mode === 'review' ? 'preview' : 'write-when-enabled';
-  const curate = phaseAuthority(
-    config.maintenance.curate.enabled,
-    config.maintenance.curate.mode,
-    config.maintenance.curate.write,
-  );
-  const adopt = phaseAuthority(config.maintenance.adopt.enabled, config.maintenance.adopt.mode, false);
   const inferenceWrites =
     inference === 'write-when-enabled' &&
     (config.maintenance.observe.enabled || config.maintenance.reflect.enabled);
+  const policies = Object.fromEntries(
+    MAINTENANCE_TRANSFORMS.map((kind) => [kind, configuredTransformPolicy(config, kind)]),
+  ) as Record<MaintenanceTransform, EffectiveMaintenancePolicy>;
+  const policyMatrix = config.maintenance.profile !== 'custom' || config.maintenance.policiesConfigured;
+  const curate = policyMatrix
+    ? policyPhaseAuthority(
+        config.maintenance.curate.enabled,
+        MAINTENANCE_TRANSFORMS.filter((kind) => kind !== 'adopt').map((kind) => policies[kind]),
+      )
+    : phaseAuthority(
+        config.maintenance.curate.enabled,
+        config.maintenance.curate.mode,
+        config.maintenance.curate.write,
+      );
+  const adopt = policyMatrix
+    ? policyPhaseAuthority(config.maintenance.adopt.enabled, [policies.adopt])
+    : phaseAuthority(config.maintenance.adopt.enabled, config.maintenance.adopt.mode, false);
+  const planWrites = MAINTENANCE_TRANSFORMS.some((kind) => {
+    if (policies[kind] !== 'auto') return false;
+    if (kind === 'adopt') return config.maintenance.adopt.enabled;
+    if (!config.maintenance.curate.enabled) return false;
+    if (kind === 'contradiction') return config.maintenance.conflicts.resolve;
+    if (kind === 'broken_link') return config.maintenance.repair.links;
+    return true;
+  });
   return {
     profile: config.maintenance.profile,
     mode,
-    automaticKnowledgeBaseWrites:
-      inferenceWrites || curate === 'auto' || curate === 'legacy-write' || adopt === 'auto',
+    automaticKnowledgeBaseWrites: inferenceWrites || planWrites || curate === 'legacy-write',
     inference,
     curate,
     adopt,
+    policies,
   };
+}
+
+/** Fully resolved authority for one transformation before a one-run ceiling is applied. */
+export function configuredTransformPolicy(
+  config: AknoConfig,
+  kind: MaintenanceTransform,
+): EffectiveMaintenancePolicy {
+  const configured = config.maintenance.policies[kind];
+  if (configured) return configured;
+  if (config.maintenance.policiesConfigured) return 'off';
+  if (kind === 'adopt') {
+    return config.maintenance.adopt.enabled ? (config.maintenance.adopt.mode ?? 'off') : 'off';
+  }
+  if (!config.maintenance.curate.enabled) return 'off';
+  return (
+    config.maintenance.curate.mode ?? (config.maintenance.curate.write ? 'legacy-write' : 'legacy-preview')
+  );
+}
+
+/** Intersect a class policy with a lower one-run mode. `off` is never promoted. */
+export function effectiveTransformPolicy(
+  config: AknoConfig,
+  kind: MaintenanceTransform,
+  runMode?: MaintenanceMode,
+): EffectiveMaintenancePolicy {
+  const configured = configuredTransformPolicy(config, kind);
+  if (!runMode || configured === 'off') return configured;
+  if (configured === 'legacy-preview' || configured === 'legacy-write') return runMode;
+  return authorityRank(configured) <= authorityRank(runMode) ? configured : runMode;
+}
+
+export function policyMode(policy: EffectiveMaintenancePolicy): MaintenanceMode | null {
+  return policy === 'audit' || policy === 'review' || policy === 'auto' ? policy : null;
+}
+
+/** Highest effective authority among the named classes, for the plan/run envelope. */
+export function highestPolicyMode(policies: Iterable<EffectiveMaintenancePolicy>): MaintenanceMode | null {
+  let selected: MaintenanceMode | null = null;
+  for (const policy of policies) {
+    const mode = policyMode(policy);
+    if (mode && (!selected || authorityRank(mode) > authorityRank(selected))) selected = mode;
+  }
+  return selected;
 }
 
 /** A run override may reduce configured authority, never promote it. */
@@ -90,6 +160,14 @@ function phaseAuthority(
   if (!enabled) return 'disabled';
   if (mode) return mode;
   return legacyWrite ? 'legacy-write' : 'preview';
+}
+
+function policyPhaseAuthority(
+  enabled: boolean,
+  policies: Iterable<EffectiveMaintenancePolicy>,
+): MaintenancePhaseAuthority {
+  if (!enabled) return 'disabled';
+  return highestPolicyMode(policies) ?? 'disabled';
 }
 
 function authorityRank(mode: MaintenanceMode): number {

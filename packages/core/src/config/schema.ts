@@ -198,6 +198,31 @@ const TierDoc = z.object({
 
 export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous', 'custom'] as const;
 export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
+export const MAINTENANCE_TRANSFORMS = [
+  'hygiene',
+  'synthesis',
+  'split',
+  'extract',
+  'merge',
+  'contradiction',
+  'broken_link',
+  'adopt',
+] as const;
+export type MaintenanceTransform = (typeof MAINTENANCE_TRANSFORMS)[number];
+export const MAINTENANCE_POLICIES = ['off', 'audit', 'review', 'auto'] as const;
+export type MaintenancePolicy = (typeof MAINTENANCE_POLICIES)[number];
+
+const MaintenancePolicyDoc = z.enum(MAINTENANCE_POLICIES);
+const MaintenancePoliciesDoc = z.object({
+  hygiene: MaintenancePolicyDoc.optional(),
+  synthesis: MaintenancePolicyDoc.optional(),
+  split: MaintenancePolicyDoc.optional(),
+  extract: MaintenancePolicyDoc.optional(),
+  merge: MaintenancePolicyDoc.optional(),
+  contradiction: MaintenancePolicyDoc.optional(),
+  broken_link: MaintenancePolicyDoc.optional(),
+  adopt: MaintenancePolicyDoc.optional(),
+});
 
 const MaintenanceDoc = z.object({
   /**
@@ -206,6 +231,8 @@ const MaintenanceDoc = z.object({
    * created before named profiles existed.
    */
   profile: z.enum(MAINTENANCE_PROFILES).optional(),
+  /** Per-transformation authority; absent values inherit a named profile and are off under explicit custom. */
+  policies: MaintenancePoliciesDoc.optional(),
   /**
    * The model the cycle uses, when it should not be the one indexing uses.
    *
@@ -434,6 +461,10 @@ export interface AknoConfig {
   maintenance: {
     /** Named authority policy for the complete cycle; `custom` preserves phase-level settings. */
     profile: MaintenanceProfile;
+    /** True only when the user supplied a policy map; used to preserve legacy custom behavior. */
+    policiesConfigured: boolean;
+    /** Named profiles resolve all keys; custom retains only explicitly configured keys. */
+    policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
     /** Null when the cycle uses the `derive` role, which is the default. */
     model: ResolvedModelRole | null;
     /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */

@@ -9,6 +9,7 @@ import {
   DOCUMENT_AVAILABILITY_MIGRATION_INDEX,
   DOCUMENT_FILE_DATES_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
+  MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
@@ -160,6 +161,9 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'documents', 'file_modified_at')) {
         db.exec(MIGRATIONS[DOCUMENT_FILE_DATES_MIGRATION_INDEX]!);
+      }
+      if (!columnExists(db, 'maintenance_items', 'policy')) {
+        db.exec(MIGRATIONS[MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

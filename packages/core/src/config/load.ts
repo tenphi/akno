@@ -6,7 +6,10 @@ import { expandTilde, findRepoRoot, resolveUserPath } from './paths.ts';
 import { compileRules } from '../rules/compile.ts';
 import {
   ConfigDoc,
+  MAINTENANCE_TRANSFORMS,
   type AknoConfig,
+  type MaintenancePolicy,
+  type MaintenanceTransform,
   type ProviderDoc,
   type ResolvedModelRole,
   type ResolvedProvider,
@@ -130,6 +133,28 @@ function namedMaintenanceMode(
   if (profile === 'audit' || profile === 'review') return profile;
   if (profile === 'autonomous') return 'auto';
   return null;
+}
+
+function resolvedMaintenancePolicies(
+  configured: Partial<Record<MaintenanceTransform, MaintenancePolicy>>,
+  namedMode: 'audit' | 'review' | 'auto' | null,
+): Partial<Record<MaintenanceTransform, MaintenancePolicy>> {
+  if (!namedMode) return { ...configured };
+  return Object.fromEntries(
+    MAINTENANCE_TRANSFORMS.map((kind) => [
+      kind,
+      lowerMaintenancePolicy(configured[kind] ?? namedMode, namedMode),
+    ]),
+  );
+}
+
+function lowerMaintenancePolicy(
+  policy: MaintenancePolicy,
+  ceiling: 'audit' | 'review' | 'auto',
+): MaintenancePolicy {
+  if (policy === 'off') return policy;
+  const rank = { audit: 0, review: 1, auto: 2 } as const;
+  return rank[policy] <= rank[ceiling] ? policy : ceiling;
 }
 
 // ─── Layer discovery ────────────────────────────────────────────────────────
@@ -400,6 +425,7 @@ function resolve(
   const providers = resolveProviders(doc.providers, env);
   const maintenanceProfile = doc.maintenance?.profile ?? 'custom';
   const namedMode = namedMaintenanceMode(maintenanceProfile);
+  const configuredPolicies = doc.maintenance?.policies ?? {};
 
   // Rules found in the knowledge base win over machine config, so they can be
   // versioned with the notes and survive a move to another machine.
@@ -492,6 +518,8 @@ function resolve(
     },
     maintenance: {
       profile: maintenanceProfile,
+      policiesConfigured: Object.keys(configuredPolicies).length > 0,
+      policies: resolvedMaintenancePolicies(configuredPolicies, namedMode),
       // Resolved through the same path as any role, so a typo in the provider name fails the
       // same way and `doctor` can probe it like the rest.
       model: doc.maintenance?.model

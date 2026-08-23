@@ -9,6 +9,7 @@ import {
   type MaintenancePlan,
 } from '../maintenance/plans.ts';
 import { captureMaintenanceSnapshot } from '../maintenance/runs.ts';
+import { effectiveTransformPolicy, policyMode } from '../maintenance/profile.ts';
 
 interface DocumentState {
   id: string;
@@ -71,7 +72,11 @@ export async function adopt(ctx: AknoContext, rawInput: unknown): Promise<AdoptO
     };
   }
 
-  const { enabled, mode } = ctx.config.maintenance.adopt;
+  const { enabled } = ctx.config.maintenance.adopt;
+  const policyMatrix =
+    ctx.config.maintenance.profile !== 'custom' || ctx.config.maintenance.policiesConfigured;
+  const itemPolicy = policyMode(effectiveTransformPolicy(ctx.config, 'adopt'));
+  const mode = policyMatrix ? itemPolicy : ctx.config.maintenance.adopt.mode;
   if (!enabled || !mode) {
     return {
       status: 'ok',
@@ -97,12 +102,18 @@ export async function adopt(ctx: AknoContext, rawInput: unknown): Promise<AdoptO
   }
 
   const modelId = ctx.config.maintenance.model?.id ?? ctx.config.models.derive.id;
-  let plan = createAdoptionPlan(ctx, mode, [draft], captureMaintenanceSnapshot(ctx, ['adopt'], modelId));
+  let plan = createAdoptionPlan(
+    ctx,
+    mode,
+    [draft],
+    captureMaintenanceSnapshot(ctx, ['adopt'], modelId),
+    itemPolicy ?? mode,
+  );
   if (!plan) {
     throw new AknoError('internal', 'the selected adoption produced no maintenance plan');
   }
 
-  if (mode === 'auto' && plan.items.some((item) => item.status === 'proposed')) {
+  if (mode === 'auto' && plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
     plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
   }
   if (

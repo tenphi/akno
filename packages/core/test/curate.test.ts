@@ -4,7 +4,14 @@ import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { open, type Akno, type MaintenanceMode } from '../src/index.ts';
+import {
+  open,
+  type Akno,
+  type MaintenanceMode,
+  type MaintenancePolicy,
+  type MaintenanceProfile,
+  type MaintenanceTransform,
+} from '../src/index.ts';
 import { linkIssuesForTesting } from '../src/maintenance/curate.ts';
 
 let root: string;
@@ -329,6 +336,96 @@ describe('plan-backed hygiene', () => {
     expect(report.curated[0]?.action).toBe('updated');
     expect(server.calls()).toBe(3);
     expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('lowers every autonomous class to audit for an audit invocation', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    await mem.close();
+    mem = await openMem(false, undefined, { profile: 'autonomous' });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate', mode: 'audit' });
+
+    expect(report.maintenancePlan).toMatchObject({ mode: 'audit', status: 'ready' });
+    expect(report.maintenancePlan?.items[0]).toMatchObject({ policy: 'audit', status: 'proposed' });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(server.curatorCalls()).toBe(0);
+  });
+
+  it('applies only auto items while review items remain proposed in the same plan', async () => {
+    const hygienePage = path.join(root, 'people/ada-marlow.md');
+    const hygieneBefore = fs.readFileSync(hygienePage, 'utf8');
+    fs.mkdirSync(path.join(root, 'notes'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'notes/zephyr-dashboard.md'),
+      '---\ntitle: Zephyr dashboard\nakno:\n  management:\n    dream: hygiene\n---\n\n' +
+        'See [[products/zephyr-manual]].\n',
+    );
+    fs.mkdirSync(path.join(root, 'archive'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'archive/zephyr-qx-100.md'),
+      '---\ntitle: Zephyr QX-100\nakno:\n  aliases:\n    - products/zephyr-manual\n---\n\nInvented manual notes.\n',
+    );
+    await mem.close();
+    mem = await openMem(false, undefined, {
+      profile: 'autonomous',
+      policies: {
+        hygiene: 'review',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'off',
+        contradiction: 'off',
+        broken_link: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    const hygiene = plan.items.find((item) => item.kind === 'hygiene')!;
+    const link = plan.items.find((item) => item.kind === 'broken_link')!;
+
+    expect(plan).toMatchObject({ mode: 'auto', status: 'awaiting_review' });
+    expect(hygiene).toMatchObject({ policy: 'review', status: 'proposed', decision: null });
+    expect(link).toMatchObject({
+      policy: 'auto',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+    });
+    expect(fs.readFileSync(hygienePage, 'utf8')).toBe(hygieneBefore);
+    expect(fs.readFileSync(path.join(root, 'notes/zephyr-dashboard.md'), 'utf8')).toContain(
+      '[[archive/zephyr-qx-100]]',
+    );
+    expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('does not inspect curation classes whose policies are all off', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    await mem.close();
+    mem = await openMem(false, undefined, {
+      profile: 'autonomous',
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'off',
+        contradiction: 'off',
+        broken_link: 'off',
+        adopt: 'off',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated).toEqual([]);
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(server.calls()).toBe(0);
   });
 
   it('rejects cosmetic-only synthesis and caches that completed input', async () => {
@@ -794,7 +891,7 @@ An invented interview record.
     mem.decidePlan(planned.id, item.id, 'approve', 'The hygiene edit is safe.');
 
     const db = new Database(mem.config.dbPath);
-    db.prepare("UPDATE maintenance_items SET status = 'applying' WHERE id = ?").run(item.id);
+    db.prepare("UPDATE maintenance_items SET status = 'applying', policy = 'auto' WHERE id = ?").run(item.id);
     db.prepare("UPDATE maintenance_plans SET mode = 'auto' WHERE id = ?").run(planned.id);
     db.close();
     fs.writeFileSync(page, item.operations[0]!.after);
@@ -943,6 +1040,8 @@ async function openMem(
     allowExtracts?: boolean;
     allowMerges?: boolean;
     folders?: Record<string, { role: 'ignored' }>;
+    profile?: MaintenanceProfile;
+    policies?: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
   } = {},
 ): Promise<Akno> {
   return open({
@@ -961,6 +1060,8 @@ async function openMem(
         derive: { provider: 'stub', id: 'stub' },
       },
       maintenance: {
+        ...(options.profile ? { profile: options.profile } : {}),
+        ...(options.policies ? { policies: options.policies } : {}),
         log_changes: true,
         curate: {
           enabled: true,

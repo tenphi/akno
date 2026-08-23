@@ -165,6 +165,13 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['awaiting decisions', status.awaitingHuman],
     ['verification pending', status.verificationPending],
   ]);
+  line('\n  transformation policies');
+  for (const policy of ['auto', 'review', 'audit', 'off', 'legacy-write', 'legacy-preview'] as const) {
+    const kinds = Object.entries(status.authority.policies)
+      .filter(([, effective]) => effective === policy)
+      .map(([kind]) => kind);
+    if (kinds.length > 0) line(`    ${policy.padEnd(14)} ${kinds.join(', ')}`);
+  }
   if (status.latestRun) {
     line('\n  latest dream run');
     kv([
@@ -203,7 +210,8 @@ function printPlan(plan: MaintenancePlan): void {
   ]);
   for (const item of plan.items) {
     line(
-      `\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.kind}/${item.risk}  ${item.subject}`,
+      `\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.kind}/${item.risk}  ` +
+        `${style.grey(item.policy)}  ${item.subject}`,
     );
     line(`    ${style.grey(item.rationale)}`);
     if (item.decision) {

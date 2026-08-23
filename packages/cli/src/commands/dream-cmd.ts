@@ -561,6 +561,7 @@ function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Rec
     items: plan.items.map((item) => ({
       id: item.id,
       kind: item.kind,
+      policy: item.policy,
       risk: item.risk,
       status: item.status,
       decision: item.decision

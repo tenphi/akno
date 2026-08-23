@@ -588,6 +588,29 @@ and reflection phases in preview mode. `custom` is the compatibility default and
 phase settings. Named profiles enable the plan-backed curate/adopt surface but do not override page opt-ins,
 folder restrictions, merge allowlists, guards, or limits, and do not enable observe or reflect.
 
+Individual transformation classes can be stricter than the profile:
+
+```jsonc
+{
+  "maintenance": {
+    "profile": "autonomous",
+    "policies": {
+      "hygiene": "auto",
+      "broken_link": "auto",
+      "merge": "review",
+      "contradiction": "off",
+    },
+  },
+}
+```
+
+Policy keys are `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and
+`adopt`; values are `off`, `audit`, `review`, or `auto`. Omitted keys inherit a named profile. A non-empty map
+under `custom` is an allowlist, so omitted keys are off; an empty map retains the legacy phase behavior. Policy
+is sealed per item, allowing one plan to apply autonomous repairs while leaving higher-risk proposals for human
+review. Under `custom`, the corresponding phase must still be enabled. A command-line mode can only lower every
+effective item policy.
+
 Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
 between summary preview and direct application. Opted-in hygiene and synthesis pages can instead use an
 explicit trust mode:
@@ -608,7 +631,8 @@ akno plan apply <plan-id>
 akno dream status
 ```
 
-All three modes seal the same exact operations. Apply refuses changed inputs, journals each item separately,
+All three modes seal the same exact operations and each item retains its effective transformation policy.
+Apply refuses changed inputs, journals each item separately,
 re-indexes it, verifies disk and index state, and rolls back a proven failed result. Synthesis items retain the
 bounded evidence graph given to the independent curator. A split is one atomic item: it replaces the canonical
 page and creates every child together, or changes nothing. A command-line mode can cover the full run or one
@@ -868,7 +892,8 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
 - **`curate`** — off globally, with both its trust mode and legacy write switch unset/off. Even when enabled,
   it only considers pages whose own frontmatter opts into `hygiene` or `synthesize`. `--mode auto` is explicit
   per-run authority for opted-in curation under a compatible ceiling; a named profile enables its planner, and
-  `maintenance.curate.mode` gives the nightly phase the same authority under `custom`.
+  `maintenance.curate.mode` gives the nightly phase the same authority under legacy `custom` configuration.
+  A non-empty `maintenance.policies` map instead controls each transformation class independently.
 - **`repair`** — the legacy standalone phase, now a report-only compatibility view and off by default.
   `maintenance.repair.links` defaults on, but it produces durable link items only when plan-backed curate is
   enabled. Those items require exact move, alias, or canonical identity evidence; similarity never authorizes

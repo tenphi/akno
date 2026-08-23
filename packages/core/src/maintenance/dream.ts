@@ -1,6 +1,7 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoContext } from '../context.ts';
+import type { MaintenancePolicy, MaintenanceTransform } from '../config/schema.ts';
 import { AknoError } from '@tenphi/akno-protocol';
 import { writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
@@ -19,7 +20,7 @@ import { housekeeping, type Housekeeping } from './housekeeping.ts';
 import { ModelClient } from '../models/client.ts';
 import { planOrphanAdoptions, type AdoptedDocument } from './adopt.ts';
 import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
-import { curatePages, type CurateDraft, type CuratedPage } from './curate.ts';
+import { curatePages, type CurateDraft, type CuratedPage, type CurateTransformationKind } from './curate.ts';
 import {
   applyMaintenancePlan,
   createAdoptionPlan,
@@ -38,7 +39,14 @@ import {
   type DreamRunMode,
   type DreamRunReceipt,
 } from './runs.ts';
-import { assertMaintenanceModeAllowed, inferenceDryRun, profileMode } from './profile.ts';
+import {
+  assertMaintenanceModeAllowed,
+  effectiveTransformPolicy,
+  highestPolicyMode,
+  inferenceDryRun,
+  policyMode,
+  profileMode,
+} from './profile.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -85,6 +93,16 @@ export const DREAM_PHASES: DreamPhase[] = [
   'housekeeping',
 ];
 
+const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'adopt'>[] = [
+  'hygiene',
+  'synthesis',
+  'split',
+  'extract',
+  'merge',
+  'contradiction',
+  'broken_link',
+];
+
 export interface ObservationWritten {
   slug: string;
   pattern: string;
@@ -104,7 +122,16 @@ export interface DreamMaintenancePlan extends MaintenancePlanSummary {
   /** Decision and outcome metadata only; exact private bytes are fetched explicitly with `plan()`. */
   items: Pick<
     MaintenanceItem,
-    'id' | 'kind' | 'risk' | 'subject' | 'status' | 'decision' | 'statusReason' | 'changeId' | 'verification'
+    | 'id'
+    | 'kind'
+    | 'policy'
+    | 'risk'
+    | 'subject'
+    | 'status'
+    | 'decision'
+    | 'statusReason'
+    | 'changeId'
+    | 'verification'
   >[];
 }
 
@@ -234,12 +261,49 @@ function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
   if (options.mode) return options.mode;
   const configuredProfileMode = profileMode(ctx.config.maintenance.profile);
   if (configuredProfileMode) return configuredProfileMode;
+  if (ctx.config.maintenance.policiesConfigured) {
+    const kinds: MaintenanceTransform[] =
+      options.phase === 'adopt'
+        ? ['adopt']
+        : options.phase === 'curate'
+          ? CURATE_POLICY_KINDS
+          : [...CURATE_POLICY_KINDS, 'adopt'];
+    return highestPolicyMode(kinds.map((kind) => effectiveTransformPolicy(ctx.config, kind))) ?? 'legacy';
+  }
   if (options.phase === 'adopt') return ctx.config.maintenance.adopt.mode ?? 'legacy';
   if (!options.phase) {
     return ctx.config.maintenance.curate.mode ?? ctx.config.maintenance.adopt.mode ?? 'legacy';
   }
   if (options.phase === 'curate') return ctx.config.maintenance.curate.mode ?? 'legacy';
   return 'legacy';
+}
+
+function usesPolicyMatrix(ctx: AknoContext, options: DreamOptions): boolean {
+  return (
+    !options.dryRun &&
+    (options.mode !== undefined ||
+      ctx.config.maintenance.profile !== 'custom' ||
+      ctx.config.maintenance.policiesConfigured)
+  );
+}
+
+function curationPolicies(
+  ctx: AknoContext,
+  options: DreamOptions,
+): Record<Exclude<MaintenanceTransform, 'adopt'>, MaintenancePolicy> {
+  return Object.fromEntries(
+    CURATE_POLICY_KINDS.map((kind) => {
+      const effective = effectiveTransformPolicy(ctx.config, kind, options.mode);
+      return [kind, policyMode(effective) ?? 'off'];
+    }),
+  ) as Record<Exclude<MaintenanceTransform, 'adopt'>, MaintenancePolicy>;
+}
+
+function planMatchesPolicies(
+  plan: MaintenancePlan,
+  policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>>,
+): boolean {
+  return plan.items.every((item) => item.policy === policies[item.kind]);
 }
 
 async function runPhase(
@@ -273,10 +337,20 @@ async function runPhase(
     }
     case 'curate': {
       if (!ctx.config.maintenance.curate.enabled) return 'disabled in config';
+      const policyMatrix = usesPolicyMatrix(ctx, options);
+      const policies = curationPolicies(ctx, options);
+      const allowedKinds = new Set<CurateTransformationKind>(
+        (['hygiene', 'synthesis', 'split', 'extract', 'merge'] as const).filter(
+          (kind) => policies[kind] !== 'off',
+        ),
+      );
       // A configured mode is how a full scheduled run gets plan-backed curation without
       // turning the scheduler into a curate-only command. An explicit dry run keeps its
       // existing read-only path; creating a durable plan needs the service's write handle.
-      const mode = options.mode ?? (options.dryRun ? null : ctx.config.maintenance.curate.mode);
+      const mode = policyMatrix
+        ? highestPolicyMode(Object.values(policies))
+        : (options.mode ?? (options.dryRun ? null : ctx.config.maintenance.curate.mode));
+      if (policyMatrix && !mode) return 'all curation policies are off';
       if (!ctx.models.derive.available && !mode) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
@@ -284,6 +358,7 @@ async function runPhase(
         // Reuse every unfinished plan, not only autonomous ones. Re-running audit or review must
         // not spend another model call to rediscover a decision already waiting in the queue.
         let plan = findActiveMaintenancePlan(ctx, mode, 'curate');
+        if (plan && policyMatrix && !planMatchesPolicies(plan, policies)) plan = null;
         if (plan) {
           report.curated = plan.items.filter(isGeneralCurationItem).map((item) => ({
             slug: item.subject,
@@ -317,13 +392,15 @@ async function runPhase(
           }));
           report.repaired = repairResultFromPlan(plan);
         } else {
-          const contradictionResult = ctx.config.maintenance.conflicts.resolve
-            ? await planContradictions(ctx, report.conflicts)
-            : { drafts: [], warnings: [] };
+          const contradictionResult =
+            ctx.config.maintenance.conflicts.resolve && (!policyMatrix || policies.contradiction !== 'off')
+              ? await planContradictions(ctx, report.conflicts)
+              : { drafts: [], warnings: [] };
           report.warnings.push(...contradictionResult.warnings);
-          const linkResult = ctx.config.maintenance.repair.links
-            ? await planBrokenLinks(ctx, ctx.config.maintenance.repair.maxChanges)
-            : { drafts: [], report: { links: [], claims: [], declined: [] } };
+          const linkResult =
+            ctx.config.maintenance.repair.links && (!policyMatrix || policies.broken_link !== 'off')
+              ? await planBrokenLinks(ctx, ctx.config.maintenance.repair.maxChanges)
+              : { drafts: [], report: { links: [], claims: [], declined: [] } };
           report.repaired = linkResult.report;
           const result = ctx.models.derive.available
             ? await curatePages(ctx, {
@@ -333,6 +410,7 @@ async function runPhase(
                 // converge; staged pages remain `preview` until their durable item is decided.
                 recordState: true,
                 includePreviewed: true,
+                ...(policyMatrix ? { allowedKinds } : {}),
               })
             : {
                 pages: [],
@@ -389,11 +467,18 @@ async function runPhase(
                 }
               : page,
           );
-          plan = createCurationPlan(ctx, mode, curationDrafts, contradictionResult.drafts, linkDrafts);
+          plan = createCurationPlan(
+            ctx,
+            mode,
+            curationDrafts,
+            contradictionResult.drafts,
+            linkDrafts,
+            policies,
+          );
         }
         if (!plan) return null;
         if (mode === 'auto') {
-          if (plan.items.some((item) => item.status === 'proposed')) {
+          if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
             plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
           }
           if (
@@ -449,17 +534,21 @@ async function runPhase(
     }
     case 'adopt': {
       if (!ctx.config.maintenance.adopt.enabled) return 'disabled in config';
+      const policyMatrix = usesPolicyMatrix(ctx, options);
+      const adoptPolicy = policyMode(effectiveTransformPolicy(ctx.config, 'adopt', options.mode));
+      if (policyMatrix && !adoptPolicy) return 'adopt policy is off';
       const result = await planOrphanAdoptions(ctx, {
         limit: ctx.config.maintenance.adopt.maxPages,
       });
       report.adopted = result.adopted;
       if (options.dryRun) return null;
-      const mode = options.mode ?? ctx.config.maintenance.adopt.mode;
+      const mode = policyMatrix ? adoptPolicy : (options.mode ?? ctx.config.maintenance.adopt.mode);
       if (!mode) return null;
 
       let plan = findActiveMaintenancePlan(ctx, mode, 'adopt');
+      if (plan && policyMatrix && !planMatchesPolicies(plan, { adopt: adoptPolicy ?? 'off' })) plan = null;
       if (!plan && result.drafts.length > 0) {
-        plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot);
+        plan = createAdoptionPlan(ctx, mode, result.drafts, report.run.snapshot, adoptPolicy ?? mode);
       }
       if (!plan) return null;
       for (const item of plan.items.filter((candidate) => candidate.kind === 'adopt')) {
@@ -473,7 +562,7 @@ async function runPhase(
         });
       }
       if (mode === 'auto') {
-        if (plan.items.some((item) => item.status === 'proposed')) {
+        if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
           plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
         }
         if (
@@ -591,6 +680,7 @@ function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
     items: items.map((item) => ({
       id: item.id,
       kind: item.kind,
+      policy: item.policy,
       risk: item.risk,
       subject: item.subject,
       status: item.status,

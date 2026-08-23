@@ -126,6 +126,12 @@
     // "inbox/**": { "ingest": "auto", "route": true }
   },
 
+  // Prefer one named profile for a scheduled cycle: `audit`, `review`, or `autonomous`.
+  // A named profile enables plan-backed curation/adoption and supplies the default policy
+  // for every transformation. Individual `policies` may lower a class to off/audit/review.
+  // Under `custom`, a non-empty map is an allowlist and the phase still has to be enabled;
+  // an empty map preserves the phase-level compatibility behavior shown below.
+  //
   // Curate only considers pages that explicitly opt in through their own frontmatter.
   // Set `mode` to `audit`, `review`, or `auto` to use durable exact plans for opted-in
   // hygiene and synthesis pages. Splits, extractions, merges, and contradiction
@@ -137,6 +143,8 @@
   // for readable documents with no owner. Its default `auto` mode uses the same separate
   // curator/apply/verify path; choose `review` or `audit` for less authority.
   "maintenance": {
+    "profile": "custom",
+    "policies": {},
     "curate": { "enabled": false, "mode": null, "write": false, "verify": true },
     "conflicts": { "enabled": true, "verify": true, "resolve": true },
     "adopt": { "enabled": true, "mode": "auto" }

@@ -281,6 +281,11 @@
     // and applies accepted work. `custom` preserves the phase settings below and is the
     // compatibility default for installations created before profiles existed.
     "profile": "custom",
+    // Optional per-class authority: off, audit, review, or auto. Under a named
+    // profile, omitted classes inherit the profile and explicit values may only
+    // lower it. Under custom, an explicit map is allowlist-shaped: omitted classes
+    // are off. Empty preserves the phase-level compatibility behavior below.
+    "policies": {},
     // The model the cycle uses, when it should not be the one indexing uses.
     // Not a role of its own — the same capability as `derive`, pointed somewhere
     // else for the one caller that runs unattended.

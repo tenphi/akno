@@ -75,6 +75,7 @@ describe('schema migration', () => {
       'maintenance_runs',
     ]);
     expect(columns.map((row) => row.name)).toContain('evidence');
+    expect(columns.map((row) => row.name)).toContain('policy');
     expect(conflictCache?.name).toBe('conflict_verdicts');
     expect(conflictColumns.map((row) => row.name)).toContain('qualification');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
@@ -240,6 +241,44 @@ describe('schema migration', () => {
       .get('doc-vulpine') as { file_created_at: string | null; file_modified_at: string | null };
     expect(document.file_created_at).toBeNull();
     expect(document.file_modified_at).toMatch(/^2031-04-05/);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('backfills item policy from the sealed plan mode', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-policy-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 9)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO maintenance_plans
+          (id, created_at, updated_at, mode, phase, status, fingerprint, summary)
+         VALUES('pln_vulpine', '2031-04-05T12:00:00Z', '2031-04-05T12:00:00Z',
+                'review', 'curate', 'awaiting_review', 'fingerprint-vulpine', 'invented plan')`,
+      )
+      .run();
+    legacy
+      .prepare(
+        `INSERT INTO maintenance_items
+          (id, plan_id, ord, kind, risk, status, subject, rationale, input_hash,
+           operations, updated_at)
+         VALUES('itm_vulpine', 'pln_vulpine', 0, 'hygiene', 'low', 'proposed',
+                'people/ada-marlow', 'Invented cleanup.', 'hash-vulpine', '[]',
+                '2031-04-05T12:00:00Z')`,
+      )
+      .run();
+    legacy.pragma('user_version = 16');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const item = store.db.prepare('SELECT policy FROM maintenance_items WHERE id = ?').get('itm_vulpine') as {
+      policy: string;
+    };
+
+    expect(item.policy).toBe('review');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

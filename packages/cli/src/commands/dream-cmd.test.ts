@@ -187,6 +187,7 @@ function privateReport(): DreamReport {
         {
           id: 'itm_example',
           kind: 'synthesis',
+          policy: 'auto',
           risk: 'high',
           subject: 'people/ada-marlow',
           status: 'applied',
@@ -260,6 +261,16 @@ function fixtureAuthority(): MaintenanceStatus['authority'] {
     inference: 'write-when-enabled',
     curate: 'auto',
     adopt: 'auto',
+    policies: {
+      hygiene: 'auto',
+      synthesis: 'auto',
+      split: 'auto',
+      extract: 'auto',
+      merge: 'auto',
+      contradiction: 'auto',
+      broken_link: 'auto',
+      adopt: 'auto',
+    },
   };
 }
 

@@ -10,14 +10,21 @@ export { loadConfig, type LoadOptions } from './config/load.ts';
 export type {
   AknoConfig,
   FolderRule,
+  MaintenancePolicy,
   MaintenanceProfile,
+  MaintenanceTransform,
   ReasoningEffort,
   ResolvedModelRole,
   ResolvedProvider,
 } from './config/schema.ts';
 export {
+  configuredTransformPolicy,
   configuredMaintenanceAuthority,
+  effectiveTransformPolicy,
+  highestPolicyMode,
+  policyMode,
   profileMode,
+  type EffectiveMaintenancePolicy,
   type MaintenanceAuthority,
   type MaintenancePhaseAuthority,
 } from './maintenance/profile.ts';

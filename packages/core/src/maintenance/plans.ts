@@ -22,6 +22,7 @@ import { activeDreamRuns, latestDreamRun, type DreamRunReceipt } from './runs.ts
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
+import type { MaintenancePolicy, MaintenanceTransform } from '../config/schema.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'curate' | 'adopt';
@@ -121,6 +122,8 @@ export interface MaintenanceItem {
   order: number;
   revision: number;
   kind: 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge' | 'contradiction' | 'broken_link' | 'adopt';
+  /** Authority sealed with this item; an automatic curator sees only `auto` items. */
+  policy: Exclude<MaintenancePolicy, 'off'>;
   risk: 'low' | 'medium' | 'high';
   status: MaintenanceItemStatus;
   subject: string;
@@ -187,6 +190,7 @@ interface ItemRow {
   ord: number;
   revision: number;
   kind: MaintenanceItem['kind'];
+  policy: MaintenanceItem['policy'];
   risk: MaintenanceItem['risk'];
   status: MaintenanceItemStatus;
   subject: string;
@@ -238,23 +242,37 @@ export function createCurationPlan(
   drafts: CurateDraft[],
   contradictions: ContradictionDraft[] = [],
   brokenLinks: BrokenLinkDraft[] = [],
+  policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>> = {},
 ): MaintenancePlan | null {
   const sealed = [
     ...drafts.map(sealCurateDraft),
     ...contradictions.map(sealContradictionDraft),
     ...brokenLinks.map(sealBrokenLinkDraft),
-  ];
-  const splitCount = drafts.reduce((total, draft) => total + draft.children.length, 0);
-  const extractCount = drafts.reduce((total, draft) => total + draft.extractions.length, 0);
-  const mergeCount = drafts.reduce((total, draft) => total + (draft.merge ? 1 : 0), 0);
-  const linkCount = brokenLinks.reduce((total, draft) => total + draft.repairs.length, 0);
+  ].flatMap((draft): SealedDraft[] => {
+    const policy = policies[draft.kind] ?? mode;
+    return policy === 'off' ? [] : [{ ...draft, policy }];
+  });
+  const createdBy = (kind: MaintenanceItem['kind']): number =>
+    sealed
+      .filter((draft) => draft.kind === kind)
+      .reduce(
+        (count, draft) => count + draft.operations.filter((operation) => operation.type === 'create').length,
+        0,
+      );
+  const splitCount = createdBy('split');
+  const extractCount = createdBy('extract');
+  const mergeCount = sealed.filter((draft) => draft.kind === 'merge').length;
+  const contradictionCount = sealed.filter((draft) => draft.kind === 'contradiction').length;
+  const linkCount = sealed
+    .filter((draft) => draft.kind === 'broken_link')
+    .reduce((count, draft) => count + draft.evidence.length, 0);
   const summary =
     `curate: ${sealed.length} item${sealed.length === 1 ? '' : 's'}` +
     (splitCount > 0 ? `, ${splitCount} split${splitCount === 1 ? '' : 's'}` : '') +
     (extractCount > 0 ? `, ${extractCount} extraction${extractCount === 1 ? '' : 's'}` : '') +
     (mergeCount > 0 ? `, ${mergeCount} merge${mergeCount === 1 ? '' : 's'}` : '') +
-    (contradictions.length > 0
-      ? `, ${contradictions.length} contradiction${contradictions.length === 1 ? '' : 's'}`
+    (contradictionCount > 0
+      ? `, ${contradictionCount} contradiction${contradictionCount === 1 ? '' : 's'}`
       : '') +
     (linkCount > 0 ? `, ${linkCount} link repair${linkCount === 1 ? '' : 's'}` : '');
 
@@ -266,11 +284,14 @@ export function createAdoptionPlan(
   mode: MaintenanceMode,
   drafts: AdoptionDraft[],
   snapshot: AdoptionSnapshot,
+  policy: MaintenancePolicy = mode,
 ): MaintenancePlan | null {
+  if (policy === 'off') return null;
   const sealed = drafts.map((draft): SealedDraft => ({
     slug: draft.slug,
     inputHash: draft.inputHash,
     kind: 'adopt',
+    policy,
     risk: 'low',
     ...(draft.blockedReason ? { initialStatus: 'blocked' as const, statusReason: draft.blockedReason } : {}),
     rationale:
@@ -336,6 +357,7 @@ function persistMaintenancePlan(
       items: sealed.map((draft) => ({
         slug: draft.slug,
         kind: draft.kind,
+        policy: draft.policy,
         inputHash: draft.inputHash,
         initialStatus: draft.initialStatus ?? 'proposed',
         statusReason: draft.statusReason ?? null,
@@ -356,14 +378,15 @@ function persistMaintenancePlan(
 
   const now = new Date().toISOString();
   const planId = newPrefixedId('pln');
-  const hasProposed = sealed.some((draft) => (draft.initialStatus ?? 'proposed') === 'proposed');
-  const status: MaintenancePlanStatus = !hasProposed
-    ? 'failed'
-    : mode === 'audit'
-      ? 'ready'
-      : mode === 'review'
-        ? 'awaiting_review'
-        : 'deciding';
+  const proposed = sealed.filter((draft) => (draft.initialStatus ?? 'proposed') === 'proposed');
+  const status: MaintenancePlanStatus =
+    proposed.length === 0
+      ? 'failed'
+      : proposed.some((draft) => draft.policy === 'auto')
+        ? 'deciding'
+        : proposed.some((draft) => draft.policy === 'review')
+          ? 'awaiting_review'
+          : 'ready';
 
   ctx.store.transaction(() => {
     ctx.store.db
@@ -376,9 +399,9 @@ function persistMaintenancePlan(
 
     const insert = ctx.store.db.prepare(
       `INSERT INTO maintenance_items
-        (id, plan_id, ord, revision, kind, risk, status, subject, rationale, input_hash,
+        (id, plan_id, ord, revision, kind, policy, risk, status, subject, rationale, input_hash,
          operations, evidence, checks, decision_reason, decided_at, updated_at)
-       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     sealed.forEach((draft, order) => {
       const initialStatus = draft.initialStatus ?? 'proposed';
@@ -387,6 +410,7 @@ function persistMaintenancePlan(
         planId,
         order,
         draft.kind,
+        draft.policy,
         draft.risk,
         initialStatus,
         draft.slug,
@@ -408,6 +432,7 @@ interface SealedDraft {
   slug: string;
   inputHash: string;
   kind: MaintenanceItem['kind'];
+  policy: MaintenanceItem['policy'];
   risk: MaintenanceItem['risk'];
   rationale: string;
   operations: MaintenanceOperation[];
@@ -417,7 +442,7 @@ interface SealedDraft {
   statusReason?: string;
 }
 
-function sealCurateDraft(draft: CurateDraft): SealedDraft {
+function sealCurateDraft(draft: CurateDraft): Omit<SealedDraft, 'policy'> {
   const kind: MaintenanceItem['kind'] =
     draft.mode === 'hygiene'
       ? 'hygiene'
@@ -464,7 +489,7 @@ function sealCurateDraft(draft: CurateDraft): SealedDraft {
   };
 }
 
-function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
+function sealContradictionDraft(draft: ContradictionDraft): Omit<SealedDraft, 'policy'> {
   return {
     slug: draft.slug,
     inputHash: draft.inputHash,
@@ -511,7 +536,7 @@ function sealContradictionDraft(draft: ContradictionDraft): SealedDraft {
   };
 }
 
-function sealBrokenLinkDraft(draft: BrokenLinkDraft): SealedDraft {
+function sealBrokenLinkDraft(draft: BrokenLinkDraft): Omit<SealedDraft, 'policy'> {
   return {
     slug: draft.slug,
     inputHash: draft.inputHash,
@@ -626,7 +651,9 @@ export async function decideMaintenancePlanWithCurator(
   requireWritable(ctx);
   let plan = getMaintenancePlan(ctx, planId);
   setPlanStatus(ctx, planId, 'deciding');
-  for (const item of plan.items.filter((candidate) => candidate.status === 'proposed')) {
+  for (const item of plan.items.filter(
+    (candidate) => candidate.status === 'proposed' && candidate.policy === 'auto',
+  )) {
     const result = await ctx.models.derive.chat(
       [
         { role: 'system', content: CURATOR_SYSTEM },
@@ -1148,6 +1175,7 @@ function itemFromRow(row: ItemRow): MaintenanceItem {
     order: row.ord,
     revision: row.revision,
     kind: row.kind,
+    policy: row.policy,
     risk: row.risk,
     status: row.status,
     subject: row.subject,
@@ -1844,8 +1872,13 @@ function refreshDecisionStatus(ctx: AknoContext, planId: string): void {
   const plan = getMaintenancePlan(ctx, planId);
   const statuses = plan.items.map((item) => item.status);
   let status: MaintenancePlanStatus;
-  if (statuses.includes('proposed')) {
-    status = plan.mode === 'audit' ? 'ready' : plan.mode === 'auto' ? 'deciding' : 'awaiting_review';
+  const proposed = plan.items.filter((item) => item.status === 'proposed');
+  if (proposed.some((item) => item.policy === 'auto')) {
+    status = 'deciding';
+  } else if (proposed.some((item) => item.policy === 'review')) {
+    status = 'awaiting_review';
+  } else if (proposed.length > 0) {
+    status = 'ready';
   } else if (statuses.includes('approved')) {
     status = 'approved';
   } else if (statuses.includes('blocked')) {
@@ -1862,6 +1895,11 @@ function refreshApplyStatus(ctx: AknoContext, planId: string): void {
   let status: MaintenancePlanStatus;
   if (statuses.includes('verification_pending')) status = 'partially_completed';
   else if (statuses.includes('approved') || statuses.includes('applying')) status = 'approved';
+  else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto'))
+    status = 'deciding';
+  else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'review')) {
+    status = 'awaiting_review';
+  } else if (statuses.includes('proposed')) status = 'ready';
   else if (statuses.every((value) => value === 'applied' || value === 'rejected')) status = 'completed';
   else if (statuses.includes('applied')) status = 'partially_completed';
   else status = 'failed';

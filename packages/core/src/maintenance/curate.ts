@@ -77,6 +77,8 @@ export interface CurateDraft {
   conflicts: { slug: string; subject: string; attribute: string; claim: string; value: string }[];
 }
 
+export type CurateTransformationKind = 'hygiene' | 'synthesis' | 'split' | 'extract' | 'merge';
+
 interface PageRow {
   id: string;
   slug: string;
@@ -312,9 +314,14 @@ export async function curatePages(
     recordState: boolean;
     /** A durable plan may supersede a legacy preview without changing the page first. */
     includePreviewed?: boolean;
+    /** Classes the policy layer permits this pass to inspect and seal. */
+    allowedKinds?: ReadonlySet<CurateTransformationKind>;
   },
 ): Promise<CurateResult> {
   const settings = ctx.config.maintenance.curate;
+  const allowedKinds =
+    options.allowedKinds ??
+    new Set<CurateTransformationKind>(['hygiene', 'synthesis', 'split', 'extract', 'merge']);
   const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [], drafts: [] };
   const rows = ctx.store.db
     .prepare(
@@ -334,8 +341,10 @@ export async function curatePages(
   const extractionPolicyHash = extractionPolicyFingerprint(ctx, extractionFolders);
   const clock = temporalClock();
 
-  let splitBudget = settings.maxSplits;
-  let extractBudget = settings.maxExtracts;
+  const splitLimit = allowedKinds.has('split') ? settings.maxSplits : 0;
+  const extractLimit = allowedKinds.has('extract') ? settings.maxExtracts : 0;
+  let splitBudget = splitLimit;
+  let extractBudget = extractLimit;
   let attempted = 0;
   const state = new Map<string, CurateState>();
   const staged: {
@@ -355,7 +364,7 @@ export async function curatePages(
 
   // Merge is available only through durable plans. The legacy `write` switch cannot represent
   // a separately decided deletion, while audit/review/auto all seal the exact multi-file item.
-  if (options.includePreviewed && settings.maxMerges > 0) {
+  if (options.includePreviewed && allowedKinds.has('merge') && settings.maxMerges > 0) {
     const candidates = discoverMergeCandidates(rows, settings.mergeFolders);
     for (const candidate of candidates) {
       mergeReserved.add(candidate.canonical.id);
@@ -424,6 +433,15 @@ export async function curatePages(
 
   for (const row of rows) {
     if (mergeReserved.has(row.id)) continue;
+    if (row.dream_management === 'hygiene' && !allowedKinds.has('hygiene')) continue;
+    if (
+      row.dream_management === 'synthesize' &&
+      !allowedKinds.has('synthesis') &&
+      !allowedKinds.has('split') &&
+      !allowedKinds.has('extract')
+    ) {
+      continue;
+    }
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);
@@ -714,6 +732,15 @@ export async function curatePages(
       queueCurateState(state, row.id, inputHash, 'unchanged');
       continue;
     }
+    const transformationKind: CurateTransformationKind =
+      row.dream_management === 'hygiene'
+        ? 'hygiene'
+        : extractedPages.length > 0
+          ? 'extract'
+          : children.length > 0
+            ? 'split'
+            : 'synthesis';
+    if (!allowedKinds.has(transformationKind)) continue;
     staged.push({
       row,
       before,
@@ -802,8 +829,8 @@ export async function curatePages(
     actor: 'agent',
     op: 'curate',
     summary:
-      `curate: ${staged.length} canonical page(s), ${settings.maxSplits - splitBudget} split(s), ` +
-      `${settings.maxExtracts - extractBudget} extraction(s)`,
+      `curate: ${staged.length} canonical page(s), ${splitLimit - splitBudget} split(s), ` +
+      `${extractLimit - extractBudget} extraction(s)`,
     files: result.files,
   });
   const paths = result.files.map((file) => file.relPath);
@@ -2077,6 +2104,7 @@ function extractionPolicyFingerprint(ctx: AknoContext, folders = allowedExtracti
       maxExtracts: settings.maxExtracts,
       extractAfterBytes: settings.extractAfterBytes,
       extractSectionBytes: settings.extractSectionBytes,
+      policies: ctx.config.maintenance.policies,
     }),
   );
 }

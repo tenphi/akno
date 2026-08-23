@@ -651,10 +651,48 @@ repair; page frontmatter, folder rules, merge allowlists, deterministic guards, 
 restrictive boundaries. It does not automatically enable the model-sensitive `observe` or `reflect` phases.
 
 `akno config` prints the profile plus its expanded `curate.mode` and `adopt.mode`. `akno dream status`
-summarizes the profile, cycle authority, phase authority, and whether an ordinary scheduled run may write.
+summarizes the profile, cycle authority, phase authority, every transformation policy, and whether an ordinary
+scheduled run may write.
 A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
 `--mode auto` cannot promote a configured review profile.
+
+Profiles are defaults, not an all-or-nothing choice. `maintenance.policies` can lower individual transformation
+classes without giving up the coherent scheduled profile:
+
+```jsonc
+{
+  "maintenance": {
+    "profile": "autonomous",
+    "policies": {
+      "hygiene": "auto",
+      "broken_link": "auto",
+      "merge": "review",
+      "contradiction": "off",
+    },
+  },
+}
+```
+
+The supported keys are `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and
+`adopt`. Each value has one precise effect:
+
+| Policy   | Result for that transformation class                                     |
+| -------- | ------------------------------------------------------------------------ |
+| `off`    | do not produce plan items for the class                                  |
+| `audit`  | seal exact proposals, but make no decision and perform no run-time apply |
+| `review` | keep proposals waiting for a human decision                              |
+| `auto`   | ask the separate curator and apply only accepted, verified items         |
+
+Under `audit`, `review`, or `autonomous`, an omitted key inherits the profile. An explicit key can only lower
+that profile's authority. Under `custom`, a non-empty policy map is an allowlist: omitted classes are `off`.
+An empty map preserves the older phase-level configuration exactly. `custom` still uses the corresponding
+phase `enabled` switches; a policy grants authority to an enabled planner, but does not silently enable it.
+
+The effective policy is stored immutably on every plan item. One plan may therefore apply an automatic broken
+link repair while leaving a merge in human review and a synthesis proposal in audit. The plan's `mode` is only
+the highest-authority envelope; the curator receives only items whose own policy is `auto`. A one-run mode is
+another ceiling over every item, so `--mode audit` lowers even an autonomous policy map to audit for that run.
 
 ### The retention ladder is not the execution order
 
@@ -822,11 +860,12 @@ Contradiction items are always high risk, replace every affected opted-in page a
 over a general synthesis of the same bytes in that run. This prevents two individually valid items from making
 the second one stale by construction.
 
-**Write authority has three gates:**
+**Write authority has four gates:**
 
 1. The page opts in with `dream: hygiene` or `dream: synthesize`.
 2. A named profile includes the plan-backed phase, or `maintenance.curate.enabled` does so under `custom`.
-3. The profile or a lower command-line trust mode authorizes plan-backed curation; when `custom` has no mode,
+3. The transformation's effective `maintenance.policies` value permits the item to reach review or auto.
+4. The profile or a lower command-line trust mode authorizes plan-backed curation; when `custom` has no mode,
    the legacy `maintenance.curate.write` switch controls previews and writes.
 
 With `enabled: true` and `write: false`, scheduled runs are summary previews: they report that a page would
@@ -876,11 +915,12 @@ The scheduled command remains plain `akno dream`, so observation, reflection, ad
 the compatibility repair report, and housekeeping keep running. Use `profile: "custom"` only when intentionally
 retaining or composing the lower-level phase behavior.
 
-All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its exact
-operation, input hash, completed guards, decision, journal change id, and verification result. `audit` leaves
-items proposed, `review` labels the plan as waiting for human decisions, and `auto` uses a separate model call
-with no tools and a fresh curator prompt after the plan is sealed. A failed or malformed curator response is
-blocked, never treated as approval.
+All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its immutable
+policy, exact operation, input hash, completed guards, decision, journal change id, and verification result.
+`audit` leaves items proposed, `review` labels them as waiting for human decisions, and `auto` uses a separate
+model call with no tools and a fresh curator prompt after the plan is sealed. Mixed-policy plans keep their
+review and audit items proposed after independent automatic items apply. A failed or malformed curator response
+is blocked, never treated as approval.
 
 ```bash
 akno plan list
@@ -1460,18 +1500,17 @@ The named phases can remain as internal methods, but the operator would reason a
 Conflict analysis should also precede `observe` and `reflect`, or unresolved claim groups should be excluded,
 so higher-level inference is not built from facts the same run later identifies as contradictory.
 
-### Maintenance profiles do not have per-transformation policy yet
+### Maintenance profiles still need whole-run budgets and failure policy
 
-`audit`, `review`, `autonomous`, and compatibility `custom` now resolve one authority ceiling for the complete
-cycle. That removes the most dangerous ambiguity: review cannot write legacy inference output, a one-run mode
-cannot promote configured authority, and the scheduler resolves the current profile instead of embedding stale
-flags.
+`audit`, `review`, `autonomous`, and compatibility `custom` resolve one authority ceiling for the complete cycle,
+and per-transformation policies can independently select `off`, `audit`, `review`, or `auto`. Each sealed item
+retains that policy, and mixed plans apply only their automatic subset. This removes the dangerous ambiguity
+around whether a high-authority run can promote a lower-authority class.
 
-The remaining gap is finer-grained policy. A user cannot yet say “automate hygiene and broken links, queue
-merges for review, and turn contradiction edits off” without dropping to lower-level phase and limit settings.
-Profiles also lack whole-run item/file/byte/high-risk budgets and failure policies. Page and folder restrictions,
-per-transformation deterministic guards, and existing phase caps still apply, but they are not summarized as one
-path-specific policy explanation.
+The remaining significant boundary is cumulative scope. Profiles still lack whole-run item, changed-file,
+written-byte, and high-risk-item budgets and a complete failure policy. Page and folder restrictions,
+transformation-specific deterministic guards, and existing phase caps still apply, but they are not yet
+summarized as one path-specific policy explanation.
 
 ### The scheduled cycle still lacks schedule and history visibility
 

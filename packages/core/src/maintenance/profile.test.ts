@@ -4,7 +4,12 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadConfig } from '../config/load.ts';
 import type { ConfigDoc } from '../config/schema.ts';
-import { assertMaintenanceModeAllowed, configuredMaintenanceAuthority, inferenceDryRun } from './profile.ts';
+import {
+  assertMaintenanceModeAllowed,
+  configuredMaintenanceAuthority,
+  effectiveTransformPolicy,
+  inferenceDryRun,
+} from './profile.ts';
 
 const temporary: string[] = [];
 
@@ -78,6 +83,61 @@ describe('maintenance profiles', () => {
     expect(() => assertMaintenanceModeAllowed(review, { mode: 'auto' })).toThrow(
       "mode 'auto' exceeds the review profile authority 'review'",
     );
+  });
+
+  it('resolves named-profile overrides without allowing a policy to exceed its ceiling', () => {
+    const autonomous = fixtureConfig({
+      profile: 'autonomous',
+      policies: { merge: 'review', broken_link: 'off' },
+    });
+    const review = fixtureConfig({ profile: 'review', policies: { hygiene: 'auto' } });
+
+    expect(autonomous.maintenance.policies).toMatchObject({
+      hygiene: 'auto',
+      merge: 'review',
+      broken_link: 'off',
+      adopt: 'auto',
+    });
+    expect(configuredMaintenanceAuthority(autonomous).policies).toMatchObject({
+      hygiene: 'auto',
+      merge: 'review',
+      broken_link: 'off',
+    });
+    expect(review.maintenance.policies.hygiene).toBe('review');
+  });
+
+  it('treats an explicit custom policy map as an allowlist and lowers it for one run', () => {
+    const config = fixtureConfig({
+      profile: 'custom',
+      policies: { hygiene: 'auto', merge: 'review' },
+      curate: { enabled: true },
+    });
+
+    expect(configuredMaintenanceAuthority(config)).toMatchObject({
+      curate: 'auto',
+      adopt: 'disabled',
+      policies: {
+        hygiene: 'auto',
+        merge: 'review',
+        synthesis: 'off',
+        broken_link: 'off',
+        adopt: 'off',
+      },
+    });
+    expect(effectiveTransformPolicy(config, 'hygiene', 'audit')).toBe('audit');
+    expect(effectiveTransformPolicy(config, 'merge', 'auto')).toBe('review');
+    expect(effectiveTransformPolicy(config, 'synthesis', 'auto')).toBe('off');
+  });
+
+  it('does not report automatic writes when a custom policy names a disabled planner', () => {
+    const config = fixtureConfig({
+      profile: 'custom',
+      policies: { hygiene: 'auto', adopt: 'auto' },
+      curate: { enabled: false },
+      adopt: { enabled: false },
+    });
+
+    expect(configuredMaintenanceAuthority(config).automaticKnowledgeBaseWrites).toBe(false);
   });
 });
 
