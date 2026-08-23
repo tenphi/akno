@@ -749,7 +749,7 @@ depends strongly on data volume and model quality.
 
 ```mermaid
 flowchart LR
-    conflicts["1. conflicts"] --> observe["2. plan observe"] --> reflect["3. plan reflect"] --> curate["4. plan curate"] --> adopt["5. plan adopt"] --> barrier["decision/apply barrier"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
+    conflicts["1. conflicts"] --> observe["2. plan observe"] --> reflect["3. plan reflect"] --> curate["4. plan curate"] --> adopt["5. plan adopt"] --> barrier["decision/apply barrier"] --> retry["one bounded dependency retry"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
 ```
 
 Order matters in three places:
@@ -759,16 +759,20 @@ Order matters in three places:
   are withheld from reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this
   prerequisite inspection.
 - `reflect` reads observations, so its planner runs after `observe`, but a full policy-backed run does not expose
-  same-run observation proposals to it. New patterns become reflection evidence on the next run.
+  same-run observation proposals to it. If an accepted observation invalidates a sealed reflection input,
+  however, the bounded post-apply retry may replan reflection from that now-applied and verified observation.
 - A full named-profile or explicit-policy run seals every writable phase plan before any automatic curator call
   or knowledge-base write. It then decides and applies accepted plans in phase order with the shared budget.
   Selecting one `--phase` remains immediate; empty-policy `custom` keeps its compatibility behavior.
 - At that barrier, Akno compares the file access sealed by pending automatic items. A later item is blocked if
   it would write the same path as an earlier item, or if an earlier write would invalidate its input or evidence.
   It skips the curator and all writes with typed status `dependency_conflict`; unrelated work continues and the
-  full run is `partially_completed`. The next full cycle replans the item from the resulting snapshot. An item
-  already recovering an interrupted apply takes priority over a new proposal. Audit and review proposals are
-  not in the automatic apply set, so they do not block it.
+  independent items apply first. Akno then replans each affected phase once from the post-apply index, seals
+  every retry plan before another curator call, and uses one final barrier with the remaining shared budget.
+  The earlier plan is retained as `superseded`. If the retry is still dependent or cannot fit the budget, the
+  full run is `partially_completed` and later work resumes on the next cycle. An item already recovering an
+  interrupted apply takes priority over a new proposal. Audit and review proposals are not in the automatic
+  apply set, so they do not block it.
 - Immediately before that dependency check, Akno repeats each automatic item's stale-input preflight. It
   re-hashes operation inputs, inference evidence, ordinary curation evidence, link destinations, adoption
   documents, and applicable structural identities. A changed item skips the curator and every write with typed
@@ -1573,12 +1577,15 @@ result:
 4. **Apply:** execute the authorized bounded plan only if its inputs are unchanged.
 5. **Re-index:** reconcile every affected path before judging the result.
 6. **Verify:** rerun relevant checks and produce one durable receipt.
+7. **Retry dependants once:** replan dependency-deferred phases from verified post-apply state, then use one final
+   decision/apply barrier and the remaining shared budget.
 
 The barrier is intentionally limited to the policy-backed full command. A selected phase remains useful for
 immediate testing or recovery, and compatibility `custom` with no policies preserves its older behavior. Plans
-remain phase-specific rather than one aggregate dependency graph; overlapping paths across phases currently
-settle through exact stale checks rather than explicit dependency edges. Pinning planners to a database revision
-against concurrent external file changes is also still future work.
+remain phase-specific, but the barrier builds one deterministic access graph across their automatic items.
+Same-path writes and earlier-write/later-sealed-read edges are explicit; ambiguous items get one post-apply
+replanning wave. Semantic create-before-link edges, virtual post-plan composition, and pinning planner reads to
+one database revision against concurrent external file changes remain future work.
 
 ### Maintenance profiles still need a complete failure policy and path explanation
 
@@ -1591,10 +1598,11 @@ Whole-run scope is now bounded by configurable item, distinct changed-file, writ
 ceilings. Observe, reflect, curate, and adopt share the same budget in a full run; an indivisible item that would cross a
 ceiling stays proposed with `budget_exhausted`, and the durable receipt and status view expose usage and backlog.
 
-The remaining significant boundary is failure behavior across dependent items and phases. Page and folder
-restrictions, transformation-specific deterministic guards, run budgets, and existing phase caps all apply,
-but they are not yet summarized as one path-specific policy explanation. There is also no configurable
-fail-fast versus independent-progress policy for a future whole-cycle dependency graph.
+The remaining significant boundary is explaining authority and failure behavior for each proposed path. Page
+and folder restrictions, transformation-specific deterministic guards, run budgets, phase caps, and the
+cross-phase access graph all apply, but they are not yet summarized as one path-specific policy explanation.
+There is also no configurable fail-fast alternative to the autonomous default of independent progress plus one
+bounded dependency retry.
 
 ### The scheduled cycle still lacks schedule and history visibility
 

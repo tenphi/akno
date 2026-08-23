@@ -2481,6 +2481,22 @@ export function finalizeRetryableMaintenancePlans(ctx: AknoContext): number {
   return result.changes;
 }
 
+/**
+ * A dependency-deferred plan was sealed against the pre-apply snapshot. Once the same run starts
+ * a fresh planning wave from the post-apply index, that old plan is history rather than failed
+ * work still waiting for attention. Keep its item outcome for the audit trail while removing it
+ * from run failure accounting and active-plan recovery.
+ */
+export function supersedeDependencyMaintenancePlan(ctx: AknoContext, planId: string): MaintenancePlan {
+  requireWritable(ctx);
+  const plan = getMaintenancePlan(ctx, planId);
+  if (plan.status !== 'failed' || !plan.items.some((item) => item.statusCode === 'dependency_conflict')) {
+    throw new AknoError('invalid', `${planId} is not a failed dependency-deferred plan`);
+  }
+  setPlanStatus(ctx, planId, 'superseded');
+  return getMaintenancePlan(ctx, planId);
+}
+
 function blockItem(
   ctx: AknoContext,
   planId: string,

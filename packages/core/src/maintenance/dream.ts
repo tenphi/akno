@@ -34,6 +34,7 @@ import {
   finalizeRetryableMaintenancePlans,
   findActiveMaintenancePlan,
   getMaintenancePlan,
+  supersedeDependencyMaintenancePlan,
   type MaintenanceItem,
   type MaintenanceMode,
   type MaintenancePlan,
@@ -266,6 +267,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       });
       if (deferAutomaticApply && phaseIndex === lastWritablePlanner) {
         await decideAndApplyPlannedPhases(cycle, report, applied, budget);
+        await retryDependencyDeferredPhases(cycle, options, report, applied, budget);
       }
     }
 
@@ -749,6 +751,104 @@ async function decideAndApplyPlannedPhases(
     refreshReportFromPlan(report, plan);
     recordMaintenancePlan(report, plan);
   }
+}
+
+/**
+ * One bounded post-apply planning wave closes the common autonomous case where an earlier item
+ * safely changed a later item's sealed evidence. Every affected phase replans from the newly
+ * indexed state before any retry curator call, then all retry plans share one final barrier and
+ * the original run budget. A dependency created inside this wave waits for the next cycle; this
+ * function is deliberately not recursive.
+ */
+async function retryDependencyDeferredPhases(
+  ctx: AknoContext,
+  options: DreamOptions,
+  report: DreamReport,
+  applied: AppliedChange[],
+  budget: MaintenanceBudgetTracker,
+): Promise<void> {
+  const deferred = report.maintenancePlans.filter(
+    (plan) =>
+      plan.status === 'failed' && plan.items.some((item) => item.statusCode === 'dependency_conflict'),
+  );
+  if (deferred.length === 0) return;
+
+  const retryPhases = new Set<DreamPhase>(deferred.map((plan) => plan.phase));
+  const retryReport: DreamReport = {
+    ...report,
+    phases: [],
+    observations: [],
+    curated: [],
+    rejected: [],
+    adopted: [],
+    repaired: null,
+    repairChangeId: null,
+    housekeeping: null,
+    changeId: null,
+    adoptChangeId: null,
+    curateChangeId: null,
+    maintenancePlan: null,
+    maintenancePlans: [],
+    budget: maintenanceBudgetReceipt(budget),
+    warnings: [],
+    durationMs: 0,
+  };
+
+  for (const plan of deferred) {
+    recordMaintenancePlan(report, supersedeDependencyMaintenancePlan(ctx, plan.id));
+  }
+  for (const phase of DREAM_PHASES) {
+    if (!retryPhases.has(phase)) continue;
+    await runPhase(ctx, phase, options, retryReport, applied, budget, true);
+  }
+  await decideAndApplyPlannedPhases(ctx, retryReport, applied, budget);
+  mergeRetryReport(report, retryReport);
+}
+
+function mergeRetryReport(report: DreamReport, retry: DreamReport): void {
+  report.observations = mergeByKey(
+    report.observations,
+    retry.observations,
+    (entry) => `${entry.slug}\0${entry.pattern}`,
+  );
+  report.curated = mergeByKey(report.curated, retry.curated, (entry) => entry.slug);
+  report.rejected = mergeByKey(
+    report.rejected,
+    retry.rejected,
+    (entry) => `${entry.pattern}\0${entry.reason}`,
+  );
+  report.adopted = mergeByKey(report.adopted, retry.adopted, (entry) => entry.slug);
+  report.repaired = mergeRepairResults(report.repaired, retry.repaired);
+  if (retry.changeId !== null) report.changeId = retry.changeId;
+  if (retry.adoptChangeId !== null) report.adoptChangeId = retry.adoptChangeId;
+  if (retry.curateChangeId !== null) report.curateChangeId = retry.curateChangeId;
+  report.warnings.push(...retry.warnings);
+  for (const plan of retry.maintenancePlans) {
+    const existing = report.maintenancePlans.findIndex((candidate) => candidate.id === plan.id);
+    if (existing === -1) report.maintenancePlans.push(plan);
+    else report.maintenancePlans[existing] = plan;
+  }
+  if (retry.maintenancePlan) report.maintenancePlan = retry.maintenancePlan;
+}
+
+function mergeRepairResults(current: RepairResult | null, retry: RepairResult | null): RepairResult | null {
+  if (!current) return retry;
+  if (!retry) return current;
+  return {
+    links: mergeByKey(current.links, retry.links, (entry) => `${entry.from}\0${entry.brokenTarget}`),
+    claims: mergeByKey(
+      current.claims,
+      retry.claims,
+      (entry) => `${entry.slug}\0${entry.line}\0${entry.before}`,
+    ),
+    declined: mergeByKey(current.declined, retry.declined, (entry) => `${entry.what}\0${entry.reason}`),
+  };
+}
+
+function mergeByKey<T>(current: T[], retry: T[], key: (entry: T) => string): T[] {
+  const merged = new Map(current.map((entry) => [key(entry), entry]));
+  for (const entry of retry) merged.set(key(entry), entry);
+  return [...merged.values()];
 }
 
 function refreshReportFromPlan(report: DreamReport, plan: MaintenancePlan): void {

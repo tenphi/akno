@@ -242,7 +242,11 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     const dependencyDeferred = plan.items.filter((item) => item.statusCode === 'dependency_conflict').length;
     if (dependencyDeferred > 0) {
       line(
-        `  ${style.grey(`${dependencyDeferred} dependent item(s) deferred; they will be replanned on the next run`)}`,
+        `  ${style.grey(
+          plan.status === 'superseded'
+            ? `${dependencyDeferred} dependent item(s) were replanned from the post-apply state in this run`
+            : `${dependencyDeferred} dependent item(s) deferred; they will be replanned on the next run`,
+        )}`,
       );
     }
     const snapshotDeferred = plan.items.filter((item) => item.statusCode === 'snapshot_drift').length;

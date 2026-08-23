@@ -647,10 +647,14 @@ with no policy map retains its historical phase behavior.
 
 At that barrier Akno blocks a later automatic item if it would write the same path as an earlier item, or if
 an earlier write would invalidate its sealed input. The item skips its curator call and all writes, reports
-`dependency_conflict`, and is replanned from the new snapshot on the next full cycle; unrelated work continues.
-It also revalidates every automatic item's sealed operation and evidence bytes before any curator call. A
-changed item reports `snapshot_drift` and is likewise replanned next cycle, while apply repeats the check after
-approval in case a later edit arrives.
+`dependency_conflict`, and unrelated work continues. After those independent items apply and reindex, Akno
+replans every affected phase once from the resulting state, seals all of those retry plans, and passes them
+through one final decision/apply barrier with the same run budget. The obsolete pre-apply plan remains visible
+as `superseded`. A dependency that still exists after this bounded retry waits for the next full cycle.
+
+Akno also revalidates every automatic item's sealed operation and evidence bytes before any curator call. A
+changed item reports `snapshot_drift` and is replanned next cycle rather than in the same run, while apply
+repeats the check after approval in case a later edit arrives.
 
 The `limits` block is one cumulative apply budget. A full `akno dream` shares it across observe, reflect, curate, and adopt;
 `akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are

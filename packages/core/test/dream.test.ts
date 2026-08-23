@@ -92,7 +92,10 @@ async function startStubChat(): Promise<StubServer> {
         : system.startsWith('You classify structurally incompatible claims')
           ? conflictScripted
           : system.startsWith('You are the independent curator for an autonomous memory system')
-            ? { outcome: 'approve', reason: 'The sealed contradiction item preserves authored knowledge.' }
+            ? {
+                outcome: 'approve',
+                reason: 'The sealed contradiction item preserves authored knowledge.',
+              }
             : system.startsWith('A personal knowledge base holds two claims')
               ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
               : observeRequest &&
@@ -625,7 +628,7 @@ describe('the full-run planning barrier', () => {
     expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
   });
 
-  it('defers a later item whose sealed evidence is changed by an earlier plan, then replans it', async () => {
+  it('replans a dependency-deferred phase once from the post-apply index', async () => {
     await withInferencePolicies(undefined, true);
     const principle = 'Maintenance records support deliberate household planning.';
     server.reply(OBSERVED);
@@ -643,31 +646,71 @@ describe('the full-run planning barrier', () => {
       ],
     });
 
-    const first = await mem.dream();
-    const reflection = first.maintenancePlans.find((plan) => plan.phase === 'reflect')!;
+    const report = await mem.dream();
+    const reflections = report.maintenancePlans.filter((plan) => plan.phase === 'reflect');
+    const [deferred, replanned] = reflections;
 
-    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator']);
-    expect(first.run.status).toBe('partially_completed');
-    expect(reflection.status).toBe('failed');
-    expect(reflection.items[0]).toMatchObject({
+    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator', 'reflect', 'curator']);
+    expect(report.run.status).toBe('completed');
+    expect(reflections).toHaveLength(2);
+    expect(deferred).toMatchObject({ status: 'superseded' });
+    expect(deferred!.items[0]).toMatchObject({
       status: 'blocked',
       statusCode: 'dependency_conflict',
       decision: null,
     });
-    expect(reflection.items[0]!.statusReason).not.toContain('observations/');
-    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+    expect(deferred!.items[0]!.statusReason).not.toContain('observations/');
+    expect(replanned!.id).not.toBe(deferred!.id);
+    expect(replanned).toMatchObject({ status: 'completed' });
+    expect(replanned!.items[0]).toMatchObject({ status: 'applied', statusCode: null });
+    expect(report.budget.used).toMatchObject({ items: 2, filesChanged: 2 });
     expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
       PATTERN,
     );
+    expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
+  });
+
+  it('keeps a same-run dependency retry within the shared budget and resumes it later', async () => {
+    await withInferencePolicies({ max_items: 1 }, true);
+    const principle = 'Maintenance records support deliberate household planning.';
+    server.reply(OBSERVED);
+    server.reflection({
+      observations: [
+        {
+          pattern: principle,
+          evidence: [
+            'observations/home-appliance-servicing',
+            'observations/travel-lunch',
+            'observations/banking-review-period',
+          ],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const first = await mem.dream();
+    const reflections = first.maintenancePlans.filter((plan) => plan.phase === 'reflect');
+    const retry = reflections[1]!;
+
+    expect(reflections[0]).toMatchObject({ status: 'superseded' });
+    expect(retry.items[0]).toMatchObject({
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      decision: null,
+    });
+    expect(first.run).toMatchObject({
+      status: 'partially_completed',
+      budget: { used: { items: 1 }, deferredItems: 1 },
+    });
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
 
     const beforeSecond = server.requestKinds().length;
     server.reply({ observations: [] });
     const second = await mem.dream();
-    const replanned = second.maintenancePlans.find((plan) => plan.phase === 'reflect')!;
+    const resumed = second.maintenancePlans.find((plan) => plan.id === retry.id)!;
 
-    expect(replanned.id).not.toBe(reflection.id);
-    expect(replanned.items[0]).toMatchObject({ status: 'applied', statusCode: null });
-    expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'reflect', 'curator']);
+    expect(resumed.items[0]).toMatchObject({ status: 'applied', statusCode: null });
+    expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'curator']);
     expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
   });
 
