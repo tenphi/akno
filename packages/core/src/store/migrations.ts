@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 19;
+export const SCHEMA_VERSION = 20;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -23,6 +23,7 @@ export const DOCUMENT_FILE_DATES_MIGRATION_INDEX = 8;
 export const MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX = 9;
 export const MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX = 10;
 export const STRUCTURAL_GRAPH_MIGRATION_INDEX = 11;
+export const ENTITY_GRAPH_MIGRATION_INDEX = 12;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -500,6 +501,53 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX graph_edges_source_page ON graph_edges(source_page);
   CREATE INDEX graph_edges_source_document ON graph_edges(source_document);
   CREATE INDEX graph_edges_source_event ON graph_edges(source_event);
+  `,
+  // ── 13. Canonical graph entities and conservative mention resolution ──
+  // An entity is anchored to one canonical knowledge page. Names and mention outcomes stay
+  // separate so an ambiguous name is inspectable without becoming a traversable graph edge.
+  `
+  CREATE TABLE graph_entities (
+    id                 TEXT PRIMARY KEY,
+    canonical_page     TEXT NOT NULL UNIQUE REFERENCES pages(id) ON DELETE CASCADE,
+    entity_type        TEXT NOT NULL,
+    label              TEXT NOT NULL,
+    normalized_label   TEXT NOT NULL,
+    source_hash        TEXT NOT NULL,
+    derivation_version TEXT NOT NULL
+  );
+  CREATE INDEX graph_entities_type ON graph_entities(entity_type, canonical_page);
+
+  CREATE TABLE graph_entity_names (
+    entity_id          TEXT NOT NULL REFERENCES graph_entities(id) ON DELETE CASCADE,
+    name               TEXT NOT NULL,
+    normalized_name    TEXT NOT NULL,
+    signal             TEXT NOT NULL,
+    source_page        TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_hash        TEXT NOT NULL,
+    derivation_version TEXT NOT NULL,
+    PRIMARY KEY(entity_id, normalized_name, signal)
+  );
+  CREATE INDEX graph_entity_names_normalized
+    ON graph_entity_names(normalized_name, signal, entity_id);
+
+  CREATE TABLE graph_mentions (
+    id                 TEXT PRIMARY KEY,
+    mention            TEXT NOT NULL,
+    normalized_mention TEXT NOT NULL,
+    source_page        TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_field       TEXT NOT NULL,
+    source_line        INTEGER,
+    source_hash        TEXT NOT NULL,
+    resolved_entity    TEXT REFERENCES graph_entities(id) ON DELETE SET NULL,
+    resolution         TEXT NOT NULL,
+    signal             TEXT,
+    candidates         TEXT NOT NULL DEFAULT '[]',
+    derivation_version TEXT NOT NULL,
+    CHECK (resolution IN ('exact', 'ambiguous', 'unresolved'))
+  );
+  CREATE INDEX graph_mentions_source ON graph_mentions(source_page, source_field);
+  CREATE INDEX graph_mentions_entity ON graph_mentions(resolved_entity);
+  CREATE INDEX graph_mentions_normalized ON graph_mentions(normalized_mention, resolution);
   `,
 ];
 

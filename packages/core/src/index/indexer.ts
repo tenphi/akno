@@ -102,6 +102,10 @@ export interface IndexReport {
   factsDerived: number;
   graphNodes: number;
   graphEdges: number;
+  graphEntities: number;
+  graphMentions: number;
+  graphAmbiguousMentions: number;
+  graphUnresolvedMentions: number;
   ignored: number;
   /** Non-fatal problems worth reporting rather than throwing. `doctor` prints these. */
   warnings: string[];
@@ -159,6 +163,10 @@ export class Indexer {
       factsDerived: 0,
       graphNodes: 0,
       graphEdges: 0,
+      graphEntities: 0,
+      graphMentions: 0,
+      graphAmbiguousMentions: 0,
+      graphUnresolvedMentions: 0,
       ignored: 0,
       warnings: [],
       durationMs: 0,
@@ -291,6 +299,10 @@ export class Indexer {
     const graph = rebuildStructuralGraph(this.#store);
     report.graphNodes = graph.nodes;
     report.graphEdges = graph.edges;
+    report.graphEntities = graph.entities;
+    report.graphMentions = graph.mentions;
+    report.graphAmbiguousMentions = graph.ambiguousMentions;
+    report.graphUnresolvedMentions = graph.unresolvedMentions;
     progress({ phase: 'graph', done: 1, total: 1 });
 
     // ── Model-backed passes ────────────────────────────────────────────────

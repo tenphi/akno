@@ -402,9 +402,15 @@ akno:
 itself, and aliases equal to its title, slug, or basename are discarded as redundant.
 
 Indexing also projects exact page links, `about`, document ownership, and event participation into a disposable
-structural evidence graph. Every edge retains a current source hash and a line, frontmatter field, document, or
-event locator. This first graph slice is internal derived state: entity resolution, graph inspection, bounded
-multi-hop traversal, and graph-assisted recall are not implemented yet.
+evidence graph. Every knowledge page anchors a separate canonical entity node; source and inference pages stay
+evidence rather than silently becoming canonical records. Canonical slugs, declared aliases, and unique exact
+title or basename matches resolve after Unicode, case, and punctuation normalization. Every `about` value is
+recorded as exact, ambiguous, or unresolved, but only an exact result becomes a traversable edge. Valid links
+to knowledge pages also produce exact mention edges.
+
+Every edge retains a current source hash and a line, frontmatter field, document, or event locator. This graph
+is still internal derived state: fact subject/object edges, graph inspection, bounded multi-hop traversal,
+contextual disambiguation, and graph-assisted recall are not implemented yet.
 
 ## Documents
 

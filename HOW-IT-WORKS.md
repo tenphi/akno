@@ -194,7 +194,7 @@ flowchart TD
     hash --> parse["4. Parse pages, roles, links, and dates"]
     parse --> chunk["5. Split pages on headings"]
     chunk --> docs["6. Discover and extract documents"]
-    docs --> graph["7. Rebuild structural evidence graph"]
+    docs --> graph["7. Rebuild exact evidence graph"]
     graph --> embed["8. Embed searchable chunks"]
     embed --> derive["9. Derive summaries, keywords, and facts"]
     derive --> store["10. Commit the new reading to the index"]
@@ -208,7 +208,7 @@ flowchart TD
 | Parse               | Read frontmatter, headings, wikilinks, dates, roles, and source fences | none          |
 | Chunk               | Follow headings and configured size limits                             | none          |
 | Extract             | Read PDF text, OCR scans, and convert supported Office files           | none on macOS |
-| Structural graph    | Rebuild exact page links, `about`, ownership, and event relationships  | none          |
+| Evidence graph      | Rebuild structural paths, canonical entities, and exact mentions       | none          |
 | Embed               | Turn chunks into vectors for semantic search                           | embedding     |
 | Derive              | Produce page summaries, keywords, and durable fact candidates          | derive        |
 | Summarize documents | Describe each document without copying its body into Markdown          | derive        |
@@ -1570,17 +1570,24 @@ or document was forgotten, recover it from Akno's trash within the configured re
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### The evidence graph is structural but not queryable yet
+### The evidence graph is entity-aware but not queryable yet
 
 Indexing now rebuilds a local evidence graph from exact page links, `akno.about`, document ownership, and
-dated event relationships. Its nodes and edges live only in the disposable SQLite index, carry current source
-hashes and exact line/frontmatter/document locators, and are recreated transactionally without model calls or
-knowledge-base writes.
+dated event relationships. Each knowledge page anchors a separate canonical entity node. Its canonical slug,
+declared aliases, title, and basename form an exact identity-name index; Unicode, case, and punctuation are
+normalized, but similarity is never treated as identity. Source and inference pages remain evidence pages.
 
-This is the foundation, not multi-hop retrieval yet. Akno does not yet resolve aliases into canonical entity
-nodes, derive fact subject/object edges, expose `akno graph`, traverse bounded paths, or feed graph candidates
-into recall. Until those slices ship, related evidence still has to be discovered by lexical/semantic recall or
-authored links rather than deliberate graph traversal.
+Every `akno.about` mention is retained as exact, ambiguous, or unresolved. Canonical slugs take precedence,
+followed by declared aliases, unique titles, and unique basenames. An ambiguous signal records its candidate
+entity ids but creates no traversable edge. Removing an alias or changing a page invalidates its prior outcome
+on the next transactional rebuild. Valid authored links to knowledge pages also create exact mention edges.
+All nodes, names, outcomes, and edges live only in disposable SQLite state, carry current source hashes and
+exact line/frontmatter/document locators, and require neither a model call nor a knowledge-base write.
+
+This is still a foundation, not multi-hop retrieval. Akno does not yet derive fact subject/object edges,
+expose `akno graph`, traverse bounded paths, contextually disambiguate same-name candidates, or feed graph
+candidates into recall. Until those slices ship, related evidence still has to be discovered by
+lexical/semantic recall or authored links rather than deliberate graph traversal.
 
 ### The durable review queue does not cover every phase yet
 
