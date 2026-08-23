@@ -208,7 +208,7 @@ export interface ApplyMaintenanceResult {
 export interface MaintenanceDependencyConflict {
   planId: string;
   itemId: string;
-  kind: 'write_write' | 'sealed_input' | 'semantic_cycle';
+  kind: 'write_write' | 'sealed_input' | 'semantic_cycle' | 'semantic_delete';
 }
 
 export interface MaintenanceApplyStep {
@@ -765,7 +765,7 @@ export function blockMaintenanceDependencies(ctx: AknoContext, planIds: string[]
       ctx,
       conflict.planId,
       conflict.itemId,
-      "Deferred because another automatic maintenance item changes this item's sealed input or output. Replan it against the resulting knowledge-base snapshot.",
+      maintenanceDependencyConflictReason(conflict.kind),
       'dependency_conflict',
     );
     touchedPlans.add(conflict.planId);
@@ -849,14 +849,64 @@ export function findMaintenanceDependencyConflicts(
     preceding.push(candidate);
   }
 
-  const eligible = entries.filter((entry) => !blocked.has(keyFor(entry)));
+  let eligible = entries.filter((entry) => !blocked.has(keyFor(entry)));
   const dependencies = semanticMaintenanceDependencies(eligible);
   for (const key of cyclicDependencyKeys(eligible, dependencies)) {
     const entry = eligible.find((candidate) => keyFor(candidate) === key)!;
     blocked.set(key, { planId: entry.planId, itemId: entry.itemId, kind: 'semantic_cycle' });
   }
+  eligible = entries.filter((entry) => !blocked.has(keyFor(entry)));
+  blockSemanticDeletionConflicts(eligible, blocked);
 
   return [...blocked.values()];
+}
+
+function maintenanceDependencyConflictReason(kind: MaintenanceDependencyConflict['kind']): string {
+  if (kind === 'semantic_cycle') {
+    return 'Deferred because automatic maintenance proposals form a canonical create/reference cycle. Replan them against the resulting knowledge-base snapshot.';
+  }
+  if (kind === 'semantic_delete') {
+    return 'Deferred because applying this item with other sealed maintenance work could leave a reference to a deleted page. Replan it against the resulting knowledge-base snapshot.';
+  }
+  return "Deferred because another automatic maintenance item changes this item's sealed input or output. Replan it against the resulting knowledge-base snapshot.";
+}
+
+function blockSemanticDeletionConflicts(
+  entries: MaintenanceDependencyEntry[],
+  blocked: Map<string, MaintenanceDependencyConflict>,
+): void {
+  const recoveries = entries.filter(isMaintenanceRecovery);
+
+  // Recovery may already have deleted the target. It must finish; a new proposal that would add
+  // the now-invalid reference waits and replans from the recovered state.
+  for (const deleter of recoveries) {
+    if (deleter.deletes.size === 0) continue;
+    for (const referencer of entries) {
+      if (isMaintenanceRecovery(referencer) || !intersects(deleter.deletes, referencer.references)) continue;
+      blocked.set(dependencyKey(referencer), {
+        planId: referencer.planId,
+        itemId: referencer.itemId,
+        kind: 'semantic_delete',
+      });
+    }
+  }
+
+  // For new work, preserving a sealed reference is safer than deleting its destination. Blocking
+  // the deletion lets the bounded retry replan it after the referencer has applied and reindexed.
+  for (const deleter of entries) {
+    const deleterKey = dependencyKey(deleter);
+    if (isMaintenanceRecovery(deleter) || blocked.has(deleterKey) || deleter.deletes.size === 0) continue;
+    const referencer = entries.find(
+      (candidate) =>
+        !blocked.has(dependencyKey(candidate)) && intersects(deleter.deletes, candidate.references),
+    );
+    if (!referencer) continue;
+    blocked.set(deleterKey, {
+      planId: deleter.planId,
+      itemId: deleter.itemId,
+      kind: 'semantic_delete',
+    });
+  }
 }
 
 /**
@@ -910,6 +960,7 @@ interface MaintenanceDependencyEntry {
   reads: Set<string>;
   writes: Set<string>;
   creates: Set<string>;
+  deletes: Set<string>;
   references: Set<string>;
 }
 
@@ -940,11 +991,15 @@ function maintenanceDependencyEntries(
             if (relPath) reads.add(relPath);
           }
           const creates = new Set<string>();
+          const deletes = new Set<string>();
           const references = new Set<string>();
           for (const operation of item.operations) {
-            if (operation.type === 'delete') continue;
             const parsed = plannedPage(operation);
             if (!parsed) continue;
+            if (operation.type === 'delete') {
+              deletes.add(dependencySlug(parsed.slug));
+              continue;
+            }
             if (operation.type === 'create') creates.add(dependencySlug(parsed.slug));
             for (const link of parsed.links) {
               if (link.kind !== 'embed') references.add(dependencySlug(link.toSlug));
@@ -960,6 +1015,7 @@ function maintenanceDependencyEntries(
               reads,
               writes,
               creates,
+              deletes,
               references,
             },
           ];
@@ -968,16 +1024,18 @@ function maintenanceDependencyEntries(
   );
 }
 
-function plannedPage(
-  operation: Exclude<MaintenanceOperation, DeleteOperation>,
-): ReturnType<typeof parsePage> | null {
+function plannedPage(operation: MaintenanceOperation): ReturnType<typeof parsePage> | null {
   try {
-    return parsePage(operation.relPath, operation.after);
+    return parsePage(operation.relPath, operation.type === 'delete' ? operation.before : operation.after);
   } catch {
     // Preflight reports malformed Markdown as a typed item failure. Dependency inspection stays
     // content-safe and must not turn one invalid proposal into a whole-run infrastructure error.
     return null;
   }
+}
+
+function isMaintenanceRecovery(entry: MaintenanceDependencyEntry): boolean {
+  return entry.status === 'applying' || entry.status === 'verification_pending';
 }
 
 function semanticMaintenanceDependencies(entries: MaintenanceDependencyEntry[]): Map<string, Set<string>> {

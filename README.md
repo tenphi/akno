@@ -641,9 +641,9 @@ uses the same checks with a floor of at least three distinct live observation pa
 
 A full named-profile or explicit-policy run has a planning barrier: conflicts and every enabled writable
 planner seal their phase plans before the first curator call or knowledge-base write. Automatic plans are then
-decided and applied in `observe` → `reflect` → `curate` → `adopt` order with one shared budget; repair and
-housekeeping inspect the resulting state. A selected `--phase` remains immediate, and compatibility `custom`
-with no policy map retains its historical phase behavior.
+decided in `observe` → `reflect` → `curate` → `adopt` order, then accepted items apply in stable dependency
+order with one shared budget; repair and housekeeping inspect the resulting state. A selected `--phase` remains
+immediate, and compatibility `custom` with no policy map retains its historical phase behavior.
 
 At that barrier Akno blocks a later automatic item if it would write the same path as an earlier item, or if
 an earlier write would invalidate its sealed input. The item skips its curator call and all writes, reports
@@ -657,7 +657,10 @@ another item's wikilink, Markdown link, or `akno.about`, the creator is applied 
 its phase normally comes later. Curator decisions still all finish before either write. Duplicate planned page
 identities and reference cycles are blocked; if the creator is rejected, stale, or budget-deferred, its
 dependant writes nothing with typed status `dependency_unmet` and is replanned on the next full cycle. A same-run
-retry would be unsafe because its required page still does not exist.
+retry would be unsafe because its required page still does not exist. Deletions are checked in the other
+direction: if another sealed output would still reference the deleted canonical page, the new deletion waits
+and replans after that output is indexed. Interrupted deletion recovery retains priority, so a new referencer
+waits instead. Both cases report `dependency_conflict` without exposing either path.
 
 Akno also revalidates every automatic item's sealed operation and evidence bytes before any curator call. A
 changed item reports `snapshot_drift` and is replanned next cycle rather than in the same run, while apply
@@ -748,6 +751,9 @@ so a folder of 500 unowned PDFs does not become 500 pages before anyone has read
 document card includes a typed action for the single-document form, `akno adopt <document-id>`; invoking it
 plans only that document group. The nightly `adopt` phase remains the bounded bulk form. Both use the configured
 audit/review/auto policy, and auto still requires a separate curator decision.
+
+Here “owned” means “attached to a Markdown page by an embed.” It does not mean a human account, access control,
+or multi-user ownership; Akno currently treats the brain as one shared knowledge base.
 
 **`observe` ships off, and what it produces is almost entirely a function of the model behind it.** Its
 guardrails are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug

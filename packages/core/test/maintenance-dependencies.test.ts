@@ -157,7 +157,7 @@ describe('maintenance plan dependencies', () => {
     expect(maintenancePlanStatusAfterApply(mixed)).toBe('failed');
   });
 
-  it('orders a canonical creator before an earlier item that references it', () => {
+  it('orders canonical creators and blocks deletions that would invalidate sealed references', () => {
     const plan = (id: string, itemId: string, relPath: string, after: string): MaintenancePlan => ({
       id,
       createdAt: '2030-01-01T00:00:00.000Z',
@@ -242,7 +242,7 @@ describe('maintenance plan dependencies', () => {
       'plan_cycle_a',
       'item_cycle_a',
       'topics/invented-a.md',
-      '---\ntitle: Invented A\n---\n\nSee [[topics/invented-b]].\n',
+      '---\ntitle: Invented A\n---\n\nSee [[topics/invented-b]] and [[topics/invented-target]].\n',
     );
     const cycleB = plan(
       'plan_cycle_b',
@@ -269,6 +269,55 @@ describe('maintenance plan dependencies', () => {
     );
     expect(findMaintenanceDependencyConflicts([creator, duplicateIdentity], new Map())).toEqual([
       { planId: 'plan_duplicate', itemId: 'item_duplicate', kind: 'write_write' },
+    ]);
+
+    const deletion = plan(
+      'plan_delete',
+      'item_delete',
+      'topics/invented-target.md',
+      '---\ntitle: Invented placeholder\n---\n\nInvented placeholder body.\n',
+    );
+    deletion.items[0]!.operations = [
+      {
+        type: 'delete',
+        relPath: 'topics/invented-target.md',
+        beforeHash: 'invented-before',
+        before: '---\ntitle: Invented target\n---\n\nInvented target body.\n',
+      },
+    ];
+    expect(findMaintenanceDependencyConflicts([deletion, reference, aboutReference], new Map())).toEqual([
+      { planId: 'plan_delete', itemId: 'item_delete', kind: 'semantic_delete' },
+    ]);
+    expect(findMaintenanceDependencyConflicts([aboutReference, deletion], new Map())).toEqual([
+      { planId: 'plan_delete', itemId: 'item_delete', kind: 'semantic_delete' },
+    ]);
+    expect(findMaintenanceDependencyConflicts([cycleA, cycleB, deletion], new Map())).toEqual([
+      { planId: 'plan_cycle_a', itemId: 'item_cycle_a', kind: 'semantic_cycle' },
+      { planId: 'plan_cycle_b', itemId: 'item_cycle_b', kind: 'semantic_cycle' },
+    ]);
+
+    const recoveringDeletion = plan(
+      'plan_recovering_delete',
+      'item_recovering_delete',
+      'topics/invented-target.md',
+      '---\ntitle: Invented placeholder\n---\n\nInvented placeholder body.\n',
+    );
+    recoveringDeletion.items[0]!.operations = deletion.items[0]!.operations;
+    recoveringDeletion.items[0]!.status = 'verification_pending';
+    recoveringDeletion.status = 'partially_completed';
+    expect(findMaintenanceDependencyConflicts([reference, recoveringDeletion], new Map())).toEqual([
+      { planId: 'plan_reference', itemId: 'item_reference', kind: 'semantic_delete' },
+    ]);
+
+    const internallyBroken = plan(
+      'plan_internal_delete',
+      'item_internal_delete',
+      'notes/invented-internal.md',
+      '---\ntitle: Invented internal\n---\n\nSee [[topics/invented-target]].\n',
+    );
+    internallyBroken.items[0]!.operations.push(deletion.items[0]!.operations[0]!);
+    expect(findMaintenanceDependencyConflicts([internallyBroken], new Map())).toEqual([
+      { planId: 'plan_internal_delete', itemId: 'item_internal_delete', kind: 'semantic_delete' },
     ]);
   });
 });

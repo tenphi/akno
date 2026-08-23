@@ -780,6 +780,11 @@ Order matters in three places:
   canonical identities and reference cycles are dependency conflicts. If a creator is rejected, stale, or
   cannot fit the shared budget, its dependant is deferred without writing as `dependency_unmet` and replanned
   next cycle; Akno does not spend its bounded retry while the prerequisite is still absent.
+- A new deletion is deferred if another eligible item's exact proposed output still links to the deleted
+  canonical page or declares it in `akno.about`. The reference-bearing item applies first, then the deletion's
+  phase receives the bounded replan from current state. If the deletion is already recovering an interrupted
+  apply, recovery retains priority and the new referencer waits instead. Both outcomes use the content-safe
+  `dependency_conflict` status.
 - Immediately before that dependency check, Akno repeats each automatic item's stale-input preflight. It
   re-hashes operation inputs, inference evidence, ordinary curation evidence, link destinations, adoption
   documents, and applicable structural identities. A changed item skips the curator and every write with typed
@@ -1126,6 +1131,9 @@ but a passed date is never treated as proof that a plan happened.
 
 **Problem it solves:** an orphan document is searchable, but it has no browsable Markdown home for authored
 notes, links, page policy, or later synthesis. Adoption adds that organization; it is not a retrieval repair.
+
+“Owned” here means that a Markdown page attaches the document with an embed. It is unrelated to user accounts,
+permissions, or multi-user ownership; the brain remains one shared knowledge base.
 
 **Method:** find readable unowned documents, make a page name from the existing filename, and seal the same
 minimal page shape used by ingest: title, available summary, embeds, and extraction provenance. Each document
@@ -1591,9 +1599,9 @@ The barrier is intentionally limited to the policy-backed full command. A select
 immediate testing or recovery, and compatibility `custom` with no policies preserves its older behavior. Plans
 remain phase-specific, but the barrier builds one deterministic access graph across their automatic items.
 Same-path writes and earlier-write/later-sealed-read edges are explicit; ambiguous items get one post-apply
-replanning wave. Canonical create-before-link/`akno.about` edges are topologically ordered. Semantic deletion
-and ownership edges, virtual post-plan composition, and pinning planner reads to one database revision against
-concurrent external file changes remain future work.
+replanning wave. Canonical create-before-link/`akno.about` edges are topologically ordered, and incompatible
+delete/reference proposals are deferred. Document-attachment dependencies, virtual post-plan composition, and
+pinning planner reads to one database revision against concurrent external file changes remain future work.
 
 ### Maintenance profiles still need a complete failure policy and path explanation
 
