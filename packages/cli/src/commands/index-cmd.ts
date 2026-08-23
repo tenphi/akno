@@ -82,6 +82,8 @@ export async function indexCommand(argv: string[]): Promise<number> {
       ['pages summarized', report.pagesDerived],
       ['facts derived', report.factsDerived],
       ['events indexed', report.eventsIndexed],
+      ['graph nodes', report.graphNodes],
+      ['graph edges', report.graphEdges],
       ['documents linked', report.documentsLinked],
       ['documents read', report.documentsExtracted > 0 ? report.documentsExtracted : '-'],
       ['documents summarized', report.documentsSummarized > 0 ? report.documentsSummarized : '-'],

@@ -7,14 +7,6 @@
 
 export { open, readOnlyExplanation, type Akno, type OpenOptions } from './open.ts';
 export { loadConfig, type LoadOptions } from './config/load.ts';
-export {
-  applyMaintenanceConfigMigration,
-  planMaintenanceConfigMigration,
-  planMaintenanceConfigMigrationFromSources,
-  type MaintenanceMigrationChange,
-  type MaintenanceMigrationOptions,
-  type MaintenanceMigrationPlan,
-} from './config/maintenance-migration.ts';
 export type {
   AknoConfig,
   FolderRule,

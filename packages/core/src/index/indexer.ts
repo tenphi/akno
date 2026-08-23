@@ -30,6 +30,7 @@ import { bodyItemIds, bodyLineHashes, derivePage, summarizeDocument, type Derive
 import { eventId, factId, managedFactId, newPageId, sha256 } from '../store/ids.ts';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
+import { rebuildStructuralGraph } from './graph.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -70,6 +71,7 @@ export interface IndexProgress {
     | 'embed'
     | 'derive'
     | 'documents'
+    | 'graph'
     | 'extract'
     | 'renditions'
     | 'summarize'
@@ -98,6 +100,8 @@ export interface IndexReport {
   renditionsWritten: number;
   eventsIndexed: number;
   factsDerived: number;
+  graphNodes: number;
+  graphEdges: number;
   ignored: number;
   /** Non-fatal problems worth reporting rather than throwing. `doctor` prints these. */
   warnings: string[];
@@ -153,6 +157,8 @@ export class Indexer {
       renditionsWritten: 0,
       eventsIndexed: 0,
       factsDerived: 0,
+      graphNodes: 0,
+      graphEdges: 0,
       ignored: 0,
       warnings: [],
       durationMs: 0,
@@ -278,6 +284,14 @@ export class Indexer {
     // not do. It is a single UPDATE over a table with one row per link; scoping it would save
     // nothing worth the inconsistency.
     this.resolveLinks();
+
+    // Structural graph rows are cheap, private derived state. Rebuilding the complete graph
+    // after every pass also reconciles edges whose target changed in a scoped index operation.
+    progress({ phase: 'graph', done: 0, total: 1 });
+    const graph = rebuildStructuralGraph(this.#store);
+    report.graphNodes = graph.nodes;
+    report.graphEdges = graph.edges;
+    progress({ phase: 'graph', done: 1, total: 1 });
 
     // ── Model-backed passes ────────────────────────────────────────────────
     // Scoped to the pages this pass touched when the caller named files. Without

@@ -323,4 +323,24 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds the rebuildable structural graph to a version-eighteen database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-graph-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 11)) legacy.exec(migration);
+    legacy.pragma('user_version = 18');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const tables = store.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'graph_%' ORDER BY name")
+      .all() as { name: string }[];
+
+    expect(tables.map((row) => row.name)).toEqual(['graph_edges', 'graph_nodes']);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

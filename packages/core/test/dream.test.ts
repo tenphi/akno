@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { SCHEMA_VERSION } from '../src/store/migrations.ts';
 
 /**
  * The maintenance cycle, end to end over a real knowledge base on disk.
@@ -2000,7 +2001,7 @@ describe('the cycle', () => {
     expect(first.run.id).toMatch(/^run_[a-f0-9]{8}$/);
     expect(first.run.finishedAt).not.toBeNull();
     expect(first.run.snapshot).toMatchObject({
-      schemaVersion: 18,
+      schemaVersion: SCHEMA_VERSION,
       requestedPhases: ['housekeeping'],
       plannerVersion: 'dream-lifecycle-v1',
     });

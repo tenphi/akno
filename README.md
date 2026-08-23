@@ -299,10 +299,9 @@ socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
 ## How your files are treated
 
 **An index pass writes nothing into your knowledge base by default.** Not frontmatter, not fact tables, not a
-`timeline.md` you did not ask for. Explicit write operations do, and the scheduled dream cycle has one enabled
-write phase: `adopt` seals a minimal page for each eligible readable document that no page owns, asks a separate
-curator, and applies accepted items. Install the watcher with `akno service install --no-dream` if you want
-background indexing without scheduled writes.
+`timeline.md` you did not ask for. Explicit write operations do. The scheduled dream cycle starts under the
+`audit` profile, which may seal proposals but applies none until the owner chooses `review` or `autonomous`.
+Install the watcher with `akno service install --no-dream` if you do not want scheduled maintenance at all.
 
 - Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to have
   Akno add a frontmatter `id:` — the only index-time write into a page you wrote — for identity that
@@ -401,6 +400,11 @@ akno:
 
 `about` names the entities a page contributes evidence about. A canonical entity page does not point at
 itself, and aliases equal to its title, slug, or basename are discarded as redundant.
+
+Indexing also projects exact page links, `about`, document ownership, and event participation into a disposable
+structural evidence graph. Every edge retains a current source hash and a line, frontmatter field, document, or
+event locator. This first graph slice is internal derived state: entity resolution, graph inspection, bounded
+multi-hop traversal, and graph-assisted recall are not implemented yet.
 
 ## Documents
 

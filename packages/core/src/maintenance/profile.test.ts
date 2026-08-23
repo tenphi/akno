@@ -19,9 +19,19 @@ afterEach(() => {
 
 describe('maintenance profiles', () => {
   it('rejects the removed compatibility profile before unknown keys can be stripped', () => {
-    expect(() => fixtureConfig({ profile: 'custom' } as never)).toThrow(
-      'uses removed maintenance configuration',
-    );
+    let error: unknown;
+    try {
+      fixtureConfig({ profile: 'custom' } as never);
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toMatchObject({
+      code: 'invalid',
+      details: { reason: 'removed_configuration', keys: ['maintenance.profile=custom'] },
+    });
+    expect((error as Error).message).toContain('configure maintenance.profile and maintenance.policies');
+    expect((error as Error).message).not.toContain('migrat');
   });
 
   it.each([

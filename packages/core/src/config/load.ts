@@ -182,13 +182,13 @@ function repoLocalConfigPath(): string | null {
 }
 
 function parseLayer(raw: unknown, label: string): ConfigDoc {
-  const legacyKeys = legacyMaintenanceKeys(raw);
-  if (legacyKeys.length > 0) {
+  const removedKeys = removedMaintenanceKeys(raw);
+  if (removedKeys.length > 0) {
     throw new AknoError(
       'invalid',
-      `${label} uses removed maintenance configuration (${legacyKeys.join(', ')}); ` +
-        'run `akno config migrate --remove-custom --check` and then apply the migration',
-      { reason: 'configuration_migration_required', keys: legacyKeys },
+      `${label} uses removed maintenance configuration (${removedKeys.join(', ')}); ` +
+        'remove those fields and configure maintenance.profile and maintenance.policies',
+      { reason: 'removed_configuration', keys: removedKeys },
     );
   }
   const parsed = ConfigDoc.safeParse(raw);
@@ -202,7 +202,7 @@ function parseLayer(raw: unknown, label: string): ConfigDoc {
 }
 
 /** Removed authority keys are rejected before Zod can silently strip them. */
-export function legacyMaintenanceKeys(raw: unknown): string[] {
+function removedMaintenanceKeys(raw: unknown): string[] {
   if (!isPlainObject(raw) || !isPlainObject(raw.maintenance)) return [];
   const maintenance = raw.maintenance;
   const keys: string[] = [];

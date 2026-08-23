@@ -194,9 +194,10 @@ flowchart TD
     hash --> parse["4. Parse pages, roles, links, and dates"]
     parse --> chunk["5. Split pages on headings"]
     chunk --> docs["6. Discover and extract documents"]
-    docs --> embed["7. Embed searchable chunks"]
-    embed --> derive["8. Derive summaries, keywords, and facts"]
-    derive --> store["9. Commit the new reading to the index"]
+    docs --> graph["7. Rebuild structural evidence graph"]
+    graph --> embed["8. Embed searchable chunks"]
+    embed --> derive["9. Derive summaries, keywords, and facts"]
+    derive --> store["10. Commit the new reading to the index"]
 ```
 
 | Pass                | Method                                                                 | Model         |
@@ -207,6 +208,7 @@ flowchart TD
 | Parse               | Read frontmatter, headings, wikilinks, dates, roles, and source fences | none          |
 | Chunk               | Follow headings and configured size limits                             | none          |
 | Extract             | Read PDF text, OCR scans, and convert supported Office files           | none on macOS |
+| Structural graph    | Rebuild exact page links, `about`, ownership, and event relationships  | none          |
 | Embed               | Turn chunks into vectors for semantic search                           | embedding     |
 | Derive              | Produce page summaries, keywords, and durable fact candidates          | derive        |
 | Summarize documents | Describe each document without copying its body into Markdown          | derive        |
@@ -688,13 +690,9 @@ An omitted key inherits the profile. An explicit key can only lower that profile
 `off` when it should not be inspected or planned. The separate `observe.enabled` and `reflect.enabled` settings
 control whether those model-sensitive inference tiers run at all; they do not grant write authority.
 
-Installations with the removed `custom`, `curate.enabled/mode/write`, or `adopt.enabled/mode` keys must migrate
-explicitly. Preview first, then apply the content-safe configuration-only rewrite:
-
-```bash
-akno config migrate --remove-custom --check
-akno config migrate --remove-custom
-```
+The removed `custom`, `curate.enabled/mode/write`, and `adopt.enabled/mode` keys are rejected rather than
+silently ignored. Delete them and express authority through `maintenance.profile` and
+`maintenance.policies`.
 
 The effective policy is stored immutably on every plan item. One plan may therefore apply an automatic broken
 link repair while leaving a merge in human review and a synthesis proposal in audit. The plan's `mode` is only
@@ -1571,6 +1569,18 @@ or document was forgotten, recover it from Akno's trash within the configured re
 
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
+
+### The evidence graph is structural but not queryable yet
+
+Indexing now rebuilds a local evidence graph from exact page links, `akno.about`, document ownership, and
+dated event relationships. Its nodes and edges live only in the disposable SQLite index, carry current source
+hashes and exact line/frontmatter/document locators, and are recreated transactionally without model calls or
+knowledge-base writes.
+
+This is the foundation, not multi-hop retrieval yet. Akno does not yet resolve aliases into canonical entity
+nodes, derive fact subject/object edges, expose `akno graph`, traverse bounded paths, or feed graph candidates
+into recall. Until those slices ship, related evidence still has to be discovered by lexical/semantic recall or
+authored links rather than deliberate graph traversal.
 
 ### The durable review queue does not cover every phase yet
 

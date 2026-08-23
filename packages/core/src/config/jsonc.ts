@@ -60,7 +60,7 @@ function stripTrailingCommas(input: string): string {
   return input.replace(/,(\s*[}\]])/g, '$1');
 }
 
-export function parseJsonc<T = unknown>(content: string, label = '<string>'): T {
+function parseJsonc<T = unknown>(content: string, label = '<string>'): T {
   try {
     return JSON.parse(stripTrailingCommas(stripJsonComments(content))) as T;
   } catch (err) {

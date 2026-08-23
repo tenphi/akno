@@ -6,12 +6,12 @@
  * never has to regenerate a possibly different rewrite; the receipt explains the lifecycle around them.
  *
  * The first entry is the canonical 0.1.0 schema, compacted from historical versions
- * 1–8. Later entries add durable state that cannot be recovered by rebuilding the index.
+ * 1–8. Later entries add durable exceptions or new rebuildable index capabilities.
  * `user_version` therefore uses the historical schema number, not this array's length.
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 18;
+export const SCHEMA_VERSION = 19;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -22,6 +22,7 @@ export const DOCUMENT_AVAILABILITY_MIGRATION_INDEX = 7;
 export const DOCUMENT_FILE_DATES_MIGRATION_INDEX = 8;
 export const MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX = 9;
 export const MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX = 10;
+export const STRUCTURAL_GRAPH_MIGRATION_INDEX = 11;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -459,6 +460,46 @@ export const MIGRATIONS: string[] = [
   // Human-readable detail remains in decision_reason; automation must not parse prose to detect backlog.
   `
   ALTER TABLE maintenance_items ADD COLUMN status_code TEXT;
+  `,
+  // ── 12. Rebuildable structural evidence graph ───────────────────────────
+  // These rows are pointers into the canonical page/document/event tables, never another
+  // knowledge store. The indexer replaces the complete structural graph transactionally.
+  `
+  CREATE TABLE graph_nodes (
+    id                 TEXT PRIMARY KEY,
+    kind               TEXT NOT NULL,
+    source_id          TEXT NOT NULL,
+    source_hash        TEXT NOT NULL,
+    derivation_version TEXT NOT NULL,
+    UNIQUE(kind, source_id)
+  );
+  CREATE INDEX graph_nodes_kind ON graph_nodes(kind, source_id);
+
+  CREATE TABLE graph_edges (
+    id                 TEXT PRIMARY KEY,
+    from_node          TEXT NOT NULL REFERENCES graph_nodes(id) ON DELETE CASCADE,
+    to_node            TEXT NOT NULL REFERENCES graph_nodes(id) ON DELETE CASCADE,
+    relation           TEXT NOT NULL,
+    predicate          TEXT,
+    source_kind        TEXT NOT NULL,
+    source_page        TEXT REFERENCES pages(id) ON DELETE CASCADE,
+    source_document    TEXT REFERENCES documents(id) ON DELETE CASCADE,
+    source_event       TEXT REFERENCES events(id) ON DELETE CASCADE,
+    line_start         INTEGER,
+    line_end           INTEGER,
+    source_field       TEXT,
+    source_hash        TEXT NOT NULL,
+    derivation         TEXT NOT NULL,
+    resolution         TEXT NOT NULL,
+    confidence         REAL NOT NULL,
+    derivation_version TEXT NOT NULL,
+    CHECK (confidence >= 0 AND confidence <= 1)
+  );
+  CREATE INDEX graph_edges_from ON graph_edges(from_node, relation);
+  CREATE INDEX graph_edges_to ON graph_edges(to_node, relation);
+  CREATE INDEX graph_edges_source_page ON graph_edges(source_page);
+  CREATE INDEX graph_edges_source_document ON graph_edges(source_document);
+  CREATE INDEX graph_edges_source_event ON graph_edges(source_event);
   `,
 ];
 

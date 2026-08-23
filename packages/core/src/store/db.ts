@@ -16,6 +16,7 @@ import {
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   SCHEMA_VERSION,
+  STRUCTURAL_GRAPH_MIGRATION_INDEX,
 } from './migrations.ts';
 import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
 
@@ -168,6 +169,9 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'maintenance_items', 'status_code')) {
         db.exec(MIGRATIONS[MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'graph_nodes')) {
+        db.exec(MIGRATIONS[STRUCTURAL_GRAPH_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AknoConfig, ResolvedModelRole, ResolvedProvider } from '@tenphi/akno-core';
-import { planMaintenanceConfigMigrationFromSources } from '@tenphi/akno-core';
-import { configForOutput, migrationForOutput, redactSecrets } from './config-cmd.ts';
+import { configForOutput, redactSecrets } from './config-cmd.ts';
 
 const provider: ResolvedProvider = {
   name: 'vulpine',
@@ -68,23 +67,5 @@ describe('config output redaction', () => {
         label: 'safe label',
       },
     });
-  });
-
-  it('never includes source configuration content in a migration preview', () => {
-    const plan = planMaintenanceConfigMigrationFromSources([
-      {
-        path: '/fixture/local.jsonc',
-        content: JSON.stringify({
-          providers: { vulpine: { api_key: 'invented-migration-secret' } },
-          maintenance: { profile: 'custom', adopt: { enabled: true, mode: 'auto' } },
-        }),
-      },
-    ]);
-
-    const output = JSON.stringify(migrationForOutput(plan, true));
-
-    expect(output).not.toContain('invented-migration-secret');
-    expect(output).not.toContain('/fixture/local.jsonc');
-    expect(output).not.toContain('providers');
   });
 });
