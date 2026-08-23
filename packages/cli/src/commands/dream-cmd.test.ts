@@ -273,10 +273,12 @@ function fixtureAuthority(): MaintenanceStatus['authority'] {
     automaticKnowledgeBaseWrites: true,
     inference: 'write-when-enabled',
     observe: 'auto',
+    reflect: 'auto',
     curate: 'auto',
     adopt: 'auto',
     policies: {
       observe: 'auto',
+      reflect: 'auto',
       hygiene: 'auto',
       synthesis: 'auto',
       split: 'auto',

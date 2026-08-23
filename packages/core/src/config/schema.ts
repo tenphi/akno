@@ -200,6 +200,7 @@ export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous', 'custom'] 
 export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
 export const MAINTENANCE_TRANSFORMS = [
   'observe',
+  'reflect',
   'hygiene',
   'synthesis',
   'split',
@@ -222,6 +223,7 @@ export interface MaintenanceLimits {
 const MaintenancePolicyDoc = z.enum(MAINTENANCE_POLICIES);
 const MaintenancePoliciesDoc = z.object({
   observe: MaintenancePolicyDoc.optional(),
+  reflect: MaintenancePolicyDoc.optional(),
   hygiene: MaintenancePolicyDoc.optional(),
   synthesis: MaintenancePolicyDoc.optional(),
   split: MaintenancePolicyDoc.optional(),

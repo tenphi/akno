@@ -158,7 +158,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['cycle authority', status.authority.mode],
     ['automatic KB writes', status.authority.automaticKnowledgeBaseWrites ? 'allowed' : 'not allowed'],
     ['observe', status.authority.observe],
-    ['reflect', status.authority.inference],
+    ['reflect', status.authority.reflect],
     ['curate', status.authority.curate],
     ['adopt', status.authority.adopt],
     ['active dream runs', status.activeRuns],

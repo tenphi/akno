@@ -229,12 +229,27 @@ const OBSERVED = {
 };
 
 describe('reflect', () => {
+  const PRINCIPLE = 'Recurring activities are managed through explicit structures.';
+  const REFLECTED = {
+    observations: [
+      {
+        pattern: PRINCIPLE,
+        evidence: [
+          'observations/travel-lunch',
+          'observations/banking-review-period',
+          'observations/home-servicing',
+        ],
+        confidence: 0.9,
+      },
+    ],
+  };
+
   /**
    * The tier reads the folder it writes into, which is how `principles` came to list itself as its
    * own evidence on a real knowledge base. A conclusion offered as its own support reads, later, as
    * a conclusion with support.
    */
-  async function withTwoObservations(): Promise<Akno> {
+  async function withTwoObservations(maintenance: Record<string, unknown> = {}): Promise<Akno> {
     await mem.close();
     for (const [name, body] of [
       ['travel-lunch', 'Travel itineraries treat lunch as a scheduled part of the day.'],
@@ -249,7 +264,9 @@ describe('reflect', () => {
         'utf8',
       );
     }
-    mem = await openMem({ maintenance: { observe: { enabled: true }, reflect: { enabled: true } } });
+    mem = await openMem({
+      maintenance: { observe: { enabled: true }, reflect: { enabled: true }, ...maintenance },
+    });
     await mem.index({});
     return mem;
   }
@@ -338,6 +355,119 @@ describe('reflect', () => {
     server.reply({ observations: [] });
     await mem.dream({ phase: 'reflect' });
     expect(server.lastObserveInput()).not.toContain('observations/principles');
+  });
+
+  it('seals an exact reflection audit plan without writing or deciding', async () => {
+    await withTwoObservations({ profile: 'autonomous' });
+    server.reply(REFLECTED);
+
+    const report = await mem.dream({ phase: 'reflect', mode: 'audit' });
+
+    expect(report.observations[0]).toMatchObject({ action: 'would-create', pattern: PRINCIPLE });
+    expect(report.maintenancePlan).toMatchObject({ phase: 'reflect', mode: 'audit', status: 'ready' });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      kind: 'reflect',
+      policy: 'audit',
+      status: 'proposed',
+      decision: null,
+    });
+    expect(mem.maintenanceDiff(report.maintenancePlan!.id)).toContain(PRINCIPLE);
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+  });
+
+  it('seals reflection for human review and applies an approved principle', async () => {
+    await withTwoObservations({ profile: 'review' });
+    server.reply(REFLECTED);
+
+    const report = await mem.dream({ phase: 'reflect' });
+
+    expect(report.maintenancePlan).toMatchObject({ phase: 'reflect', status: 'awaiting_review' });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      kind: 'reflect',
+      policy: 'review',
+      status: 'proposed',
+    });
+    expect(mem.maintenanceStatus().authority).toMatchObject({ reflect: 'review' });
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+
+    const item = report.maintenancePlan!.items[0]!;
+    mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'The invented principle is useful.');
+    const applied = await mem.applyPlan(report.maintenancePlan!.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'applied', verification: { status: 'passed' } });
+    expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(PRINCIPLE);
+  });
+
+  it('does not resubmit an unchanged rejected principle', async () => {
+    await withTwoObservations({ profile: 'review' });
+    server.reply(REFLECTED);
+
+    const first = await mem.dream({ phase: 'reflect' });
+    const item = first.maintenancePlan!.items[0]!;
+    mem.decidePlan(first.maintenancePlan!.id, item.id, 'reject', 'This invented principle is too broad.');
+
+    const repeated = await mem.dream({ phase: 'reflect' });
+
+    expect(repeated.maintenancePlan).toBeNull();
+    expect(repeated.observations[0]).toMatchObject({ action: 'rejected', pattern: PRINCIPLE });
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+  });
+
+  it('refuses an approved reflection after sealed observation evidence changes', async () => {
+    await withTwoObservations({ profile: 'review' });
+    server.reply(REFLECTED);
+
+    const report = await mem.dream({ phase: 'reflect' });
+    const item = report.maintenancePlan!.items[0]!;
+    fs.appendFileSync(
+      path.join(root, 'observations/travel-lunch.md'),
+      '\n- 2026-08-09 — Lunch plans now use an invented rotating schedule.\n',
+    );
+    mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'Approved before evidence changed.');
+
+    const applied = await mem.applyPlan(report.maintenancePlan!.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(applied.files).toEqual([]);
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+  });
+
+  it('uses a separate curator and shared budget for autonomous reflection', async () => {
+    await withTwoObservations({ profile: 'autonomous' });
+    server.reply(REFLECTED);
+
+    const report = await mem.dream({ phase: 'reflect' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.observations[0]).toMatchObject({ action: 'created', pattern: PRINCIPLE });
+    expect(item).toMatchObject({
+      kind: 'reflect',
+      policy: 'auto',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(report.budget.used).toMatchObject({ items: 1, filesChanged: 1, highRiskItems: 0 });
+    expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(PRINCIPLE);
+  });
+
+  it('defers an approved autonomous reflection when its shared run budget is exhausted', async () => {
+    await withTwoObservations({ profile: 'autonomous', limits: { max_items: 0 } });
+    server.reply(REFLECTED);
+
+    const report = await mem.dream({ phase: 'reflect' });
+
+    expect(report.run).toMatchObject({
+      status: 'partially_completed',
+      budget: { used: { items: 0, filesChanged: 0 }, deferredItems: 1 },
+    });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      kind: 'reflect',
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      decision: null,
+    });
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
   });
 });
 

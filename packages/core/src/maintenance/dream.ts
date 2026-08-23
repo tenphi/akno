@@ -27,6 +27,7 @@ import {
   createAdoptionPlan,
   createCurationPlan,
   createObservationPlan,
+  createReflectionPlan,
   decideMaintenancePlanWithCurator,
   findActiveMaintenancePlan,
   type MaintenanceItem,
@@ -102,7 +103,7 @@ export const DREAM_PHASES: DreamPhase[] = [
   'housekeeping',
 ];
 
-const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'observe' | 'adopt'>[] = [
+const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'observe' | 'reflect' | 'adopt'>[] = [
   'hygiene',
   'synthesis',
   'split',
@@ -161,7 +162,7 @@ export interface DreamReport {
   /** @deprecated Direct repair writes were retired; link item change ids live on the plan. */
   repairChangeId: string | null;
   housekeeping: Housekeeping | null;
-  /** @deprecated One legacy observe change, or one plan-backed observation item for compatibility. */
+  /** @deprecated One legacy inference change, or one plan-backed inference item for compatibility. */
   changeId: string | null;
   /** The `adopt` phase's compatibility change id, kept apart from observations. */
   adoptChangeId: string | null;
@@ -183,7 +184,7 @@ export interface DreamOptions {
   phase?: DreamPhase;
   /** Report what would be written without touching disk. */
   dryRun?: boolean;
-  /** Authority policy for a durable observe, curate, or adopt plan. */
+  /** Authority policy for a durable observe, reflect, curate, or adopt plan. */
   mode?: MaintenanceMode;
 }
 
@@ -282,15 +283,20 @@ function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
     const kinds: MaintenanceTransform[] =
       options.phase === 'observe'
         ? ['observe']
-        : options.phase === 'adopt'
-          ? ['adopt']
-          : options.phase === 'curate'
-            ? CURATE_POLICY_KINDS
-            : ['observe', ...CURATE_POLICY_KINDS, 'adopt'];
+        : options.phase === 'reflect'
+          ? ['reflect']
+          : options.phase === 'adopt'
+            ? ['adopt']
+            : options.phase === 'curate'
+              ? CURATE_POLICY_KINDS
+              : ['observe', 'reflect', ...CURATE_POLICY_KINDS, 'adopt'];
     return highestPolicyMode(kinds.map((kind) => effectiveTransformPolicy(ctx.config, kind))) ?? 'legacy';
   }
   if (options.phase === 'observe') {
     return policyMode(effectiveTransformPolicy(ctx.config, 'observe')) ?? 'legacy';
+  }
+  if (options.phase === 'reflect') {
+    return policyMode(effectiveTransformPolicy(ctx.config, 'reflect')) ?? 'legacy';
   }
   if (options.phase === 'adopt') return ctx.config.maintenance.adopt.mode ?? 'legacy';
   if (!options.phase) {
@@ -312,13 +318,13 @@ function usesPolicyMatrix(ctx: AknoContext, options: DreamOptions): boolean {
 function curationPolicies(
   ctx: AknoContext,
   options: DreamOptions,
-): Record<Exclude<MaintenanceTransform, 'observe' | 'adopt'>, MaintenancePolicy> {
+): Record<Exclude<MaintenanceTransform, 'observe' | 'reflect' | 'adopt'>, MaintenancePolicy> {
   return Object.fromEntries(
     CURATE_POLICY_KINDS.map((kind) => {
       const effective = effectiveTransformPolicy(ctx.config, kind, options.mode);
       return [kind, policyMode(effective) ?? 'off'];
     }),
-  ) as Record<Exclude<MaintenanceTransform, 'observe' | 'adopt'>, MaintenancePolicy>;
+  ) as Record<Exclude<MaintenanceTransform, 'observe' | 'reflect' | 'adopt'>, MaintenancePolicy>;
 }
 
 function planMatchesPolicies(
@@ -358,10 +364,16 @@ async function runPhase(
       if (!ctx.config.maintenance.reflect.enabled) {
         return 'off by default — enable it once the knowledge base has the volume for it';
       }
+      if (
+        usesPolicyMatrix(ctx, options) &&
+        !policyMode(effectiveTransformPolicy(ctx.config, 'reflect', options.mode))
+      ) {
+        return 'reflect policy is off';
+      }
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await reflectPhase(ctx, { ...options, dryRun: inferenceDryRun(ctx.config, options) }, report, applied);
+      await reflectPhase(ctx, options, report, applied, budget);
       return null;
     }
     case 'curate': {
@@ -675,6 +687,7 @@ function linkDraftPaths(draft: BrokenLinkDraft): string[] {
 function isGeneralCurationItem(item: MaintenanceItem): boolean {
   return (
     item.kind !== 'observe' &&
+    item.kind !== 'reflect' &&
     item.kind !== 'contradiction' &&
     item.kind !== 'broken_link' &&
     item.kind !== 'adopt'
@@ -800,7 +813,7 @@ async function observePhase(
     const drafts: ObservationPlanDraft[] = [];
     for (const entry of prepared) {
       if (!entry.draft) continue;
-      if (observationWasRejected(ctx, entry.draft)) {
+      if (inferenceWasRejected(ctx, 'observe', entry.draft)) {
         previouslyRejected.push({ ...entry.written, action: 'rejected' });
       } else {
         drafts.push(entry.draft);
@@ -1172,14 +1185,18 @@ async function observationEvidence(
   return out;
 }
 
-function observationWasRejected(ctx: AknoContext, draft: ObservationPlanDraft): boolean {
+function inferenceWasRejected(
+  ctx: AknoContext,
+  kind: Extract<MaintenanceItem['kind'], 'observe' | 'reflect'>,
+  draft: ObservationPlanDraft,
+): boolean {
   const row = ctx.store.db
     .prepare(
       `SELECT 1 FROM maintenance_items
-        WHERE kind = 'observe' AND status = 'rejected' AND subject = ? AND input_hash = ?
+        WHERE kind = ? AND status = 'rejected' AND subject = ? AND input_hash = ?
         LIMIT 1`,
     )
-    .get(draft.slug, draft.inputHash);
+    .get(kind, draft.slug, draft.inputHash);
   return row !== undefined;
 }
 
@@ -1279,67 +1296,71 @@ async function reflectPhase(
   options: DreamOptions,
   report: DreamReport,
   applied: AppliedChange[],
+  budget: MaintenanceBudgetTracker,
 ): Promise<void> {
-  // The page this phase writes to is under `observations/` like everything it reads, so without
-  // excluding it the tier feeds on its own output: from the second night onwards `principles` has a
-  // summary, is selected as a source, and is cited as evidence for the principle it already
-  // contains. A conclusion that is its own evidence is not a conclusion.
-  const target = observationSlug(ctx, PRINCIPLES_SLUG);
-  const observations = await allObservations(ctx);
-  const ineligibleSources = ineligibleConflictSourceSlugs(report.conflicts);
-  const rows = (
-    ctx.store.db
-      .prepare(
-        `SELECT slug, summary, frontmatter FROM pages
-        WHERE (slug = ? OR slug LIKE ?) AND slug != ? AND summary IS NOT NULL
-        ORDER BY updated_at DESC LIMIT 40`,
-      )
-      .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`, target) as {
-      slug: string;
-      summary: string;
-      frontmatter: string;
-    }[]
-  ).filter((row) => !frontmatterEvidence(row.frontmatter).some((slug) => ineligibleSources.has(slug)));
-
-  if (rows.length < 2) {
-    report.warnings.push('reflect had fewer than two observations to build on — nothing was written');
-    return;
-  }
-
-  const result = await runObserveMission({
-    subject: 'decision principles',
-    facts: rows.map((row) => ({ claim: row.summary, slug: row.slug })),
-    model: ctx.models.derive,
-    mission:
-      ctx.config.maintenance.reflect.mission ??
-      'State durable decision principles and long-term tendencies, not individual patterns.',
-    // A tier further from the evidence needs more of it.
-    minEvidence: Math.max(3, ctx.config.maintenance.observe.minEvidence),
-    // This tier appends to one page every night from observations that rarely change, so without
-    // its own previous answers it restates them — the same way `observe` did, one tier up.
-    existing: observations.get(target) ?? [],
-    // A principle that is one of the observation lines verbatim is not a tier above them. Its
-    // sources here are page *summaries*, so the lines themselves are not otherwise checked.
-    otherObservations: [...observations].flatMap(([slug, lines]) => (slug === target ? [] : lines)),
-    // Nor a raw claim promoted to a principle. `facts` for this phase is the observations, so
-    // without this the knowledge base's own facts are the one thing it is not compared against.
-    knownFacts: liveFactClaims(ctx, report.conflicts),
-  });
-
-  if (result.error) {
-    report.warnings.push(`reflect: ${result.error}`);
-    return;
-  }
-  report.rejected.push(...result.rejected);
-
-  const files: ChangeFile[] = [];
-  for (const observation of result.observations) {
-    const outcome = await prepareObservation(
+  const policyMatrix = usesPolicyMatrix(ctx, options);
+  if (!policyMatrix) {
+    await legacyReflectPhase(
       ctx,
-      { title: 'Principles', slug: PRINCIPLES_SLUG },
-      observation,
-      'inference',
+      { ...options, dryRun: inferenceDryRun(ctx.config, options) },
+      report,
+      applied,
     );
+    return;
+  }
+
+  const reflectPolicy = policyMode(effectiveTransformPolicy(ctx.config, 'reflect', options.mode));
+  if (!reflectPolicy) return;
+  let plan = findActiveMaintenancePlan(ctx, reflectPolicy, 'reflect');
+  if (plan && !planMatchesPolicies(plan, { reflect: reflectPolicy })) plan = null;
+
+  const previouslyRejected: ObservationWritten[] = [];
+  if (!plan) {
+    const prepared = await collectPreparedReflections(ctx, report);
+    const drafts: ObservationPlanDraft[] = [];
+    for (const entry of prepared) {
+      if (!entry.draft) continue;
+      if (inferenceWasRejected(ctx, 'reflect', entry.draft)) {
+        previouslyRejected.push({ ...entry.written, action: 'rejected' });
+      } else {
+        drafts.push(entry.draft);
+      }
+    }
+    plan = createReflectionPlan(ctx, reflectPolicy, drafts, reflectPolicy);
+  }
+  if (!plan) {
+    report.observations.push(...previouslyRejected);
+    return;
+  }
+
+  if (reflectPolicy === 'auto') {
+    if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
+      plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+    }
+    if (plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
+      const result = await applyMaintenancePlan(ctx, plan.id, budget);
+      plan = result.plan;
+      applied.push(...result.files.map((file) => asApplied('reflect', file)));
+    }
+  }
+
+  report.observations.push(...plan.items.map(observationFromPlanItem), ...previouslyRejected);
+  const changeIds = plan.items
+    .map((item) => item.changeId)
+    .filter((changeId): changeId is string => changeId !== null);
+  report.changeId = changeIds.length === 1 ? changeIds[0]! : null;
+  recordMaintenancePlan(report, plan);
+}
+
+async function legacyReflectPhase(
+  ctx: AknoContext,
+  options: DreamOptions,
+  report: DreamReport,
+  applied: AppliedChange[],
+): Promise<void> {
+  const prepared = await collectPreparedReflections(ctx, report);
+  const files: ChangeFile[] = [];
+  for (const outcome of prepared) {
     report.observations.push(outcome.written);
     if (!outcome.draft || options.dryRun) continue;
     const writeResult = await writeFileAtomic(
@@ -1365,6 +1386,78 @@ async function reflectPhase(
     files,
   });
   await ctx.indexer.run({ only: files.map((file) => file.relPath) });
+}
+
+async function collectPreparedReflections(
+  ctx: AknoContext,
+  report: DreamReport,
+): Promise<PreparedObservation[]> {
+  // The page this phase writes to is under `observations/` like everything it reads, so without
+  // excluding it the tier feeds on its own output: from the second night onwards `principles` has a
+  // summary, is selected as a source, and is cited as evidence for the principle it already
+  // contains. A conclusion that is its own evidence is not a conclusion.
+  const target = observationSlug(ctx, PRINCIPLES_SLUG);
+  const observations = await allObservations(ctx);
+  const ineligibleSources = ineligibleConflictSourceSlugs(report.conflicts);
+  const rows = (
+    ctx.store.db
+      .prepare(
+        `SELECT slug, summary, frontmatter FROM pages
+        WHERE (slug = ? OR slug LIKE ?) AND slug != ? AND summary IS NOT NULL
+        ORDER BY updated_at DESC LIMIT 40`,
+      )
+      .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`, target) as {
+      slug: string;
+      summary: string;
+      frontmatter: string;
+    }[]
+  ).filter((row) => !frontmatterEvidence(row.frontmatter).some((slug) => ineligibleSources.has(slug)));
+
+  if (rows.length < 2) {
+    report.warnings.push('reflect had fewer than two observations to build on — nothing was written');
+    return [];
+  }
+
+  const result = await runObserveMission({
+    subject: 'decision principles',
+    facts: rows.map((row) => ({ claim: row.summary, slug: row.slug })),
+    model: ctx.models.derive,
+    mission:
+      ctx.config.maintenance.reflect.mission ??
+      'State durable decision principles and long-term tendencies, not individual patterns.',
+    // A tier further from the evidence needs more of it.
+    minEvidence: Math.max(3, ctx.config.maintenance.observe.minEvidence),
+    // This tier appends to one page every night from observations that rarely change, so without
+    // its own previous answers it restates them — the same way `observe` did, one tier up.
+    existing: observations.get(target) ?? [],
+    // A principle that is one of the observation lines verbatim is not a tier above them. Its
+    // sources here are page *summaries*, so the lines themselves are not otherwise checked.
+    otherObservations: [...observations].flatMap(([slug, lines]) => (slug === target ? [] : lines)),
+    // Nor a raw claim promoted to a principle. `facts` for this phase is the observations, so
+    // without this the knowledge base's own facts are the one thing it is not compared against.
+    knownFacts: liveFactClaims(ctx, report.conflicts),
+  });
+
+  if (result.error) {
+    report.warnings.push(`reflect: ${result.error}`);
+    return [];
+  }
+  report.rejected.push(...result.rejected);
+
+  const prepared: PreparedObservation[] = [];
+  for (const observation of result.observations) {
+    const outcome = await prepareObservation(
+      ctx,
+      { title: 'Principles', slug: PRINCIPLES_SLUG },
+      observation,
+      'inference',
+    );
+    prepared.push(outcome);
+    if (outcome.rejectionReason) {
+      report.rejected.push({ pattern: observation.pattern, reason: outcome.rejectionReason });
+    }
+  }
+  return prepared;
 }
 
 function ineligibleConflictSourceSlugs(conflicts: CrossPageConflict[]): Set<string> {

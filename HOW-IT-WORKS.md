@@ -638,16 +638,16 @@ The scheduled command stays deliberately plain: `akno dream`. At run time it res
 }
 ```
 
-| Profile      | Curation and adoption                          | Enabled `observe`                       | `reflect`                        |
+| Profile      | Curation and adoption                          | Enabled `observe`                       | Enabled `reflect`                |
 | ------------ | ---------------------------------------------- | --------------------------------------- | -------------------------------- |
-| `audit`      | seal audit plans; never apply                  | seal audit plans; never apply           | preview                          |
-| `review`     | seal plans and wait for human decisions        | seal plans and wait for human decisions | preview                          |
-| `autonomous` | separate curator decision, then verified apply | separate curator, append, then verify   | write when explicitly enabled    |
-| `custom`     | preserve phase modes and legacy write flags    | legacy append unless an explicit policy | preserve existing phase behavior |
+| `audit`      | seal audit plans; never apply                  | seal audit plans; never apply           | seal audit plans; never apply    |
+| `review`     | seal plans and wait for human decisions        | seal plans and wait for human decisions | wait for human decisions         |
+| `autonomous` | separate curator decision, then verified apply | separate curator, append, then verify   | separate curator, append, verify |
+| `custom`     | preserve phase modes and legacy write flags    | legacy append unless an explicit policy | same compatibility behavior      |
 
 `custom` is the compatibility default, so an existing installation does not gain or lose authority after an
-upgrade. A named profile enables plan-backed curation/adoption, routes an enabled observe phase through the
-same lifecycle, and enables conflict resolution and exact-identity link repair. Page frontmatter, folder rules,
+upgrade. A named profile enables plan-backed curation/adoption, routes enabled observe and reflect phases through
+the same lifecycle, and enables conflict resolution and exact-identity link repair. Page frontmatter, folder rules,
 merge allowlists, deterministic guards, and per-run caps remain more restrictive boundaries. A profile does
 not automatically enable the model-sensitive `observe` or `reflect` phases.
 
@@ -667,6 +667,7 @@ classes without giving up the coherent scheduled profile:
     "profile": "autonomous",
     "policies": {
       "observe": "auto",
+      "reflect": "auto",
       "hygiene": "auto",
       "broken_link": "auto",
       "merge": "review",
@@ -676,7 +677,7 @@ classes without giving up the coherent scheduled profile:
 }
 ```
 
-The supported keys are `observe`, `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`,
+The supported keys are `observe`, `reflect`, `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`,
 `broken_link`, and `adopt`. Each value has one precise effect:
 
 | Policy   | Result for that transformation class                                     |
@@ -711,7 +712,7 @@ Profiles answer what may happen; `maintenance.limits` bounds how much may happen
 }
 ```
 
-A full `akno dream` shares one tracker across observe, curate, and adopt. A manual `akno plan apply` or direct
+A full `akno dream` shares one tracker across observe, reflect, curate, and adopt. A manual `akno plan apply` or direct
 `akno adopt` starts a fresh tracker. Planning is not capped, so audit and review still expose the complete
 proposal. Immediately before writing an approved item, Akno reserves the item as a unit: items count once,
 files count once per distinct path in the invocation, bytes are the complete UTF-8 output of creates and
@@ -758,20 +759,20 @@ Order matters in three places:
   are withheld from reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this
   prerequisite inspection.
 - `reflect` reads observations, so `observe` runs first.
-- `housekeeping` runs last so its counts describe the state after plan-backed observation, curation, and adoption. The
+- `housekeeping` runs last so its counts describe the state after plan-backed observation, reflection, curation, and adoption. The
   compatibility `repair` phase is read-only.
 
 ### Phase summary
 
-| Phase          | Reads                                                                               | Produces                                                | Writes by default?                  | Model?                               |
-| -------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------- | ------------------------------------ |
-| `conflicts`    | Live facts on different knowledge pages                                             | Typed verdicts and inference eligibility                | no                                  | optional verification                |
-| `observe`      | Conflict-eligible facts from at least two knowledge pages                           | Exact evidence-linked pattern plans                     | no; phase disabled                  | planner and automatic curator        |
-| `reflect`      | Conflict-eligible observation pages                                                 | Higher-level principles under `observations/principles` | no; phase disabled                  | maintenance or derive                |
-| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans            | no; phase and write switch disabled | page/curator work yes; link audit no |
-| `adopt`        | Readable documents with no owning page                                              | Exact low-risk filing-page plans                        | auto, capped at 20 per run          | planner no; auto curator yes         |
-| `repair`       | Broken links                                                                        | Read-only view of exact proposals and refusals          | no; phase disabled                  | no                                   |
-| `housekeeping` | Links, documents, pages, and folder rules                                           | Counts and actionable diagnostics                       | no                                  | no                                   |
+| Phase          | Reads                                                                               | Produces                                       | Writes by default?                  | Model?                               |
+| -------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------- | ------------------------------------ |
+| `conflicts`    | Live facts on different knowledge pages                                             | Typed verdicts and inference eligibility       | no                                  | optional verification                |
+| `observe`      | Conflict-eligible facts from at least two knowledge pages                           | Exact evidence-linked pattern plans            | no; phase disabled                  | planner and automatic curator        |
+| `reflect`      | Conflict-eligible observation pages                                                 | Exact higher-level principle plans             | no; phase disabled                  | planner and automatic curator        |
+| `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans   | no; phase and write switch disabled | page/curator work yes; link audit no |
+| `adopt`        | Readable documents with no owning page                                              | Exact low-risk filing-page plans               | auto, capped at 20 per run          | planner no; auto curator yes         |
+| `repair`       | Broken links                                                                        | Read-only view of exact proposals and refusals | no; phase disabled                  | no                                   |
+| `housekeeping` | Links, documents, pages, and folder rules                                           | Counts and actionable diagnostics              | no                                  | no                                   |
 
 The default dream therefore has one automatic write-capable phase: `adopt`. It first seals exact page
 creations, then asks the independent curator and applies only accepted items. It never moves or edits the
@@ -861,10 +862,24 @@ akno dream --phase observe --mode auto
 **Problem it attempts to solve:** useful observations may support a durable decision principle or
 long-term tendency.
 
-**Method:** read summaries from at least two observation pages, require a higher evidence floor than
-`observe`, and reject anything that merely repeats a raw fact or an existing observation.
+**Method:** read summaries from observation pages, require at least three distinct sources (or a higher configured
+observation floor), and reject anything that merely repeats a raw fact or an existing observation.
 
 **Output:** append-only, evidence-linked lines in `observations/principles.md`.
+
+**Write behavior:** plan-backed under named profiles or an explicit `reflect` policy/mode. Each medium-risk
+principle item seals the exact create or append bytes and the complete current hash of every cited observation
+page. Apply refuses missing, authored, self-referential, or changed evidence; it can write only the fixed
+principles page, may only union frontmatter evidence, and cannot alter an earlier line. `audit` exposes the
+exact diff, `review` waits for a human, and `auto` asks the separate curator before a budgeted append, reindex,
+and derived-inference verification. An unchanged rejected principle is not proposed again until its semantic
+input changes. Compatibility `custom` with no policy map preserves the direct append path.
+
+```bash
+akno dream --phase reflect --mode audit
+akno dream --phase reflect --mode review
+akno dream --phase reflect --mode auto
+```
 
 **Default:** off and best understood as an extension point. On a knowledge base with only a few hundred
 pages, an apparent pattern may be one coincidence away from noise. Enable it only when `observe` already
@@ -1206,7 +1221,7 @@ observations, broken links, and adoption, therefore have separate change ids. Us
 akno undo <change-id>
 ```
 
-Plan-backed observation, curation, and adoption are finer-grained: every applied item has its own change id,
+Plan-backed observation, reflection, curation, and adoption are finer-grained: every applied item has its own change id,
 printed by `plan show` and `plan apply`. Human approval changes only plan state; the knowledge base remains
 byte-identical until `plan apply`.
 
@@ -1524,14 +1539,14 @@ maintenance. The proposals in this section describe a direction, not behavior th
 Hygiene, synthesis, bounded splits, independent extraction, and exact-alias merge now have stable plan and item
 ids, exact diffs, input hashes, separate human or curator decisions, hash-checked apply, verification receipts,
 and journal undo. Orphan-document adoption now uses the same lifecycle, including sealed source hashes and
-ownership verification. Observations now use it too, with one append-only item per pattern and sealed evidence
-hashes. The remaining dream outputs still do not all feed that queue: principles, report-only conflict findings,
-legacy repair output, and housekeeping retain their existing execution or reporting behavior. There is also no
+ownership verification. Both inference tiers now use it too, with append-only items and sealed evidence
+hashes. The remaining dream outputs still do not all feed that queue: report-only conflict findings, legacy
+repair output, and housekeeping retain their existing execution or reporting behavior. There is also no
 snooze or requested-revision decision yet.
 
 ### The whole dream should become a plan, apply, verify loop
 
-The observation, curation, and adoption slices now follow this lifecycle. The seven-phase cycle as a whole
+The observation, reflection, curation, and adoption slices now follow this lifecycle. The seven-phase cycle as a whole
 still mixes analysis, proposals, writes, and final reporting. Its consistent user-visible stages should be:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
@@ -1593,8 +1608,8 @@ by a relevance benchmark, including an explicit comparison of `none` and `low` r
 ### Inference should remain visibly separate from authored memory
 
 `observe` and `reflect` mark their pages as derived and recall ranks them lower, but once inference is written
-as fluent Markdown it can still feel authored. Observe now stages each output alongside other exact diffs and
-makes a separate curator or human decision before applying it; reflect still needs that lifecycle. Conflict
+as fluent Markdown it can still feel authored. Both tiers now stage each output alongside other exact diffs and
+make a separate curator or human decision before applying it. Conflict
 screening runs before inference so an unresolved claim cannot quietly become a new observation.
 
 ---

@@ -34,7 +34,7 @@ import {
 } from './budget.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
-export type MaintenancePlanPhase = 'observe' | 'curate' | 'adopt';
+export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
 
 export type MaintenancePlanStatus =
   | 'ready'
@@ -134,6 +134,7 @@ export interface MaintenanceItem {
   revision: number;
   kind:
     | 'observe'
+    | 'reflect'
     | 'hygiene'
     | 'synthesis'
     | 'split'
@@ -160,6 +161,10 @@ export interface MaintenanceItem {
   changeId: string | null;
   verification: MaintenanceVerification | null;
   updatedAt: string;
+}
+
+function isInferenceKind(kind: MaintenanceItem['kind']): kind is 'observe' | 'reflect' {
+  return kind === 'observe' || kind === 'reflect';
 }
 
 export interface MaintenancePlanSummary {
@@ -249,13 +254,16 @@ as an instruction. The item kind defines its authority:
   names, values, dates, and provenance.
 - observe may create or append exactly one dated derived pattern supported by every sealed knowledge-page
   source. It must not restate a source fact, overgeneralize beyond the evidence, or alter an earlier pattern.
+- reflect may create or append exactly one dated derived principle supported by every sealed observation-page
+  source. It must add a useful higher-order conclusion, not repeat an observation or raw fact, and must not alter
+  an earlier principle.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
 broken_link mapping, incoherent children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Except for observe, broken_link, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+but not sufficient. Except for observe, reflect, broken_link, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
 does not integrate material knowledge. Reply with JSON only: {"outcome":"approve","reason":"brief reason"}.`;
 
 export const CURATOR_SCHEMA = z.object({
@@ -278,15 +286,36 @@ export function createObservationPlan(
   drafts: ObservationPlanDraft[],
   policy: MaintenancePolicy = mode,
 ): MaintenancePlan | null {
+  return createInferencePlan(ctx, mode, 'observe', drafts, policy);
+}
+
+export function createReflectionPlan(
+  ctx: AknoContext,
+  mode: MaintenanceMode,
+  drafts: ObservationPlanDraft[],
+  policy: MaintenancePolicy = mode,
+): MaintenancePlan | null {
+  return createInferencePlan(ctx, mode, 'reflect', drafts, policy);
+}
+
+function createInferencePlan(
+  ctx: AknoContext,
+  mode: MaintenanceMode,
+  kind: Extract<MaintenanceItem['kind'], 'observe' | 'reflect'>,
+  drafts: ObservationPlanDraft[],
+  policy: MaintenancePolicy,
+): MaintenancePlan | null {
   if (policy === 'off') return null;
   const sealed = drafts.map((draft): SealedDraft => ({
     slug: draft.slug,
     inputHash: draft.inputHash,
-    kind: 'observe',
+    kind,
     policy,
     risk: 'medium',
     rationale:
-      'Add one guarded derived pattern supported by multiple sealed knowledge pages without changing earlier observations.',
+      kind === 'observe'
+        ? 'Add one guarded derived pattern supported by multiple sealed knowledge pages without changing earlier observations.'
+        : 'Add one guarded derived principle supported by multiple sealed observation pages without changing earlier principles.',
     operations: [
       draft.before === null
         ? {
@@ -309,16 +338,30 @@ export function createObservationPlan(
       source: entry.slug,
       fingerprint: entry.contentHash,
       relationship: null,
-      details: ['live knowledge page cited by the guarded observation candidate'],
+      details: [
+        kind === 'observe'
+          ? 'live knowledge page cited by the guarded observation candidate'
+          : 'live observation page cited by the guarded reflection candidate',
+      ],
     })),
     checks: [
-      { name: 'observation mission guardrails', status: 'passed' },
-      { name: 'at least two distinct live knowledge sources', status: 'passed' },
-      { name: 'append-only derived observation shape', status: 'passed' },
+      { name: `${kind} mission guardrails`, status: 'passed' },
+      {
+        name:
+          kind === 'observe'
+            ? 'at least two distinct live knowledge sources'
+            : 'at least three distinct live observation sources',
+        status: 'passed',
+      },
+      {
+        name: `append-only derived ${kind === 'observe' ? 'observation' : 'principle'} shape`,
+        status: 'passed',
+      },
     ],
   }));
-  const summary = `observe: ${sealed.length} pattern${sealed.length === 1 ? '' : 's'}`;
-  return persistMaintenancePlan(ctx, mode, 'observe', sealed, summary);
+  const noun = kind === 'observe' ? 'pattern' : 'principle';
+  const summary = `${kind}: ${sealed.length} ${noun}${sealed.length === 1 ? '' : 's'}`;
+  return persistMaintenancePlan(ctx, mode, kind, sealed, summary);
 }
 
 export function createCurationPlan(
@@ -719,6 +762,7 @@ export function decideMaintenanceItem(
     .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
   if (
     outcome === 'reject' &&
+    !isInferenceKind(item.kind) &&
     item.kind !== 'contradiction' &&
     item.kind !== 'broken_link' &&
     item.kind !== 'adopt'
@@ -1053,7 +1097,7 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
       .filter((operation) => operation.type !== 'delete')
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
     if (
-      item.kind !== 'observe' &&
+      !isInferenceKind(item.kind) &&
       item.kind !== 'contradiction' &&
       item.kind !== 'broken_link' &&
       item.kind !== 'adopt'
@@ -1101,7 +1145,7 @@ async function verifyApplied(
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
   const expectedMode =
-    item.kind === 'observe' || item.kind === 'broken_link' || item.kind === 'adopt'
+    isInferenceKind(item.kind) || item.kind === 'broken_link' || item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'
         ? 'hygiene'
@@ -1156,7 +1200,7 @@ async function verifyApplied(
       canonical = parsed;
       canonicalPageId = row.id;
     }
-    const expectedRole = item.kind === 'observe' ? 'inference' : 'knowledge';
+    const expectedRole = isInferenceKind(item.kind) ? 'inference' : 'knowledge';
     if (row.role !== expectedRole) {
       return `${operation.relPath} is no longer live ${expectedRole}.`;
     }
@@ -1207,7 +1251,7 @@ async function verifyApplied(
       .get(retired.slug) as { n: number };
     if (remaining.n > 0) return `The structural index still contains links to ${retired.slug}.`;
   }
-  if (item.kind === 'observe') {
+  if (isInferenceKind(item.kind)) {
     const shapeIssue = observationOperationIssue(ctx, item, operations);
     if (shapeIssue) return shapeIssue;
     const evidenceIssue = await observationEvidenceIssue(ctx, item);
@@ -1333,14 +1377,14 @@ function itemRow(ctx: AknoContext, planId: string, itemId: string): ItemRow {
 
 function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   if (
-    (item.kind === 'adopt' || item.kind === 'observe') &&
+    (item.kind === 'adopt' || isInferenceKind(item.kind)) &&
     (item.operations.length !== 1 || !['create', 'replace'].includes(item.operations[0]?.type ?? ''))
   ) {
     throw new AknoError('invalid', `${item.id} must contain exactly one supported page operation`);
   }
   if (
     item.kind !== 'adopt' &&
-    item.kind !== 'observe' &&
+    !isInferenceKind(item.kind) &&
     (item.operations.length === 0 || item.operations[0]?.type !== 'replace')
   ) {
     throw new AknoError('invalid', `${item.id} does not start with one supported canonical replacement`);
@@ -1354,7 +1398,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
       item.kind !== 'merge' &&
       item.kind !== 'contradiction' &&
       item.kind !== 'broken_link' &&
-      item.kind !== 'observe' &&
+      !isInferenceKind(item.kind) &&
       item.kind !== 'adopt' &&
       index > 0 &&
       operation.type !== 'create'
@@ -1385,10 +1429,10 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
     throw new AknoError('invalid', `${item.id} may only create its filing page`);
   }
   if (
-    item.kind === 'observe' &&
+    isInferenceKind(item.kind) &&
     (item.operations.length !== 1 || item.operations.some((operation) => operation.type === 'delete'))
   ) {
-    throw new AknoError('invalid', `${item.id} may only create or append to one observation page`);
+    throw new AknoError('invalid', `${item.id} may only create or append to one inference page`);
   }
   return item.operations;
 }
@@ -1542,62 +1586,72 @@ function observationOperationIssue(
 ): string | null {
   const operation = operations[0];
   if (!operation || operation.type === 'delete' || operations.length !== 1) {
-    return 'an observation item requires exactly one page creation or append';
+    return 'an inference item requires exactly one page creation or append';
   }
   const observationRoot = ctx.config.paths.observations.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
   if (
     operation.relPath !== `${item.subject}.md` ||
     (item.subject !== observationRoot && !item.subject.startsWith(`${observationRoot}/`))
   ) {
-    return 'an observation item must write only beneath the configured observations path';
+    return 'an inference item must write only beneath the configured observations path';
+  }
+  if (item.kind === 'reflect' && item.subject !== `${observationRoot}/principles`) {
+    return 'a reflection item must write only the configured observations/principles page';
   }
   const sources = item.evidence.filter((entry) => entry.type === 'page');
+  const minEvidence =
+    item.kind === 'reflect'
+      ? Math.max(3, ctx.config.maintenance.observe.minEvidence)
+      : ctx.config.maintenance.observe.minEvidence;
   if (
-    sources.length < ctx.config.maintenance.observe.minEvidence ||
+    sources.length < minEvidence ||
     sources.length !== item.evidence.length ||
     new Set(sources.map((entry) => entry.source)).size !== sources.length ||
     sources.some((entry) => !entry.fingerprint)
   ) {
-    return 'an observation item requires distinct, hashed knowledge-page evidence above the configured floor';
+    return 'an inference item requires distinct, hashed source-page evidence above its configured floor';
   }
 
   let after: ReturnType<typeof parsePage>;
   try {
     after = parsePage(operation.relPath, operation.after);
   } catch (err) {
-    return `the observation output is not valid Markdown: ${errorMessage(err)}`;
+    return `the inference output is not valid Markdown: ${errorMessage(err)}`;
   }
   const afterData = after.frontmatter.data;
   const evidence = stringArray(afterData.evidence);
   const sourceSlugs = sources.map((entry) => entry.source);
   if (afterData.derived !== true) {
-    return 'the observation page must remain explicitly derived';
+    return 'the inference page must remain explicitly derived';
   }
   const lastLine = after.body.trimEnd().split('\n').at(-1) ?? '';
   const match = /^- (\d{4}-\d{2}-\d{2}) — (.+?)(\s+(?:\[\[[^\]]+\]\]\s*)+)$/.exec(lastLine);
   if (!match || match[2]!.trim().length === 0) {
-    return 'the observation item must append one dated, cited pattern line';
+    return 'the inference item must append one dated, cited conclusion line';
   }
   const citations = [...match[3]!.matchAll(/\[\[([^\]|#]+)(?:[#|][^\]]*)?\]\]/g)].map((entry) => entry[1]!);
   if (!sameStringSet(citations, sourceSlugs)) {
-    return 'the appended observation line must cite exactly its sealed evidence pages';
+    return 'the appended inference line must cite exactly its sealed evidence pages';
   }
 
   if (operation.type === 'create') {
     if (!sameStringSet(evidence, sourceSlugs)) {
-      return 'a new observation page must name exactly its sealed evidence pages';
+      return 'a new inference page must name exactly its sealed evidence pages';
     }
     if (!isDeepStrictEqual(Object.keys(afterData).sort(), ['derived', 'evidence', 'title'])) {
-      return 'a new observation page contains frontmatter outside its fixed derived shape';
+      return 'a new inference page contains frontmatter outside its fixed derived shape';
     }
     if (typeof afterData.title !== 'string' || afterData.title.trim().length === 0) {
-      return 'a new observation page requires a title';
+      return 'a new inference page requires a title';
+    }
+    if (item.kind === 'reflect' && afterData.title !== 'Principles') {
+      return 'a new reflection page must keep the fixed Principles title';
     }
     const expectedBody =
       `\n# ${afterData.title}\n\n` +
       'Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n' +
       `${lastLine}\n`;
-    if (after.body !== expectedBody) return 'a new observation page changed its fixed explanatory body';
+    if (after.body !== expectedBody) return 'a new inference page changed its fixed explanatory body';
     return null;
   }
 
@@ -1612,19 +1666,30 @@ function observationOperationIssue(
     !isDeepStrictEqual(beforeData, afterWithoutEvidence) ||
     !isDeepStrictEqual(evidence, expectedEvidence)
   ) {
-    return 'an observation append may only union evidence in existing frontmatter';
+    return 'an inference append may only union evidence in existing frontmatter';
   }
   if (after.body !== `${before.body.replace(/\s+$/, '')}\n${lastLine}\n`) {
-    return 'an observation append changed or removed an earlier body line';
+    return 'an inference append changed or removed an earlier body line';
   }
   return null;
 }
 
 async function observationEvidenceIssue(ctx: AknoContext, item: MaintenanceItem): Promise<string | null> {
+  const expectedRole = item.kind === 'reflect' ? 'inference' : 'knowledge';
+  const observationRoot = ctx.config.paths.observations.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
   for (const entry of item.evidence) {
     const row = ctx.store.db.prepare('SELECT rel_path, role FROM pages WHERE slug = ?').get(entry.source) as
       { rel_path: string; role: string } | undefined;
-    if (!row || row.role !== 'knowledge') return `${entry.source} is no longer live knowledge evidence.`;
+    if (!row || row.role !== expectedRole) {
+      return `${entry.source} is no longer live ${expectedRole} evidence.`;
+    }
+    if (
+      item.kind === 'reflect' &&
+      (entry.source === item.subject ||
+        (entry.source !== observationRoot && !entry.source.startsWith(`${observationRoot}/`)))
+    ) {
+      return `${entry.source} is not an independent observation-page source.`;
+    }
     let sourcePath: string;
     try {
       sourcePath = await safeOperationPath(ctx, row.rel_path);
@@ -1633,7 +1698,7 @@ async function observationEvidenceIssue(ctx: AknoContext, item: MaintenanceItem)
     }
     const bytes = await fsp.readFile(sourcePath, 'utf8').catch(() => null);
     if (bytes === null || sha256(bytes) !== entry.fingerprint) {
-      return `${entry.source} no longer matches its sealed observation evidence.`;
+      return `${entry.source} no longer matches its sealed inference evidence.`;
     }
   }
   return null;
@@ -1736,8 +1801,8 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'adopt' && (creates !== 1 || deletes !== 0)) {
     return { status: 'blocked', detail: 'an adoption item must create exactly one filing page' };
   }
-  if (item.kind === 'observe' && (operations.length !== 1 || deletes !== 0 || creates > 1)) {
-    return { status: 'blocked', detail: 'an observation item must create or append to exactly one page' };
+  if (isInferenceKind(item.kind) && (operations.length !== 1 || deletes !== 0 || creates > 1)) {
+    return { status: 'blocked', detail: 'an inference item must create or append to exactly one page' };
   }
   if (item.kind === 'broken_link') {
     const issue = brokenLinkOperationIssue(item, operations);
@@ -1747,14 +1812,14 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     const issue = adoptionOperationIssue(item, operations);
     if (issue) return { status: 'blocked', detail: issue };
   }
-  if (item.kind === 'observe') {
+  if (isInferenceKind(item.kind)) {
     const issue = observationOperationIssue(ctx, item, operations);
     if (issue) return { status: 'blocked', detail: issue };
     const evidenceIssue = await observationEvidenceIssue(ctx, item);
     if (evidenceIssue) return { status: 'stale', detail: evidenceIssue };
   }
   const expectedMode =
-    item.kind === 'observe' || item.kind === 'broken_link' || item.kind === 'adopt'
+    isInferenceKind(item.kind) || item.kind === 'broken_link' || item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'
         ? 'hygiene'
@@ -1812,7 +1877,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     }
     if (index === 0) canonical = parsed;
     if (operation.type === 'delete') mergeSource = parsed;
-    const allowedDeclaredRole = item.kind === 'observe' ? 'inference' : 'knowledge';
+    const allowedDeclaredRole = isInferenceKind(item.kind) ? 'inference' : 'knowledge';
     if (parsed.declaredRole && parsed.declaredRole !== allowedDeclaredRole) {
       return { status: 'blocked', detail: `${operation.relPath} is not declared as ${allowedDeclaredRole}` };
     }

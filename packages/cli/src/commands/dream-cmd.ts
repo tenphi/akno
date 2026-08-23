@@ -17,8 +17,8 @@ akno dream status
 
     observe        Combine repeated facts into stable patterns. Writes pages under
                    observations/ with their evidence, and never restates a fact.
-    reflect        Decision principles built on observations. Off by default — at a few
-                   hundred pages a "pattern" is one coincidence away from noise.
+    reflect        Plan-backed decision principles built on observation-page evidence.
+                   Off by default until the observation tier has enough repeated history.
     curate         Hygiene or full synthesis, only for pages that explicitly authorize it.
                    Runs a draft pass, a verification pass and deterministic guards.
     adopt          A page for a document that has none, written beside the file — so its
@@ -158,7 +158,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     const changed = report.observations.filter(
       (entry) => entry.action !== 'unchanged' && entry.action !== 'rejected',
     );
-    heading(`${changed.length} observation proposal/result(s)`);
+    heading(`${changed.length} inference proposal/result(s)`);
     if (privateDetails) {
       for (const entry of report.observations) {
         const mark =

@@ -68,21 +68,33 @@ describe('maintenance profiles', () => {
       automaticKnowledgeBaseWrites: automaticWrites,
       inference: profile === 'autonomous' ? 'write-when-enabled' : 'preview',
       observe: 'disabled',
+      reflect: 'disabled',
       curate: mode,
       adopt: mode,
     });
   });
 
-  it('plans observe under named profiles while reflect keeps its legacy preview ceiling', () => {
-    const review = fixtureConfig({ profile: 'review', observe: { enabled: true } });
-    const autonomous = fixtureConfig({ profile: 'autonomous', observe: { enabled: true } });
+  it('plans enabled inference phases under named profiles and permits a lower one-run ceiling', () => {
+    const review = fixtureConfig({
+      profile: 'review',
+      observe: { enabled: true },
+      reflect: { enabled: true },
+    });
+    const autonomous = fixtureConfig({
+      profile: 'autonomous',
+      observe: { enabled: true },
+      reflect: { enabled: true },
+    });
 
     expect(inferenceDryRun(review, {})).toBe(true);
     expect(inferenceDryRun(autonomous, {})).toBe(false);
     expect(inferenceDryRun(autonomous, { mode: 'audit' })).toBe(true);
     expect(configuredMaintenanceAuthority(review).observe).toBe('review');
+    expect(configuredMaintenanceAuthority(review).reflect).toBe('review');
     expect(configuredMaintenanceAuthority(autonomous).observe).toBe('auto');
+    expect(configuredMaintenanceAuthority(autonomous).reflect).toBe('auto');
     expect(effectiveTransformPolicy(autonomous, 'observe', 'audit')).toBe('audit');
+    expect(effectiveTransformPolicy(autonomous, 'reflect', 'audit')).toBe('audit');
     expect(() => assertMaintenanceModeAllowed(autonomous, { mode: 'audit' })).not.toThrow();
     expect(() => assertMaintenanceModeAllowed(review, { mode: 'auto' })).toThrow(
       "mode 'auto' exceeds the review profile authority 'review'",
@@ -113,15 +125,18 @@ describe('maintenance profiles', () => {
   it('treats an explicit custom policy map as an allowlist and lowers it for one run', () => {
     const config = fixtureConfig({
       profile: 'custom',
-      policies: { hygiene: 'auto', merge: 'review' },
+      policies: { reflect: 'review', hygiene: 'auto', merge: 'review' },
+      reflect: { enabled: true },
       curate: { enabled: true },
     });
 
     expect(configuredMaintenanceAuthority(config)).toMatchObject({
       curate: 'auto',
+      reflect: 'review',
       adopt: 'disabled',
       policies: {
         observe: 'off',
+        reflect: 'review',
         hygiene: 'auto',
         merge: 'review',
         synthesis: 'off',
@@ -137,7 +152,8 @@ describe('maintenance profiles', () => {
   it('does not report automatic writes when a custom policy names a disabled planner', () => {
     const config = fixtureConfig({
       profile: 'custom',
-      policies: { hygiene: 'auto', adopt: 'auto' },
+      policies: { reflect: 'auto', hygiene: 'auto', adopt: 'auto' },
+      reflect: { enabled: false },
       curate: { enabled: false },
       adopt: { enabled: false },
     });
