@@ -30,6 +30,7 @@ import {
   createReflectionPlan,
   decideMaintenancePlanWithCurator,
   findActiveMaintenancePlan,
+  getMaintenancePlan,
   type MaintenanceItem,
   type MaintenanceMode,
   type MaintenancePlan,
@@ -234,6 +235,10 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   // is and threading it out conditionally is how a debugging flag ends up logging half a run.
   const applied: AppliedChange[] = [];
   const budget = createMaintenanceBudget(ctx.config.maintenance.limits);
+  const deferAutomaticApply = !options.phase && usesPolicyMatrix(cycle, options);
+  const lastWritablePlanner = Math.max(
+    ...(['observe', 'reflect', 'curate', 'adopt'] as DreamPhase[]).map((phase) => wanted.lastIndexOf(phase)),
+  );
 
   try {
     // A selected inference or curation phase still gets the same safety boundary as a full run.
@@ -246,15 +251,18 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     ) {
       await inspectConflicts(cycle, report);
     }
-    for (const phase of wanted) {
+    for (const [phaseIndex, phase] of wanted.entries()) {
       const phaseStarted = performance.now();
-      const skipped = await runPhase(cycle, phase, options, report, applied, budget);
+      const skipped = await runPhase(cycle, phase, options, report, applied, budget, deferAutomaticApply);
       report.phases.push({
         phase,
         ran: skipped === null,
         ...(skipped ? { skipped } : {}),
         durationMs: Math.round(performance.now() - phaseStarted),
       });
+      if (deferAutomaticApply && phaseIndex === lastWritablePlanner) {
+        await decideAndApplyPlannedPhases(cycle, report, applied, budget);
+      }
     }
 
     report.durationMs = Math.round(performance.now() - started);
@@ -341,6 +349,7 @@ async function runPhase(
   report: DreamReport,
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
+  deferAutomaticApply: boolean,
 ): Promise<string | null> {
   switch (phase) {
     case 'observe': {
@@ -354,7 +363,7 @@ async function runPhase(
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await observePhase(ctx, options, report, applied, budget);
+      await observePhase(ctx, options, report, applied, budget, deferAutomaticApply);
       return null;
     }
     case 'reflect': {
@@ -373,7 +382,7 @@ async function runPhase(
       if (!ctx.models.derive.available) {
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await reflectPhase(ctx, options, report, applied, budget);
+      await reflectPhase(ctx, options, report, applied, budget, deferAutomaticApply);
       return null;
     }
     case 'curate': {
@@ -518,7 +527,7 @@ async function runPhase(
           );
         }
         if (!plan) return null;
-        if (mode === 'auto') {
+        if (mode === 'auto' && !deferAutomaticApply) {
           if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
             plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
           }
@@ -530,33 +539,7 @@ async function runPhase(
             applied.push(...appliedResult.files.map((file) => asApplied('curate', file)));
           }
         }
-        report.curated = report.curated.map((page) => {
-          const item = plan.items.find(
-            (candidate) => isGeneralCurationItem(candidate) && candidate.subject === page.slug,
-          );
-          if (!item) return page;
-          if (item.status === 'applied') return { ...page, action: 'updated', issues: [] };
-          if (item.status === 'verification_pending') {
-            return {
-              ...page,
-              action: 'updated',
-              issues: [item.verification?.detail ?? 'post-write verification is pending'],
-            };
-          }
-          if (['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)) {
-            return {
-              ...page,
-              action: 'rejected',
-              issues: [
-                item.verification?.detail ??
-                  item.decision?.reason ??
-                  item.statusReason ??
-                  `maintenance item is ${item.status}`,
-              ],
-            };
-          }
-          return page;
-        });
+        report.curated = curationReportFromPlan(report.curated, plan);
         report.repaired = repairResultFromPlan(plan, report.repaired?.declined ?? []);
         recordMaintenancePlan(report, plan);
         return null;
@@ -602,7 +585,7 @@ async function runPhase(
           action: 'planned',
         });
       }
-      if (mode === 'auto') {
+      if (mode === 'auto' && !deferAutomaticApply) {
         if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
           plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
         }
@@ -614,24 +597,7 @@ async function runPhase(
           applied.push(...appliedResult.files.map((file) => asApplied('adopt', file)));
         }
       }
-      report.adopted = report.adopted.map((entry) => {
-        if (entry.action !== 'planned') return entry;
-        const item = plan!.items.find((candidate) => candidate.subject === entry.slug);
-        if (!item) return entry;
-        if (item.status === 'applied') return { ...entry, action: 'created' };
-        if (['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)) {
-          return {
-            ...entry,
-            action: 'rejected',
-            reason:
-              item.verification?.detail ??
-              item.decision?.reason ??
-              item.statusReason ??
-              `maintenance item is ${item.status}`,
-          };
-        }
-        return entry;
-      });
+      report.adopted = adoptionReportFromPlan(report.adopted, plan);
       const adoptionChanges = plan.items
         .map((item) => item.changeId)
         .filter((id): id is string => id !== null);
@@ -749,6 +715,113 @@ function recordMaintenancePlan(report: DreamReport, plan: MaintenancePlan): void
   report.maintenancePlan = summary;
 }
 
+/**
+ * A full policy-backed cycle reaches this barrier only after every writable planner has sealed
+ * its current phase plan. Curator calls and knowledge-base writes therefore cannot influence a
+ * later planner in the same invocation. Single-phase commands deliberately keep their immediate
+ * decide/apply behavior.
+ */
+async function decideAndApplyPlannedPhases(
+  ctx: AknoContext,
+  report: DreamReport,
+  applied: AppliedChange[],
+  budget: MaintenanceBudgetTracker,
+): Promise<void> {
+  const planIds = report.maintenancePlans.map((plan) => plan.id);
+  for (const planId of planIds) {
+    let plan = getMaintenancePlan(ctx, planId);
+    if (plan.mode === 'auto') {
+      if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
+        plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+      }
+      if (plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
+        const result = await applyMaintenancePlan(ctx, plan.id, budget);
+        plan = result.plan;
+        applied.push(...result.files.map((file) => asApplied(plan.phase, file)));
+      }
+    }
+    refreshReportFromPlan(report, plan);
+    recordMaintenancePlan(report, plan);
+  }
+}
+
+function refreshReportFromPlan(report: DreamReport, plan: MaintenancePlan): void {
+  if (plan.phase === 'observe' || plan.phase === 'reflect') {
+    for (const item of plan.items.filter(
+      (candidate) => candidate.kind === 'observe' || candidate.kind === 'reflect',
+    )) {
+      const next = observationFromPlanItem(item);
+      const existing = report.observations.findIndex(
+        (entry) => entry.slug === next.slug && entry.pattern === next.pattern,
+      );
+      if (existing === -1) report.observations.push(next);
+      else report.observations[existing] = next;
+    }
+    const changes = plan.items.map((item) => item.changeId).filter((id): id is string => id !== null);
+    report.changeId = changes.length === 1 ? changes[0]! : null;
+    return;
+  }
+  if (plan.phase === 'curate') {
+    report.curated = curationReportFromPlan(report.curated, plan);
+    report.repaired = repairResultFromPlan(plan, report.repaired?.declined ?? []);
+    return;
+  }
+  report.adopted = adoptionReportFromPlan(report.adopted, plan);
+  const changes = plan.items.map((item) => item.changeId).filter((id): id is string => id !== null);
+  report.adoptChangeId = changes.length === 1 ? changes[0]! : null;
+}
+
+function curationReportFromPlan(pages: CuratedPage[], plan: MaintenancePlan): CuratedPage[] {
+  return pages.map((page) => {
+    const item = plan.items.find(
+      (candidate) => isGeneralCurationItem(candidate) && candidate.subject === page.slug,
+    );
+    if (!item) return page;
+    if (item.status === 'applied') return { ...page, action: 'updated', issues: [] };
+    if (item.status === 'verification_pending') {
+      return {
+        ...page,
+        action: 'updated',
+        issues: [item.verification?.detail ?? 'post-write verification is pending'],
+      };
+    }
+    if (['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)) {
+      return {
+        ...page,
+        action: 'rejected',
+        issues: [
+          item.verification?.detail ??
+            item.decision?.reason ??
+            item.statusReason ??
+            `maintenance item is ${item.status}`,
+        ],
+      };
+    }
+    return page;
+  });
+}
+
+function adoptionReportFromPlan(entries: AdoptedDocument[], plan: MaintenancePlan): AdoptedDocument[] {
+  return entries.map((entry) => {
+    if (entry.action !== 'planned') return entry;
+    const item = plan.items.find((candidate) => candidate.subject === entry.slug);
+    if (!item) return entry;
+    if (item.status === 'applied') return { ...entry, action: 'created' };
+    if (['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)) {
+      return {
+        ...entry,
+        action: 'rejected',
+        reason:
+          item.verification?.detail ??
+          item.decision?.reason ??
+          item.statusReason ??
+          `maintenance item is ${item.status}`,
+      };
+    }
+    return entry;
+  });
+}
+
 // ─── Observe ────────────────────────────────────────────────────────────────
 
 interface SubjectGroup {
@@ -790,6 +863,7 @@ async function observePhase(
   report: DreamReport,
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
+  deferAutomaticApply: boolean,
 ): Promise<void> {
   const policyMatrix = usesPolicyMatrix(ctx, options);
   if (!policyMatrix) {
@@ -826,7 +900,7 @@ async function observePhase(
     return;
   }
 
-  if (observePolicy === 'auto') {
+  if (observePolicy === 'auto' && !deferAutomaticApply) {
     if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
       plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
     }
@@ -1297,6 +1371,7 @@ async function reflectPhase(
   report: DreamReport,
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
+  deferAutomaticApply: boolean,
 ): Promise<void> {
   const policyMatrix = usesPolicyMatrix(ctx, options);
   if (!policyMatrix) {
@@ -1333,7 +1408,7 @@ async function reflectPhase(
     return;
   }
 
-  if (reflectPolicy === 'auto') {
+  if (reflectPolicy === 'auto' && !deferAutomaticApply) {
     if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
       plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
     }

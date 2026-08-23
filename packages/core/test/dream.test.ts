@@ -31,12 +31,15 @@ interface StubServer {
   close: () => Promise<void>;
   /** What the observe mission and the conflict verifier get back. */
   reply: (value: unknown) => void;
+  reflection: (value: unknown) => void;
   conflict: (value: unknown) => void;
   conflictCalls: () => number;
   /** Facts the deriver returns for a page, so real facts land on real lines. */
   facts: (byslug: Record<string, DerivedFact[]>) => void;
   /** The last body the observe mission was given, for asserting what it was shown. */
   lastObserveInput: () => string;
+  requestKinds: () => ('observe' | 'reflect' | 'curator')[];
+  onCurator: (hook: () => void) => void;
 }
 
 /**
@@ -47,6 +50,7 @@ interface StubServer {
  */
 async function startStubChat(): Promise<StubServer> {
   let scripted: unknown = {};
+  let reflectionScripted: unknown | null = null;
   let conflictScripted: unknown = {
     outcome: 'not_a_conflict',
     current: null,
@@ -56,6 +60,8 @@ async function startStubChat(): Promise<StubServer> {
   let classified = 0;
   let byPage: Record<string, DerivedFact[]> = {};
   let lastObserve = '';
+  const requestKinds: ('observe' | 'reflect' | 'curator')[] = [];
+  let curatorHook: (() => void) | null = null;
 
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -67,6 +73,17 @@ async function startStubChat(): Promise<StubServer> {
       const user = body.messages?.at(-1)?.content ?? '';
       const system = body.messages?.[0]?.content ?? '';
       if (system.startsWith('You classify structurally incompatible claims')) classified += 1;
+      const observeRequest = system.startsWith(
+        'You look for stable patterns across facts already recorded in a personal knowledge base.',
+      );
+      if (observeRequest) {
+        const kind = user.startsWith('Subject: decision principles') ? 'reflect' : 'observe';
+        requestKinds.push(kind);
+        lastObserve = user;
+      } else if (system.startsWith('You are the independent curator for an autonomous memory system')) {
+        requestKinds.push('curator');
+        curatorHook?.();
+      }
       const answer = user.startsWith('Page: ')
         ? derive(user, byPage)
         : system.startsWith('You classify structurally incompatible claims')
@@ -75,8 +92,11 @@ async function startStubChat(): Promise<StubServer> {
             ? { outcome: 'approve', reason: 'The sealed contradiction item preserves authored knowledge.' }
             : system.startsWith('A personal knowledge base holds two claims')
               ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
-              : scripted;
-      if (!user.startsWith('Page: ')) lastObserve = user;
+              : observeRequest &&
+                  user.startsWith('Subject: decision principles') &&
+                  reflectionScripted !== null
+                ? reflectionScripted
+                : scripted;
 
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(answer) } }] }));
@@ -94,6 +114,9 @@ async function startStubChat(): Promise<StubServer> {
     reply: (value) => {
       scripted = value;
     },
+    reflection: (value) => {
+      reflectionScripted = value;
+    },
     conflict: (value) => {
       conflictScripted =
         value && typeof value === 'object' && !Array.isArray(value) && !('qualification' in value)
@@ -105,6 +128,10 @@ async function startStubChat(): Promise<StubServer> {
       byPage = value;
     },
     lastObserveInput: () => lastObserve,
+    requestKinds: () => [...requestKinds],
+    onCurator: (hook) => {
+      curatorHook = hook;
+    },
   };
 }
 
@@ -471,6 +498,120 @@ describe('reflect', () => {
   });
 });
 
+describe('the full-run planning barrier', () => {
+  async function withInferencePolicies(limits?: { max_items: number }): Promise<void> {
+    await mem.close();
+    fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
+    for (const [name, body] of [
+      ['travel-lunch', 'Travel itineraries treat lunch as a scheduled part of the day.'],
+      ['banking-review-period', 'Banking review periods cover the full calendar month.'],
+      ['home-servicing', 'Household appliances are serviced on a regular cadence.'],
+    ] as const) {
+      fs.writeFileSync(
+        path.join(root, `observations/${name}.md`),
+        `---\ntitle: ${name}\nderived: true\n---\n\n- 2026-08-08 — ${body}\n`,
+        'utf8',
+      );
+    }
+    mem = await openMem({
+      maintenance: {
+        profile: 'custom',
+        policies: { observe: 'auto', reflect: 'auto' },
+        observe: { enabled: true },
+        reflect: { enabled: true },
+        ...(limits ? { limits } : {}),
+        curate: { enabled: false },
+        adopt: { enabled: false },
+        conflicts: { enabled: false },
+      },
+    });
+    await mem.index({});
+  }
+
+  it('seals every inference plan before the first curator decision or write', async () => {
+    await withInferencePolicies();
+    const principle = 'Recurring activities are managed through explicit structures.';
+    server.reply(OBSERVED);
+    server.reflection({
+      observations: [
+        {
+          pattern: principle,
+          evidence: [
+            'observations/travel-lunch',
+            'observations/banking-review-period',
+            'observations/home-servicing',
+          ],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const report = await mem.dream();
+
+    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator', 'curator']);
+    expect(report.maintenancePlans.map((plan) => plan.phase)).toEqual(['observe', 'reflect']);
+    expect(report.maintenancePlans.every((plan) => plan.status === 'completed')).toBe(true);
+    expect(report.maintenancePlans.flatMap((plan) => plan.items)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'observe', status: 'applied' }),
+        expect.objectContaining({ kind: 'reflect', status: 'applied' }),
+      ]),
+    );
+    expect(report.observations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ pattern: PATTERN, action: 'created' }),
+        expect.objectContaining({ pattern: principle, action: 'created' }),
+      ]),
+    );
+    expect(report.budget.used).toMatchObject({ items: 2, filesChanged: 2, highRiskItems: 0 });
+    expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
+  });
+
+  it('resumes a plan deferred by the shared post-planning budget without replanning it', async () => {
+    await withInferencePolicies({ max_items: 1 });
+    const principle = 'Recurring activities are managed through explicit structures.';
+    server.reply(OBSERVED);
+    server.reflection({
+      observations: [
+        {
+          pattern: principle,
+          evidence: [
+            'observations/travel-lunch',
+            'observations/banking-review-period',
+            'observations/home-servicing',
+          ],
+          confidence: 0.9,
+        },
+      ],
+    });
+
+    const first = await mem.dream();
+    const reflection = first.maintenancePlans.find((plan) => plan.phase === 'reflect')!;
+
+    expect(first.run).toMatchObject({
+      status: 'partially_completed',
+      budget: { used: { items: 1 }, deferredItems: 1 },
+    });
+    expect(reflection.items[0]).toMatchObject({
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      decision: null,
+    });
+    expect(server.requestKinds()).toEqual(['observe', 'reflect', 'curator', 'curator']);
+    expect(fs.existsSync(path.join(root, 'observations/principles.md'))).toBe(false);
+
+    const beforeSecond = server.requestKinds().length;
+    server.reply({ observations: [] });
+    const second = await mem.dream();
+    const resumed = second.maintenancePlans.find((plan) => plan.id === reflection.id)!;
+
+    expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'curator']);
+    expect(resumed.items[0]).toMatchObject({ status: 'applied', statusCode: null });
+    expect(second.run.budget).toMatchObject({ used: { items: 1 }, deferredItems: 0 });
+    expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
+  });
+});
+
 describe('repair', () => {
   async function withBrokenLinks(
     mode: 'audit' | 'auto' = 'auto',
@@ -633,6 +774,56 @@ describe('repair', () => {
     expect(report.adopted).toContainEqual(
       expect.objectContaining({ slug: 'household/coverage-note', action: 'created' }),
     );
+  });
+
+  it('seals curation and adoption before their first full-run curator call', async () => {
+    await withBrokenLinks();
+    await mem.close();
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'household/vulpine note.txt'),
+      'Vulpine Mutual coverage is an invented fixture.\n',
+    );
+    mem = await openMem({
+      maintenance: {
+        profile: 'custom',
+        policies: { broken_link: 'auto', adopt: 'auto' },
+        observe: { enabled: false },
+        reflect: { enabled: false },
+        curate: { enabled: true, verify: true },
+        repair: { enabled: true, links: true },
+        conflicts: { enabled: false },
+        adopt: { enabled: true },
+      },
+    });
+    await mem.index({});
+
+    const curatorSnapshots: { phases: string[]; sourceUnchanged: boolean; adoptionAbsent: boolean }[] = [];
+    server.onCurator(() => {
+      curatorSnapshots.push({
+        phases: mem.plans().map((plan) => plan.phase),
+        sourceUnchanged: fs
+          .readFileSync(path.join(root, 'home/appliances.md'), 'utf8')
+          .includes('[[Boiler|heating notes]]'),
+        adoptionAbsent: !fs.existsSync(path.join(root, 'household/vulpine-note.md')),
+      });
+    });
+
+    const report = await mem.dream();
+
+    expect(curatorSnapshots[0]).toMatchObject({
+      phases: expect.arrayContaining(['curate', 'adopt']),
+      sourceUnchanged: true,
+      adoptionAbsent: true,
+    });
+    expect(report.maintenancePlans.map((plan) => plan.phase)).toEqual(['curate', 'adopt']);
+    expect(
+      report.maintenancePlans.flatMap((plan) => plan.items).every((item) => item.status === 'applied'),
+    ).toBe(true);
+    expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toContain(
+      '[[home/heating/furnace|heating notes]]',
+    );
+    expect(fs.existsSync(path.join(root, 'household/vulpine-note.md'))).toBe(true);
   });
 
   it('shares one item budget across curate and adopt, then resumes deferred work next run', async () => {

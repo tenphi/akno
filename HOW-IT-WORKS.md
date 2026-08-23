@@ -749,7 +749,7 @@ depends strongly on data volume and model quality.
 
 ```mermaid
 flowchart LR
-    conflicts["1. conflicts"] --> observe["2. observe"] --> reflect["3. reflect"] --> curate["4. curate"] --> adopt["5. adopt"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
+    conflicts["1. conflicts"] --> observe["2. plan observe"] --> reflect["3. plan reflect"] --> curate["4. plan curate"] --> adopt["5. plan adopt"] --> barrier["decision/apply barrier"] --> repair["6. repair"] --> housekeeping["7. housekeeping"]
 ```
 
 Order matters in three places:
@@ -758,7 +758,11 @@ Order matters in three places:
   qualification claims are removed from observation inputs claim-by-claim; observations backed by those claims
   are withheld from reflection. Selecting `observe`, `reflect`, or `curate` alone still performs this
   prerequisite inspection.
-- `reflect` reads observations, so `observe` runs first.
+- `reflect` reads observations, so its planner runs after `observe`, but a full policy-backed run does not expose
+  same-run observation proposals to it. New patterns become reflection evidence on the next run.
+- A full named-profile or explicit-policy run seals every writable phase plan before any automatic curator call
+  or knowledge-base write. It then decides and applies accepted plans in phase order with the shared budget.
+  Selecting one `--phase` remains immediate; empty-policy `custom` keeps its compatibility behavior.
 - `housekeeping` runs last so its counts describe the state after plan-backed observation, reflection, curation, and adoption. The
   compatibility `repair` phase is read-only.
 
@@ -1544,10 +1548,12 @@ hashes. The remaining dream outputs still do not all feed that queue: report-onl
 repair output, and housekeeping retain their existing execution or reporting behavior. There is also no
 snooze or requested-revision decision yet.
 
-### The whole dream should become a plan, apply, verify loop
+### The full cycle now separates planning from automatic apply
 
-The observation, reflection, curation, and adoption slices now follow this lifecycle. The seven-phase cycle as a whole
-still mixes analysis, proposals, writes, and final reporting. Its consistent user-visible stages should be:
+The observation, reflection, curation, and adoption slices follow one lifecycle. In a full named-profile or
+explicit-policy run, every enabled writable planner finishes before the first curator decision or write. Accepted plans then
+apply in phase order, each item is reindexed and verified, and only then do repair and housekeeping report the
+result:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
 2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
@@ -1556,9 +1562,11 @@ still mixes analysis, proposals, writes, and final reporting. Its consistent use
 5. **Re-index:** reconcile every affected path before judging the result.
 6. **Verify:** rerun relevant checks and produce one durable receipt.
 
-The named phases can remain as internal methods, but the operator would reason about one consistent lifecycle.
-Conflict analysis should also precede `observe` and `reflect`, or unresolved claim groups should be excluded,
-so higher-level inference is not built from facts the same run later identifies as contradictory.
+The barrier is intentionally limited to the policy-backed full command. A selected phase remains useful for
+immediate testing or recovery, and compatibility `custom` with no policies preserves its older behavior. Plans
+remain phase-specific rather than one aggregate dependency graph; overlapping paths across phases currently
+settle through exact stale checks rather than explicit dependency edges. Pinning planners to a database revision
+against concurrent external file changes is also still future work.
 
 ### Maintenance profiles still need a complete failure policy and path explanation
 
@@ -1568,7 +1576,7 @@ retains that policy, and mixed plans apply only their automatic subset. This rem
 around whether a high-authority run can promote a lower-authority class.
 
 Whole-run scope is now bounded by configurable item, distinct changed-file, written-byte, and high-risk-item
-ceilings. Observe, curate, and adopt share the same budget in a full run; an indivisible item that would cross a
+ceilings. Observe, reflect, curate, and adopt share the same budget in a full run; an indivisible item that would cross a
 ceiling stays proposed with `budget_exhausted`, and the durable receipt and status view expose usage and backlog.
 
 The remaining significant boundary is failure behavior across dependent items and phases. Page and folder

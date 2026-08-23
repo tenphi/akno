@@ -280,6 +280,7 @@
     // audit plans only, review waits for a human, autonomous uses the separate curator
     // and applies accepted work. `custom` preserves the phase settings below and is the
     // compatibility default for installations created before profiles existed.
+    // In a full named-profile/policy run, every phase plan is sealed before automatic apply.
     "profile": "custom",
     // Optional per-class authority: off, audit, review, or auto. Under a named
     // profile, omitted classes inherit the profile and explicit values may only

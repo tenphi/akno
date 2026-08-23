@@ -639,6 +639,12 @@ curator rejection is not resubmitted until the conclusion, evidence, or destinat
 uses the same checks with a floor of at least three distinct live observation pages and writes only
 `observations/principles.md`.
 
+A full named-profile or explicit-policy run has a planning barrier: conflicts and every enabled writable
+planner seal their phase plans before the first curator call or knowledge-base write. Automatic plans are then
+decided and applied in `observe` → `reflect` → `curate` → `adopt` order with one shared budget; repair and
+housekeeping inspect the resulting state. A selected `--phase` remains immediate, and compatibility `custom`
+with no policy map retains its historical phase behavior.
+
 The `limits` block is one cumulative apply budget. A full `akno dream` shares it across observe, reflect, curate, and adopt;
 `akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are
 not truncated. Instead, apply reserves a complete item before its first write. `max_items` counts items,
