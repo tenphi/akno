@@ -58,7 +58,7 @@ export type MaintenanceItemStatus =
   | 'verification_pending'
   | 'verification_failed';
 
-export type MaintenanceItemStatusCode = 'budget_exhausted' | 'dependency_conflict';
+export type MaintenanceItemStatusCode = 'budget_exhausted' | 'dependency_conflict' | 'snapshot_drift';
 
 export interface ReplaceOperation {
   type: 'replace';
@@ -100,6 +100,9 @@ export interface MaintenanceEvidence {
   signal?: LinkIdentitySignal;
   targetRelPath?: string;
   targetHash?: string;
+  /** Exact source bytes for ordinary curation evidence; older plans may only have `fingerprint`. */
+  sourceRelPath?: string;
+  sourceHash?: string;
   /** Structured orphan identity is required for deterministic adoption preflight and verification. */
   documentId?: string;
   documentRelPath?: string;
@@ -760,6 +763,31 @@ export function blockMaintenanceDependencies(ctx: AknoContext, planIds: string[]
   }
   for (const planId of touchedPlans) refreshDecisionStatus(ctx, planId);
   return conflicts.length;
+}
+
+/**
+ * Recheck the exact inputs of the automatic apply set before spending any curator calls. Apply
+ * repeats this preflight, so a change in the smaller decision-to-write window is still refused.
+ */
+export async function deferStaleMaintenanceItems(ctx: AknoContext, planIds: string[]): Promise<number> {
+  requireWritable(ctx);
+  let deferred = 0;
+  const touchedPlans = new Set<string>();
+  for (const planId of planIds) {
+    const plan = getMaintenancePlan(ctx, planId);
+    if (plan.mode !== 'auto') continue;
+    for (const item of plan.items.filter(
+      (candidate) => candidate.status === 'proposed' && candidate.policy === 'auto',
+    )) {
+      const preflight = await preflightItem(ctx, item);
+      if (preflight.status !== 'stale') continue;
+      deferSnapshotDriftItem(ctx, planId, item.id, preflight.detail);
+      deferred += 1;
+      touchedPlans.add(planId);
+    }
+  }
+  for (const planId of touchedPlans) refreshDecisionStatus(ctx, planId);
+  return deferred;
 }
 
 export function findMaintenanceDependencyConflicts(
@@ -1628,6 +1656,8 @@ function evidenceForDraft(draft: CurateDraft): MaintenanceEvidence[] {
       type: 'page',
       source: entry.slug,
       fingerprint: entry.bodyHash,
+      sourceRelPath: entry.relPath,
+      sourceHash: entry.contentHash,
       relationship: entry.relationship,
       details: [...(entry.summary ? [entry.summary] : []), ...entry.claims, ...entry.events],
     })),
@@ -1835,6 +1865,45 @@ async function observationEvidenceIssue(ctx: AknoContext, item: MaintenanceItem)
   return null;
 }
 
+async function curationPageEvidenceIssue(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+): Promise<PreflightResult | null> {
+  for (const entry of item.evidence.filter((candidate) => candidate.type === 'page')) {
+    if (!entry.fingerprint) {
+      return { status: 'blocked', detail: 'a curation item contains unhashed page evidence' };
+    }
+    const row = ctx.store.db.prepare('SELECT rel_path FROM pages WHERE slug = ?').get(entry.source) as
+      { rel_path: string } | undefined;
+    if (!row || (entry.sourceRelPath && row.rel_path !== entry.sourceRelPath)) {
+      return { status: 'stale', detail: `${entry.source} is no longer live page evidence.` };
+    }
+    let sourcePath: string;
+    try {
+      sourcePath = await safeOperationPath(ctx, row.rel_path);
+    } catch (err) {
+      return { status: 'blocked', detail: errorMessage(err) };
+    }
+    const bytes = await fsp.readFile(sourcePath, 'utf8').catch(() => null);
+    if (bytes === null) {
+      return { status: 'stale', detail: `${entry.source} is no longer readable page evidence.` };
+    }
+    if (entry.sourceHash && sha256(bytes) !== entry.sourceHash) {
+      return { status: 'stale', detail: `${entry.source} no longer matches its sealed page bytes.` };
+    }
+    let bodyHash: string;
+    try {
+      bodyHash = parsePage(row.rel_path, bytes).bodyHash;
+    } catch {
+      return { status: 'stale', detail: `${entry.source} is no longer parseable page evidence.` };
+    }
+    if (bodyHash !== entry.fingerprint) {
+      return { status: 'stale', detail: `${entry.source} no longer matches its sealed page evidence.` };
+    }
+  }
+  return null;
+}
+
 function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 }
@@ -1948,6 +2017,9 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     if (issue) return { status: 'blocked', detail: issue };
     const evidenceIssue = await observationEvidenceIssue(ctx, item);
     if (evidenceIssue) return { status: 'stale', detail: evidenceIssue };
+  } else if (!['broken_link', 'adopt', 'contradiction'].includes(item.kind)) {
+    const evidenceIssue = await curationPageEvidenceIssue(ctx, item);
+    if (evidenceIssue) return evidenceIssue;
   }
   const expectedMode =
     isInferenceKind(item.kind) || item.kind === 'broken_link' || item.kind === 'adopt'
@@ -2337,7 +2409,7 @@ function refreshDecisionStatus(ctx: AknoContext, planId: string): void {
     status = 'ready';
   } else if (statuses.includes('approved')) {
     status = 'approved';
-  } else if (statuses.includes('blocked')) {
+  } else if (statuses.some((value) => ['blocked', 'stale', 'verification_failed'].includes(value))) {
     status = 'failed';
   } else {
     status = 'completed';
@@ -2347,27 +2419,66 @@ function refreshDecisionStatus(ctx: AknoContext, planId: string): void {
 
 function refreshApplyStatus(ctx: AknoContext, planId: string): void {
   const plan = getMaintenancePlan(ctx, planId);
+  setPlanStatus(ctx, planId, maintenancePlanStatusAfterApply(plan));
+}
+
+export function maintenancePlanStatusAfterApply(plan: MaintenancePlan): MaintenancePlanStatus {
   const statuses = plan.items.map((item) => item.status);
-  let status: MaintenancePlanStatus;
-  if (statuses.includes('verification_pending')) status = 'partially_completed';
-  else if (statuses.includes('approved') || statuses.includes('applying')) status = 'approved';
+  if (statuses.includes('verification_pending')) return 'partially_completed';
+  if (statuses.includes('approved') || statuses.includes('applying')) return 'approved';
   else if (plan.items.some((item) => item.statusCode === 'budget_exhausted')) {
-    status = 'partially_completed';
+    return 'partially_completed';
   } else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto'))
-    status = 'deciding';
+    return 'deciding';
   else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'review')) {
-    status = 'awaiting_review';
-  } else if (statuses.includes('proposed')) status = 'ready';
-  else if (statuses.every((value) => value === 'applied' || value === 'rejected')) status = 'completed';
-  else if (statuses.includes('applied')) status = 'partially_completed';
-  else status = 'failed';
-  setPlanStatus(ctx, planId, status);
+    return 'awaiting_review';
+  } else if (statuses.includes('proposed')) return 'ready';
+  else if (
+    plan.items.some((item) => ['dependency_conflict', 'snapshot_drift'].includes(item.statusCode ?? ''))
+  ) {
+    // These items need a new plan, unlike budget and verification deferrals. Keeping this plan
+    // active would make the next cycle resume a terminal item forever instead of replanning it.
+    return 'failed';
+  } else if (statuses.every((value) => value === 'applied' || value === 'rejected')) return 'completed';
+  else if (statuses.includes('applied')) return 'partially_completed';
+  return 'failed';
 }
 
 function setPlanStatus(ctx: AknoContext, planId: string, status: MaintenancePlanStatus): void {
   ctx.store.db
     .prepare('UPDATE maintenance_plans SET status = ?, updated_at = ? WHERE id = ?')
     .run(status, new Date().toISOString(), planId);
+}
+
+export function finalizeRetryableMaintenancePlans(ctx: AknoContext): number {
+  requireWritable(ctx);
+  const result = ctx.store.db
+    .prepare(
+      `UPDATE maintenance_plans AS plan
+          SET status = 'failed', updated_at = ?
+        WHERE plan.status = 'partially_completed'
+          AND EXISTS (
+            SELECT 1 FROM maintenance_items item
+             WHERE item.plan_id = plan.id
+               AND item.status_code IN ('dependency_conflict', 'snapshot_drift')
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM maintenance_items item
+             WHERE item.plan_id = plan.id
+               AND item.status IN ('proposed', 'approved', 'applying', 'verification_pending')
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM maintenance_items item
+             WHERE item.plan_id = plan.id
+               AND item.status IN ('blocked', 'stale', 'verification_failed')
+               AND NOT (
+                 (item.status = 'blocked' AND item.status_code = 'dependency_conflict')
+                 OR (item.status = 'stale' AND item.status_code = 'snapshot_drift')
+               )
+          )`,
+    )
+    .run(new Date().toISOString());
+  return result.changes;
 }
 
 function blockItem(
@@ -2385,6 +2496,31 @@ function blockItem(
        WHERE id = ? AND plan_id = ?`,
     )
     .run(statusCode, reason, now, now, itemId, planId);
+}
+
+function deferSnapshotDriftItem(
+  ctx: AknoContext,
+  planId: string,
+  itemId: string,
+  privateDetail: string,
+): void {
+  const now = new Date().toISOString();
+  const statusReason =
+    'Deferred because a sealed input changed during planning. Nothing was written; the item will be replanned on the next full run.';
+  const verification: MaintenanceVerification = {
+    status: 'failed',
+    detail: `${privateDetail} Nothing was written; a later run must create a fresh plan.`,
+    at: now,
+  };
+  ctx.store.db
+    .prepare(
+      `UPDATE maintenance_items
+          SET status = 'stale', status_code = 'snapshot_drift',
+              decision_actor = NULL, decision_outcome = NULL, decision_reason = ?, decided_at = NULL,
+              verification = ?, updated_at = ?
+        WHERE id = ? AND plan_id = ?`,
+    )
+    .run(statusReason, JSON.stringify(verification), now, itemId, planId);
 }
 
 function deferBudgetItem(

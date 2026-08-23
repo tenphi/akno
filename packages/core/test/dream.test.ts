@@ -40,6 +40,7 @@ interface StubServer {
   lastObserveInput: () => string;
   requestKinds: () => ('observe' | 'reflect' | 'curator')[];
   onCurator: (hook: () => void) => void;
+  onReflect: (hook: () => void) => void;
 }
 
 /**
@@ -62,6 +63,7 @@ async function startStubChat(): Promise<StubServer> {
   let lastObserve = '';
   const requestKinds: ('observe' | 'reflect' | 'curator')[] = [];
   let curatorHook: (() => void) | null = null;
+  let reflectHook: (() => void) | null = null;
 
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -79,6 +81,7 @@ async function startStubChat(): Promise<StubServer> {
       if (observeRequest) {
         const kind = user.startsWith('Subject: decision principles') ? 'reflect' : 'observe';
         requestKinds.push(kind);
+        if (kind === 'reflect') reflectHook?.();
         lastObserve = user;
       } else if (system.startsWith('You are the independent curator for an autonomous memory system')) {
         requestKinds.push('curator');
@@ -131,6 +134,9 @@ async function startStubChat(): Promise<StubServer> {
     requestKinds: () => [...requestKinds],
     onCurator: (hook) => {
       curatorHook = hook;
+    },
+    onReflect: (hook) => {
+      reflectHook = hook;
     },
   };
 }
@@ -663,6 +669,72 @@ describe('the full-run planning barrier', () => {
     expect(replanned.items[0]).toMatchObject({ status: 'applied', statusCode: null });
     expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'reflect', 'curator']);
     expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
+  });
+
+  it('rechecks a sealed operation input before the first curator call and replans next run', async () => {
+    await withInferencePolicies(undefined, true);
+    server.reply(OBSERVED);
+    server.reflection({ observations: [] });
+    let changed = false;
+    server.onReflect(() => {
+      if (changed) return;
+      changed = true;
+      fs.appendFileSync(
+        path.join(root, 'observations/home-appliance-servicing.md'),
+        '\n- 2026-08-10 — An invented external process changed this page during planning.\n',
+      );
+    });
+
+    const first = await mem.dream();
+    const observation = first.maintenancePlans.find((plan) => plan.phase === 'observe')!;
+
+    expect(server.requestKinds()).toEqual(['observe', 'reflect']);
+    expect(first.run.status).toBe('partially_completed');
+    expect(observation.status).toBe('failed');
+    expect(observation.items[0]).toMatchObject({
+      status: 'stale',
+      statusCode: 'snapshot_drift',
+      decision: null,
+    });
+    expect(observation.items[0]!.statusReason).not.toContain('observations/');
+    const afterFirst = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    expect(afterFirst).toContain('invented external process');
+    expect(afterFirst).not.toContain(PATTERN);
+
+    const beforeSecond = server.requestKinds().length;
+    const second = await mem.dream();
+    const replanned = second.maintenancePlans.find((plan) => plan.phase === 'observe')!;
+
+    expect(replanned.id).not.toBe(observation.id);
+    expect(replanned.items[0]).toMatchObject({ status: 'applied', statusCode: null });
+    expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'reflect', 'curator']);
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
+      PATTERN,
+    );
+  });
+
+  it('rechecks sealed inference evidence before the first curator call', async () => {
+    await withInferencePolicies();
+    server.reply(OBSERVED);
+    server.reflection({ observations: [] });
+    server.onReflect(() => {
+      fs.appendFileSync(
+        path.join(root, 'home/appliances.md'),
+        '\nAn invented external note arrived during planning.\n',
+      );
+    });
+
+    const report = await mem.dream();
+    const observation = report.maintenancePlans.find((plan) => plan.phase === 'observe')!;
+
+    expect(server.requestKinds()).toEqual(['observe', 'reflect']);
+    expect(report.run.status).toBe('partially_completed');
+    expect(observation.items[0]).toMatchObject({
+      status: 'stale',
+      statusCode: 'snapshot_drift',
+      decision: null,
+    });
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
 });
 

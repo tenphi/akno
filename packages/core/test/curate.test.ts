@@ -856,6 +856,57 @@ An invented interview record.
     ).toBe(true);
   });
 
+  it('makes synthesis stale when linked evidence bytes change before apply', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      fs.readFileSync(canonical, 'utf8').replace('dream: hygiene', 'dream: synthesize'),
+    );
+    fs.mkdirSync(path.join(root, 'evidence'), { recursive: true });
+    const evidence = path.join(root, 'evidence/ada-interview.md');
+    fs.writeFileSync(
+      evidence,
+      `---
+title: Ada interview
+akno:
+  role: source
+  about:
+    - people/ada-marlow
+---
+
+An invented interview record.
+`,
+    );
+    server.synthesisDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'review');
+    await mem.index({ structuralOnly: true });
+    const db = new Database(mem.config.dbPath);
+    db.prepare('UPDATE pages SET summary = ? WHERE slug = ?').run(
+      'Ada Marlow maintains a brass compass collection.',
+      'evidence/ada-interview',
+    );
+    db.close();
+    const before = fs.readFileSync(canonical, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+    fs.appendFileSync(evidence, '\nAn invented correction arrived after planning.\n');
+
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply only against unchanged linked evidence.');
+    const result = await mem.applyPlan(planned.id);
+
+    expect(item.evidence).toContainEqual(
+      expect.objectContaining({
+        source: 'evidence/ada-interview',
+        sourceRelPath: 'evidence/ada-interview.md',
+        sourceHash: expect.any(String),
+      }),
+    );
+    expect(result.plan.items[0]).toMatchObject({ kind: 'synthesis', status: 'stale' });
+    expect(result.files).toEqual([]);
+    expect(fs.readFileSync(canonical, 'utf8')).toBe(before);
+  });
+
   it('makes a whole split item stale when its child target appears before apply', async () => {
     const canonical = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(

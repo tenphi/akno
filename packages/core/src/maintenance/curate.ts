@@ -68,8 +68,10 @@ export interface CurateDraft {
   } | null;
   evidence: {
     slug: string;
+    relPath: string;
     relationship: 'about' | 'outbound' | 'backlink';
     bodyHash: string;
+    contentHash: string;
     summary: string | null;
     claims: string[];
     events: string[];
@@ -100,10 +102,12 @@ type CurateStatus = 'preview' | 'unchanged' | 'rejected' | 'applied';
 interface EvidencePage {
   id: string;
   slug: string;
+  rel_path: string;
   summary: string | null;
   about: string;
   role: string;
   body_hash: string;
+  content_hash: string;
   facts: EvidenceFact[];
   events: { date: string; summary: string }[];
   relationship: 'about' | 'outbound' | 'backlink';
@@ -781,8 +785,10 @@ export async function curatePages(
       merge: null,
       evidence: stage.evidence.map((entry) => ({
         slug: entry.slug,
+        relPath: entry.rel_path,
         relationship: entry.relationship,
         bodyHash: entry.body_hash,
+        contentHash: entry.content_hash,
         summary: entry.relationship === 'about' ? entry.summary : null,
         claims: entry.facts.map((fact) => fact.claim),
         events: entry.events.map((event) => `${event.date}: ${event.summary}`),
@@ -1467,10 +1473,11 @@ async function verifyMergeDraft(
 function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
   const rows = ctx.store.db
     .prepare(
-      `SELECT DISTINCT p.id, p.slug, p.summary, p.about, p.role, p.body_hash,
+      `SELECT DISTINCT p.id, p.slug, p.rel_path, p.summary, p.about, p.role, p.body_hash,
+          indexed_file.sha256 AS content_hash,
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id) AS outbound,
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?) AS backlink
-        FROM pages p
+        FROM pages p JOIN files indexed_file ON indexed_file.rel_path = p.rel_path
         WHERE p.id != ? AND (
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?)
           OR EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id)

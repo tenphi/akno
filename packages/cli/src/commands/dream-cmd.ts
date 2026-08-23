@@ -245,6 +245,12 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
         `  ${style.grey(`${dependencyDeferred} dependent item(s) deferred; they will be replanned on the next run`)}`,
       );
     }
+    const snapshotDeferred = plan.items.filter((item) => item.statusCode === 'snapshot_drift').length;
+    if (snapshotDeferred > 0) {
+      line(
+        `  ${style.grey(`${snapshotDeferred} stale item(s) deferred; they will be replanned on the next run`)}`,
+      );
+    }
     if (proposed > 0) {
       line(`  ${style.grey('inspect:')} ${style.bold(`akno plan diff ${plan.id}`)}`);
       line(

@@ -769,6 +769,12 @@ Order matters in three places:
   full run is `partially_completed`. The next full cycle replans the item from the resulting snapshot. An item
   already recovering an interrupted apply takes priority over a new proposal. Audit and review proposals are
   not in the automatic apply set, so they do not block it.
+- Immediately before that dependency check, Akno repeats each automatic item's stale-input preflight. It
+  re-hashes operation inputs, inference evidence, ordinary curation evidence, link destinations, adoption
+  documents, and applicable structural identities. A changed item skips the curator and every write with typed
+  status `snapshot_drift`; the next full cycle plans it again from current state. Unrelated file changes do not
+  invalidate the whole run. Apply repeats the preflight after approval, closing the later curator-to-write
+  window as far as an external, unlocked Markdown tree allows.
 - `housekeeping` runs last so its counts describe the state after plan-backed observation, reflection, curation, and adoption. The
   compatibility `repair` phase is read-only.
 

@@ -30,6 +30,8 @@ import {
   createObservationPlan,
   createReflectionPlan,
   decideMaintenancePlanWithCurator,
+  deferStaleMaintenanceItems,
+  finalizeRetryableMaintenancePlans,
   findActiveMaintenancePlan,
   getMaintenancePlan,
   type MaintenanceItem,
@@ -242,6 +244,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   );
 
   try {
+    if (cycle.writable) finalizeRetryableMaintenancePlans(cycle);
     // A selected inference or curation phase still gets the same safety boundary as a full run.
     // It does not add a second visible phase to the report; it supplies that phase's prerequisites.
     if (
@@ -729,6 +732,7 @@ async function decideAndApplyPlannedPhases(
   budget: MaintenanceBudgetTracker,
 ): Promise<void> {
   const planIds = report.maintenancePlans.map((plan) => plan.id);
+  await deferStaleMaintenanceItems(ctx, planIds);
   blockMaintenanceDependencies(ctx, planIds);
   for (const planId of planIds) {
     let plan = getMaintenancePlan(ctx, planId);

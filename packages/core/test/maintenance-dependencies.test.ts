@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   findMaintenanceDependencyConflicts,
+  maintenancePlanStatusAfterApply,
   type MaintenanceItem,
   type MaintenanceOperation,
   type MaintenancePlan,
 } from '../src/maintenance/plans.ts';
 
 describe('maintenance plan dependencies', () => {
-  it('classifies later writes to the same path separately from sealed-input conflicts', () => {
+  it('classifies conflicts, prioritizes recovery, and terminates retryable mixed plans', () => {
     const plan = (
       id: string,
       itemId: string,
@@ -133,5 +134,23 @@ describe('maintenance plan dependencies', () => {
       after: 'Invented unchanged page.',
     });
     expect(findMaintenanceDependencyConflicts([sealedRead, proposed], new Map())).toEqual([]);
+
+    const mixed = plan('plan_mixed', 'item_applied', {
+      type: 'create',
+      relPath: 'observations/applied.md',
+      afterHash: 'applied',
+      after: 'Invented applied page.',
+    });
+    mixed.items[0]!.status = 'applied';
+    mixed.items.push({
+      ...mixed.items[0]!,
+      id: 'item_deferred',
+      order: 1,
+      status: 'blocked',
+      statusCode: 'dependency_conflict',
+      changeId: null,
+      verification: null,
+    });
+    expect(maintenancePlanStatusAfterApply(mixed)).toBe('failed');
   });
 });

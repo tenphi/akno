@@ -348,16 +348,19 @@ function completedStatus(report: DreamReport): DreamRunStatus {
   }
   const failed = plans.filter((plan) => plan.status === 'failed');
   if (failed.length > 0) {
-    const onlyDependencyDeferrals = failed.every(
+    const onlyRetryableDeferrals = failed.every(
       (plan) =>
-        plan.items.some((item) => item.statusCode === 'dependency_conflict') &&
+        plan.items.some((item) =>
+          ['dependency_conflict', 'snapshot_drift'].includes(item.statusCode ?? ''),
+        ) &&
         plan.items.every(
           (item) =>
             !['blocked', 'stale', 'verification_failed'].includes(item.status) ||
-            (item.status === 'blocked' && item.statusCode === 'dependency_conflict'),
+            (item.status === 'blocked' && item.statusCode === 'dependency_conflict') ||
+            (item.status === 'stale' && item.statusCode === 'snapshot_drift'),
         ),
     );
-    return onlyDependencyDeferrals ? 'partially_completed' : 'failed';
+    return onlyRetryableDeferrals ? 'partially_completed' : 'failed';
   }
   if (plans.some((plan) => plan.status === 'partially_completed')) return 'partially_completed';
   return 'completed';
