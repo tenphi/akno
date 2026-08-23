@@ -30,10 +30,12 @@ import {
   createObservationPlan,
   createReflectionPlan,
   decideMaintenancePlanWithCurator,
+  deferUnmetMaintenanceDependency,
   deferStaleMaintenanceItems,
   finalizeRetryableMaintenancePlans,
   findActiveMaintenancePlan,
   getMaintenancePlan,
+  maintenanceItemApplySchedule,
   supersedeDependencyMaintenancePlan,
   type MaintenanceItem,
   type MaintenanceMode,
@@ -734,20 +736,55 @@ async function decideAndApplyPlannedPhases(
   budget: MaintenanceBudgetTracker,
 ): Promise<void> {
   const planIds = report.maintenancePlans.map((plan) => plan.id);
+  const pagePaths = new Map(
+    (
+      ctx.store.db.prepare('SELECT slug, rel_path FROM pages').all() as {
+        slug: string;
+        rel_path: string;
+      }[]
+    ).map((row) => [row.slug, row.rel_path]),
+  );
+  const schedule = maintenanceItemApplySchedule(
+    planIds.map((planId) => getMaintenancePlan(ctx, planId)),
+    pagePaths,
+  );
   await deferStaleMaintenanceItems(ctx, planIds);
   blockMaintenanceDependencies(ctx, planIds);
+
+  // Decide every sealed item before applying any of them. A target creator may move ahead of an
+  // earlier-phase referencer, but its bytes must never influence that referencer's curator prompt.
   for (const planId of planIds) {
     let plan = getMaintenancePlan(ctx, planId);
     if (plan.mode === 'auto') {
       if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
         plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
       }
-      if (plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
-        const result = await applyMaintenancePlan(ctx, plan.id, budget);
-        plan = result.plan;
-        applied.push(...result.files.map((file) => asApplied(plan.phase, file)));
-      }
     }
+  }
+
+  for (const step of schedule) {
+    let plan = getMaintenancePlan(ctx, step.planId);
+    const item = plan.items.find((candidate) => candidate.id === step.itemId);
+    if (!item || !['approved', 'applying', 'verification_pending'].includes(item.status)) continue;
+    const prerequisiteMissing = step.dependsOn.some((dependency) => {
+      const prerequisite = getMaintenancePlan(ctx, dependency.planId).items.find(
+        (candidate) => candidate.id === dependency.itemId,
+      );
+      return prerequisite?.status !== 'applied';
+    });
+    if (prerequisiteMissing) {
+      deferUnmetMaintenanceDependency(ctx, plan.id, item.id);
+      continue;
+    }
+    const result = await applyMaintenancePlan(ctx, plan.id, budget, {
+      onlyItemIds: new Set([item.id]),
+    });
+    plan = result.plan;
+    applied.push(...result.files.map((file) => asApplied(plan.phase, file)));
+  }
+
+  for (const planId of planIds) {
+    const plan = getMaintenancePlan(ctx, planId);
     refreshReportFromPlan(report, plan);
     recordMaintenancePlan(report, plan);
   }

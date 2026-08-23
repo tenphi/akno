@@ -652,6 +652,13 @@ replans every affected phase once from the resulting state, seals all of those r
 through one final decision/apply barrier with the same run budget. The obsolete pre-apply plan remains visible
 as `superseded`. A dependency that still exists after this bounded retry waits for the next full cycle.
 
+The barrier also parses exact proposed Markdown outputs. If one item creates a canonical page referenced by
+another item's wikilink, Markdown link, or `akno.about`, the creator is applied and verified first even when
+its phase normally comes later. Curator decisions still all finish before either write. Duplicate planned page
+identities and reference cycles are blocked; if the creator is rejected, stale, or budget-deferred, its
+dependant writes nothing with typed status `dependency_unmet` and is replanned on the next full cycle. A same-run
+retry would be unsafe because its required page still does not exist.
+
 Akno also revalidates every automatic item's sealed operation and evidence bytes before any curator call. A
 changed item reports `snapshot_drift` and is replanned next cycle rather than in the same run, while apply
 repeats the check after approval in case a later edit arrives.

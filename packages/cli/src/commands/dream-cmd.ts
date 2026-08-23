@@ -239,7 +239,9 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     line(`  ${style.bold(plan.id)}  ${plan.mode}/${plan.phase}  ${style.grey(plan.summary)}`);
     const proposed = plan.items.filter((item) => item.status === 'proposed').length;
     const approved = plan.items.filter((item) => item.status === 'approved').length;
-    const dependencyDeferred = plan.items.filter((item) => item.statusCode === 'dependency_conflict').length;
+    const dependencyDeferred = plan.items.filter((item) =>
+      ['dependency_conflict', 'dependency_unmet'].includes(item.statusCode ?? ''),
+    ).length;
     if (dependencyDeferred > 0) {
       line(
         `  ${style.grey(

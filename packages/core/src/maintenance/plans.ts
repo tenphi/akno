@@ -58,7 +58,8 @@ export type MaintenanceItemStatus =
   | 'verification_pending'
   | 'verification_failed';
 
-export type MaintenanceItemStatusCode = 'budget_exhausted' | 'dependency_conflict' | 'snapshot_drift';
+export type MaintenanceItemStatusCode =
+  'budget_exhausted' | 'dependency_conflict' | 'dependency_unmet' | 'snapshot_drift';
 
 export interface ReplaceOperation {
   type: 'replace';
@@ -207,7 +208,14 @@ export interface ApplyMaintenanceResult {
 export interface MaintenanceDependencyConflict {
   planId: string;
   itemId: string;
-  kind: 'write_write' | 'sealed_input';
+  kind: 'write_write' | 'sealed_input' | 'semantic_cycle';
+}
+
+export interface MaintenanceApplyStep {
+  planId: string;
+  itemId: string;
+  /** Items that must be applied and verified before this item can safely run. */
+  dependsOn: { planId: string; itemId: string }[];
 }
 
 interface PlanRow {
@@ -734,9 +742,10 @@ export function getMaintenancePlan(ctx: AknoContext, planId: string): Maintenanc
 }
 
 /**
- * Prevent an earlier automatic write from invalidating a later item that was sealed from the
- * pre-write snapshot. Recovery items take priority because their write may already have happened;
- * among new items, phase and item order determine which proposal proceeds first.
+ * Prevent incompatible automatic access to sealed paths or canonical identities. Recovery items
+ * take priority because their write may already have happened; among new conflicting items, phase
+ * and item order determine which proposal proceeds. Compatible create-before-reference edges are
+ * ordered separately by `maintenanceItemApplySchedule` rather than blocked.
  */
 export function blockMaintenanceDependencies(ctx: AknoContext, planIds: string[]): number {
   requireWritable(ctx);
@@ -756,7 +765,7 @@ export function blockMaintenanceDependencies(ctx: AknoContext, planIds: string[]
       ctx,
       conflict.planId,
       conflict.itemId,
-      "Deferred because another automatic maintenance item changes this item's sealed input or output. Replan it against the resulting knowledge-base snapshot in a later run.",
+      "Deferred because another automatic maintenance item changes this item's sealed input or output. Replan it against the resulting knowledge-base snapshot.",
       'dependency_conflict',
     );
     touchedPlans.add(conflict.planId);
@@ -794,7 +803,122 @@ export function findMaintenanceDependencyConflicts(
   plans: MaintenancePlan[],
   pagePaths: ReadonlyMap<string, string>,
 ): MaintenanceDependencyConflict[] {
-  const entries = plans.flatMap((plan) =>
+  const entries = maintenanceDependencyEntries(plans, pagePaths);
+  const recoveries = entries.filter((entry) => ['applying', 'verification_pending'].includes(entry.status));
+  const pending = entries.filter((entry) => ['proposed', 'approved'].includes(entry.status));
+  const blocked = new Map<string, MaintenanceDependencyConflict>();
+  const keyFor = (entry: (typeof entries)[number]): string => `${entry.planId}\0${entry.itemId}`;
+
+  // A write may already be present for a recovery item, so recovery always wins over a proposal,
+  // even when the proposal belongs to an earlier phase.
+  for (const candidate of pending) {
+    for (const recovery of recoveries) {
+      if (!accessesConflict(candidate, recovery) || keyFor(candidate) === keyFor(recovery)) continue;
+      blocked.set(keyFor(candidate), {
+        planId: candidate.planId,
+        itemId: candidate.itemId,
+        kind:
+          intersects(candidate.writes, recovery.writes) || intersects(candidate.creates, recovery.creates)
+            ? 'write_write'
+            : 'sealed_input',
+      });
+      break;
+    }
+  }
+
+  const preceding: typeof pending = [];
+  for (const candidate of pending) {
+    if (blocked.has(keyFor(candidate))) continue;
+    const conflict = preceding.find(
+      (earlier) =>
+        intersects(earlier.writes, candidate.writes) ||
+        intersects(earlier.creates, candidate.creates) ||
+        intersects(earlier.writes, candidate.reads),
+    );
+    if (conflict) {
+      blocked.set(keyFor(candidate), {
+        planId: candidate.planId,
+        itemId: candidate.itemId,
+        kind:
+          intersects(conflict.writes, candidate.writes) || intersects(conflict.creates, candidate.creates)
+            ? 'write_write'
+            : 'sealed_input',
+      });
+      continue;
+    }
+    preceding.push(candidate);
+  }
+
+  const eligible = entries.filter((entry) => !blocked.has(keyFor(entry)));
+  const dependencies = semanticMaintenanceDependencies(eligible);
+  for (const key of cyclicDependencyKeys(eligible, dependencies)) {
+    const entry = eligible.find((candidate) => keyFor(candidate) === key)!;
+    blocked.set(key, { planId: entry.planId, itemId: entry.itemId, kind: 'semantic_cycle' });
+  }
+
+  return [...blocked.values()];
+}
+
+/**
+ * Stable topological order for automatic items. Exact proposed Markdown is enough to recognize
+ * that one item creates a canonical slug referenced by another item's links or `akno.about`.
+ * The creator is applied and verified first even when its phase would normally run later.
+ */
+export function maintenanceItemApplySchedule(
+  plans: MaintenancePlan[],
+  pagePaths: ReadonlyMap<string, string>,
+): MaintenanceApplyStep[] {
+  const entries = maintenanceDependencyEntries(plans, pagePaths);
+  const dependencies = semanticMaintenanceDependencies(entries);
+  const keys = topologicalDependencyOrder(entries, dependencies);
+  const byKey = new Map(entries.map((entry) => [dependencyKey(entry), entry]));
+  return keys.map((key) => {
+    const entry = byKey.get(key)!;
+    return {
+      planId: entry.planId,
+      itemId: entry.itemId,
+      dependsOn: [...(dependencies.get(key) ?? [])].map((dependency) => {
+        const prerequisite = byKey.get(dependency)!;
+        return { planId: prerequisite.planId, itemId: prerequisite.itemId };
+      }),
+    };
+  });
+}
+
+export function deferUnmetMaintenanceDependency(
+  ctx: AknoContext,
+  planId: string,
+  itemId: string,
+): MaintenancePlan {
+  requireWritable(ctx);
+  blockItem(
+    ctx,
+    planId,
+    itemId,
+    'Deferred because a page this item references was not created and verified by its prerequisite maintenance item.',
+    'dependency_unmet',
+  );
+  refreshDecisionStatus(ctx, planId);
+  return getMaintenancePlan(ctx, planId);
+}
+
+interface MaintenanceDependencyEntry {
+  planId: string;
+  itemId: string;
+  status: MaintenanceItemStatus;
+  order: number;
+  reads: Set<string>;
+  writes: Set<string>;
+  creates: Set<string>;
+  references: Set<string>;
+}
+
+function maintenanceDependencyEntries(
+  plans: MaintenancePlan[],
+  pagePaths: ReadonlyMap<string, string>,
+): MaintenanceDependencyEntry[] {
+  let order = 0;
+  return plans.flatMap((plan) =>
     plan.mode === 'auto'
       ? plan.items.flatMap((item) => {
           const scheduled =
@@ -815,64 +939,148 @@ export function findMaintenanceDependencyConflicts(
             const relPath = evidence.targetRelPath ?? pagePaths.get(evidence.source);
             if (relPath) reads.add(relPath);
           }
+          const creates = new Set<string>();
+          const references = new Set<string>();
+          for (const operation of item.operations) {
+            if (operation.type === 'delete') continue;
+            const parsed = plannedPage(operation);
+            if (!parsed) continue;
+            if (operation.type === 'create') creates.add(dependencySlug(parsed.slug));
+            for (const link of parsed.links) {
+              if (link.kind !== 'embed') references.add(dependencySlug(link.toSlug));
+            }
+            for (const target of parsed.about) references.add(dependencySlug(target));
+          }
           return [
             {
               planId: plan.id,
               itemId: item.id,
               status: item.status,
+              order: order++,
               reads,
               writes,
+              creates,
+              references,
             },
           ];
         })
       : [],
   );
-  const recoveries = entries.filter((entry) => ['applying', 'verification_pending'].includes(entry.status));
-  const pending = entries.filter((entry) => ['proposed', 'approved'].includes(entry.status));
-  const blocked = new Map<string, MaintenanceDependencyConflict>();
-  const keyFor = (entry: (typeof entries)[number]): string => `${entry.planId}\0${entry.itemId}`;
+}
 
-  // A write may already be present for a recovery item, so recovery always wins over a proposal,
-  // even when the proposal belongs to an earlier phase.
-  for (const candidate of pending) {
-    for (const recovery of recoveries) {
-      if (!accessesConflict(candidate, recovery) || keyFor(candidate) === keyFor(recovery)) continue;
-      blocked.set(keyFor(candidate), {
-        planId: candidate.planId,
-        itemId: candidate.itemId,
-        kind: intersects(candidate.writes, recovery.writes) ? 'write_write' : 'sealed_input',
-      });
-      break;
+function plannedPage(
+  operation: Exclude<MaintenanceOperation, DeleteOperation>,
+): ReturnType<typeof parsePage> | null {
+  try {
+    return parsePage(operation.relPath, operation.after);
+  } catch {
+    // Preflight reports malformed Markdown as a typed item failure. Dependency inspection stays
+    // content-safe and must not turn one invalid proposal into a whole-run infrastructure error.
+    return null;
+  }
+}
+
+function semanticMaintenanceDependencies(entries: MaintenanceDependencyEntry[]): Map<string, Set<string>> {
+  const creators = new Map<string, MaintenanceDependencyEntry[]>();
+  for (const entry of entries) {
+    for (const slug of entry.creates) {
+      const current = creators.get(slug);
+      if (current) current.push(entry);
+      else creators.set(slug, [entry]);
     }
   }
-
-  const preceding: typeof pending = [];
-  for (const candidate of pending) {
-    if (blocked.has(keyFor(candidate))) continue;
-    const conflict = preceding.find(
-      (earlier) =>
-        intersects(earlier.writes, candidate.writes) || intersects(earlier.writes, candidate.reads),
-    );
-    if (conflict) {
-      blocked.set(keyFor(candidate), {
-        planId: candidate.planId,
-        itemId: candidate.itemId,
-        kind: intersects(conflict.writes, candidate.writes) ? 'write_write' : 'sealed_input',
-      });
-      continue;
+  const dependencies = new Map(entries.map((entry) => [dependencyKey(entry), new Set<string>()]));
+  for (const entry of entries) {
+    const key = dependencyKey(entry);
+    // Recovery owns bytes or a journal entry already. New proposals may wait for it, but a newly
+    // inferred semantic edge must never turn interrupted-apply recovery into an ordinary deferral.
+    if (['applying', 'verification_pending'].includes(entry.status)) continue;
+    for (const reference of entry.references) {
+      const matches = creators.get(reference) ?? [];
+      if (matches.length === 0) continue;
+      const creatorKey = dependencyKey(matches[0]!);
+      if (creatorKey !== key) dependencies.get(key)!.add(creatorKey);
     }
-    preceding.push(candidate);
   }
+  return dependencies;
+}
 
-  return [...blocked.values()];
+function cyclicDependencyKeys(
+  entries: MaintenanceDependencyEntry[],
+  dependencies: ReadonlyMap<string, ReadonlySet<string>>,
+): string[] {
+  return entries
+    .map(dependencyKey)
+    .filter((key) => dependencyPathReturnsTo(key, key, dependencies, new Set()));
+}
+
+function dependencyPathReturnsTo(
+  current: string,
+  target: string,
+  dependencies: ReadonlyMap<string, ReadonlySet<string>>,
+  visited: Set<string>,
+): boolean {
+  if (visited.has(current)) return false;
+  visited.add(current);
+  for (const prerequisite of dependencies.get(current) ?? []) {
+    if (prerequisite === target) return true;
+    if (dependencyPathReturnsTo(prerequisite, target, dependencies, visited)) return true;
+  }
+  return false;
+}
+
+function topologicalDependencyOrder(
+  entries: MaintenanceDependencyEntry[],
+  dependencies: ReadonlyMap<string, ReadonlySet<string>>,
+): string[] {
+  const byKey = new Map(entries.map((entry) => [dependencyKey(entry), entry]));
+  const dependants = new Map<string, Set<string>>();
+  const indegree = new Map<string, number>();
+  for (const entry of entries) {
+    const key = dependencyKey(entry);
+    const required = dependencies.get(key) ?? new Set<string>();
+    indegree.set(key, required.size);
+    for (const prerequisite of required) {
+      const current = dependants.get(prerequisite);
+      if (current) current.add(key);
+      else dependants.set(prerequisite, new Set([key]));
+    }
+  }
+  const ready = entries.filter((entry) => indegree.get(dependencyKey(entry)) === 0);
+  const ordered: string[] = [];
+  while (ready.length > 0) {
+    ready.sort((left, right) => left.order - right.order);
+    const entry = ready.shift()!;
+    const key = dependencyKey(entry);
+    ordered.push(key);
+    for (const dependant of dependants.get(key) ?? []) {
+      const next = indegree.get(dependant)! - 1;
+      indegree.set(dependant, next);
+      if (next === 0) ready.push(byKey.get(dependant)!);
+    }
+  }
+  for (const entry of entries) {
+    const key = dependencyKey(entry);
+    if (!ordered.includes(key)) ordered.push(key);
+  }
+  return ordered;
+}
+
+function dependencyKey(entry: Pick<MaintenanceDependencyEntry, 'planId' | 'itemId'>): string {
+  return `${entry.planId}\0${entry.itemId}`;
+}
+
+function dependencySlug(slug: string): string {
+  return slug.normalize('NFKC').trim().toLowerCase();
 }
 
 function accessesConflict(
-  left: { reads: ReadonlySet<string>; writes: ReadonlySet<string> },
-  right: { reads: ReadonlySet<string>; writes: ReadonlySet<string> },
+  left: { reads: ReadonlySet<string>; writes: ReadonlySet<string>; creates: ReadonlySet<string> },
+  right: { reads: ReadonlySet<string>; writes: ReadonlySet<string>; creates: ReadonlySet<string> },
 ): boolean {
   return (
     intersects(left.writes, right.writes) ||
+    intersects(left.creates, right.creates) ||
     intersects(left.writes, right.reads) ||
     intersects(right.writes, left.reads)
   );
@@ -988,17 +1196,25 @@ export async function applyMaintenancePlan(
   ctx: AknoContext,
   planId: string,
   sharedBudget?: MaintenanceBudgetTracker,
+  options: { onlyItemIds?: ReadonlySet<string> } = {},
 ): Promise<ApplyMaintenanceResult> {
   requireWritable(ctx);
   const budget = sharedBudget ?? createMaintenanceBudget(ctx.config.maintenance.limits);
   let plan = getMaintenancePlan(ctx, planId);
-  if (!plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
+  const selected = (item: MaintenanceItem): boolean =>
+    !options.onlyItemIds || options.onlyItemIds.has(item.id);
+  if (
+    !plan.items.some(
+      (item) => selected(item) && ['approved', 'applying', 'verification_pending'].includes(item.status),
+    )
+  ) {
     throw new AknoError('invalid', `${planId} has no approved, interrupted, or pending items to apply`);
   }
   setPlanStatus(ctx, planId, 'applying');
   const files: ChangeFile[] = [];
 
   for (const plannedItem of plan.items) {
+    if (!selected(plannedItem)) continue;
     let item = plannedItem;
     if (item.status === 'applying') {
       item = await recoverInterruptedApply(ctx, item);
@@ -2434,7 +2650,9 @@ export function maintenancePlanStatusAfterApply(plan: MaintenancePlan): Maintena
     return 'awaiting_review';
   } else if (statuses.includes('proposed')) return 'ready';
   else if (
-    plan.items.some((item) => ['dependency_conflict', 'snapshot_drift'].includes(item.statusCode ?? ''))
+    plan.items.some((item) =>
+      ['dependency_conflict', 'dependency_unmet', 'snapshot_drift'].includes(item.statusCode ?? ''),
+    )
   ) {
     // These items need a new plan, unlike budget and verification deferrals. Keeping this plan
     // active would make the next cycle resume a terminal item forever instead of replanning it.
@@ -2460,7 +2678,7 @@ export function finalizeRetryableMaintenancePlans(ctx: AknoContext): number {
           AND EXISTS (
             SELECT 1 FROM maintenance_items item
              WHERE item.plan_id = plan.id
-               AND item.status_code IN ('dependency_conflict', 'snapshot_drift')
+               AND item.status_code IN ('dependency_conflict', 'dependency_unmet', 'snapshot_drift')
           )
           AND NOT EXISTS (
             SELECT 1 FROM maintenance_items item
@@ -2472,7 +2690,7 @@ export function finalizeRetryableMaintenancePlans(ctx: AknoContext): number {
              WHERE item.plan_id = plan.id
                AND item.status IN ('blocked', 'stale', 'verification_failed')
                AND NOT (
-                 (item.status = 'blocked' AND item.status_code = 'dependency_conflict')
+                 (item.status = 'blocked' AND item.status_code IN ('dependency_conflict', 'dependency_unmet'))
                  OR (item.status = 'stale' AND item.status_code = 'snapshot_drift')
                )
           )`,

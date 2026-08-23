@@ -762,8 +762,9 @@ Order matters in three places:
   same-run observation proposals to it. If an accepted observation invalidates a sealed reflection input,
   however, the bounded post-apply retry may replan reflection from that now-applied and verified observation.
 - A full named-profile or explicit-policy run seals every writable phase plan before any automatic curator call
-  or knowledge-base write. It then decides and applies accepted plans in phase order with the shared budget.
-  Selecting one `--phase` remains immediate; empty-policy `custom` keeps its compatibility behavior.
+  or knowledge-base write. It decides plans in phase order, then applies accepted items in a stable dependency
+  order with the shared budget. Selecting one `--phase` remains immediate; empty-policy `custom` keeps its
+  compatibility behavior.
 - At that barrier, Akno compares the file access sealed by pending automatic items. A later item is blocked if
   it would write the same path as an earlier item, or if an earlier write would invalidate its input or evidence.
   It skips the curator and all writes with typed status `dependency_conflict`; unrelated work continues and the
@@ -773,6 +774,12 @@ Order matters in three places:
   full run is `partially_completed` and later work resumes on the next cycle. An item already recovering an
   interrupted apply takes priority over a new proposal. Audit and review proposals are not in the automatic
   apply set, so they do not block it.
+- Exact proposed Markdown contributes semantic edges too. A canonical page creation precedes any other item
+  whose sealed output links to it or names it in `akno.about`, regardless of normal phase order. Every curator
+  decision still happens before the first write; apply then follows the stable topological item order. Duplicate
+  canonical identities and reference cycles are dependency conflicts. If a creator is rejected, stale, or
+  cannot fit the shared budget, its dependant is deferred without writing as `dependency_unmet` and replanned
+  next cycle; Akno does not spend its bounded retry while the prerequisite is still absent.
 - Immediately before that dependency check, Akno repeats each automatic item's stale-input preflight. It
   re-hashes operation inputs, inference evidence, ordinary curation evidence, link destinations, adoption
   documents, and applicable structural identities. A changed item skips the curator and every write with typed
@@ -1567,9 +1574,9 @@ snooze or requested-revision decision yet.
 ### The full cycle now separates planning from automatic apply
 
 The observation, reflection, curation, and adoption slices follow one lifecycle. In a full named-profile or
-explicit-policy run, every enabled writable planner finishes before the first curator decision or write. Accepted plans then
-apply in phase order, each item is reindexed and verified, and only then do repair and housekeeping report the
-result:
+explicit-policy run, every enabled writable planner finishes before the first curator decision or write. All
+curator decisions then finish before accepted items apply in stable dependency order; each item is reindexed and
+verified before its dependants, and only then do repair and housekeeping report the result:
 
 1. **Inspect:** find ownership gaps, conflicts, structural drift, and inference candidates without writing.
 2. **Plan:** produce stable finding ids and complete proposed diffs against recorded input hashes.
@@ -1584,8 +1591,9 @@ The barrier is intentionally limited to the policy-backed full command. A select
 immediate testing or recovery, and compatibility `custom` with no policies preserves its older behavior. Plans
 remain phase-specific, but the barrier builds one deterministic access graph across their automatic items.
 Same-path writes and earlier-write/later-sealed-read edges are explicit; ambiguous items get one post-apply
-replanning wave. Semantic create-before-link edges, virtual post-plan composition, and pinning planner reads to
-one database revision against concurrent external file changes remain future work.
+replanning wave. Canonical create-before-link/`akno.about` edges are topologically ordered. Semantic deletion
+and ownership edges, virtual post-plan composition, and pinning planner reads to one database revision against
+concurrent external file changes remain future work.
 
 ### Maintenance profiles still need a complete failure policy and path explanation
 

@@ -351,12 +351,13 @@ function completedStatus(report: DreamReport): DreamRunStatus {
     const onlyRetryableDeferrals = failed.every(
       (plan) =>
         plan.items.some((item) =>
-          ['dependency_conflict', 'snapshot_drift'].includes(item.statusCode ?? ''),
+          ['dependency_conflict', 'dependency_unmet', 'snapshot_drift'].includes(item.statusCode ?? ''),
         ) &&
         plan.items.every(
           (item) =>
             !['blocked', 'stale', 'verification_failed'].includes(item.status) ||
-            (item.status === 'blocked' && item.statusCode === 'dependency_conflict') ||
+            (item.status === 'blocked' &&
+              ['dependency_conflict', 'dependency_unmet'].includes(item.statusCode ?? '')) ||
             (item.status === 'stale' && item.statusCode === 'snapshot_drift'),
         ),
     );
