@@ -76,6 +76,7 @@ describe('schema migration', () => {
     ]);
     expect(columns.map((row) => row.name)).toContain('evidence');
     expect(columns.map((row) => row.name)).toContain('policy');
+    expect(columns.map((row) => row.name)).toContain('status_code');
     expect(conflictCache?.name).toBe('conflict_verdicts');
     expect(conflictColumns.map((row) => row.name)).toContain('qualification');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
@@ -279,6 +280,44 @@ describe('schema migration', () => {
     };
 
     expect(item.policy).toBe('review');
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds a typed item status code without changing a version-seventeen plan', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-status-code-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 10)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO maintenance_plans
+          (id, created_at, updated_at, mode, phase, status, fingerprint, summary)
+         VALUES('pln_blackwater', '2031-05-06T12:00:00Z', '2031-05-06T12:00:00Z',
+                'auto', 'curate', 'completed', 'fingerprint-blackwater', 'invented plan')`,
+      )
+      .run();
+    legacy
+      .prepare(
+        `INSERT INTO maintenance_items
+          (id, plan_id, ord, kind, policy, risk, status, subject, rationale, input_hash,
+           operations, updated_at)
+         VALUES('itm_blackwater', 'pln_blackwater', 0, 'hygiene', 'auto', 'low', 'applied',
+                'places/blackwater-bay', 'Invented cleanup.', 'hash-blackwater', '[]',
+                '2031-05-06T12:00:00Z')`,
+      )
+      .run();
+    legacy.pragma('user_version = 17');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const item = store.db
+      .prepare('SELECT status, status_code FROM maintenance_items WHERE id = ?')
+      .get('itm_blackwater') as { status: string; status_code: string | null };
+
+    expect(item).toEqual({ status: 'applied', status_code: null });
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

@@ -47,6 +47,12 @@ import {
   policyMode,
   profileMode,
 } from './profile.ts';
+import {
+  createMaintenanceBudget,
+  maintenanceBudgetReceipt,
+  type MaintenanceBudgetReceipt,
+  type MaintenanceBudgetTracker,
+} from './budget.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -128,6 +134,7 @@ export interface DreamMaintenancePlan extends MaintenancePlanSummary {
     | 'risk'
     | 'subject'
     | 'status'
+    | 'statusCode'
     | 'decision'
     | 'statusReason'
     | 'changeId'
@@ -159,6 +166,8 @@ export interface DreamReport {
   maintenancePlan: DreamMaintenancePlan | null;
   /** Every phase-specific plan touched by this run. */
   maintenancePlans: DreamMaintenancePlan[];
+  /** Cumulative apply limits and usage shared by plan-backed phases in this invocation. */
+  budget: MaintenanceBudgetReceipt;
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
@@ -211,6 +220,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     curateChangeId: null,
     maintenancePlan: null,
     maintenancePlans: [],
+    budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
     warnings: [],
     durationMs: 0,
   };
@@ -218,6 +228,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   // Collected whether or not anything reads it, because the phases are where the information
   // is and threading it out conditionally is how a debugging flag ends up logging half a run.
   const applied: AppliedChange[] = [];
+  const budget = createMaintenanceBudget(ctx.config.maintenance.limits);
 
   try {
     // A selected inference or curation phase still gets the same safety boundary as a full run.
@@ -232,7 +243,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     }
     for (const phase of wanted) {
       const phaseStarted = performance.now();
-      const skipped = await runPhase(cycle, phase, options, report, applied);
+      const skipped = await runPhase(cycle, phase, options, report, applied, budget);
       report.phases.push({
         phase,
         ran: skipped === null,
@@ -242,6 +253,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     }
 
     report.durationMs = Math.round(performance.now() - started);
+    report.budget = maintenanceBudgetReceipt(budget);
 
     if (ctx.config.maintenance.logChanges) {
       const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });
@@ -251,7 +263,8 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     return report;
   } catch (error) {
     report.durationMs = Math.round(performance.now() - started);
-    report.run = failDreamRun(ctx, startedRun, error, report.durationMs, report.phases);
+    report.budget = maintenanceBudgetReceipt(budget);
+    report.run = failDreamRun(ctx, startedRun, error, report.durationMs, report.phases, report.budget);
     throw error;
   }
 }
@@ -312,6 +325,7 @@ async function runPhase(
   options: DreamOptions,
   report: DreamReport,
   applied: AppliedChange[],
+  budget: MaintenanceBudgetTracker,
 ): Promise<string | null> {
   switch (phase) {
     case 'observe': {
@@ -484,7 +498,7 @@ async function runPhase(
           if (
             plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))
           ) {
-            const appliedResult = await applyMaintenancePlan(ctx, plan.id);
+            const appliedResult = await applyMaintenancePlan(ctx, plan.id, budget);
             plan = appliedResult.plan;
             applied.push(...appliedResult.files.map((file) => asApplied('curate', file)));
           }
@@ -568,7 +582,7 @@ async function runPhase(
         if (
           plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))
         ) {
-          const appliedResult = await applyMaintenancePlan(ctx, plan.id);
+          const appliedResult = await applyMaintenancePlan(ctx, plan.id, budget);
           plan = appliedResult.plan;
           applied.push(...appliedResult.files.map((file) => asApplied('adopt', file)));
         }
@@ -684,6 +698,7 @@ function maintenancePlanForReport(plan: MaintenancePlan): DreamMaintenancePlan {
       risk: item.risk,
       subject: item.subject,
       status: item.status,
+      statusCode: item.statusCode,
       decision: item.decision,
       statusReason: item.statusReason,
       changeId: item.changeId,

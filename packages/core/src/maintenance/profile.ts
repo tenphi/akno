@@ -2,6 +2,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import {
   MAINTENANCE_TRANSFORMS,
   type AknoConfig,
+  type MaintenanceLimits,
   type MaintenancePolicy,
   type MaintenanceProfile,
   type MaintenanceTransform,
@@ -22,6 +23,7 @@ export interface MaintenanceAuthority {
   curate: MaintenancePhaseAuthority;
   adopt: MaintenancePhaseAuthority;
   policies: Record<MaintenanceTransform, EffectiveMaintenancePolicy>;
+  limits: MaintenanceLimits;
 }
 
 export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceAuthority {
@@ -63,6 +65,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
     curate,
     adopt,
     policies,
+    limits: { ...config.maintenance.limits },
   };
 }
 

@@ -273,7 +273,7 @@ describe('plan-backed hygiene', () => {
     await mem.close();
     mem = await openMem(false);
     expect(mem.plan(plan.id)).toMatchObject({ id: plan.id, status: 'ready' });
-    expect(mem.maintenanceStatus()).toMatchObject({ active: 1, awaitingHuman: 1 });
+    expect(mem.maintenanceStatus()).toMatchObject({ active: 1, awaitingHuman: 0, budgetDeferred: 0 });
   });
 
   it('keeps human review separate from apply and leaves an undoable change', async () => {

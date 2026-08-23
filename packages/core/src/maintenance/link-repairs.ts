@@ -373,7 +373,11 @@ function relativeTo(folder: string, target: string): string {
   let shared = 0;
   while (shared < from.length && shared < to.length && from[shared] === to[shared]) shared += 1;
   const up = Array.from({ length: from.length - shared }, () => '..');
-  return [...up, ...to.slice(shared)].join('/');
+  const relative = [...up, ...to.slice(shared)].join('/');
+  // Akno accepts root-relative Markdown paths for convenience, so a nested path without
+  // an explicit dot is parsed from the knowledge-base root. Mark generated nested relatives
+  // explicitly or the next index/dream pass sees Akno's own repair as broken and rewrites it.
+  return relative.includes('/') && !relative.startsWith('../') ? `./${relative}` : relative;
 }
 
 async function readPage(ctx: AknoContext, relPath: string): Promise<string | null> {

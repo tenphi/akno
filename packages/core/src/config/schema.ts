@@ -211,6 +211,12 @@ export const MAINTENANCE_TRANSFORMS = [
 export type MaintenanceTransform = (typeof MAINTENANCE_TRANSFORMS)[number];
 export const MAINTENANCE_POLICIES = ['off', 'audit', 'review', 'auto'] as const;
 export type MaintenancePolicy = (typeof MAINTENANCE_POLICIES)[number];
+export interface MaintenanceLimits {
+  maxItems: number;
+  maxFilesChanged: number;
+  maxBytesWritten: number;
+  maxHighRiskItems: number;
+}
 
 const MaintenancePolicyDoc = z.enum(MAINTENANCE_POLICIES);
 const MaintenancePoliciesDoc = z.object({
@@ -224,6 +230,13 @@ const MaintenancePoliciesDoc = z.object({
   adopt: MaintenancePolicyDoc.optional(),
 });
 
+const MaintenanceLimitsDoc = z.object({
+  max_items: z.number().int().nonnegative().optional(),
+  max_files_changed: z.number().int().nonnegative().optional(),
+  max_bytes_written: z.number().int().nonnegative().optional(),
+  max_high_risk_items: z.number().int().nonnegative().optional(),
+});
+
 const MaintenanceDoc = z.object({
   /**
    * One understandable authority choice for the complete scheduled cycle. `custom` preserves
@@ -233,6 +246,8 @@ const MaintenanceDoc = z.object({
   profile: z.enum(MAINTENANCE_PROFILES).optional(),
   /** Per-transformation authority; absent values inherit a named profile and are off under explicit custom. */
   policies: MaintenancePoliciesDoc.optional(),
+  /** Cumulative apply ceilings shared by every plan-backed phase in one dream invocation. */
+  limits: MaintenanceLimitsDoc.optional(),
   /**
    * The model the cycle uses, when it should not be the one indexing uses.
    *
@@ -465,6 +480,8 @@ export interface AknoConfig {
     policiesConfigured: boolean;
     /** Named profiles resolve all keys; custom retains only explicitly configured keys. */
     policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
+    /** Cumulative apply ceilings for one maintenance invocation. */
+    limits: MaintenanceLimits;
     /** Null when the cycle uses the `derive` role, which is the default. */
     model: ResolvedModelRole | null;
     /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */

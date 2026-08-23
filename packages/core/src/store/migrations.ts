@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 17;
+export const SCHEMA_VERSION = 18;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -21,6 +21,7 @@ export const ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX = 6;
 export const DOCUMENT_AVAILABILITY_MIGRATION_INDEX = 7;
 export const DOCUMENT_FILE_DATES_MIGRATION_INDEX = 8;
 export const MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX = 9;
+export const MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX = 10;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -453,6 +454,11 @@ export const MIGRATIONS: string[] = [
        (SELECT mode FROM maintenance_plans WHERE maintenance_plans.id = maintenance_items.plan_id),
        'audit'
      );
+  `,
+  // ── 11. Typed maintenance deferral reasons ──────────────────────────────
+  // Human-readable detail remains in decision_reason; automation must not parse prose to detect backlog.
+  `
+  ALTER TABLE maintenance_items ADD COLUMN status_code TEXT;
   `,
 ];
 

@@ -600,6 +600,12 @@ Individual transformation classes can be stricter than the profile:
       "merge": "review",
       "contradiction": "off",
     },
+    "limits": {
+      "max_items": 30,
+      "max_files_changed": 40,
+      "max_bytes_written": 500000,
+      "max_high_risk_items": 3,
+    },
   },
 }
 ```
@@ -610,6 +616,15 @@ under `custom` is an allowlist, so omitted keys are off; an empty map retains th
 is sealed per item, allowing one plan to apply autonomous repairs while leaving higher-risk proposals for human
 review. Under `custom`, the corresponding phase must still be enabled. A command-line mode can only lower every
 effective item policy.
+
+The `limits` block is one cumulative apply budget. A full `akno dream` shares it across curate and adopt;
+`akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are
+not truncated. Instead, apply reserves a complete item before its first write. `max_items` counts items,
+`max_files_changed` counts distinct paths, `max_bytes_written` counts the full UTF-8 output of creates and
+replacements, and `max_high_risk_items` counts high-risk items. Zero is valid, including zero high-risk writes.
+An item that would cross any ceiling changes nothing, returns to `proposed` with the typed
+`budget_exhausted` reason, and can be reconsidered with a fresh budget on a later run. `akno dream status`
+shows both configured ceilings and any budget-deferred backlog; each run receipt records exact usage.
 
 Curate is included in scheduled runs with `enabled`. When `mode` is null, the legacy `write` switch chooses
 between summary preview and direct application. Opted-in hygiene and synthesis pages can instead use an

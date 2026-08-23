@@ -650,9 +650,9 @@ upgrade. A named profile enables both plan-backed planners, conflict resolution,
 repair; page frontmatter, folder rules, merge allowlists, deterministic guards, and per-run caps remain more
 restrictive boundaries. It does not automatically enable the model-sensitive `observe` or `reflect` phases.
 
-`akno config` prints the profile plus its expanded `curate.mode` and `adopt.mode`. `akno dream status`
-summarizes the profile, cycle authority, phase authority, every transformation policy, and whether an ordinary
-scheduled run may write.
+`akno config` prints the profile plus its expanded `curate.mode`, `adopt.mode`, policies, and limits. `akno
+dream status` summarizes the profile, cycle authority, phase authority, every transformation policy, the
+whole-run ceilings and latest usage, and whether an ordinary scheduled run may write.
 A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
 `--mode auto` cannot promote a configured review profile.
@@ -693,6 +693,34 @@ The effective policy is stored immutably on every plan item. One plan may theref
 link repair while leaving a merge in human review and a synthesis proposal in audit. The plan's `mode` is only
 the highest-authority envelope; the curator receives only items whose own policy is `auto`. A one-run mode is
 another ceiling over every item, so `--mode audit` lowers even an autonomous policy map to audit for that run.
+
+Profiles answer what may happen; `maintenance.limits` bounds how much may happen in one apply invocation:
+
+```jsonc
+{
+  "maintenance": {
+    "limits": {
+      "max_items": 30,
+      "max_files_changed": 40,
+      "max_bytes_written": 500000,
+      "max_high_risk_items": 3,
+    },
+  },
+}
+```
+
+A full `akno dream` shares one tracker across curate and adopt. A manual `akno plan apply` or direct
+`akno adopt` starts a fresh tracker. Planning is not capped, so audit and review still expose the complete
+proposal. Immediately before writing an approved item, Akno reserves the item as a unit: items count once,
+files count once per distinct path in the invocation, bytes are the complete UTF-8 output of creates and
+replacements, and a delete consumes a file slot but writes zero bytes. Zero is a valid limit.
+
+If any ceiling would be crossed, none of that item's operations start. The item returns to `proposed`, its
+prior decision is cleared, and its machine-readable status is `budget_exhausted`; unrelated later items may
+still fit because a refused reservation consumes no capacity. The plan and run become `partially_completed`.
+An autonomous later run asks the curator again and retries with a fresh budget; a human-controlled item waits
+for a new explicit decision. Run receipts store the content-safe limits, exact usage, and deferral count, while
+`akno dream status` separates budget backlog from items genuinely awaiting human review.
 
 ### The retention ladder is not the execution order
 
@@ -916,7 +944,8 @@ the compatibility repair report, and housekeeping keep running. Use `profile: "c
 retaining or composing the lower-level phase behavior.
 
 All three modes create the same persistent plan in `<state_dir>/akno.db`. Each item records its immutable
-policy, exact operation, input hash, completed guards, decision, journal change id, and verification result.
+policy, exact operation, input hash, completed guards, decision, typed nonterminal status, journal change id,
+and verification result.
 `audit` leaves items proposed, `review` labels them as waiting for human decisions, and `auto` uses a separate
 model call with no tools and a fresh curator prompt after the plan is sealed. Mixed-policy plans keep their
 review and audit items proposed after independent automatic items apply. A failed or malformed curator response
@@ -1500,23 +1529,28 @@ The named phases can remain as internal methods, but the operator would reason a
 Conflict analysis should also precede `observe` and `reflect`, or unresolved claim groups should be excluded,
 so higher-level inference is not built from facts the same run later identifies as contradictory.
 
-### Maintenance profiles still need whole-run budgets and failure policy
+### Maintenance profiles still need a complete failure policy and path explanation
 
 `audit`, `review`, `autonomous`, and compatibility `custom` resolve one authority ceiling for the complete cycle,
 and per-transformation policies can independently select `off`, `audit`, `review`, or `auto`. Each sealed item
 retains that policy, and mixed plans apply only their automatic subset. This removes the dangerous ambiguity
 around whether a high-authority run can promote a lower-authority class.
 
-The remaining significant boundary is cumulative scope. Profiles still lack whole-run item, changed-file,
-written-byte, and high-risk-item budgets and a complete failure policy. Page and folder restrictions,
-transformation-specific deterministic guards, and existing phase caps still apply, but they are not yet
-summarized as one path-specific policy explanation.
+Whole-run scope is now bounded by configurable item, distinct changed-file, written-byte, and high-risk-item
+ceilings. Curate and adopt share the same budget in a full run; an indivisible item that would cross a ceiling
+stays proposed with `budget_exhausted`, and the durable receipt and status view expose usage and backlog.
+
+The remaining significant boundary is failure behavior across dependent items and phases. Page and folder
+restrictions, transformation-specific deterministic guards, run budgets, and existing phase caps all apply,
+but they are not yet summarized as one path-specific policy explanation. There is also no configurable
+fail-fast versus independent-progress policy for a future whole-cycle dependency graph.
 
 ### The scheduled cycle still lacks schedule and history visibility
 
 `akno dream status` now shows resolved profile authority, active plans, proposed items, pending verification,
-and the latest content-safe full-cycle receipt with phase outcomes. It still does not inspect launchd to show
-whether the schedule is loaded, the next run time, older run history, model usage, or typed degradation.
+configured whole-run limits, budget-deferred items, and the latest content-safe full-cycle receipt with phase
+outcomes and budget usage. It still does not inspect launchd to show whether the schedule is loaded, the next
+run time, older run history, model usage, or typed degradation.
 
 ### Setup assumes too much infrastructure knowledge
 

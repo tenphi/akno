@@ -342,7 +342,15 @@ describe('reflect', () => {
 });
 
 describe('repair', () => {
-  async function withBrokenLinks(mode: 'audit' | 'auto' = 'auto'): Promise<void> {
+  async function withBrokenLinks(
+    mode: 'audit' | 'auto' = 'auto',
+    limits?: {
+      max_items?: number;
+      max_files_changed?: number;
+      max_bytes_written?: number;
+      max_high_risk_items?: number;
+    },
+  ): Promise<void> {
     await mem.close();
     fs.writeFileSync(
       path.join(root, 'home/appliances.md'),
@@ -359,6 +367,7 @@ describe('repair', () => {
     );
     mem = await openMem({
       maintenance: {
+        ...(limits ? { limits } : {}),
         observe: { enabled: false },
         curate: { enabled: true, mode, verify: true },
         repair: { enabled: true, links: true },
@@ -375,7 +384,7 @@ describe('repair', () => {
     const page = fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8');
     expect(page).toContain('[[home/heating/furnace|heating notes]]');
     expect(page).toContain('[[nothing-like-this-exists]]');
-    expect(page).toContain('[the boiler](heating/furnace.md)');
+    expect(page).toContain('[the boiler](./heating/furnace.md)');
     expect(page).toContain('https://example.com/boiler');
 
     const item = mem
@@ -494,6 +503,52 @@ describe('repair', () => {
     expect(report.adopted).toContainEqual(
       expect.objectContaining({ slug: 'household/coverage-note', action: 'created' }),
     );
+  });
+
+  it('shares one item budget across curate and adopt, then resumes deferred work next run', async () => {
+    await withBrokenLinks('auto', {
+      max_items: 1,
+      max_files_changed: 10,
+      max_bytes_written: 10_000,
+      max_high_risk_items: 2,
+    });
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'household/vulpine note.txt'),
+      'Vulpine Mutual coverage is an invented fixture.\n',
+    );
+    await mem.index({});
+
+    const first = await mem.dream({});
+    const curate = first.maintenancePlans.find((plan) => plan.phase === 'curate')!;
+    const adopt = first.maintenancePlans.find((plan) => plan.phase === 'adopt')!;
+
+    expect(curate.items.find((item) => item.kind === 'broken_link')).toMatchObject({ status: 'applied' });
+    expect(adopt.items[0]).toMatchObject({
+      status: 'proposed',
+      statusCode: 'budget_exhausted',
+      decision: null,
+    });
+    expect(first.run).toMatchObject({
+      status: 'partially_completed',
+      budget: {
+        used: { items: 1, filesChanged: 1, highRiskItems: 0 },
+        deferredItems: 1,
+      },
+    });
+    expect(fs.existsSync(path.join(root, 'household/vulpine-note.md'))).toBe(false);
+    expect(mem.maintenanceStatus()).toMatchObject({ awaitingHuman: 0, budgetDeferred: 1 });
+
+    const second = await mem.dream({});
+    const resumed = second.maintenancePlans.find((plan) => plan.id === adopt.id)!;
+
+    expect(resumed).toMatchObject({ status: 'completed' });
+    expect(resumed.items[0]).toMatchObject({ status: 'applied', statusCode: null });
+    expect(second.run.budget).toMatchObject({
+      used: { items: 1, filesChanged: 1, highRiskItems: 0 },
+      deferredItems: 0,
+    });
+    expect(fs.existsSync(path.join(root, 'household/vulpine-note.md'))).toBe(true);
   });
 
   it('uses journalled move history when the new name has no textual resemblance', async () => {
@@ -1257,7 +1312,7 @@ describe('the cycle', () => {
     expect(first.run.id).toMatch(/^run_[a-f0-9]{8}$/);
     expect(first.run.finishedAt).not.toBeNull();
     expect(first.run.snapshot).toMatchObject({
-      schemaVersion: 17,
+      schemaVersion: 18,
       requestedPhases: ['housekeeping'],
       plannerVersion: 'dream-lifecycle-v1',
     });

@@ -286,6 +286,15 @@
     // lower it. Under custom, an explicit map is allowlist-shaped: omitted classes
     // are off. Empty preserves the phase-level compatibility behavior below.
     "policies": {},
+    // Cumulative apply ceilings shared by curate and adopt in one invocation.
+    // Planning remains complete; an indivisible item that would cross a ceiling
+    // stays proposed with a typed budget_exhausted reason for a later run.
+    "limits": {
+      "max_items": 30,
+      "max_files_changed": 40,
+      "max_bytes_written": 500000,
+      "max_high_risk_items": 3
+    },
     // The model the cycle uses, when it should not be the one indexing uses.
     // Not a role of its own — the same capability as `derive`, pointed somewhere
     // else for the one caller that runs unattended.

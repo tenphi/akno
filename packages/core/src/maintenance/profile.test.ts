@@ -139,6 +139,32 @@ describe('maintenance profiles', () => {
 
     expect(configuredMaintenanceAuthority(config).automaticKnowledgeBaseWrites).toBe(false);
   });
+
+  it('resolves whole-run limits, including an explicit zero high-risk allowance', () => {
+    const defaults = fixtureConfig({ profile: 'autonomous' });
+    const bounded = fixtureConfig({
+      profile: 'autonomous',
+      limits: {
+        max_items: 5,
+        max_files_changed: 7,
+        max_bytes_written: 1111,
+        max_high_risk_items: 0,
+      },
+    });
+
+    expect(defaults.maintenance.limits).toEqual({
+      maxItems: 30,
+      maxFilesChanged: 40,
+      maxBytesWritten: 500_000,
+      maxHighRiskItems: 3,
+    });
+    expect(configuredMaintenanceAuthority(bounded).limits).toEqual({
+      maxItems: 5,
+      maxFilesChanged: 7,
+      maxBytesWritten: 1111,
+      maxHighRiskItems: 0,
+    });
+  });
 });
 
 function fixtureConfig(maintenance: NonNullable<ConfigDoc['maintenance']>) {

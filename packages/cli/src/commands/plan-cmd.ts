@@ -164,6 +164,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['active plans', status.active],
     ['awaiting decisions', status.awaitingHuman],
     ['verification pending', status.verificationPending],
+    ['budget deferred', status.budgetDeferred],
   ]);
   line('\n  transformation policies');
   for (const policy of ['auto', 'review', 'audit', 'off', 'legacy-write', 'legacy-preview'] as const) {
@@ -172,6 +173,13 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
       .map(([kind]) => kind);
     if (kinds.length > 0) line(`    ${policy.padEnd(14)} ${kinds.join(', ')}`);
   }
+  line('\n  whole-run apply limits');
+  kv([
+    ['items', status.authority.limits.maxItems],
+    ['changed files', status.authority.limits.maxFilesChanged],
+    ['written bytes', status.authority.limits.maxBytesWritten],
+    ['high-risk items', status.authority.limits.maxHighRiskItems],
+  ]);
   if (status.latestRun) {
     line('\n  latest dream run');
     kv([
@@ -182,6 +190,18 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
       ['started', status.latestRun.startedAt],
       ['snapshot', status.latestRun.snapshot.indexRevision.slice(0, 12)],
     ]);
+    if (status.latestRun.budget) {
+      kv([
+        [
+          'budget used',
+          `${status.latestRun.budget.used.items} items, ` +
+            `${status.latestRun.budget.used.filesChanged} files, ` +
+            `${status.latestRun.budget.used.bytesWritten} bytes, ` +
+            `${status.latestRun.budget.used.highRiskItems} high-risk`,
+        ],
+        ['budget deferred', status.latestRun.budget.deferredItems],
+      ]);
+    }
   }
   if (!status.latest) {
     line(style.grey('\n  no maintenance plans yet'));
@@ -242,9 +262,19 @@ function printApplyResult(result: ApplyMaintenanceResult): void {
   for (const item of result.plan.items) {
     line(`  ${itemStatus(item.status)}  ${item.id}  ${item.subject}`);
     if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
+    if (!item.decision && item.statusReason) line(`    ${style.grey(item.statusReason)}`);
     if (item.changeId)
       line(`    ${style.grey('reverse with')} ${style.bold(`akno undo ${item.changeId}`)}`);
   }
+  line(
+    style.grey(
+      `  budget: ${result.budget.used.items}/${result.budget.limits.maxItems} items, ` +
+        `${result.budget.used.filesChanged}/${result.budget.limits.maxFilesChanged} files, ` +
+        `${result.budget.used.bytesWritten}/${result.budget.limits.maxBytesWritten} bytes, ` +
+        `${result.budget.used.highRiskItems}/${result.budget.limits.maxHighRiskItems} high-risk; ` +
+        `${result.budget.deferredItems} deferred`,
+    ),
+  );
 }
 
 function itemStatus(status: string): string {

@@ -564,6 +564,7 @@ function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Rec
       policy: item.policy,
       risk: item.risk,
       status: item.status,
+      statusCode: item.statusCode,
       decision: item.decision
         ? { actor: item.decision.actor, outcome: item.decision.outcome, at: item.decision.at }
         : null,

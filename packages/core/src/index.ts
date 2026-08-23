@@ -10,6 +10,7 @@ export { loadConfig, type LoadOptions } from './config/load.ts';
 export type {
   AknoConfig,
   FolderRule,
+  MaintenanceLimits,
   MaintenancePolicy,
   MaintenanceProfile,
   MaintenanceTransform,
@@ -116,6 +117,11 @@ export {
   type PhaseReport,
 } from './maintenance/dream.ts';
 export type {
+  MaintenanceBudgetDimension,
+  MaintenanceBudgetReceipt,
+  MaintenanceBudgetUsage,
+} from './maintenance/budget.ts';
+export type {
   DreamRunCounts,
   DreamRunMode,
   DreamRunReceipt,
@@ -138,6 +144,7 @@ export {
   type MaintenanceEvidence,
   type MaintenanceItem,
   type MaintenanceItemStatus,
+  type MaintenanceItemStatusCode,
   type MaintenanceMode,
   type MaintenanceOperation,
   type MaintenancePlan,

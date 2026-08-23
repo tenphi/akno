@@ -5,6 +5,7 @@ import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { SCHEMA_VERSION } from '../store/migrations.ts';
 import type { DreamPhase, DreamReport, PhaseReport } from './dream.ts';
 import type { MaintenanceMode } from './plans.ts';
+import type { MaintenanceBudgetReceipt } from './budget.ts';
 
 export type DreamRunStatus = 'running' | 'completed' | 'partially_completed' | 'awaiting_review' | 'failed';
 
@@ -55,6 +56,8 @@ export interface DreamRunReceipt {
   snapshot: DreamSnapshotManifest;
   phases: { phase: DreamPhase; ran: boolean; skipped: boolean; durationMs: number }[];
   counts: DreamRunCounts;
+  /** Content-safe cumulative apply usage; null only on receipts written before run budgets shipped. */
+  budget: MaintenanceBudgetReceipt | null;
   durationMs: number | null;
   maintenancePlanIds: string[];
   /** Most recently touched plan, retained for older clients. */
@@ -115,6 +118,7 @@ export function beginDreamRun(
     snapshot: captureMaintenanceSnapshot(ctx, options.requestedPhases, options.modelId, startedAt),
     phases: [],
     counts: emptyCounts(),
+    budget: emptyBudget(ctx),
     durationMs: null,
     maintenancePlanIds: [],
     maintenancePlanId: null,
@@ -153,6 +157,7 @@ export function completeDreamRun(
     status: completedStatus(report),
     phases: safePhases(report.phases),
     counts: reportCounts(report),
+    budget: report.budget,
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
     maintenancePlanId: plans.at(-1)?.id ?? null,
@@ -175,12 +180,14 @@ export function failDreamRun(
   error: unknown,
   durationMs: number,
   phases: PhaseReport[],
+  budget: MaintenanceBudgetReceipt = started.budget ?? emptyBudget(ctx),
 ): DreamRunReceipt {
   const receipt: DreamRunReceipt = {
     ...started,
     finishedAt: new Date().toISOString(),
     status: 'failed',
     phases: safePhases(phases),
+    budget,
     durationMs,
     errorCode: error instanceof AknoError ? error.code : 'internal',
   };
@@ -292,6 +299,8 @@ function configurationFingerprint(ctx: AknoContext): string {
       adopt: config.maintenance.adopt,
       conflicts: config.maintenance.conflicts,
       repair: config.maintenance.repair,
+      policies: config.maintenance.policies,
+      limits: config.maintenance.limits,
       model: roleFingerprint(config.maintenance.model),
     },
     models: {
@@ -366,6 +375,14 @@ function emptyCounts(): DreamRunCounts {
   };
 }
 
+function emptyBudget(ctx: AknoContext): MaintenanceBudgetReceipt {
+  return {
+    limits: { ...ctx.config.maintenance.limits },
+    used: { items: 0, filesChanged: 0, bytesWritten: 0, highRiskItems: 0 },
+    deferredItems: 0,
+  };
+}
+
 function safePhases(phases: PhaseReport[]): DreamRunReceipt['phases'] {
   return phases.map((phase) => ({
     phase: phase.phase,
@@ -405,6 +422,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
     return {
       ...receipt,
       profile: receipt.profile ?? 'custom',
+      budget: receipt.budget ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')
         : receipt.maintenancePlanId

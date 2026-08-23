@@ -520,6 +520,12 @@ function resolve(
       profile: maintenanceProfile,
       policiesConfigured: Object.keys(configuredPolicies).length > 0,
       policies: resolvedMaintenancePolicies(configuredPolicies, namedMode),
+      limits: {
+        maxItems: doc.maintenance?.limits?.max_items ?? 30,
+        maxFilesChanged: doc.maintenance?.limits?.max_files_changed ?? 40,
+        maxBytesWritten: doc.maintenance?.limits?.max_bytes_written ?? 500_000,
+        maxHighRiskItems: doc.maintenance?.limits?.max_high_risk_items ?? 3,
+      },
       // Resolved through the same path as any role, so a typo in the provider name fails the
       // same way and `doctor` can probe it like the rest.
       model: doc.maintenance?.model

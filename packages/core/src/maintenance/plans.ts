@@ -23,6 +23,14 @@ import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
 import type { MaintenancePolicy, MaintenanceTransform } from '../config/schema.ts';
+import {
+  createMaintenanceBudget,
+  maintenanceBudgetReceipt,
+  reserveMaintenanceBudget,
+  type MaintenanceBudgetExceeded,
+  type MaintenanceBudgetReceipt,
+  type MaintenanceBudgetTracker,
+} from './budget.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'curate' | 'adopt';
@@ -48,6 +56,8 @@ export type MaintenanceItemStatus =
   | 'applied'
   | 'verification_pending'
   | 'verification_failed';
+
+export type MaintenanceItemStatusCode = 'budget_exhausted';
 
 export interface ReplaceOperation {
   type: 'replace';
@@ -133,6 +143,8 @@ export interface MaintenanceItem {
   evidence: MaintenanceEvidence[];
   checks: MaintenanceCheck[];
   decision: MaintenanceDecision | null;
+  /** Stable machine-readable reason for a nonterminal state. */
+  statusCode: MaintenanceItemStatusCode | null;
   /** Why a non-decision state such as `blocked` was reached. */
   statusReason: string | null;
   changeId: string | null;
@@ -164,12 +176,14 @@ export interface MaintenanceStatus {
   active: number;
   activeRuns: number;
   awaitingHuman: number;
+  budgetDeferred: number;
   verificationPending: number;
 }
 
 export interface ApplyMaintenanceResult {
   plan: MaintenancePlan;
   files: ChangeFile[];
+  budget: MaintenanceBudgetReceipt;
 }
 
 interface PlanRow {
@@ -202,6 +216,7 @@ interface ItemRow {
   decision_actor: 'human' | 'curator' | null;
   decision_outcome: 'approve' | 'reject' | null;
   decision_reason: string | null;
+  status_code: MaintenanceItemStatusCode | null;
   decided_at: string | null;
   change_id: string | null;
   verification: string | null;
@@ -628,7 +643,7 @@ export function decideMaintenanceItem(
   const now = new Date().toISOString();
   ctx.store.db
     .prepare(
-      `UPDATE maintenance_items SET status = ?, decision_actor = ?, decision_outcome = ?,
+      `UPDATE maintenance_items SET status = ?, status_code = NULL, decision_actor = ?, decision_outcome = ?,
        decision_reason = ?, decided_at = ?, updated_at = ? WHERE id = ? AND plan_id = ?`,
     )
     .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
@@ -699,8 +714,10 @@ export async function decideMaintenancePlanWithCurator(
 export async function applyMaintenancePlan(
   ctx: AknoContext,
   planId: string,
+  sharedBudget?: MaintenanceBudgetTracker,
 ): Promise<ApplyMaintenanceResult> {
   requireWritable(ctx);
+  const budget = sharedBudget ?? createMaintenanceBudget(ctx.config.maintenance.limits);
   let plan = getMaintenancePlan(ctx, planId);
   if (!plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
     throw new AknoError('invalid', `${planId} has no approved, interrupted, or pending items to apply`);
@@ -729,6 +746,11 @@ export async function applyMaintenancePlan(
     }
     if (preflight.status === 'blocked') {
       blockItem(ctx, planId, item.id, preflight.detail);
+      continue;
+    }
+    const reservation = reserveMaintenanceBudget(budget, item);
+    if (!reservation.allowed) {
+      deferBudgetItem(ctx, planId, item.id, reservation.exceeded);
       continue;
     }
 
@@ -796,7 +818,7 @@ export async function applyMaintenancePlan(
 
   refreshApplyStatus(ctx, planId);
   plan = getMaintenancePlan(ctx, planId);
-  return { plan, files };
+  return { plan, files, budget: maintenanceBudgetReceipt(budget) };
 }
 
 async function recoverInterruptedApply(ctx: AknoContext, item: MaintenanceItem): Promise<MaintenanceItem> {
@@ -865,6 +887,7 @@ export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
       active: 0,
       activeRuns: activeDreamRuns(ctx),
       awaitingHuman: 0,
+      budgetDeferred: 0,
       verificationPending: 0,
     };
   }
@@ -876,7 +899,20 @@ export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
     )
     .get() as { n: number };
   const awaiting = ctx.store.db
-    .prepare("SELECT count(*) AS n FROM maintenance_items WHERE status = 'proposed'")
+    .prepare(
+      `SELECT count(*) AS n
+         FROM maintenance_items item JOIN maintenance_plans plan ON plan.id = item.plan_id
+        WHERE item.status = 'proposed' AND item.policy = 'review'
+          AND plan.status NOT IN ('completed', 'failed', 'superseded')`,
+    )
+    .get() as { n: number };
+  const deferred = ctx.store.db
+    .prepare(
+      `SELECT count(*) AS n
+         FROM maintenance_items item JOIN maintenance_plans plan ON plan.id = item.plan_id
+        WHERE item.status = 'proposed' AND item.status_code = 'budget_exhausted'
+          AND plan.status NOT IN ('completed', 'failed', 'superseded')`,
+    )
     .get() as { n: number };
   const pending = ctx.store.db
     .prepare("SELECT count(*) AS n FROM maintenance_items WHERE status = 'verification_pending'")
@@ -888,6 +924,7 @@ export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
     active: active.n,
     activeRuns: activeDreamRuns(ctx),
     awaitingHuman: awaiting.n,
+    budgetDeferred: deferred.n,
     verificationPending: pending.n,
   };
 }
@@ -1193,6 +1230,7 @@ function itemFromRow(row: ItemRow): MaintenanceItem {
             at: row.decided_at,
           }
         : null,
+    statusCode: row.status_code,
     statusReason: row.decision_reason,
     changeId: row.change_id,
     verification: row.verification
@@ -1895,7 +1933,9 @@ function refreshApplyStatus(ctx: AknoContext, planId: string): void {
   let status: MaintenancePlanStatus;
   if (statuses.includes('verification_pending')) status = 'partially_completed';
   else if (statuses.includes('approved') || statuses.includes('applying')) status = 'approved';
-  else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto'))
+  else if (plan.items.some((item) => item.statusCode === 'budget_exhausted')) {
+    status = 'partially_completed';
+  } else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto'))
     status = 'deciding';
   else if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'review')) {
     status = 'awaiting_review';
@@ -1916,11 +1956,35 @@ function blockItem(ctx: AknoContext, planId: string, itemId: string, reason: str
   const now = new Date().toISOString();
   ctx.store.db
     .prepare(
-      `UPDATE maintenance_items SET status = 'blocked', decision_actor = NULL,
+      `UPDATE maintenance_items SET status = 'blocked', status_code = NULL, decision_actor = NULL,
        decision_outcome = NULL, decision_reason = ?, decided_at = ?, updated_at = ?
        WHERE id = ? AND plan_id = ?`,
     )
     .run(reason, now, now, itemId, planId);
+}
+
+function deferBudgetItem(
+  ctx: AknoContext,
+  planId: string,
+  itemId: string,
+  exceeded: MaintenanceBudgetExceeded[],
+): void {
+  const now = new Date().toISOString();
+  const detail =
+    'Deferred before writing because the maintenance run budget would be exceeded: ' +
+    exceeded
+      .map((entry) => `${entry.dimension} used ${entry.used} + item ${entry.item} > limit ${entry.limit}`)
+      .join('; ') +
+    '. It may be reconsidered in a later run.';
+  ctx.store.db
+    .prepare(
+      `UPDATE maintenance_items
+          SET status = 'proposed', status_code = 'budget_exhausted',
+              decision_actor = NULL, decision_outcome = NULL, decision_reason = ?,
+              decided_at = NULL, verification = NULL, updated_at = ?
+        WHERE id = ? AND plan_id = ?`,
+    )
+    .run(detail, now, itemId, planId);
 }
 
 function updateItemStatus(

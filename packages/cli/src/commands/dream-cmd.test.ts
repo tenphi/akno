@@ -123,6 +123,11 @@ function privateReport(): DreamReport {
         repairedLinks: 0,
         warnings: 1,
       },
+      budget: {
+        limits: { maxItems: 30, maxFilesChanged: 40, maxBytesWritten: 500000, maxHighRiskItems: 3 },
+        used: { items: 1, filesChanged: 1, bytesWritten: 111, highRiskItems: 1 },
+        deferredItems: 0,
+      },
       durationMs: 111,
       maintenancePlanIds: ['pln_example'],
       maintenancePlanId: 'pln_example',
@@ -191,6 +196,7 @@ function privateReport(): DreamReport {
           risk: 'high',
           subject: 'people/ada-marlow',
           status: 'applied',
+          statusCode: null,
           decision: {
             actor: 'curator',
             outcome: 'approve',
@@ -208,6 +214,11 @@ function privateReport(): DreamReport {
       ],
     },
     maintenancePlans: [],
+    budget: {
+      limits: { maxItems: 30, maxFilesChanged: 40, maxBytesWritten: 500000, maxHighRiskItems: 3 },
+      used: { items: 1, filesChanged: 1, bytesWritten: 111, highRiskItems: 1 },
+      deferredItems: 0,
+    },
     warnings: ['people/ada-marlow: private warning'],
     durationMs: 111,
     logPath: '/private/state/dream.jsonl',
@@ -222,6 +233,7 @@ function emptyStatus(): MaintenanceStatus {
     active: 0,
     activeRuns: 0,
     awaitingHuman: 0,
+    budgetDeferred: 0,
     verificationPending: 0,
   };
 }
@@ -249,6 +261,7 @@ function statusAt(
     active: status === 'completed' ? 0 : 1,
     activeRuns: 0,
     awaitingHuman: 0,
+    budgetDeferred: 0,
     verificationPending: 0,
   };
 }
@@ -271,6 +284,7 @@ function fixtureAuthority(): MaintenanceStatus['authority'] {
       broken_link: 'auto',
       adopt: 'auto',
     },
+    limits: { maxItems: 30, maxFilesChanged: 40, maxBytesWritten: 500000, maxHighRiskItems: 3 },
   };
 }
 

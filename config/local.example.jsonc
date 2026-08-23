@@ -145,6 +145,12 @@
   "maintenance": {
     "profile": "custom",
     "policies": {},
+    "limits": {
+      "max_items": 30,
+      "max_files_changed": 40,
+      "max_bytes_written": 500000,
+      "max_high_risk_items": 3
+    },
     "curate": { "enabled": false, "mode": null, "write": false, "verify": true },
     "conflicts": { "enabled": true, "verify": true, "resolve": true },
     "adopt": { "enabled": true, "mode": "auto" }
