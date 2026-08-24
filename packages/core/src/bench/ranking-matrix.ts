@@ -11,9 +11,17 @@ import {
   type RankingExcerptChars,
   type RankingQualityMetrics,
   type RankingQualificationMetrics,
+  type RankingTokenUsage,
 } from './ranking.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v3';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v4';
+export const RANKING_MATRIX_VARIANT_IDS = [
+  'llm-none-c10',
+  'llm-none-c20',
+  'llm-none-c40',
+  'llm-low-c20',
+] as const;
+export type RankingMatrixVariantId = (typeof RANKING_MATRIX_VARIANT_IDS)[number];
 
 export interface RankingMatrixOptions {
   split?: RankingBenchSplit;
@@ -23,6 +31,8 @@ export interface RankingMatrixOptions {
   concurrency?: number;
   excerptChars?: RankingExcerptChars;
   includeNative?: boolean;
+  /** Run only named repeated LLM variants; useful for development diagnostics, never release selection. */
+  variants?: RankingMatrixVariantId[];
   onProgress?: (progress: RankingMatrixProgress) => void;
 }
 
@@ -40,6 +50,14 @@ export interface RankingMatrixRun {
   maxLatencyMs: number;
   topThree: Record<string, string[]>;
   fallbackQueries: string[];
+  execution: RankingBenchReport['execution'];
+}
+
+export interface RankingMatrixExecution {
+  requests: number;
+  endpointRequests: number;
+  extraEndpointRequests: number;
+  tokenUsage: RankingTokenUsage | null;
 }
 
 export interface RankingMatrixVariant {
@@ -66,6 +84,7 @@ export interface RankingMatrixVariant {
   p95LatencyMs: number;
   maxLatencyMs: number;
   medianTop3Overlap: number | null;
+  execution: RankingMatrixExecution;
   runs: RankingMatrixRun[];
 }
 
@@ -137,6 +156,8 @@ export interface RankingMatrixReport {
   corpus: RankingBenchReport['corpus'];
   requestedRuns: number;
   concurrency: number;
+  /** Non-null when this is deliberately diagnostic rather than a preset-selection matrix. */
+  targetedVariants: RankingMatrixVariantId[] | null;
   variants: RankingMatrixVariant[];
   selection: RankingMatrixSelection | null;
   endToEndEvidence: RankingEndToEndEvidence | null;
@@ -161,10 +182,13 @@ export async function runRankingMatrix(
   const requestedRuns = normalizeRuns(options.runs ?? 5);
   const concurrency = normalizeConcurrency(options.concurrency ?? 4);
   const excerptChars = options.excerptChars ?? 800;
+  if (options.variants && split !== 'development') {
+    throw new Error('targeted ranking evidence is development-only');
+  }
   const configuredNative =
     config.models?.reranker?.enabled === true && config.models.reranker.rerankerMode === 'endpoint';
   const includeNative = options.includeNative ?? configuredNative;
-  const descriptors: MatrixDescriptor[] = [
+  const allDescriptors: MatrixDescriptor[] = [
     { id: 'fusion-c20', system: 'fusion', candidateCount: 20, reasoningEffort: null, repeated: false },
     ...(!includeNative
       ? []
@@ -182,6 +206,11 @@ export async function runRankingMatrix(
     { id: 'llm-none-c40', system: 'llm', candidateCount: 40, reasoningEffort: 'none', repeated: true },
     { id: 'llm-low-c20', system: 'llm', candidateCount: 20, reasoningEffort: 'low', repeated: true },
   ];
+  const requestedVariants = options.variants ? new Set(options.variants) : null;
+  const descriptors = requestedVariants
+    ? allDescriptors.filter((descriptor) => requestedVariants.has(descriptor.id as RankingMatrixVariantId))
+    : allDescriptors;
+  if (descriptors.length === 0) throw new Error('ranking matrix variant selection is empty');
 
   const variants: RankingMatrixVariant[] = [];
   let corpus: RankingBenchReport['corpus'] | null = null;
@@ -215,6 +244,7 @@ export async function runRankingMatrix(
     corpus: corpus!,
     requestedRuns,
     concurrency,
+    targetedVariants: options.variants ?? null,
     variants,
     selection: null,
     endToEndEvidence: null,
@@ -287,13 +317,15 @@ export function attachRankingEndToEndEvidence(
 export function refreshRankingMatrixReport(report: RankingMatrixReport): RankingMatrixReport {
   const variants = report.variants.map((variant) => ({
     ...variant,
+    execution: normalizeVariantExecution(variant),
     comparisonEligible: hasComparableMeasurements(variant),
   }));
   const refreshed: RankingMatrixReport = {
     ...report,
     schemaVersion: RANKING_MATRIX_SCHEMA_VERSION,
+    targetedVariants: report.targetedVariants ?? null,
     variants,
-    selection: selectConfiguration(variants),
+    selection: report.targetedVariants ? null : selectConfiguration(variants),
     endToEndEvidence: report.endToEndEvidence ?? null,
     releaseEligible: false,
     releaseGate: { passed: false, checks: [], blockers: [] },
@@ -455,6 +487,7 @@ function summarizeVariant(descriptor: MatrixDescriptor, reports: RankingBenchRep
     p95LatencyMs: percentile(queryLatencies, 0.95),
     maxLatencyMs: queryLatencies.length === 0 ? 0 : Math.max(...queryLatencies),
     medianTop3Overlap: stabilityFor(reports),
+    execution: aggregateExecution(reports),
     runs: reports.map((report) => ({
       quality: report.quality,
       validResponseRate: report.validResponseRate,
@@ -463,8 +496,55 @@ function summarizeVariant(descriptor: MatrixDescriptor, reports: RankingBenchRep
       maxLatencyMs: report.maxLatencyMs,
       topThree: Object.fromEntries(report.queries.map((query) => [query.queryId, query.order.slice(0, 3)])),
       fallbackQueries: report.fallbackQueries,
+      execution: report.execution,
     })),
   };
+}
+
+function aggregateExecution(reports: RankingBenchReport[]): RankingMatrixExecution {
+  return {
+    requests: reports.reduce((sum, report) => sum + report.execution.requests, 0),
+    endpointRequests: reports.reduce((sum, report) => sum + report.execution.endpointRequests, 0),
+    extraEndpointRequests: reports.reduce((sum, report) => sum + report.execution.extraEndpointRequests, 0),
+    tokenUsage: aggregateTokenUsage(reports.map((report) => report.execution.tokenUsage)),
+  };
+}
+
+function normalizeVariantExecution(variant: RankingMatrixVariant): RankingMatrixExecution {
+  const legacy = variant as RankingMatrixVariant & {
+    execution?: RankingMatrixExecution;
+    runs: Array<RankingMatrixRun & { execution?: RankingBenchReport['execution'] }>;
+  };
+  if (legacy.execution) return legacy.execution;
+  return aggregateRunExecution(legacy.runs.flatMap((run) => (run.execution ? [run.execution] : [])));
+}
+
+function aggregateRunExecution(executions: RankingBenchReport['execution'][]): RankingMatrixExecution {
+  return {
+    requests: executions.reduce((sum, execution) => sum + execution.requests, 0),
+    endpointRequests: executions.reduce((sum, execution) => sum + execution.endpointRequests, 0),
+    extraEndpointRequests: executions.reduce((sum, execution) => sum + execution.extraEndpointRequests, 0),
+    tokenUsage: aggregateTokenUsage(executions.map((execution) => execution.tokenUsage)),
+  };
+}
+
+function aggregateTokenUsage(values: Array<RankingTokenUsage | null>): RankingTokenUsage | null {
+  const reported = values.filter((value): value is RankingTokenUsage => value !== null);
+  if (reported.length === 0) return null;
+  return {
+    reportedQueries: reported.reduce((sum, value) => sum + value.reportedQueries, 0),
+    inputTokens: sumNullable(reported.map((value) => value.inputTokens)),
+    outputTokens: sumNullable(reported.map((value) => value.outputTokens)),
+    totalTokens: sumNullable(reported.map((value) => value.totalTokens)),
+    cachedInputTokens: sumNullable(reported.map((value) => value.cachedInputTokens)),
+    reasoningOutputTokens: sumNullable(reported.map((value) => value.reasoningOutputTokens)),
+  };
+}
+
+function sumNullable(values: Array<number | null>): number | null {
+  return values.every((value) => value === null)
+    ? null
+    : values.reduce<number>((sum, value) => sum + (value ?? 0), 0);
 }
 
 function selectConfiguration(variants: RankingMatrixVariant[]): RankingMatrixSelection | null {

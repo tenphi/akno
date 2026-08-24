@@ -51,8 +51,8 @@ describe('prompted LLM reranking', () => {
       fakeModel(
         JSON.stringify({
           j: {
-            c_K7vJ3pQx: { g: 1, r: 2 },
-            c_M2rT8nWa: { g: 3, r: 1 },
+            c_K7vJ3pQx: [1, 2],
+            c_M2rT8nWa: [3, 1],
           },
         }),
       ),
@@ -80,15 +80,23 @@ describe('prompted LLM reranking', () => {
             j:
               calls === 1
                 ? {
-                    c_K7vJ3pQx: { g: 3, r: 1 },
-                    c_unknown: { g: 1, r: 2 },
+                    c_K7vJ3pQx: [3, 1],
+                    c_unknown: [1, 2],
                   }
                 : {
-                    c_K7vJ3pQx: { g: 3, r: 1 },
-                    c_M2rT8nWa: { g: 1, r: 2 },
+                    c_K7vJ3pQx: [3, 1],
+                    c_M2rT8nWa: [1, 2],
                   },
           }),
           latencyMs: 11,
+          endpointRequests: calls === 1 ? 2 : 1,
+          usage: {
+            inputTokens: 100,
+            outputTokens: 20,
+            totalTokens: 120,
+            cachedInputTokens: 10,
+            reasoningOutputTokens: 0,
+          },
         };
       },
     } as unknown as ModelClient;
@@ -96,7 +104,18 @@ describe('prompted LLM reranking', () => {
     const result = await rerankWithLlm(model, 'Which warranty applies?', candidates);
 
     expect(calls).toBe(2);
-    expect(result).toMatchObject({ ok: true, latencyMs: 22 });
+    expect(result).toMatchObject({
+      ok: true,
+      latencyMs: 22,
+      endpointRequests: 3,
+      usage: {
+        inputTokens: 200,
+        outputTokens: 40,
+        totalTokens: 240,
+        cachedInputTokens: 20,
+        reasoningOutputTokens: 0,
+      },
+    });
   });
 
   it('does not retry a transport failure', async () => {
@@ -140,8 +159,8 @@ describe('prompted LLM reranking', () => {
       'an invented id in place of a candidate',
       {
         j: {
-          c_unknown: { g: 3, r: 1 },
-          c_K7vJ3pQx: { g: 1, r: 2 },
+          c_unknown: [3, 1],
+          c_K7vJ3pQx: [1, 2],
         },
       },
     ],
@@ -149,13 +168,13 @@ describe('prompted LLM reranking', () => {
       'an extra id',
       {
         j: {
-          c_K7vJ3pQx: { g: 3, r: 1 },
-          c_M2rT8nWa: { g: 1, r: 2 },
-          c_unknown: { g: 0, r: 3 },
+          c_K7vJ3pQx: [3, 1],
+          c_M2rT8nWa: [1, 2],
+          c_unknown: [0, 3],
         },
       },
     ],
-    ['a missing candidate', { j: { c_K7vJ3pQx: { g: 3, r: 1 } } }],
+    ['a missing candidate', { j: { c_K7vJ3pQx: [3, 1] } }],
   ])('rejects %s', async (_case, body) => {
     const result = await rerankWithLlm(
       fakeModel(JSON.stringify(body)),
@@ -170,8 +189,8 @@ describe('prompted LLM reranking', () => {
       fakeModel(
         JSON.stringify({
           j: {
-            c_K7vJ3pQx: { g: 2, r: 2 },
-            c_M2rT8nWa: { g: 2, r: 1 },
+            c_K7vJ3pQx: [2, 2],
+            c_M2rT8nWa: [2, 1],
           },
         }),
       ),
@@ -193,8 +212,8 @@ describe('prompted LLM reranking', () => {
       fakeModel(
         JSON.stringify({
           j: {
-            c_K7vJ3pQx: { g: 2, r: 1 },
-            c_M2rT8nWa: { g: 2, r: 1 },
+            c_K7vJ3pQx: [2, 1],
+            c_M2rT8nWa: [2, 1],
           },
         }),
       ),
@@ -216,22 +235,22 @@ describe('prompted LLM reranking', () => {
     expect(
       schema.safeParse({
         j: {
-          c_K7vJ3pQx: { g: 1, r: 2 },
-          c_M2rT8nWa: { g: 3, r: 1 },
+          c_K7vJ3pQx: [1, 2],
+          c_M2rT8nWa: [3, 1],
         },
       }).success,
     ).toBe(true);
     expect(
       schema.safeParse({
         j: {
-          c_unknown: { g: 3, r: 1 },
-          c_K7vJ3pQx: { g: 1, r: 2 },
+          c_unknown: [3, 1],
+          c_K7vJ3pQx: [1, 2],
         },
       }).success,
     ).toBe(false);
     expect(
       schema.safeParse({
-        j: { c_K7vJ3pQx: { g: 3, r: 1 } },
+        j: { c_K7vJ3pQx: [3, 1] },
       }).success,
     ).toBe(false);
     expect(toEndpointSchema(schema)).toMatchObject({
@@ -242,7 +261,36 @@ describe('prompted LLM reranking', () => {
         },
       },
     });
+    const compactSchema = toEndpointSchema(schema, { reuseDefinitions: true });
+    expect(compactSchema).toHaveProperty('definitions');
+    expect(compactSchema).toHaveProperty(
+      'properties.j.properties.c_K7vJ3pQx.$ref',
+      '#/definitions/__schema0',
+    );
+    const tenCandidates = Array.from({ length: 10 }, (_, index) => ({
+      ...candidates[index % candidates.length]!,
+      id: `c_invented_${index}`,
+    }));
+    expect(
+      JSON.stringify(toEndpointSchema(llmRerankSchema(tenCandidates), { reuseDefinitions: true })).length,
+    ).toBeLessThan(JSON.stringify(toEndpointSchema(llmRerankSchema(tenCandidates))).length);
     expect(toEndpointSchema(llmRerankSchema([...candidates].reverse()))).toEqual(toEndpointSchema(schema));
+  });
+
+  it('rejects an out-of-range grade in the compact judgment tuple', async () => {
+    const result = await rerankWithLlm(
+      fakeModel(
+        JSON.stringify({
+          j: {
+            c_K7vJ3pQx: [4, 1],
+            c_M2rT8nWa: [1, 2],
+          },
+        }),
+      ),
+      'Which warranty applies?',
+      candidates,
+    );
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'bad_response' });
   });
 
   it('serializes candidate instructions as data under a fixed untrusted-content rule', () => {

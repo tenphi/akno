@@ -1042,6 +1042,11 @@ The artifact contains aggregate metrics, prompt/schema identifiers, and stable i
 top three results. It contains no knowledge-base text, endpoint URL, credential, or raw model request. Writes
 are atomic, so an interrupted benchmark cannot leave a result that appears complete.
 
+After a shape has already been selected, `--matrix --variant llm-none-c10` repeats only that development
+variant. The targeted artifact still records each run's token usage, logical and physical request counts,
+latency, fallbacks, and top-three stability. It intentionally makes no preset selection and cannot be release
+evidence by itself.
+
 The end-to-end track then tests the matrix selection through the production index and recall path. It creates a
 temporary knowledge base containing the same invented 120 sources, embeds it, measures whether each direct
 answer reaches the selected candidate window, and separately measures the final assembled order after
@@ -1103,20 +1108,24 @@ but its 3.36 s p95 missed the latency gate; `low` at 20 was slower still at 4.74
 therefore satisfies both reliability and latency. This artifact is final test evidence, not another prompt-tuning
 input, and the preset remains experimental.
 
-The runtime has since advanced to `akno-judgment-map-v5` / `compact-judgment-map-v4`. Instead of asking the
+The runtime has since advanced to `akno-judgment-map-v6` / `tuple-judgment-map-v5`. Instead of asking the
 model to reproduce opaque ids in a failure-prone array permutation, the strict schema makes every permitted id
-a required property and rejects additional properties. Each fixed-id judgment carries a four-point grade for
-qualification and a rank that only orders candidates within that grade; tied ranks preserve fusion order.
-The reusable opaque id set is randomly assigned to candidates on every request, so it reveals neither source
-identity nor initial rank while keeping the schema cacheable. Compatible endpoints that return unconstrained
-JSON still receive one bounded retry for an invalid map; other failures preserve exact fusion order.
+a required property and rejects additional properties. Each property carries `[grade, rank]`: the grade drives
+qualification, while rank only orders candidates within the same grade and ties preserve fusion order. The
+repeated pair schema is sent once through a reusable JSON Schema definition. The opaque id set is randomly
+assigned to candidates on every request, so it reveals neither source identity nor initial rank while keeping
+the schema cacheable. Compatible endpoints that return unconstrained JSON still receive one bounded retry for
+an invalid map; other failures preserve exact fusion order.
 
-One 60-query development run of the final v5/v4 shape reached 0.963 nDCG@10 against fusion's 0.483, 100% valid
-responses, complete direct-answer retention, and perfect instruction-negative rejection. Its 4.07 s p95 missed
-the provisional 2.5 s latency gate. This is tuning evidence only: v5/v4 needs repeated development evidence,
-independent corpus review, embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation.
-The immutable v4/v3 held-out artifact cannot authorize the changed runtime contract, so the preset remains
-experimental.
+The checked-in [v6 targeted development evidence](benchmarks/ranking/results/development-openai-luna-v6-targeted-2026-08-24.json)
+repeated the selected 10-candidate, no-reasoning shape five times. It produced 300/300 valid responses, zero
+fallbacks, 0.958 mean nDCG@10 against fusion's 0.483, complete direct/support/marginal retention, perfect
+instruction-negative rejection, and 100% median top-three overlap. Usage averaged 958 input and 157 output
+tokens per query, down from 1,355/197 in the preceding object-map diagnostic; p50 improved from 2.53 to 2.20
+seconds, while aggregate p95 remained above the provisional gate at 3.39 seconds. This is tuning evidence only:
+v6/v5 still needs a full development comparison, independent corpus review, embedding-backed end-to-end
+evidence, and a new pre-declared held-out evaluation. The immutable v4/v3 held-out artifact cannot authorize
+the changed runtime contract, so the preset remains experimental.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

@@ -154,7 +154,7 @@ describe('rerankHits', () => {
           ok: true,
           value: JSON.stringify({
             j: Object.fromEntries(
-              entries.map((entry, index) => [entry.candidate_id, { g: entry.relevance, r: index + 1 }]),
+              entries.map((entry, index) => [entry.candidate_id, [entry.relevance, index + 1]]),
             ),
           }),
           latencyMs: 1,
@@ -320,7 +320,7 @@ describe('rerankHits', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            j: { [payload.candidates[0]!.candidate_id]: { g: 3, r: 1 } },
+            j: { [payload.candidates[0]!.candidate_id]: [3, 1] },
           }),
           latencyMs: 1,
         };

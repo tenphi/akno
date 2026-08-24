@@ -20,6 +20,7 @@ import {
   runRankingBench,
   runRankingEndToEnd,
   runRankingMatrix,
+  RANKING_MATRIX_VARIANT_IDS,
   type Akno,
   type AnswerBenchReport,
   type AutoRecallAnswerBenchReport,
@@ -34,6 +35,7 @@ import {
   type RankingExcerptChars,
   type RankingEndToEndReport,
   type RankingMatrixReport,
+  type RankingMatrixVariantId,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
@@ -71,6 +73,8 @@ const BENCH_HELP = `akno bench [options]
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
                       Luna low at 20 candidates with repeated stability checks.
+    --variant <id>    Restrict a matrix to one repeated LLM variant. This creates
+                      development evidence and intentionally cannot select a release preset.
   ranking --track end-to-end
                       Index the invented corpus, measure candidate-window recall,
                       then run reranking and assembly over the same derived index.
@@ -112,6 +116,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     write: boolean;
     probe: boolean;
     matrix: boolean;
+    variant?: string;
     'skip-native': boolean;
     track?: string;
     'matrix-artifact'?: string;
@@ -134,6 +139,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     write: { type: 'boolean', default: false },
     probe: { type: 'boolean', default: false },
     matrix: { type: 'boolean', default: false },
+    variant: { type: 'string' },
     'skip-native': { type: 'boolean', default: false },
     track: { type: 'string' },
     'matrix-artifact': { type: 'string' },
@@ -167,6 +173,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
       values.write ||
       values.probe ||
       values.matrix ||
+      values.variant ||
       values['skip-native'] ||
       values.track ||
       values['matrix-artifact'] ||
@@ -237,6 +244,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
       values.write ||
       values.probe ||
       values.matrix ||
+      values.variant ||
       values['skip-native'] ||
       values.track ||
       values['matrix-artifact'] ||
@@ -307,6 +315,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
       values.write ||
       values.probe ||
       values.matrix ||
+      values.variant ||
       values['skip-native'] ||
       values.track ||
       values['matrix-artifact'] ||
@@ -377,6 +386,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
       values.write ||
       values.probe ||
       values.matrix ||
+      values.variant ||
       values['skip-native'] ||
       values.track ||
       values['matrix-artifact'] ||
@@ -443,8 +453,17 @@ export async function benchCommand(argv: string[]): Promise<number> {
         fail(`invalid ranking track: ${values.track}`);
         return 2;
       }
-      if (values.matrix || values.probe || values.system || values.runs || values['skip-native']) {
-        fail('--track cannot be combined with --matrix, --probe, --system, --runs, or --skip-native');
+      if (
+        values.matrix ||
+        values.variant ||
+        values.probe ||
+        values.system ||
+        values.runs ||
+        values['skip-native']
+      ) {
+        fail(
+          '--track cannot be combined with --matrix, --variant, --probe, --system, --runs, or --skip-native',
+        );
         return 2;
       }
       let matrix: RankingMatrixReport | null = null;
@@ -553,7 +572,19 @@ export async function benchCommand(argv: string[]): Promise<number> {
       const excerptChars = parseExcerptChars(values['excerpt-chars']);
       const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
       const runs = parseBoundedInteger(values.runs, 1, 10, 'runs');
-      if (!split || !excerptChars || concurrency === null || runs === null) return 2;
+      const selectedVariantId = parseRankingMatrixVariant(values.variant);
+      if (
+        !split ||
+        !excerptChars ||
+        concurrency === null ||
+        runs === null ||
+        (values.variant && !selectedVariantId)
+      )
+        return 2;
+      if (selectedVariantId && split !== 'development') {
+        fail('--variant is development-only; use the complete pre-declared matrix for held-out evidence');
+        return 2;
+      }
       let report = await runRankingMatrix(config, {
         split,
         excerptChars,
@@ -562,10 +593,18 @@ export async function benchCommand(argv: string[]): Promise<number> {
         ...(values.concurrency ? { concurrency } : {}),
         ...(values.runs ? { runs } : {}),
         ...(values['skip-native'] ? { includeNative: false } : {}),
+        ...(selectedVariantId ? { variants: [selectedVariantId] } : {}),
         ...(!values.json
           ? {
-              onProgress: ({ variant, run, runs: total }: { variant: string; run: number; runs: number }) =>
-                line(`  ${variant}  run ${run}/${total}`),
+              onProgress: ({
+                variant: id,
+                run,
+                runs: total,
+              }: {
+                variant: string;
+                run: number;
+                runs: number;
+              }) => line(`  ${id}  run ${run}/${total}`),
             }
           : {}),
       });
@@ -577,8 +616,8 @@ export async function benchCommand(argv: string[]): Promise<number> {
       if (values.json) json(report);
       else renderRankingMatrix(report, artifactPath);
       return report.variants
-        .filter((variant) => variant.system === 'llm')
-        .every((variant) => variant.comparisonEligible)
+        .filter((entry) => entry.system === 'llm')
+        .every((entry) => entry.comparisonEligible)
         ? 0
         : 1;
     }
@@ -621,8 +660,14 @@ export async function benchCommand(argv: string[]): Promise<number> {
     const excerptChars = parseExcerptChars(values['excerpt-chars']);
     const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
     if (!candidateCount || !excerptChars || concurrency === null) return 2;
-    if (values.output || values.runs || values['skip-native'] || values['matrix-artifact']) {
-      fail('--output, --runs, --skip-native, and --matrix-artifact require --matrix or --track');
+    if (
+      values.output ||
+      values.variant ||
+      values.runs ||
+      values['skip-native'] ||
+      values['matrix-artifact']
+    ) {
+      fail('--output, --variant, --runs, --skip-native, and --matrix-artifact require --matrix or --track');
       return 2;
     }
     const report = await runRankingBench(config, {
@@ -753,6 +798,15 @@ function parseRankingSplit(value: string | undefined): RankingBenchSplit | null 
   return split === 'development' || split === 'test' || split === 'all' ? split : null;
 }
 
+function parseRankingMatrixVariant(value: string | undefined): RankingMatrixVariantId | null {
+  if (value === undefined) return null;
+  if (RANKING_MATRIX_VARIANT_IDS.includes(value as RankingMatrixVariantId)) {
+    return value as RankingMatrixVariantId;
+  }
+  fail(`invalid ranking matrix variant: ${value} (expected ${RANKING_MATRIX_VARIANT_IDS.join(', ')})`);
+  return null;
+}
+
 function parseCandidateCount(value: string | undefined): RankingCandidateCount | null {
   const count = Number(value ?? 20);
   if (count === 10 || count === 20 || count === 40) return count;
@@ -841,6 +895,26 @@ function renderRanking(report: RankingBenchReport): void {
     line(
       `  latency p50 / p95     ${Math.round(report.p50LatencyMs)}ms / ${Math.round(report.p95LatencyMs)}ms`,
     );
+  }
+  if (report.execution.requests > 0) {
+    line(
+      `  endpoint requests     ${report.execution.endpointRequests} ` +
+        `(${report.execution.extraEndpointRequests} beyond ${report.execution.requests} logical calls)`,
+    );
+  }
+  const tokenUsage = report.execution.tokenUsage;
+  if (tokenUsage) {
+    line(
+      `  provider tokens       ${tokenUsage.inputTokens ?? 'n/a'} input / ` +
+        `${tokenUsage.outputTokens ?? 'n/a'} output on ` +
+        `${tokenUsage.reportedQueries}/${report.execution.requests} calls`,
+    );
+    if (tokenUsage.cachedInputTokens !== null || tokenUsage.reasoningOutputTokens !== null) {
+      line(
+        `  token details        ${tokenUsage.cachedInputTokens ?? 'n/a'} cached input / ` +
+          `${tokenUsage.reasoningOutputTokens ?? 'n/a'} reasoning output`,
+      );
+    }
   }
   for (const failure of report.failures) line(`  ${style.red(failure.queryId)}  ${failure.error}`);
   line(`\n${report.passed ? style.green('development gate passed') : style.red('development gate failed')}`);
@@ -1102,8 +1176,10 @@ function renderGraphBench(report: GraphBenchReport, artifactPath: string | null)
 }
 
 function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string | null): void {
+  const targeted = report.targetedVariants !== null;
   heading(
-    `Ranking matrix — ${report.split}, ${report.requestedRuns} repeated runs, concurrency ${report.concurrency}`,
+    `${targeted ? 'Targeted ranking evidence' : 'Ranking matrix'} — ${report.split}, ` +
+      `${report.requestedRuns} repeated runs, concurrency ${report.concurrency}`,
   );
   for (const variant of report.variants) {
     const stability = variant.medianTop3Overlap === null ? 'n/a' : percent(variant.medianTop3Overlap);
@@ -1112,6 +1188,18 @@ function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string |
         `nDCG ${fixed(variant.quality.ndcgAt10)}  Δ ${signed(variant.ndcgDeltaFromFusion)}  ` +
         `top3 ${stability}  p95 ${Math.round(variant.p95LatencyMs)}ms`,
     );
+    const usage = variant.execution.tokenUsage;
+    if (usage?.reportedQueries) {
+      const averageInput =
+        usage.inputTokens === null ? 'n/a' : String(Math.round(usage.inputTokens / usage.reportedQueries));
+      const averageOutput =
+        usage.outputTokens === null ? 'n/a' : String(Math.round(usage.outputTokens / usage.reportedQueries));
+      line(
+        `  ${''.padEnd(16)} ${averageInput}/${averageOutput} input/output tokens per reported query; ` +
+          `${variant.execution.endpointRequests} endpoint requests ` +
+          `(${variant.execution.extraEndpointRequests} extra)`,
+      );
+    }
   }
   if (report.selection) {
     line(
@@ -1121,15 +1209,19 @@ function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string |
     line(`  ${style.grey(report.selection.rationale)}`);
   }
   if (artifactPath) line(`  artifact  ${artifactPath}`);
-  if (report.releaseGate.blockers.length > 0) {
+  if (!targeted && report.releaseGate.blockers.length > 0) {
     line(`  release blockers  ${report.releaseGate.blockers.join(', ')}`);
   }
   const measurementsComplete = report.variants
     .filter((variant) => variant.system === 'llm')
     .every((variant) => variant.comparisonEligible);
   line(
-    `\n${measurementsComplete ? style.green('matrix measurements complete') : style.red('matrix measurements incomplete')}`,
+    `\n${measurementsComplete ? style.green(`${targeted ? 'targeted' : 'matrix'} measurements complete`) : style.red(`${targeted ? 'targeted' : 'matrix'} measurements incomplete`)}`,
   );
+  if (targeted) {
+    line(style.grey('Targeted evidence measures one contract; it cannot select or release a preset.'));
+    return;
+  }
   line(
     report.releaseEligible
       ? style.green('Stored held-out evidence satisfies every release gate.')

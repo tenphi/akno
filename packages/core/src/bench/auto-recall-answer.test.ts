@@ -166,7 +166,7 @@ function inventedProvider(): typeof fetch {
       const judgments = Object.fromEntries(
         (payload.candidates ?? []).map((candidate, index) => [
           candidate.candidate_id,
-          { g: supports(payload.query ?? '', candidate.excerpt) ? 3 : 0, r: index + 1 },
+          [supports(payload.query ?? '', candidate.excerpt) ? 3 : 0, index + 1],
         ]),
       );
       return completion({ j: judgments });

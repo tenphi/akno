@@ -28,6 +28,8 @@ export interface ModelOutcome<T> {
   /** Human-readable detail. For `doctor` and logs, never for control flow. */
   error?: string;
   latencyMs: number;
+  /** Physical HTTP requests, including compatibility and provider retries when known. */
+  endpointRequests?: number;
   /** Present only when a chat-compatible endpoint reports real token usage. */
   usage?: ModelUsage;
 }
@@ -36,6 +38,10 @@ export interface ModelUsage {
   inputTokens: number | null;
   outputTokens: number | null;
   totalTokens: number | null;
+  /** Provider-reported prompt-cache hits, when the endpoint exposes the detail. */
+  cachedInputTokens?: number | null;
+  /** Hidden reasoning tokens included in output tokens, when reported separately. */
+  reasoningOutputTokens?: number | null;
 }
 
 /** Content-free receipt for one logical model call after compatibility retries settle. */
@@ -218,6 +224,7 @@ export class ModelClient {
         reason: 'unavailable',
         error: this.#role.unavailableReason ?? 'model unavailable',
         latencyMs: 0,
+        endpointRequests: 0,
       };
     }
 
@@ -253,6 +260,7 @@ export class ModelClient {
     const attemptDeadline = timeoutMs ?? this.#role.timeoutMs;
     const maxAttempts = 1 + this.#role.provider.maxRetries;
     let last: ModelOutcome<T> | null = null;
+    let endpointRequests = 0;
 
     for (let attempt = 1; ; attempt++) {
       // Rounded because `performance.now()` is fractional and `AbortSignal.timeout` rejects a
@@ -267,6 +275,7 @@ export class ModelClient {
       let retryAfter: string | null = null;
 
       try {
+        endpointRequests += 1;
         const response = await fetch(`${this.#role.provider.baseUrl}${endpoint}`, {
           method: 'POST',
           headers,
@@ -279,7 +288,12 @@ export class ModelClient {
         });
 
         if (response.ok) {
-          return { ok: true, value: (await response.json()) as T, latencyMs: performance.now() - started };
+          return {
+            ok: true,
+            value: (await response.json()) as T,
+            latencyMs: performance.now() - started,
+            endpointRequests,
+          };
         }
 
         status = response.status;
@@ -291,6 +305,7 @@ export class ModelClient {
           reason: 'request_failed',
           error: `${this.#role.role} endpoint returned ${status}${detail ? `: ${detail}` : ''}`,
           latencyMs: performance.now() - started,
+          endpointRequests,
         };
       } catch (err) {
         // `AbortSignal.timeout` rejects with TimeoutError, not AbortError.
@@ -319,6 +334,7 @@ export class ModelClient {
             last,
           ),
           latencyMs: performance.now() - started,
+          endpointRequests,
         };
       }
 
@@ -333,15 +349,16 @@ export class ModelClient {
 
     // Reached with `last` set on an exhausted or unretryable failure, and without it only when
     // a total budget ran out before a single attempt could be made.
-    return (
-      last ?? {
-        ok: false,
-        value: null,
-        reason: 'timeout',
-        error: `${this.#role.role} had no time left to call: ${attemptDeadline}ms was already spent`,
-        latencyMs: performance.now() - started,
-      }
-    );
+    return last
+      ? { ...last, endpointRequests }
+      : {
+          ok: false,
+          value: null,
+          reason: 'timeout',
+          error: `${this.#role.role} had no time left to call: ${attemptDeadline}ms was already spent`,
+          latencyMs: performance.now() - started,
+          endpointRequests,
+        };
   }
 
   /**
@@ -391,7 +408,12 @@ export class ModelClient {
       index: entry.index,
       score: entry.relevance_score ?? entry.score ?? 0,
     }));
-    return { ok: true, value: results, latencyMs: result.latencyMs };
+    return {
+      ok: true,
+      value: results,
+      latencyMs: result.latencyMs,
+      endpointRequests: result.endpointRequests,
+    };
   }
 
   async chat(
@@ -408,6 +430,8 @@ export class ModelClient {
        * prose, the trailing commentary, the object that stopped being JSON halfway through.
        */
       schema?: z.ZodType;
+      /** Reuse repeated subschemas through local JSON Schema definitions. */
+      reuseSchemaDefinitions?: boolean;
       maxTokens?: number;
       temperature?: number;
       timeoutMs?: number;
@@ -421,7 +445,9 @@ export class ModelClient {
     const wantsJson = options.json || options.schema !== undefined;
     // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
     // retry must send the identical schema rather than a second conversion of it.
-    const jsonSchema = options.schema ? toEndpointSchema(options.schema) : null;
+    const jsonSchema = options.schema
+      ? toEndpointSchema(options.schema, { reuseDefinitions: options.reuseSchemaDefinitions ?? false })
+      : null;
 
     const build = (tokenParam: TokenParam, schemaMode: SchemaMode): Record<string, unknown> => {
       const body: Record<string, unknown> = {
@@ -440,6 +466,7 @@ export class ModelClient {
     };
 
     let result: ModelOutcome<ChatCompletionResponse>;
+    let endpointRequests = 0;
     // Three fixable mistakes at most — the token parameter, and two rungs down the schema
     // ladder — so four passes is the ceiling, not a budget anything grows into.
     for (let pass = 0; ; pass++) {
@@ -463,6 +490,7 @@ export class ModelClient {
         build(sentTokenParam, sentSchemaMode),
         options.timeoutMs,
       );
+      endpointRequests += result.endpointRequests ?? 0;
       if (result.ok || pass >= 3) break;
 
       // Each of these has a known, mechanical fix, and each is learned once for the
@@ -488,7 +516,12 @@ export class ModelClient {
     }
 
     if (!result.ok || !result.value) {
-      return this.observeChat({ ...result, value: null, latencyMs: performance.now() - chatStarted });
+      return this.observeChat({
+        ...result,
+        value: null,
+        latencyMs: performance.now() - chatStarted,
+        endpointRequests,
+      });
     }
     const usage = reportedModelUsage(result.value.usage);
     const content = result.value.choices?.[0]?.message?.content;
@@ -499,6 +532,7 @@ export class ModelClient {
         reason: 'bad_response',
         error: 'chat response had no content',
         latencyMs: performance.now() - chatStarted,
+        endpointRequests,
         ...(usage ? { usage } : {}),
       });
     }
@@ -506,6 +540,7 @@ export class ModelClient {
       ok: true,
       value: content,
       latencyMs: performance.now() - chatStarted,
+      endpointRequests,
       ...(usage ? { usage } : {}),
     });
   }
@@ -605,6 +640,10 @@ interface ChatCompletionResponse {
     total_tokens?: unknown;
     input_tokens?: unknown;
     output_tokens?: unknown;
+    prompt_tokens_details?: { cached_tokens?: unknown };
+    completion_tokens_details?: { reasoning_tokens?: unknown };
+    input_tokens_details?: { cached_tokens?: unknown };
+    output_tokens_details?: { reasoning_tokens?: unknown };
   };
 }
 
@@ -614,8 +653,20 @@ function reportedModelUsage(usage: ChatCompletionResponse['usage']): ModelUsage 
   const inputTokens = tokenCount(usage.prompt_tokens ?? usage.input_tokens);
   const outputTokens = tokenCount(usage.completion_tokens ?? usage.output_tokens);
   const totalTokens = tokenCount(usage.total_tokens);
+  const cachedInputTokens = tokenCount(
+    usage.prompt_tokens_details?.cached_tokens ?? usage.input_tokens_details?.cached_tokens,
+  );
+  const reasoningOutputTokens = tokenCount(
+    usage.completion_tokens_details?.reasoning_tokens ?? usage.output_tokens_details?.reasoning_tokens,
+  );
   if (inputTokens === null && outputTokens === null && totalTokens === null) return null;
-  return { inputTokens, outputTokens, totalTokens };
+  return {
+    inputTokens,
+    outputTokens,
+    totalTokens,
+    ...(cachedInputTokens === null ? {} : { cachedInputTokens }),
+    ...(reasoningOutputTokens === null ? {} : { reasoningOutputTokens }),
+  };
 }
 
 function tokenCount(value: unknown): number | null {
@@ -699,11 +750,14 @@ export function parseRetryAfter(value: string | null): number | null {
  * strict endpoint rejects the key outright. draft-7 is asked for because that is what
  * llama.cpp's schema-to-GBNF converter reads.
  */
-export function toEndpointSchema(schema: z.ZodType): Record<string, unknown> {
-  const { $schema: _dialect, ...rest } = z.toJSONSchema(schema, { target: 'draft-7' }) as Record<
-    string,
-    unknown
-  >;
+export function toEndpointSchema(
+  schema: z.ZodType,
+  options: { reuseDefinitions?: boolean } = {},
+): Record<string, unknown> {
+  const { $schema: _dialect, ...rest } = z.toJSONSchema(schema, {
+    target: 'draft-7',
+    ...(options.reuseDefinitions ? { reused: 'ref' as const } : {}),
+  }) as Record<string, unknown>;
   return rest;
 }
 

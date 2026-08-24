@@ -70,11 +70,31 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v3');
+    expect(report.schemaVersion).toBe('ranking-matrix-v4');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
     expect(report.releaseEligible).toBe(false);
+  });
+
+  it('can repeat one development variant without running the full tuning matrix', async () => {
+    const report = await runRankingMatrix({ providers: {}, models: {} } as AknoConfig, {
+      runs: 2,
+      includeNative: false,
+      variants: ['llm-none-c10'],
+    });
+
+    expect(report.variants.map((entry) => entry.id)).toEqual(['llm-none-c10']);
+    expect(report.variants[0]!.runs).toHaveLength(2);
+    expect(report.variants[0]!.execution).toMatchObject({ requests: 120, endpointRequests: 0 });
+    expect(report.targetedVariants).toEqual(['llm-none-c10']);
+    expect(report.selection).toBeNull();
+    await expect(
+      runRankingMatrix({ providers: {}, models: {} } as AknoConfig, {
+        split: 'test',
+        variants: ['llm-none-c10'],
+      }),
+    ).rejects.toThrow('development-only');
   });
 
   it('re-derives comparison eligibility and selection from persisted measurements', () => {
@@ -120,7 +140,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v3',
+    schemaVersion: 'ranking-matrix-v4',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -133,6 +153,7 @@ function passingReport(): RankingMatrixReport {
     },
     requestedRuns: 5,
     concurrency: 4,
+    targetedVariants: null,
     variants: [none, low],
     selection: {
       variantId: none.id,
@@ -215,6 +236,12 @@ function variant(id: string, reasoningEffort: 'none' | 'low', ndcgAt10: number):
     p95LatencyMs: 2222,
     maxLatencyMs: 2222,
     medianTop3Overlap: 1,
+    execution: {
+      requests: 100,
+      endpointRequests: 100,
+      extraEndpointRequests: 0,
+      tokenUsage: null,
+    },
     runs: [],
   };
 }

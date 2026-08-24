@@ -255,6 +255,62 @@ describe('logical call observations', () => {
   });
 });
 
+describe('provider usage diagnostics', () => {
+  it('retains cache and hidden-reasoning token details without exposing content', async () => {
+    const instance = http.createServer((_request, response) => {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(
+        JSON.stringify({
+          choices: [{ message: { content: '{"outcome":"ok"}' } }],
+          usage: {
+            prompt_tokens: 111,
+            completion_tokens: 22,
+            total_tokens: 133,
+            prompt_tokens_details: { cached_tokens: 44 },
+            completion_tokens_details: { reasoning_tokens: 7 },
+          },
+        }),
+      );
+    });
+    await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
+    const { port } = instance.address() as { port: number };
+    try {
+      const client = new ModelClient({
+        role: 'derive',
+        provider: {
+          name: 'invented-provider',
+          baseUrl: `http://127.0.0.1:${port}/v1`,
+          apiKey: null,
+          headers: {},
+          maxRetries: 0,
+        },
+        id: 'invented-model',
+        enabled: true,
+        requested: true,
+        timeoutMs: 5_000,
+        unavailableReason: null,
+      });
+
+      const result = await client.chat([{ role: 'user', content: 'Invented private prompt.' }]);
+
+      expect(result).toMatchObject({
+        ok: true,
+        endpointRequests: 1,
+        usage: {
+          inputTokens: 111,
+          outputTokens: 22,
+          totalTokens: 133,
+          cachedInputTokens: 44,
+          reasoningOutputTokens: 7,
+        },
+      });
+    } finally {
+      instance.close();
+      instance.closeAllConnections();
+    }
+  });
+});
+
 describe('parseRetryAfter', () => {
   it('reads delta-seconds', () => {
     expect(parseRetryAfter('3')).toBe(3000);
@@ -777,6 +833,7 @@ describe('learning a parameter dialect while several calls are in flight', () =>
 
     expect(result.map((outcome) => outcome.ok)).toEqual([true, true, true, true]);
     expect(result.every((outcome) => outcome.value === '{"summary":"ok"}')).toBe(true);
+    expect(result.every((outcome) => outcome.endpointRequests === 2)).toBe(true);
   });
 
   it('never demotes the schema ladder past a rung nobody tried', async () => {

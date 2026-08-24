@@ -144,6 +144,7 @@ export {
   refreshRankingMatrixReport,
   medianTop3Overlap,
   RANKING_MATRIX_SCHEMA_VERSION,
+  RANKING_MATRIX_VARIANT_IDS,
   runRankingMatrix,
   type RankingEndToEndEvidence,
   type RankingMatrixOptions,
@@ -152,6 +153,7 @@ export {
   type RankingMatrixRun,
   type RankingMatrixSelection,
   type RankingMatrixVariant,
+  type RankingMatrixVariantId,
   type RankingReleaseCheck,
   type RankingReleaseGate,
 } from './bench/ranking-matrix.ts';

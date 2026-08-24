@@ -1568,6 +1568,11 @@ native reference once, then repeats LLM `none` at 10, 20, and 40 candidates and 
 five repetitions, 800 characters per candidate, and four concurrent requests; all are bounded CLI options.
 Concurrency shortens the run but does not change the per-request p50/p95/max measurements.
 
+`--variant llm-none-c10` restricts the matrix to one repeated development shape. This is useful after a
+candidate configuration has already been chosen and only a new prompt/schema contract needs stability,
+latency, or token measurement. Targeted evidence records every run but deliberately produces no selection, so
+it cannot accidentally authorize a preset without the comparison matrix.
+
 With `--output <path>`, Akno atomically writes a content-safe artifact containing metrics and the stable ids
 of each query's top three results—not raw excerpts, private knowledge-base content, endpoints, or credentials.
 The median pairwise top-three overlap measures whether the user-visible head of the ranking changes between
@@ -1630,6 +1635,21 @@ median top-three overlap, and 1.90-second p95. One of 100 responses remained inv
 fell back exactly to fusion, so validity and instruction-negative rejection are both 99%, below their 99.5%
 and 100% gates. The fully valid 20-candidate variant missed latency at 3.36 seconds. The preset therefore stays
 experimental; the held-out result is evidence to preserve, not a test set to tune against.
+
+The current runtime contract is `akno-judgment-map-v6` / `tuple-judgment-map-v5`. It retains the strict
+fixed-id map introduced by v5, so missing, invented, and extra ids remain structurally impossible on a strict
+endpoint. Each id now maps to `[grade, rank]`, avoiding repeated object keys in the generated answer. The
+identical pair schema is also represented once and reused by reference, while Akno's own validator still
+enforces grade `0..3`, exact tuple length, and the complete id set before applying a result.
+
+Five targeted development runs produced 300/300 valid responses, zero fallbacks, 0.958 mean nDCG, complete
+direct/support/marginal retention, perfect instruction-negative rejection, and 100% median top-three overlap.
+Compared with the preceding object-map diagnostic, provider usage fell from 1,355 to 958 input tokens and from
+197 to 157 output tokens per query; p50 fell from 2.53 to 2.20 seconds. Aggregate p95 was 3.39 seconds, still
+above the provisional 2.5-second release gate. The artifact records 310 physical requests for 300 logical calls:
+each fresh benchmark client paid the two-request compatibility negotiation once, while the long-running service
+learns that endpoint dialect for its lifetime. A full development comparison, independent corpus review,
+embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation remain open.
 
 Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
 role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call

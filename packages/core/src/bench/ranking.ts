@@ -1,5 +1,5 @@
 import type { AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
-import { ModelClient } from '../models/client.ts';
+import { ModelClient, type ModelUsage } from '../models/client.ts';
 import {
   allocateLlmRerankIds,
   LLM_RERANK_PROMPT_VERSION,
@@ -61,12 +61,23 @@ export interface RankingCategoryReport {
   ndcgDeltaFromFusion: number;
 }
 
+export interface RankingTokenUsage {
+  reportedQueries: number;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+  cachedInputTokens: number | null;
+  reasoningOutputTokens: number | null;
+}
+
 export interface RankingQueryReport {
   queryId: string;
   category: RankingCategory;
   order: string[];
   rejected: string[] | null;
   latencyMs: number;
+  endpointRequests: number;
+  usage: ModelUsage | null;
   fallback: string | null;
 }
 
@@ -106,7 +117,9 @@ export interface RankingBenchReport {
     candidateCount: RankingCandidateCount;
     excerptChars: RankingExcerptChars;
     maxExcerptChars: number;
-    tokenUsage: null;
+    endpointRequests: number;
+    extraEndpointRequests: number;
+    tokenUsage: RankingTokenUsage | null;
   };
   calibration: {
     basis: 'auto' | 'none';
@@ -124,6 +137,8 @@ interface QueryOutcome {
   rejected: Set<number> | null;
   scores: number[] | null;
   latencyMs: number;
+  endpointRequests: number;
+  usage: ModelUsage | null;
   error: string | null;
 }
 
@@ -153,6 +168,8 @@ export async function runRankingBench(
     rejected: null,
     scores: null,
     latencyMs: 0,
+    endpointRequests: 0,
+    usage: null,
     error: null,
   }));
   const fusionBaseline = aggregateQuality(cases, baselineOutcomes);
@@ -224,6 +241,8 @@ export async function runRankingBench(
   );
   const latencies = outcomes.map((outcome) => outcome.latencyMs).filter((latency) => latency > 0);
   const validResponseRate = (cases.length - failures.length) / cases.length;
+  const endpointRequests = outcomes.reduce((sum, outcome) => sum + outcome.endpointRequests, 0);
+  const logicalRequests = options.system === 'fusion' ? 0 : cases.length;
   const passed =
     options.system === 'fusion' ||
     (validResponseRate === 1 &&
@@ -262,7 +281,7 @@ export async function runRankingBench(
     p95LatencyMs: percentile(latencies, 0.95),
     maxLatencyMs: latencies.length === 0 ? 0 : Math.max(...latencies),
     execution: {
-      requests: options.system === 'fusion' ? 0 : cases.length,
+      requests: logicalRequests,
       concurrency,
       candidateCount,
       excerptChars,
@@ -271,7 +290,9 @@ export async function runRankingBench(
           benchCase.pool.map((id) => Math.min(excerptChars, RANKING_CORPUS.candidates[id]!.text.length)),
         ),
       ),
-      tokenUsage: null,
+      endpointRequests,
+      extraEndpointRequests: Math.max(0, endpointRequests - logicalRequests),
+      tokenUsage: aggregateTokenUsage(outcomes),
     },
     calibration,
     failures,
@@ -365,6 +386,8 @@ function queryReport(benchCase: RankingCase, outcome: QueryOutcome): RankingQuer
     rejected:
       outcome.rejected === null ? null : [...outcome.rejected].map((index) => benchCase.pool[index]!).sort(),
     latencyMs: outcome.latencyMs,
+    endpointRequests: outcome.endpointRequests,
+    usage: outcome.usage,
     fallback: outcome.error,
   };
 }
@@ -462,12 +485,20 @@ async function runLlmCase(
   });
   const result = await rerankWithLlm(model, benchCase.query, candidates);
   if (!result.ok || !result.value)
-    return fallback(result.latencyMs, result.error ?? 'LLM rank failed', benchCase);
+    return fallback(
+      result.latencyMs,
+      result.error ?? 'LLM rank failed',
+      benchCase,
+      result.endpointRequests ?? 0,
+      result.usage ?? null,
+    );
   return {
     order: result.value.map((entry) => entry.index),
     rejected: new Set(result.value.filter((entry) => entry.relevance === 0).map((entry) => entry.index)),
     scores: null,
     latencyMs: result.latencyMs,
+    endpointRequests: result.endpointRequests ?? 0,
+    usage: result.usage ?? null,
     error: null,
   };
 }
@@ -484,9 +515,20 @@ async function runNativeCase(
     benchCase.pool.length,
   );
   if (!result.ok || !result.value)
-    return fallback(result.latencyMs, result.error ?? 'native rank failed', benchCase);
+    return fallback(
+      result.latencyMs,
+      result.error ?? 'native rank failed',
+      benchCase,
+      result.endpointRequests ?? 0,
+    );
   const entries = completeEntries(result.value, benchCase.pool.length);
-  if (!entries) return fallback(result.latencyMs, 'native rank returned an invalid permutation', benchCase);
+  if (!entries)
+    return fallback(
+      result.latencyMs,
+      'native rank returned an invalid permutation',
+      benchCase,
+      result.endpointRequests ?? 0,
+    );
   entries.sort((a, b) => b.score - a.score);
   return {
     order: entries.map((entry) => entry.index),
@@ -499,18 +541,46 @@ async function runNativeCase(
       .sort((a, b) => a.index - b.index)
       .map((entry) => entry.score),
     latencyMs: result.latencyMs,
+    endpointRequests: result.endpointRequests ?? 0,
+    usage: null,
     error: null,
   };
 }
 
-function fallback(latencyMs: number, error: string, benchCase: RankingCase): QueryOutcome {
+function fallback(
+  latencyMs: number,
+  error: string,
+  benchCase: RankingCase,
+  endpointRequests = 0,
+  usage: ModelUsage | null = null,
+): QueryOutcome {
   return {
     order: benchCase.pool.map((_, index) => index),
     rejected: null,
     scores: null,
     latencyMs,
+    endpointRequests,
+    usage,
     error,
   };
+}
+
+function aggregateTokenUsage(outcomes: QueryOutcome[]): RankingTokenUsage | null {
+  const usages = outcomes.flatMap((outcome) => (outcome.usage ? [outcome.usage] : []));
+  if (usages.length === 0) return null;
+  return {
+    reportedQueries: usages.length,
+    inputTokens: sumReported(usages.map((usage) => usage.inputTokens)),
+    outputTokens: sumReported(usages.map((usage) => usage.outputTokens)),
+    totalTokens: sumReported(usages.map((usage) => usage.totalTokens)),
+    cachedInputTokens: sumReported(usages.map((usage) => usage.cachedInputTokens)),
+    reasoningOutputTokens: sumReported(usages.map((usage) => usage.reasoningOutputTokens)),
+  };
+}
+
+function sumReported(values: Array<number | null | undefined>): number | null {
+  const reported = values.filter((value): value is number => typeof value === 'number');
+  return reported.length === 0 ? null : reported.reduce((sum, value) => sum + value, 0);
 }
 
 function nativeScoreDiagnostics(
