@@ -96,6 +96,10 @@ async function rewriteAsHistory(
   if (!result.ok || !result.value) return null;
 
   const parsed = parseJsonLoose<{ line?: unknown }>(result.value);
+  if (!parsed || (typeof parsed.line !== 'string' && parsed.line !== null)) {
+    ctx.models.derive.reportInvalidResponse();
+    return null;
+  }
   const line = typeof parsed?.line === 'string' ? parsed.line.trim() : '';
   if (!line || line.includes('\n')) return null;
   return line;

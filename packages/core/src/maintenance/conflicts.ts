@@ -253,6 +253,7 @@ export async function verifyConflicts(
       ) ||
       typeof parsed.reason !== 'string'
     ) {
+      ctx.models.derive.reportInvalidResponse();
       conflicts.push(candidate);
       continue;
     }

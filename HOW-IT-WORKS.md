@@ -820,7 +820,11 @@ bodies, prompts, paths, source excerpts, or provider responses. New receipts inc
 model calls, success/failure counts, provider-reported token totals and coverage, cumulative model latency, and
 per-phase/curator usage. Missing usage remains explicitly unreported rather than becoming zero. Client-level
 capability failures are grouped into typed `no_derive_model` or `derive_failed` degradation by stage and retain
-an actionable `unavailable`, `timeout`, `request_failed`, or `bad_response` subtype. The default view also reads
+an actionable `unavailable`, `timeout`, `request_failed`, or `bad_response` subtype. If a planner, verifier,
+conflict classifier, or curator receives content but cannot validate its output contract, the original billed
+call is reclassified as `derive_failed/bad_response`: its latency and provider token counts stay attached, and
+no second call is invented. Valid model rejections and deterministic guardrail abstentions remain ordinary
+outcomes. The default view also reads
 the local
 `dev.akno.dream` LaunchAgent and reports installed/loaded state, daily local-time cadence, previous and next
 expected windows, and typed health. A two-hour grace period separates “due” from “overdue.” Health is based on
@@ -1960,9 +1964,10 @@ history without opening private plan bodies. The default view now inspects the n
 job, reports its cadence and next expected window, and detects a failed or overdue full cycle after a two-hour
 grace period. New receipts account for logical synchronous maintenance calls, provider-reported tokens and
 coverage, model latency, and typed client-level degradation by planner or curator stage. Deferred post-write
-index derivation is asynchronous and therefore intentionally outside the run receipt. Semantic failures found
-only after a caller validates otherwise well-formed model content still appear as warnings rather than typed
-degradation, and audit mode does not yet estimate the cost of a later autonomous curator pass.
+index derivation is asynchronous and therefore intentionally outside the run receipt. Planner, verifier,
+conflict-classifier, and curator responses that fail their caller-side output contracts are now reclassified as
+typed `derive_failed/bad_response` while retaining the original call's measured usage. Audit mode does not yet
+estimate the cost of a later autonomous curator pass.
 
 ### Setup assumes too much infrastructure knowledge
 

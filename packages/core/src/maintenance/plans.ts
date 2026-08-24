@@ -1426,6 +1426,7 @@ export async function decideMaintenancePlanWithCurator(
     ) {
       decideMaintenanceItem(ctx, planId, item.id, parsed.outcome, 'curator', parsed.reason.trim());
     } else {
+      if (result.ok) ctx.models.derive.reportInvalidResponse();
       blockItem(ctx, planId, item.id, result.error ?? 'curator returned an invalid decision');
     }
   }

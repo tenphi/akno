@@ -62,6 +62,13 @@ export class DreamModelTelemetry {
   }
 
   observe(stage: DreamModelStage, observation: ModelCallObservation): void {
+    if (observation.event === 'semantic_failure') {
+      reclassifySuccessfulCall(this.#total);
+      const stageUsage = this.#stages.get(stage);
+      if (stageUsage) reclassifySuccessfulCall(stageUsage);
+      this.degrade(stage, observation.degradedReason, observation.failure);
+      return;
+    }
     addObservation(this.#total, observation);
     const stageUsage = this.#stages.get(stage) ?? mutableUsage();
     addObservation(stageUsage, observation);
@@ -92,6 +99,13 @@ export class DreamModelTelemetry {
   }
 }
 
+/** A semantic-failure event corrects a receipt; it must not invent a second call or token bill. */
+function reclassifySuccessfulCall(usage: MutableUsage): void {
+  if (usage.successfulCalls === 0) return;
+  usage.successfulCalls -= 1;
+  usage.failedCalls += 1;
+}
+
 export function emptyDreamModelUsage(modelId: string | null): DreamModelUsageReceipt {
   return { modelId, ...usageReceipt(mutableUsage()), stages: [] };
 }
@@ -112,7 +126,10 @@ function mutableUsage(): MutableUsage {
   };
 }
 
-function addObservation(usage: MutableUsage, observation: ModelCallObservation): void {
+function addObservation(
+  usage: MutableUsage,
+  observation: Extract<ModelCallObservation, { event: 'call' }>,
+): void {
   usage.calls += 1;
   if (observation.ok) usage.successfulCalls += 1;
   else usage.failedCalls += 1;

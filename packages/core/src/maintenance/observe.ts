@@ -202,6 +202,7 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
 
   const parsed = parseJsonLoose<{ observations?: unknown }>(result.value);
   if (!parsed || !Array.isArray(parsed.observations)) {
+    input.model.reportInvalidResponse();
     return { ...empty, error: 'the observe mission did not return usable JSON' };
   }
 

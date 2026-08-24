@@ -38,8 +38,9 @@ export interface ModelUsage {
   totalTokens: number | null;
 }
 
-/** Content-free observation of one logical model call after compatibility retries settle. */
-export interface ModelCallObservation {
+/** Content-free receipt for one logical model call after compatibility retries settle. */
+export interface ModelCallReceipt {
+  event: 'call';
   role: ResolvedModelRole['role'];
   modelId: string | null;
   ok: boolean;
@@ -48,6 +49,20 @@ export interface ModelCallObservation {
   latencyMs: number;
   usage: ModelUsage | null;
 }
+
+/**
+ * A caller rejected a transport-successful response because it did not satisfy the requested
+ * output contract. This is a correction to the preceding call receipt, not another model call.
+ */
+export interface ModelSemanticFailureObservation {
+  event: 'semantic_failure';
+  role: ResolvedModelRole['role'];
+  modelId: string | null;
+  failure: 'bad_response';
+  degradedReason: DegradedReason;
+}
+
+export type ModelCallObservation = ModelCallReceipt | ModelSemanticFailureObservation;
 
 export type ModelOutcomeObserver = (observation: ModelCallObservation) => void;
 
@@ -133,6 +148,20 @@ export class ModelClient {
     const observed = new ModelClient(this.#role, observer);
     observed.#compatibility = this.#compatibility;
     return observed;
+  }
+
+  /**
+   * Reclassify the preceding successful call when its content cannot satisfy the caller's
+   * contract. No response text or validation detail crosses this telemetry boundary.
+   */
+  reportInvalidResponse(): void {
+    this.emitObservation({
+      event: 'semantic_failure',
+      role: this.#role.role,
+      modelId: this.#role.id,
+      failure: 'bad_response',
+      degradedReason: this.degradedReason({ reason: 'bad_response' }),
+    });
   }
 
   get available(): boolean {
@@ -482,21 +511,26 @@ export class ModelClient {
   }
 
   private observeChat(outcome: ModelOutcome<string>): ModelOutcome<string> {
-    if (!this.#outcomeObserver) return outcome;
+    this.emitObservation({
+      event: 'call',
+      role: this.#role.role,
+      modelId: this.#role.id,
+      ok: outcome.ok,
+      failure: outcome.ok ? null : (outcome.reason ?? 'bad_response'),
+      degradedReason: outcome.ok ? null : this.degradedReason(outcome),
+      latencyMs: outcome.latencyMs,
+      usage: outcome.usage ?? null,
+    });
+    return outcome;
+  }
+
+  private emitObservation(observation: ModelCallObservation): void {
+    if (!this.#outcomeObserver) return;
     try {
-      this.#outcomeObserver({
-        role: this.#role.role,
-        modelId: this.#role.id,
-        ok: outcome.ok,
-        failure: outcome.ok ? null : (outcome.reason ?? 'bad_response'),
-        degradedReason: outcome.ok ? null : this.degradedReason(outcome),
-        latencyMs: outcome.latencyMs,
-        usage: outcome.usage ?? null,
-      });
+      this.#outcomeObserver(observation);
     } catch {
       // Telemetry must never turn a usable model response into a failed operation.
     }
-    return outcome;
   }
 
   /**

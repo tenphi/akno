@@ -2086,6 +2086,41 @@ describe('the cycle', () => {
     expect(mem.maintenanceStatus({ runId: report.run.id }).runs[0]?.modelUsage).toEqual(report.modelUsage);
   });
 
+  it('persists a malformed planner reply as one billed but semantically failed call', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { conflicts: { enabled: false } } });
+    server.reply({ result: [] });
+
+    const report = await mem.dream({ phase: 'observe', mode: 'audit' });
+
+    expect(report.modelUsage).toMatchObject({
+      modelId: 'stub-derive',
+      calls: 1,
+      successfulCalls: 0,
+      failedCalls: 1,
+      usageReportedCalls: 1,
+      inputTokens: 111,
+      outputTokens: 22,
+      totalTokens: 133,
+      stages: [
+        {
+          stage: 'observe',
+          calls: 1,
+          successfulCalls: 0,
+          failedCalls: 1,
+          totalTokens: 133,
+        },
+      ],
+    });
+    expect(report.degraded).toEqual([
+      { stage: 'observe', reason: 'derive_failed', failure: 'bad_response', occurrences: 1 },
+    ]);
+    expect(mem.maintenanceStatus({ runId: report.run.id }).runs[0]).toMatchObject({
+      modelUsage: report.modelUsage,
+      degraded: report.degraded,
+    });
+  });
+
   it('runs every enabled phase, and says why the others did not', async () => {
     server.reply({ observations: [] });
     const report = await mem.dream({});
@@ -2551,6 +2586,8 @@ describe('the run log', () => {
     expect(record.changeIds).toEqual([report.changeId]);
     expect(record.rejected.map((entry: { reason: string }) => entry.reason)).toContain('hedged language');
     expect(record.dryRun).toBe(false);
+    expect(report.modelUsage).toMatchObject({ failedCalls: 0 });
+    expect(report.degraded).toEqual([]);
     expect(record.modelUsage).toEqual(report.modelUsage);
     expect(record.degraded).toEqual(report.degraded);
 

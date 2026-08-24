@@ -215,6 +215,7 @@ describe('logical call observations', () => {
 
     expect(observations).toEqual([
       {
+        event: 'call',
         role: 'maintenance',
         modelId: null,
         ok: false,
@@ -225,6 +226,32 @@ describe('logical call observations', () => {
       },
     ]);
     expect(JSON.stringify(observations)).not.toContain('Invented private prompt.');
+  });
+
+  it('reports caller-rejected content as a content-free correction to the call receipt', () => {
+    const observations: ModelCallObservation[] = [];
+    const client = new ModelClient({
+      role: 'maintenance',
+      provider: null,
+      id: 'zephyr-model',
+      enabled: false,
+      requested: true,
+      timeoutMs: 5_000,
+      unavailableReason: 'Invented model is not configured.',
+    }).withOutcomeObserver((observation) => observations.push(observation));
+
+    client.reportInvalidResponse();
+
+    expect(observations).toEqual([
+      {
+        event: 'semantic_failure',
+        role: 'maintenance',
+        modelId: 'zephyr-model',
+        failure: 'bad_response',
+        degradedReason: 'derive_failed',
+      },
+    ]);
+    expect(JSON.stringify(observations)).not.toContain('response body');
   });
 });
 

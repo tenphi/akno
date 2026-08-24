@@ -531,6 +531,7 @@ export async function curatePages(
     const parsed = draftResult.ok && draftResult.value ? parseJsonLoose<Draft>(draftResult.value) : null;
     let nextBody = typeof parsed?.body === 'string' ? endWithNewline(parsed.body) : null;
     if (!nextBody) {
+      if (draftResult.ok) ctx.models.derive.reportInvalidResponse();
       const issue = draftResult.error ?? 'draft was not valid JSON with a body';
       result.pages.push({
         slug: row.slug,
@@ -1083,6 +1084,7 @@ async function prepareMergeDraft(ctx: AknoContext, inspection: MergeInspection):
   const parsed = planned.ok && planned.value ? parseJsonLoose<{ body?: unknown }>(planned.value) : null;
   const nextBody = typeof parsed?.body === 'string' ? endWithNewline(parsed.body) : null;
   if (!nextBody) {
+    if (planned.ok) ctx.models.derive.reportInvalidResponse();
     return {
       inputHash,
       draft: null,
@@ -1454,15 +1456,18 @@ async function verifyMergeDraft(
   );
   const parsed =
     result.ok && result.value ? parseJsonLoose<{ ok?: unknown; issues?: unknown }>(result.value) : null;
-  if (parsed?.ok === true && Array.isArray(parsed.issues)) return { ok: true, issues: [], cacheable: true };
-  if (parsed?.ok === false && Array.isArray(parsed.issues)) {
-    const issues = parsed.issues.filter((issue): issue is string => typeof issue === 'string');
+  const validIssues =
+    Array.isArray(parsed?.issues) && parsed.issues.every((issue) => typeof issue === 'string');
+  if (parsed?.ok === true && validIssues) return { ok: true, issues: [], cacheable: true };
+  if (parsed?.ok === false && validIssues) {
+    const issues = parsed.issues as string[];
     return {
       ok: false,
       issues: issues.length > 0 ? issues : ['merge verifier rejected draft'],
       cacheable: true,
     };
   }
+  if (result.ok) ctx.models.derive.reportInvalidResponse();
   return {
     ok: false,
     issues: [result.error ?? 'merge verifier returned invalid JSON'],
@@ -1622,9 +1627,16 @@ async function verifyDraft(
     return { ok: false, issues: [result.error ?? 'verification failed'], cacheable: false };
   }
   const parsed = parseJsonLoose<{ ok?: unknown; issues?: unknown }>(result.value);
-  const issues = Array.isArray(parsed?.issues)
-    ? parsed.issues.filter((issue): issue is string => typeof issue === 'string').slice(0, 12)
-    : [];
+  if (
+    !parsed ||
+    typeof parsed.ok !== 'boolean' ||
+    !Array.isArray(parsed.issues) ||
+    !parsed.issues.every((issue) => typeof issue === 'string')
+  ) {
+    ctx.models.derive.reportInvalidResponse();
+    return { ok: false, issues: ['verifier returned invalid JSON'], cacheable: true };
+  }
+  const issues = (parsed.issues as string[]).slice(0, 12);
   return {
     ok: parsed?.ok === true && issues.length === 0,
     issues: issues.length ? issues : ['verifier rejected rewrite'],

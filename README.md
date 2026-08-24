@@ -748,7 +748,10 @@ provider-reported input/output/total tokens, usage-report coverage, model latenc
 breakdown. If an endpoint omits usage, status says so instead of treating the call as zero tokens. Needed but
 unavailable capabilities and failed model calls are durable typed degradation such as `no_derive_model` or
 `derive_failed`, with an `unavailable`, `timeout`, `request_failed`, or `bad_response` subtype; prompts,
-responses, and provider errors are excluded.
+responses, and provider errors are excluded. A response that reaches Akno but fails the planner, verifier,
+conflict-classifier, or curator output contract is reclassified as `derive_failed/bad_response` without
+inventing a second call or losing its provider token receipt. A valid rejection or deterministic guardrail
+abstention remains a normal outcome.
 
 All three modes seal the same exact operations and each item retains its effective transformation policy.
 Apply refuses changed inputs, journals each item separately,
