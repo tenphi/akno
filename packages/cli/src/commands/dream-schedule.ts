@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import type { DreamRunReceipt } from '@tenphi/akno-core';
 
 export const DREAM_SCHEDULE_LABEL = 'dev.akno.dream';
+export const DREAM_HEALTH_LABEL = 'dev.akno.dream-health';
 export const DREAM_SCHEDULE_GRACE_MS = 2 * 60 * 60 * 1_000;
 
 export type DreamScheduleHealth =
@@ -30,6 +31,13 @@ export interface DreamScheduleStatus {
   nextExpectedAt: string | null;
   graceUntil: string | null;
   latestFullRun: Pick<DreamRunReceipt, 'id' | 'status' | 'startedAt'> | null;
+  missedCycleCheck: {
+    label: typeof DREAM_HEALTH_LABEL;
+    installed: boolean;
+    loaded: boolean | null;
+    hour: number | null;
+    minute: number | null;
+  };
   health: DreamScheduleHealth;
 }
 
@@ -41,6 +49,11 @@ interface DreamScheduleProbe {
   calendar: { hour: number; minute: number } | null;
   now: Date;
   timezone: string;
+  missedCycleCheck?: {
+    installed: boolean;
+    loaded: boolean | null;
+    calendar: { hour: number; minute: number } | null;
+  };
 }
 
 /** Read only the launchd metadata needed for content-safe maintenance status. */
@@ -56,6 +69,7 @@ export function inspectDreamSchedule(latestFullRun: DreamRunReceipt | null): Dre
         calendar: null,
         now: new Date(),
         timezone,
+        missedCycleCheck: { installed: false, loaded: null, calendar: null },
       },
       latestFullRun,
     );
@@ -77,6 +91,7 @@ export function inspectDreamSchedule(latestFullRun: DreamRunReceipt | null): Dre
           stdio: 'ignore',
         }).status === 0
       : false;
+  const missedCycleCheck = inspectLaunchdCalendar(DREAM_HEALTH_LABEL, uid);
 
   return calculateDreamSchedule(
     {
@@ -87,6 +102,7 @@ export function inspectDreamSchedule(latestFullRun: DreamRunReceipt | null): Dre
       calendar,
       now: new Date(),
       timezone,
+      missedCycleCheck,
     },
     latestFullRun,
   );
@@ -124,6 +140,13 @@ export function calculateDreamSchedule(
     latestFullRun: latestFullRun
       ? { id: latestFullRun.id, status: latestFullRun.status, startedAt: latestFullRun.startedAt }
       : null,
+    missedCycleCheck: {
+      label: DREAM_HEALTH_LABEL,
+      installed: probe.missedCycleCheck?.installed ?? false,
+      loaded: probe.platform === 'darwin' ? (probe.missedCycleCheck?.loaded ?? false) : null,
+      hour: probe.missedCycleCheck?.calendar?.hour ?? null,
+      minute: probe.missedCycleCheck?.calendar?.minute ?? null,
+    },
   } as const;
 
   if (probe.platform !== 'darwin') {
@@ -181,6 +204,26 @@ export function calculateDreamSchedule(
     ...base,
     ...timing,
     health: probe.now < graceUntil ? 'within_window' : 'overdue',
+  };
+}
+
+function inspectLaunchdCalendar(
+  label: string,
+  uid: number | undefined,
+): {
+  installed: boolean;
+  loaded: boolean | null;
+  calendar: { hour: number; minute: number } | null;
+} {
+  const plistPath = path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents', `${label}.plist`);
+  const installed = fs.existsSync(plistPath);
+  return {
+    installed,
+    loaded:
+      installed && uid !== undefined
+        ? spawnSync('launchctl', ['print', `gui/${uid}/${label}`], { stdio: 'ignore' }).status === 0
+        : false,
+    calendar: installed ? parseDreamCalendar(fs.readFileSync(plistPath, 'utf8')) : null,
   };
 }
 

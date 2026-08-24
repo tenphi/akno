@@ -258,6 +258,9 @@ const MaintenanceLimitsDoc = z.object({
   max_high_risk_items: z.number().int().nonnegative().optional(),
 });
 
+const MAINTENANCE_NOTIFICATION_MODES = ['off', 'actionable', 'all'] as const;
+export type MaintenanceNotificationMode = (typeof MAINTENANCE_NOTIFICATION_MODES)[number];
+
 const MaintenanceDoc = z.object({
   /** One understandable authority choice for the complete scheduled cycle. */
   profile: z.enum(MAINTENANCE_PROFILES).optional(),
@@ -275,6 +278,11 @@ const MaintenanceDoc = z.object({
    */
   // Nullable so the committed default can name the key while leaving it unset.
   model: TextRoleDoc.nullable().optional(),
+  /**
+   * Local, content-safe scheduled-run notifications. `actionable` stays quiet unless the
+   * owner can do something; `all` also confirms successful no-op runs.
+   */
+  notifications: z.enum(MAINTENANCE_NOTIFICATION_MODES).optional(),
   /**
    * Write every run down: what was applied, what a guard refused, what was skipped and why.
    *
@@ -504,6 +512,8 @@ export interface AknoConfig {
     model: ResolvedModelRole | null;
     /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */
     logChanges: boolean;
+    /** Local notification policy for scheduled maintenance; never includes knowledge-base content. */
+    notifications: MaintenanceNotificationMode;
     retain: { enabled: boolean; mission: string | null };
     observe: {
       enabled: boolean;

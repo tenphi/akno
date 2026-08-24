@@ -580,6 +580,7 @@ function resolve(
         ? resolveRole('maintenance', doc.maintenance.model, providers, 120_000)
         : null,
       logChanges: doc.maintenance?.log_changes ?? false,
+      notifications: doc.maintenance?.notifications ?? 'off',
       retain: {
         enabled: doc.maintenance?.retain?.enabled ?? true,
         mission: doc.maintenance?.retain?.mission ?? null,

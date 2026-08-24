@@ -1680,10 +1680,29 @@ akno service uninstall
 
 The installation includes the watcher service and, unless disabled, a nightly dream schedule at 03:00. Use
 `--dream-hour` to choose another hour or `--no-dream` to omit the scheduled cycle. The job runs plain
-`akno dream` and resolves the current `maintenance.profile` at start-up, so an authority change does not
-require reinstalling the scheduler. `akno dream status` inspects both the plist and its live launchd job,
-calculates the next expected local-time run, and compares the previous window with the durable full-cycle
-receipt. It never prints the plist path, program arguments, environment, or log paths.
+`akno dream --scheduled` and resolves the current `maintenance.profile` at start-up, so an authority change
+does not require reinstalling the scheduler. The marker changes only notification delivery, not maintenance
+authority. A second `dev.akno.dream-health` job runs five minutes after the two-hour grace window; it exists
+because a nightly process that never started cannot report its own absence. `akno dream status` inspects the
+main schedule and its live launchd job, calculates the next expected local-time run, compares the previous
+window with the durable full-cycle receipt, and reports whether the missed-cycle checker is itself installed
+and loaded. It never prints the plist path, program arguments, environment, or log paths.
+
+Notifications are opt-in and local:
+
+```jsonc
+{
+  "maintenance": { "notifications": "actionable" },
+}
+```
+
+`"actionable"` reports review backlog, failed or incomplete runs, pending verification, budget-deferred work,
+the same typed model degradation across three consecutive full cycles, and a missed nightly window. A healthy
+no-op run is quiet. `"all"` additionally confirms each successful scheduled run; `"off"` is the default. The
+notification contains only content-safe counts, typed states, timestamps, and run ids. It never contains page
+text, file paths, diffs, prompts, or model output, and its deduplication state stores only run/window
+fingerprints. Re-run `akno service install` after upgrading an existing installation so the scheduler gains
+the marker and health-check agent.
 
 For an agent host, choose one integration:
 

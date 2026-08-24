@@ -24,6 +24,26 @@ describe('dream schedule status', () => {
     );
   });
 
+  it('reports whether the separate missed-cycle checker is actually loaded', () => {
+    const status = calculateDreamSchedule(
+      probe(new Date(2030, 0, 2, 6, 0), {
+        missedCycleCheck: {
+          installed: true,
+          loaded: true,
+          calendar: { hour: 5, minute: 5 },
+        },
+      }),
+      null,
+    );
+    expect(status.missedCycleCheck).toEqual({
+      label: 'dev.akno.dream-health',
+      installed: true,
+      loaded: true,
+      hour: 5,
+      minute: 5,
+    });
+  });
+
   it('uses a two-hour window before declaring a full cycle overdue', () => {
     expect(calculateDreamSchedule(probe(new Date(2030, 0, 2, 4, 59)), null).health).toBe('within_window');
     expect(calculateDreamSchedule(probe(new Date(2030, 0, 2, 5, 1)), null).health).toBe('overdue');

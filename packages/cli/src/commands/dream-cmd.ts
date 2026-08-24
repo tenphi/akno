@@ -1,4 +1,5 @@
 import {
+  loadConfig,
   AknoError,
   parsePhase,
   type DreamReport,
@@ -23,9 +24,17 @@ import {
   dreamModelUsageSummary,
 } from './dream-model-status.ts';
 import { printMaintenancePathPolicy } from './maintenance-policy-output.ts';
+import {
+  deliverMaintenanceNotification,
+  missedCycleNotification,
+  scheduledCommandFailureNotification,
+  scheduledRunNotification,
+  type NotificationDelivery,
+} from './dream-notifications.ts';
 
 const DREAM_HELP = `akno dream [options]
 akno dream status [--run <run_id> | --last <n> | --pending | --explain-policy <path>]
+akno dream notify --schedule-health
 
   The maintenance cycle. Phases are selectable and safe to re-run.
 
@@ -58,6 +67,8 @@ akno dream status [--run <run_id> | --last <n> | --pending | --explain-policy <p
   --private-details
                    Include page names, source excerpts, URLs and other private content in
                    terminal or JSON output. Default output is safe to retain and share.
+  --scheduled       Mark a full run as scheduler-owned and deliver configured local notifications.
+  --schedule-health Check the expected nightly window and notify once if it was missed.
   --run <run_id>   Show one durable, content-safe run receipt.
   --last <n>       Show the newest 1–100 run receipts.
   --pending        List every nonterminal plan that can still be decided, retried, applied,
@@ -77,6 +88,8 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     'explain-policy'?: string;
     'dry-run': boolean;
     'private-details': boolean;
+    scheduled: boolean;
+    'schedule-health': boolean;
   }>(argv, {
     phase: { type: 'string' },
     mode: { type: 'string' },
@@ -86,11 +99,33 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     'explain-policy': { type: 'string' },
     'dry-run': { type: 'boolean', default: false },
     'private-details': { type: 'boolean', default: false },
+    scheduled: { type: 'boolean', default: false },
+    'schedule-health': { type: 'boolean', default: false },
   });
 
   if (values.help) {
     line(DREAM_HELP);
     return 0;
+  }
+
+  if (positionals[0] === 'notify' && positionals.length === 1) {
+    if (!values['schedule-health']) {
+      throw new AknoError('invalid', 'dream notify requires --schedule-health');
+    }
+    if (
+      values.scheduled ||
+      values.phase !== undefined ||
+      values.mode !== undefined ||
+      values.run !== undefined ||
+      values.last !== undefined ||
+      values.pending ||
+      values['explain-policy'] !== undefined ||
+      values['dry-run'] ||
+      values['private-details']
+    ) {
+      throw new AknoError('invalid', 'dream notify --schedule-health cannot be combined with run options');
+    }
+    return notifyScheduleHealth(values);
   }
 
   if (positionals[0] === 'status' && positionals.length === 1) {
@@ -114,13 +149,16 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     else printDreamStatus(status, query, schedule);
     return 0;
   }
-  if (positionals.length > 0 || values.run || values.last || values.pending) {
+  if (positionals.length > 0 || values.run || values.last || values.pending || values['schedule-health']) {
     line(DREAM_HELP);
     return 1;
   }
 
   const phase = values.phase ? parsePhase(values.phase) : undefined;
   const mode = values.mode ? parseMode(values.mode) : undefined;
+  if (values.scheduled && (phase || mode || values['dry-run'] || values['private-details'])) {
+    throw new AknoError('invalid', '--scheduled is only valid for the plain configured full cycle');
+  }
   const input = {
     ...(phase ? { phase } : {}),
     ...(mode ? { mode } : {}),
@@ -131,6 +169,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   // A second request on the same multiplexed connection reads content-free plan state while the
   // model call is pending, so a healthy multi-minute run no longer looks hung.
   const progress = values.json ? null : dreamProgressWriter(Date.now(), phase, mode);
+  const commandStartedAt = new Date();
   let report: DreamReport | null = null;
   let busy: AknoError | null = null;
   try {
@@ -144,7 +183,10 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     );
   } catch (error) {
     const typed = AknoError.from(error);
-    if (typed.code !== 'busy') throw typed;
+    if (typed.code !== 'busy') {
+      if (values.scheduled) await notifyScheduledFailure(values, typed.code, commandStartedAt);
+      throw typed;
+    }
     busy = typed;
   } finally {
     progress?.done();
@@ -153,11 +195,89 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   if (busy) return reportActiveDream(busy, values);
   if (!report) throw new AknoError('internal', 'dream returned no report');
 
+  if (values.scheduled) await notifyScheduledRun(values, report.run);
+
   if (values.json) {
     json(values['private-details'] ? report : safeDreamReport(report));
     return 0;
   }
   return printDream(report, values['private-details']);
+}
+
+async function notifyScheduledRun(
+  values: Parameters<typeof openOptionsFrom>[0],
+  run: DreamRunReceipt,
+): Promise<void> {
+  const config = loadConfig(openOptionsFrom(values));
+  if (config.maintenance.notifications === 'off') return;
+  try {
+    const status = await loadMaintenanceStatus(values);
+    const history = await loadMaintenanceStatus(values, { last: 10 });
+    reportNotificationDelivery(
+      deliverMaintenanceNotification(
+        config.maintenance.notifications,
+        scheduledRunNotification(config.maintenance.notifications, run, status, history.runs),
+        config.stateDir,
+      ),
+    );
+  } catch (error) {
+    reportNotificationDelivery({ status: 'failed', error: AknoError.from(error).code });
+  }
+}
+
+async function notifyScheduledFailure(
+  values: Parameters<typeof openOptionsFrom>[0],
+  errorCode: string,
+  startedAt: Date,
+): Promise<void> {
+  const config = loadConfig(openOptionsFrom(values));
+  if (config.maintenance.notifications === 'off') return;
+  try {
+    const status = await loadMaintenanceStatus(values);
+    const latest = status.latestRun;
+    if (latest && Date.parse(latest.startedAt) >= startedAt.getTime() - 2_000) {
+      const history = await loadMaintenanceStatus(values, { last: 10 });
+      reportNotificationDelivery(
+        deliverMaintenanceNotification(
+          config.maintenance.notifications,
+          scheduledRunNotification(config.maintenance.notifications, latest, status, history.runs),
+          config.stateDir,
+        ),
+      );
+      return;
+    }
+  } catch {
+    // A failed service may also make status unavailable. The typed command failure is still actionable.
+  }
+  reportNotificationDelivery(
+    deliverMaintenanceNotification(
+      config.maintenance.notifications,
+      scheduledCommandFailureNotification(config.maintenance.notifications, errorCode, startedAt),
+      config.stateDir,
+    ),
+  );
+}
+
+async function notifyScheduleHealth(values: Parameters<typeof openOptionsFrom>[0]): Promise<number> {
+  const config = loadConfig(openOptionsFrom(values));
+  const status = await loadMaintenanceStatus(values);
+  const schedule = inspectDreamSchedule(status.latestFullRun);
+  const delivery = deliverMaintenanceNotification(
+    config.maintenance.notifications,
+    missedCycleNotification(config.maintenance.notifications, schedule),
+    config.stateDir,
+  );
+  if (values.json) json({ notification: delivery, schedule });
+  else reportNotificationDelivery(delivery);
+  return delivery.status === 'failed' ? 2 : 0;
+}
+
+function reportNotificationDelivery(delivery: NotificationDelivery): void {
+  if (delivery.status === 'failed') {
+    process.stderr.write(style.yellow(`notification delivery failed (${delivery.error ?? 'unknown'})\n`));
+  } else if (delivery.status === 'sent') {
+    process.stderr.write(style.grey('local maintenance notification sent\n'));
+  }
 }
 
 async function loadMaintenancePathPolicy(
@@ -259,6 +379,18 @@ function printDreamSchedule(schedule: DreamScheduleStatus): void {
       schedule.latestFullRun
         ? `${schedule.latestFullRun.id} · ${schedule.latestFullRun.status} · ${schedule.latestFullRun.startedAt}`
         : null,
+    ],
+    [
+      'missed-cycle check',
+      !schedule.missedCycleCheck.installed
+        ? 'not installed'
+        : schedule.missedCycleCheck.loaded === false
+          ? 'installed but not loaded'
+          : schedule.missedCycleCheck.hour === null || schedule.missedCycleCheck.minute === null
+            ? 'installed schedule is unreadable'
+            : `loaded · daily at ${String(schedule.missedCycleCheck.hour).padStart(2, '0')}:${String(
+                schedule.missedCycleCheck.minute,
+              ).padStart(2, '0')}`,
     ],
   ]);
 }

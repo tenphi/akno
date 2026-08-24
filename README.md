@@ -812,6 +812,16 @@ its local-time cadence, the previous and next expected full-cycle windows, and t
 A run is marked overdue only after a two-hour completion window; a newer phase-specific diagnostic cannot mask
 a missed nightly cycle.
 
+Scheduled maintenance can emit content-safe local macOS notifications. Set
+`maintenance.notifications` to `"actionable"` for review backlog, failed or incomplete work, pending
+verification, budget deferral, degradation repeated across three full cycles, and missed-run alerts. Successful
+no-op runs stay quiet. `"all"` also confirms every successful scheduled run; `"off"` is the default. A companion
+`dev.akno.dream-health` LaunchAgent runs just after the grace window so a cycle that never started can still be
+reported. Notification text contains counts, typed status, timestamps, and run ids only—never page text, paths,
+diffs, prompts, or model responses. Re-run `akno service install` after upgrading an older schedule so both
+agents and the `--scheduled` marker are installed. `akno dream status` reports the missed-cycle check's own
+installed, loaded, and cadence state as well as the main schedule.
+
 **`akno redeploy` applies a local change.** It builds, restarts `dev.akno`, and then waits for the socket
 to come back — `launchctl kickstart` returns when launchd has spawned the process, not when it is listening, so
 without the wait the next command fails with "no Akno service at …" and reads like a broken deploy. The two
@@ -1160,6 +1170,10 @@ prevent. These defaults keep inference and unattended edits behind explicit perm
   guard refused it, what was skipped and why. It is the fastest way to decide whether to trust the cycle, and
   it is off by default because a log of inferences drawn from private notes is a second copy of the sensitive
   part, kept outside the notes. That is the owner's call, not a default.
+- **`maintenance.notifications`** — local scheduled-run alerts. It defaults to `"off"`; `"actionable"` stays
+  silent on healthy no-op nights and reports only an owner-actionable backlog, failure, repeated degradation,
+  budget deferral, or missed cycle. `"all"` additionally confirms every completed scheduled run. The payload is
+  safe for a lock screen and the deduplication file in `<state_dir>` stores only run/window fingerprints.
 
 Everything else is on: extraction for every attachment including the ones that predate Akno, audit-mode
 `adopt` planning, the cross-page conflict pass, and the housekeeping report.

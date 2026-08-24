@@ -8,6 +8,7 @@ import { serveHttp } from '../serve/http.ts';
 import { serveMcp } from '../serve/mcp.ts';
 import { resolveOps } from '../ops-handle.ts';
 import { AknoError } from '@tenphi/akno-protocol';
+import { DREAM_HEALTH_LABEL, DREAM_SCHEDULE_LABEL } from './dream-schedule.ts';
 
 const SERVE_HELP = `akno serve [options]
 
@@ -229,13 +230,15 @@ const SERVICE_HELP = `akno service <install | uninstall | status> [options]
     dev.akno.dream  Nightly — the maintenance cycle. Observe runs on a schedule,
                       and this is that schedule. It resolves maintenance.profile at
                       run time, so changing authority does not require reinstalling it.
+    dev.akno.dream-health
+                      Daily — after the two-hour grace window, reports a missed cycle
+                      when local maintenance notifications are enabled.
 
   --http <addr>       Serve loopback HTTP as well as the socket.
   --dream-hour <0-23> When the nightly cycle runs. Default 3.
   --no-dream          Do not install the nightly agent.`;
 
 const PLIST_LABEL = 'dev.akno';
-const DREAM_LABEL = 'dev.akno.dream';
 
 export async function serviceCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse<{ http?: string; 'dream-hour'?: string; dream: boolean }>(argv, {
@@ -256,14 +259,16 @@ export async function serviceCommand(argv: string[]): Promise<number> {
 
   const agents = path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents');
   const plistPath = path.join(agents, `${PLIST_LABEL}.plist`);
-  const dreamPath = path.join(agents, `${DREAM_LABEL}.plist`);
+  const dreamPath = path.join(agents, `${DREAM_SCHEDULE_LABEL}.plist`);
+  const dreamHealthPath = path.join(agents, `${DREAM_HEALTH_LABEL}.plist`);
   const action = positionals[0];
 
   if (action === 'status') {
     let installed = false;
     for (const [label, target] of [
       [PLIST_LABEL, plistPath],
-      [DREAM_LABEL, dreamPath],
+      [DREAM_SCHEDULE_LABEL, dreamPath],
+      [DREAM_HEALTH_LABEL, dreamHealthPath],
     ] as const) {
       if (fs.existsSync(target)) {
         installed = true;
@@ -277,7 +282,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   }
 
   if (action === 'uninstall') {
-    const removed = [plistPath, dreamPath].filter((target) => fs.existsSync(target));
+    const removed = [plistPath, dreamPath, dreamHealthPath].filter((target) => fs.existsSync(target));
     if (removed.length === 0) {
       line(style.grey('not installed'));
       return 0;
@@ -288,7 +293,10 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     }
     line(style.grey(`run: launchctl bootout gui/$(id -u)/${PLIST_LABEL}`));
     if (removed.includes(dreamPath)) {
-      line(style.grey(`run: launchctl bootout gui/$(id -u)/${DREAM_LABEL}`));
+      line(style.grey(`run: launchctl bootout gui/$(id -u)/${DREAM_SCHEDULE_LABEL}`));
+    }
+    if (removed.includes(dreamHealthPath)) {
+      line(style.grey(`run: launchctl bootout gui/$(id -u)/${DREAM_HEALTH_LABEL}`));
     }
     return 0;
   }
@@ -331,12 +339,12 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     fs.writeFileSync(
       dreamPath,
       plist({
-        label: DREAM_LABEL,
+        label: DREAM_SCHEDULE_LABEL,
         node: process.execPath,
         script: binary,
-        // Keep the job unqualified: `dream` resolves the current named profile every night.
-        // Baking a mode into this plist would leave stale authority after a config change.
-        args: ['dream'],
+        // Keep authority unqualified: `dream` resolves the current named profile every night.
+        // The marker enables local notification delivery; it does not change dream behaviour.
+        args: ['dream', '--scheduled'],
         logDir: config.logDir,
         logName: 'dream',
         calendarHour: hour,
@@ -346,6 +354,28 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     line(`wrote ${dreamPath}  ${style.grey(`(daily at ${String(hour).padStart(2, '0')}:00)`)}`);
     line(style.grey(`  maintenance profile: ${config.maintenance.profile} (resolved at run time)`));
     line(style.grey(`run: launchctl bootstrap gui/$(id -u) ${dreamPath}`));
+
+    const healthHour = (hour + 2) % 24;
+    fs.writeFileSync(
+      dreamHealthPath,
+      plist({
+        label: DREAM_HEALTH_LABEL,
+        node: process.execPath,
+        script: binary,
+        args: ['dream', 'notify', '--schedule-health'],
+        logDir: config.logDir,
+        logName: 'dream-health',
+        calendarHour: healthHour,
+        calendarMinute: 5,
+      }),
+      'utf8',
+    );
+    line(
+      `wrote ${dreamHealthPath}  ${style.grey(
+        `(daily at ${String(healthHour).padStart(2, '0')}:05; notification policy resolved at run time)`,
+      )}`,
+    );
+    line(style.grey(`run: launchctl bootstrap gui/$(id -u) ${dreamHealthPath}`));
   }
 
   line(style.grey(`logs: ${config.logDir}`));
@@ -362,7 +392,7 @@ function dreamHour(raw: string | undefined): number {
   return hour;
 }
 
-interface PlistOptions {
+export interface PlistOptions {
   label: string;
   node: string;
   script: string;
@@ -374,9 +404,11 @@ interface PlistOptions {
   keepAlive?: boolean;
   /** The nightly cycle: run once a day at this hour. */
   calendarHour?: number;
+  calendarMinute?: number;
 }
 
-function plist(options: PlistOptions): string {
+/** Exported for exact scheduler fixture tests; service installation is the only production caller. */
+export function plist(options: PlistOptions): string {
   const { label, node, script, args, logDir } = options;
   const logName = options.logName ?? 'akno';
   const programArgs = [node, script, ...args]
@@ -385,7 +417,7 @@ function plist(options: PlistOptions): string {
   const schedule =
     options.calendarHour === undefined
       ? `  <key>RunAtLoad</key><true/>\n  <key>KeepAlive</key>${options.keepAlive ? '<true/>' : '<false/>'}`
-      : `  <key>StartCalendarInterval</key>\n  <dict><key>Hour</key><integer>${options.calendarHour}</integer><key>Minute</key><integer>0</integer></dict>`;
+      : `  <key>StartCalendarInterval</key>\n  <dict><key>Hour</key><integer>${options.calendarHour}</integer><key>Minute</key><integer>${options.calendarMinute ?? 0}</integer></dict>`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">

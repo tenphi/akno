@@ -84,6 +84,13 @@ describe('dream status history views', () => {
       nextExpectedAt: '2030-01-03T02:00:00.000Z',
       graceUntil: '2030-01-02T04:00:00.000Z',
       latestFullRun: { id: report.run.id, status: report.run.status, startedAt: report.run.startedAt },
+      missedCycleCheck: {
+        label: 'dev.akno.dream-health' as const,
+        installed: true,
+        loaded: true,
+        hour: 5,
+        minute: 5,
+      },
       health: 'on_time' as const,
     };
     expect(dreamStatusJson(status, {}, schedule)).toEqual({ ...status, schedule });
@@ -330,6 +337,7 @@ function privateReport(): DreamReport {
 function emptyStatus(): MaintenanceStatus {
   return {
     authority: fixtureAuthority(),
+    notifications: 'off',
     latest: null,
     latestRun: null,
     latestFullRun: null,
@@ -350,6 +358,7 @@ function statusAt(
 ): MaintenanceStatus {
   return {
     authority: fixtureAuthority(),
+    notifications: 'off',
     latest: {
       id: 'pln_example',
       createdAt: new Date(startedAt).toISOString(),

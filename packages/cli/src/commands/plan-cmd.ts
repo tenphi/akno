@@ -167,6 +167,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
   heading('Maintenance');
   kv([
     ['profile', status.authority.profile],
+    ['local notifications', status.notifications],
     ['cycle authority', status.authority.mode],
     ['automatic KB writes', status.authority.automaticKnowledgeBaseWrites ? 'allowed' : 'not allowed'],
     ['observe', status.authority.observe],

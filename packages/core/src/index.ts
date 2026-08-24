@@ -158,6 +158,7 @@ export {
 export type { IndexOptions, IndexProgress, IndexReport } from './index/indexer.ts';
 export type { WatcherEvents } from './watch/watcher.ts';
 export type { AknoWatchEvents } from './open.ts';
+export type { MaintenanceNotificationMode } from './config/schema.ts';
 export type { InboxResult } from './ingest/inbox.ts';
 export {
   DREAM_PHASES,

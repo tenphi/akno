@@ -336,6 +336,11 @@
     //
     //   "model": { "provider": "openai", "id": "gpt-5.6" }
     "model": null,
+    // Local macOS notifications for scheduled runs. "actionable" reports only
+    // review backlog, failed/incomplete work, persistent budget deferral, repeated
+    // model degradation, or a missed cycle. "all" also confirms quiet success.
+    // Page text, paths, diffs, prompts, and model responses are never included.
+    "notifications": "off",
     // Retain is the `remember` op, available per-turn — the tier that needs
     // to be fresh does not wait for a timer. `dream` does not re-run it.
     // Write every run down — what was applied, what a guardrail refused, what was

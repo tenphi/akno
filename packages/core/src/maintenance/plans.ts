@@ -31,7 +31,11 @@ import {
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
-import type { MaintenancePolicy, MaintenanceTransform } from '../config/schema.ts';
+import type {
+  MaintenanceNotificationMode,
+  MaintenancePolicy,
+  MaintenanceTransform,
+} from '../config/schema.ts';
 import {
   createMaintenanceBudget,
   maintenanceBudgetReceipt,
@@ -200,6 +204,8 @@ export interface MaintenancePlan extends MaintenancePlanSummary {
 
 export interface MaintenanceStatus {
   authority: MaintenanceAuthority;
+  /** Configured local delivery policy; notification payloads themselves are not retained here. */
+  notifications: MaintenanceNotificationMode;
   latest: MaintenancePlanSummary | null;
   latestRun: DreamRunReceipt | null;
   /** Latest run of the complete cycle; phase-specific commands do not replace it. */
@@ -1699,6 +1705,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
   if (!maintenanceTablesAvailable(ctx)) {
     return {
       authority: configuredMaintenanceAuthority(ctx.config),
+      notifications: ctx.config.maintenance.notifications,
       latest: null,
       latestRun: latestDreamRun(ctx),
       latestFullRun: latestFullDreamRun(ctx),
@@ -1739,6 +1746,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
     .get() as { n: number };
   return {
     authority: configuredMaintenanceAuthority(ctx.config),
+    notifications: ctx.config.maintenance.notifications,
     latest,
     latestRun: latestDreamRun(ctx),
     latestFullRun: latestFullDreamRun(ctx),
