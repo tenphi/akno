@@ -1117,15 +1117,23 @@ assigned to candidates on every request, so it reveals neither source identity n
 the schema cacheable. Compatible endpoints that return unconstrained JSON still receive one bounded retry for
 an invalid map; other failures preserve exact fusion order.
 
-The checked-in [v6 targeted development evidence](benchmarks/ranking/results/development-openai-luna-v6-targeted-2026-08-24.json)
-repeated the selected 10-candidate, no-reasoning shape five times. It produced 300/300 valid responses, zero
-fallbacks, 0.958 mean nDCG@10 against fusion's 0.483, complete direct/support/marginal retention, perfect
+The checked-in [v6 development matrix](benchmarks/ranking/results/development-openai-luna-v6-2026-08-24.json)
+selects Luna with `none` reasoning and 10 candidates. Across five runs it produced 300/300 valid responses,
+zero fallbacks, 0.957 mean nDCG@10 against fusion's 0.483, complete direct/support/marginal retention, perfect
 instruction-negative rejection, and 100% median top-three overlap. Usage averaged 958 input and 157 output
-tokens per query, down from 1,355/197 in the preceding object-map diagnostic; p50 improved from 2.53 to 2.20
-seconds, while aggregate p95 remained above the provisional gate at 3.39 seconds. This is tuning evidence only:
-v6/v5 still needs a full development comparison, independent corpus review, embedding-backed end-to-end
-evidence, and a new pre-declared held-out evaluation. The immutable v4/v3 held-out artifact cannot authorize
-the changed runtime contract, so the preset remains experimental.
+tokens per query. Its 2.41-second p50 and 3.63-second p95 miss only the provisional latency gate among the
+development-side selection checks. The earlier
+[targeted repetition](benchmarks/ranking/results/development-openai-luna-v6-targeted-2026-08-24.json) reached
+the same quality, validity, retention, and stability conclusions.
+
+Larger windows did not buy quality: `none` at 20 and 40 candidates reached 0.949/0.944 nDCG, 67% median
+top-three overlap, 4.16/6.99-second p95, and averaged 1,581/306 and 2,808/596 input/output tokens per query.
+`low` at 20 was only 88% valid, reached 0.894 nDCG, and took 10.15 seconds at p95. The configured native
+reference was unavailable and preserved fusion order for all 60 calls, so it is not comparison evidence. The
+selected c10 shape is therefore the smallest, fastest, highest-quality prompted variant in this matrix, but
+the preset remains experimental: latency, independent corpus review, embedding-backed end-to-end evidence,
+and a new pre-declared held-out evaluation remain open. The immutable v4/v3 held-out artifact cannot authorize
+the changed runtime contract.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

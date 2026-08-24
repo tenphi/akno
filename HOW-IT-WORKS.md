@@ -1642,14 +1642,21 @@ endpoint. Each id now maps to `[grade, rank]`, avoiding repeated object keys in 
 identical pair schema is also represented once and reused by reference, while Akno's own validator still
 enforces grade `0..3`, exact tuple length, and the complete id set before applying a result.
 
-Five targeted development runs produced 300/300 valid responses, zero fallbacks, 0.958 mean nDCG, complete
-direct/support/marginal retention, perfect instruction-negative rejection, and 100% median top-three overlap.
-Compared with the preceding object-map diagnostic, provider usage fell from 1,355 to 958 input tokens and from
-197 to 157 output tokens per query; p50 fell from 2.53 to 2.20 seconds. Aggregate p95 was 3.39 seconds, still
-above the provisional 2.5-second release gate. The artifact records 310 physical requests for 300 logical calls:
-each fresh benchmark client paid the two-request compatibility negotiation once, while the long-running service
-learns that endpoint dialect for its lifetime. A full development comparison, independent corpus review,
-embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation remain open.
+The full development matrix selects `none` reasoning with 10 candidates. Five runs produced 300/300 valid
+responses, zero fallbacks, 0.957 mean nDCG, complete direct/support/marginal retention, perfect
+instruction-negative rejection, and 100% median top-three overlap. Provider usage averaged 958 input and 157
+output tokens per query; aggregate p50 was 2.41 seconds and p95 was 3.63 seconds, still above the provisional
+2.5-second release gate. The artifact records 310 physical requests for 300 logical calls: each fresh benchmark
+client paid the two-request compatibility negotiation once, while the long-running service learns that
+endpoint dialect for its lifetime.
+
+More candidates made the result worse as well as more expensive. At 20 and 40 candidates, `none` reached
+0.949/0.944 nDCG, only 67% median top-three overlap, and 4.16/6.99-second p95. `low` reasoning at 20 candidates
+was only 88% valid, reached 0.894 nDCG, and took 10.15 seconds at p95; the provider reported 93,676 reasoning
+tokens across its 300 queries. The configured native reference was unavailable and correctly preserved fusion
+order. The c10 shape therefore passes every development quality, safety, reliability, and selection check, but
+latency, independent corpus review, embedding-backed end-to-end evidence, and a new pre-declared held-out
+evaluation remain open.
 
 Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
 role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call

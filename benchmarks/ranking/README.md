@@ -37,11 +37,18 @@ stochastic response missed a gate; a later contract needs a new version and a ne
 
 The runtime now uses `akno-judgment-map-v6` / `tuple-judgment-map-v5`. The fixed-id map remains structurally
 complete, but each value is the compact `[grade, rank]` pair and repeated pair schemas are sent once through
-JSON Schema definitions. The checked-in
-`development-openai-luna-v6-targeted-2026-08-24.json` artifact records 300/300 valid responses, zero fallbacks,
-0.958 mean nDCG, 100% median top-three overlap, and 3.39-second p95. Provider usage averaged 958 input and 157
-output tokens per query. This is repeated development evidence, not a full comparison matrix or held-out
-release artifact. Do not treat the v4/v3 files as release evidence for this changed contract.
+JSON Schema definitions. The checked-in artifacts for this contract are:
+
+- `development-openai-luna-v6-targeted-2026-08-24.json`
+- `development-openai-luna-v6-2026-08-24.json`
+
+The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
+fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second p95. Provider usage averaged 958 input
+and 157 output tokens per query. Increasing the window to 20 or 40 candidates reduced quality and stability
+while increasing latency and tokens; `low` reasoning was only 88% valid, reached 0.894 nDCG, and took 10.15
+seconds at p95. The selected configuration passes every development quality, safety, reliability, and
+selection check, but misses the 2.5-second latency gate. These are development artifacts, not held-out release
+evidence. Do not treat the v4/v3 files as release evidence for this changed contract.
 
 After the matrix selects a configuration, attach production-pipeline evidence over a temporary, entirely
 invented knowledge base:
