@@ -497,6 +497,13 @@ uses a stricter 0.99 calibrated relevance floor for automatic injection—the or
 appropriate for explicit discovery, but measured topical hard negatives reached 0.9728 and are not safe to
 insert before a host model can object.
 
+A compound prompt can need complementary evidence: one page may state a renewal date while another states its
+amount or duration. Auto-recall combines those sources only when the prompt requests at least two mechanical
+fields, every source matches the complete non-field subject, and exactly one source supplies an explicit value
+for each field. If two sources disagree on any requested value, it injects nothing rather than hiding the lower
+ranked conflict. For prompts asking for the current, active, or latest value, evidence explicitly marked old,
+former, archived, or superseded cannot activate or survive qualification unless it also states a current value.
+
 Recent turns are accepted only to resolve local expressions such as “it” or “the other one”: at most six turns
 and 6,000 characters pass validation, only the last two turns and 1,000 characters can affect retrieval, and the
 current prompt still has to match the selected evidence. The response's `searched` receipt contains only the
@@ -1768,25 +1775,33 @@ token usage when reported. The stored five-run local native result passed all te
 with 41.7% qualifier activation and 361 ms p95; independent corpus review remains its only release blocker.
 
 `bench auto-recall-answer` then evaluates the host boundary without changing the public retrieval API. It
-reuses the invented answer corpus except for its graph-only case and sends each current prompt to the same host
-model twice. The memory-on arm receives the exact, locator-bearing auto-recall bundle inside a clearly delimited
-untrusted-data section. The memory-off arm receives no memory. Both arms use the same frozen structured host
-prompt, model, reasoning setting, and output budget.
+uses dedicated sixteen-source, twelve-case development and held-out corpora and sends each current prompt to the
+same host model twice. The corpora are disjoint from each other and from the explicit-answer benchmark. The
+memory-on arm receives the exact, locator-bearing auto-recall bundle inside a clearly delimited untrusted-data
+section. The memory-off arm receives no memory. Both arms use the same frozen structured host prompt, model,
+reasoning setting, and output budget.
 
-The gate requires perfect activation, supported-fact coverage, unsupported/conflicting-evidence abstention,
-memory-off abstention, pairwise improvement, and repeated decision stability. Any answer without evidence is an
-unsupported claim. Evidence instructions and unrelated protected markers must never appear in an answer.
-Context p95 is bounded at 10 seconds, memory-on total p95 at 20 seconds, and paired incremental p95 at 10
-seconds. Host and qualifier latency and provider usage are accounted separately. The artifact stores no current
-prompt, evidence, answer text, source locator, endpoint, provider error, or credential.
+The gate requires perfect activation, evidence-fact coverage, answer-fact coverage,
+unsupported/conflicting-evidence abstention, memory-off abstention, pairwise improvement, and repeated decision
+stability. Evidence-fact coverage identifies an assembly omission before host generation. Any answer without
+evidence is an unsupported claim. Evidence instructions and unrelated protected markers must never appear in
+an answer. Context p95 is bounded at 10 seconds, memory-on total p95 at 20 seconds, and paired incremental p95
+at 10 seconds. Host and qualifier latency and provider usage are accounted separately. The artifact stores no
+current prompt, evidence, answer text, source locator, endpoint, provider error, or credential.
 
-The first five-run OpenAI Luna held-out artifact failed the quality gate while passing its safety boundaries.
+The first five-run OpenAI Luna v1 held-out artifact failed the quality gate while passing its safety boundaries.
 Across 55 paired executions, activation and both abstention metrics were 100%, with zero unsupported claims and
 zero forbidden-memory leakage. Memory-on answer accuracy was 81.8%, fact accuracy 75.6%, pairwise improvement
 75%, and decision stability 90.9%. A list-form cadence was not answered; a two-page compound answer was
-incomplete and varied between runs. Akno therefore must not enable the Luna pre-turn integration from this
-evidence. The failed frozen artifact is retained as the regression target, not used to tune the same held-out
-split.
+incomplete and varied between runs. The failed frozen artifact remains historical regression evidence and was
+not used as tuning data.
+
+The two failure shapes were instead reproduced in new development data. Auto-recall gained conservative
+complementary mechanical-field assembly, conflicting-value abstention, and current-versus-stale filtering. A
+fresh fingerprint-bound v2 corpus then passed every technical gate across five runs and 60 paired executions:
+all activation, evidence, answer, abstention, pairwise, safety, and stability metrics were perfect. Context p95
+was 494 ms, total memory-on p95 was 2.257 seconds, and paired incremental p95 was 1.015 seconds. Independent
+corpus review remains the only release blocker before Luna pre-turn integration.
 
 ### Recovery guarantees
 

@@ -17,7 +17,7 @@ describe('auto-recall host answer benchmark', () => {
     expect(failures(report)).toEqual([]);
     expect(report).toMatchObject({
       kind: 'invented_auto_recall_answer_benchmark',
-      schemaVersion: 'auto-recall-answer-benchmark-v1',
+      schemaVersion: 'auto-recall-answer-benchmark-v2',
       hostPromptVersion: 'auto-recall-host-answer-v1',
       development: true,
       artifactPersisted: false,
@@ -25,19 +25,20 @@ describe('auto-recall host answer benchmark', () => {
       passed: true,
       split: 'development',
       corpus: {
-        cases: 11,
-        sources: 15,
+        cases: 12,
+        sources: 16,
         categories: 11,
         frozen: false,
         independentlyReviewed: false,
-        graphCasesExcluded: 1,
+        graphCasesExcluded: 0,
       },
-      embedding: { available: true, totalChunks: 15, embeddedChunks: 15 },
+      embedding: { available: true, totalChunks: 16, embeddedChunks: 16 },
       qualifier: { available: true, mode: 'llm' },
       hostModel: { available: true, warmupOk: true },
       metrics: {
         executionRate: 1,
         activationAccuracy: 1,
+        evidenceFactAccuracy: 1,
         withMemoryAccuracy: 1,
         withMemoryFactAccuracy: 1,
         withMemoryAbstentionAccuracy: 1,
@@ -48,8 +49,8 @@ describe('auto-recall host answer benchmark', () => {
       },
       blockers: [],
     });
-    expect(report.execution.hostModelCalls).toBe(22);
-    expect(report.execution.hostUsageReportedCalls).toBe(22);
+    expect(report.execution.hostModelCalls).toBe(24);
+    expect(report.execution.hostUsageReportedCalls).toBe(24);
     expect(report.execution.qualificationCalls).toBeGreaterThan(0);
     expect(report.releaseBlockers).toEqual([
       'held_out_split',
@@ -58,8 +59,8 @@ describe('auto-recall host answer benchmark', () => {
       'persisted_artifact',
     ]);
     const serialized = JSON.stringify(report);
-    expect(serialized).not.toContain('silverpine-direct');
-    expect(serialized).not.toContain('violet-gull');
+    expect(serialized).not.toContain('cedar-direct');
+    expect(serialized).not.toContain('indigo-owl');
     expect(serialized).not.toContain('five-year warranty');
   });
 
@@ -77,16 +78,16 @@ describe('auto-recall host answer benchmark', () => {
       split: 'test',
       passed: true,
       corpus: {
-        version: 'auto-recall-answer-held-out-v1',
+        version: 'auto-recall-answer-held-out-v2',
         fingerprint: AUTO_RECALL_ANSWER_HELD_OUT_FINGERPRINT,
-        cases: 11,
+        cases: 12,
         sources: 16,
         categories: 11,
         frozen: true,
         independentlyReviewed: false,
-        graphCasesExcluded: 1,
+        graphCasesExcluded: 0,
       },
-      execution: { operations: 22, hostModelCalls: 44 },
+      execution: { operations: 24, hostModelCalls: 48 },
       stability: {
         requestedRuns: 2,
         completedRuns: 2,
@@ -175,39 +176,35 @@ function inventedProvider(): typeof fetch {
 function supports(question: string, evidence: string): boolean {
   const query = question.toLowerCase();
   const excerpt = evidence.toLowerCase();
-  const match = query.includes('silverpine-direct')
-    ? ['silverpine-direct', ['five-year']]
-    : query.includes('amberlark-service')
-      ? ['amberlark-service', ['every six months']]
-      : query.includes('foxglove-compound')
-        ? ['foxglove-compound', ['14 may 2027', '1111 eur']]
-        : query.includes('kestrel-partial')
-          ? ['kestrel-partial', ['moonstone']]
-          : query.includes('osprey-negative')
-            ? ['osprey-negative', ['does not include']]
-            : query.includes('willow-current')
-              ? ['willow-current', ['current inspection cadence is every six months']]
-              : query.includes('tern-instruction')
-                ? ['tern-instruction', ['seven-year']]
-                : query.includes('heron-orphan')
-                  ? ['heron-orphan', ['18:00']]
-                  : query.includes('juniper held-out')
-                    ? ['juniper held-out', ['four years']]
-                    : query.includes('seabright held-out')
-                      ? ['seabright held-out', ['every nine months']]
-                      : query.includes('bramble held-out')
-                        ? ['bramble held-out', ['22 june 2028', '2222 eur']]
-                        : query.includes('lantern held-out')
-                          ? ['lantern held-out', ['starlight']]
-                          : query.includes('cormorant held-out')
-                            ? ['cormorant held-out', ['excludes volcanic-ash']]
-                            : query.includes('rowan held-out')
-                              ? ['current rowan held-out', ['active inspection cadence']]
-                              : query.includes('petrel held-out')
-                                ? ['petrel held-out', ['eight years']]
-                                : query.includes('kingfisher held-out')
-                                  ? ['kingfisher held-out', ['07:30']]
-                                  : null;
+  const match = query.includes('pine-conflict')
+    ? ['pine-conflict', ['1 march 2029', '1111 eur', '2222 eur']]
+    : query.includes('oak-conflict')
+      ? ['oak-conflict', ['3 october 2031', '5555 eur', '6666 eur']]
+      : query.includes('maple renewal')
+        ? ['maple renewal', ['12 april 2029', '3333 eur']]
+        : query.includes('cedar-partial')
+          ? ['cedar-partial', ['comet']]
+          : query.includes('aspen-current')
+            ? ['aspen-current', ['every four months']]
+            : query.includes('swift-orphan')
+              ? ['swift-orphan', ['17:00']]
+              : query.includes('rook-ambiguous')
+                ? ['rook-ambiguous', ['red access', 'amber access']]
+                : query.includes('thistle')
+                  ? ['thistle', ['every eight months']]
+                  : query.includes('gull-negative')
+                    ? ['gull-negative', ['excludes hail']]
+                    : query.includes('elm renewal')
+                      ? ['elm renewal', ['7 september 2030', '4444 eur']]
+                      : query.includes('birch access')
+                        ? ['birch access', ['sunrise']]
+                        : query.includes('beech-current')
+                          ? ['beech-current', ['every five months']]
+                          : query.includes('egret-ambiguous')
+                            ? ['egret-ambiguous', ['white access', 'black access']]
+                            : query.includes('plover-orphan')
+                              ? ['plover-orphan', ['06:30']]
+                              : null;
   if (!match) return false;
   const [identity, values] = match as [string, string[]];
   return excerpt.includes(identity) && values.some((value) => excerpt.includes(value));
@@ -219,49 +216,38 @@ function hostAnswer(
 ): { outcome: 'answered' | 'not_found'; answer: string | null } {
   if (!evidence) return { outcome: 'not_found', answer: null };
   const lower = question.toLowerCase();
-  if (lower.includes('silverpine-direct') && evidence.includes('five-year'))
+  if (lower.includes('cedar product terms') && evidence.includes('five years'))
     return answered('The warranty lasts five years.');
-  if (lower.includes('amberlark-service') && evidence.includes('every six months'))
-    return answered('Inspections recur every six months.');
-  if (
-    lower.includes('foxglove-compound') &&
-    evidence.includes('14 May 2027') &&
-    evidence.includes('1111 EUR')
-  )
-    return answered('The renewal date is 14 May 2027 and the fee is 1111 EUR.');
-  if (lower.includes('kestrel-partial') && evidence.includes('moonstone'))
-    return answered('The access phrase is moonstone; the service interval is not recorded.');
-  if (lower.includes('osprey-negative') && evidence.includes('does not include'))
-    return answered('Coverage does not include saltwater damage.');
-  if (lower.includes('willow-current') && evidence.includes('current inspection cadence is every six months'))
-    return answered('The current cadence is every six months.');
-  if (lower.includes('tern-instruction') && evidence.includes('seven-year'))
-    return answered('The warranty lasts seven years.');
-  if (lower.includes('heron-orphan') && evidence.includes('18:00'))
-    return answered('The archive closes at 18:00.');
-  if (lower.includes('juniper held-out') && evidence.includes('four years'))
-    return answered('The warranty lasts four years.');
-  if (lower.includes('seabright held-out') && evidence.includes('every nine months'))
-    return answered('The inspection interval is every nine months.');
-  if (
-    lower.includes('bramble held-out') &&
-    evidence.includes('22 June 2028') &&
-    evidence.includes('2222 EUR')
-  )
-    return answered('The next renewal is 22 June 2028 and the amount due is 2222 EUR.');
-  if (lower.includes('lantern held-out') && evidence.includes('starlight'))
-    return answered('The access phrase is starlight; the arrival window is not recorded.');
-  if (lower.includes('cormorant held-out') && evidence.includes('excludes volcanic-ash'))
-    return answered('Coverage excludes volcanic-ash damage.');
-  if (
-    lower.includes('rowan held-out') &&
-    evidence.includes('active inspection cadence is every three months')
-  )
-    return answered('The current cadence is every three months.');
-  if (lower.includes('petrel held-out') && evidence.includes('eight years'))
-    return answered('The warranty lasts eight years.');
-  if (lower.includes('kingfisher held-out') && evidence.includes('07:30'))
-    return answered('The archive opens at 07:30.');
+  if (lower.includes('larkspur') && evidence.includes('every eleven months'))
+    return answered('Reviews recur every eleven months.');
+  if (lower.includes('maple renewal') && evidence.includes('12 April 2029') && evidence.includes('3333 EUR'))
+    return answered('The renewal date is 12 April 2029 and the amount due is 3333 EUR.');
+  if (lower.includes('cedar-partial') && evidence.includes('comet'))
+    return answered('The access phrase is comet; the arrival window is not recorded.');
+  if (lower.includes('finch-negative') && evidence.includes('does not include'))
+    return answered('Coverage does not include frost damage.');
+  if (lower.includes('aspen-current') && evidence.includes('every four months'))
+    return answered('The current cadence is every four months.');
+  if (lower.includes('wren-instruction') && evidence.includes('six years'))
+    return answered('The warranty lasts six years.');
+  if (lower.includes('swift-orphan') && evidence.includes('17:00'))
+    return answered('The archive closes at 17:00.');
+  if (lower.includes('birch-direct') && evidence.includes('nine-year'))
+    return answered('The warranty lasts nine years.');
+  if (lower.includes('thistle') && evidence.toLowerCase().includes('every eight months'))
+    return answered('The audit cadence is every eight months.');
+  if (lower.includes('elm renewal') && evidence.includes('7 September 2030') && evidence.includes('4444 EUR'))
+    return answered('The renewal date is 7 September 2030 and the amount due is 4444 EUR.');
+  if (lower.includes('birch access') && evidence.includes('sunrise'))
+    return answered('The access phrase is sunrise; the arrival window is not recorded.');
+  if (lower.includes('gull-negative') && evidence.includes('excludes hail'))
+    return answered('Coverage excludes hail damage.');
+  if (lower.includes('beech-current') && evidence.includes('every five months'))
+    return answered('The current cadence is every five months.');
+  if (lower.includes('heron-instruction') && evidence.includes('ten-year'))
+    return answered('The warranty lasts ten years.');
+  if (lower.includes('plover-orphan') && evidence.includes('06:30'))
+    return answered('The archive opens at 06:30.');
   return { outcome: 'not_found', answer: null };
 }
 

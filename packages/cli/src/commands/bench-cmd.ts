@@ -1016,6 +1016,7 @@ function renderAutoRecallAnswerBench(report: AutoRecallAnswerBenchReport, artifa
   line(`  embedding                     ${report.embedding.provider}/${report.embedding.model}`);
   line(`  execution                     ${percent(report.metrics.executionRate)}`);
   line(`  context activation            ${percent(report.metrics.activationAccuracy)}`);
+  line(`  evidence fact coverage        ${percent(report.metrics.evidenceFactAccuracy)}`);
   line(`  answers with memory           ${percent(report.metrics.withMemoryAccuracy)}`);
   line(`  facts with memory             ${percent(report.metrics.withMemoryFactAccuracy)}`);
   line(`  abstention with memory        ${percent(report.metrics.withMemoryAbstentionAccuracy)}`);

@@ -221,6 +221,19 @@ async function autoRecallContext(
 
   const degraded = new Set(initial.degraded ?? []);
   const signals = initial.results.map((result) => activationSignal(result, input.query, resolutionContext));
+  const mechanicalCompoundConflict = hasMechanicalCompoundConflict(signals, input.query);
+  const complementary = complementaryCompoundSignals(signals, input.query);
+  if (complementary.length > 0) {
+    return assembledAutoRecall({
+      budget,
+      searched: [input.query],
+      selected: complementary.map((signal) => signal.result),
+      candidates: initial.results.length,
+      degraded,
+      activationBasis: 'exact',
+      qualificationRun: false,
+    });
+  }
   const strongSignals = signals
     .filter((signal) => signal.strong)
     .sort((left, right) => right.strength - left.strength);
@@ -233,7 +246,9 @@ async function autoRecallContext(
   ).slice(0, AUTO_RECALL_MAX_RESULTS);
   const ambiguousSingularFact = asksForSingularFact(input.query) && deterministic.length > 1;
 
-  if (deterministic.length > 0 && !ambiguousSingularFact) {
+  const unresolvedMechanicalCompound = requestedMechanicalValueKinds(input.query).length > 1;
+
+  if (deterministic.length > 0 && !ambiguousSingularFact && !unresolvedMechanicalCompound) {
     return assembledAutoRecall({
       budget,
       searched: [input.query],
@@ -275,11 +290,23 @@ async function autoRecallContext(
   const qualificationApplied = qualified.qualification?.applied === true;
   const minimumRelevance =
     qualified.qualification?.model === 'llm' ? 2 / 3 : AUTO_RECALL_NATIVE_QUALIFICATION_THRESHOLD;
-  const selected = qualificationApplied
+  const qualifiedSelection = qualificationApplied
     ? qualified.results
-        .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
+        .filter(
+          (result) =>
+            temporalEvidenceEligible(result, input.query) && (result.relevance ?? 0) >= minimumRelevance,
+        )
         .slice(0, AUTO_RECALL_MAX_RESULTS)
     : [];
+  const qualifiedComplementary = complementaryCompoundSignals(
+    qualifiedSelection.map((result) => activationSignal(result, input.query, resolutionContext)),
+    input.query,
+  );
+  const selected = unresolvedMechanicalCompound
+    ? mechanicalCompoundConflict
+      ? []
+      : qualifiedComplementary.map((signal) => signal.result)
+    : qualifiedSelection;
   const qualifiedReferenceAmbiguous = asksForSingularFact(input.query) && selected.length > 1;
 
   if (selected.length === 0 || qualifiedReferenceAmbiguous) {
@@ -398,6 +425,54 @@ interface ActivationSignal {
   plausible: boolean;
 }
 
+type MechanicalValueKind = 'money' | 'date' | 'duration';
+
+/**
+ * A compound answer may legitimately live on separate pages. Admit that set without lowering the global
+ * qualifier threshold only when the decision is mechanical: every requested value class has exactly one
+ * source, every source states an explicit value, and every source contains the same non-field subject tokens.
+ * Two candidates for one field are a conflict and therefore produce no deterministic set.
+ */
+function complementaryCompoundSignals(signals: ActivationSignal[], query: string): ActivationSignal[] {
+  const kinds = requestedMechanicalValueKinds(query);
+  if (kinds.length < 2) return [];
+  const eligible = mechanicalCompoundCandidates(signals, query);
+  const selected: ActivationSignal[] = [];
+  for (const kind of kinds) {
+    const matches = eligible.filter((signal) =>
+      evidenceSupportsMechanicalKind(evidenceText(signal.result), kind),
+    );
+    if (matches.length !== 1) return [];
+    selected.push(matches[0]!);
+  }
+  return [...new Map(selected.map((signal) => [resultIdentity(signal.result), signal])).values()].slice(
+    0,
+    AUTO_RECALL_MAX_RESULTS,
+  );
+}
+
+function hasMechanicalCompoundConflict(signals: ActivationSignal[], query: string): boolean {
+  const kinds = requestedMechanicalValueKinds(query);
+  if (kinds.length < 2) return false;
+  const eligible = mechanicalCompoundCandidates(signals, query);
+  return kinds.some(
+    (kind) =>
+      eligible.filter((signal) => evidenceSupportsMechanicalKind(evidenceText(signal.result), kind)).length >
+      1,
+  );
+}
+
+function mechanicalCompoundCandidates(signals: ActivationSignal[], query: string): ActivationSignal[] {
+  const subjectTokens = meaningfulTokens(query).filter((token) => !COMPOUND_FIELD_TOKENS.has(token));
+  if (subjectTokens.length === 0) return [];
+  return signals.filter(
+    (signal) =>
+      signal.plausible &&
+      temporalEvidenceEligible(signal.result, query) &&
+      overlapRatio(subjectTokens, evidenceText(signal.result)) === 1,
+  );
+}
+
 function activationSignal(
   result: RecallResult,
   query: string,
@@ -441,6 +516,7 @@ function activationSignal(
       );
     });
   const semantic = result.relevance ?? 0;
+  const temporallyEligible = temporalEvidenceEligible(result, query);
   // A topical page can repeat the requested field without containing its value: “the price record was
   // reviewed” is not the price. Mechanical numeric and duration questions therefore need an explicit value
   // before lexical overlap may bypass qualification. The qualifier handles less mechanical attribute/value
@@ -464,8 +540,8 @@ function activationSignal(
   const exact =
     !requestedValueMissing &&
     (identityRelationSupported || exactEvidence || (resolvedIdentity && overlap > 0));
-  const strong = exact || strongSemantic || dualArmSemantic;
-  const plausible = strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45;
+  const strong = temporallyEligible && (exact || strongSemantic || dualArmSemantic);
+  const plausible = temporallyEligible && (strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45);
   return {
     result,
     basis: exact ? 'exact' : 'semantic',
@@ -529,6 +605,57 @@ function containsExplicitDurationValue(evidence: string): boolean {
   return /\b(?:(?:\d+(?:[.,]\d+)?)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ -](?:minute|hour|day|week|month|year)s?\b|\b(?:hourly|daily|weekly|monthly|quarterly|annually|yearly|twice a year)\b/i.test(
     evidence,
   );
+}
+
+const COMPOUND_FIELD_TOKENS = new Set([
+  'amount',
+  'balance',
+  'cost',
+  'date',
+  'deadline',
+  'due',
+  'duration',
+  'fee',
+  'interval',
+  'next',
+  'price',
+  'rate',
+  'renewal',
+  'total',
+]);
+
+function requestedMechanicalValueKinds(query: string): MechanicalValueKind[] {
+  const kinds: MechanicalValueKind[] = [];
+  if (/\b(price|cost|fee|amount|total|balance)\b/i.test(query)) kinds.push('money');
+  if (/\b(date|deadline)\b/i.test(query)) kinds.push('date');
+  if (/\b(duration|interval|cadence)\b/i.test(query) || /\bhow (?:long|often)\b/i.test(query))
+    kinds.push('duration');
+  return kinds;
+}
+
+function evidenceSupportsMechanicalKind(evidence: string, kind: MechanicalValueKind): boolean {
+  if (kind === 'money') return containsExplicitNumericValue(evidence);
+  if (kind === 'duration') return containsExplicitDurationValue(evidence);
+  return containsExplicitDateValue(evidence);
+}
+
+function containsExplicitDateValue(evidence: string): boolean {
+  return /\b(?:\d{4}-\d{2}-\d{2}|\d{1,2}[/.]\d{1,2}[/.]\d{2,4}|\d{1,2}\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}|(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2},?\s+\d{4})\b/i.test(
+    evidence,
+  );
+}
+
+function resultIdentity(result: RecallResult): string {
+  return result.type === 'page' ? `page:${result.slug}` : `document:${result.id}`;
+}
+
+function temporalEvidenceEligible(result: RecallResult, query: string): boolean {
+  if (!/\b(current|active|latest)\b/i.test(query)) return true;
+  if (result.type === 'page' && result.superseded) return false;
+  const evidence = evidenceText(result);
+  const stale = /(?:^|\s)(?:the\s+)?(?:old|former|archived|superseded)\s+/im.test(evidence);
+  const fresh = /(?:^|\s)(?:the\s+)?(?:current|active|latest)\s+/im.test(evidence);
+  return !stale || fresh;
 }
 
 const AUTO_RECALL_STOPWORDS = new Set([

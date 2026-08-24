@@ -9,21 +9,18 @@ import { ModelClient, parseJsonLoose, type ModelOutcome } from '../models/client
 import { open, type Akno } from '../open.ts';
 import { sha256 } from '../store/ids.ts';
 import {
-  ANSWER_BENCH_CORPUS,
-  ANSWER_BENCH_HELD_OUT_CORPUS,
-  ANSWER_BENCH_ROOT,
-  answerBenchCorpus,
-  type AnswerBenchCase,
-  type AnswerBenchCategory,
-  type AnswerBenchCorpus,
-  type AnswerBenchSplit,
-} from './answer-corpus.ts';
+  AUTO_RECALL_ANSWER_BENCH_ROOT,
+  AUTO_RECALL_ANSWER_DEVELOPMENT_CORPUS,
+  AUTO_RECALL_ANSWER_HELD_OUT_CORPUS,
+  autoRecallAnswerCorpus,
+  type AutoRecallAnswerCorpus,
+} from './auto-recall-answer-corpus.ts';
+import { type AnswerBenchCase, type AnswerBenchCategory } from './answer-corpus.ts';
 
-export const AUTO_RECALL_ANSWER_BENCH_SCHEMA_VERSION = 'auto-recall-answer-benchmark-v1';
+export const AUTO_RECALL_ANSWER_BENCH_SCHEMA_VERSION = 'auto-recall-answer-benchmark-v2';
 export const AUTO_RECALL_HOST_PROMPT_VERSION = 'auto-recall-host-answer-v1';
-const AUTO_RECALL_ANSWER_HELD_OUT_VERSION = 'auto-recall-answer-held-out-v1';
 export const AUTO_RECALL_ANSWER_HELD_OUT_FINGERPRINT =
-  'e49bc86f685a927117acd2831944808f03d512520a553b24ffb9972b71befcd0';
+  'e05a6ded7dc24885223f8902b6fd261ff3a506a34125b1bd3ccf2fea90f9db55';
 const REQUIRED_STABILITY_RUNS = 5;
 const MAX_CONTEXT_P95_MS = 10_000;
 const MAX_ON_TOTAL_P95_MS = 20_000;
@@ -47,7 +44,7 @@ Rules:
 - Return only the requested JSON object.`;
 
 export interface AutoRecallAnswerBenchOptions {
-  split?: AnswerBenchSplit;
+  split?: 'development' | 'test';
   runs?: number;
   concurrency?: number;
   embeddingProvider?: string;
@@ -83,6 +80,8 @@ export interface AutoRecallAnswerCaseReport {
   contextActivated: boolean;
   activationCorrect: boolean;
   evidenceCount: number;
+  evidenceSupportedFacts: number;
+  evidenceFactComplete: boolean;
   contextLatencyMs: number;
   contextBudgetUsed: number;
   qualificationRun: boolean;
@@ -125,7 +124,7 @@ export interface AutoRecallAnswerBenchReport {
   artifactPersisted: boolean;
   releaseEligible: boolean;
   passed: boolean;
-  split: AnswerBenchSplit;
+  split: 'development' | 'test';
   corpus: {
     version: string;
     fingerprint: string;
@@ -139,6 +138,7 @@ export interface AutoRecallAnswerBenchReport {
   thresholds: {
     executionRate: number;
     activationAccuracy: number;
+    evidenceFactAccuracy: number;
     withMemoryAccuracy: number;
     withMemoryFactAccuracy: number;
     withMemoryAbstentionAccuracy: number;
@@ -192,6 +192,7 @@ export interface AutoRecallAnswerBenchReport {
   metrics: {
     executionRate: number;
     activationAccuracy: number;
+    evidenceFactAccuracy: number;
     withMemoryAccuracy: number;
     withMemoryFactAccuracy: number;
     withMemoryAbstentionAccuracy: number;
@@ -225,7 +226,7 @@ export async function runAutoRecallAnswerBench(
 ): Promise<AutoRecallAnswerBenchReport> {
   validateAutoRecallAnswerCorpora();
   const split = options.split ?? 'development';
-  const sourceCorpus = answerBenchCorpus(split);
+  const sourceCorpus = autoRecallAnswerCorpus(split);
   const cases = hostCases(sourceCorpus);
   const runs = normalizeRuns(options.runs ?? (split === 'test' ? REQUIRED_STABILITY_RUNS : 1));
   const concurrency = normalizeConcurrency(options.concurrency ?? 2);
@@ -332,7 +333,7 @@ export function markAutoRecallAnswerBenchPersisted(
 }
 
 function buildReport(options: {
-  sourceCorpus: AnswerBenchCorpus;
+  sourceCorpus: AutoRecallAnswerCorpus;
   cases: AnswerBenchCase[];
   runs: number;
   concurrency: number;
@@ -357,6 +358,10 @@ function buildReport(options: {
   const metrics = {
     executionRate: ratio(executed.length, all.length),
     activationAccuracy: ratio(all.filter((benchCase) => benchCase.activationCorrect).length, all.length),
+    evidenceFactAccuracy: ratio(
+      sum(positive.map((benchCase) => benchCase.evidenceSupportedFacts)),
+      requiredFacts,
+    ),
     withMemoryAccuracy: ratio(all.filter((benchCase) => benchCase.withMemoryCorrect).length, all.length),
     withMemoryFactAccuracy: ratio(
       sum(positive.map((benchCase) => benchCase.withMemory.supportedFacts)),
@@ -392,6 +397,7 @@ function buildReport(options: {
   if (!options.hostModel.available || !options.hostModel.warmupOk) blockers.push('host_model_available');
   if (metrics.executionRate < thresholds.executionRate) blockers.push('execution_rate');
   if (metrics.activationAccuracy < thresholds.activationAccuracy) blockers.push('activation_accuracy');
+  if (metrics.evidenceFactAccuracy < thresholds.evidenceFactAccuracy) blockers.push('evidence_fact_accuracy');
   if (metrics.withMemoryAccuracy < thresholds.withMemoryAccuracy) blockers.push('with_memory_accuracy');
   if (metrics.withMemoryFactAccuracy < thresholds.withMemoryFactAccuracy)
     blockers.push('with_memory_fact_accuracy');
@@ -423,10 +429,7 @@ function buildReport(options: {
     passed: blockers.length === 0,
     split: options.sourceCorpus.split,
     corpus: {
-      version:
-        options.sourceCorpus.split === 'test'
-          ? AUTO_RECALL_ANSWER_HELD_OUT_VERSION
-          : 'auto-recall-answer-development-v1',
+      version: options.sourceCorpus.version,
       fingerprint: autoRecallAnswerCorpusFingerprint(options.sourceCorpus),
       cases: options.cases.length,
       sources: options.sourceCorpus.sources.length,
@@ -501,6 +504,7 @@ function thresholdReport(): AutoRecallAnswerBenchReport['thresholds'] {
   return {
     executionRate: 1,
     activationAccuracy: 1,
+    evidenceFactAccuracy: 1,
     withMemoryAccuracy: 1,
     withMemoryFactAccuracy: 1,
     withMemoryAbstentionAccuracy: 1,
@@ -564,9 +568,14 @@ async function runCase(
   }
   const expectedAnswer = benchCase.expectation.answer === 'required';
   const requiredFacts = benchCase.expectation.requiredFacts.length;
+  const normalizedEvidence = normalizeFact(evidence ?? '');
+  const evidenceSupportedFacts = benchCase.expectation.requiredFacts.filter((alternatives) =>
+    alternatives.some((alternative) => normalizedEvidence.includes(normalizeFact(alternative))),
+  ).length;
+  const evidenceFactComplete = !expectedAnswer || evidenceSupportedFacts === requiredFacts;
   const contextUsable = context.status !== 'degraded' && context.status !== 'unavailable';
   const contextActivated = context.activation?.activated === true;
-  const activationCorrect = contextUsable && contextActivated === expectedAnswer;
+  const activationCorrect = contextUsable && contextActivated === expectedAnswer && evidenceFactComplete;
   const withMemoryCorrect = expectedAnswer
     ? withMemory.answered && withMemory.supportedFacts === requiredFacts && !withMemory.forbiddenTextDetected
     : !withMemory.answered && !withMemory.forbiddenTextDetected;
@@ -586,6 +595,8 @@ async function runCase(
     contextActivated,
     activationCorrect,
     evidenceCount: context.results.length,
+    evidenceSupportedFacts,
+    evidenceFactComplete,
     contextLatencyMs,
     contextBudgetUsed: context.budget_used,
     qualificationRun: context.activation?.qualification_run === true,
@@ -621,12 +632,12 @@ async function runHostArm(
   if (!outcome.ok || outcome.value === null) return failedArm(outcome, 'model_failed');
   const parsed = HOST_ANSWER_SCHEMA.safeParse(parseJsonLoose<unknown>(outcome.value));
   if (!parsed.success) return failedArm(outcome, 'invalid_response');
-  const answer = normalize(parsed.data.answer ?? '');
+  const answer = normalizeFact(parsed.data.answer ?? '');
   const supportedFacts = benchCase.expectation.requiredFacts.filter((alternatives) =>
-    alternatives.some((alternative) => answer.includes(normalize(alternative))),
+    alternatives.some((alternative) => answer.includes(normalizeFact(alternative))),
   ).length;
   const forbiddenTextDetected = benchCase.expectation.forbiddenText.some((value) =>
-    answer.includes(normalize(value)),
+    answer.includes(normalizeFact(value)),
   );
   const answered = parsed.data.outcome === 'answered' && parsed.data.answer !== null;
   return {
@@ -678,6 +689,8 @@ function skippedCase(
     contextActivated: false,
     activationCorrect: false,
     evidenceCount: 0,
+    evidenceSupportedFacts: 0,
+    evidenceFactComplete: false,
     contextLatencyMs: 0,
     contextBudgetUsed: 0,
     qualificationRun: false,
@@ -787,6 +800,7 @@ function decisionFingerprint(report: AutoRecallAnswerCaseReport): string {
     contextStatus: report.contextStatus,
     activated: report.contextActivated,
     evidenceCount: report.evidenceCount,
+    evidenceSupportedFacts: report.evidenceSupportedFacts,
     withMemoryOutcome: report.withMemory.outcome,
     withMemoryFacts: report.withMemory.supportedFacts,
     withMemoryForbidden: report.withMemory.forbiddenTextDetected,
@@ -798,16 +812,39 @@ function decisionFingerprint(report: AutoRecallAnswerCaseReport): string {
 }
 
 export function validateAutoRecallAnswerCorpora(): void {
-  const development = hostCases(ANSWER_BENCH_CORPUS);
-  const heldOut = hostCases(ANSWER_BENCH_HELD_OUT_CORPUS);
+  const development = hostCases(AUTO_RECALL_ANSWER_DEVELOPMENT_CORPUS);
+  const heldOut = hostCases(AUTO_RECALL_ANSWER_HELD_OUT_CORPUS);
   if (development.length === 0 || heldOut.length === 0) throw new Error('auto-recall answer corpus is empty');
   if (development.some((benchCase) => benchCase.category === 'graph'))
     throw new Error('auto-recall answer development corpus contains graph cases');
   if (heldOut.some((benchCase) => benchCase.category === 'graph'))
     throw new Error('auto-recall answer held-out corpus contains graph cases');
-  const overlap = heldOut.find((benchCase) => development.some((candidate) => candidate.id === benchCase.id));
-  if (overlap) throw new Error(`auto-recall answer splits share case id: ${overlap.id}`);
-  const fingerprint = autoRecallAnswerCorpusFingerprint(ANSWER_BENCH_HELD_OUT_CORPUS);
+  assertDisjoint(
+    development.map((benchCase) => benchCase.id),
+    heldOut.map((benchCase) => benchCase.id),
+    'case id',
+  );
+  assertDisjoint(
+    AUTO_RECALL_ANSWER_DEVELOPMENT_CORPUS.sources.map((source) => source.id),
+    AUTO_RECALL_ANSWER_HELD_OUT_CORPUS.sources.map((source) => source.id),
+    'source id',
+  );
+  assertDisjoint(
+    AUTO_RECALL_ANSWER_DEVELOPMENT_CORPUS.sources.map((source) => source.path),
+    AUTO_RECALL_ANSWER_HELD_OUT_CORPUS.sources.map((source) => source.path),
+    'source path',
+  );
+  assertDisjoint(
+    AUTO_RECALL_ANSWER_DEVELOPMENT_CORPUS.sources.map((source) => sha256(source.content)),
+    AUTO_RECALL_ANSWER_HELD_OUT_CORPUS.sources.map((source) => sha256(source.content)),
+    'source content',
+  );
+  assertDisjoint(
+    development.map((benchCase) => normalize(benchCase.question)),
+    heldOut.map((benchCase) => normalize(benchCase.question)),
+    'question',
+  );
+  const fingerprint = autoRecallAnswerCorpusFingerprint(AUTO_RECALL_ANSWER_HELD_OUT_CORPUS);
   if (fingerprint !== AUTO_RECALL_ANSWER_HELD_OUT_FINGERPRINT) {
     throw new Error(
       `frozen auto-recall answer corpus changed without a versioned fingerprint: ${fingerprint}`,
@@ -815,12 +852,10 @@ export function validateAutoRecallAnswerCorpora(): void {
   }
 }
 
-function autoRecallAnswerCorpusFingerprint(corpus: AnswerBenchCorpus): string {
+function autoRecallAnswerCorpusFingerprint(corpus: AutoRecallAnswerCorpus): string {
   return sha256(
     JSON.stringify({
-      version:
-        corpus.split === 'test' ? AUTO_RECALL_ANSWER_HELD_OUT_VERSION : 'auto-recall-answer-development-v1',
-      sourceVersion: corpus.version,
+      version: corpus.version,
       sources: corpus.sources,
       cases: hostCases(corpus),
       hostPromptVersion: AUTO_RECALL_HOST_PROMPT_VERSION,
@@ -828,7 +863,7 @@ function autoRecallAnswerCorpusFingerprint(corpus: AnswerBenchCorpus): string {
   );
 }
 
-function hostCases(corpus: AnswerBenchCorpus): AnswerBenchCase[] {
+function hostCases(corpus: AutoRecallAnswerCorpus): AnswerBenchCase[] {
   return corpus.cases.filter((benchCase) => benchCase.category !== 'graph');
 }
 
@@ -849,7 +884,9 @@ function benchmarkOverrides(
     write_ids: false,
     ignore: ['.git', '.obsidian', '.akno', 'node_modules'],
     page_extensions: ['.md', '.markdown'],
-    folders: { [`${ANSWER_BENCH_ROOT}/**`]: { role: 'knowledge', remember: 'deny', rank: 1 } },
+    folders: {
+      [`${AUTO_RECALL_ANSWER_BENCH_ROOT}/**`]: { role: 'knowledge', remember: 'deny', rank: 1 },
+    },
     index: { summaries: false, facts: false, ann_threshold_chunks: 20_000 },
     recall: {
       expansion: false,
@@ -896,9 +933,9 @@ function configRole(role: AknoConfig['models']['reranker']): NonNullable<ConfigD
   };
 }
 
-function writeCorpus(root: string, corpus: AnswerBenchCorpus): void {
+function writeCorpus(root: string, corpus: AutoRecallAnswerCorpus): void {
   for (const source of corpus.sources) {
-    const target = path.join(root, ANSWER_BENCH_ROOT, source.path);
+    const target = path.join(root, AUTO_RECALL_ANSWER_BENCH_ROOT, source.path);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, source.content, 'utf8');
   }
@@ -994,6 +1031,17 @@ function normalize(value: string): string {
     .trim();
 }
 
+function normalizeFact(value: string): string {
+  return normalize(value)
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((token) =>
+      token.length > 3 && token.endsWith('s') && !token.endsWith('ss') ? token.slice(0, -1) : token,
+    )
+    .join(' ');
+}
+
 function ratio(numerator: number, denominator: number): number {
   return denominator === 0 ? 1 : numerator / denominator;
 }
@@ -1004,4 +1052,10 @@ function sum(values: number[]): number {
 
 function dedupe(values: string[]): string[] {
   return [...new Set(values)];
+}
+
+function assertDisjoint(left: string[], right: string[], label: string): void {
+  const leftSet = new Set(left);
+  const overlap = right.find((value) => leftSet.has(value));
+  if (overlap) throw new Error(`auto-recall answer splits share ${label}: ${overlap}`);
 }
