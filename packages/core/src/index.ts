@@ -29,6 +29,14 @@ export {
   type MaintenanceAuthority,
   type MaintenancePhaseAuthority,
 } from './maintenance/profile.ts';
+export {
+  type MaintenancePathOutcome,
+  type MaintenancePathPolicy,
+  type MaintenancePathReason,
+  type MaintenancePathState,
+  type MaintenancePathTransformPolicy,
+  type PageMaintenanceTransform,
+} from './maintenance/path-policy.ts';
 export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
 export {
   OPENAI_LUNA_EMBEDDING_DIMENSIONS,

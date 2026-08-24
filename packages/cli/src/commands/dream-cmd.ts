@@ -3,6 +3,7 @@ import {
   parsePhase,
   type DreamReport,
   type DreamRunReceipt,
+  type MaintenancePathPolicy,
   type MaintenanceMode,
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
@@ -17,9 +18,10 @@ import {
   type DreamScheduleStatus,
 } from './dream-schedule.ts';
 import { dreamModelDegradationSummary, dreamModelUsageSummary } from './dream-model-status.ts';
+import { printMaintenancePathPolicy } from './maintenance-policy-output.ts';
 
 const DREAM_HELP = `akno dream [options]
-akno dream status [--run <run_id> | --last <n> | --pending]
+akno dream status [--run <run_id> | --last <n> | --pending | --explain-policy <path>]
 
   The maintenance cycle. Phases are selectable and safe to re-run.
 
@@ -56,6 +58,9 @@ akno dream status [--run <run_id> | --last <n> | --pending]
   --last <n>       Show the newest 1–100 run receipts.
   --pending        List every nonterminal plan that can still be decided, retried, applied,
                    or verified.
+  --explain-policy <path>
+                   Explain the resolved profile, page opt-in, structural eligibility,
+                   budgets, decision path, and remaining guards for one page.
   --json`;
 
 export async function dreamCommand(argv: string[]): Promise<number> {
@@ -65,6 +70,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     run?: string;
     last?: string;
     pending: boolean;
+    'explain-policy'?: string;
     'dry-run': boolean;
     'private-details': boolean;
   }>(argv, {
@@ -73,6 +79,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     run: { type: 'string' },
     last: { type: 'string' },
     pending: { type: 'boolean', default: false },
+    'explain-policy': { type: 'string' },
     'dry-run': { type: 'boolean', default: false },
     'private-details': { type: 'boolean', default: false },
   });
@@ -83,6 +90,19 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   }
 
   if (positionals[0] === 'status' && positionals.length === 1) {
+    if (values['explain-policy'] !== undefined) {
+      if (values.run !== undefined || values.last !== undefined || values.pending) {
+        throw new AknoError('invalid', 'choose only one of --run, --last, --pending, or --explain-policy');
+      }
+      const mode = values.mode ? parseMode(values.mode) : undefined;
+      const policy = await loadMaintenancePathPolicy(values, values['explain-policy'], mode);
+      if (values.json) json({ policy });
+      else printMaintenancePathPolicy(policy);
+      return 0;
+    }
+    if (values.mode !== undefined) {
+      throw new AknoError('invalid', '--mode is only meaningful with --explain-policy in status');
+    }
     const query = dreamStatusQuery(values);
     const status = await loadMaintenanceStatus(values, query);
     const schedule = Object.keys(query).length === 0 ? inspectDreamSchedule(status.latestFullRun) : null;
@@ -134,6 +154,22 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     return 0;
   }
   return printDream(report, values['private-details']);
+}
+
+async function loadMaintenancePathPolicy(
+  values: Parameters<typeof openOptionsFrom>[0],
+  policyPath: string,
+  mode?: MaintenanceMode,
+): Promise<MaintenancePathPolicy> {
+  if (!policyPath.trim()) throw new AknoError('invalid', '--explain-policy requires a path');
+  return runMaintenance(
+    'plan',
+    { action: 'policy', path: policyPath, ...(mode ? { mode } : {}) },
+    values,
+    openOptionsFrom(values),
+    async (mem) => mem.maintenancePolicy(policyPath, mode),
+    { writable: false },
+  );
 }
 
 export function dreamStatusQuery(values: {

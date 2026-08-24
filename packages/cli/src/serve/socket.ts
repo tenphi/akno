@@ -14,7 +14,7 @@ import {
   PROTOCOL_VERSION,
   type Hello,
 } from '@tenphi/akno-protocol';
-import type { Akno, MaintenanceStatusQuery } from '@tenphi/akno-core';
+import type { Akno, MaintenanceMode, MaintenanceStatusQuery } from '@tenphi/akno-core';
 
 export interface SocketServer {
   readonly path: string;
@@ -166,11 +166,22 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
           return akno.applyPlan(idFrom(input, 'plan_id'));
         case 'status':
           return akno.maintenanceStatus(statusQueryFrom(input));
+        case 'policy': {
+          const mode = optionalMaintenanceMode(input);
+          return akno.maintenancePolicy(stringFrom(input, 'path'), mode);
+        }
         default:
           throw new AknoError('invalid', `unknown plan action: ${action}`);
       }
     }
   }
+}
+
+function optionalMaintenanceMode(input: unknown): MaintenanceMode | undefined {
+  const value = (input as Record<string, unknown> | null)?.mode;
+  if (value === undefined) return undefined;
+  if (value === 'audit' || value === 'review' || value === 'auto') return value;
+  throw new AknoError('invalid', 'mode must be audit, review, or auto');
 }
 
 function idFrom(input: unknown, key: string): string {

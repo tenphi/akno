@@ -4,6 +4,7 @@ import type { AknoContext } from '../context.ts';
 import { normalizeLinkTarget } from '../kb/page.ts';
 import { sha256 } from '../store/ids.ts';
 import { candidatesFor } from './repair.ts';
+import { pageAllowsMaintenanceTransform } from './path-policy.ts';
 
 export type LinkIdentitySignal = 'canonical' | 'alias' | 'move_history';
 
@@ -99,8 +100,11 @@ export async function planBrokenLinks(ctx: AknoContext, maxChanges: number): Pro
     if (planned >= maxChanges) break;
     const first = links[0]!;
     if (
-      first.role !== 'knowledge' ||
-      (first.dream_management !== 'hygiene' && first.dream_management !== 'synthesize')
+      !pageAllowsMaintenanceTransform(
+        ctx.config,
+        { slug, role: first.role, dreamManagement: first.dream_management },
+        'broken_link',
+      )
     ) {
       for (const link of links) {
         report.declined.push({

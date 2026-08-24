@@ -1,12 +1,14 @@
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style } from '../output.ts';
 import { open } from '@tenphi/akno-core';
+import { printMaintenancePathPolicy } from './maintenance-policy-output.ts';
 
 const RULES_HELP = `akno rules [path]
 
-  With a path: which rule governs it, and why. Without: every rule, most
-  specific first. Specificity comes from the shape of the glob, not from
-  declaration order, so reordering the config cannot change what applies.`;
+  With a path: which rule governs it, why, and the resulting page-specific
+  maintenance authority. Without: every rule, most specific first. Specificity
+  comes from the shape of the glob, not from declaration order, so reordering
+  the config cannot change what applies.`;
 
 export async function rulesCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse(argv);
@@ -47,8 +49,9 @@ export async function rulesCommand(argv: string[]): Promise<number> {
 
     const slug = positionals[0]!.replace(/\.(md|markdown)$/i, '');
     const result = mem.rules(slug);
+    const maintenance = mem.maintenancePolicy(positionals[0]!);
     if (values.json) {
-      json({ slug, ...result });
+      json({ slug, ...result, maintenance });
       return 0;
     }
 
@@ -65,6 +68,7 @@ export async function rulesCommand(argv: string[]): Promise<number> {
         line(`    ${candidate.glob}  ${style.grey(candidate.source)}`);
       }
     }
+    printMaintenancePathPolicy(maintenance);
     return 0;
   } finally {
     await mem.close();

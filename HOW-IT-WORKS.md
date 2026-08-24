@@ -653,8 +653,9 @@ taxonomy can travel with the knowledge base. They are glob-scoped and the most s
 }
 ```
 
-Use `akno rules <path>` to see the resolved policy and which file supplied it. Changing rules causes
-affected pages to be reconsidered on the next index pass even when their content has not changed.
+Use `akno rules <path>` to see the resolved folder rule, its source, and the complete page-specific
+maintenance authority. Changing rules causes affected pages to be reconsidered on the next index pass even
+when their content has not changed.
 
 Automatic write policy has two independent dimensions:
 
@@ -783,6 +784,7 @@ akno dream status
 akno dream status --last 10
 akno dream status --run <run-id>
 akno dream status --pending
+akno dream status --explain-policy people/ada-marlow.md
 ```
 
 `--dry-run` executes the selected checks and model decisions but does not change knowledge-base files.
@@ -832,6 +834,16 @@ the latest full-cycle receipt, so a later phase-specific diagnostic does not con
 A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
 `--mode auto` cannot promote a configured review profile.
+
+For one relative page path, `akno dream status --explain-policy <path>` answers the narrower question: “what
+may Akno do to this page on the next ordinary cycle, and why?” It intersects the profile and optional lower
+run mode with the transformation policy, indexed role, page-owned `dream` opt-in, reserved-path boundary,
+planner limits, thresholds, merge allowlist, feature switches, model configuration, and whole-run write limits.
+Each transformation reports one outcome—off, ineligible, audit-only, awaiting a human, curator-then-apply, or
+apply-blocked—plus typed reasons. `akno rules <path>` includes the same explanation after its folder-rule
+resolution. Neither command reads or emits page content. It deliberately does not promise that a proposal will
+exist: candidate discovery, content-specific deterministic guards, remaining budget, curator decisions,
+sealed-input freshness, and post-write verification still happen during the run.
 
 Profiles are defaults, not an all-or-nothing choice. `maintenance.policies` can lower individual transformation
 classes without giving up the coherent scheduled profile:
@@ -1704,7 +1716,11 @@ akno rules
 akno rules household/boiler.md
 ```
 
-The result lists matching rules from most to least specific and names the config file that supplied each one.
+Without a path, the result lists configured rules. With a path, it lists matching rules from most to least
+specific, names the configuration source as before, and then explains each page-maintenance transformation.
+The maintenance explanation itself uses content-safe source classes and includes page opt-in, protected-path
+checks, planner configuration, model configuration, apply budgets, decision owner, and the checks that remain
+run-dependent; it never includes the page body.
 
 ### `config`: what settings won
 
@@ -1938,7 +1954,7 @@ curation replacements without changing any drafted bytes. Cross-phase compositio
 document-attachment dependencies, and pinning planner reads to one database revision against concurrent external
 file changes remain future work.
 
-### Maintenance profiles still need a complete failure policy and path explanation
+### Maintenance profiles still need a configurable failure policy
 
 `audit`, `review`, and `autonomous` resolve one authority ceiling for the complete cycle, and
 per-transformation policies can independently select `off`, `audit`, `review`, or `auto`. Each sealed item
@@ -1949,11 +1965,15 @@ Whole-run scope is now bounded by configurable item, distinct changed-file, writ
 ceilings. Observe, reflect, curate, and adopt share the same budget in a full run; an indivisible item that would cross a
 ceiling stays proposed with `budget_exhausted`, and the durable receipt and status view expose usage and backlog.
 
-The remaining significant boundary is explaining authority and failure behavior for each proposed path. Page
-and folder restrictions, transformation-specific deterministic guards, run budgets, phase caps, and the
-cross-phase access graph all apply, but they are not yet summarized as one path-specific policy explanation.
-There is also no configurable fail-fast alternative to the autonomous default of independent progress plus one
-bounded dependency retry.
+Path-specific authority is now inspectable through `akno dream status --explain-policy <path>` and
+`akno rules <path>`. The explanation intersects resolved page and folder ownership, protected paths,
+transformation policy, planner caps, model configuration, and apply budgets, while clearly separating those
+known boundaries from content-dependent candidate guards and fresh run budget. It remains content-safe and
+does not turn an explanation endpoint into a self-approval surface for an agent.
+
+The remaining significant boundary is configurable failure semantics. Autonomous runs currently favor
+independent progress plus one bounded dependency retry; there is no fail-fast alternative for an installation
+that wants the first degraded or blocked writable phase to stop the rest of the cycle.
 
 ### The scheduled cycle needs deeper model-operability diagnostics
 

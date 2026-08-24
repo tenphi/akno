@@ -141,6 +141,18 @@ describe('the socket door', () => {
       expect(plans).toEqual([]);
       const status = (await client.command('plan', { action: 'status' })) as { active: number };
       expect(status.active).toBe(0);
+      const policy = (await client.command('plan', {
+        action: 'policy',
+        path: 'home/lease.md',
+      })) as {
+        slug: string;
+        page: { dream: string };
+        transformations: { kind: string; outcome: string }[];
+      };
+      expect(policy).toMatchObject({ slug: 'home/lease', page: { dream: 'none' } });
+      expect(policy.transformations).toContainEqual(
+        expect.objectContaining({ kind: 'hygiene', outcome: 'ineligible' }),
+      );
       const history = (await client.command('plan', { action: 'status', last: 1 })) as {
         runs: { id: string }[];
       };

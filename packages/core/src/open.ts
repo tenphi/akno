@@ -49,10 +49,12 @@ import {
   type ApplyMaintenanceResult,
   type MaintenancePlan,
   type MaintenancePlanSummary,
+  type MaintenanceMode,
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
 } from './maintenance/plans.ts';
 import { recoverInterruptedDreamRuns } from './maintenance/runs.ts';
+import { explainMaintenancePath, type MaintenancePathPolicy } from './maintenance/path-policy.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -92,6 +94,8 @@ export interface Akno extends AknoOps {
   doctor(options?: { probeModels?: boolean }): Promise<DoctorReport>;
   /** Explain which rule governs a path, and why. */
   rules(slug: string): { effective: Record<string, unknown>; candidates: { glob: string; source: string }[] };
+  /** Explain the layered scheduled-maintenance authority for one page path. */
+  maintenancePolicy(slug: string, mode?: MaintenanceMode): MaintenancePathPolicy;
   /** Recent changes, newest first. What `undo` takes an id from. */
   changes(limit?: number): ChangeSummary[];
   /** Gated proposals waiting on the user. */
@@ -371,6 +375,8 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
         candidates: match.candidates.map((rule) => ({ glob: rule.glob, source: rule.source })),
       };
     },
+
+    maintenancePolicy: (slug, mode) => explainMaintenancePath(ctx, slug, mode),
 
     changes: (limit) => ctx.journal.list(limit),
 

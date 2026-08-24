@@ -8,6 +8,7 @@ import {
   rewriteAsHistoryForTesting as rewriteAsHistory,
 } from './repair.ts';
 import { explicitCurrentBoundary, type CrossPageConflict } from './conflicts.ts';
+import { pageAllowsMaintenanceTransform } from './path-policy.ts';
 
 interface ContradictionOperationDraft {
   slug: string;
@@ -155,7 +156,16 @@ async function eligiblePages(
     const row = ctx.store.db
       .prepare(`SELECT slug, rel_path, role, dream_management FROM pages WHERE slug = ?`)
       .get(slug) as { slug: string; rel_path: string; role: string; dream_management: string } | undefined;
-    if (!row || row.role !== 'knowledge' || row.dream_management !== 'synthesize') return null;
+    if (
+      !row ||
+      !pageAllowsMaintenanceTransform(
+        ctx.config,
+        { slug: row.slug, role: row.role, dreamManagement: row.dream_management },
+        'contradiction',
+      )
+    ) {
+      return null;
+    }
     const before = await fsp
       .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
       .catch(() => null);

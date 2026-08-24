@@ -8,6 +8,7 @@ import { AKNO_ITEM, normalizeLinkTarget, parsePage } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
 import { missingNumericValues } from './repair.ts';
+import { mergePathAllowed, pageAllowsMaintenanceTransform } from './path-policy.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { sha256 } from '../store/ids.ts';
@@ -369,7 +370,7 @@ export async function curatePages(
   // Merge is available only through durable plans. The legacy `write` switch cannot represent
   // a separately decided deletion, while audit/review/auto all seal the exact multi-file item.
   if (options.includePreviewed && allowedKinds.has('merge') && settings.maxMerges > 0) {
-    const candidates = discoverMergeCandidates(rows, settings.mergeFolders);
+    const candidates = discoverMergeCandidates(ctx, rows, settings.mergeFolders);
     for (const candidate of candidates) {
       mergeReserved.add(candidate.canonical.id);
       mergeReserved.add(candidate.duplicate.id);
@@ -437,6 +438,16 @@ export async function curatePages(
 
   for (const row of rows) {
     if (mergeReserved.has(row.id)) continue;
+    const pathKind = row.dream_management === 'hygiene' ? 'hygiene' : 'synthesis';
+    if (
+      !pageAllowsMaintenanceTransform(
+        ctx.config,
+        { slug: row.slug, role: row.role, dreamManagement: row.dream_management },
+        pathKind,
+      )
+    ) {
+      continue;
+    }
     if (row.dream_management === 'hygiene' && !allowedKinds.has('hygiene')) continue;
     if (
       row.dream_management === 'synthesize' &&
@@ -882,9 +893,14 @@ export async function curatePages(
   return result;
 }
 
-function discoverMergeCandidates(rows: PageRow[], folders: string[]): MergeCandidate[] {
+function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: string[]): MergeCandidate[] {
   const eligible = rows.filter(
-    (row) => row.dream_management === 'synthesize' && mergeFolderAllowed(row.slug, folders),
+    (row) =>
+      pageAllowsMaintenanceTransform(
+        ctx.config,
+        { slug: row.slug, role: row.role, dreamManagement: row.dream_management },
+        'merge',
+      ) && mergePathAllowed(row.slug, folders),
   );
   if (eligible.length < 2 || folders.length === 0) return [];
   const identities = new Map<string, PageRow[]>();
@@ -944,17 +960,6 @@ function discoverMergeCandidates(rows: PageRow[], folders: string[]): MergeCandi
     selected.push(candidate);
   }
   return selected;
-}
-
-function mergeFolderAllowed(slug: string, folders: string[]): boolean {
-  const value = slug.toLowerCase();
-  return folders.some((raw) => {
-    const folder = raw
-      .trim()
-      .replace(/^\/+|\/+$/g, '')
-      .toLowerCase();
-    return folder === '*' || (folder.length > 0 && value.startsWith(`${folder}/`));
-  });
 }
 
 function exactIdentityKey(value: string): string {

@@ -738,11 +738,14 @@ akno dream status
 akno dream status --last 10          # content-safe run history, newest first
 akno dream status --run <run-id>     # one durable receipt with counts, phases, and ids
 akno dream status --pending          # every nonterminal plan still needing work
+akno dream status --explain-policy people/ada-marlow.md
+akno rules people/ada-marlow.md       # folder rule plus page-specific maintenance authority
 ```
 
-The status views never include page bodies, prompts, paths, source excerpts, or provider responses. `--run`
-shows the receipt tied to one invocation; `--last` is bounded to 100 receipts; and `--pending` separates plans
-that can still be decided, retried, applied, or verified from completed history. All three support `--json`.
+The general status and history views never include page bodies, prompts, paths, source excerpts, or provider
+responses. The explicit policy explanation echoes only the relative path the operator supplied. `--run` shows
+the receipt tied to one invocation; `--last` is bounded to 100 receipts; and `--pending` separates plans that
+can still be decided, retried, applied, or verified from completed history. All support `--json`.
 Each new run receipt also records the maintenance model id, logical call counts, succeeded/failed calls, summed
 provider-reported input/output/total tokens, usage-report coverage, model latency, and a planner/curator stage
 breakdown. If an endpoint omits usage, status says so instead of treating the call as zero tokens. Needed but
@@ -752,6 +755,14 @@ responses, and provider errors are excluded. A response that reaches Akno but fa
 conflict-classifier, or curator output contract is reclassified as `derive_failed/bad_response` without
 inventing a second call or losing its provider token receipt. A valid rejection or deterministic guardrail
 abstention remains a normal outcome.
+
+The path explanation is an authority check, not a preview of private proposals. It reports whether the path is
+indexed, which page-owned `dream` opt-in and content-safe folder rule apply, whether each transformation may be
+inspected, who would decide it, whether automatic apply is currently possible, and every typed blocker from
+protected paths, thresholds, allowlists, disabled planners, missing model configuration, or zero budgets. Pass
+`--mode audit` or `--mode review` to see the effect of lowering one run without changing configuration. Actual
+candidates still depend on current content, evidence, deterministic guards, remaining run budget, and
+sealed-input checks.
 
 All three modes seal the same exact operations and each item retains its effective transformation policy.
 Apply refuses changed inputs, journals each item separately,
