@@ -5,6 +5,7 @@ import { looksLikeLedger } from './reserved.ts';
 import { extractionCapabilities } from './ingest/extract.ts';
 import { readOnlyExplanation } from './open.ts';
 import { ModelClient } from './models/client.ts';
+import { probeAnswerModel, type AnswerCapabilityCheck, type AnswerCapabilityProbe } from './ops/answer.ts';
 
 /**
  * What's present, what's degraded, and **what that costs.** The last
@@ -26,6 +27,8 @@ export interface RoleReport {
   error: string | null;
   /** Plain-language consequence of this role being unavailable. */
   withoutIt: string;
+  /** Production-shaped probes are reported separately from a generic transport ping. */
+  checks?: AnswerCapabilityProbe;
 }
 
 export interface DoctorReport {
@@ -166,11 +169,22 @@ export async function doctor(
       withoutIt: consequences[role] ?? '',
     };
     if (options.probeModels !== false && client.available) {
-      const ping = await client.ping();
-      report.latencyMs = Math.round(ping.latencyMs);
-      if (!ping.ok) {
-        report.available = false;
-        report.error = ping.error ?? 'ping failed';
+      if (role === 'answer') {
+        const checks = await probeAnswerModel(client);
+        report.checks = checks;
+        report.latencyMs = capabilityLatency(checks);
+        const failed = Object.entries(checks).find(([, check]) => check.status !== 'ok');
+        if (failed) {
+          report.available = false;
+          report.error = `${failed[0]} check ${failed[1].status}: ${failed[1].error ?? 'unknown failure'}`;
+        }
+      } else {
+        const ping = await client.ping();
+        report.latencyMs = Math.round(ping.latencyMs);
+        if (!ping.ok) {
+          report.available = false;
+          report.error = ping.error ?? 'ping failed';
+        }
       }
     }
     models.push(report);
@@ -310,6 +324,13 @@ export async function doctor(
     reserved,
     warnings,
   };
+}
+
+function capabilityLatency(checks: AnswerCapabilityProbe): number {
+  return (Object.values(checks) as AnswerCapabilityCheck[]).reduce(
+    (total, check) => total + (check.latencyMs ?? 0),
+    0,
+  );
 }
 
 function round(value: number): number {

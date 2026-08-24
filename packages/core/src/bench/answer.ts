@@ -16,7 +16,7 @@ import {
   type AnswerBenchCategory,
 } from './answer-corpus.ts';
 
-export const ANSWER_BENCH_SCHEMA_VERSION = 'answer-benchmark-v1';
+export const ANSWER_BENCH_SCHEMA_VERSION = 'answer-benchmark-v2';
 
 export interface AnswerBenchOptions {
   concurrency?: number;
@@ -51,6 +51,11 @@ export interface AnswerBenchCaseReport {
   latencyMs: number;
   evidenceTokens: number;
   answerTokens: number;
+  modelCalls: number;
+  usageReportedCalls: number;
+  providerInputTokens: number;
+  providerOutputTokens: number;
+  providerTotalTokens: number;
   passed: boolean;
   error: string | null;
 }
@@ -93,6 +98,11 @@ export interface AnswerBenchReport {
     maxLatencyMs: number;
     evidenceTokens: number;
     answerTokens: number;
+    modelCalls: number;
+    usageReportedCalls: number;
+    providerInputTokens: number;
+    providerOutputTokens: number;
+    providerTotalTokens: number;
   };
   metrics: {
     executionRate: number;
@@ -304,6 +314,11 @@ function buildReport(options: {
       maxLatencyMs: latencies.length === 0 ? 0 : Math.max(...latencies),
       evidenceTokens: sum(cases.map((benchCase) => benchCase.evidenceTokens)),
       answerTokens: sum(cases.map((benchCase) => benchCase.answerTokens)),
+      modelCalls: sum(cases.map((benchCase) => benchCase.modelCalls)),
+      usageReportedCalls: sum(cases.map((benchCase) => benchCase.usageReportedCalls)),
+      providerInputTokens: sum(cases.map((benchCase) => benchCase.providerInputTokens)),
+      providerOutputTokens: sum(cases.map((benchCase) => benchCase.providerOutputTokens)),
+      providerTotalTokens: sum(cases.map((benchCase) => benchCase.providerTotalTokens)),
     },
     metrics,
     cases,
@@ -404,6 +419,9 @@ function gradeCase(
     citationPrecisionCorrect &&
     citationRecallCorrect &&
     retrievalRecallCorrect;
+  const receipts = [output.model_usage.generation, output.model_usage.verification].filter(
+    (receipt) => receipt !== null,
+  );
   return {
     id: benchCase.id,
     category: benchCase.category,
@@ -426,6 +444,14 @@ function gradeCase(
     latencyMs,
     evidenceTokens: output.budget_used.evidence_tokens,
     answerTokens: output.budget_used.answer_tokens,
+    modelCalls: receipts.length,
+    usageReportedCalls: receipts.filter(
+      (receipt) =>
+        receipt.input_tokens !== null || receipt.output_tokens !== null || receipt.total_tokens !== null,
+    ).length,
+    providerInputTokens: sum(receipts.map((receipt) => receipt.input_tokens ?? 0)),
+    providerOutputTokens: sum(receipts.map((receipt) => receipt.output_tokens ?? 0)),
+    providerTotalTokens: sum(receipts.map((receipt) => receipt.total_tokens ?? 0)),
     passed,
     error: null,
   };
@@ -454,6 +480,11 @@ function skippedCase(benchCase: AnswerBenchCase, error: string, latencyMs = 0): 
     latencyMs,
     evidenceTokens: 0,
     answerTokens: 0,
+    modelCalls: 0,
+    usageReportedCalls: 0,
+    providerInputTokens: 0,
+    providerOutputTokens: 0,
+    providerTotalTokens: 0,
     passed: false,
     error,
   };

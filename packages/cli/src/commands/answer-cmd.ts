@@ -152,6 +152,21 @@ function printAnswer(result: AnswerOutput): void {
   if (result.searched.length > 1 || result.outcome === 'not_found') {
     line(`\n${style.grey(`searched: ${result.searched.map((query) => `"${query}"`).join(', ')}`)}`);
   }
+  const calls = Object.entries(result.model_usage).filter((entry) => entry[1] !== null);
+  if (calls.length > 0) {
+    line(
+      style.grey(
+        `model usage: ${calls
+          .map(
+            ([name, receipt]) =>
+              `${name} ${
+                receipt!.total_tokens === null ? 'tokens unreported' : `${receipt!.total_tokens} tokens`
+              }/${receipt!.latency_ms}ms`,
+          )
+          .join(', ')}`,
+      ),
+    );
+  }
 }
 
 function splitList(value: string): string[] {

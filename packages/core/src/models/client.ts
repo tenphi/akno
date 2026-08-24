@@ -28,6 +28,14 @@ export interface ModelOutcome<T> {
   /** Human-readable detail. For `doctor` and logs, never for control flow. */
   error?: string;
   latencyMs: number;
+  /** Present only when a chat-compatible endpoint reports real token usage. */
+  usage?: ModelUsage;
+}
+
+export interface ModelUsage {
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
 }
 
 export interface ChatMessage {
@@ -353,6 +361,7 @@ export class ModelClient {
       images?: ImagePart[];
     } = {},
   ): Promise<ModelOutcome<string>> {
+    const chatStarted = performance.now();
     const wantsJson = options.json || options.schema !== undefined;
     // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
     // retry must send the identical schema rather than a second conversion of it.
@@ -374,7 +383,7 @@ export class ModelClient {
       return body;
     };
 
-    let result: ModelOutcome<{ choices: { message?: { content?: string } }[] }>;
+    let result: ModelOutcome<ChatCompletionResponse>;
     // Three fixable mistakes at most — the token parameter, and two rungs down the schema
     // ladder — so four passes is the ceiling, not a budget anything grows into.
     for (let pass = 0; ; pass++) {
@@ -393,7 +402,7 @@ export class ModelClient {
       const sentTokenParam = this.#tokenParam;
       const sentSchemaMode = this.#schemaMode;
 
-      result = await this.post<{ choices: { message?: { content?: string } }[] }>(
+      result = await this.post<ChatCompletionResponse>(
         '/chat/completions',
         build(sentTokenParam, sentSchemaMode),
         options.timeoutMs,
@@ -420,7 +429,10 @@ export class ModelClient {
       break;
     }
 
-    if (!result.ok || !result.value) return { ...result, value: null };
+    if (!result.ok || !result.value) {
+      return { ...result, value: null, latencyMs: performance.now() - chatStarted };
+    }
+    const usage = reportedModelUsage(result.value.usage);
     const content = result.value.choices?.[0]?.message?.content;
     if (typeof content !== 'string') {
       return {
@@ -428,10 +440,16 @@ export class ModelClient {
         value: null,
         reason: 'bad_response',
         error: 'chat response had no content',
-        latencyMs: result.latencyMs,
+        latencyMs: performance.now() - chatStarted,
+        ...(usage ? { usage } : {}),
       };
     }
-    return { ok: true, value: content, latencyMs: result.latencyMs };
+    return {
+      ok: true,
+      value: content,
+      latencyMs: performance.now() - chatStarted,
+      ...(usage ? { usage } : {}),
+    };
   }
 
   /**
@@ -496,6 +514,31 @@ export class ModelClient {
       latencyMs: result.latencyMs,
     };
   }
+}
+
+interface ChatCompletionResponse {
+  choices: { message?: { content?: string } }[];
+  usage?: {
+    prompt_tokens?: unknown;
+    completion_tokens?: unknown;
+    total_tokens?: unknown;
+    input_tokens?: unknown;
+    output_tokens?: unknown;
+  };
+}
+
+/** OpenAI-compatible servers use either the Chat Completions or Responses token names. */
+function reportedModelUsage(usage: ChatCompletionResponse['usage']): ModelUsage | null {
+  if (!usage) return null;
+  const inputTokens = tokenCount(usage.prompt_tokens ?? usage.input_tokens);
+  const outputTokens = tokenCount(usage.completion_tokens ?? usage.output_tokens);
+  const totalTokens = tokenCount(usage.total_tokens);
+  if (inputTokens === null && outputTokens === null && totalTokens === null) return null;
+  return { inputTokens, outputTokens, totalTokens };
+}
+
+function tokenCount(value: unknown): number | null {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : null;
 }
 
 /**

@@ -362,6 +362,11 @@ model returns `degraded/not_answered` with `no_answer_model`; complete empty rec
 A deterministic or semantic guard that successfully withholds an unsupported draft is an `ok` abstention, not
 a degraded capability—the guard completed its job.
 
+The response keeps two kinds of accounting deliberately separate. `budget_used` contains Akno's local token
+estimates for fitting evidence and rendered output into request budgets. `model_usage` contains one receipt per
+actual generation or verification request: the model id, measured latency, and provider-reported input, output,
+and total tokens. Missing provider counts stay null; estimates are never relabeled as measured usage.
+
 ### `read`: open one exact page or document
 
 ```bash
@@ -1544,6 +1549,9 @@ Read-only operations such as `read`, `list`, and `timeline` require no model. `w
 
 With no models at all, Akno remains a line-citing lexical search and exact read/write layer over Markdown.
 `akno doctor` reports which roles resolved and describes the specific capability lost for each missing one.
+For the answer role it sends one tiny invented warranty fact through the same structured generation and
+independent-verification contracts used in production, reports the two checks separately, and never reads or
+sends content from the configured knowledge base.
 
 ---
 
@@ -1614,7 +1622,8 @@ const result = await memory.call('recall', { query: 'car insurance renewal' });
 
 Run `akno doctor` after the first index and whenever behavior changes unexpectedly. It reports the
 knowledge-base path and writability, index counts, broken links, document ownership, model availability and
-latency, and degraded capabilities in plain language.
+latency, and degraded capabilities in plain language. The answer model is not marked healthy from a generic
+"ok" ping: both its grounded-generation schema and support-verifier schema must succeed on invented evidence.
 
 ### `rules`: why a page is treated this way
 
@@ -1677,8 +1686,9 @@ evidence to the configured answer model for generation and separate support veri
 direct, paraphrased, compound, partial, negated, current/superseded, instruction-bearing, unsupported,
 cited-ambiguity, orphan-document, graph, and empty-recall behavior. The report contains stable invented ids and
 aggregate judgments but no question, evidence, generated answer, path, slug, endpoint, provider response, or
-credential. A passing development result still records `independent_review` and `held_out_run` as release
-blockers.
+credential. Its report separates bounded evidence/output estimates from real provider-reported model-call token
+totals and records how many endpoints omitted usage. A passing development result still records
+`independent_review` and `held_out_run` as release blockers.
 
 ### Recovery guarantees
 

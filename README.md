@@ -226,9 +226,11 @@ answering_, and nothing waits on a background derivation, so it applies per atte
 long generation must not leave the retry a fraction of the budget that number was tuned for. Only refusals
 returned without doing work are retried, which keeps a real sequence backoff-dominated and measured in seconds.
 
-`akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Model latency
-and index latency are reported separately, because a memory system that feels slow after idling is almost never
-suffering from its storage engine.
+`akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Its answer-role
+check runs both production structured contracts—generation and independent verification—against one tiny,
+invented fact and reports them separately with provider token usage when available. It never samples the
+configured knowledge base. Model latency and index latency are reported separately, because a memory system
+that feels slow after idling is almost never suffering from its storage engine.
 
 The maintenance cycle can point at a different model than indexing uses — see
 [The maintenance cycle](#the-maintenance-cycle) for why that turned out to matter more than any other setting.
@@ -886,7 +888,8 @@ akno bench answer --concurrency 2 \
 
 The development gate requires every expected outcome and fact, perfect citation precision/recall and retrieval
 recall, perfect abstention, zero forbidden-text leakage, zero degraded or verifier-failed cases, and a green
-mixed-retrieval regression check. Latency and bounded evidence/answer token estimates are reported. The
+mixed-retrieval regression check. Latency, bounded evidence/answer token estimates, and actual provider token
+receipts are reported separately. The
 content-safe artifact retains only invented case/source ids, booleans, typed statuses, metrics, model/prompt
 receipts, and timings—not questions, evidence, generated answers, paths, slugs, endpoints, credentials, or
 provider errors. This development corpus is tuning evidence; independent review and a frozen held-out run are

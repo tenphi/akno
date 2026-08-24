@@ -25,7 +25,7 @@ describe('grounded-answer benchmark', () => {
 
     expect(report).toMatchObject({
       kind: 'invented_answer_benchmark',
-      schemaVersion: 'answer-benchmark-v1',
+      schemaVersion: 'answer-benchmark-v2',
       development: true,
       releaseEligible: false,
       passed: true,
@@ -49,8 +49,20 @@ describe('grounded-answer benchmark', () => {
         verificationFailureRate: 0,
         mixedRetrievalPassed: true,
       },
+      execution: {
+        modelCalls: expect.any(Number),
+        usageReportedCalls: expect.any(Number),
+        providerInputTokens: expect.any(Number),
+        providerOutputTokens: expect.any(Number),
+        providerTotalTokens: expect.any(Number),
+      },
       blockers: [],
     });
+    expect(report.execution.modelCalls).toBeGreaterThan(0);
+    expect(report.execution.usageReportedCalls).toBe(report.execution.modelCalls);
+    expect(report.execution.providerTotalTokens).toBe(
+      report.execution.providerInputTokens + report.execution.providerOutputTokens,
+    );
     expect(report.cases.every((benchCase) => benchCase.passed)).toBe(true);
     expect(report.releaseBlockers).toEqual(['independent_review', 'held_out_run']);
     const serialized = JSON.stringify(report);
@@ -117,10 +129,16 @@ function inventedProvider(): typeof fetch {
           })),
         }
       : generation(user.question ?? '', user.evidence ?? []);
-    return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(content) } }] }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        choices: [{ message: { content: JSON.stringify(content) } }],
+        usage: { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
+      }),
+      {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      },
+    );
   }) as typeof fetch;
 }
 

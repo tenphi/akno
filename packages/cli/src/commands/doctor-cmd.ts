@@ -77,6 +77,21 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       const latency = role.latencyMs !== null ? style.grey(` ${ms(role.latencyMs)}`) : '';
       line(`  ${style.bold(role.role.padEnd(10))} ${state}${latency}`);
       if (role.model) line(`    ${style.grey(`${role.model} @ ${role.endpoint ?? '?'}`)}`);
+      if (role.checks) {
+        for (const [name, check] of Object.entries(role.checks)) {
+          const checkState =
+            check.status === 'ok'
+              ? style.green('ok')
+              : check.status === 'failed'
+                ? style.red('failed')
+                : style.grey('skipped');
+          const checkLatency = check.latencyMs === null ? '' : style.grey(` ${ms(check.latencyMs)}`);
+          const tokens = check.usage?.totalTokens;
+          const tokenReceipt =
+            tokens === null || tokens === undefined ? '' : style.grey(`, ${tokens} tokens`);
+          line(`    ${name.padEnd(12)} ${checkState}${checkLatency}${tokenReceipt}`);
+        }
+      }
       if (!role.available) {
         if (role.error) line(`    ${style.grey(role.error)}`);
         // The consequence is the part that is actually useful to a reader.

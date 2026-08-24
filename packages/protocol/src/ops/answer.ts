@@ -59,6 +59,17 @@ export const AnswerCitation = z.discriminatedUnion('type', [
 ]);
 export type AnswerCitation = z.infer<typeof AnswerCitation>;
 
+/** A content-free receipt for one request to the configured answer model. */
+export const AnswerModelCallReceipt = z.object({
+  model: z.string(),
+  latency_ms: z.number().nonnegative(),
+  /** Null means the compatible endpoint did not report this value; it is never estimated here. */
+  input_tokens: z.number().int().nonnegative().nullable(),
+  output_tokens: z.number().int().nonnegative().nullable(),
+  total_tokens: z.number().int().nonnegative().nullable(),
+});
+export type AnswerModelCallReceipt = z.infer<typeof AnswerModelCallReceipt>;
+
 export const AnswerOutput = ResultEnvelope.extend({
   outcome: z.enum(['complete', 'partial', 'not_found', 'not_answered']),
   answer: z.string().nullable(),
@@ -80,6 +91,11 @@ export const AnswerOutput = ResultEnvelope.extend({
     retrieval_tokens: z.number().int().nonnegative(),
     evidence_tokens: z.number().int().nonnegative(),
     answer_tokens: z.number().int().nonnegative(),
+  }),
+  /** Actual provider receipts. These are separate from the bounded token estimates above. */
+  model_usage: z.object({
+    generation: AnswerModelCallReceipt.nullable(),
+    verification: AnswerModelCallReceipt.nullable(),
   }),
 });
 export type AnswerOutput = z.infer<typeof AnswerOutput>;

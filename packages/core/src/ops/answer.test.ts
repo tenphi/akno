@@ -74,6 +74,7 @@ describe('grounded answer discovery surface', () => {
       related_page_slugs: ['products/zephyr-qx-100'],
       related_documents: [],
       budget_used: { evidence_tokens: 0, answer_tokens: 0 },
+      model_usage: { generation: null, verification: null },
     });
     expect(result.degraded).toContain('no_answer_model');
     expect(result.degraded).not.toContain('no_reranker');
@@ -161,6 +162,22 @@ describe('grounded answer discovery surface', () => {
       },
     ]);
     expect(modelRequests).toHaveLength(2);
+    expect(result.model_usage).toEqual({
+      generation: {
+        model: 'invented-answer-model',
+        latency_ms: expect.any(Number),
+        input_tokens: 111,
+        output_tokens: 22,
+        total_tokens: 133,
+      },
+      verification: {
+        model: 'invented-answer-model',
+        latency_ms: expect.any(Number),
+        input_tokens: 222,
+        output_tokens: 33,
+        total_tokens: 255,
+      },
+    });
     expect(JSON.stringify(modelRequests)).not.toContain('products/zephyr-qx-100');
     expect(treeFingerprint()).toBe(before);
     expect(memory.changes()).toEqual([]);
@@ -186,6 +203,8 @@ describe('grounded answer discovery surface', () => {
     expect(result.citations).toEqual([]);
     expect(result.context).toBeUndefined();
     expect(modelRequests).toHaveLength(1);
+    expect(result.model_usage.generation?.total_tokens).toBe(133);
+    expect(result.model_usage.verification).toBeNull();
   });
 
   it('withholds semantically unsupported prose without reporting verification failure', async () => {
@@ -242,10 +261,73 @@ describe('grounded answer discovery surface', () => {
     expect(result).toMatchObject({ status: 'degraded', outcome: 'not_answered', answer: null });
     expect(result.degraded).toContain('answer_verification_failed');
     expect(result.citations).toEqual([]);
+    expect(result.model_usage.verification?.total_tokens).toBe(255);
+  });
+
+  it('doctor exercises the production generation and verification contracts on invented evidence', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The warranty lasts five years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+
+    const report = await memory.doctor();
+    const answerRole = report.models.find((role) => role.role === 'answer');
+    expect(answerRole).toMatchObject({
+      available: true,
+      latencyMs: expect.any(Number),
+      checks: {
+        generation: {
+          status: 'ok',
+          usage: { inputTokens: 111, outputTokens: 22, totalTokens: 133 },
+          error: null,
+        },
+        verification: {
+          status: 'ok',
+          usage: { inputTokens: 222, outputTokens: 33, totalTokens: 255 },
+          error: null,
+        },
+      },
+    });
+    expect(modelRequests).toHaveLength(2);
+  });
+
+  it('leaves provider token counts null when a compatible endpoint omits usage', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The warranty lasts five years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      reportUsage: false,
+    });
+
+    const result = await memory.answer({
+      question: 'What does the silverpine warranty marker say?',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.model_usage.generation).toMatchObject({
+      input_tokens: null,
+      output_tokens: null,
+      total_tokens: null,
+    });
+    expect(result.model_usage.verification).toMatchObject({
+      input_tokens: null,
+      output_tokens: null,
+      total_tokens: null,
+    });
   });
 });
 
-async function useAnswerModel(script: { generation: unknown; verification: unknown }): Promise<void> {
+async function useAnswerModel(script: {
+  generation: unknown;
+  verification: unknown;
+  reportUsage?: boolean;
+}): Promise<void> {
   await memory.close();
   modelServer = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -254,9 +336,21 @@ async function useAnswerModel(script: { generation: unknown; verification: unkno
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
       modelRequests.push(body);
       const system = String((body.messages as Array<{ content?: unknown }> | undefined)?.[0]?.content ?? '');
-      const content = system.includes('independently verify') ? script.verification : script.generation;
+      const verifying = system.includes('independently verify');
+      const content = verifying ? script.verification : script.generation;
       response.writeHead(200, { 'content-type': 'application/json' });
-      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(content) } }] }));
+      response.end(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify(content) } }],
+          ...(script.reportUsage === false
+            ? {}
+            : {
+                usage: verifying
+                  ? { prompt_tokens: 222, completion_tokens: 33, total_tokens: 255 }
+                  : { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
+              }),
+        }),
+      );
     });
   });
   await new Promise<void>((resolve) => modelServer!.listen(0, '127.0.0.1', resolve));

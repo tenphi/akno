@@ -3,12 +3,13 @@ import {
   AnswerInput,
   type AnswerCitation,
   type AnswerContextItem,
+  type AnswerModelCallReceipt,
   type AnswerOutput,
   type DegradedReason,
   type RecallResult,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
-import { parseJsonLoose } from '../models/client.ts';
+import { type ModelClient, type ModelOutcome, type ModelUsage, parseJsonLoose } from '../models/client.ts';
 import { recall } from './recall.ts';
 
 export const ANSWER_PROMPT_VERSION = 'answer-generation-v1';
@@ -45,6 +46,18 @@ const ANSWER_DRAFT_SCHEMA = answerDraftSchema(z.string());
 type AnswerDraft = z.infer<typeof ANSWER_DRAFT_SCHEMA>;
 type WithoutEvidenceId<T> = T extends unknown ? Omit<T, 'evidence_id'> : never;
 type UnlabeledEvidence = WithoutEvidenceId<AnswerContextItem>;
+
+export interface AnswerCapabilityCheck {
+  status: 'ok' | 'failed' | 'skipped';
+  latencyMs: number | null;
+  usage: ModelUsage | null;
+  error: string | null;
+}
+
+export interface AnswerCapabilityProbe {
+  generation: AnswerCapabilityCheck;
+  verification: AnswerCapabilityCheck;
+}
 
 const ANSWER_SYSTEM_PROMPT = `You answer a factual question using only supplied memory evidence.
 
@@ -116,6 +129,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       evidence_tokens: 0,
       answer_tokens: 0,
     },
+    model_usage: { generation: null, verification: null },
   };
 
   if (recalled.status === 'empty') {
@@ -171,6 +185,10 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   });
   const attemptedBase = {
     ...base,
+    model_usage: {
+      generation: modelCallReceipt(ctx.models.answer, generated),
+      verification: null,
+    },
     budget_used: {
       ...base.budget_used,
       evidence_tokens: estimateTokens(evidence.map(evidenceText).join('\n')),
@@ -197,13 +215,23 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   }
 
   const checked = validateDraft(parsed.data, evidence);
-  const verified = checked.blocks.length > 0 ? await verifyDraftSupport(ctx, checked.blocks, evidence) : null;
+  const verified =
+    checked.blocks.length > 0 ? await verifyDraftSupport(ctx.models.answer, checked.blocks, evidence) : null;
+  const verifiedBase = verified
+    ? {
+        ...attemptedBase,
+        model_usage: {
+          ...attemptedBase.model_usage,
+          verification: modelCallReceipt(ctx.models.answer, verified.outcome),
+        },
+      }
+    : attemptedBase;
   if (verified && !verified.ok) {
     return {
       status: 'degraded',
       degraded: dedupeReasons([...(recalled.degraded ?? []), 'answer_verification_failed']),
       outcome: 'not_answered',
-      ...attemptedBase,
+      ...verifiedBase,
       note: verified.note,
     };
   }
@@ -219,7 +247,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   const guardFailed = checked.rejected > 0;
   const reasons = dedupeReasons(recalled.degraded ?? []);
   const generatedBase = {
-    ...attemptedBase,
+    ...verifiedBase,
     answer: rendered || null,
     citations,
     budget_used: {
@@ -272,14 +300,17 @@ function answerMessages(question: string, evidence: AnswerContextItem[]) {
 }
 
 async function verifyDraftSupport(
-  ctx: AknoContext,
+  model: ModelClient,
   blocks: AnswerDraft['blocks'],
   evidence: AnswerContextItem[],
-): Promise<{ ok: true; blocks: AnswerDraft['blocks'] } | { ok: false; note: string }> {
+): Promise<
+  | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
+  | { ok: false; note: string; outcome: ModelOutcome<string> }
+> {
   const blockIds = blocks.map((_, index) => `B${index + 1}`);
   const byEvidenceId = new Map(evidence.map((item) => [item.evidence_id, item]));
   const liveSchema = answerVerificationSchema(z.enum(blockIds as [string, ...string[]]), blocks.length);
-  const result = await ctx.models.answer.chat(
+  const result = await model.chat(
     [
       { role: 'system', content: ANSWER_VERIFIER_SYSTEM_PROMPT },
       {
@@ -302,6 +333,7 @@ async function verifyDraftSupport(
     return {
       ok: false,
       note: 'the independent support verifier could not establish a trustworthy answer',
+      outcome: result,
     };
   }
   const parsed = liveSchema.safeParse(parseJsonLoose<unknown>(result.value));
@@ -312,6 +344,7 @@ async function verifyDraftSupport(
     return {
       ok: false,
       note: 'the independent support verifier returned an invalid structured verdict',
+      outcome: result,
     };
   }
 
@@ -321,6 +354,92 @@ async function verifyDraftSupport(
   return {
     ok: true,
     blocks: blocks.filter((_, index) => supported.has(blockIds[index]!)),
+    outcome: result,
+  };
+}
+
+/**
+ * Exercises both production answer contracts without reading the configured knowledge base.
+ * The prompt and evidence are intentionally tiny, wholly invented, and stable across runs.
+ */
+export async function probeAnswerModel(model: ModelClient): Promise<AnswerCapabilityProbe> {
+  const evidence: AnswerContextItem[] = [
+    {
+      evidence_id: 'E1',
+      type: 'page',
+      slug: 'products/zephyr-qx-100',
+      title: 'Zephyr QX-100',
+      lines: [{ n: 3, text: 'The Zephyr QX-100 warranty lasts five years.' }],
+    },
+  ];
+  const schema = answerDraftSchema(z.enum(['E1']));
+  const generated = await model.chat(answerMessages('How long is the Zephyr QX-100 warranty?', evidence), {
+    schema,
+    maxTokens: 512,
+  });
+  const generationBase = capabilityCheck(generated);
+  if (!generated.ok || generated.value === null) {
+    return {
+      generation: { ...generationBase, status: 'failed', error: 'generation request failed' },
+      verification: skippedCapability('generation did not complete'),
+    };
+  }
+  const parsed = schema.safeParse(parseJsonLoose<unknown>(generated.value));
+  if (!parsed.success) {
+    return {
+      generation: { ...generationBase, status: 'failed', error: 'generation schema was not satisfied' },
+      verification: skippedCapability('generation did not produce a valid draft'),
+    };
+  }
+  const checked = validateDraft(parsed.data, evidence);
+  if (checked.blocks.length === 0) {
+    return {
+      generation: { ...generationBase, status: 'failed', error: 'generation produced no grounded block' },
+      verification: skippedCapability('generation produced no grounded block'),
+    };
+  }
+
+  const verified = await verifyDraftSupport(model, checked.blocks, evidence);
+  const verificationBase = capabilityCheck(verified.outcome);
+  if (!verified.ok) {
+    return {
+      generation: generationBase,
+      verification: { ...verificationBase, status: 'failed', error: verified.note },
+    };
+  }
+  if (verified.blocks.length !== checked.blocks.length) {
+    return {
+      generation: generationBase,
+      verification: {
+        ...verificationBase,
+        status: 'failed',
+        error: 'verification rejected the invented supported fact',
+      },
+    };
+  }
+  return { generation: generationBase, verification: verificationBase };
+}
+
+function capabilityCheck(outcome: ModelOutcome<unknown>): AnswerCapabilityCheck {
+  return {
+    status: outcome.ok ? 'ok' : 'failed',
+    latencyMs: Math.round(outcome.latencyMs),
+    usage: outcome.usage ?? null,
+    error: outcome.ok ? null : (outcome.error ?? 'model request failed'),
+  };
+}
+
+function skippedCapability(error: string): AnswerCapabilityCheck {
+  return { status: 'skipped', latencyMs: null, usage: null, error };
+}
+
+function modelCallReceipt(model: ModelClient, outcome: ModelOutcome<unknown>): AnswerModelCallReceipt {
+  return {
+    model: model.modelId ?? 'unknown',
+    latency_ms: Math.round(outcome.latencyMs),
+    input_tokens: outcome.usage?.inputTokens ?? null,
+    output_tokens: outcome.usage?.outputTokens ?? null,
+    total_tokens: outcome.usage?.totalTokens ?? null,
   };
 }
 
