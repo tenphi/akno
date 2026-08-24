@@ -46,9 +46,10 @@ It turns common requests into grounded workflows:
 - **“Is the knowledge base still coherent?”** Find cross-page conflicts, broken links,
   unowned documents, and pages that have drifted from their folder rules.
 
-The useful distinction is that Akno does not answer on the agent's behalf. It supplies
-**evidence with addresses** and an explicit account of missing coverage. The agent still
-reasons and writes the final response.
+The primary retrieval path supplies **evidence with addresses** and an explicit account of missing coverage.
+`recall` leaves reasoning to the caller. A separate `answer` surface now composes over that same retrieval path
+for direct grounded responses; its first implemented slice returns compact related identities and an honest
+`no_answer_model` result while structured generation and verification are still being added.
 
 Akno is a good fit when:
 
@@ -118,7 +119,8 @@ much you already know about the answer or change.
 
 | Your intent                                 | Method                   | Why this one                                                    | Writes files?    |
 | ------------------------------------------- | ------------------------ | --------------------------------------------------------------- | ---------------- |
-| Ask a fuzzy or natural-language question    | `recall`                 | Finds relevant pages and reports coverage                       | no               |
+| Find evidence for a fuzzy question          | `recall`                 | Returns relevant cited sections for inspection                  | no               |
+| Ask for a direct memory-grounded answer     | `answer`                 | Composes over recall; compact answer/related-source contract    | no               |
 | Open a page or document you already know    | `read`                   | No ranking or truncation policy                                 | no               |
 | Browse the shape of the knowledge base      | `list`                   | Shows folders, pages, or a tree                                 | no               |
 | Inspect how exact records are connected     | `graph`                  | Returns bounded evidence paths and locators, without bodies     | no               |
@@ -136,8 +138,9 @@ Two rules of thumb prevent most misuse:
 
 - If you know the destination and wording, use `write`; if you are handing over raw material,
   use `remember`.
-- If you know the slug, use `read`; if you only know the subject, use `recall`. Use `graph` when the
-  relationship between exact records is itself what you need to inspect.
+- If you know the slug, use `read`; if you need evidence, use `recall`; if you need the direct grounded
+  response, use `answer`. Use `graph` when the relationship between exact records is itself what you need to
+  inspect. Do not call `answer` and `recall` by default for the same question: `answer` already retrieves.
 
 The CLI exposes these methods to a person. The in-process, socket, HTTP, and MCP interfaces expose
 the same operations to an agent from one registry, with the same schemas and errors.
@@ -327,6 +330,24 @@ akno recall "policy wording" --include source --depth full
 akno recall "rent" --tag legal,household --budget 2000
 akno recall "warranty" --source document --ownership orphan
 ```
+
+### `answer`: ask for synthesis, not evidence cards
+
+```bash
+akno answer "How long is the Zephyr QX-100 warranty?"
+```
+
+`answer` is a separate read operation over the same question-oriented recall pipeline. It never turns `recall`
+itself into a slower generative call, and callers should not invoke both for the same question unless they also
+need to inspect the evidence. Its compact response separates exact citations from ranked related identities:
+page results become ordered slugs, while an ownerless document remains an opaque document id. No summaries,
+quotes, paths, or scores are repeated in those related lists.
+
+The first implemented slice deliberately has generation disabled. When related evidence exists it returns
+`degraded`, `outcome=not_answered`, and `no_answer_model`, while still returning the compact related identities.
+A complete empty recall returns `empty/not_found` without blaming the absent answer model; degraded or
+unavailable retrieval never becomes “not recorded.” Structured answer blocks, deterministic citation mapping,
+value guards, and independent support verification are the next slice.
 
 ### `read`: open one exact page or document
 
@@ -1707,7 +1728,8 @@ gate requires perfect selection precision and abstention on indistinguishable an
 This does not perform open-ended entity discovery or duplicate merging. Housekeeping now reports identity
 collisions, unresolved authored subjects, and traversal hubs as read-only graph review candidates, but those
 findings contain no operation and cannot authorize maintenance. Deliberate one-to-three-hop inspection remains
-the job of `graph`, and grounded answer synthesis remains a separate proposed operation.
+the job of `graph`. The separate `answer` surface now composes over recall and exposes compact related
+identities with typed absence; grounded generation and verification are the next implementation slice.
 
 ### The durable review queue does not cover every phase yet
 
@@ -1807,6 +1829,7 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 | `init`                | Preview/check an experimental guided setup                | no                               | embedding, reranker with `--check`       |
 | `index`               | Reconcile the index with files                            | no by default                    | embedding, derive                        |
 | `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker           |
+| `answer <question>`   | Direct grounded-answer envelope over qualified recall     | no                               | recall roles; answer model not yet wired |
 | `read <slug>`         | Read one page or document directly                        | no                               | none                                     |
 | `list`                | Browse folders, pages, or a tree                          | no                               | none                                     |
 | `graph`               | Inspect bounded exact evidence paths and locators         | no                               | none                                     |

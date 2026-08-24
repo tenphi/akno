@@ -67,6 +67,7 @@ describe('the socket door', () => {
       expect(client.hello.hello).toBe('akno');
       expect(client.hello.writable).toBe(true);
       expect(client.hello.ops).toContain('recall');
+      expect(client.hello.ops).toContain('answer');
       expect(client.hello.ops).toContain('write');
       // Advertised separately from the ops: the ops are what an agent calls about memory, these are
       // what an operator asks of the process — including gates, journal reads, and maintenance plans,
@@ -81,6 +82,27 @@ describe('the socket door', () => {
         'proposals',
         'plan',
       ]);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('runs compact answer discovery through the generated client surface', async () => {
+    const client = await connect({ socket: server.path });
+    try {
+      const result = await client.answer({
+        question: 'What is the invented monthly rent?',
+        expand: false,
+        graph: false,
+      });
+      expect(result).toMatchObject({
+        status: 'degraded',
+        outcome: 'not_answered',
+        answer: null,
+        related_page_slugs: ['home/lease'],
+      });
+      expect(result.degraded).toContain('no_answer_model');
+      expect(JSON.stringify(result)).not.toContain('1111 EUR');
     } finally {
       await client.close();
     }

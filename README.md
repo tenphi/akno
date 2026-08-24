@@ -242,6 +242,7 @@ the wrong one. `context` is normally called by the host rather than by the agent
 | Op         | What it does                                                                                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `recall`   | Expand → lexical, semantic, and bounded graph candidates → rank fusion → qualification/rerank → cited cards under one budget. `--no-graph` disables graph.           |
+| `answer`   | Run question-oriented recall and return a direct-answer envelope with compact related identities. Until generation lands, evidence returns typed `no_answer_model`.  |
 | `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                          |
 | `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                    |
 | `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |

@@ -23,6 +23,7 @@ import type { AknoContext } from './context.ts';
 import { Journal, type ChangeSummary } from './write/journal.ts';
 import { Gate, type ProposalRow } from './write/gate.ts';
 import { recall } from './ops/recall.ts';
+import { answer as answerOp } from './ops/answer.ts';
 import { read } from './ops/read.ts';
 import { list } from './ops/list.ts';
 import { timeline } from './ops/timeline.ts';
@@ -267,6 +268,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     [N in OpName]?: (ctx: AknoContext, input: unknown) => Promise<OpResult<N>>;
   } = {
     recall,
+    answer: answerOp,
     read,
     list,
     timeline,
@@ -331,6 +333,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     lockHeldBy,
 
     recall: (input) => call('recall', input),
+    answer: (input) => call('answer', input),
     read: (input) => call('read', input),
     list: (input) => call('list', input),
     timeline: (input) => call('timeline', input),

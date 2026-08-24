@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import { RecallInput, RecallOutput } from './ops/recall.ts';
+import { AnswerInput, AnswerOutput } from './ops/answer.ts';
 import { ReadInput, ReadOutput } from './ops/read.ts';
 import { ListInput, ListOutput } from './ops/list.ts';
 import { TimelineInput, TimelineOutput } from './ops/timeline.ts';
@@ -66,6 +67,20 @@ export const OPS = {
       'missing, search was weaker) or "unavailable" (the index could not be read). In question mode, ' +
       '`coverage` reports which concepts from the question the results actually cover — do not answer the ' +
       'parts it reports as false.',
+  }),
+  answer: op({
+    name: 'answer',
+    kind: 'read',
+    input: AnswerInput,
+    output: AnswerOutput,
+    implemented: true,
+    description:
+      'Answer a direct factual question using only bounded, qualified memory evidence. Returns compact exact ' +
+      'citations plus ranked related page slugs and orphan document ids; it does not return source excerpts. ' +
+      'Use recall instead when evidence must be inspected, compared, or quoted. Do not call both by default: ' +
+      'answer already performs recall internally. Check status and outcome: only empty/not_found proves memory ' +
+      'has no matching evidence; degraded or unavailable never proves absence. When answer generation is not ' +
+      'configured, it returns compact related identities with degraded/not_answered and no_answer_model.',
   }),
   read: op({
     name: 'read',

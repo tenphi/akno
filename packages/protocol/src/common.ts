@@ -307,6 +307,14 @@ export const DegradedReason = z.enum([
   'partial_graph_index',
   /** A path, seed, or per-node fan-out safety cap stopped traversal. */
   'graph_traversal_limited',
+  /** Related evidence exists, but no model role is available to produce a grounded answer. */
+  'no_answer_model',
+  /** The answer-generation request failed or returned an invalid draft. */
+  'answer_failed',
+  /** Independent support verification failed or could not run. */
+  'answer_verification_failed',
+  /** The answer hit a configured generation or output safety cap. */
+  'answer_truncated',
 ]);
 export type DegradedReason = z.infer<typeof DegradedReason>;
 

@@ -80,6 +80,31 @@ try {
     ),
   );
 
+  const answer = JSON.parse(
+    run(
+      'answer',
+      'How long is the Zephyr QX-100 warranty?',
+      '--source',
+      'page',
+      '--no-expand',
+      '--no-graph',
+    ),
+  );
+  check(
+    'answer reuses recall with honest model degradation',
+    answer.status === 'degraded' &&
+      answer.outcome === 'not_answered' &&
+      (answer.degraded ?? []).includes('no_answer_model'),
+  );
+  check(
+    'answer returns compact related identities',
+    answer.related_page_slugs.includes('home/appliances') && answer.related_documents.length === 0,
+  );
+  check(
+    'answer does not leak uncited evidence cards',
+    !JSON.stringify(answer).includes('five-year warranty'),
+  );
+
   const empty = JSON.parse(run('recall', 'zzzz nonexistent unicorn'));
   check('absence is a result with a reason', empty.cards.length === 0 && Boolean(empty.note));
   check('absence reports what was searched', empty.searched.length > 0);

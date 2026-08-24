@@ -539,7 +539,7 @@ function resolve(
     server: {
       socket: doc.server?.socket ?? 'akno.sock',
       http: doc.server?.http ?? null,
-      mcpAllow: doc.server?.mcp_allow ?? ['recall', 'read', 'list', 'timeline', 'context', 'graph'],
+      mcpAllow: doc.server?.mcp_allow ?? ['recall', 'answer', 'read', 'list', 'timeline', 'context', 'graph'],
     },
     ingest: {
       maxFileBytes: Math.round((doc.ingest?.max_file_mb ?? 25) * 1_048_576),

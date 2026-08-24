@@ -3,6 +3,7 @@ import { AknoError, OPS, OP_NAMES } from '@tenphi/akno-protocol';
 import { fail, line, style } from './output.ts';
 import { indexCommand } from './commands/index-cmd.ts';
 import { recallCommand } from './commands/recall-cmd.ts';
+import { answerCommand } from './commands/answer-cmd.ts';
 import { readCommand } from './commands/read-cmd.ts';
 import { listCommand } from './commands/list-cmd.ts';
 import { timelineCommand } from './commands/timeline-cmd.ts';
@@ -30,6 +31,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
 
   ${style.bold('Reading')}
     recall <query>       Search memory. Returns cited page and document cards.
+    answer <question>    Answer from memory; returns citations and related identities.
     read <slug>          One exact page or document, in full.
     list                 Browse folders, pages, or a tree outline.
     timeline             When things happened.
@@ -76,6 +78,7 @@ type Command = (argv: string[]) => Promise<number>;
 
 const COMMANDS: Record<string, Command> = {
   recall: recallCommand,
+  answer: answerCommand,
   read: readCommand,
   list: listCommand,
   timeline: timelineCommand,

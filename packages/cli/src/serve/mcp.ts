@@ -27,10 +27,12 @@ export async function serveMcp(
       // a fact it can use: what it needs is that recall is where knowledge of this user lives,
       // and what the status fields mean.
       instructions:
-        'This is the user’s long-term memory, stored as a Markdown knowledge base. Retrieve with ' +
-        '`recall` before answering anything about the user, their history, or their files — its typed page and ' +
-        'document results carry source addresses, so a claim you take from them can be cited and a claim you cannot find ' +
-        'in them should not be made. Read `status` on every result: "empty" means the knowledge base ' +
+        'This is the user’s long-term memory, stored as a Markdown knowledge base. Use `answer` for a direct ' +
+        'factual response grounded entirely in memory, or `recall` when evidence must be inspected, compared, ' +
+        'or quoted. Do not call both by default: answer already performs bounded recall and returns compact ' +
+        'related identities. Recall’s typed page and document results carry source addresses, so a claim you ' +
+        'take from them can be cited and a claim you cannot find in them should not be made. Read `status` on ' +
+        'every result: "empty" means the knowledge base ' +
         'genuinely has nothing and you may say so; "degraded" means part of the search stack was ' +
         'missing, so absence is not proven; "unavailable" means the index could not be read. In ' +
         'question mode, `coverage` tells you which parts of the question the results actually cover — ' +

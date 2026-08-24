@@ -441,7 +441,7 @@
     // Ops an MCP caller may invoke. Trust is a parameter, not a property of the
     // transport — the same code runs with different permissions. Add "adopt" to
     // expose only the document-scoped, plan-backed filing action to an agent.
-    "mcp_allow": ["recall", "read", "list", "timeline", "context", "graph"]
+    "mcp_allow": ["recall", "answer", "read", "list", "timeline", "context", "graph"]
   },
 
   // ─── Ingest ───────────────────────────────────────────────────────────────

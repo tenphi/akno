@@ -5,6 +5,7 @@ export * from './registry.ts';
 export * from './wire.ts';
 
 export * from './ops/recall.ts';
+export * from './ops/answer.ts';
 export * from './ops/read.ts';
 export * from './ops/list.ts';
 export * from './ops/timeline.ts';
