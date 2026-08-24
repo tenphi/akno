@@ -144,6 +144,21 @@ describe('one day, one event, however it is worded', () => {
     expect(result.content).toContain('Wicked: For Good');
   });
 
+  it('does not collapse a completed event into its earlier calendar entry', () => {
+    const scheduled = insertEvent(ledger, {
+      date: '2026-08-08',
+      summary:
+        'The Zephyr QX-100 launch was added to the shared calendar for a workshop at Blackwater Bay.',
+    });
+    const attended = insertEvent(scheduled.content, {
+      date: '2026-08-08',
+      summary: 'Ada Marlow attended the Zephyr QX-100 launch workshop at Blackwater Bay.',
+    });
+
+    expect(attended.content).toContain('was added to the shared calendar');
+    expect(attended.content).toContain('Ada Marlow attended');
+  });
+
   it('does not collapse the same event on two different days', () => {
     // A ledger is full of things that recur — a weekly delivery, a monthly payment. Those are
     // separate events, and only the date tells them apart.

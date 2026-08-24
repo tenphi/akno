@@ -78,7 +78,11 @@ export function insertEvent(content: string, event: LedgerEvent): LedgerInsert {
   const sameDay = lines.findIndex((text) => {
     const date = EVENT_DATE.exec(text)?.[1];
     if (date !== event.date) return false;
-    return saysTheSame(summaryOf(text), event.summary);
+    // A shared subject, place and date are not enough: scheduling something and later doing it
+    // are separate events whose nouns can overlap heavily. The default 0.7 containment boundary
+    // collapsed exactly that transition. Ledger deduplication is intentionally stricter because
+    // an extra line is visible and repairable, while a missing completion event is silent loss.
+    return saysTheSame(summaryOf(text), event.summary, 0.8);
   });
   if (sameDay !== -1) return { content, line: sameDay + 1 };
 
