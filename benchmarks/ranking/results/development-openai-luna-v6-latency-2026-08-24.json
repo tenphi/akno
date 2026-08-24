@@ -11,7 +11,7 @@
     "judgments": 600,
     "categories": 8,
     "version": "invented-ranking-v2",
-    "independentlyReviewed": false
+    "fingerprint": "fdf42618d3a782e07ff4a46d7bdf4460597df03da8073c8114b3a0dbfdf0d889"
   },
   "provider": "openai",
   "model": "gpt-5.6-luna",

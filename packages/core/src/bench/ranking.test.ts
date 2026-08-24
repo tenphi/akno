@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AknoConfig } from '../config/schema.ts';
 import { RANKING_CORPUS, rankingCorpusCases } from './ranking-corpus.ts';
+import { rankingCorpusFingerprint } from './ranking-review.ts';
 import { qualityFor, qualificationFor, runRankingBench, validateRankingCorpus } from './ranking.ts';
 
 describe('ranking benchmark metrics', () => {
@@ -30,7 +31,6 @@ describe('ranking benchmark metrics', () => {
     expect(RANKING_CORPUS.cases).toHaveLength(80);
     expect(rankingCorpusCases('development')).toHaveLength(60);
     expect(rankingCorpusCases('test')).toHaveLength(20);
-    expect(RANKING_CORPUS.independentlyReviewed).toBe(false);
     expect(
       Object.fromEntries(
         rankingCorpusCases('test').map((entry) => [
@@ -62,7 +62,7 @@ describe('ranking benchmark metrics', () => {
       judgments: 1200,
       categories: 8,
       version: 'invented-ranking-v2',
-      independentlyReviewed: false,
+      fingerprint: rankingCorpusFingerprint(),
     });
     expect(report.split).toBe('development');
     expect(report.byCategory).toHaveLength(8);

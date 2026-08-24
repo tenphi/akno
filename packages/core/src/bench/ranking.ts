@@ -18,6 +18,7 @@ import {
   type RankingCategory,
   type RelevanceGrade,
 } from './ranking-corpus.ts';
+import { rankingCorpusFingerprint } from './ranking-review.ts';
 
 export type { RankingBenchSplit, RankingCategory } from './ranking-corpus.ts';
 export type RankingBenchSystem = 'fusion' | 'native' | 'llm';
@@ -98,7 +99,7 @@ export interface RankingBenchReport {
     judgments: number;
     categories: number;
     version: string;
-    independentlyReviewed: boolean;
+    fingerprint: string;
   };
   quality: RankingQualityMetrics;
   fusionBaseline: RankingQualityMetrics;
@@ -267,7 +268,7 @@ export async function runRankingBench(
       judgments: cases.reduce((sum, benchCase) => sum + benchCase.pool.length, 0),
       categories: new Set(cases.map((benchCase) => benchCase.category)).size,
       version: RANKING_CORPUS.version,
-      independentlyReviewed: RANKING_CORPUS.independentlyReviewed,
+      fingerprint: rankingCorpusFingerprint(),
     },
     quality,
     fusionBaseline,

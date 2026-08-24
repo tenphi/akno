@@ -9,6 +9,37 @@ Development artifacts tune candidate count, reasoning effort, and latency. They 
 single-endpoint preset: the mechanical release gate also requires an independently reviewed corpus and an
 explicit five-run `--split test` artifact. Never use the held-out split while changing the prompt or thresholds.
 
+Export the corpus-only independent-review handoff separately from benchmark outputs:
+
+```bash
+akno bench ranking review --output /tmp/akno-ranking-review.json
+```
+
+The reviewer must work outside corpus authorship and runtime prompt/threshold tuning, without consulting matrix
+outputs. They mark all 120 sources and all 80 cases, resolve every issue, and complete the packet's global and
+independence attestations. Attach the returned approved packet with:
+
+```bash
+akno bench ranking review --input /tmp/akno-ranking-review.json \
+  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json
+```
+
+Only a content-free receipt is copied into the matrix. It is bound to the whole-corpus SHA-256, so changing any
+source, query, intent, pool order, or grade invalidates it. Akno validates completeness and identity; human or
+model independence is established by the separate handoff and review history, not authenticated by the CLI.
+Do not check a working packet into `results/`—it deliberately contains the held-out corpus and judgments.
+
+The CLI will not run any ranking `--split test` or `--split all` command without that completed packet. A fresh
+held-out matrix takes it directly and carries the receipt into its result:
+
+```bash
+akno bench ranking --matrix --split test --input /tmp/akno-ranking-review.json \
+  --runs 5 --output benchmarks/ranking/results/test-openai-luna.json
+```
+
+Development runs reject `--input`, preventing the reviewed packet from becoming an accidental tuning input.
+Latency and end-to-end tracks accept only the resulting reviewed matrix.
+
 Example:
 
 ```bash

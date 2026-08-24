@@ -1042,6 +1042,28 @@ The artifact contains aggregate metrics, prompt/schema identifiers, and stable i
 top three results. It contains no knowledge-base text, endpoint URL, credential, or raw model request. Writes
 are atomic, so an interrupted benchmark cannot leave a result that appears complete.
 
+Independent review is a receipt, not a source-code switch. Export a handoff packet before the held-out run:
+
+```bash
+akno bench ranking review --output /tmp/akno-ranking-review.json
+```
+
+The packet contains the complete invented source catalog and every query, intent, candidate id, and grade, but
+no runtime prompt, model response, benchmark score, or outcome. A human or model reviewer working separately
+from corpus authorship and prompt tuning marks every source and case, records any issue, and completes the
+global quality and independence attestations. An approved packet attaches to a matrix like this:
+
+```bash
+akno bench ranking review --input /tmp/akno-ranking-review.json \
+  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json
+```
+
+Akno verifies the packet against the current whole-corpus SHA-256 and copies only a content-free receipt into
+the matrix. Any corpus change makes that receipt stale. Pending entries, unresolved issues, incomplete checks,
+or a changed packet are rejected before the matrix is written. The receipt proves coverage and content
+identity; reviewer independence itself is a workflow property that should be visible in the handoff or code
+review history, not a claim the local process can authenticate.
+
 After a shape has already been selected, `--matrix --variant llm-none-c10` repeats only that development
 variant. The targeted artifact still records each run's token usage, logical and physical request counts,
 latency, fallbacks, and top-three stability. It intentionally makes no preset selection and cannot be release
@@ -1084,8 +1106,12 @@ fallback from being reported as evidence for an embedding model that never ran. 
 misses remain separate because a reranker cannot recover evidence absent from its input window.
 
 Development is the default. `--split test` explicitly selects the held-out 20 queries; prompt work must use the
-default split so test evidence is not quietly turned into tuning data. Only generic distractors and adversarial
-snippets cross the boundary—answer, support, marginal, and stale fact sources do not.
+default split so test evidence is not quietly turned into tuning data. Akno refuses every ranking `test` or
+`all` run unless `--input` supplies a completed packet first. A held-out matrix therefore uses
+`akno bench ranking --matrix --split test --input /tmp/akno-ranking-review.json --output <path>` and embeds
+the content-free receipt automatically. Latency and end-to-end tracks consume that reviewed matrix rather than
+accepting a packet independently. Only generic distractors and adversarial snippets cross the boundary—answer,
+support, marginal, and stale fact sources do not.
 
 The report covers overall and category-level nDCG, reciprocal rank, top-result success, hard-negative inversions,
 response validity, latency, and qualification separately. Qualification distinguishes retained direct answers,
@@ -1095,8 +1121,8 @@ retained, and every instruction-bearing negative rejected.
 
 Matrix selection is deliberately separate from release. It chooses the least expensive comparable variant:
 `none` wins unless `low` improves nDCG@10 by more than 0.01, then the smallest equivalent candidate window
-wins. The mechanical release gate still requires an explicitly selected held-out run, independent corpus
-review, a persisted artifact, end-to-end direct-answer candidate recall at the selected window, five
+wins. The mechanical release gate still requires an explicitly selected held-out run, a matching independent
+review receipt, a persisted artifact, end-to-end direct-answer candidate recall at the selected window, five
 repetitions, quality and exact-entity floors, valid/fallback-safe responses, perfect instruction-negative
 rejection, stable top-three results, and a bound warm single-flight latency receipt. The selected prompt and
 schema must also match the current runtime contract, so refreshing an old artifact cannot authorize
@@ -1156,7 +1182,8 @@ learning the token and schema dialect, and was excluded from the warm distributi
 calls were 100% valid with 2.34-second p50, 3.12-second p95, and one endpoint request each. At four-way load,
 the 59 warm calls stayed 100% valid and one-request, with 2.26-second p50 and 4.12-second p95. The round
 4-second warm single-flight UX gate therefore passes without mistaking either cold negotiation or saturation
-for normal user-perceived latency. The preset remains experimental because independent corpus review,
+for normal user-perceived latency. The review handoff is implemented but no independent receipt has been
+completed yet. The preset remains experimental because that review,
 embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation remain open. The immutable
 v4/v3 held-out artifact cannot authorize the changed runtime contract.
 

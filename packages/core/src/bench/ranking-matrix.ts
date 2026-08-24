@@ -19,8 +19,9 @@ import {
   type RankingQualificationMetrics,
   type RankingTokenUsage,
 } from './ranking.ts';
+import { rankingReviewEvidenceMatches, type RankingReviewEvidence } from './ranking-review.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v5';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v6';
 export const RANKING_MATRIX_VARIANT_IDS = [
   'llm-none-c10',
   'llm-none-c20',
@@ -104,6 +105,7 @@ export interface RankingMatrixSelection {
 export interface RankingEndToEndEvidence {
   split: RankingBenchSplit;
   corpusVersion: string;
+  corpusFingerprint: string;
   candidateCount: RankingCandidateCount;
   directAnswerCandidateRecall: number;
   directAnswerRankedRecall: number;
@@ -168,6 +170,7 @@ export interface RankingMatrixReport {
   targetedVariants: RankingMatrixVariantId[] | null;
   variants: RankingMatrixVariant[];
   selection: RankingMatrixSelection | null;
+  reviewEvidence: RankingReviewEvidence | null;
   endToEndEvidence: RankingEndToEndEvidence | null;
   latencyEvidence: RankingLatencyReport | null;
   artifactPersisted: boolean;
@@ -256,6 +259,7 @@ export async function runRankingMatrix(
     targetedVariants: options.variants ?? null,
     variants,
     selection: null,
+    reviewEvidence: null,
     endToEndEvidence: null,
     latencyEvidence: null,
     artifactPersisted: false,
@@ -263,6 +267,16 @@ export async function runRankingMatrix(
     releaseGate: { passed: false, checks: [], blockers: [] },
   };
   return refreshRankingMatrixReport(draft);
+}
+
+export function attachRankingReviewEvidence(
+  matrix: RankingMatrixReport,
+  evidence: RankingReviewEvidence,
+): RankingMatrixReport {
+  if (!rankingReviewEvidenceMatches(evidence, matrix.corpus)) {
+    throw new Error('ranking review does not match the matrix corpus');
+  }
+  return refreshRankingMatrixReport({ ...matrix, reviewEvidence: evidence });
 }
 
 export function attachRankingLatencyEvidence(
@@ -280,6 +294,7 @@ export function attachRankingLatencyEvidence(
   if (
     matrix.split !== refreshedReport.split ||
     matrix.corpus.version !== refreshedReport.corpus.version ||
+    matrix.corpus.fingerprint !== refreshedReport.corpus.fingerprint ||
     selected.candidateCount !== refreshedReport.candidateCount ||
     selected.excerptChars !== refreshedReport.excerptChars ||
     selected.reasoningEffort !== refreshedReport.reasoningEffort ||
@@ -314,6 +329,12 @@ export function attachRankingEndToEndEvidence(
     throw new Error('unsupported end-to-end artifact schema');
   }
   if (matrix.split !== report.split) throw new Error('matrix and end-to-end splits do not match');
+  if (
+    matrix.corpus.version !== report.corpus.version ||
+    matrix.corpus.fingerprint !== report.corpus.fingerprint
+  ) {
+    throw new Error('end-to-end run does not match the matrix corpus');
+  }
   const selected = matrix.selection
     ? (matrix.variants.find((variant) => variant.id === matrix.selection!.variantId) ?? null)
     : null;
@@ -333,6 +354,7 @@ export function attachRankingEndToEndEvidence(
     endToEndEvidence: {
       split: report.split,
       corpusVersion: report.corpus.version,
+      corpusFingerprint: report.corpus.fingerprint,
       candidateCount: report.candidateCount,
       directAnswerCandidateRecall: report.candidateGeneration.directAnswerRecall,
       directAnswerRankedRecall: report.rankedRecall.directAnswerRecall,
@@ -367,6 +389,7 @@ export function refreshRankingMatrixReport(report: RankingMatrixReport): Ranking
     targetedVariants: report.targetedVariants ?? null,
     variants,
     selection: report.targetedVariants ? null : selectConfiguration(variants),
+    reviewEvidence: report.reviewEvidence ?? null,
     endToEndEvidence: report.endToEndEvidence ?? null,
     latencyEvidence: normalizeLatencyEvidence(report.latencyEvidence ?? null),
     releaseEligible: false,
@@ -389,9 +412,9 @@ export function evaluateRankingRelease(report: RankingMatrixReport): RankingRele
     check('held_out_split', report.split === 'test', report.split, 'test'),
     check(
       'independent_review',
-      report.corpus.independentlyReviewed,
-      report.corpus.independentlyReviewed,
-      'true',
+      rankingReviewEvidenceMatches(report.reviewEvidence, report.corpus),
+      report.reviewEvidence !== null,
+      'completed content-free receipt for this exact corpus fingerprint',
     ),
     check('persisted_artifact', report.artifactPersisted, report.artifactPersisted, 'true'),
     check(
@@ -654,6 +677,7 @@ function endToEndConfigurationMatches(
     selected &&
     evidence.split === report.split &&
     evidence.corpusVersion === report.corpus.version &&
+    evidence.corpusFingerprint === report.corpus.fingerprint &&
     evidence.candidateCount === selected.candidateCount &&
     evidence.embeddingAvailable &&
     evidence.totalChunks > 0 &&
@@ -681,6 +705,7 @@ function latencyConfigurationMatches(
     evidence.schemaVersion === RANKING_LATENCY_SCHEMA_VERSION &&
     evidence.split === report.split &&
     evidence.corpus.version === report.corpus.version &&
+    evidence.corpus.fingerprint === report.corpus.fingerprint &&
     evidence.corpus.queries === report.corpus.queries &&
     evidence.candidateCount === selected.candidateCount &&
     evidence.excerptChars === selected.excerptChars &&

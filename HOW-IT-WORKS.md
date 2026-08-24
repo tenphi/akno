@@ -1579,6 +1579,23 @@ The median pairwise top-three overlap measures whether the user-visible head of 
 runs. The selector prefers `none` unless `low` gains more than 0.01 nDCG@10, then prefers the smallest
 equivalent candidate window.
 
+Corpus review is separate from model evaluation. `akno bench ranking review --output <path>` exports all 120
+invented sources and all 80 query/intent/pool/judgment cases, each with a pending review mark. It deliberately
+contains no prompt, model output, ranking metric, or benchmark outcome. A reviewer outside corpus authorship and
+runtime tuning marks every source and case, records issues, and completes the independence and corpus-quality
+attestations. `akno bench ranking review --input <path> --matrix-artifact <path>` accepts only an approved,
+issue-free packet with complete coverage. It verifies both the packet hash and the current whole-corpus SHA-256
+before atomically attaching a content-free receipt. A later source, query, intent, pool-order, or grade change
+therefore reopens the release gate. The receipt establishes reviewed content and coverage; reviewer identity
+and independence are necessarily enforced by the handoff or code-review process rather than trusted local
+metadata.
+
+Ranking access to `--split test` or `--split all` is refused before provider calls unless `--input` is a
+completed packet for the current corpus. A held-out matrix attaches that receipt before
+it is persisted. Development runs reject the packet so it cannot become an accidental prompt-tuning input;
+latency and end-to-end tracks inherit review evidence from their matrix instead of accepting an independent
+override.
+
 `akno bench ranking --track latency --matrix-artifact <matrix> --output <result>` measures the selected shape
 without mixing lifecycle phases. For each profile, `runRankingBench` serializes the first call before starting
 workers; the latency track records that fresh-client call as cold compatibility negotiation and excludes it
@@ -1612,12 +1629,14 @@ was later lost. Reports contain no query text, source text, provider response bo
 
 Selection is not authorization. A variant with at least one valid response can remain in the tuning comparison
 so reliability failures do not erase the evidence about it. The separate mechanical release gate then checks
-the held-out split, independent corpus review, persisted artifact, end-to-end direct-answer candidate recall at
-the selected window, five runs, overall and per-category quality, exact-entity MRR, response and fallback
+the held-out split, a matching independent-review receipt, persisted artifact, end-to-end direct-answer
+candidate recall at the selected window, five runs, overall and per-category quality, exact-entity MRR,
+response and fallback
 integrity, instruction safety, top-three stability, bound latency configuration/integrity/SLO, and
-cheapest-equivalent selection. The corpus currently says `independentlyReviewed: false`, and a development split
-can never satisfy the held-out check. The selected prompt and schema must also equal the current runtime
-versions, preventing an old artifact from authorizing changed ranking code. Development artifacts remain tuning
+cheapest-equivalent selection. A development split can never satisfy the held-out check, and review cannot be
+enabled by editing a corpus boolean: only a completed packet for the exact fingerprint satisfies it. The
+selected prompt and schema must also equal the current runtime versions, preventing an old artifact from
+authorizing changed ranking code. Development artifacts remain tuning
 evidence rather than a recommended preset.
 
 The current full five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.962 mean
@@ -1678,14 +1697,16 @@ single-flight calls were 100% valid with exactly one request each and measured 2
 p95. The 59 calls under four-way load stayed 100% valid and one-request, measuring 2.26-second p50 and
 4.12-second p95. A 2.5-second p95 was below the observed warm operating range—the matrix and targeted studies
 were already 3.63 and 3.39 seconds—so the pre-held-out development decision fixes a round 4-second warm
-single-flight SLO. That gate passes. Independent corpus review, embedding-backed end-to-end evidence, and a new
+single-flight SLO. That gate passes. The independent-review handoff and receipt validation now ship, but an
+external reviewer has not completed the packet. That review, embedding-backed end-to-end evidence, and a new
 pre-declared held-out evaluation remain open.
 
 Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
 role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call
 Luna but receives a redacted 403 for `text-embedding-3-small`, and `/v1/models` exposes no embedding model id.
 That proves honest prerequisite handling and a provider-capability gap; it cannot authorize lexical fallback or
-a second endpoint under the single-endpoint preset. Independent corpus review also remains open.
+a second endpoint under the single-endpoint preset. The review workflow exists; an independent receipt remains
+open.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

@@ -4,8 +4,15 @@ import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/
 import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import type { RankingLatencyReport } from './ranking-latency.ts';
 import {
+  completeRankingReview,
+  createRankingReviewPacket,
+  rankingCorpusFingerprint,
+  type RankingReviewEvidence,
+} from './ranking-review.ts';
+import {
   attachRankingEndToEndEvidence,
   attachRankingLatencyEvidence,
+  attachRankingReviewEvidence,
   evaluateRankingRelease,
   markRankingMatrixPersisted,
   medianTop3Overlap,
@@ -36,10 +43,7 @@ describe('ranking benchmark matrix', () => {
     expect(persisted.releaseEligible).toBe(true);
     expect(persisted.releaseGate.checks.every((check) => check.passed)).toBe(true);
 
-    const unreviewed = {
-      ...persisted,
-      corpus: { ...persisted.corpus, independentlyReviewed: false },
-    };
+    const unreviewed = { ...persisted, reviewEvidence: null };
     expect(evaluateRankingRelease(unreviewed).blockers).toContain('independent_review');
 
     const staleContract = {
@@ -80,7 +84,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v5');
+    expect(report.schemaVersion).toBe('ranking-matrix-v6');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -142,6 +146,12 @@ describe('ranking benchmark matrix', () => {
     expect(() => attachRankingEndToEndEvidence(matrix, { ...endToEnd, candidateCount: 10 })).toThrow(
       'does not match',
     );
+    expect(() =>
+      attachRankingEndToEndEvidence(matrix, {
+        ...endToEnd,
+        corpus: { ...endToEnd.corpus, fingerprint: 'a'.repeat(64) },
+      }),
+    ).toThrow('matrix corpus');
   });
 
   it('attaches warm latency evidence only for the selected configuration', () => {
@@ -159,6 +169,28 @@ describe('ranking benchmark matrix', () => {
     expect(() => attachRankingLatencyEvidence(matrix, { ...latency, candidateCount: 10 })).toThrow(
       'does not match',
     );
+    expect(() =>
+      attachRankingLatencyEvidence(matrix, {
+        ...latency,
+        corpus: { ...latency.corpus, fingerprint: 'a'.repeat(64) },
+      }),
+    ).toThrow('does not match');
+  });
+
+  it('attaches only an independently completed review for the exact corpus', () => {
+    const matrix = { ...passingReport(), reviewEvidence: null };
+    const evidence = passingReviewEvidence();
+
+    const attached = attachRankingReviewEvidence(matrix, evidence);
+
+    expect(attached.reviewEvidence).toEqual(evidence);
+    expect(attached.releaseGate.blockers).toEqual(['persisted_artifact']);
+    expect(() =>
+      attachRankingReviewEvidence(matrix, {
+        ...evidence,
+        corpusFingerprint: 'a'.repeat(64),
+      }),
+    ).toThrow('does not match');
   });
 });
 
@@ -167,7 +199,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v5',
+    schemaVersion: 'ranking-matrix-v6',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -176,7 +208,7 @@ function passingReport(): RankingMatrixReport {
       judgments: 400,
       categories: 8,
       version: 'invented-ranking-v2',
-      independentlyReviewed: true,
+      fingerprint: rankingCorpusFingerprint(),
     },
     requestedRuns: 5,
     concurrency: 4,
@@ -188,9 +220,11 @@ function passingReport(): RankingMatrixReport {
       reasoningEffort: 'none',
       rationale: 'Invented passing fixture.',
     },
+    reviewEvidence: passingReviewEvidence(),
     endToEndEvidence: {
       split: 'test',
       corpusVersion: 'invented-ranking-v2',
+      corpusFingerprint: rankingCorpusFingerprint(),
       candidateCount: 20,
       directAnswerCandidateRecall: 1,
       directAnswerRankedRecall: 1,
@@ -241,7 +275,7 @@ function passingLatencyReport(): RankingLatencyReport {
       judgments: 400,
       categories: 8,
       version: 'invented-ranking-v2',
-      independentlyReviewed: true,
+      fingerprint: rankingCorpusFingerprint(),
     },
     provider: 'invented-provider',
     model: 'invented-model',
@@ -351,7 +385,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
       sources: 120,
       categories: 8,
       version: 'invented-ranking-v2',
-      independentlyReviewed: true,
+      fingerprint: rankingCorpusFingerprint(),
     },
     system: 'llm',
     candidateCount: 20,
@@ -377,4 +411,29 @@ function passingEndToEndReport(): RankingEndToEndReport {
     rerankFallbackRate: 0,
     queries: [],
   };
+}
+
+function passingReviewEvidence(): RankingReviewEvidence {
+  const packet = createRankingReviewPacket(new Date('2027-01-02T03:04:05.000Z'));
+  packet.sources = packet.sources.map((source) => ({ ...source, review: 'pass' }));
+  packet.cases = packet.cases.map((benchCase) => ({ ...benchCase, review: 'pass' }));
+  packet.review = {
+    verdict: 'approved',
+    reviewerKind: 'human',
+    reviewedAt: '2027-01-03T04:05:06.000Z',
+    independence: {
+      didNotAuthorCorpus: true,
+      didNotTuneRuntimeContract: true,
+      reviewedWithoutBenchmarkOutputs: true,
+    },
+    checks: {
+      inventedContent: true,
+      sourceClarity: true,
+      queryIntentAlignment: true,
+      poolAndJudgmentAccuracy: true,
+      splitIsolation: true,
+    },
+    issues: [],
+  };
+  return completeRankingReview(packet);
 }

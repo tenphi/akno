@@ -7,6 +7,7 @@ import type { ConfigDoc, AknoConfig, ReasoningEffort, ResolvedModelRole } from '
 import { open, type Akno } from '../open.ts';
 import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
 import { RANKING_CATEGORIES, RANKING_CORPUS, rankingCorpusCases } from './ranking-corpus.ts';
+import { rankingCorpusFingerprint } from './ranking-review.ts';
 import type {
   RankingBenchSplit,
   RankingCandidateCount,
@@ -91,7 +92,7 @@ export interface RankingEndToEndReport {
     sources: number;
     categories: number;
     version: string;
-    independentlyReviewed: boolean;
+    fingerprint: string;
   };
   system: RankingEndToEndSystem;
   candidateCount: RankingCandidateCount;
@@ -392,7 +393,7 @@ function buildReport(options: {
       sources: Object.keys(RANKING_CORPUS.candidates).length,
       categories: new Set(options.cases.map((benchCase) => benchCase.category)).size,
       version: RANKING_CORPUS.version,
-      independentlyReviewed: RANKING_CORPUS.independentlyReviewed,
+      fingerprint: rankingCorpusFingerprint(),
     },
     system: options.system,
     candidateCount: options.candidateCount,

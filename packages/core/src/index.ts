@@ -127,6 +127,23 @@ export {
   type RankingQueryReport,
 } from './bench/ranking.ts';
 export {
+  completeRankingReview,
+  createRankingReviewPacket,
+  rankingCorpusFingerprint,
+  rankingReviewEvidenceMatches,
+  reviewPacketFingerprint,
+  RANKING_REVIEW_EVIDENCE_SCHEMA_VERSION,
+  RANKING_REVIEW_PACKET_SCHEMA_VERSION,
+  type RankingReviewCase,
+  type RankingReviewDecision,
+  type RankingReviewEvidence,
+  type RankingReviewIssue,
+  type RankingReviewMark,
+  type RankingReviewPacket,
+  type RankingReviewerKind,
+  type RankingReviewSource,
+} from './bench/ranking-review.ts';
+export {
   RANKING_END_TO_END_SCHEMA_VERSION,
   runRankingEndToEnd,
   type RankingEndToEndCategoryReport,
@@ -151,6 +168,7 @@ export {
   type RankingLatencyReport,
 } from './bench/ranking-latency.ts';
 export {
+  attachRankingReviewEvidence,
   attachRankingLatencyEvidence,
   attachRankingEndToEndEvidence,
   evaluateRankingRelease,

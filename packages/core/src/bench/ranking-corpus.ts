@@ -13,7 +13,7 @@ export type RankingCategory = (typeof RANKING_CATEGORIES)[number];
 export type RankingBenchSplit = 'development' | 'test' | 'all';
 export type RelevanceGrade = 0 | 1 | 2 | 3;
 
-interface RankingCandidate {
+export interface RankingCandidate {
   id: string;
   text: string;
   sourceKind: 'page' | 'document';
@@ -33,7 +33,6 @@ export interface RankingCase {
 
 export interface RankingCorpus {
   version: string;
-  independentlyReviewed: boolean;
   candidates: Record<string, RankingCandidate>;
   cases: RankingCase[];
 }
@@ -442,8 +441,6 @@ function buildCorpus(): RankingCorpus {
 
   return {
     version: 'invented-ranking-v2',
-    // A second reviewer must explicitly change this after auditing every source, query, pool, and judgment.
-    independentlyReviewed: false,
     candidates,
     cases,
   };

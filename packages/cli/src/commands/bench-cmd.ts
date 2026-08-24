@@ -4,6 +4,9 @@ import path from 'node:path';
 import {
   attachRankingEndToEndEvidence,
   attachRankingLatencyEvidence,
+  attachRankingReviewEvidence,
+  completeRankingReview,
+  createRankingReviewPacket,
   markAnswerBenchPersisted,
   markAutoRecallAnswerBenchPersisted,
   markAutoRecallBenchPersisted,
@@ -39,6 +42,8 @@ import {
   type RankingLatencyReport,
   type RankingMatrixReport,
   type RankingMatrixVariantId,
+  type RankingReviewEvidence,
+  type RankingReviewPacket,
   type RetrievalBenchResult,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
@@ -84,6 +89,9 @@ const BENCH_HELP = `akno bench [options]
   ranking --track latency
                       Measure the selected ranker's cold negotiation, warm
                       single-flight UX, and warm loaded latency separately.
+  ranking review      Export the model-output-free corpus review packet with
+                      --output, or attach a completed packet with --input and
+                      --matrix-artifact. Review must happen in a separate session.
     --split <name>    development, test, or all (default development). Test is
                       held out from prompt tuning and must be selected explicitly.
     --candidates <n>  10, 20, or 40 for a single-system run (default 20).
@@ -96,6 +104,8 @@ const BENCH_HELP = `akno bench [options]
     --matrix-artifact <path>
                       Use its selected configuration and atomically attach
                       end-to-end or latency evidence to that matrix artifact.
+    --input <path>    Completed corpus review packet for review attachment or
+                      any ranking run that reads the held-out split.
     --output <path>   Atomically persist the content-safe result artifact.
     --provider <name> Configured provider. Ranking defaults to openai; answer
                       and auto-recall-answer use the answer role; auto-recall
@@ -139,6 +149,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
     concurrency?: string;
     runs?: string;
     output?: string;
+    input?: string;
   }>(argv, {
     iterations: { type: 'string' },
     'retrieval-only': { type: 'boolean', default: false },
@@ -162,11 +173,16 @@ export async function benchCommand(argv: string[]): Promise<number> {
     concurrency: { type: 'string' },
     runs: { type: 'string' },
     output: { type: 'string' },
+    input: { type: 'string' },
   });
 
   if (values.help) {
     line(BENCH_HELP);
     return 0;
+  }
+  if (values.input && positionals[0] !== 'ranking') {
+    fail('--input is only valid for ranking');
+    return 2;
   }
 
   if (positionals[0] === 'answer') {
@@ -447,6 +463,82 @@ export async function benchCommand(argv: string[]): Promise<number> {
   }
 
   if (positionals[0] === 'ranking') {
+    if (positionals[1] === 'review') {
+      if (positionals.length > 2) {
+        fail(`unknown ranking review argument: ${positionals[2]}`);
+        return 2;
+      }
+      if (
+        values['retrieval-only'] ||
+        values.write ||
+        values.probe ||
+        values.matrix ||
+        values.variant ||
+        values['skip-native'] ||
+        values.track ||
+        values.provider ||
+        values.model ||
+        values['embedding-provider'] ||
+        values['embedding-model'] ||
+        values['embedding-dimensions'] ||
+        values.reasoning ||
+        values.split ||
+        values.system ||
+        values.candidates ||
+        values['excerpt-chars'] ||
+        values.concurrency ||
+        values.runs ||
+        values.iterations
+      ) {
+        fail('ranking review accepts only --output, or --input with --matrix-artifact, plus --json');
+        return 2;
+      }
+      if (values.input) {
+        if (!values['matrix-artifact'] || values.output) {
+          fail('attaching a ranking review requires --input and --matrix-artifact, without --output');
+          return 2;
+        }
+        try {
+          const packet = await readJsonArtifact(values.input);
+          const evidence = completeRankingReview(packet);
+          let matrix = refreshRankingMatrixReport(await readRankingMatrixArtifact(values['matrix-artifact']));
+          matrix = attachRankingReviewEvidence(matrix, evidence);
+          const matrixPath = await writeJsonArtifact(values['matrix-artifact'], matrix);
+          if (values.json) json(evidence);
+          else renderRankingReviewEvidence(evidence, matrixPath, matrix);
+          return 0;
+        } catch (error) {
+          fail(error instanceof Error ? error.message : 'ranking review validation failed');
+          return 2;
+        }
+      }
+      if (!values.output || values['matrix-artifact']) {
+        fail('exporting a ranking review requires --output and does not accept --matrix-artifact');
+        return 2;
+      }
+      const packet = createRankingReviewPacket();
+      const artifactPath = await writeJsonArtifact(values.output, packet);
+      if (values.json) json(packet);
+      else renderRankingReviewPacket(packet, artifactPath);
+      return 0;
+    }
+    if (positionals.length > 1) {
+      fail(`unknown ranking bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    if (values.input && (values.track || values.probe)) {
+      fail('--input unlocks held-out matrix or single-system runs; tracks use a reviewed matrix instead');
+      return 2;
+    }
+    let heldOutReview: RankingReviewEvidence | null = null;
+    if (values.input) {
+      try {
+        heldOutReview = completeRankingReview(await readJsonArtifact(values.input));
+      } catch (error) {
+        fail(error instanceof Error ? error.message : 'ranking review validation failed');
+        return 2;
+      }
+    }
     const reasoning = parseReasoningEffort(values.reasoning);
     if (!reasoning) {
       fail(`invalid reasoning effort: ${values.reasoning}`);
@@ -489,6 +581,10 @@ export async function benchCommand(argv: string[]): Promise<number> {
         let matrix = refreshRankingMatrixReport(await readRankingMatrixArtifact(values['matrix-artifact']));
         if (!matrix.selection) {
           fail('the matrix artifact has no selected configuration');
+          return 2;
+        }
+        if (matrix.split !== 'development' && !hasIndependentRankingReview(matrix)) {
+          fail('held-out ranking tracks require a matrix with an accepted independent review receipt');
           return 2;
         }
         const selected = matrix.variants.find((variant) => variant.id === matrix.selection!.variantId);
@@ -587,6 +683,10 @@ export async function benchCommand(argv: string[]): Promise<number> {
       ) {
         return 2;
       }
+      if (split !== 'development' && (!matrix || !hasIndependentRankingReview(matrix))) {
+        fail('held-out ranking tracks require a reviewed --matrix-artifact');
+        return 2;
+      }
       if (selection && values.candidates && candidateCount !== selection.candidateCount) {
         fail('--candidates does not match the matrix selection');
         return 2;
@@ -665,6 +765,14 @@ export async function benchCommand(argv: string[]): Promise<number> {
         fail('--variant is development-only; use the complete pre-declared matrix for held-out evidence');
         return 2;
       }
+      if (split !== 'development' && !heldOutReview) {
+        fail('held-out ranking requires --input with an approved independent review packet');
+        return 2;
+      }
+      if (split === 'development' && heldOutReview) {
+        fail('--input is only accepted when a ranking run reads the held-out split');
+        return 2;
+      }
       let report = await runRankingMatrix(config, {
         split,
         excerptChars,
@@ -688,6 +796,7 @@ export async function benchCommand(argv: string[]): Promise<number> {
             }
           : {}),
       });
+      if (heldOutReview) report = attachRankingReviewEvidence(report, heldOutReview);
       let artifactPath: string | null = null;
       if (values.output) {
         report = markRankingMatrixPersisted(report);
@@ -740,6 +849,14 @@ export async function benchCommand(argv: string[]): Promise<number> {
     const excerptChars = parseExcerptChars(values['excerpt-chars']);
     const concurrency = parseBoundedInteger(values.concurrency, 1, 16, 'concurrency');
     if (!candidateCount || !excerptChars || concurrency === null) return 2;
+    if (split !== 'development' && !heldOutReview) {
+      fail('held-out ranking requires --input with an approved independent review packet');
+      return 2;
+    }
+    if (split === 'development' && heldOutReview) {
+      fail('--input is only accepted when a ranking run reads the held-out split');
+      return 2;
+    }
     if (
       values.output ||
       values.variant ||
@@ -998,13 +1115,47 @@ function renderRanking(report: RankingBenchReport): void {
   }
   for (const failure of report.failures) line(`  ${style.red(failure.queryId)}  ${failure.error}`);
   line(`\n${report.passed ? style.green('development gate passed') : style.red('development gate failed')}`);
+  line(style.grey('Single-system results are tuning evidence; review receipts attach only to a matrix.'));
+}
+
+function renderRankingReviewPacket(packet: RankingReviewPacket, artifactPath: string): void {
+  heading('Ranking corpus review — independent handoff packet');
+  line(`  corpus       ${packet.corpus.version}`);
+  line(`  fingerprint  ${packet.corpus.fingerprint}`);
+  line(
+    `  scope        ${packet.corpus.sources} sources, ${packet.corpus.queries} queries, ` +
+      `${packet.corpus.judgments} judgments`,
+  );
+  line(`  packet       ${artifactPath}`);
+  line('\n  Reviewer workflow');
+  packet.instructions.forEach((instruction, index) => line(`    ${index + 1}. ${instruction}`));
   line(
     style.grey(
-      report.corpus.independentlyReviewed
-        ? 'Release eligibility still requires repeatability and a stored result artifact.'
-        : 'The corpus awaits independent review and cannot authorize a preset release.',
+      'The packet contains corpus content and grades, but no prompt, model response, score, or benchmark outcome.',
     ),
   );
+}
+
+function renderRankingReviewEvidence(
+  evidence: RankingReviewEvidence,
+  matrixPath: string,
+  matrix: RankingMatrixReport,
+): void {
+  heading('Ranking corpus review — receipt attached');
+  line(`  reviewer     ${evidence.reviewerKind}`);
+  line(`  reviewed     ${evidence.reviewedAt}`);
+  line(`  coverage     ${evidence.sourceReviews} sources, ${evidence.caseReviews} cases`);
+  line(`  corpus       ${evidence.corpusFingerprint}`);
+  line(`  receipt      ${evidence.receiptFingerprint}`);
+  line(`  matrix       ${matrixPath}`);
+  if (matrix.releaseGate.blockers.length > 0) {
+    line(`  release blockers  ${matrix.releaseGate.blockers.join(', ')}`);
+  }
+  line(`\n${style.green('independent review receipt accepted')}`);
+}
+
+function hasIndependentRankingReview(matrix: RankingMatrixReport): boolean {
+  return matrix.releaseGate.checks.some((check) => check.id === 'independent_review' && check.passed);
 }
 
 function renderEntityResolution(report: EntityResolutionBenchReport, artifactPath: string | null): void {
@@ -1288,6 +1439,12 @@ function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string |
     );
     line(`  ${style.grey(report.selection.rationale)}`);
   }
+  if (report.reviewEvidence) {
+    line(
+      `  reviewed  ${report.reviewEvidence.reviewerKind} at ${report.reviewEvidence.reviewedAt}; ` +
+        `${report.reviewEvidence.receiptFingerprint.slice(0, 12)}…`,
+    );
+  }
   if (artifactPath) line(`  artifact  ${artifactPath}`);
   if (!targeted && report.releaseGate.blockers.length > 0) {
     line(`  release blockers  ${report.releaseGate.blockers.join(', ')}`);
@@ -1435,6 +1592,10 @@ async function readRankingMatrixArtifact(target: string): Promise<RankingMatrixR
     throw new Error(`${absolute} is not a ranking matrix artifact`);
   }
   return parsed as RankingMatrixReport;
+}
+
+async function readJsonArtifact(target: string): Promise<unknown> {
+  return JSON.parse(await fsp.readFile(path.resolve(target), 'utf8')) as unknown;
 }
 
 async function writeJsonArtifact(target: string, report: unknown): Promise<string> {
