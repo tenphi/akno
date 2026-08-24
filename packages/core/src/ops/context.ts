@@ -6,6 +6,7 @@ import {
   type RecallResult,
   type RecallQualification,
   type TimelineResult,
+  type ContextInput as ParsedContextInput,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { estimateTokens } from '../recall/assemble.ts';
@@ -27,7 +28,12 @@ import { list } from './list.ts';
  */
 export async function context(ctx: AknoContext, rawInput: unknown): Promise<ContextOutput> {
   const input = ContextInput.parse(rawInput);
-  let remaining = input.budget;
+  if (input.profile === 'auto_recall') {
+    return autoRecallContext(ctx, { ...input, profile: 'auto_recall', query: input.query! });
+  }
+
+  const budget = input.budget ?? 20_000;
+  let remaining = budget;
   const degraded = new Set<NonNullable<ContextOutput['degraded']>[number]>();
   let droppedCards = 0;
   let droppedEvents = 0;
@@ -110,6 +116,8 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
       query: input.query,
       budget: remaining,
       ...(input.mode ? { mode: input.mode } : {}),
+      ...(input.include ? { include: input.include } : {}),
+      ...(input.filter ? { filter: input.filter } : {}),
     });
     searched = result.searched;
     if (result.coverage) coverage = result.coverage;
@@ -122,7 +130,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     remaining -= result.budget_used;
   }
 
-  const budgetUsed = input.budget - Math.max(0, remaining);
+  const budgetUsed = budget - Math.max(0, remaining);
   const anyDropped = droppedCards > 0 || droppedTimeline > 0;
   const unavailableTimelineOnly =
     results.length === 0 &&
@@ -140,6 +148,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
         : results.length === 0 && pinned.length === 0 && recentTimeline.length === 0
           ? 'empty'
           : 'ok',
+    profile: 'default',
     ...(!unavailableTimelineOnly && degraded.size > 0 ? { degraded: [...degraded] } : {}),
     ...(unavailableTimelineOnly
       ? { note: 'recent document date metadata remains, but no readable source copy is available' }
@@ -159,6 +168,465 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
       ? { dropped: { cards: droppedCards, events: droppedEvents, timeline: droppedTimeline } }
       : {}),
   };
+}
+
+const AUTO_RECALL_DEFAULT_BUDGET = 1200;
+const AUTO_RECALL_CANDIDATE_LIMIT = 8;
+const AUTO_RECALL_CANDIDATE_BUDGET = 6000;
+const AUTO_RECALL_MAX_RESULTS = 3;
+
+/**
+ * Precision-first evidence for a host turn. Unlike broad context, this profile never adds
+ * ambient structure, timeline entries, pins, or generated prose. It first performs cheap
+ * retrieval without reranking. Strong deterministic evidence can be returned immediately;
+ * only a plausible ambiguous boundary pays for model qualification.
+ */
+async function autoRecallContext(
+  ctx: AknoContext,
+  input: ParsedContextInput & { profile: 'auto_recall'; query: string },
+): Promise<ContextOutput> {
+  const budget = input.budget ?? AUTO_RECALL_DEFAULT_BUDGET;
+  const resolutionContext = referenceContext(input.query, input.conversation_context ?? []);
+  const retrievalQuery = resolutionContext ? `${input.query}\n${resolutionContext}` : input.query;
+  const recallInput = {
+    query: retrievalQuery,
+    mode: input.mode ?? ('lookup' as const),
+    depth: 'lines' as const,
+    limit: AUTO_RECALL_CANDIDATE_LIMIT,
+    budget: AUTO_RECALL_CANDIDATE_BUDGET,
+    expand: false,
+    graph: false,
+    ...(input.include ? { include: input.include } : {}),
+    ...(input.filter ? { filter: input.filter } : {}),
+  };
+
+  const initial = await recall(ctx, { ...recallInput, rerank: false });
+  if (initial.status === 'unavailable') {
+    return emptyAutoRecall({
+      status: 'unavailable',
+      budget,
+      searched: [input.query],
+      candidates: 0,
+      degraded: initial.degraded,
+      note: initial.note ?? 'memory evidence could not be read',
+    });
+  }
+
+  const degraded = new Set(initial.degraded ?? []);
+  const signals = initial.results.map((result) => activationSignal(result, input.query, resolutionContext));
+  const deterministic = signals
+    .filter((signal) => signal.strong)
+    .sort((left, right) => right.strength - left.strength)
+    .slice(0, AUTO_RECALL_MAX_RESULTS);
+
+  if (deterministic.length > 0) {
+    return assembledAutoRecall({
+      budget,
+      searched: [input.query],
+      selected: deterministic.map((signal) => signal.result),
+      candidates: initial.results.length,
+      degraded,
+      activationBasis: deterministic.some((signal) => signal.basis === 'exact') ? 'exact' : 'semantic',
+      qualificationRun: false,
+    });
+  }
+
+  const plausible = signals.some((signal) => signal.plausible);
+  if (!plausible) {
+    return emptyAutoRecall({
+      status: degraded.size > 0 ? 'degraded' : 'empty',
+      budget,
+      searched: [input.query],
+      candidates: initial.results.length,
+      degraded: [...degraded],
+      note: 'no memory evidence was strong enough for automatic injection',
+    });
+  }
+
+  const qualified = await recall(ctx, { ...recallInput, rerank: true });
+  for (const reason of qualified.degraded ?? []) degraded.add(reason);
+  if (qualified.status === 'unavailable') {
+    return emptyAutoRecall({
+      status: 'unavailable',
+      budget,
+      searched: [input.query],
+      candidates: initial.results.length,
+      degraded: [...degraded],
+      qualification: qualified.qualification,
+      qualificationRun: true,
+      note: qualified.note ?? 'memory evidence could not be read during qualification',
+    });
+  }
+
+  const qualificationApplied = qualified.qualification?.applied === true;
+  const minimumRelevance = qualified.qualification?.model === 'llm' ? 2 / 3 : 0.5;
+  const selected = qualificationApplied
+    ? qualified.results
+        .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
+        .slice(0, AUTO_RECALL_MAX_RESULTS)
+    : [];
+
+  if (selected.length === 0) {
+    return emptyAutoRecall({
+      status: degraded.size > 0 ? 'degraded' : 'empty',
+      budget,
+      searched: [input.query],
+      candidates: initial.results.length,
+      degraded: [...degraded],
+      qualification: qualified.qualification,
+      qualificationRun: true,
+      note: qualificationApplied
+        ? 'qualification found no evidence strong enough for automatic injection'
+        : 'automatic injection requires calibrated qualification for ambiguous evidence',
+    });
+  }
+
+  return assembledAutoRecall({
+    budget,
+    searched: [input.query],
+    selected,
+    candidates: initial.results.length,
+    degraded,
+    activationBasis: 'qualified',
+    qualification: qualified.qualification,
+    qualificationRun: true,
+  });
+}
+
+interface EmptyAutoRecallOptions {
+  status: 'empty' | 'degraded' | 'unavailable';
+  budget: number;
+  searched: string[];
+  candidates: number;
+  degraded?: ContextOutput['degraded'];
+  qualification?: RecallQualification;
+  qualificationRun?: boolean;
+  note: string;
+}
+
+function emptyAutoRecall(options: EmptyAutoRecallOptions): ContextOutput {
+  return {
+    status: options.status,
+    ...(options.status === 'degraded' && options.degraded?.length ? { degraded: options.degraded } : {}),
+    note: options.note,
+    profile: 'auto_recall',
+    activation: {
+      activated: false,
+      basis: 'none',
+      candidates: options.candidates,
+      selected: 0,
+      qualification_run: options.qualificationRun ?? false,
+    },
+    pinned: [],
+    results: [],
+    cards: [],
+    timeline: [],
+    events: [],
+    searched: options.searched,
+    ...(options.qualification ? { qualification: options.qualification } : {}),
+    budget_used: 0,
+  };
+}
+
+interface AssembledAutoRecallOptions {
+  budget: number;
+  searched: string[];
+  selected: RecallResult[];
+  candidates: number;
+  degraded: Set<NonNullable<ContextOutput['degraded']>[number]>;
+  activationBasis: 'exact' | 'semantic' | 'qualified';
+  qualification?: RecallQualification;
+  qualificationRun: boolean;
+}
+
+function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput {
+  const fitted = fitAutoRecallResults(options.selected, options.budget);
+  const cards = fitted.results
+    .filter((result): result is Extract<RecallResult, { type: 'page' }> => result.type === 'page')
+    .map(({ type: _type, ...card }) => card);
+  const reasons = [...options.degraded];
+  const activated = fitted.results.length > 0;
+  const dropped = options.selected.length - fitted.results.length;
+
+  return {
+    status: reasons.length > 0 ? 'degraded' : activated ? 'ok' : 'empty',
+    ...(reasons.length > 0 ? { degraded: reasons } : {}),
+    ...(!activated ? { note: 'relevant evidence could not fit the requested context budget' } : {}),
+    profile: 'auto_recall',
+    activation: {
+      activated,
+      basis: activated ? options.activationBasis : 'none',
+      candidates: options.candidates,
+      selected: fitted.results.length,
+      qualification_run: options.qualificationRun,
+    },
+    pinned: [],
+    results: fitted.results,
+    cards,
+    timeline: [],
+    events: [],
+    searched: options.searched,
+    ...(options.qualification ? { qualification: options.qualification } : {}),
+    budget_used: fitted.budgetUsed,
+    ...(dropped > 0 ? { dropped: { cards: dropped, events: 0, timeline: 0 } } : {}),
+  };
+}
+
+interface ActivationSignal {
+  result: RecallResult;
+  basis: 'exact' | 'semantic';
+  strength: number;
+  strong: boolean;
+  plausible: boolean;
+}
+
+function activationSignal(
+  result: RecallResult,
+  query: string,
+  resolutionContext: string | null,
+): ActivationSignal {
+  const evidence = evidenceText(result);
+  const queryTokens = meaningfulTokens(query);
+  const contextTokens = meaningfulTokens(resolutionContext ?? '');
+  const overlap = overlapRatio(queryTokens, evidence);
+  const contextOverlap = overlapRatio(contextTokens, evidence);
+  const identities =
+    result.type === 'page'
+      ? [result.title, result.slug.split('/').at(-1)?.replaceAll('-', ' ') ?? '']
+      : [
+          result.label,
+          result.path
+            .split('/')
+            .at(-1)
+            ?.replace(/\.[^.]+$/, '')
+            .replaceAll('-', ' ') ?? '',
+        ];
+  const promptHaystack = normalize(`${query} ${resolutionContext ?? ''}`);
+  const exactIdentity = identities.some((identity) => {
+    const normalized = normalize(identity);
+    return meaningfulTokens(identity).length >= 2 && promptHaystack.includes(normalized);
+  });
+  const exactEvidence = queryTokens.length >= 2 && overlap >= 0.75;
+  const resolvedIdentity =
+    Boolean(resolutionContext) &&
+    identities.some((identity) => {
+      const normalized = normalize(identity);
+      return (
+        meaningfulTokens(identity).length >= 2 && normalize(resolutionContext ?? '').includes(normalized)
+      );
+    });
+  const semantic = result.relevance ?? 0;
+  const strongSemantic = semantic >= 0.82 && overlap > 0;
+  const dualArmSemantic =
+    semantic >= 0.72 &&
+    overlap >= 0.5 &&
+    result.matched_by?.includes('lexical') === true &&
+    result.matched_by.includes('vector');
+  const exact = exactIdentity || exactEvidence || (resolvedIdentity && overlap > 0);
+  const strong = exact || strongSemantic || dualArmSemantic;
+  const plausible = strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45;
+  return {
+    result,
+    basis: exact ? 'exact' : 'semantic',
+    strength: exact ? 2 + Math.max(overlap, contextOverlap) : semantic + overlap,
+    strong,
+    plausible,
+  };
+}
+
+/** The recent turns are not a second query. They are admitted only when the current prompt has a local
+ * reference to resolve, and even then only the last 1,000 characters are allowed into retrieval. */
+function referenceContext(
+  query: string,
+  turns: NonNullable<ParsedContextInput['conversation_context']>,
+): string | null {
+  if (turns.length === 0 || !hasLocalReference(query)) return null;
+  const recent = turns
+    .slice(-2)
+    .map((turn) => turn.content.trim())
+    .filter(Boolean)
+    .join('\n');
+  if (!recent) return null;
+  return recent.slice(-1000);
+}
+
+function hasLocalReference(query: string): boolean {
+  return (
+    /\b(it|its|that|this|they|them|those|these|one|other|former|latter|same)\b/i.test(query) ||
+    /\b(what|how) about\b/i.test(query)
+  );
+}
+
+const AUTO_RECALL_STOPWORDS = new Set([
+  'about',
+  'again',
+  'also',
+  'and',
+  'are',
+  'can',
+  'could',
+  'does',
+  'for',
+  'from',
+  'have',
+  'how',
+  'into',
+  'its',
+  'memory',
+  'please',
+  'remember',
+  'tell',
+  'that',
+  'the',
+  'their',
+  'them',
+  'there',
+  'these',
+  'they',
+  'this',
+  'those',
+  'was',
+  'what',
+  'when',
+  'where',
+  'which',
+  'who',
+  'why',
+  'with',
+  'would',
+  'you',
+]);
+
+function meaningfulTokens(text: string): string[] {
+  return [
+    ...new Set(
+      normalize(text)
+        .split(' ')
+        .filter((token) => token.length > 2 && !AUTO_RECALL_STOPWORDS.has(token))
+        .map(autoRecallRoot),
+    ),
+  ];
+}
+
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+}
+
+function overlapRatio(tokens: string[], evidence: string): number {
+  if (tokens.length === 0) return 0;
+  const haystack = new Set(normalize(evidence).split(' ').map(autoRecallRoot));
+  return tokens.filter((token) => haystack.has(token)).length / tokens.length;
+}
+
+function autoRecallRoot(token: string): string {
+  if (token.length > 5 && token.endsWith('ies')) return token.slice(0, -3);
+  if (token.length > 4 && token.endsWith('es')) return token.slice(0, -2);
+  if (token.length > 3 && token.endsWith('s') && !token.endsWith('ss')) return token.slice(0, -1);
+  return token;
+}
+
+function evidenceText(result: RecallResult): string {
+  if (result.type === 'document') return `${result.path} ${result.label} ${result.quote ?? ''}`;
+  return `${result.slug} ${result.title} ${result.breadcrumb ?? ''} ${result.lines.map((line) => line.text).join(' ')}`;
+}
+
+function fitAutoRecallResults(
+  selected: RecallResult[],
+  budget: number,
+): { results: RecallResult[]; budgetUsed: number } {
+  const results: RecallResult[] = [];
+  let budgetUsed = 0;
+  for (const raw of selected) {
+    const remaining = budget - budgetUsed;
+    if (remaining <= 0) break;
+    const result = fitAutoRecallResult(sanitizeAutoRecallResult(raw), remaining);
+    if (!result) continue;
+    const cost = estimateTokens(result);
+    if (cost > remaining) continue;
+    results.push(result);
+    budgetUsed += cost;
+  }
+  return { results, budgetUsed };
+}
+
+/** Clip only at exact line/quote boundaries. Auto-recall never asks a model to summarize evidence to fit. */
+function fitAutoRecallResult(result: RecallResult, budget: number): RecallResult | null {
+  if (estimateTokens(result) <= budget && hasExactEvidence(result)) return result;
+  if (result.type === 'document') {
+    const lines = result.quote?.split('\n') ?? [];
+    let fitted: Extract<RecallResult, { type: 'document' }> | null = null;
+    for (const line of lines) {
+      const quote: string = fitted ? `${fitted.quote ?? ''}\n${line}`.trim() : line;
+      const candidate: Extract<RecallResult, { type: 'document' }> = { ...result, quote };
+      if (estimateTokens(candidate) > budget) break;
+      fitted = candidate;
+    }
+    return fitted;
+  }
+
+  let fittedLines: typeof result.lines = [];
+  let fittedDocuments: NonNullable<typeof result.documents> = [];
+  let fitted: RecallResult | null = null;
+  for (const line of result.lines) {
+    const candidate = { ...result, lines: fittedLines.concat(line), documents: fittedDocuments };
+    if (estimateTokens(candidate) > budget) break;
+    fittedLines = candidate.lines;
+    fitted = candidate;
+  }
+  for (const document of result.documents ?? []) {
+    if (!document.quote) continue;
+    const quoteLines = document.quote.split('\n');
+    let clipped = { ...document, quote: '' };
+    for (const line of quoteLines) {
+      const candidateDocument = { ...clipped, quote: `${clipped.quote}\n${line}`.trim() };
+      const candidate = {
+        ...result,
+        lines: fittedLines,
+        documents: fittedDocuments.concat(candidateDocument),
+      };
+      if (estimateTokens(candidate) > budget) break;
+      clipped = candidateDocument;
+      fitted = candidate;
+    }
+    if (clipped.quote) fittedDocuments = fittedDocuments.concat(clipped);
+  }
+  return fitted;
+}
+
+function sanitizeAutoRecallResult(result: RecallResult): RecallResult {
+  if (result.type === 'document') {
+    const { summary: _summary, graph_paths: _graphPaths, suggested_actions: _actions, ...exact } = result;
+    return exact;
+  }
+  const {
+    links: _links,
+    summary: _summary,
+    superseded: _superseded,
+    graph_paths: _graphPaths,
+    documents,
+    ...exact
+  } = result;
+  return {
+    ...exact,
+    summary: null,
+    ...(documents?.some((document) => document.quote)
+      ? {
+          documents: documents
+            .filter((document) => document.quote)
+            .map(({ summary: _documentSummary, ...document }) => document),
+        }
+      : {}),
+  };
+}
+
+function hasExactEvidence(result: RecallResult): boolean {
+  return result.type === 'document'
+    ? Boolean(result.quote?.trim())
+    : result.lines.length > 0 ||
+        result.documents?.some((document) => Boolean(document.quote?.trim())) === true;
 }
 
 /** A pinned page is delivered in the same card shape as a recalled one, so the

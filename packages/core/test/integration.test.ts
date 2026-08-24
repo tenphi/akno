@@ -388,6 +388,106 @@ describe('context', () => {
     const result = await mem.context({ budget: 2000, pinned: ['gone/missing'], structure: false });
     expect(result.dropped?.cards).toBeGreaterThan(0);
   });
+
+  it('auto-recall injects exact evidence without ambient context or model qualification', async () => {
+    const result = await mem.context({
+      profile: 'auto_recall',
+      query: 'What does Ada Marlow prefer?',
+      budget: 240,
+      // These broad-context inputs are deliberately ignored by this profile.
+      pinned: ['home/lease'],
+      timeline_days: 100000,
+      structure: true,
+    });
+
+    expect(result.profile).toBe('auto_recall');
+    expect(result.activation).toMatchObject({
+      activated: true,
+      basis: 'exact',
+      qualification_run: false,
+    });
+    expect(result.results.map((entry) => (entry.type === 'page' ? entry.slug : entry.path))).toContain(
+      'people/ada-marlow',
+    );
+    expect(result.pinned).toEqual([]);
+    expect(result.timeline).toEqual([]);
+    expect(result.structure).toBeUndefined();
+    expect(result.budget_used).toBeLessThanOrEqual(240);
+    expect(result.searched).toEqual(['What does Ada Marlow prefer?']);
+    expect(result.cards.every((card) => card.summary === null && card.links === undefined)).toBe(true);
+  });
+
+  it('uses bounded recent context only to resolve a local reference', async () => {
+    const result = await mem.context({
+      profile: 'auto_recall',
+      query: 'When does it renew?',
+      conversation_context: [
+        { role: 'user', content: 'We were discussing the apartment lease.' },
+        { role: 'assistant', content: 'I can check the lease terms.' },
+      ],
+      budget: 240,
+    });
+
+    expect(result.activation?.activated).toBe(true);
+    expect(result.results.some((entry) => entry.type === 'page' && entry.slug === 'home/lease')).toBe(true);
+    // The receipt echoes neither the resolving turns nor the combined internal retrieval query.
+    expect(result.searched).toEqual(['When does it renew?']);
+  });
+
+  it('returns no speculative auto-recall evidence when relevance is weak', async () => {
+    const result = await mem.context({
+      profile: 'auto_recall',
+      query: 'Draft a cheerful greeting',
+      budget: 240,
+    });
+
+    expect(result.activation).toMatchObject({ activated: false, basis: 'none', selected: 0 });
+    expect(result.results).toEqual([]);
+    // This fixture deliberately has no embedding model, so absence is degraded rather than proof of no match.
+    expect(result.status).toBe('degraded');
+    expect(result.degraded).toContain('no_embedding_model');
+  });
+
+  it('tries qualification only for a plausible result and abstains when none is calibrated', async () => {
+    const result = await mem.context({ profile: 'auto_recall', query: 'rent', budget: 240 });
+
+    expect(result.activation).toMatchObject({
+      activated: false,
+      basis: 'none',
+      qualification_run: true,
+    });
+    expect(result.results).toEqual([]);
+  });
+
+  it('treats the auto-recall budget as a hard evidence ceiling', async () => {
+    const result = await mem.context({
+      profile: 'auto_recall',
+      query: 'What does Ada Marlow prefer?',
+      budget: 1,
+    });
+
+    expect(result.results).toEqual([]);
+    expect(result.activation?.activated).toBe(false);
+    expect(result.budget_used).toBe(0);
+    expect(result.dropped?.cards).toBeGreaterThan(0);
+  });
+
+  it('requires a current prompt and bounds recent context for auto-recall', async () => {
+    await expect(mem.context({ profile: 'auto_recall', budget: 240 } as never)).rejects.toThrow(
+      /invalid input/,
+    );
+    await expect(
+      mem.context({
+        profile: 'auto_recall',
+        query: 'When does it renew?',
+        conversation_context: Array.from({ length: 4 }, () => ({
+          role: 'user' as const,
+          content: 'x'.repeat(1600),
+        })),
+        budget: 240,
+      }),
+    ).rejects.toThrow(/invalid input/);
+  });
 });
 
 describe('input validation', () => {

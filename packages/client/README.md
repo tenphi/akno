@@ -13,6 +13,13 @@ import { connect } from '@tenphi/akno-client';
 
 const akno = await connect({ socket: '~/.akno/akno.sock' });
 const result = await akno.call('recall', { query: 'car insurance renewal' });
+
+// A host may conservatively prepare evidence before its own model handles a turn.
+const context = await akno.context({
+  profile: 'auto_recall',
+  query: 'When does the Zephyr QX-100 warranty end?',
+  budget: 1200,
+});
 ```
 
 Schemas and error codes come from

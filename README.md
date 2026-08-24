@@ -250,7 +250,7 @@ the wrong one. `context` is normally called by the host rather than by the agent
 | `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                    |
 | `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |
 | `timeline` | Authored events and typed orphan-document date evidence — by range, subject, source, or match.                                                                       |
-| `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                                  |
+| `context`  | One pre-turn budget. The default profile combines pins, timeline, structure, and recall; `auto_recall` injects only strongly relevant exact evidence.                |
 | `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                                  |
 | `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                                |
 | `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. It sees the complete folder taxonomy and only writes into existing eligible folders. |

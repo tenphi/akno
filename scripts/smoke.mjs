@@ -149,6 +149,29 @@ try {
   check('context fits its budget', bundle.budget_used <= 3000, `used ${bundle.budget_used}`);
   check('context includes the ledger', bundle.events.length >= 0);
 
+  const autoRecall = JSON.parse(
+    run('context', 'Zephyr QX-100 warranty', '--profile', 'auto_recall', '--budget', '180'),
+  );
+  check(
+    'auto-recall injects exact evidence without ambient context',
+    autoRecall.activation?.activated === true &&
+      autoRecall.results.some((result) => result.type === 'page' && result.slug === 'home/appliances') &&
+      autoRecall.timeline.length === 0 &&
+      autoRecall.structure === undefined,
+  );
+  check(
+    'auto-recall respects its hard evidence budget',
+    autoRecall.budget_used <= 180,
+    `used ${autoRecall.budget_used}`,
+  );
+  const emptyAutoRecall = JSON.parse(
+    run('context', 'Draft a cheerful greeting', '--profile', 'auto_recall', '--budget', '180'),
+  );
+  check(
+    'auto-recall abstains from weak evidence',
+    emptyAutoRecall.activation?.activated === false && emptyAutoRecall.results.length === 0,
+  );
+
   // The knowledge base must be byte-identical: nothing was written into it.
   const untouched = Object.entries(PAGES).every(
     ([relPath, content]) => fs.readFileSync(path.join(root, relPath), 'utf8') === content,

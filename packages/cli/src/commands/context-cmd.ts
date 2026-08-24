@@ -8,7 +8,9 @@ const CONTEXT_HELP = `akno context [query] [options]
   structure outline, and this turn's recall. Normally called by a host before the
   model sees the turn, not by an agent.
 
-  --budget <n>        Total token budget (default 20000).
+  --budget <n>        Hard token budget (default 20000; auto_recall 1200).
+  --profile <name>    "default" or precision-first "auto_recall" (default default).
+  --turn <role:text>  Recent user/assistant turn for reference resolution; repeatable.
   --pin <slug,...>    Pages always included, before anything else competes.
   --days <n>          Days of timeline to include. 0 omits the section.
   --no-structure      Omit the folder outline.
@@ -20,11 +22,15 @@ export async function contextCommand(argv: string[]): Promise<number> {
     pin?: string;
     days?: string;
     structure: boolean;
+    profile?: string;
+    turn?: string[];
   }>(argv, {
     budget: { type: 'string' },
     pin: { type: 'string' },
     days: { type: 'string' },
     structure: { type: 'boolean', default: true },
+    profile: { type: 'string' },
+    turn: { type: 'string', multiple: true },
   });
 
   if (values.help) {
@@ -36,7 +42,9 @@ export async function contextCommand(argv: string[]): Promise<number> {
   try {
     const result = await handle.ops.context({
       ...(positionals.length > 0 ? { query: positionals.join(' ') } : {}),
-      budget: values.budget ? Number(values.budget) : 20000,
+      budget: values.budget ? Number(values.budget) : values.profile === 'auto_recall' ? 1200 : 20000,
+      ...(values.profile ? { profile: values.profile as 'default' | 'auto_recall' } : {}),
+      ...(values.turn ? { conversation_context: values.turn.map(parseConversationTurn) } : {}),
       ...(values.pin ? { pinned: values.pin.split(',').map((slug) => slug.trim()) } : {}),
       ...(values.days ? { timeline_days: Number(values.days) } : {}),
       structure: values.structure,
@@ -52,6 +60,15 @@ export async function contextCommand(argv: string[]): Promise<number> {
         `${result.dropped ? style.yellow(`  dropped ${result.dropped.cards} cards, ${result.dropped.timeline ?? result.dropped.events} timeline results`) : ''}`,
     );
     if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
+    if (result.activation) {
+      line(
+        `  ${style.grey('auto-recall')} ${result.activation.activated ? style.green('activated') : style.grey('empty')} ` +
+          style.grey(
+            `(${result.activation.basis}; ${result.activation.selected}/${result.activation.candidates} selected` +
+              `${result.activation.qualification_run ? '; qualified' : ''})`,
+          ),
+      );
+    }
 
     if (result.coverage && Object.keys(result.coverage).length > 0) {
       const parts = Object.entries(result.coverage).map(([concept, covered]) =>
@@ -123,4 +140,14 @@ export async function contextCommand(argv: string[]): Promise<number> {
   } finally {
     await handle.close();
   }
+}
+
+function parseConversationTurn(value: string): { role: 'user' | 'assistant'; content: string } {
+  const separator = value.indexOf(':');
+  const role = separator === -1 ? '' : value.slice(0, separator);
+  const content = separator === -1 ? '' : value.slice(separator + 1).trim();
+  if ((role !== 'user' && role !== 'assistant') || !content) {
+    throw new Error('--turn expects user:<text> or assistant:<text>');
+  }
+  return { role, content };
 }
