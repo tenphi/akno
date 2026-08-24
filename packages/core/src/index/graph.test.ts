@@ -7,6 +7,8 @@ import { open } from '../open.ts';
 import { CONFLICT_PROMPT_VERSION, findCrossPageConflictsInStore } from '../maintenance/conflicts.ts';
 import { openStore } from '../store/db.ts';
 import { sha256 } from '../store/ids.ts';
+import type { ModelClient } from '../models/client.ts';
+import { resolveContextualEntityMentions } from './entity-resolution.ts';
 import { normalizeEntityName, rebuildEvidenceGraph, resolveExactEntity } from './graph.ts';
 
 const temporary: string[] = [];
@@ -275,6 +277,172 @@ An invented design record.
       candidates: [],
     });
     db.close();
+  });
+
+  it('projects a cached contextual choice with provenance and reuses it without another model call', async () => {
+    const root = contextualEntityFixtureCorpus();
+    const stateDir = temporaryDirectory('akno-contextual-entity-state-');
+    const memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+
+    const store = openStore({ dbPath: path.join(stateDir, 'akno.db'), embeddingDimensions: 1024 });
+    let calls = 0;
+    const model = {
+      available: true,
+      modelId: 'fixture-resolver',
+      unavailableReason: null,
+      chat: async (messages: { content: string }[]) => {
+        calls++;
+        const payload = JSON.parse(messages[1]!.content) as {
+          candidates: { candidate_id: string; label: string }[];
+        };
+        return {
+          ok: true,
+          value: JSON.stringify({
+            order: payload.candidates.map((candidate) => ({
+              id: candidate.candidate_id,
+              grade: candidate.label === 'Zephyr One' ? 3 : 0,
+            })),
+            rationale: 'distinguishing_evidence',
+          }),
+          latencyMs: 7,
+        };
+      },
+    } as unknown as ModelClient;
+
+    const first = await resolveContextualEntityMentions(store, model, {
+      maxCandidates: 8,
+      maxMentions: 20,
+    });
+    expect(first).toMatchObject({ considered: 1, resolved: 1, abstained: 0, cached: 0, failed: 0 });
+    rebuildEvidenceGraph(store, { contextualModelId: 'fixture-resolver' });
+
+    const mention = store.db
+      .prepare(
+        `SELECT resolution, confidence, decision_fingerprint, model_id, prompt_version
+           FROM graph_mentions WHERE mention = 'Zephyr'`,
+      )
+      .get() as Record<string, unknown>;
+    expect(mention).toMatchObject({
+      resolution: 'contextual',
+      confidence: 0.85,
+      model_id: 'fixture-resolver',
+    });
+    expect(mention.decision_fingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(mention.prompt_version).toBe('entity-context-v1');
+    expect(
+      store.db.prepare("SELECT resolution, confidence FROM graph_edges WHERE relation = 'about'").get(),
+    ).toEqual({ resolution: 'contextual', confidence: 0.85 });
+
+    const second = await resolveContextualEntityMentions(store, model, {
+      maxCandidates: 8,
+      maxMentions: 20,
+    });
+    expect(second).toMatchObject({ considered: 0, resolved: 0, cached: 0, failed: 0 });
+    expect(calls).toBe(1);
+    store.close();
+
+    fs.writeFileSync(
+      path.join(root, 'products/zephyr-one.md'),
+      `---
+title: Zephyr One
+type: product
+akno:
+  aliases: [Zephyr]
+---
+
+# Zephyr One
+
+The invented warranty now lasts seven years.
+`,
+    );
+    const changedMemory = await openFixture(root, stateDir);
+    await changedMemory.index({ structuralOnly: true, verify: true });
+    await changedMemory.close();
+    const changedStore = openStore({
+      dbPath: path.join(stateDir, 'akno.db'),
+      embeddingDimensions: 1024,
+    });
+    const changed = await resolveContextualEntityMentions(changedStore, model, {
+      maxCandidates: 8,
+      maxMentions: 20,
+    });
+    expect(changed).toMatchObject({ considered: 1, resolved: 1, cached: 0, failed: 0 });
+    expect(calls).toBe(2);
+    expect(changedStore.db.prepare('SELECT count(*) AS count FROM graph_resolution_verdicts').get()).toEqual({
+      count: 2,
+    });
+    changedStore.close();
+  });
+
+  it('marks fact edges contextual when an ambiguous fact subject is uniquely resolved', async () => {
+    const root = contextualEntityFixtureCorpus();
+    const stateDir = temporaryDirectory('akno-contextual-fact-state-');
+    const memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+
+    const store = openStore({ dbPath: path.join(stateDir, 'akno.db'), embeddingDimensions: 1024 });
+    const note = store.db.prepare("SELECT id FROM pages WHERE slug = 'notes/warranty'").get() as {
+      id: string;
+    };
+    store.db.prepare("UPDATE pages SET about = '[]' WHERE id = ?").run(note.id);
+    insertFact(store.db, {
+      id: 'fac_contextual_warranty',
+      slug: 'notes/warranty',
+      line: 8,
+      claim: 'Zephyr One has the five-year warranty.',
+      subject: 'Zephyr',
+      attribute: 'Warranty',
+      value: 'five years',
+    });
+    rebuildEvidenceGraph(store);
+    const model = {
+      available: true,
+      modelId: 'fixture-resolver',
+      unavailableReason: null,
+      chat: async (messages: { content: string }[]) => {
+        const payload = JSON.parse(messages[1]!.content) as {
+          candidates: { candidate_id: string; label: string }[];
+        };
+        return {
+          ok: true,
+          value: JSON.stringify({
+            order: payload.candidates.map((candidate) => ({
+              id: candidate.candidate_id,
+              grade: candidate.label === 'Zephyr One' ? 3 : 0,
+            })),
+            rationale: 'distinguishing_evidence',
+          }),
+          latencyMs: 7,
+        };
+      },
+    } as unknown as ModelClient;
+    const resolution = await resolveContextualEntityMentions(store, model, {
+      maxCandidates: 8,
+      maxMentions: 20,
+    });
+    expect(resolution.resolved).toBe(1);
+    rebuildEvidenceGraph(store, { contextualModelId: 'fixture-resolver' });
+
+    expect(
+      store.db
+        .prepare(
+          `SELECT subject_resolution, subject_resolution_fingerprint, traversable
+             FROM graph_fact_status WHERE fact_id = 'fac_contextual_warranty'`,
+        )
+        .get(),
+    ).toMatchObject({ subject_resolution: 'contextual', traversable: 1 });
+    expect(
+      store.db
+        .prepare(
+          `SELECT resolution, confidence FROM graph_edges
+            WHERE source_fact = 'fac_contextual_warranty' AND relation = 'has_attribute'`,
+        )
+        .get(),
+    ).toEqual({ resolution: 'contextual', confidence: 0.85 });
+    store.close();
   });
 
   it('projects only exact, current, conflict-eligible facts into traversable relationships', async () => {
@@ -673,6 +841,55 @@ akno:
 # Invented Research Note
 
 See [[people/ada-marlow]].
+`,
+  );
+  return root;
+}
+
+function contextualEntityFixtureCorpus(): string {
+  const root = temporaryDirectory('akno-contextual-entity-kb-');
+  write(
+    root,
+    'products/zephyr-one.md',
+    `---
+title: Zephyr One
+type: product
+akno:
+  aliases: [Zephyr]
+---
+
+# Zephyr One
+
+The invented warranty lasts five years.
+`,
+  );
+  write(
+    root,
+    'products/zephyr-two.md',
+    `---
+title: Zephyr Two
+type: product
+akno:
+  aliases: [Zephyr]
+---
+
+# Zephyr Two
+
+The invented warranty lasts two years.
+`,
+  );
+  write(
+    root,
+    'notes/warranty.md',
+    `---
+title: Warranty Note
+akno:
+  about: [Zephyr]
+---
+
+# Warranty Note
+
+The five-year warranty belongs to Zephyr One.
 `,
   );
   return root;

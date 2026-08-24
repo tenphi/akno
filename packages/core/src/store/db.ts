@@ -4,6 +4,7 @@ import Database from 'better-sqlite3';
 import * as sqliteVec from 'sqlite-vec';
 import { AknoError } from '@tenphi/akno-protocol';
 import {
+  CONTEXTUAL_ENTITY_MIGRATION_INDEX,
   CONFLICT_VERDICTS_MIGRATION_INDEX,
   CONFLICT_QUALIFICATION_MIGRATION_INDEX,
   DOCUMENT_AVAILABILITY_MIGRATION_INDEX,
@@ -180,6 +181,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'graph_fact_status')) {
         db.exec(MIGRATIONS[FACT_GRAPH_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'graph_resolution_verdicts')) {
+        db.exec(MIGRATIONS[CONTEXTUAL_ENTITY_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

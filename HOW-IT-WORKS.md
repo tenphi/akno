@@ -199,21 +199,26 @@ flowchart TD
     docs --> embed["7. Embed searchable chunks"]
     embed --> derive["8. Derive summaries, keywords, and facts"]
     derive --> graph["9. Rebuild exact evidence graph"]
-    graph --> store["10. Commit the new reading to the index"]
+    graph --> context{"10. Contextual resolution enabled?"}
+    context -->|no| store["11. Commit the new reading to the index"]
+    context -->|yes| resolve["Resolve exact-name collisions<br/>or abstain"]
+    resolve --> graph2["Rebuild with current cached verdicts"]
+    graph2 --> store
 ```
 
-| Pass                | Method                                                                 | Model         |
-| ------------------- | ---------------------------------------------------------------------- | ------------- |
-| Walk                | Ignore configured paths, dot folders, and unsupported page types       | none          |
-| Skip                | Compare size and modification time with the previous pass              | none          |
-| Verify              | Hash likely changes; periodic sweeps also catch misleading timestamps  | none          |
-| Parse               | Read frontmatter, headings, wikilinks, dates, roles, and source fences | none          |
-| Chunk               | Follow headings and configured size limits                             | none          |
-| Extract             | Read PDF text, OCR scans, and convert supported Office files           | none on macOS |
-| Evidence graph      | Rebuild structural paths, entities, mentions, and eligible fact edges  | none          |
-| Embed               | Turn chunks into vectors for semantic search                           | embedding     |
-| Derive              | Produce page summaries, keywords, and durable fact candidates          | derive        |
-| Summarize documents | Describe each document without copying its body into Markdown          | derive        |
+| Pass                | Method                                                                 | Model          |
+| ------------------- | ---------------------------------------------------------------------- | -------------- |
+| Walk                | Ignore configured paths, dot folders, and unsupported page types       | none           |
+| Skip                | Compare size and modification time with the previous pass              | none           |
+| Verify              | Hash likely changes; periodic sweeps also catch misleading timestamps  | none           |
+| Parse               | Read frontmatter, headings, wikilinks, dates, roles, and source fences | none           |
+| Chunk               | Follow headings and configured size limits                             | none           |
+| Extract             | Read PDF text, OCR scans, and convert supported Office files           | none on macOS  |
+| Evidence graph      | Rebuild structural paths, entities, mentions, and eligible fact edges  | none           |
+| Entity context      | Choose among bounded exact-name candidates under a strict margin       | derive, opt-in |
+| Embed               | Turn chunks into vectors for semantic search                           | embedding      |
+| Derive              | Produce page summaries, keywords, and durable fact candidates          | derive         |
+| Summarize documents | Describe each document without copying its body into Markdown          | derive         |
 
 The fast path is why a second index pass is normally quick: unchanged bytes are not re-read,
 re-embedded, or re-derived.
@@ -360,7 +365,17 @@ akno graph --entity ent_01JEXAMPLE --direction out --hops 1
 `graph` is relationship inspection, not fuzzy search and not question answering. A slug starts at that exact
 page. An entity id starts at one canonical entity. A query extracts only exact entity names declared by
 canonical slugs, aliases, titles, or basenames; lexical similarity never becomes identity. If an exact name
-belongs to more than one entity, the result is `degraded` and lists the candidates instead of choosing one.
+belongs to more than one entity, it remains ambiguous unless optional contextual resolution previously found
+one uniquely supported candidate.
+
+Contextual resolution is an indexing feature, not a fuzzy graph query. Enable
+`graph.contextual_resolution.enabled` only after `akno bench entities` passes for the configured derive
+model. The model receives the bounded source context and at most eight existing exact-name candidates under
+opaque request ids. One candidate must receive grade 3 while every alternative receives at most grade 1;
+otherwise Akno abstains. The model cannot create, merge, rename, or write an entity. A selected edge is
+marked `resolution: contextual`, capped at confidence `0.85`, and sealed to the source, candidate-set, model,
+and prompt fingerprints. Any changed input invalidates it. Cached abstentions prevent repeated calls for the
+same evidence.
 
 Traversal goes both directions and at most two hops by default. `--direction`, `--relation`, and `--hops`
 narrow it; three hops is the hard maximum. Current eligible evidence is the default. `--history` includes
@@ -1589,6 +1604,7 @@ source files in precedence order.
 ```bash
 akno bench --write
 akno bench --retrieval-only
+akno bench entities --provider openai --model gpt-5.6-luna --reasoning none
 ```
 
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
@@ -1597,6 +1613,10 @@ corpus and asserts orphan recall, no owned/standalone duplication, unchanged pag
 typed lexical degradation, two-hop graph-only discovery with complete path provenance, direct-query top-result
 preservation, and mixed budget-fitting latency. `--retrieval-only` runs that reproducible quality gate without
 opening the configured knowledge base or calling its models.
+
+`bench entities` is a separate opt-in live gate. It sends only Akno's eight invented same-name cases to the
+selected model and never opens the configured knowledge base. It measures strict candidate selection,
+indistinguishable-case abstention, instruction resistance, schema validity, and latency.
 
 ### Recovery guarantees
 
@@ -1623,7 +1643,7 @@ or document was forgotten, recover it from Akno's trash within the configured re
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### The evidence graph still uses conservative exact identity
+### Contextual identity is opt-in and deliberately narrow
 
 Indexing now rebuilds a local evidence graph from exact page links, `akno.about`, document ownership, and
 dated event relationships. Each knowledge page anchors a separate canonical entity node. Its canonical slug,
@@ -1661,10 +1681,16 @@ reranking, qualification, filtering, assembly, and budget stages. Cards say `mat
 complete compact node/relation path and evidence locators that admitted them. The invented retrieval gate proves
 one target with no query overlap is found only by this arm and checks that direct-query top results remain stable.
 
-The remaining identity gap is contextual disambiguation. Same-name candidates still produce typed
-`entity_resolution_failed` degradation and no guessed edge. Recall also does not request three-hop traversal or
-use graph findings to authorize maintenance; deliberate one-to-three-hop inspection remains the job of
-`graph`, and grounded answer synthesis remains a separate proposed operation.
+Optional contextual disambiguation now handles the narrow case where exact identity lookup already found two
+or more same-name candidates. It uses bounded source and canonical-page context, opaque per-request ids, a
+strict select-or-abstain grade margin, and a content-addressed verdict cache. Accepted edges expose contextual
+provenance and conservative confidence; malformed output, endpoint failure, indistinguishable candidates, and
+changed evidence all leave the mention ambiguous. Run `akno bench entities` before enabling it; the invented
+gate requires perfect selection precision and abstention on indistinguishable and instruction-bearing cases.
+
+This does not perform open-ended entity discovery or duplicate merging. Recall also does not request three-hop
+traversal or use graph findings to authorize maintenance; deliberate one-to-three-hop inspection remains the
+job of `graph`, and grounded answer synthesis remains a separate proposed operation.
 
 ### The durable review queue does not cover every phase yet
 

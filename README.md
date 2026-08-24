@@ -425,7 +425,11 @@ typed rather than becoming guessed paths or false proof of absence.
 seeds. Graph candidates join lexical and semantic candidates through rank fusion, then pass through the same
 reranker, irrelevance qualification, filters, assembly, and budget. Returned cards expose `matched_by` and a
 compact node/relation/locator path; they still cite ordinary page lines or document quotes as evidence.
-Contextual disambiguation of same-name entities is not implemented: ambiguity degrades and abstains.
+Optional contextual disambiguation can choose only among existing exact-name candidates. It is off by default
+and should be enabled only after `akno bench entities` passes for the configured derive model. A choice needs
+one grade-3 candidate and no alternative above grade 1; everything else abstains. Accepted edges are marked
+`contextual`, use conservative confidence, and are invalidated when the source, candidate pages, model, or
+prompt changes. The model cannot discover, create, merge, rename, or write entities.
 
 ## Documents
 
@@ -851,6 +855,11 @@ nor calls its models, which makes it the safe, reproducible quality gate for CI 
 invented excerpts—including one instruction-bearing irrelevant passage—to the selected provider, and reports
 transport, schema, order, labels, and latency. It never opens the index. Passing verifies the integration, not
 the larger relevance release gate.
+
+`akno bench entities` runs the separate contextual-identity gate against eight invented same-name cases. It
+never opens the configured knowledge base. The gate requires valid structured responses, perfect selection
+precision, and perfect abstention on deliberately indistinguishable and instruction-bearing inputs before the
+off-by-default feature should be enabled.
 
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
 knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level

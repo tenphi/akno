@@ -53,6 +53,12 @@ export {
   type RetrievalBenchUnit,
 } from './bench/mixed-retrieval.ts';
 export {
+  runEntityResolutionBench,
+  type EntityResolutionBenchCaseReport,
+  type EntityResolutionBenchOptions,
+  type EntityResolutionBenchReport,
+} from './bench/entity-resolution.ts';
+export {
   runLlmRankingProbe,
   type LlmRankingProbeOptions,
   type LlmRankingProbeReport,

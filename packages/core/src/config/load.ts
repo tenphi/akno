@@ -520,6 +520,16 @@ function resolve(
         inference: doc.recall?.rank?.inference ?? 0.6,
       },
     },
+    graph: {
+      contextualResolution: {
+        enabled: doc.graph?.contextual_resolution?.enabled ?? false,
+        maxCandidates: doc.graph?.contextual_resolution?.max_candidates ?? 8,
+        maxMentionsPerIndex: doc.graph?.contextual_resolution?.max_mentions_per_index ?? 20,
+        ...(doc.graph?.contextual_resolution?.reasoning_effort !== null
+          ? { reasoningEffort: doc.graph?.contextual_resolution?.reasoning_effort ?? 'none' }
+          : {}),
+      },
+    },
     watch: {
       enabled: doc.watch?.enabled ?? true,
       debounceMs: doc.watch?.debounce_ms ?? 400,

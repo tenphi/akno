@@ -164,6 +164,20 @@ const RecallDoc = z.object({
     .optional(),
 });
 
+const GraphDoc = z.object({
+  contextual_resolution: z
+    .object({
+      /** Model judgment is opt-in until its invented benchmark passes on the configured model. */
+      enabled: z.boolean().optional(),
+      /** Contextual resolution never searches for or creates candidates. */
+      max_candidates: z.number().int().min(2).max(16).optional(),
+      max_mentions_per_index: z.number().int().positive().max(1000).optional(),
+      /** This classification usually benefits from disabling hidden thinking on hosted models. */
+      reasoning_effort: ReasoningEffort.nullable().optional(),
+    })
+    .optional(),
+});
+
 const WatchDoc = z.object({
   enabled: z.boolean().optional(),
   debounce_ms: z.number().int().nonnegative().optional(),
@@ -341,6 +355,7 @@ export const ConfigDoc = z.object({
   models: ModelsDoc.optional(),
   index: IndexDoc.optional(),
   recall: RecallDoc.optional(),
+  graph: GraphDoc.optional(),
   watch: WatchDoc.optional(),
   server: ServerDoc.optional(),
   ingest: IngestDoc.optional(),
@@ -454,6 +469,14 @@ export interface AknoConfig {
     expansionTimeoutMs: number;
     graph: boolean;
     rank: { knowledge: number; source: number; inference: number };
+  };
+  graph: {
+    contextualResolution: {
+      enabled: boolean;
+      maxCandidates: number;
+      maxMentionsPerIndex: number;
+      reasoningEffort?: ReasoningEffort;
+    };
   };
   watch: { enabled: boolean; debounceMs: number; sweepIntervalMs: number; verifyIntervalMs: number };
   server: { socket: string; http: string | null; mcpAllow: string[] };

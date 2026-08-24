@@ -590,7 +590,10 @@ async function inspectConflicts(ctx: AknoContext, report: DreamReport): Promise<
   // Conflict verdicts are content-addressed graph eligibility. Refresh immediately after
   // caching them so an audit-only cycle does not leave relationship edges one night behind.
   if (ctx.writable) {
-    rebuildEvidenceGraph(ctx.store, { conflictModelId: ctx.models.derive.modelId });
+    rebuildEvidenceGraph(ctx.store, {
+      conflictModelId: ctx.models.derive.modelId,
+      contextualModelId: ctx.config.graph.contextualResolution.enabled ? ctx.models.derive.modelId : null,
+    });
   }
 }
 

@@ -6,6 +6,11 @@ import {
   conflictClaimIneligibility,
   findCrossPageConflictsInStore,
 } from '../maintenance/conflicts.ts';
+import {
+  cachedContextualEntityResolution,
+  type CachedContextualResolution,
+  type ContextualMentionInput,
+} from './entity-resolution.ts';
 
 export const STRUCTURAL_GRAPH_VERSION = 'structural-v1';
 export const ENTITY_RESOLUTION_VERSION = 'entity-exact-v1';
@@ -13,6 +18,7 @@ export const FACT_GRAPH_VERSION = 'fact-relationships-v1';
 
 export interface EvidenceGraphOptions {
   conflictModelId?: string | null;
+  contextualModelId?: string | null;
 }
 
 export interface EvidenceGraphReport {
@@ -22,6 +28,7 @@ export interface EvidenceGraphReport {
   mentions: number;
   ambiguousMentions: number;
   unresolvedMentions: number;
+  contextualMentions: number;
   facts: number;
   factEdges: number;
   nonTraversableFacts: number;
@@ -44,6 +51,17 @@ export type ExactEntityResolution =
       signal: EntityNameSignal;
     }
   | { status: 'unresolved'; normalized: string; candidates: [] };
+
+interface ContextualEntityResolution {
+  status: 'resolved';
+  normalized: string;
+  entityId: string;
+  candidates: string[];
+  signal: EntityNameSignal;
+  contextual: CachedContextualResolution;
+}
+
+type EntityResolution = ExactEntityResolution | ContextualEntityResolution;
 
 type NodeKind = 'entity' | 'page' | 'document' | 'fact' | 'event';
 type EntityType = 'person' | 'organization' | 'place' | 'product' | 'event' | 'concept' | 'other';
@@ -157,22 +175,24 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
     const insertMention = store.db.prepare(
       `INSERT OR IGNORE INTO graph_mentions(
          id, mention, normalized_mention, source_page, source_field, source_line, source_hash,
-         resolved_entity, resolution, signal, candidates, derivation_version
-       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         resolved_entity, resolution, signal, candidates, decision_fingerprint, model_id,
+         prompt_version, confidence, derivation_version
+       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const insertFactStatus = store.db.prepare(
       `INSERT INTO graph_fact_status(
          fact_id, subject_entity, object_entity, subject_resolution, subject_candidates,
-         object_resolution, object_candidates, predicate, eligibility, traversable,
+         subject_resolution_fingerprint, object_resolution, object_candidates,
+         object_resolution_fingerprint, predicate, eligibility, traversable,
          conflict_fingerprint, source_hash, derivation_version
-       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     const insertEdge = store.db.prepare(
       `INSERT OR IGNORE INTO graph_edges(
          id, from_node, to_node, relation, predicate, source_kind,
          source_page, source_document, source_event, source_fact, line_start, line_end, source_field,
          source_hash, derivation, resolution, confidence, derivation_version, valid_from, valid_to
-       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'exact', ?, ?, ?, ?)`,
+       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
 
     const pages = store.db
@@ -273,6 +293,34 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       }
     }
     const resolveEntity = exactEntityResolver(store.db);
+    const resolveMention = (
+      mention: string,
+      source: Omit<ContextualMentionInput, 'mention' | 'normalized' | 'signal' | 'candidates'>,
+    ): EntityResolution => {
+      const exact = resolveEntity(mention);
+      if (exact.status !== 'ambiguous') return exact;
+      const contextual = cachedContextualEntityResolution(
+        store,
+        {
+          mention,
+          normalized: exact.normalized,
+          signal: exact.signal,
+          candidates: exact.candidates,
+          ...source,
+        },
+        options.contextualModelId ?? null,
+      );
+      return contextual
+        ? {
+            status: 'resolved',
+            normalized: exact.normalized,
+            entityId: contextual.entityId,
+            candidates: exact.candidates,
+            signal: exact.signal,
+            contextual,
+          }
+        : exact;
+    };
 
     let edges = 0;
     const addEdge = (edge: {
@@ -291,6 +339,7 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       sourceHash: string;
       derivation?: 'structural' | 'fact';
       confidence?: number;
+      resolution?: 'exact' | 'contextual';
       version?: string;
       validFrom?: string | null;
       validTo?: string | null;
@@ -323,6 +372,7 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         edge.sourceField,
         edge.sourceHash,
         edge.derivation ?? 'structural',
+        edge.resolution ?? 'exact',
         edge.confidence ?? 1,
         edge.version ?? STRUCTURAL_GRAPH_VERSION,
         edge.validFrom ?? null,
@@ -352,13 +402,14 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
     let mentions = 0;
     let ambiguousMentions = 0;
     let unresolvedMentions = 0;
+    let contextualMentions = 0;
     const addMention = (input: {
       mention: string;
       sourcePage: string;
       sourceField: string;
       sourceLine: number | null;
       sourceHash: string;
-      resolution: ExactEntityResolution;
+      resolution: EntityResolution;
     }): void => {
       const { resolution } = input;
       const id = `gmn_${sha256(
@@ -373,15 +424,28 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         input.sourceLine,
         input.sourceHash,
         resolution.status === 'resolved' ? resolution.entityId : null,
-        resolution.status === 'resolved' ? 'exact' : resolution.status,
+        isContextualResolution(resolution)
+          ? 'contextual'
+          : resolution.status === 'resolved'
+            ? 'exact'
+            : resolution.status,
         resolution.status === 'unresolved' ? null : resolution.signal,
         JSON.stringify(resolution.candidates),
+        isContextualResolution(resolution) ? resolution.contextual.fingerprint : null,
+        isContextualResolution(resolution) ? resolution.contextual.modelId : null,
+        isContextualResolution(resolution) ? resolution.contextual.promptVersion : null,
+        isContextualResolution(resolution)
+          ? resolution.contextual.confidence
+          : resolution.status === 'resolved'
+            ? 1
+            : null,
         ENTITY_RESOLUTION_VERSION,
       );
       mentions += result.changes;
       if (result.changes === 0) return;
       if (resolution.status === 'ambiguous') ambiguousMentions++;
       if (resolution.status === 'unresolved') unresolvedMentions++;
+      if (isContextualResolution(resolution)) contextualMentions++;
     };
 
     const links = store.db
@@ -448,7 +512,12 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
 
     for (const page of pages) {
       for (const mention of new Set(parseStringArray(page.about))) {
-        const resolution = resolveEntity(mention);
+        const resolution = resolveMention(mention, {
+          sourcePage: page.id,
+          sourceField: 'akno.about',
+          sourceLine: null,
+          sourceHash: page.source_hash,
+        });
         addMention({
           mention,
           sourcePage: page.id,
@@ -470,6 +539,8 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
           line: null,
           sourceField: 'akno.about',
           sourceHash: page.source_hash,
+          resolution: isContextualResolution(resolution) ? 'contextual' : 'exact',
+          confidence: isContextualResolution(resolution) ? resolution.contextual.confidence : 1,
           version: ENTITY_RESOLUTION_VERSION,
         });
       }
@@ -490,7 +561,14 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
     let factEdges = 0;
     let nonTraversableFacts = 0;
     for (const fact of facts) {
-      const subjectResolution = fact.subject ? resolveEntity(fact.subject) : null;
+      const subjectResolution = fact.subject
+        ? resolveMention(fact.subject, {
+            sourcePage: fact.page_id,
+            sourceField: 'fact.subject',
+            sourceLine: fact.line_start,
+            sourceHash: fact.source_line_hash,
+          })
+        : null;
       if (fact.subject && subjectResolution) {
         addMention({
           mention: fact.subject,
@@ -502,7 +580,14 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         });
       }
 
-      const attemptedObject = fact.value ? resolveEntity(fact.value) : null;
+      const attemptedObject = fact.value
+        ? resolveMention(fact.value, {
+            sourcePage: fact.page_id,
+            sourceField: 'fact.value',
+            sourceLine: fact.line_start,
+            sourceHash: fact.source_line_hash,
+          })
+        : null;
       const objectResolution = attemptedObject?.status === 'unresolved' ? null : attemptedObject;
       if (fact.value && objectResolution) {
         addMention({
@@ -532,18 +617,16 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         fact.id,
         subjectEntity,
         objectEntity,
-        !subjectResolution
-          ? 'missing'
-          : subjectResolution.status === 'resolved'
-            ? 'exact'
-            : subjectResolution.status,
+        !subjectResolution ? 'missing' : resolutionLabel(subjectResolution),
         JSON.stringify(subjectResolution?.candidates ?? []),
-        !objectResolution
-          ? 'scalar'
-          : objectResolution.status === 'resolved'
-            ? 'exact'
-            : objectResolution.status,
+        subjectResolution && isContextualResolution(subjectResolution)
+          ? subjectResolution.contextual.fingerprint
+          : null,
+        !objectResolution ? 'scalar' : resolutionLabel(objectResolution),
         JSON.stringify(objectResolution?.candidates ?? []),
+        objectResolution && isContextualResolution(objectResolution)
+          ? objectResolution.contextual.fingerprint
+          : null,
         predicate,
         eligibility,
         traversable ? 1 : 0,
@@ -556,6 +639,10 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       // live claims do not: a classifier verdict is a gate, not another historical assertion.
       if ((!traversable && eligibility !== 'superseded') || !subjectEntity || !predicate) continue;
       const confidence = Math.max(0, Math.min(1, fact.confidence));
+      const subjectContextual =
+        subjectResolution && isContextualResolution(subjectResolution) ? subjectResolution.contextual : null;
+      const objectContextual =
+        objectResolution && isContextualResolution(objectResolution) ? objectResolution.contextual : null;
       factEdges += addEdge({
         from: requiredNode(nodeIds, 'entity', subjectEntity),
         to: requiredNode(nodeIds, 'fact', fact.id),
@@ -571,7 +658,8 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         sourceField: 'fact.attribute',
         sourceHash: fact.source_line_hash,
         derivation: 'fact',
-        confidence,
+        resolution: subjectContextual ? 'contextual' : 'exact',
+        confidence: Math.min(confidence, subjectContextual?.confidence ?? 1),
         version: FACT_GRAPH_VERSION,
         validFrom: fact.valid_from,
         validTo: fact.valid_to,
@@ -592,7 +680,12 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         sourceField: 'fact.value',
         sourceHash: fact.source_line_hash,
         derivation: 'fact',
-        confidence,
+        resolution: subjectContextual || objectContextual ? 'contextual' : 'exact',
+        confidence: Math.min(
+          confidence,
+          subjectContextual?.confidence ?? 1,
+          objectContextual?.confidence ?? 1,
+        ),
         version: FACT_GRAPH_VERSION,
         validFrom: fact.valid_from,
         validTo: fact.valid_to,
@@ -656,6 +749,7 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       mentions,
       ambiguousMentions,
       unresolvedMentions,
+      contextualMentions,
       facts: facts.length,
       factEdges,
       nonTraversableFacts,
@@ -709,6 +803,15 @@ function resolutionFromRows(normalized: string, rows: NameRow[]): ExactEntityRes
     if (candidates.length > 1) return { status: 'ambiguous', normalized, candidates, signal };
   }
   return { status: 'unresolved', normalized, candidates: [] };
+}
+
+function isContextualResolution(resolution: EntityResolution): resolution is ContextualEntityResolution {
+  return 'contextual' in resolution;
+}
+
+function resolutionLabel(resolution: EntityResolution): 'exact' | 'contextual' | 'ambiguous' | 'unresolved' {
+  if (isContextualResolution(resolution)) return 'contextual';
+  return resolution.status === 'resolved' ? 'exact' : resolution.status;
 }
 
 export function normalizeEntityName(value: string): string {

@@ -6,6 +6,7 @@ import {
   markRankingMatrixPersisted,
   open,
   refreshRankingMatrixReport,
+  runEntityResolutionBench,
   runBench,
   runLlmRankingProbe,
   runMixedRetrievalBench,
@@ -13,6 +14,7 @@ import {
   runRankingEndToEnd,
   runRankingMatrix,
   type Akno,
+  type EntityResolutionBenchReport,
   type MixedRetrievalBenchReport,
   type RankingBenchReport,
   type RankingBenchSplit,
@@ -41,6 +43,8 @@ const BENCH_HELP = `akno bench [options]
                       open or query the configured knowledge base.
   ranking --probe     Send one invented three-candidate smoke probe to a live
                       generative endpoint. This is not the ranking release gate.
+  entities            Run the invented select-or-abstain release gate for
+                      contextual entity resolution. Never opens the knowledge base.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
@@ -123,6 +127,30 @@ export async function benchCommand(argv: string[]): Promise<number> {
   if (values.help) {
     line(BENCH_HELP);
     return 0;
+  }
+
+  if (positionals[0] === 'entities') {
+    const reasoning = parseReasoningEffort(values.reasoning);
+    if (!reasoning) {
+      fail(`invalid reasoning effort: ${values.reasoning}`);
+      return 2;
+    }
+    if (positionals.length > 1) {
+      fail(`unknown entities bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    const { loadConfig } = await import('@tenphi/akno-core');
+    const config = loadConfig(openOptionsFrom(values));
+    const report = await runEntityResolutionBench(config, {
+      ...(values.provider ? { provider: values.provider } : {}),
+      ...(values.model ? { model: values.model } : {}),
+      reasoningEffort: reasoning,
+    });
+    let artifactPath: string | null = null;
+    if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+    if (values.json) json(report);
+    else renderEntityResolution(report, artifactPath);
+    return report.passed ? 0 : 1;
   }
 
   if (positionals[0] === 'ranking') {
@@ -545,6 +573,30 @@ function renderRanking(report: RankingBenchReport): void {
         ? 'Release eligibility still requires repeatability and a stored result artifact.'
         : 'The corpus awaits independent review and cannot authorize a preset release.',
     ),
+  );
+}
+
+function renderEntityResolution(report: EntityResolutionBenchReport, artifactPath: string | null): void {
+  heading(`Entity resolution — ${report.provider}/${report.model}, invented corpus`);
+  line(`  reasoning                    ${report.reasoningEffort}`);
+  line(`  valid responses              ${percent(report.metrics.validResponseRate)}`);
+  line(`  clear-case recall            ${percent(report.metrics.clearRecall)}`);
+  line(`  selection precision          ${percent(report.metrics.selectionPrecision)}`);
+  line(`  indistinguishable abstention ${percent(report.metrics.indistinguishableAbstention)}`);
+  line(`  adversarial abstention       ${percent(report.metrics.adversarialAbstention)}`);
+  line(`  expected outcomes            ${percent(report.metrics.expectedOutcomeAccuracy)}`);
+  for (const bench of report.cases) {
+    const verdict = bench.passed ? style.green('pass') : style.red('FAIL');
+    line(
+      `  ${bench.id.padEnd(34)} ${verdict}  ` +
+        style.grey(`expected ${bench.expected ?? 'abstain'}, got ${bench.selected ?? 'abstain'}`),
+    );
+    if (bench.error) line(`    ${style.red(bench.error)}`);
+  }
+  if (artifactPath) line(`  artifact  ${artifactPath}`);
+  if (report.blockers.length > 0) line(`  blockers  ${report.blockers.join(', ')}`);
+  line(
+    `\n${report.passed ? style.green('entity-resolution gate passed') : style.red('entity-resolution gate failed')}`,
   );
 }
 

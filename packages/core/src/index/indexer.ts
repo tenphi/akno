@@ -31,6 +31,7 @@ import { eventId, factId, managedFactId, newPageId, sha256 } from '../store/ids.
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 import { rebuildEvidenceGraph } from './graph.ts';
+import { resolveContextualEntityMentions } from './entity-resolution.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -106,6 +107,11 @@ export interface IndexReport {
   graphMentions: number;
   graphAmbiguousMentions: number;
   graphUnresolvedMentions: number;
+  graphContextualMentions: number;
+  graphContextualResolved: number;
+  graphContextualAbstained: number;
+  graphContextualCached: number;
+  graphContextualFailed: number;
   graphFacts: number;
   graphFactEdges: number;
   graphNonTraversableFacts: number;
@@ -170,6 +176,11 @@ export class Indexer {
       graphMentions: 0,
       graphAmbiguousMentions: 0,
       graphUnresolvedMentions: 0,
+      graphContextualMentions: 0,
+      graphContextualResolved: 0,
+      graphContextualAbstained: 0,
+      graphContextualCached: 0,
+      graphContextualFailed: 0,
       graphFacts: 0,
       graphFactEdges: 0,
       graphNonTraversableFacts: 0,
@@ -323,15 +334,42 @@ export class Indexer {
     // by this pass become relationships immediately, while structural-only passes still
     // reconcile the complete graph from the facts already present.
     progress({ phase: 'graph', done: 0, total: 1 });
-    const graph = rebuildEvidenceGraph(this.#store, {
+    const contextualModelId = this.#config.graph.contextualResolution.enabled
+      ? this.#models.derive.modelId
+      : null;
+    let graph = rebuildEvidenceGraph(this.#store, {
       conflictModelId: this.#models.derive.modelId,
+      contextualModelId,
     });
+    if (!options.structuralOnly && this.#config.graph.contextualResolution.enabled) {
+      const contextual = await resolveContextualEntityMentions(this.#store, this.#models.derive, {
+        maxCandidates: this.#config.graph.contextualResolution.maxCandidates,
+        maxMentions: this.#config.graph.contextualResolution.maxMentionsPerIndex,
+        ...(this.#config.graph.contextualResolution.reasoningEffort
+          ? { reasoningEffort: this.#config.graph.contextualResolution.reasoningEffort }
+          : {}),
+      });
+      report.graphContextualResolved = contextual.resolved;
+      report.graphContextualAbstained = contextual.abstained;
+      report.graphContextualCached = contextual.cached;
+      report.graphContextualFailed = contextual.failed;
+      report.warnings.push(...contextual.warnings);
+      // A new selected verdict becomes an edge only through the same complete graph rebuild as
+      // exact evidence. Abstentions need no projection; they intentionally remain ambiguous.
+      if (contextual.resolved > 0) {
+        graph = rebuildEvidenceGraph(this.#store, {
+          conflictModelId: this.#models.derive.modelId,
+          contextualModelId,
+        });
+      }
+    }
     report.graphNodes = graph.nodes;
     report.graphEdges = graph.edges;
     report.graphEntities = graph.entities;
     report.graphMentions = graph.mentions;
     report.graphAmbiguousMentions = graph.ambiguousMentions;
     report.graphUnresolvedMentions = graph.unresolvedMentions;
+    report.graphContextualMentions = graph.contextualMentions;
     report.graphFacts = graph.facts;
     report.graphFactEdges = graph.factEdges;
     report.graphNonTraversableFacts = graph.nonTraversableFacts;

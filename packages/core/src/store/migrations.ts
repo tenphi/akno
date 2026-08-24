@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 21;
+export const SCHEMA_VERSION = 22;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -25,6 +25,7 @@ export const MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX = 10;
 export const STRUCTURAL_GRAPH_MIGRATION_INDEX = 11;
 export const ENTITY_GRAPH_MIGRATION_INDEX = 12;
 export const FACT_GRAPH_MIGRATION_INDEX = 13;
+export const CONTEXTUAL_ENTITY_MIGRATION_INDEX = 14;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -585,6 +586,108 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX graph_fact_status_subject ON graph_fact_status(subject_entity, traversable);
   CREATE INDEX graph_fact_status_object ON graph_fact_status(object_entity, traversable);
   CREATE INDEX graph_fact_status_eligibility ON graph_fact_status(eligibility, traversable);
+  `,
+  // ── 15. Provenance-bound contextual entity verdicts ───────────────────
+  // Verdicts are a cache over authored evidence, not knowledge. Rebuilding the graph applies
+  // only a verdict whose source and candidate fingerprints still match.
+  `
+  DROP INDEX graph_fact_status_subject;
+  DROP INDEX graph_fact_status_object;
+  DROP INDEX graph_fact_status_eligibility;
+  DROP INDEX graph_mentions_source;
+  DROP INDEX graph_mentions_entity;
+  DROP INDEX graph_mentions_normalized;
+  ALTER TABLE graph_fact_status RENAME TO graph_fact_status_v21;
+  ALTER TABLE graph_mentions RENAME TO graph_mentions_v21;
+
+  CREATE TABLE graph_mentions (
+    id                   TEXT PRIMARY KEY,
+    mention              TEXT NOT NULL,
+    normalized_mention   TEXT NOT NULL,
+    source_page          TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_field         TEXT NOT NULL,
+    source_line          INTEGER,
+    source_hash          TEXT NOT NULL,
+    resolved_entity      TEXT REFERENCES graph_entities(id) ON DELETE SET NULL,
+    resolution           TEXT NOT NULL,
+    signal               TEXT,
+    candidates           TEXT NOT NULL DEFAULT '[]',
+    decision_fingerprint TEXT,
+    model_id             TEXT,
+    prompt_version       TEXT,
+    confidence           REAL,
+    derivation_version   TEXT NOT NULL,
+    CHECK (resolution IN ('exact', 'contextual', 'ambiguous', 'unresolved')),
+    CHECK (confidence IS NULL OR (confidence >= 0 AND confidence <= 1))
+  );
+  INSERT INTO graph_mentions(
+    id, mention, normalized_mention, source_page, source_field, source_line, source_hash,
+    resolved_entity, resolution, signal, candidates, confidence, derivation_version
+  )
+  SELECT id, mention, normalized_mention, source_page, source_field, source_line, source_hash,
+         resolved_entity, resolution, signal, candidates,
+         CASE WHEN resolution = 'exact' THEN 1 ELSE NULL END,
+         derivation_version
+    FROM graph_mentions_v21;
+  DROP TABLE graph_mentions_v21;
+  CREATE INDEX graph_mentions_source ON graph_mentions(source_page, source_field);
+  CREATE INDEX graph_mentions_entity ON graph_mentions(resolved_entity);
+  CREATE INDEX graph_mentions_normalized ON graph_mentions(normalized_mention, resolution);
+
+  CREATE TABLE graph_fact_status (
+    fact_id                        TEXT PRIMARY KEY REFERENCES facts(id) ON DELETE CASCADE,
+    subject_entity                 TEXT REFERENCES graph_entities(id) ON DELETE SET NULL,
+    object_entity                  TEXT REFERENCES graph_entities(id) ON DELETE SET NULL,
+    subject_resolution             TEXT NOT NULL,
+    subject_candidates             TEXT NOT NULL DEFAULT '[]',
+    subject_resolution_fingerprint TEXT,
+    object_resolution              TEXT NOT NULL,
+    object_candidates              TEXT NOT NULL DEFAULT '[]',
+    object_resolution_fingerprint  TEXT,
+    predicate                      TEXT,
+    eligibility                    TEXT NOT NULL,
+    traversable                    INTEGER NOT NULL DEFAULT 0,
+    conflict_fingerprint           TEXT,
+    source_hash                    TEXT NOT NULL,
+    derivation_version             TEXT NOT NULL,
+    CHECK (subject_resolution IN ('missing', 'exact', 'contextual', 'ambiguous', 'unresolved')),
+    CHECK (object_resolution IN ('scalar', 'exact', 'contextual', 'ambiguous')),
+    CHECK (eligibility IN (
+      'eligible', 'superseded', 'low_confidence', 'conflict_unverified',
+      'conflict_unresolved', 'conflict_qualified', 'conflict_superseded'
+    )),
+    CHECK (traversable IN (0, 1))
+  );
+  INSERT INTO graph_fact_status(
+    fact_id, subject_entity, object_entity, subject_resolution, subject_candidates,
+    object_resolution, object_candidates, predicate, eligibility, traversable,
+    conflict_fingerprint, source_hash, derivation_version
+  )
+  SELECT fact_id, subject_entity, object_entity, subject_resolution, subject_candidates,
+         object_resolution, object_candidates, predicate, eligibility, traversable,
+         conflict_fingerprint, source_hash, derivation_version
+    FROM graph_fact_status_v21;
+  DROP TABLE graph_fact_status_v21;
+  CREATE INDEX graph_fact_status_subject ON graph_fact_status(subject_entity, traversable);
+  CREATE INDEX graph_fact_status_object ON graph_fact_status(object_entity, traversable);
+  CREATE INDEX graph_fact_status_eligibility ON graph_fact_status(eligibility, traversable);
+
+  CREATE TABLE graph_resolution_verdicts (
+    fingerprint           TEXT NOT NULL,
+    model_id              TEXT NOT NULL,
+    prompt_version        TEXT NOT NULL,
+    outcome               TEXT NOT NULL,
+    selected_entity       TEXT,
+    grades                TEXT NOT NULL,
+    rationale             TEXT NOT NULL,
+    source_hash           TEXT NOT NULL,
+    candidate_fingerprint TEXT NOT NULL,
+    created_at            TEXT NOT NULL,
+    PRIMARY KEY(fingerprint, model_id, prompt_version),
+    CHECK (outcome IN ('resolved', 'unresolved'))
+  );
+  CREATE INDEX graph_resolution_verdicts_model
+    ON graph_resolution_verdicts(model_id, prompt_version, created_at);
   `,
 ];
 

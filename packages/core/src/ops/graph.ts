@@ -34,7 +34,7 @@ interface EdgeRow {
   line_end: number | null;
   source_field: string | null;
   derivation: 'structural' | 'fact';
-  resolution: 'exact';
+  resolution: 'exact' | 'contextual';
   confidence: number;
   valid_from: string | null;
   valid_to: string | null;

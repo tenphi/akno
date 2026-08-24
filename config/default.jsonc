@@ -230,6 +230,20 @@
     "ann_threshold_chunks": 20000
   },
 
+  // ─── Evidence graph ─────────────────────────────────────────────────────
+  "graph": {
+    "contextual_resolution": {
+      // Exact aliases remain the default. Turn this on only after
+      // `akno bench entities` passes against the configured derive model.
+      // The model may choose among existing exact-name candidates or abstain;
+      // it cannot create, merge, or rename entities.
+      "enabled": false,
+      "max_candidates": 8,
+      "max_mentions_per_index": 20,
+      "reasoning_effort": "none"
+    }
+  },
+
   // ─── Recall ───────────────────────────────────────────────────────────────
   "recall": {
     "default_budget": 8000,

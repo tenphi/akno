@@ -344,6 +344,7 @@ describe('schema migration', () => {
       'graph_fact_status',
       'graph_mentions',
       'graph_nodes',
+      'graph_resolution_verdicts',
     ]);
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
@@ -371,6 +372,7 @@ describe('schema migration', () => {
       'graph_fact_status',
       'graph_mentions',
       'graph_nodes',
+      'graph_resolution_verdicts',
     ]);
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
@@ -396,6 +398,55 @@ describe('schema migration', () => {
       expect.arrayContaining(['source_fact', 'valid_from', 'valid_to']),
     );
     expect(factStatus?.name).toBe('graph_fact_status');
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds contextual entity verdict provenance to a version-twenty-one database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-contextual-entity-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 14)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO pages(id, slug, rel_path, title, body_hash, indexed_at)
+         VALUES('page_fixture', 'notes/fixture', 'notes/fixture.md', 'Fixture Note', 'fixture_hash', ?)`,
+      )
+      .run('2031-01-01T00:00:00.000Z');
+    legacy
+      .prepare(
+        `INSERT INTO graph_mentions(
+           id, mention, normalized_mention, source_page, source_field, source_hash,
+           resolution, candidates, derivation_version
+         ) VALUES(
+           'mention_fixture', 'Unknown Fixture', 'unknown fixture', 'page_fixture',
+           'akno.about', 'fixture_hash', 'unresolved', '[]', 'entity-exact-v1'
+         )`,
+      )
+      .run();
+    legacy.pragma('user_version = 21');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const mentionColumns = store.db.pragma('table_info(graph_mentions)') as { name: string }[];
+    const factColumns = store.db.pragma('table_info(graph_fact_status)') as { name: string }[];
+
+    expect(mentionColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['decision_fingerprint', 'model_id', 'prompt_version', 'confidence']),
+    );
+    expect(factColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['subject_resolution_fingerprint', 'object_resolution_fingerprint']),
+    );
+    expect(
+      store.db
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'graph_resolution_verdicts'")
+        .get(),
+    ).toBeDefined();
+    expect(
+      store.db.prepare("SELECT resolution FROM graph_mentions WHERE id = 'mention_fixture'").get(),
+    ).toEqual({ resolution: 'unresolved' });
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

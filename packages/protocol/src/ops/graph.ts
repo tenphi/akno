@@ -30,7 +30,7 @@ export const GraphEdgeRef = z.object({
   predicate: z.string().optional(),
   confidence: z.number().min(0).max(1),
   derivation: z.enum(['structural', 'fact']),
-  resolution: z.literal('exact'),
+  resolution: z.enum(['exact', 'contextual']),
   evidence: GraphEvidenceLocator,
   valid_from: z.string().optional(),
   valid_to: z.string().optional(),
