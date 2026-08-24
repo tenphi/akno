@@ -2054,6 +2054,8 @@ describe('the cycle', () => {
       first.run.snapshot.knowledgeBaseFingerprint,
     );
     expect(first.run.snapshot.knowledgeBaseFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(mem.maintenanceStatus({ last: 2 }).runs).toEqual([second.run, first.run]);
+    expect(mem.maintenanceStatus({ runId: first.run.id }).runs).toEqual([first.run]);
   });
 
   it('runs every enabled phase, and says why the others did not', async () => {

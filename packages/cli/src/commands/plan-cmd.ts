@@ -4,6 +4,7 @@ import type {
   MaintenancePlan,
   MaintenancePlanSummary,
   MaintenanceStatus,
+  MaintenanceStatusQuery,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance } from '../ops-handle.ts';
@@ -140,13 +141,19 @@ export async function planCommand(argv: string[]): Promise<number> {
 
 export async function loadMaintenanceStatus(
   values: Parameters<typeof openOptionsFrom>[0],
+  query: MaintenanceStatusQuery = {},
 ): Promise<MaintenanceStatus> {
   return runMaintenance(
     'plan',
-    { action: 'status' },
+    {
+      action: 'status',
+      ...(query.runId ? { run_id: query.runId } : {}),
+      ...(query.last !== undefined ? { last: query.last } : {}),
+      ...(query.pending ? { pending: true } : {}),
+    },
     values,
     openOptionsFrom(values),
-    async (mem) => mem.maintenanceStatus(),
+    async (mem) => mem.maintenanceStatus(query),
     { writable: false },
   );
 }

@@ -2,8 +2,10 @@ import {
   AknoError,
   parsePhase,
   type DreamReport,
+  type DreamRunReceipt,
   type MaintenanceMode,
   type MaintenanceStatus,
+  type MaintenanceStatusQuery,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance, type MaintenanceWaitUpdate } from '../ops-handle.ts';
@@ -11,7 +13,7 @@ import { heading, json, kv, line, ms, style, truncate } from '../output.ts';
 import { loadMaintenanceStatus, printMaintenanceStatus } from './plan-cmd.ts';
 
 const DREAM_HELP = `akno dream [options]
-akno dream status
+akno dream status [--run <run_id> | --last <n> | --pending]
 
   The maintenance cycle. Phases are selectable and safe to re-run.
 
@@ -40,17 +42,27 @@ akno dream status
   --private-details
                    Include page names, source excerpts, URLs and other private content in
                    terminal or JSON output. Default output is safe to retain and share.
+  --run <run_id>   Show one durable, content-safe run receipt.
+  --last <n>       Show the newest 1–100 run receipts.
+  --pending        List every nonterminal plan that can still be decided, retried, applied,
+                   or verified.
   --json`;
 
 export async function dreamCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse<{
     phase?: string;
     mode?: string;
+    run?: string;
+    last?: string;
+    pending: boolean;
     'dry-run': boolean;
     'private-details': boolean;
   }>(argv, {
     phase: { type: 'string' },
     mode: { type: 'string' },
+    run: { type: 'string' },
+    last: { type: 'string' },
+    pending: { type: 'boolean', default: false },
     'dry-run': { type: 'boolean', default: false },
     'private-details': { type: 'boolean', default: false },
   });
@@ -61,12 +73,13 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   }
 
   if (positionals[0] === 'status' && positionals.length === 1) {
-    const status = await loadMaintenanceStatus(values);
-    if (values.json) json(status);
-    else printMaintenanceStatus(status);
+    const query = dreamStatusQuery(values);
+    const status = await loadMaintenanceStatus(values, query);
+    if (values.json) json(dreamStatusJson(status, query));
+    else printDreamStatus(status, query);
     return 0;
   }
-  if (positionals.length > 0) {
+  if (positionals.length > 0 || values.run || values.last || values.pending) {
     line(DREAM_HELP);
     return 1;
   }
@@ -110,6 +123,142 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     return 0;
   }
   return printDream(report, values['private-details']);
+}
+
+export function dreamStatusQuery(values: {
+  run?: string;
+  last?: string;
+  pending?: boolean;
+}): MaintenanceStatusQuery {
+  const selected =
+    Number(values.run !== undefined) + Number(values.last !== undefined) + Number(values.pending);
+  if (selected > 1) throw new AknoError('invalid', 'choose only one of --run, --last, or --pending');
+  if (values.run !== undefined) {
+    const runId = values.run.trim();
+    if (!runId) throw new AknoError('invalid', '--run requires a run id');
+    return { runId };
+  }
+  if (values.last !== undefined) {
+    const last = Number(values.last);
+    if (!Number.isInteger(last) || last < 1 || last > 100) {
+      throw new AknoError('invalid', '--last must be an integer from 1 to 100');
+    }
+    return { last };
+  }
+  return values.pending ? { pending: true } : {};
+}
+
+export function dreamStatusJson(status: MaintenanceStatus, query: MaintenanceStatusQuery): unknown {
+  if (query.runId) return { run: status.runs[0] ?? null };
+  if (query.last !== undefined) return { runs: status.runs };
+  if (query.pending) {
+    return {
+      awaitingHuman: status.awaitingHuman,
+      verificationPending: status.verificationPending,
+      budgetDeferred: status.budgetDeferred,
+      pendingPlans: status.pendingPlans,
+    };
+  }
+  return status;
+}
+
+function printDreamStatus(status: MaintenanceStatus, query: MaintenanceStatusQuery): void {
+  if (query.runId) {
+    const run = status.runs[0];
+    if (!run) throw new AknoError('not_found', `no maintenance run with id ${query.runId}`);
+    printDreamRunReceipt(run);
+    return;
+  }
+  if (query.last !== undefined) {
+    printDreamRunHistory(status.runs);
+    return;
+  }
+  if (query.pending) {
+    printPendingMaintenance(status);
+    return;
+  }
+  printMaintenanceStatus(status);
+}
+
+function printDreamRunReceipt(run: DreamRunReceipt): void {
+  heading(`Dream run — ${run.status}`);
+  kv([
+    ['id', run.id],
+    ['profile', run.profile],
+    ['authority', run.mode],
+    ['started', run.startedAt],
+    ['finished', run.finishedAt],
+    ['duration', run.durationMs === null ? null : ms(run.durationMs)],
+    ['error', run.errorCode],
+    ['snapshot', run.snapshot.indexRevision.slice(0, 12)],
+  ]);
+  line('\n  outcomes');
+  kv([
+    ['observations', run.counts.observations],
+    ['curated', run.counts.curated],
+    ['guard rejections', run.counts.rejectedByGuard],
+    ['adopted', run.counts.adopted],
+    ['conflicts', run.counts.conflicts],
+    ['links repaired', run.counts.repairedLinks],
+    ['warnings', run.counts.warnings],
+  ]);
+  if (run.budget) {
+    line('\n  apply budget');
+    kv([
+      ['items', `${run.budget.used.items}/${run.budget.limits.maxItems}`],
+      ['changed files', `${run.budget.used.filesChanged}/${run.budget.limits.maxFilesChanged}`],
+      ['written bytes', `${run.budget.used.bytesWritten}/${run.budget.limits.maxBytesWritten}`],
+      ['high-risk items', `${run.budget.used.highRiskItems}/${run.budget.limits.maxHighRiskItems}`],
+      ['deferred items', run.budget.deferredItems],
+    ]);
+  }
+  if (run.phases.length > 0) {
+    line('\n  phases');
+    for (const phase of run.phases) {
+      line(
+        `    ${phase.phase.padEnd(13)} ${phase.ran ? 'ran' : 'skipped'}  ${style.grey(ms(phase.durationMs))}`,
+      );
+    }
+  }
+  if (run.maintenancePlanIds.length > 0) line(`\n  plans    ${run.maintenancePlanIds.join(', ')}`);
+  if (run.changeIds.length > 0) line(`  changes  ${run.changeIds.join(', ')}`);
+}
+
+function printDreamRunHistory(runs: DreamRunReceipt[]): void {
+  if (runs.length === 0) {
+    line(style.grey('no durable dream runs'));
+    return;
+  }
+  heading(`${runs.length} dream run${runs.length === 1 ? '' : 's'} — newest first`);
+  for (const run of runs) {
+    const duration = run.durationMs === null ? '-' : ms(run.durationMs);
+    line(
+      `  ${style.bold(run.id)}  ${run.status.padEnd(19)} ${run.mode.padEnd(6)} ${run.startedAt}  ${duration}`,
+    );
+  }
+}
+
+function printPendingMaintenance(status: MaintenanceStatus): void {
+  heading('Pending maintenance');
+  kv([
+    ['awaiting decisions', status.awaitingHuman],
+    ['verification pending', status.verificationPending],
+    ['budget deferred', status.budgetDeferred],
+    ['nonterminal plans', status.pendingPlans.length],
+  ]);
+  if (status.pendingPlans.length === 0) {
+    line(style.grey('\n  nothing is waiting for a decision, retry, apply, or verification'));
+    return;
+  }
+  for (const plan of status.pendingPlans) {
+    const proposed = plan.counts.proposed;
+    const verification = plan.counts.verification_pending;
+    line(
+      `\n  ${style.bold(plan.id)}  ${plan.status}  ${plan.mode}/${plan.phase}` +
+        `  ${proposed} proposed · ${verification} verification pending`,
+    );
+    line(`    ${style.grey(`created ${plan.createdAt}`)}`);
+  }
 }
 
 async function reportActiveDream(

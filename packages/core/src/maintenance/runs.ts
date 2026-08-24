@@ -198,12 +198,34 @@ export function failDreamRun(
 }
 
 export function latestDreamRun(ctx: AknoContext): DreamRunReceipt | null {
-  if (!runsTableAvailable(ctx)) return null;
-  const row = ctx.store.db
-    .prepare('SELECT receipt FROM maintenance_runs ORDER BY rowid DESC LIMIT 1')
-    .get() as ReceiptRow | undefined;
-  if (!row) return null;
-  return parseReceipt(row.receipt);
+  return listDreamRuns(ctx, 1)[0] ?? null;
+}
+
+/** Content-safe durable receipts, newest first. */
+export function listDreamRuns(ctx: AknoContext, limit = 10): DreamRunReceipt[] {
+  if (!runsTableAvailable(ctx)) return [];
+  const requested = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 10;
+  const bounded = Math.min(100, requested);
+  const rows = ctx.store.db
+    .prepare('SELECT receipt FROM maintenance_runs ORDER BY rowid DESC LIMIT ?')
+    .all(bounded) as ReceiptRow[];
+  return rows.flatMap((row) => {
+    const receipt = parseReceipt(row.receipt);
+    return receipt ? [receipt] : [];
+  });
+}
+
+/** One content-safe durable receipt by id. */
+export function getDreamRun(ctx: AknoContext, runId: string): DreamRunReceipt {
+  if (!runsTableAvailable(ctx)) {
+    throw new AknoError('not_found', `no maintenance run with id ${runId}`);
+  }
+  const row = ctx.store.db.prepare('SELECT receipt FROM maintenance_runs WHERE id = ?').get(runId) as
+    ReceiptRow | undefined;
+  if (!row) throw new AknoError('not_found', `no maintenance run with id ${runId}`);
+  const receipt = parseReceipt(row.receipt);
+  if (!receipt) throw new AknoError('internal', `maintenance run ${runId} has an invalid receipt`);
+  return receipt;
 }
 
 /**

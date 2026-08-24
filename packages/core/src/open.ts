@@ -50,6 +50,7 @@ import {
   type MaintenancePlan,
   type MaintenancePlanSummary,
   type MaintenanceStatus,
+  type MaintenanceStatusQuery,
 } from './maintenance/plans.ts';
 import { recoverInterruptedDreamRuns } from './maintenance/runs.ts';
 
@@ -106,7 +107,7 @@ export interface Akno extends AknoOps {
   /** Apply approved items with stale-input checks, journaling and verification. */
   applyPlan(planId: string): Promise<ApplyMaintenanceResult>;
   /** A small operational view of the maintenance queue. */
-  maintenanceStatus(): MaintenanceStatus;
+  maintenanceStatus(query?: MaintenanceStatusQuery): MaintenanceStatus;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -401,7 +402,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       return applyMaintenancePlan(ctx, planId);
     },
 
-    maintenanceStatus: () => maintenanceStatus(ctx),
+    maintenanceStatus: (query) => maintenanceStatus(ctx, query),
 
     async approve(
       proposalId: string,

@@ -735,7 +735,14 @@ akno plan diff <plan-id>
 akno plan decide <plan-id> --item <item-id> --approve
 akno plan apply <plan-id>
 akno dream status
+akno dream status --last 10          # content-safe run history, newest first
+akno dream status --run <run-id>     # one durable receipt with counts, phases, and ids
+akno dream status --pending          # every nonterminal plan still needing work
 ```
+
+The status views never include page bodies, prompts, paths, source excerpts, or provider responses. `--run`
+shows the receipt tied to one invocation; `--last` is bounded to 100 receipts; and `--pending` separates plans
+that can still be decided, retried, applied, or verified from completed history. All three support `--json`.
 
 All three modes seal the same exact operations and each item retains its effective transformation policy.
 Apply refuses changed inputs, journals each item separately,

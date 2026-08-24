@@ -14,7 +14,7 @@ import {
   PROTOCOL_VERSION,
   type Hello,
 } from '@tenphi/akno-protocol';
-import type { Akno } from '@tenphi/akno-core';
+import type { Akno, MaintenanceStatusQuery } from '@tenphi/akno-core';
 
 export interface SocketServer {
   readonly path: string;
@@ -165,7 +165,7 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
         case 'apply':
           return akno.applyPlan(idFrom(input, 'plan_id'));
         case 'status':
-          return akno.maintenanceStatus();
+          return akno.maintenanceStatus(statusQueryFrom(input));
         default:
           throw new AknoError('invalid', `unknown plan action: ${action}`);
       }
@@ -192,6 +192,29 @@ function stringFrom(input: unknown, key: string): string {
 function limitFrom(input: unknown): number {
   const value = (input as { limit?: unknown } | null)?.limit;
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 20;
+}
+
+function statusQueryFrom(input: unknown): MaintenanceStatusQuery {
+  const values = (input as Record<string, unknown> | null) ?? {};
+  const runId = values.run_id;
+  const last = values.last;
+  const pending = values.pending;
+  const selected = Number(runId !== undefined) + Number(last !== undefined) + Number(pending === true);
+  if (selected > 1) throw new AknoError('invalid', 'choose only one of run_id, last, or pending');
+  if (runId !== undefined && (typeof runId !== 'string' || runId.length === 0)) {
+    throw new AknoError('invalid', 'run_id must be a non-empty string');
+  }
+  if (last !== undefined && (typeof last !== 'number' || !Number.isInteger(last) || last < 1 || last > 100)) {
+    throw new AknoError('invalid', 'last must be an integer from 1 to 100');
+  }
+  if (pending !== undefined && typeof pending !== 'boolean') {
+    throw new AknoError('invalid', 'pending must be boolean');
+  }
+  return {
+    ...(typeof runId === 'string' ? { runId } : {}),
+    ...(typeof last === 'number' ? { last } : {}),
+    ...(pending === true ? { pending: true } : {}),
+  };
 }
 
 async function handle(

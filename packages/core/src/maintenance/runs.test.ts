@@ -10,11 +10,63 @@ import {
   activeDreamRuns,
   beginDreamRun,
   failDreamRun,
+  getDreamRun,
   latestDreamRun,
+  listDreamRuns,
   recoverInterruptedDreamRuns,
 } from './runs.ts';
 
 describe('durable dream runs', () => {
+  it('lists content-safe history newest first and resolves one receipt by id', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-history-kb-'));
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-history-state-'));
+    const config = loadConfig({ aknoPath: root, stateDir, isolated: true, env: {} });
+    const store = openStore({ dbPath: config.dbPath, embeddingDimensions: 8 });
+    const ctx = { config, store, writable: true } as AknoContext;
+
+    try {
+      const first = beginDreamRun(ctx, {
+        requestedPhase: 'housekeeping',
+        requestedPhases: ['housekeeping'],
+        mode: 'audit',
+        dryRun: true,
+        modelId: null,
+      });
+      const firstFinished = failDreamRun(
+        ctx,
+        first,
+        new AknoError('interrupted', 'Invented first run.'),
+        11,
+        [],
+      );
+      const second = beginDreamRun(ctx, {
+        requestedPhase: 'curate',
+        requestedPhases: ['curate'],
+        mode: 'review',
+        dryRun: false,
+        modelId: 'zephyr-model',
+      });
+      const secondFinished = failDreamRun(
+        ctx,
+        second,
+        new AknoError('unavailable', 'Invented second run.'),
+        22,
+        [],
+      );
+
+      expect(listDreamRuns(ctx, 10)).toEqual([secondFinished, firstFinished]);
+      expect(listDreamRuns(ctx, 1)).toEqual([secondFinished]);
+      expect(getDreamRun(ctx, first.id)).toEqual(firstFinished);
+      expect(() => getDreamRun(ctx, 'run_ffffffff')).toThrowError(
+        expect.objectContaining({ code: 'not_found' }),
+      );
+    } finally {
+      store.close();
+      fs.rmSync(root, { recursive: true, force: true });
+      fs.rmSync(stateDir, { recursive: true, force: true });
+    }
+  });
+
   it('records a typed failure without storing its private message', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-kb-'));
     const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-state-'));

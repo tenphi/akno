@@ -19,7 +19,7 @@ import {
 import type { ContradictionDraft } from './contradictions.ts';
 import { replaceLinkTarget, type BrokenLinkDraft, type LinkIdentitySignal } from './link-repairs.ts';
 import { preservesAuthoredTokens, preservesValues } from './repair.ts';
-import { activeDreamRuns, latestDreamRun, type DreamRunReceipt } from './runs.ts';
+import { activeDreamRuns, getDreamRun, latestDreamRun, listDreamRuns, type DreamRunReceipt } from './runs.ts';
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
@@ -194,11 +194,21 @@ export interface MaintenanceStatus {
   authority: MaintenanceAuthority;
   latest: MaintenancePlanSummary | null;
   latestRun: DreamRunReceipt | null;
+  /** Explicitly requested historical receipts; empty in the default compact status view. */
+  runs: DreamRunReceipt[];
+  /** Explicitly requested nonterminal plans; empty in the default compact status view. */
+  pendingPlans: MaintenancePlanSummary[];
   active: number;
   activeRuns: number;
   awaitingHuman: number;
   budgetDeferred: number;
   verificationPending: number;
+}
+
+export interface MaintenanceStatusQuery {
+  runId?: string;
+  last?: number;
+  pending?: boolean;
 }
 
 export interface ApplyMaintenanceResult {
@@ -869,6 +879,20 @@ export function listMaintenancePlans(ctx: AknoContext, limit = 20): MaintenanceP
   const rows = ctx.store.db
     .prepare('SELECT * FROM maintenance_plans ORDER BY rowid DESC LIMIT ?')
     .all(Math.max(1, Math.min(100, limit))) as PlanRow[];
+  return rows.map((row) => planSummary(ctx, row));
+}
+
+/** Nonterminal plans that may still need a decision, retry, apply, or verification. */
+export function listPendingMaintenancePlans(ctx: AknoContext, limit = 100): MaintenancePlanSummary[] {
+  if (!maintenanceTablesAvailable(ctx)) return [];
+  const requested = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 100;
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT * FROM maintenance_plans
+        WHERE status NOT IN ('completed', 'failed', 'superseded')
+        ORDER BY rowid DESC LIMIT ?`,
+    )
+    .all(Math.min(100, requested)) as PlanRow[];
   return rows.map((row) => planSummary(ctx, row));
 }
 
@@ -1581,12 +1605,20 @@ async function recoverInterruptedApply(ctx: AknoContext, item: MaintenanceItem):
   return itemFromRow(itemRow(ctx, item.planId, item.id));
 }
 
-export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
+export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuery = {}): MaintenanceStatus {
+  const runs = query.runId
+    ? [getDreamRun(ctx, query.runId)]
+    : query.last !== undefined
+      ? listDreamRuns(ctx, query.last)
+      : [];
+  const pendingPlans = query.pending ? listPendingMaintenancePlans(ctx) : [];
   if (!maintenanceTablesAvailable(ctx)) {
     return {
       authority: configuredMaintenanceAuthority(ctx.config),
       latest: null,
       latestRun: latestDreamRun(ctx),
+      runs,
+      pendingPlans,
       active: 0,
       activeRuns: activeDreamRuns(ctx),
       awaitingHuman: 0,
@@ -1624,6 +1656,8 @@ export function maintenanceStatus(ctx: AknoContext): MaintenanceStatus {
     authority: configuredMaintenanceAuthority(ctx.config),
     latest,
     latestRun: latestDreamRun(ctx),
+    runs,
+    pendingPlans,
     active: active.n,
     activeRuns: activeDreamRuns(ctx),
     awaitingHuman: awaiting.n,

@@ -130,6 +130,7 @@ describe('the socket door', () => {
 
       const dream = (await client.command('dream', { phase: 'housekeeping' })) as {
         housekeeping: { counts: { brokenLinks: number } } | null;
+        run: { id: string };
       };
       expect(dream.housekeeping?.counts.brokenLinks).toBe(0);
 
@@ -140,6 +141,19 @@ describe('the socket door', () => {
       expect(plans).toEqual([]);
       const status = (await client.command('plan', { action: 'status' })) as { active: number };
       expect(status.active).toBe(0);
+      const history = (await client.command('plan', { action: 'status', last: 1 })) as {
+        runs: { id: string }[];
+      };
+      expect(history.runs).toEqual([expect.objectContaining({ id: dream.run.id })]);
+      const selected = (await client.command('plan', {
+        action: 'status',
+        run_id: dream.run.id,
+      })) as { runs: { id: string }[] };
+      expect(selected.runs).toEqual([expect.objectContaining({ id: dream.run.id })]);
+      const pending = (await client.command('plan', { action: 'status', pending: true })) as {
+        pendingPlans: unknown[];
+      };
+      expect(pending.pendingPlans).toEqual([]);
     } finally {
       await client.close();
     }

@@ -4,6 +4,8 @@ import {
   curationGuardSummary,
   dreamProgressDescription,
   dreamRunIsReadOnly,
+  dreamStatusJson,
+  dreamStatusQuery,
   safeDreamReport,
 } from './dream-cmd.ts';
 
@@ -42,6 +44,34 @@ describe('dream authority output', () => {
     expect(dreamRunIsReadOnly({ run: { ...report.run, mode: 'audit', dryRun: false } })).toBe(true);
     expect(dreamRunIsReadOnly({ run: { ...report.run, mode: 'review', dryRun: false } })).toBe(true);
     expect(dreamRunIsReadOnly(report)).toBe(false);
+  });
+});
+
+describe('dream status history views', () => {
+  it('parses one bounded history selector', () => {
+    expect(dreamStatusQuery({ run: 'run_example' })).toEqual({ runId: 'run_example' });
+    expect(dreamStatusQuery({ last: '5' })).toEqual({ last: 5 });
+    expect(dreamStatusQuery({ pending: true })).toEqual({ pending: true });
+    expect(dreamStatusQuery({})).toEqual({});
+    expect(() => dreamStatusQuery({ run: 'run_example', pending: true })).toThrow(/only one/);
+    expect(() => dreamStatusQuery({ last: '0' })).toThrow(/1 to 100/);
+    expect(() => dreamStatusQuery({ last: '101' })).toThrow(/1 to 100/);
+  });
+
+  it('returns a narrow content-safe JSON shape for each explicit view', () => {
+    const status = emptyStatus();
+    const report = privateReport();
+    status.runs = [report.run];
+    status.pendingPlans = [report.maintenancePlan!];
+
+    expect(dreamStatusJson(status, { runId: report.run.id })).toEqual({ run: report.run });
+    expect(dreamStatusJson(status, { last: 5 })).toEqual({ runs: [report.run] });
+    expect(dreamStatusJson(status, { pending: true })).toEqual({
+      awaitingHuman: 0,
+      verificationPending: 0,
+      budgetDeferred: 0,
+      pendingPlans: [report.maintenancePlan],
+    });
   });
 });
 
@@ -248,6 +278,8 @@ function emptyStatus(): MaintenanceStatus {
     authority: fixtureAuthority(),
     latest: null,
     latestRun: null,
+    runs: [],
+    pendingPlans: [],
     active: 0,
     activeRuns: 0,
     awaitingHuman: 0,
@@ -276,6 +308,8 @@ function statusAt(
       counts: itemCounts(applied),
     },
     latestRun: null,
+    runs: [],
+    pendingPlans: [],
     active: status === 'completed' ? 0 : 1,
     activeRuns: 0,
     awaitingHuman: 0,

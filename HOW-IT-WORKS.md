@@ -780,6 +780,9 @@ akno dream --phase curate
 akno dream --phase curate --mode audit
 akno dream --phase adopt --mode audit
 akno dream status
+akno dream status --last 10
+akno dream status --run <run-id>
+akno dream status --pending
 ```
 
 `--dry-run` executes the selected checks and model decisions but does not change knowledge-base files.
@@ -809,8 +812,11 @@ deterministic guards, and per-run caps remain more restrictive boundaries. A pro
 enable the model-sensitive `observe` or `reflect` phases.
 
 `akno config` prints the profile plus its expanded policies and limits. `akno dream status` summarizes the
-profile, cycle authority, phase authority, every transformation policy, the
-whole-run ceilings and latest usage, and whether an ordinary scheduled run may write.
+profile, cycle authority, phase authority, every transformation policy, the whole-run ceilings and latest
+usage, and whether an ordinary scheduled run may write. `--last <n>` returns up to 100 content-safe durable run
+receipts, `--run <id>` expands one receipt with its phase outcomes, counts, budgets, and linked plan/change ids,
+and `--pending` lists every nonterminal plan. The same views are available as bounded JSON and contain no page
+bodies, prompts, paths, source excerpts, or provider responses.
 A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
 `--mode auto` cannot promote a configured review profile.
@@ -1935,12 +1941,13 @@ cross-phase access graph all apply, but they are not yet summarized as one path-
 There is also no configurable fail-fast alternative to the autonomous default of independent progress plus one
 bounded dependency retry.
 
-### The scheduled cycle still lacks schedule and history visibility
+### The scheduled cycle still lacks schedule and model-operability visibility
 
 `akno dream status` now shows resolved profile authority, active plans, proposed items, pending verification,
 configured whole-run limits, budget-deferred items, and the latest content-safe full-cycle receipt with phase
-outcomes and budget usage. It still does not inspect launchd to show whether the schedule is loaded, the next
-run time, older run history, model usage, or typed degradation.
+outcomes and budget usage. Bounded `--last`, exact `--run`, and actionable `--pending` views expose durable
+history without opening private plan bodies. Status still does not inspect launchd to show whether the schedule
+is loaded or the next run time, and receipts do not yet account for model usage or typed degradation.
 
 ### Setup assumes too much infrastructure knowledge
 
