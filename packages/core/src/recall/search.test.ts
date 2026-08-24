@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
 import type { Store } from '../store/db.ts';
-import { normalizeScores, rerankHits, toMatchExpression, type ChunkHit } from './search.ts';
+import { fuseHits, normalizeScores, rerankHits, toMatchExpression, type ChunkHit } from './search.ts';
 
 describe('toMatchExpression', () => {
   it('turns a natural-language query into a legal FTS5 expression', () => {
@@ -61,6 +61,24 @@ describe('normalizeScores', () => {
   });
 });
 
+describe('fuseHits', () => {
+  it('combines lexical and graph candidates by rank rather than mixing native score scales', () => {
+    const fused = fuseHits([
+      [
+        { chunkId: 1, pageId: 'page-a', score: 1000, from: ['lexical'] },
+        { chunkId: 2, pageId: 'page-b', score: 500, from: ['lexical'] },
+      ],
+      [
+        { chunkId: 3, pageId: 'page-c', score: 0.000_001, from: ['graph'] },
+        { chunkId: 2, pageId: 'page-b', score: 0.000_000_1, from: ['graph'] },
+      ],
+    ]);
+
+    expect(fused[0]).toMatchObject({ chunkId: 2, from: ['lexical', 'graph'] });
+    expect(fused.find((hit) => hit.chunkId === 1)?.score).toBe(fused.find((hit) => hit.chunkId === 3)?.score);
+  });
+});
+
 /**
  * The regression this guards: a cross-encoder emits logits spanning roughly -12
  * to +8, while fusion emits reciprocal ranks around 0.016. Returning both in one
@@ -69,11 +87,32 @@ describe('normalizeScores', () => {
  * changed nothing.
  */
 describe('rerankHits', () => {
-  function fakeStore(chunks: { id: number; text: string }[]): Store {
+  function fakeStore(chunks: { id: number; text: string; slug?: string }[]): Store {
     const db = new Database(':memory:');
-    db.exec('CREATE TABLE chunks (id INTEGER PRIMARY KEY, heading_path TEXT, text TEXT)');
-    const insert = db.prepare('INSERT INTO chunks(id, heading_path, text) VALUES (?, ?, ?)');
-    for (const chunk of chunks) insert.run(chunk.id, '', chunk.text);
+    db.exec(`
+      CREATE TABLE pages (id TEXT PRIMARY KEY, slug TEXT NOT NULL);
+      CREATE TABLE chunks (
+        id INTEGER PRIMARY KEY,
+        page_id TEXT,
+        document_id TEXT,
+        ord INTEGER NOT NULL,
+        heading_path TEXT,
+        text TEXT,
+        line_start INTEGER NOT NULL,
+        line_end INTEGER NOT NULL
+      );
+    `);
+    const insertPage = db.prepare('INSERT INTO pages(id, slug) VALUES (?, ?)');
+    const insert = db.prepare(
+      `INSERT INTO chunks(
+         id, page_id, document_id, ord, heading_path, text, line_start, line_end
+       ) VALUES (?, ?, NULL, 0, ?, ?, 1, 100)`,
+    );
+    for (const chunk of chunks) {
+      const pageId = `page-${chunk.id}`;
+      insertPage.run(pageId, chunk.slug ?? `pages/page-${chunk.id}`);
+      insert.run(chunk.id, pageId, '', chunk.text);
+    }
     return { db } as unknown as Store;
   }
 
@@ -201,6 +240,97 @@ describe('rerankHits', () => {
     const result = await rerankHits(store, model, 'Unrecorded warranty', hits.slice(0, 1), 3, 800, 0, true);
     expect(result.hits).toEqual([]);
     expect(result.qualification).toMatchObject({ judged: 1, rejected: 1, applied: true });
+  });
+
+  it('subjects graph candidates to the same qualification gate', async () => {
+    const graphHit: ChunkHit = {
+      chunkId: 1,
+      pageId: 'page-1',
+      score: 0.9,
+      from: ['graph'],
+      graphPaths: [
+        {
+          seed: { id: 'node-a', kind: 'page', slug: 'people/ada-marlow' },
+          target: { id: 'node-b', kind: 'page', slug: 'products/zephyr-qx-100' },
+          nodes: [
+            { id: 'node-a', kind: 'page', slug: 'people/ada-marlow' },
+            { id: 'node-b', kind: 'page', slug: 'products/zephyr-qx-100' },
+          ],
+          relations: ['links_to'],
+          hops: 1,
+          confidence: 1,
+          evidence: [{ kind: 'page_line', slug: 'people/ada-marlow', line_start: 7 }],
+        },
+      ],
+    };
+    const model = fakeLlmReranker(([only]) => [{ candidate_id: only!, relevance: 0 }]);
+    const result = await rerankHits(store, model, 'Unrecorded mechanism', [graphHit], 3, 800, 0, true);
+    expect(result.hits).toEqual([]);
+    expect(result.qualification).toMatchObject({ judged: 1, rejected: 1, applied: true });
+  });
+
+  it('gives the qualifier bounded path evidence for a graph-only destination', async () => {
+    const graphStore = fakeStore([
+      {
+        id: 1,
+        slug: 'people/ada-marlow',
+        text: 'The albatross conduit begins here and points onward.',
+      },
+      {
+        id: 2,
+        slug: 'products/zephyr-qx-100',
+        text: 'Silver mechanism carries opaque marker glimmer.',
+      },
+    ]);
+    const graphHit: ChunkHit = {
+      chunkId: 2,
+      pageId: 'page-2',
+      score: 0.9,
+      from: ['graph'],
+      graphPaths: [
+        {
+          seed: { id: 'node-a', kind: 'page', slug: 'people/ada-marlow' },
+          target: { id: 'node-b', kind: 'page', slug: 'products/zephyr-qx-100' },
+          nodes: [
+            { id: 'node-a', kind: 'page', slug: 'people/ada-marlow' },
+            { id: 'node-b', kind: 'page', slug: 'products/zephyr-qx-100' },
+          ],
+          relations: ['links_to'],
+          hops: 1,
+          confidence: 1,
+          evidence: [{ kind: 'page_line', slug: 'people/ada-marlow', line_start: 7 }],
+        },
+      ],
+    };
+    const model = stubReranker({
+      rerankerMode: 'llm',
+      chat: async (messages) => {
+        const payload = JSON.parse(messages.at(-1)!.content) as {
+          candidates: { candidate_id: string; excerpt: string }[];
+        };
+        expect(payload.candidates[0]!.excerpt).toContain('albatross conduit');
+        return {
+          ok: true,
+          value: JSON.stringify({
+            order: [{ id: payload.candidates[0]!.candidate_id, grade: 3 }],
+          }),
+          latencyMs: 1,
+        };
+      },
+    } as unknown as Partial<ModelClient>);
+
+    const result = await rerankHits(
+      graphStore,
+      model,
+      'Where does the albatross conduit lead?',
+      [graphHit],
+      3,
+      800,
+      0,
+      true,
+    );
+    expect(result.hits).toHaveLength(1);
+    expect(result.hits[0]).toMatchObject({ chunkId: 2, relevance: 1, from: ['graph'] });
   });
 
   it('uses a manual native boundary to reject candidates and omit the unjudged tail', async () => {

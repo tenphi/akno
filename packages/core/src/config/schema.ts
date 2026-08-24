@@ -153,6 +153,8 @@ const RecallDoc = z.object({
   source_quote_lines: z.number().int().positive().optional(),
   expansion: z.boolean().optional(),
   expansion_timeout_ms: z.number().int().positive().optional(),
+  /** Add exact, bounded evidence-graph candidates to recall before qualification. */
+  graph: z.boolean().optional(),
   rank: z
     .object({
       knowledge: z.number().min(0).optional(),
@@ -450,6 +452,7 @@ export interface AknoConfig {
     sourceQuoteLines: number;
     expansion: boolean;
     expansionTimeoutMs: number;
+    graph: boolean;
     rank: { knowledge: number; source: number; inference: number };
   };
   watch: { enabled: boolean; debounceMs: number; sweepIntervalMs: number; verifyIntervalMs: number };

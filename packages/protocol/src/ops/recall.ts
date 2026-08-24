@@ -30,6 +30,8 @@ export const RecallInput = z.object({
    * rewriting it costs a round trip and buys nothing.
    */
   expand: z.boolean().optional(),
+  /** Add exact, bounded evidence-graph candidates before ordinary reranking. */
+  graph: z.boolean().optional(),
   filter: SlugFilter.optional(),
   since: DatePrefix.optional(),
   until: DatePrefix.optional(),

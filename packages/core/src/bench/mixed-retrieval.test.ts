@@ -10,7 +10,8 @@ describe('mixed retrieval benchmark', () => {
       pages: 4,
       ownedDocuments: 1,
       orphanDocuments: 7,
-      queries: 6,
+      queries: 7,
+      graphQueries: 1,
       orphanK: 3,
       pageK: 2,
     });
@@ -20,6 +21,9 @@ describe('mixed retrieval benchmark', () => {
     expect(results['duplicate document result rate']).toMatchObject({ value: 0, passed: true });
     expect(results['page recall@2, page-only baseline']).toMatchObject({ value: 1, passed: true });
     expect(results['page recall change after mixed assembly']).toMatchObject({ value: 0, passed: true });
+    expect(results['graph multi-hop discovery@5']).toMatchObject({ value: 1, passed: true });
+    expect(results['graph path provenance completeness']).toMatchObject({ value: 1, passed: true });
+    expect(results['graph direct-query top-1 preservation']).toMatchObject({ value: 1, passed: true });
     expect(results['lexical recall with model degradation']).toMatchObject({ value: 1, passed: true });
     expect(results['mixed assembly + budget fit, p50']).toMatchObject({ passed: true });
   });

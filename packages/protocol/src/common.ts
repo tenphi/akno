@@ -91,6 +91,69 @@ export const DocumentAvailability = z.object({
 });
 export type DocumentAvailability = z.infer<typeof DocumentAvailability>;
 
+export const GraphRelation = z.enum([
+  'canonical_record',
+  'links_to',
+  'mentions',
+  'about',
+  'has_attribute',
+  'related_entity',
+  'owns_document',
+  'participates_in',
+]);
+export type GraphRelation = z.infer<typeof GraphRelation>;
+
+export const GraphNodeKind = z.enum(['entity', 'page', 'document', 'fact', 'event']);
+export type GraphNodeKind = z.infer<typeof GraphNodeKind>;
+
+/** Compact identity only. Read the referenced page or document for content. */
+export const GraphNodeRef = z.object({
+  id: z.string(),
+  kind: GraphNodeKind,
+  slug: z.string().optional(),
+  label: z.string().optional(),
+  role: PageRole.optional(),
+  entity: z.string().optional(),
+  entity_type: z.enum(['person', 'organization', 'place', 'product', 'event', 'concept', 'other']).optional(),
+  document: z.string().optional(),
+  fact: z.string().optional(),
+  event: z.string().optional(),
+  date: z.string().optional(),
+  line_start: z.number().int().positive().optional(),
+  line_end: z.number().int().positive().optional(),
+  availability: DocumentAvailability.shape.status.optional(),
+});
+export type GraphNodeRef = z.infer<typeof GraphNodeRef>;
+
+/** A locator, never a copied claim or excerpt. */
+export const GraphEvidenceLocator = z.object({
+  kind: z.enum(['page_line', 'fact_line', 'frontmatter', 'document']),
+  slug: z.string().optional(),
+  document: z.string().optional(),
+  event: z.string().optional(),
+  fact: z.string().optional(),
+  line_start: z.number().int().positive().optional(),
+  line_end: z.number().int().positive().optional(),
+  field: z.string().optional(),
+});
+export type GraphEvidenceLocator = z.infer<typeof GraphEvidenceLocator>;
+
+/** Why one recall candidate entered the fused candidate set. */
+export const RecallMatchArm = z.enum(['lexical', 'vector', 'graph']);
+export type RecallMatchArm = z.infer<typeof RecallMatchArm>;
+
+/** Compact, self-contained graph explanation attached only to a returned card. */
+export const RecallGraphPath = z.object({
+  seed: GraphNodeRef,
+  target: GraphNodeRef,
+  nodes: z.array(GraphNodeRef).min(2).max(4),
+  relations: z.array(GraphRelation).min(1).max(3),
+  hops: z.number().int().positive().max(3),
+  confidence: z.number().min(0).max(1),
+  evidence: z.array(GraphEvidenceLocator).min(1).max(3),
+});
+export type RecallGraphPath = z.infer<typeof RecallGraphPath>;
+
 /** An attachment that matched, and where inside it. */
 export const DocumentRef = z.object({
   id: z.string(),
@@ -162,6 +225,10 @@ export const Card = z.object({
   documents: z.array(DocumentRef).optional(),
   /** Set when the role capped what this card could contribute. */
   truncated: z.boolean().optional(),
+  /** Candidate-generation arms that found this page. Scores across these arms are fused by rank. */
+  matched_by: z.array(RecallMatchArm).optional(),
+  /** Bounded graph paths that contributed this returned page, with locators but no copied claims. */
+  graph_paths: z.array(RecallGraphPath).optional(),
 });
 export type Card = z.infer<typeof Card>;
 
@@ -195,6 +262,8 @@ export const DocumentCard = z.object({
     .optional(),
   score: z.number(),
   relevance: z.number().min(0).max(1).optional(),
+  matched_by: z.array(RecallMatchArm).optional(),
+  graph_paths: z.array(RecallGraphPath).optional(),
 });
 export type DocumentCard = z.infer<typeof DocumentCard>;
 
@@ -228,6 +297,8 @@ export const DegradedReason = z.enum([
   'no_document_text',
   /** The original bytes are gone; recall is using a retained extraction or rendition. */
   'document_source_missing',
+  /** Recall could not read the optional structural graph candidate arm. */
+  'no_graph_index',
   /** Canonical entity names are not completely available for exact seeding. */
   'no_entity_index',
   /** One or more query names were ambiguous and Akno abstained. */

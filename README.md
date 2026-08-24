@@ -236,13 +236,14 @@ There is no model downloading or serving in this repo. Models are configuration,
 
 ## The ops
 
-Ten, small on purpose: every additional op is another chance for an agent to pick the wrong one. Plus `context`,
-the pre-turn bundle, normally called by the host rather than by the agent.
+The operation surface stays small on purpose: every additional choice is another chance for an agent to pick
+the wrong one. `context` is normally called by the host rather than by the agent.
 
 | Op         | What it does                                                                                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `recall`   | Expand → hybrid search → rerank → assemble → fit a budget. `mode` (`lookup`/`question`/`explore`) selects the expansion strategy and is inferred from the query.     |
+| `recall`   | Expand → lexical, semantic, and bounded graph candidates → rank fusion → qualification/rerank → cited cards under one budget. `--no-graph` disables graph.           |
 | `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                          |
+| `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                    |
 | `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |
 | `timeline` | Authored events and typed orphan-document date evidence — by range, subject, source, or match.                                                                       |
 | `context`  | The whole pre-turn bundle against **one** budget: pinned pages, recent timeline, structure, and this turn's recall.                                                  |
@@ -418,8 +419,13 @@ authored facts may remain as explicitly historical edges with their original val
 canonical entity id, or query containing exact declared entity names; restrict direction or relation; and
 traverse one to three hops. Results contain compact node identities and source locators, never page bodies or
 copied claims. Ambiguity, partial indexing, unavailable document evidence, and safety-cap truncation remain
-typed rather than becoming guessed paths or false proof of absence. Contextual disambiguation and a
-rank-fused graph candidate arm inside `recall` are not implemented yet.
+typed rather than becoming guessed paths or false proof of absence.
+
+`recall` also uses exact query entities and up to three qualified lexical page hits as bounded two-hop graph
+seeds. Graph candidates join lexical and semantic candidates through rank fusion, then pass through the same
+reranker, irrelevance qualification, filters, assembly, and budget. Returned cards expose `matched_by` and a
+compact node/relation/locator path; they still cite ordinary page lines or document quotes as evidence.
+Contextual disambiguation of same-name entities is not implemented: ambiguity degrades and abstains.
 
 ## Documents
 
@@ -826,14 +832,17 @@ regression: a fast wrong answer and a correct slow one. The configured-base timi
 
 The fixed mixed-result corpus is asserted on every run:
 
-| Assertion                                 | Required |
-| ----------------------------------------- | -------- |
-| Orphan recall at 3                        | 100%     |
-| Owned/standalone duplicate document rate  | 0%       |
-| Page-only recall at 2                     | 100%     |
-| Page-recall change after mixed assembly   | ≥ 0      |
-| Lexical hits with typed model degradation | 100%     |
-| Mixed assembly and budget fitting, p50    | ≤ 20 ms  |
+| Assertion                                  | Required |
+| ------------------------------------------ | -------- |
+| Orphan recall at 3                         | 100%     |
+| Owned/standalone duplicate document rate   | 0%       |
+| Page-only recall at 2                      | 100%     |
+| Page-recall change after mixed assembly    | ≥ 0      |
+| Two-hop graph-only discovery at 5          | 100%     |
+| Graph path provenance completeness         | 100%     |
+| Direct-query top-1 preservation with graph | 100%     |
+| Lexical hits with typed model degradation  | 100%     |
+| Mixed assembly and budget fitting, p50     | ≤ 20 ms  |
 
 `akno bench --retrieval-only` runs only that invented corpus. It neither opens the configured knowledge base
 nor calls its models, which makes it the safe, reproducible quality gate for CI and ranking changes.

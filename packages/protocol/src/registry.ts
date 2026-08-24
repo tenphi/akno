@@ -59,7 +59,9 @@ export const OPS = {
     description:
       'Search memory. Returns typed page and document cards with exact source citations. A readable document ' +
       'does not need an owning Markdown page to be found. Handles both keyword lookups and natural ' +
-      'language questions; the expansion strategy is inferred from the query. An empty result is proof that ' +
+      'language questions; the expansion strategy is inferred from the query. Bounded exact graph paths add ' +
+      'related candidates before ordinary reranking and qualification, with compact path provenance on cards. ' +
+      'An empty result is proof that ' +
       'nothing matched, not a failure: check `status` for "empty" (nothing there), "degraded" (a model was ' +
       'missing, search was weaker) or "unavailable" (the index could not be read). In question mode, ' +
       '`coverage` reports which concepts from the question the results actually cover — do not answer the ' +

@@ -113,6 +113,12 @@
   //   }
   // },
 
+  // Exact query entities and a few strong lexical page hits seed a bounded
+  // two-hop graph candidate arm. Disable this only for retrieval comparisons.
+  "recall": {
+    "graph": true
+  },
+
   // Rules can live here, or travel with the notes at <akno_path>/akno.json —
   // which wins over both config files. Glob-scoped, most-specific-wins.
   // `akno rules <path>` prints which rule won and why.

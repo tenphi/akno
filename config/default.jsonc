@@ -247,6 +247,9 @@
     // role's ceiling. A recall that waits two minutes for an optional model call has
     // failed at its job; past this it degrades and searches the query verbatim.
     "expansion_timeout_ms": 4000,
+    // Add bounded exact evidence paths as a third candidate arm. Candidates still
+    // pass through ordinary rank fusion, reranking, qualification, and budgeting.
+    "graph": true,
     // Multiplied into the final score at assembly, not at search.
     "rank": {
       "knowledge": 1,
@@ -424,7 +427,7 @@
     // Ops an MCP caller may invoke. Trust is a parameter, not a property of the
     // transport — the same code runs with different permissions. Add "adopt" to
     // expose only the document-scoped, plan-backed filing action to an agent.
-    "mcp_allow": ["recall", "read", "list", "timeline", "context"]
+    "mcp_allow": ["recall", "read", "list", "timeline", "context", "graph"]
   },
 
   // ─── Ingest ───────────────────────────────────────────────────────────────

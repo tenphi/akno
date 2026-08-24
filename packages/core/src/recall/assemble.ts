@@ -8,6 +8,8 @@ import type {
   Line,
   PageRole,
   RecallMode,
+  RecallGraphPath,
+  RecallMatchArm,
   RecallResult,
   SupersededClaim,
 } from '@tenphi/akno-protocol';
@@ -288,6 +290,8 @@ export class Assembler {
         : {}),
       score: round(score),
       ...(relevance !== undefined ? { relevance: round(relevance) } : {}),
+      matched_by: matchedBy(hits),
+      ...graphPathFields(hits),
     };
   }
 
@@ -326,6 +330,8 @@ export class Assembler {
       summary: page.summary,
       score: round(score),
       lines: annotateLines(lines, facts),
+      matched_by: matchedBy(hits),
+      ...graphPathFields(hits),
     };
 
     if (chunk?.heading_path) card.breadcrumb = chunk.heading_path;
@@ -594,6 +600,7 @@ export function estimateTokens(card: Card | RecallResult): number {
       card.summary ?? '',
       card.quote ?? '',
       ...(card.parts ?? []).map((part) => part.path),
+      ...graphPathTokens(card.graph_paths),
     ].join(' ');
     return Math.ceil(text.length / 4) + 24;
   }
@@ -605,13 +612,55 @@ export function estimateTokens(card: Card | RecallResult): number {
     ...card.lines.map((line) => line.text),
     ...(card.superseded ?? []).map((entry) => entry.claim),
     ...(card.links ?? []),
+    ...graphPathTokens(card.graph_paths),
   ].join(' ');
   // +24 for the card's own structural overhead: keys, scores, line numbers.
   return Math.ceil(text.length / 4) + 24;
 }
 
+function graphPathTokens(paths: RecallGraphPath[] | undefined): string[] {
+  return (paths ?? []).flatMap((graphPath) => [
+    ...graphPath.nodes.map((node) => node.slug ?? node.label ?? node.document ?? node.id),
+    graphPath.relations.join(' '),
+    ...graphPath.evidence.map((locator) =>
+      [locator.slug, locator.document, locator.event, locator.fact, locator.line_start, locator.field]
+        .filter((value) => value !== undefined)
+        .join(' '),
+    ),
+  ]);
+}
+
 function round(value: number): number {
   return Math.round(value * 10000) / 10000;
+}
+
+function matchedBy(hits: ChunkHit[]): RecallMatchArm[] {
+  const order: RecallMatchArm[] = ['lexical', 'vector', 'graph'];
+  const found = new Set(hits.flatMap((hit) => hit.from));
+  return order.filter((arm) => found.has(arm));
+}
+
+function graphPathFields(hits: ChunkHit[]): { graph_paths?: RecallGraphPath[] } {
+  const paths = new Map<string, RecallGraphPath>();
+  for (const graphPath of hits.flatMap((hit) => hit.graphPaths ?? [])) {
+    const key = `${graphPath.nodes.map((node) => node.id).join('\0')}\0${graphPath.relations.join('\0')}\0${graphPath.evidence
+      .map((locator) =>
+        [
+          locator.kind,
+          locator.slug,
+          locator.document,
+          locator.event,
+          locator.fact,
+          locator.line_start,
+          locator.field,
+        ]
+          .filter((value) => value !== undefined)
+          .join('\0'),
+      )
+      .join('\0')}`;
+    paths.set(key, graphPath);
+  }
+  return paths.size > 0 ? { graph_paths: [...paths.values()].slice(0, 3) } : {};
 }
 
 interface ChunkMeta {

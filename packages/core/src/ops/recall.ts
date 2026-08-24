@@ -8,7 +8,8 @@ import {
 import type { AknoContext } from '../context.ts';
 import { indexDegradation } from '../context.ts';
 import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
-import { hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.ts';
+import { graphRecallCandidates } from '../recall/graph-arm.ts';
+import { fuseHits, hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.ts';
 
 /**
  * The retrieval op. Expand → hybrid search → rerank → assemble → fit a
@@ -109,6 +110,20 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   notes.push(...search.notes);
 
   let hits: ChunkHit[] = search.hits;
+  if (input.graph ?? ctx.config.recall.graph) {
+    try {
+      const graphResult = await graphRecallCandidates(ctx, input.query, search.hits, chunkIds ?? undefined);
+      for (const reason of graphResult.degraded) degraded.add(reason);
+      notes.push(...graphResult.notes);
+      if (graphResult.hits.length > 0) hits = fuseHits([...search.arms, graphResult.hits]);
+    } catch {
+      // Graph retrieval is an optional candidate arm. Its failure weakens recall, but must not erase the
+      // lexical and vector evidence that is still readable or pretend their result proves absence.
+      degraded.add('no_graph_index');
+      notes.push('the structural graph candidate arm was unavailable');
+    }
+  }
+
   let reranked = false;
   let qualification: RecallQualification | null = null;
   if (hits.length > 0 && ctx.models.reranker.available) {

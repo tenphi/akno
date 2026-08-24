@@ -1,4 +1,4 @@
-import type { RecallMode, RecallResult } from '@tenphi/akno-protocol';
+import type { RecallGraphPath, RecallMode, RecallResult } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
@@ -20,6 +20,7 @@ const RECALL_HELP = `akno recall <query> [options]
   --source <s>        page | document | both
   --ownership <o>     orphan | owned | any
   --no-expand         Search the exact words given; useful for filenames.
+  --no-graph          Disable bounded graph-assisted candidate discovery.
   --json              Machine-readable response.`;
 
 export async function recallCommand(argv: string[]): Promise<number> {
@@ -35,6 +36,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
     source?: string;
     ownership?: string;
     expand: boolean;
+    graph: boolean;
   }>(argv, {
     mode: { type: 'string' },
     depth: { type: 'string' },
@@ -47,6 +49,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
     source: { type: 'string' },
     ownership: { type: 'string' },
     expand: { type: 'boolean', default: true },
+    graph: { type: 'boolean', default: true },
   });
 
   if (values.help || positionals.length === 0) {
@@ -80,6 +83,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
           }
         : {}),
       expand: values.expand,
+      graph: values.graph,
       ...(Object.keys(filter).length > 0 ? { filter } : {}),
     });
 
@@ -138,6 +142,7 @@ function printRecall(result: {
   for (const resultCard of result.results) {
     if (resultCard.type === 'document') {
       heading(`${resultCard.path} ${style.grey(`(unfiled document, ${resultCard.score.toFixed(3)})`)}`);
+      printMatchMetadata(resultCard);
       if (resultCard.summary) line(`  ${truncate(resultCard.summary, 150)}`);
       const where = resultCard.matched_page ? `page ${resultCard.matched_page}` : 'extracted text';
       line(`  ${style.grey(`${resultCard.source.kind} via ${resultCard.source.via}; ${where}`)}`);
@@ -150,6 +155,7 @@ function printRecall(result: {
     }
     const card = resultCard;
     heading(`${card.slug} ${style.grey(`(${card.role}, ${card.score.toFixed(3)})`)}`);
+    printMatchMetadata(card);
     if (card.breadcrumb) line(`  ${style.cyan(card.breadcrumb)}`);
     if (card.summary) line(`  ${truncate(card.summary, 150)}`);
     for (const bodyLine of card.lines) {
@@ -186,4 +192,22 @@ function printRecall(result: {
   if (result.searched.length > 1 || result.results.length === 0) {
     line(`\n${style.grey(`searched: ${result.searched.map((q) => `"${q}"`).join(', ')}`)}`);
   }
+}
+
+function printMatchMetadata(result: RecallResult): void {
+  if (result.matched_by?.length) line(style.grey(`  matched: ${result.matched_by.join(' + ')}`));
+  for (const graphPath of result.graph_paths ?? []) {
+    line(style.grey(`  graph: ${formatGraphPath(graphPath)}`));
+  }
+}
+
+function formatGraphPath(path: RecallGraphPath): string {
+  const parts: string[] = [];
+  for (let index = 0; index < path.nodes.length; index++) {
+    const node = path.nodes[index]!;
+    parts.push(node.slug ?? node.document ?? node.label ?? node.id);
+    const relation = path.relations[index];
+    if (relation) parts.push(`-${relation}->`);
+  }
+  return parts.join(' ');
 }

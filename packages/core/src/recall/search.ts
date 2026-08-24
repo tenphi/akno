@@ -1,5 +1,10 @@
 import { randomBytes } from 'node:crypto';
-import type { DegradedReason, RecallQualification } from '@tenphi/akno-protocol';
+import type {
+  DegradedReason,
+  RecallGraphPath,
+  RecallMatchArm,
+  RecallQualification,
+} from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 import { rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
@@ -12,7 +17,9 @@ export interface ChunkHit {
   documentId?: string | null;
   score: number;
   /** Which arms found it. Used by fusion to merge duplicates across arms. */
-  from: ('vector' | 'lexical')[];
+  from: RecallMatchArm[];
+  /** Compact path explanations retained through fusion and reranking. */
+  graphPaths?: RecallGraphPath[];
   /**
    * An absolute 0..1 relevance, when an arm produced one: cosine from the vector arm,
    * replaced by the cross-encoder's judgement when reranking runs. Undefined after a
@@ -35,6 +42,8 @@ export interface SearchOptions {
 
 export interface SearchResult {
   hits: ChunkHit[];
+  /** Native arm rankings, retained so later graph candidates join the same rank fusion. */
+  arms: ChunkHit[][];
   degraded: DegradedReason[];
   /** Human-readable detail for logs and `doctor`, never for control flow. */
   notes: string[];
@@ -85,7 +94,8 @@ export async function hybridSearch(
     if (embedding.unavailableReason) notes.push(embedding.unavailableReason);
   }
 
-  return { hits: fuse([lexical, vector]), degraded, notes };
+  const arms = [lexical, vector];
+  return { hits: fuseHits(arms), arms, degraded, notes };
 }
 
 /**
@@ -136,7 +146,7 @@ function lexicalSearch(store: Store, queries: string[], limit: number, chunkIds?
     }
   }
 
-  return fuse(perQuery);
+  return fuseHits(perQuery);
 }
 
 function vectorSearch(
@@ -170,7 +180,7 @@ function vectorSearch(
     perVector.push(mapped);
   }
 
-  return fuse(perVector);
+  return fuseHits(perVector);
 }
 
 /** Undefined means unrestricted; when both restrictions exist, both must hold. */
@@ -189,7 +199,7 @@ function intersect(left?: Set<number>, right?: Set<number>): Set<number> | undef
  */
 const RRF_K = 60;
 
-function fuse(lists: ChunkHit[][]): ChunkHit[] {
+export function fuseHits(lists: ChunkHit[][]): ChunkHit[] {
   const populated = lists.filter((list) => list.length > 0);
   // One list needs no fusion, and passing it through keeps its own scores rather
   // than flattening them all onto the reciprocal-rank scale.
@@ -205,6 +215,7 @@ function fuse(lists: ChunkHit[][]): ChunkHit[] {
       if (existing) {
         existing.score += contribution;
         for (const arm of hit.from) if (!existing.from.includes(arm)) existing.from.push(arm);
+        existing.graphPaths = mergeGraphPaths(existing.graphPaths, hit.graphPaths);
         if (hit.relevance !== undefined) {
           existing.relevance = Math.max(existing.relevance ?? 0, hit.relevance);
         }
@@ -215,6 +226,34 @@ function fuse(lists: ChunkHit[][]): ChunkHit[] {
   }
 
   return [...merged.values()].sort((a, b) => b.score - a.score);
+}
+
+function mergeGraphPaths(
+  left: RecallGraphPath[] | undefined,
+  right: RecallGraphPath[] | undefined,
+): RecallGraphPath[] | undefined {
+  if (!left?.length) return right?.length ? [...right] : undefined;
+  if (!right?.length) return left;
+  const merged = new Map(left.map((path) => [graphPathKey(path), path]));
+  for (const path of right) merged.set(graphPathKey(path), path);
+  return [...merged.values()].slice(0, 3);
+}
+
+function graphPathKey(path: RecallGraphPath): string {
+  return `${path.nodes.map((node) => node.id).join('\0')}\0${path.relations.join('\0')}\0${path.evidence
+    .map((locator) =>
+      [
+        locator.kind,
+        locator.slug,
+        locator.document,
+        locator.event,
+        locator.fact,
+        locator.line_start,
+        locator.line_end,
+        locator.field,
+      ].join('\0'),
+    )
+    .join('\0')}`;
 }
 
 /**
@@ -290,17 +329,25 @@ export async function rerankHits(
   const candidates = hits.slice(0, topK);
   // One prepared statement for the whole batch rather than one per candidate.
   const select = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?');
+  const graphEvidence = graphEvidenceReader(store);
   const texts = candidates.map((hit) => {
     const row = select.get(hit.chunkId) as { heading_path: string; text: string } | undefined;
     if (!row) return '';
     const full = row.heading_path ? `${row.heading_path}\n${row.text}` : row.text;
+    const graphContext = renderGraphRerankContext(hit.graphPaths, graphEvidence);
+    const graphBudget = graphContext ? Math.floor(maxChars / 2) : 0;
+    const boundedGraph = graphContext.slice(0, graphBudget);
+    const boundedContent = full.slice(0, maxChars - boundedGraph.length);
+    const candidateText = boundedGraph
+      ? `[Graph path and its cited evidence]\n${boundedGraph}\n[Candidate]\n${boundedContent}`
+      : boundedContent;
     // Bounds the request payload. Measured as *free* rather than fast: truncating
     // from the 4,000-char chunk cap to 800 changed neither latency (1036 → 1028 ms)
     // nor a single result across 8 queries, because this reranker's cost is per
     // candidate, not per character. `topK` is the latency dial, and lowering that
     // does change which pages come back. Kept anyway — a cross-encoder's relevance
     // signal is front-loaded, and an unbounded payload is worth not having.
-    return full.length > maxChars ? full.slice(0, maxChars) : full;
+    return candidateText.slice(0, maxChars);
   });
 
   if (reranker.rerankerMode === 'llm') {
@@ -435,6 +482,71 @@ export async function rerankHits(
     basis: excludeIrrelevant ? calibration : 'disabled',
     threshold: resolvedOffset,
   });
+}
+
+function graphEvidenceReader(store: Store): (locator: RecallGraphPath['evidence'][number]) => string {
+  let page;
+  let document;
+  try {
+    page = store.db.prepare(
+      `SELECT c.text
+         FROM chunks c
+         JOIN pages p ON p.id = c.page_id
+        WHERE p.slug = ? AND c.document_id IS NULL
+        ORDER BY CASE WHEN ? BETWEEN c.line_start AND c.line_end THEN 0 ELSE 1 END, c.ord
+        LIMIT 1`,
+    );
+    document = store.db.prepare(
+      `SELECT text
+         FROM chunks
+        WHERE document_id = ?
+        ORDER BY ord
+        LIMIT 1`,
+    );
+  } catch {
+    // Small embedders may supply only the chunk table. Path identities still help their reranker even when
+    // this optional supporting excerpt cannot be loaded from the handle.
+    return () => '';
+  }
+  const cache = new Map<string, string>();
+
+  return (locator) => {
+    const key = `${locator.kind}\0${locator.slug ?? ''}\0${locator.document ?? ''}\0${locator.line_start ?? ''}`;
+    const cached = cache.get(key);
+    if (cached !== undefined) return cached;
+    const row = locator.slug
+      ? (page.get(locator.slug, locator.line_start ?? -1) as { text: string } | undefined)
+      : locator.document
+        ? (document.get(locator.document) as { text: string } | undefined)
+        : undefined;
+    const text = row?.text.replace(/\s+/g, ' ').trim().slice(0, 180) ?? '';
+    cache.set(key, text);
+    return text;
+  };
+}
+
+function renderGraphRerankContext(
+  paths: RecallGraphPath[] | undefined,
+  evidenceText: (locator: RecallGraphPath['evidence'][number]) => string,
+): string {
+  if (!paths?.length) return '';
+  return paths
+    .slice(0, 2)
+    .map((path) => {
+      const route: string[] = [];
+      for (let index = 0; index < path.nodes.length; index++) {
+        const node = path.nodes[index]!;
+        route.push(node.slug ?? node.document ?? node.label ?? node.id);
+        const relation = path.relations[index];
+        if (relation) route.push(`-${relation}->`);
+      }
+      const evidence = path.evidence
+        .map(evidenceText)
+        .filter(Boolean)
+        .map((text) => `Evidence: ${text}`);
+      return [`Path: ${route.join(' ')}`, ...evidence].join('\n');
+    })
+    .join('\n');
 }
 
 function finishRerank(

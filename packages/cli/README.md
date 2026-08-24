@@ -47,7 +47,7 @@ roles resolved and what each missing one costs.
 ## What you get
 
 ```
-akno recall <query>       Search memory. Returns cited page and document cards.
+akno recall <query>       Search memory with lexical, semantic, and bounded graph candidates.
 akno read <slug>          One exact page or document, in full.
 akno graph [seed]         Bounded exact evidence paths and locators; no bodies.
 akno timeline             Authored events plus typed orphan-document date evidence.

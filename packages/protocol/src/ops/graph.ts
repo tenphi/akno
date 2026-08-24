@@ -1,20 +1,8 @@
 import { z } from 'zod';
-import { DocumentAvailability, PageRole, ResultEnvelope } from '../common.ts';
+import { GraphEvidenceLocator, GraphNodeRef, GraphRelation, ResultEnvelope } from '../common.ts';
 
 export const GraphDirection = z.enum(['out', 'in', 'both']);
 export type GraphDirection = z.infer<typeof GraphDirection>;
-
-export const GraphRelation = z.enum([
-  'canonical_record',
-  'links_to',
-  'mentions',
-  'about',
-  'has_attribute',
-  'related_entity',
-  'owns_document',
-  'participates_in',
-]);
-export type GraphRelation = z.infer<typeof GraphRelation>;
 
 /** One exact seed form. Query seeds still resolve only evidence-declared names. */
 export const GraphInput = z
@@ -33,41 +21,6 @@ export const GraphInput = z
     message: 'graph requires exactly one of: slug, entity, query',
   });
 export type GraphInput = z.infer<typeof GraphInput>;
-
-export const GraphNodeKind = z.enum(['entity', 'page', 'document', 'fact', 'event']);
-export type GraphNodeKind = z.infer<typeof GraphNodeKind>;
-
-/** Compact identity only. Read the referenced page or document for content. */
-export const GraphNodeRef = z.object({
-  id: z.string(),
-  kind: GraphNodeKind,
-  slug: z.string().optional(),
-  label: z.string().optional(),
-  role: PageRole.optional(),
-  entity: z.string().optional(),
-  entity_type: z.enum(['person', 'organization', 'place', 'product', 'event', 'concept', 'other']).optional(),
-  document: z.string().optional(),
-  fact: z.string().optional(),
-  event: z.string().optional(),
-  date: z.string().optional(),
-  line_start: z.number().int().positive().optional(),
-  line_end: z.number().int().positive().optional(),
-  availability: DocumentAvailability.shape.status.optional(),
-});
-export type GraphNodeRef = z.infer<typeof GraphNodeRef>;
-
-/** A locator, never a copied claim or excerpt. */
-export const GraphEvidenceLocator = z.object({
-  kind: z.enum(['page_line', 'fact_line', 'frontmatter', 'document']),
-  slug: z.string().optional(),
-  document: z.string().optional(),
-  event: z.string().optional(),
-  fact: z.string().optional(),
-  line_start: z.number().int().positive().optional(),
-  line_end: z.number().int().positive().optional(),
-  field: z.string().optional(),
-});
-export type GraphEvidenceLocator = z.infer<typeof GraphEvidenceLocator>;
 
 export const GraphEdgeRef = z.object({
   id: z.string(),
@@ -120,3 +73,6 @@ export const GraphOutput = ResultEnvelope.extend({
   reason: z.enum(['seed_not_found', 'no_paths', 'graph_index_unreadable']).optional(),
 });
 export type GraphOutput = z.infer<typeof GraphOutput>;
+
+export { GraphEvidenceLocator, GraphNodeRef, GraphRelation } from '../common.ts';
+export type { GraphNodeKind } from '../common.ts';

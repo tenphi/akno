@@ -26,6 +26,7 @@ export interface MixedRetrievalBenchReport {
     ownedDocuments: number;
     orphanDocuments: number;
     queries: number;
+    graphQueries: number;
     orphanK: number;
     pageK: number;
   };
@@ -42,10 +43,12 @@ const FIXTURES: Record<string, string> = {
   'people/ada-marlow.md': `# Ada Marlow
 
 The northern lantern archive uses the albatross key for cataloguing.
+The albatross conduit starts here. Continue through [[organisations/vulpine-mutual]].
 `,
   'organisations/vulpine-mutual.md': `# Vulpine Mutual
 
 The southern lantern archive lists Vulpine Mutual under the foxglove index.
+The conduit continues to [[products/zephyr-qx-100]].
 `,
   'products/zephyr-qx-100.md': `# Zephyr QX-100
 
@@ -87,6 +90,10 @@ const OWNED_CASE = {
   slug: 'records/vulpine-policy',
   path: 'records/vulpine-policy.txt',
 };
+const GRAPH_CASE = {
+  query: 'albatross conduit destination',
+  slug: 'products/zephyr-qx-100',
+};
 
 /**
  * A fixed, invented corpus measures retrieval quality independently of the user's
@@ -103,7 +110,8 @@ export async function runMixedRetrievalBench(
     pages: Object.keys(FIXTURES).filter((file) => file.endsWith('.md')).length,
     ownedDocuments: 1,
     orphanDocuments: 7,
-    queries: ORPHAN_CASES.length + PAGE_CASES.length + 1,
+    queries: ORPHAN_CASES.length + PAGE_CASES.length + 2,
+    graphQueries: 1,
     orphanK: K,
     pageK: PAGE_K,
   };
@@ -166,12 +174,22 @@ export async function runMixedRetrievalBench(
     let pageOnlyHits = 0;
     let mixedPageHits = 0;
     let mixedDocumentCases = 0;
+    let graphAnchorHits = 0;
     for (const benchCase of PAGE_CASES) {
       const pageOnly = await mem.recall({
         query: benchCase.query,
         mode: 'lookup',
         limit: PAGE_K,
         budget: 1200,
+        graph: false,
+        filter: { source: 'page' },
+      });
+      const graphAssisted = await mem.recall({
+        query: benchCase.query,
+        mode: 'lookup',
+        limit: PAGE_K,
+        budget: 1200,
+        graph: true,
         filter: { source: 'page' },
       });
       const mixed = await mem.recall({
@@ -181,12 +199,47 @@ export async function runMixedRetrievalBench(
         budget: 1200,
       });
       if (hasPage(pageOnly, benchCase.slug)) pageOnlyHits++;
+      if (graphAssisted.results[0]?.type === 'page' && graphAssisted.results[0].slug === benchCase.slug) {
+        graphAnchorHits++;
+      }
       if (hasPage(mixed, benchCase.slug)) mixedPageHits++;
       if (mixed.results.some((candidate) => candidate.type === 'document')) mixedDocumentCases++;
     }
     const pageOnlyRecall = pageOnlyHits / PAGE_CASES.length;
     const mixedPageRecall = mixedPageHits / PAGE_CASES.length;
     const allCasesMixed = mixedDocumentCases === PAGE_CASES.length;
+
+    const graphBaseline = await mem.recall({
+      query: GRAPH_CASE.query,
+      mode: 'lookup',
+      expand: false,
+      graph: false,
+      limit: 5,
+      budget: 1200,
+    });
+    const graphAssisted = await mem.recall({
+      query: GRAPH_CASE.query,
+      mode: 'lookup',
+      expand: false,
+      graph: true,
+      limit: 5,
+      budget: 1200,
+    });
+    const graphTarget = graphAssisted.results.find(
+      (candidate) => candidate.type === 'page' && candidate.slug === GRAPH_CASE.slug,
+    );
+    const graphOnlyDiscovery = !hasPage(graphBaseline, GRAPH_CASE.slug) && Boolean(graphTarget);
+    const completeGraphProvenance =
+      graphTarget?.type === 'page' &&
+      graphTarget.matched_by?.includes('graph') === true &&
+      graphTarget.graph_paths?.some(
+        (entry) =>
+          entry.hops === 2 &&
+          entry.nodes.length === 3 &&
+          entry.relations.length === 2 &&
+          entry.evidence.length === 2 &&
+          entry.evidence.every((locator) => Boolean(locator.slug ?? locator.document)),
+      ) === true;
 
     const latency = await mixedLatency(mem, iterations);
     const results = [
@@ -223,6 +276,34 @@ export async function runMixedRetrievalBench(
         detail:
           `page-only ${percent(pageOnlyRecall)}, mixed ${percent(mixedPageRecall)}; ` +
           `${mixedDocumentCases}/${PAGE_CASES.length} cases also returned document evidence`,
+      }),
+      metric({
+        name: 'graph multi-hop discovery@5',
+        value: graphOnlyDiscovery ? 1 : 0,
+        target: 1,
+        comparison: 'at_least',
+        unit: 'ratio',
+        detail: graphOnlyDiscovery
+          ? 'the two-hop target appeared only with graph assistance'
+          : 'the target was already lexical or graph assistance did not return it',
+      }),
+      metric({
+        name: 'graph path provenance completeness',
+        value: completeGraphProvenance ? 1 : 0,
+        target: 1,
+        comparison: 'at_least',
+        unit: 'ratio',
+        detail: completeGraphProvenance
+          ? 'the returned target carried all nodes, relations, and evidence locators'
+          : 'the returned target lacked a complete bounded path explanation',
+      }),
+      metric({
+        name: 'graph direct-query top-1 preservation',
+        value: graphAnchorHits / PAGE_CASES.length,
+        target: 1,
+        comparison: 'at_least',
+        unit: 'ratio',
+        detail: `${graphAnchorHits}/${PAGE_CASES.length} direct page queries kept their expected top result`,
       }),
       metric({
         name: 'lexical recall with model degradation',

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { ReasoningEffort } from '../config/schema.ts';
 import type { ModelClient, ModelOutcome } from '../models/client.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import type { RecallMatchArm } from '@tenphi/akno-protocol';
 
 export const LLM_RERANK_PROMPT_VERSION = 'akno-listwise-v4';
 export const LLM_RERANK_SCHEMA_VERSION = 'compact-entries-v3';
@@ -11,7 +12,7 @@ export interface LlmRerankCandidate {
   id: string;
   text: string;
   sourceKind: 'page' | 'document';
-  matchedBy: ('vector' | 'lexical')[];
+  matchedBy: RecallMatchArm[];
 }
 
 export interface LlmRerankEntry {

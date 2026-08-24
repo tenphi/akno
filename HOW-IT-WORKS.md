@@ -276,16 +276,33 @@ flowchart LR
     query["Your query"] --> expand["1. Expand<br/>optional expansion model"]
     expand --> lexical["2a. Keyword search"]
     expand --> semantic["2b. Meaning search<br/>optional embeddings"]
-    lexical --> fuse["3. Fuse by rank"]
+    query --> exact["2c. Exact entity seeds"]
+    lexical --> pageSeeds["Qualified page seeds<br/>at most three"]
+    exact --> graphRecall["Bounded graph paths<br/>at most two hops"]
+    pageSeeds --> graphRecall
+    lexical --> fuse["3. Fuse all arms by rank"]
     semantic --> fuse
+    graphRecall --> fuse
     fuse --> rerank["4. Rerank candidates<br/>optional reranker"]
     rerank --> cards["5. Assemble page/document cards<br/>and fit one budget"]
 ```
 
 The search arms use different score scales, so they are merged by rank rather than comparing raw
-scores. Owned document hits group beneath their page; ownerless document parts group into a typed
-document card. The compatibility `cards` field contains pages only, while `results` is the
-authoritative mixed list.
+scores. Graph traversal starts only from exact names in the query or up to three page hits with strong lexical
+overlap, and stops after two hops. It can therefore discover a connected page whose own text never used the
+query words without treating similarity as identity. Every discovered candidate still passes the same
+reranking and irrelevance qualification as lexical and semantic candidates. For graph candidates, that bounded
+judgement sees the path and the small cited source windows that established it, so it does not have to infer a
+connection from the destination chunk alone.
+
+A returned card names its contributing arms in `matched_by`. A graph-assisted card also carries up to three
+compact `graph_paths`: all node identities and relation types in the path plus source locators, but no copied
+claims. The cited card lines or document quote remain the evidence to read. Set `recall.graph: false` globally
+or pass `--no-graph` for a lexical/semantic-only run. Ordinary folder, role, tag, source, ownership, and date
+filters also constrain graph candidates.
+
+Owned document hits group beneath their page; ownerless document parts group into a typed document card. The
+compatibility `cards` field contains pages only, while `results` is the authoritative mixed list.
 
 Recall has three modes:
 
@@ -1577,8 +1594,9 @@ akno bench --retrieval-only
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
 because an endpoint or GPU was temporarily busy. Every normal run also builds a temporary, wholly invented
 corpus and asserts orphan recall, no owned/standalone duplication, unchanged page recall after mixed assembly,
-typed lexical degradation, and mixed budget-fitting latency. `--retrieval-only` runs that reproducible quality
-gate without opening the configured knowledge base or calling its models.
+typed lexical degradation, two-hop graph-only discovery with complete path provenance, direct-query top-result
+preservation, and mixed budget-fitting latency. `--retrieval-only` runs that reproducible quality gate without
+opening the configured knowledge base or calling its models.
 
 ### Recovery guarantees
 
@@ -1605,7 +1623,7 @@ or document was forgotten, recover it from Akno's trash within the configured re
 The current product has several meaningful UX gaps. They are worth understanding before enabling unattended
 maintenance. The proposals in this section describe a direction, not behavior that already ships.
 
-### The evidence graph is inspectable but does not expand recall yet
+### The evidence graph still uses conservative exact identity
 
 Indexing now rebuilds a local evidence graph from exact page links, `akno.about`, document ownership, and
 dated event relationships. Each knowledge page anchors a separate canonical entity node. Its canonical slug,
@@ -1637,10 +1655,16 @@ slug, entity id, or exact-name query seed; supports relation, direction, history
 compact source locators without copied content; caps hubs; and preserves typed empty, degraded, and unavailable
 outcomes. Ambiguous exact names return their candidates and stop rather than becoming edges.
 
-This is inspection, not graph-assisted recall yet. Akno does not contextually disambiguate same-name
-candidates or feed graph paths into recall's candidate set. Until those slices ship, `recall` still discovers
-evidence through lexical and semantic retrieval, while `graph` is the explicit tool for deliberate path
-inspection.
+`recall` now uses this state as a third, rank-fused candidate arm. It starts from exact query entities and a
+small qualified set of lexical page hits, traverses at most two hops, and returns ordinary cards after the same
+reranking, qualification, filtering, assembly, and budget stages. Cards say `matched_by: graph` and retain the
+complete compact node/relation path and evidence locators that admitted them. The invented retrieval gate proves
+one target with no query overlap is found only by this arm and checks that direct-query top results remain stable.
+
+The remaining identity gap is contextual disambiguation. Same-name candidates still produce typed
+`entity_resolution_failed` degradation and no guessed edge. Recall also does not request three-hop traversal or
+use graph findings to authorize maintenance; deliberate one-to-three-hop inspection remains the job of
+`graph`, and grounded answer synthesis remains a separate proposed operation.
 
 ### The durable review queue does not cover every phase yet
 
