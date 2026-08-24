@@ -138,6 +138,20 @@ export {
   type RankingEndToEndSystem,
 } from './bench/ranking-end-to-end.ts';
 export {
+  RANKING_INTERACTIVE_P95_TARGET_MS,
+  RANKING_LATENCY_SCHEMA_VERSION,
+  evaluateRankingLatency,
+  refreshRankingLatencyReport,
+  runRankingLatencyBench,
+  type RankingLatencyCheck,
+  type RankingLatencyMetrics,
+  type RankingLatencyOptions,
+  type RankingLatencyProfile,
+  type RankingLatencyProgress,
+  type RankingLatencyReport,
+} from './bench/ranking-latency.ts';
+export {
+  attachRankingLatencyEvidence,
   attachRankingEndToEndEvidence,
   evaluateRankingRelease,
   markRankingMatrixPersisted,

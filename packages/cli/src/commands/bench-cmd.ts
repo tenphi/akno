@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
   attachRankingEndToEndEvidence,
+  attachRankingLatencyEvidence,
   markAnswerBenchPersisted,
   markAutoRecallAnswerBenchPersisted,
   markAutoRecallBenchPersisted,
@@ -19,6 +20,7 @@ import {
   runMixedRetrievalBench,
   runRankingBench,
   runRankingEndToEnd,
+  runRankingLatencyBench,
   runRankingMatrix,
   RANKING_MATRIX_VARIANT_IDS,
   type Akno,
@@ -34,6 +36,7 @@ import {
   type RankingCandidateCount,
   type RankingExcerptChars,
   type RankingEndToEndReport,
+  type RankingLatencyReport,
   type RankingMatrixReport,
   type RankingMatrixVariantId,
   type RetrievalBenchResult,
@@ -78,6 +81,9 @@ const BENCH_HELP = `akno bench [options]
   ranking --track end-to-end
                       Index the invented corpus, measure candidate-window recall,
                       then run reranking and assembly over the same derived index.
+  ranking --track latency
+                      Measure the selected ranker's cold negotiation, warm
+                      single-flight UX, and warm loaded latency separately.
     --split <name>    development, test, or all (default development). Test is
                       held out from prompt tuning and must be selected explicitly.
     --candidates <n>  10, 20, or 40 for a single-system run (default 20).
@@ -89,7 +95,7 @@ const BENCH_HELP = `akno bench [options]
     --skip-native     Omit the optional native reference from a matrix.
     --matrix-artifact <path>
                       Use its selected configuration and atomically attach
-                      end-to-end evidence to that matrix artifact.
+                      end-to-end or latency evidence to that matrix artifact.
     --output <path>   Atomically persist the content-safe result artifact.
     --provider <name> Configured provider. Ranking defaults to openai; answer
                       and auto-recall-answer use the answer role; auto-recall
@@ -449,9 +455,83 @@ export async function benchCommand(argv: string[]): Promise<number> {
     const { loadConfig } = await import('@tenphi/akno-core');
     const config = loadConfig(openOptionsFrom(values));
     if (values.track) {
-      if (values.track !== 'end-to-end') {
+      if (values.track !== 'end-to-end' && values.track !== 'latency') {
         fail(`invalid ranking track: ${values.track}`);
         return 2;
+      }
+      if (values.track === 'latency') {
+        if (
+          values.matrix ||
+          values.variant ||
+          values.probe ||
+          values.system ||
+          values.runs ||
+          values['skip-native'] ||
+          values['embedding-provider'] ||
+          values['embedding-model'] ||
+          values['embedding-dimensions'] ||
+          values.split ||
+          values.candidates ||
+          values['excerpt-chars'] ||
+          values.provider ||
+          values.model ||
+          values.reasoning
+        ) {
+          fail(
+            'ranking latency uses the matrix selection and accepts only --matrix-artifact, --concurrency, --output, and --json',
+          );
+          return 2;
+        }
+        if (!values['matrix-artifact']) {
+          fail('ranking latency requires --matrix-artifact');
+          return 2;
+        }
+        let matrix = refreshRankingMatrixReport(await readRankingMatrixArtifact(values['matrix-artifact']));
+        if (!matrix.selection) {
+          fail('the matrix artifact has no selected configuration');
+          return 2;
+        }
+        const selected = matrix.variants.find((variant) => variant.id === matrix.selection!.variantId);
+        if (
+          !selected ||
+          !selected.provider ||
+          !selected.model ||
+          !selected.reasoningEffort ||
+          !selected.promptVersion ||
+          !selected.schemaVersion
+        ) {
+          fail('the selected matrix variant has no complete LLM configuration');
+          return 2;
+        }
+        const loadConcurrency = parseBoundedInteger(
+          values.concurrency ?? String(Math.max(2, matrix.concurrency)),
+          2,
+          16,
+          'concurrency',
+        );
+        if (loadConcurrency === null) return 2;
+        const report = await runRankingLatencyBench(config, {
+          split: matrix.split,
+          candidateCount: selected.candidateCount,
+          excerptChars: selected.excerptChars,
+          loadConcurrency,
+          provider: selected.provider,
+          model: selected.model,
+          reasoningEffort: selected.reasoningEffort,
+          ...(!values.json
+            ? {
+                onProgress: ({ profile, concurrency }) =>
+                  line(`  ${profile} profile  concurrency ${concurrency}`),
+              }
+            : {}),
+        });
+        let artifactPath: string | null = null;
+        if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+        matrix = attachRankingLatencyEvidence(matrix, report);
+        const matrixPath = await writeJsonArtifact(values['matrix-artifact'], matrix);
+        if (values.json) json(report);
+        else renderRankingLatency(report, artifactPath, matrixPath, matrix);
+        return report.passed ? 0 : 1;
       }
       if (
         values.matrix ||
@@ -1227,6 +1307,42 @@ function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string |
       ? style.green('Stored held-out evidence satisfies every release gate.')
       : style.grey('The preset remains blocked until every release gate is evidenced.'),
   );
+}
+
+function renderRankingLatency(
+  report: RankingLatencyReport,
+  artifactPath: string | null,
+  matrixPath: string,
+  matrix: RankingMatrixReport,
+): void {
+  heading(
+    `Ranking latency — ${report.split}, ${report.candidateCount} candidates, ` +
+      `${report.reasoningEffort} reasoning`,
+  );
+  for (const [label, profile] of [
+    ['interactive', report.interactive],
+    ['loaded', report.loaded],
+  ] as const) {
+    line(`  ${label.padEnd(12)} concurrency ${profile.concurrency}`);
+    line(
+      `    cold       ${Math.round(profile.cold.p50LatencyMs)}ms; ` +
+        `${profile.cold.endpointRequests} endpoint request(s)`,
+    );
+    line(
+      `    warm p50/p95/max  ${Math.round(profile.warm.p50LatencyMs)} / ` +
+        `${Math.round(profile.warm.p95LatencyMs)} / ${Math.round(profile.warm.maxLatencyMs)}ms; ` +
+        `${percent(profile.warm.validResponseRate)} valid; ` +
+        `${profile.warm.extraEndpointRequests} extra endpoint requests`,
+    );
+  }
+  line(`  UX gate      warm single-flight p95 ≤ ${report.thresholds.interactiveP95LatencyMs}ms`);
+  if (artifactPath) line(`  artifact     ${artifactPath}`);
+  line(`  matrix       ${matrixPath}`);
+  if (report.blockers.length > 0) line(`  blockers     ${report.blockers.join(', ')}`);
+  if (matrix.releaseGate.blockers.length > 0) {
+    line(`  release blockers  ${matrix.releaseGate.blockers.join(', ')}`);
+  }
+  line(`\n${report.passed ? style.green('latency evidence passed') : style.red('latency evidence failed')}`);
 }
 
 function renderRankingEndToEnd(

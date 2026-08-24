@@ -41,14 +41,34 @@ JSON Schema definitions. The checked-in artifacts for this contract are:
 
 - `development-openai-luna-v6-targeted-2026-08-24.json`
 - `development-openai-luna-v6-2026-08-24.json`
+- `development-openai-luna-v6-latency-2026-08-24.json`
 
 The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
-fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second p95. Provider usage averaged 958 input
-and 157 output tokens per query. Increasing the window to 20 or 40 candidates reduced quality and stability
-while increasing latency and tokens; `low` reasoning was only 88% valid, reached 0.894 nDCG, and took 10.15
-seconds at p95. The selected configuration passes every development quality, safety, reliability, and
-selection check, but misses the 2.5-second latency gate. These are development artifacts, not held-out release
-evidence. Do not treat the v4/v3 files as release evidence for this changed contract.
+fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second concurrency-four p95. Provider usage
+averaged 958 input and 157 output tokens per query. Increasing the window to 20 or 40 candidates reduced quality
+and stability while increasing latency and tokens; `low` reasoning was only 88% valid, reached 0.894 nDCG, and
+took 10.15 seconds at p95.
+
+The bound latency track then separated fresh-client negotiation from normal service calls. Warm single-flight
+p50/p95 was 2.34/3.12 seconds across 59 calls; warm four-way load was 2.26/4.12 seconds. Both profiles were 100%
+valid with exactly one endpoint request per warm call. Cold calls took 3.36/2.79 seconds and three physical
+requests while each fresh client learned two compatibility differences. The 4-second warm single-flight UX
+gate passes; loaded latency remains capacity evidence rather than the single-owner interaction SLO. These are
+development artifacts, not held-out release evidence. Do not treat the v4/v3 files as release evidence for
+this changed contract.
+
+To reproduce and attach the selected configuration's latency profiles:
+
+```bash
+akno bench ranking --track latency \
+  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json \
+  --concurrency 4 --output benchmarks/ranking/results/development-openai-luna-latency.json
+```
+
+The command takes provider, model, reasoning, candidate count, excerpt limit, prompt, and schema exclusively
+from the matrix. It rejects configuration overrides, measures one cold plus 59 warm calls per development
+profile, and atomically attaches only an exact-match result. Artifact refresh preserves the stored threshold;
+changing the SLO requires a new latency schema and new pre-declared evidence.
 
 After the matrix selects a configuration, attach production-pipeline evidence over a temporary, entirely
 invented knowledge base:

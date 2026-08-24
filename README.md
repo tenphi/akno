@@ -1047,6 +1047,23 @@ variant. The targeted artifact still records each run's token usage, logical and
 latency, fallbacks, and top-three stability. It intentionally makes no preset selection and cannot be release
 evidence by itself.
 
+The latency track binds itself to that selected shape and separates one fresh-client compatibility call from
+the warm calls users normally feel. It measures the warm path once at single-flight concurrency and once under
+bounded load, then attaches the content-safe receipt to the matrix:
+
+```bash
+akno bench ranking --track latency \
+  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json \
+  --concurrency 4 --output benchmarks/ranking/results/development-openai-luna-latency.json
+```
+
+The release SLO is warm single-flight p95 at or below 4 seconds. Both cold calls must succeed, and every warm
+call in both profiles must be valid with exactly one endpoint request. Loaded p95 is capacity evidence rather
+than the single-owner interaction gate. The command accepts no provider/model/prompt overrides: a receipt can
+attach only when split, corpus, candidate count, excerpt limit, provider, model, reasoning, prompt, and schema
+match the matrix selection. Refreshing an artifact preserves its stored threshold; changing the SLO requires a
+new latency schema and new pre-declared evidence.
+
 The end-to-end track then tests the matrix selection through the production index and recall path. It creates a
 temporary knowledge base containing the same invented 120 sources, embeds it, measures whether each direct
 answer reaches the selected candidate window, and separately measures the final assembled order after
@@ -1081,9 +1098,10 @@ Matrix selection is deliberately separate from release. It chooses the least exp
 wins. The mechanical release gate still requires an explicitly selected held-out run, independent corpus
 review, a persisted artifact, end-to-end direct-answer candidate recall at the selected window, five
 repetitions, quality and exact-entity floors, valid/fallback-safe responses, perfect instruction-negative
-rejection, stable top-three results, and the latency budget. The selected prompt and schema must also match the
-current runtime contract, so refreshing an old artifact cannot authorize unbenchmarked code. A useful
-development result can therefore recommend the next experiment without silently authorizing the setup preset.
+rejection, stable top-three results, and a bound warm single-flight latency receipt. The selected prompt and
+schema must also match the current runtime contract, so refreshing an old artifact cannot authorize
+unbenchmarked code. A useful development result can therefore recommend the next experiment without silently
+authorizing the setup preset.
 
 The current [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
 selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.962 mean nDCG@10, 100%
@@ -1105,8 +1123,9 @@ top-three overlap, complete direct-answer retention, and 1.90 s p95 latency. One
 invalid after the bounded semantic retry and fell back exactly to fusion, leaving response validity and
 instruction-negative rejection at 99%. The 20-candidate `none` variant was 100% valid and reached 0.927 nDCG,
 but its 3.36 s p95 missed the latency gate; `low` at 20 was slower still at 4.74 s. No tested held-out variant
-therefore satisfies both reliability and latency. This artifact is final test evidence, not another prompt-tuning
-input, and the preset remains experimental.
+therefore satisfied both reliability and the then-provisional mixed matrix latency gate. The artifact also has
+no bound warm single-flight receipt required by the current gate. This is final test evidence, not another
+prompt-tuning input, and the preset remains experimental.
 
 The runtime has since advanced to `akno-judgment-map-v6` / `tuple-judgment-map-v5`. Instead of asking the
 model to reproduce opaque ids in a failure-prone array permutation, the strict schema makes every permitted id
@@ -1121,8 +1140,7 @@ The checked-in [v6 development matrix](benchmarks/ranking/results/development-op
 selects Luna with `none` reasoning and 10 candidates. Across five runs it produced 300/300 valid responses,
 zero fallbacks, 0.957 mean nDCG@10 against fusion's 0.483, complete direct/support/marginal retention, perfect
 instruction-negative rejection, and 100% median top-three overlap. Usage averaged 958 input and 157 output
-tokens per query. Its 2.41-second p50 and 3.63-second p95 miss only the provisional latency gate among the
-development-side selection checks. The earlier
+tokens per query. Its 2.41-second p50 and 3.63-second p95 were measured under four-way matrix load. The earlier
 [targeted repetition](benchmarks/ranking/results/development-openai-luna-v6-targeted-2026-08-24.json) reached
 the same quality, validity, retention, and stability conclusions.
 
@@ -1130,10 +1148,17 @@ Larger windows did not buy quality: `none` at 20 and 40 candidates reached 0.949
 top-three overlap, 4.16/6.99-second p95, and averaged 1,581/306 and 2,808/596 input/output tokens per query.
 `low` at 20 was only 88% valid, reached 0.894 nDCG, and took 10.15 seconds at p95. The configured native
 reference was unavailable and preserved fusion order for all 60 calls, so it is not comparison evidence. The
-selected c10 shape is therefore the smallest, fastest, highest-quality prompted variant in this matrix, but
-the preset remains experimental: latency, independent corpus review, embedding-backed end-to-end evidence,
-and a new pre-declared held-out evaluation remain open. The immutable v4/v3 held-out artifact cannot authorize
-the changed runtime contract.
+selected c10 shape is therefore the smallest, fastest, highest-quality prompted variant in this matrix.
+
+The checked-in [bound latency evidence](benchmarks/ranking/results/development-openai-luna-v6-latency-2026-08-24.json)
+then measured the selected shape through fresh clients. Each first call took three endpoint requests while
+learning the token and schema dialect, and was excluded from the warm distribution. The 59 warm single-flight
+calls were 100% valid with 2.34-second p50, 3.12-second p95, and one endpoint request each. At four-way load,
+the 59 warm calls stayed 100% valid and one-request, with 2.26-second p50 and 4.12-second p95. The round
+4-second warm single-flight UX gate therefore passes without mistaking either cold negotiation or saturation
+for normal user-perceived latency. The preset remains experimental because independent corpus review,
+embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation remain open. The immutable
+v4/v3 held-out artifact cannot authorize the changed runtime contract.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

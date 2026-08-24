@@ -3,6 +3,12 @@ import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/
 import { rankingCorpusCases } from './ranking-corpus.ts';
 import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import {
+  RANKING_INTERACTIVE_P95_TARGET_MS,
+  RANKING_LATENCY_SCHEMA_VERSION,
+  refreshRankingLatencyReport,
+  type RankingLatencyReport,
+} from './ranking-latency.ts';
+import {
   runRankingBench,
   type RankingBenchReport,
   type RankingBenchSplit,
@@ -14,7 +20,7 @@ import {
   type RankingTokenUsage,
 } from './ranking.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v4';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v5';
 export const RANKING_MATRIX_VARIANT_IDS = [
   'llm-none-c10',
   'llm-none-c20',
@@ -127,6 +133,8 @@ export interface RankingReleaseCheck {
     | 'end_to_end_candidate_recall'
     | 'end_to_end_ranked_recall'
     | 'end_to_end_integrity'
+    | 'latency_configuration'
+    | 'latency_integrity'
     | 'five_runs'
     | 'ndcg_gain'
     | 'category_regression'
@@ -161,6 +169,7 @@ export interface RankingMatrixReport {
   variants: RankingMatrixVariant[];
   selection: RankingMatrixSelection | null;
   endToEndEvidence: RankingEndToEndEvidence | null;
+  latencyEvidence: RankingLatencyReport | null;
   artifactPersisted: boolean;
   releaseEligible: boolean;
   releaseGate: RankingReleaseGate;
@@ -248,11 +257,43 @@ export async function runRankingMatrix(
     variants,
     selection: null,
     endToEndEvidence: null,
+    latencyEvidence: null,
     artifactPersisted: false,
     releaseEligible: false,
     releaseGate: { passed: false, checks: [], blockers: [] },
   };
   return refreshRankingMatrixReport(draft);
+}
+
+export function attachRankingLatencyEvidence(
+  matrix: RankingMatrixReport,
+  report: RankingLatencyReport,
+): RankingMatrixReport {
+  if (report.schemaVersion !== RANKING_LATENCY_SCHEMA_VERSION) {
+    throw new Error('unsupported ranking latency artifact schema');
+  }
+  const refreshedReport = refreshRankingLatencyReport(report);
+  const selected = matrix.selection
+    ? (matrix.variants.find((variant) => variant.id === matrix.selection!.variantId) ?? null)
+    : null;
+  if (!selected) throw new Error('matrix has no selected ranking configuration');
+  if (
+    matrix.split !== refreshedReport.split ||
+    matrix.corpus.version !== refreshedReport.corpus.version ||
+    selected.candidateCount !== refreshedReport.candidateCount ||
+    selected.excerptChars !== refreshedReport.excerptChars ||
+    selected.reasoningEffort !== refreshedReport.reasoningEffort ||
+    selected.provider !== refreshedReport.provider ||
+    selected.model !== refreshedReport.model ||
+    selected.promptVersion !== refreshedReport.promptVersion ||
+    selected.schemaVersion !== refreshedReport.schemaVersionContract
+  ) {
+    throw new Error('latency run does not match the selected ranking configuration');
+  }
+  return refreshRankingMatrixReport({
+    ...matrix,
+    latencyEvidence: refreshedReport,
+  });
 }
 
 export function markRankingMatrixPersisted(report: RankingMatrixReport): RankingMatrixReport {
@@ -327,6 +368,7 @@ export function refreshRankingMatrixReport(report: RankingMatrixReport): Ranking
     variants,
     selection: report.targetedVariants ? null : selectConfiguration(variants),
     endToEndEvidence: report.endToEndEvidence ?? null,
+    latencyEvidence: normalizeLatencyEvidence(report.latencyEvidence ?? null),
     releaseEligible: false,
     releaseGate: { passed: false, checks: [], blockers: [] },
   };
@@ -389,6 +431,18 @@ export function evaluateRankingRelease(report: RankingMatrixReport): RankingRele
         : null,
       'zero degraded queries and zero rerank fallbacks',
     ),
+    check(
+      'latency_configuration',
+      latencyConfigurationMatches(report, selected),
+      report.latencyEvidence !== null,
+      'same split, corpus, and selected configuration with warm single-flight and loaded profiles',
+    ),
+    check(
+      'latency_integrity',
+      latencyIntegrityPasses(report.latencyEvidence),
+      report.latencyEvidence ? latencyIntegrityPasses(report.latencyEvidence) : null,
+      'cold negotiation succeeds; every warm response is valid with one endpoint request',
+    ),
     check('five_runs', (selected?.runCount ?? 0) >= 5, selected?.runCount ?? 0, 'at least 5'),
     check(
       'ndcg_gain',
@@ -434,9 +488,10 @@ export function evaluateRankingRelease(report: RankingMatrixReport): RankingRele
     ),
     check(
       'latency',
-      (selected?.p95LatencyMs ?? Infinity) <= 2500,
-      selected?.p95LatencyMs ?? null,
-      'at most 2500ms',
+      (report.latencyEvidence?.interactive.warm.p95LatencyMs ?? Infinity) <=
+        RANKING_INTERACTIVE_P95_TARGET_MS,
+      report.latencyEvidence?.interactive.warm.p95LatencyMs ?? null,
+      `warm single-flight p95 at most ${RANKING_INTERACTIVE_P95_TARGET_MS}ms`,
     ),
     check(
       'cheapest_equivalent_effort',
@@ -612,6 +667,55 @@ function endToEndConfigurationMatches(
     evidence.promptVersion === selected.promptVersion &&
     evidence.schemaVersion === selected.schemaVersion,
   );
+}
+
+function latencyConfigurationMatches(
+  report: RankingMatrixReport,
+  selected: RankingMatrixVariant | null,
+): boolean {
+  const evidence = report.latencyEvidence;
+  const warmSamples = Math.max(0, report.corpus.queries - 1);
+  return Boolean(
+    evidence &&
+    selected &&
+    evidence.schemaVersion === RANKING_LATENCY_SCHEMA_VERSION &&
+    evidence.split === report.split &&
+    evidence.corpus.version === report.corpus.version &&
+    evidence.corpus.queries === report.corpus.queries &&
+    evidence.candidateCount === selected.candidateCount &&
+    evidence.excerptChars === selected.excerptChars &&
+    evidence.provider === selected.provider &&
+    evidence.model === selected.model &&
+    evidence.reasoningEffort === selected.reasoningEffort &&
+    evidence.promptVersion === selected.promptVersion &&
+    evidence.schemaVersionContract === selected.schemaVersion &&
+    evidence.interactive.concurrency === 1 &&
+    evidence.loaded.concurrency >= 2 &&
+    evidence.interactive.cold.samples === 1 &&
+    evidence.loaded.cold.samples === 1 &&
+    evidence.interactive.warm.samples === warmSamples &&
+    evidence.loaded.warm.samples === warmSamples &&
+    evidence.thresholds.interactiveP95LatencyMs === RANKING_INTERACTIVE_P95_TARGET_MS,
+  );
+}
+
+function latencyIntegrityPasses(evidence: RankingLatencyReport | null): boolean {
+  return Boolean(
+    evidence &&
+    evidence.interactive.cold.validResponseRate === 1 &&
+    evidence.interactive.cold.endpointRequests >= 1 &&
+    evidence.loaded.cold.validResponseRate === 1 &&
+    evidence.loaded.cold.endpointRequests >= 1 &&
+    evidence.interactive.warm.validResponseRate === 1 &&
+    evidence.loaded.warm.validResponseRate === 1 &&
+    evidence.interactive.warm.endpointRequests === evidence.interactive.warm.samples &&
+    evidence.loaded.warm.endpointRequests === evidence.loaded.warm.samples,
+  );
+}
+
+function normalizeLatencyEvidence(evidence: RankingLatencyReport | null): RankingLatencyReport | null {
+  if (!evidence || evidence.schemaVersion !== RANKING_LATENCY_SCHEMA_VERSION) return evidence;
+  return refreshRankingLatencyReport(evidence);
 }
 
 function stabilityFor(reports: RankingBenchReport[]): number | null {

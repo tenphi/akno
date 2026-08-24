@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { AknoConfig } from '../config/schema.ts';
 import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
 import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
+import type { RankingLatencyReport } from './ranking-latency.ts';
 import {
   attachRankingEndToEndEvidence,
+  attachRankingLatencyEvidence,
   evaluateRankingRelease,
   markRankingMatrixPersisted,
   medianTop3Overlap,
@@ -62,6 +64,14 @@ describe('ranking benchmark matrix', () => {
       endToEndEvidence: { ...persisted.endToEndEvidence!, embeddedChunks: 119 },
     };
     expect(evaluateRankingRelease(partialIndex).blockers).toContain('end_to_end_configuration');
+
+    const staleLatencyContract = {
+      ...persisted,
+      latencyEvidence: { ...persisted.latencyEvidence!, schemaVersion: 'invented-stale-latency' },
+    };
+    expect(refreshRankingMatrixReport(staleLatencyContract).releaseGate.blockers).toContain(
+      'latency_configuration',
+    );
   });
 
   it('can exercise the matrix without network when every model is unavailable', async () => {
@@ -70,7 +80,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v4');
+    expect(report.schemaVersion).toBe('ranking-matrix-v5');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -133,6 +143,23 @@ describe('ranking benchmark matrix', () => {
       'does not match',
     );
   });
+
+  it('attaches warm latency evidence only for the selected configuration', () => {
+    const matrix = { ...passingReport(), latencyEvidence: null };
+    const latency = passingLatencyReport();
+
+    const attached = attachRankingLatencyEvidence(matrix, latency);
+
+    expect(attached.latencyEvidence).toMatchObject({
+      candidateCount: 20,
+      interactive: { concurrency: 1, warm: { p95LatencyMs: 2222 } },
+      loaded: { concurrency: 4 },
+    });
+    expect(attached.releaseGate.blockers).toEqual(['persisted_artifact']);
+    expect(() => attachRankingLatencyEvidence(matrix, { ...latency, candidateCount: 10 })).toThrow(
+      'does not match',
+    );
+  });
 });
 
 function passingReport(): RankingMatrixReport {
@@ -140,7 +167,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v4',
+    schemaVersion: 'ranking-matrix-v5',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -182,9 +209,61 @@ function passingReport(): RankingMatrixReport {
       promptVersion: LLM_RERANK_PROMPT_VERSION,
       schemaVersion: LLM_RERANK_SCHEMA_VERSION,
     },
+    latencyEvidence: passingLatencyReport(),
     artifactPersisted: false,
     releaseEligible: false,
     releaseGate: { passed: false, checks: [], blockers: [] },
+  };
+}
+
+function passingLatencyReport(): RankingLatencyReport {
+  const metrics = {
+    samples: 19,
+    validResponseRate: 1,
+    fallbackCount: 0,
+    p50LatencyMs: 1111,
+    p95LatencyMs: 2222,
+    maxLatencyMs: 2222,
+    endpointRequests: 19,
+    extraEndpointRequests: 0,
+    tokenUsage: null,
+  };
+  return {
+    kind: 'ranking_latency',
+    schemaVersion: 'ranking-latency-v1',
+    createdAt: '2027-01-02T03:04:05.000Z',
+    development: true,
+    releaseEligible: false,
+    split: 'test',
+    corpus: {
+      queries: 20,
+      sources: 120,
+      judgments: 400,
+      categories: 8,
+      version: 'invented-ranking-v2',
+      independentlyReviewed: true,
+    },
+    provider: 'invented-provider',
+    model: 'invented-model',
+    reasoningEffort: 'none',
+    promptVersion: LLM_RERANK_PROMPT_VERSION,
+    schemaVersionContract: LLM_RERANK_SCHEMA_VERSION,
+    candidateCount: 20,
+    excerptChars: 800,
+    thresholds: { interactiveP95LatencyMs: 4000 },
+    interactive: {
+      concurrency: 1,
+      cold: { ...metrics, samples: 1, endpointRequests: 3, extraEndpointRequests: 2 },
+      warm: metrics,
+    },
+    loaded: {
+      concurrency: 4,
+      cold: { ...metrics, samples: 1, endpointRequests: 3, extraEndpointRequests: 2 },
+      warm: metrics,
+    },
+    checks: [],
+    blockers: [],
+    passed: true,
   };
 }
 
