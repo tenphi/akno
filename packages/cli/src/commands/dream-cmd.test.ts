@@ -72,6 +72,21 @@ describe('dream status history views', () => {
       budgetDeferred: 0,
       pendingPlans: [report.maintenancePlan],
     });
+    const schedule = {
+      label: 'dev.akno.dream' as const,
+      installed: true,
+      loaded: true,
+      installedAt: '2030-01-01T12:00:00.000Z',
+      hour: 3,
+      minute: 0,
+      timezone: 'Europe/Amsterdam',
+      previousExpectedAt: '2030-01-02T02:00:00.000Z',
+      nextExpectedAt: '2030-01-03T02:00:00.000Z',
+      graceUntil: '2030-01-02T04:00:00.000Z',
+      latestFullRun: { id: report.run.id, status: report.run.status, startedAt: report.run.startedAt },
+      health: 'on_time' as const,
+    };
+    expect(dreamStatusJson(status, {}, schedule)).toEqual({ ...status, schedule });
   });
 });
 
@@ -278,6 +293,7 @@ function emptyStatus(): MaintenanceStatus {
     authority: fixtureAuthority(),
     latest: null,
     latestRun: null,
+    latestFullRun: null,
     runs: [],
     pendingPlans: [],
     active: 0,
@@ -308,6 +324,7 @@ function statusAt(
       counts: itemCounts(applied),
     },
     latestRun: null,
+    latestFullRun: null,
     runs: [],
     pendingPlans: [],
     active: status === 'completed' ? 0 : 1,

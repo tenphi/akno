@@ -11,6 +11,11 @@ import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance, type MaintenanceWaitUpdate } from '../ops-handle.ts';
 import { heading, json, kv, line, ms, style, truncate } from '../output.ts';
 import { loadMaintenanceStatus, printMaintenanceStatus } from './plan-cmd.ts';
+import {
+  inspectDreamSchedule,
+  type DreamScheduleHealth,
+  type DreamScheduleStatus,
+} from './dream-schedule.ts';
 
 const DREAM_HELP = `akno dream [options]
 akno dream status [--run <run_id> | --last <n> | --pending]
@@ -34,6 +39,9 @@ akno dream status [--run <run_id> | --last <n> | --pending]
   A full/scheduled run resolves the configured maintenance profile. audit plans only,
   review waits for human decisions, autonomous uses a separate curator and applies only
   accepted work. Per-transformation policies may only lower that profile authority.
+
+  Plain status also inspects the local dev.akno.dream LaunchAgent: installed/loaded
+  state, daily interval, next expected run, and a two-hour missed-run window.
 
   --phase <name>   Run one phase instead of every enabled one.
   --mode <policy>  audit | review | auto. May lower configured authority for one run;
@@ -75,8 +83,9 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   if (positionals[0] === 'status' && positionals.length === 1) {
     const query = dreamStatusQuery(values);
     const status = await loadMaintenanceStatus(values, query);
-    if (values.json) json(dreamStatusJson(status, query));
-    else printDreamStatus(status, query);
+    const schedule = Object.keys(query).length === 0 ? inspectDreamSchedule(status.latestFullRun) : null;
+    if (values.json) json(dreamStatusJson(status, query, schedule));
+    else printDreamStatus(status, query, schedule);
     return 0;
   }
   if (positionals.length > 0 || values.run || values.last || values.pending) {
@@ -148,7 +157,11 @@ export function dreamStatusQuery(values: {
   return values.pending ? { pending: true } : {};
 }
 
-export function dreamStatusJson(status: MaintenanceStatus, query: MaintenanceStatusQuery): unknown {
+export function dreamStatusJson(
+  status: MaintenanceStatus,
+  query: MaintenanceStatusQuery,
+  schedule: DreamScheduleStatus | null = null,
+): unknown {
   if (query.runId) return { run: status.runs[0] ?? null };
   if (query.last !== undefined) return { runs: status.runs };
   if (query.pending) {
@@ -159,10 +172,14 @@ export function dreamStatusJson(status: MaintenanceStatus, query: MaintenanceSta
       pendingPlans: status.pendingPlans,
     };
   }
-  return status;
+  return schedule ? { ...status, schedule } : status;
 }
 
-function printDreamStatus(status: MaintenanceStatus, query: MaintenanceStatusQuery): void {
+function printDreamStatus(
+  status: MaintenanceStatus,
+  query: MaintenanceStatusQuery,
+  schedule: DreamScheduleStatus | null,
+): void {
   if (query.runId) {
     const run = status.runs[0];
     if (!run) throw new AknoError('not_found', `no maintenance run with id ${query.runId}`);
@@ -178,6 +195,55 @@ function printDreamStatus(status: MaintenanceStatus, query: MaintenanceStatusQue
     return;
   }
   printMaintenanceStatus(status);
+  if (schedule) printDreamSchedule(schedule);
+}
+
+function printDreamSchedule(schedule: DreamScheduleStatus): void {
+  heading('Nightly schedule');
+  kv([
+    ['installed', schedule.installed ? 'yes' : 'no'],
+    ['loaded', schedule.loaded === null ? 'unsupported' : schedule.loaded ? 'yes' : 'no'],
+    [
+      'cadence',
+      schedule.hour === null || schedule.minute === null
+        ? null
+        : `daily at ${String(schedule.hour).padStart(2, '0')}:${String(schedule.minute).padStart(2, '0')} (${schedule.timezone})`,
+    ],
+    ['health', scheduleHealthLabel(schedule.health)],
+    ['previous expected', schedule.previousExpectedAt],
+    ['next expected', schedule.nextExpectedAt],
+    [
+      'latest full cycle',
+      schedule.latestFullRun
+        ? `${schedule.latestFullRun.id} · ${schedule.latestFullRun.status} · ${schedule.latestFullRun.startedAt}`
+        : null,
+    ],
+  ]);
+}
+
+function scheduleHealthLabel(health: DreamScheduleHealth): string {
+  switch (health) {
+    case 'unsupported':
+      return 'launchd status is available on macOS only';
+    case 'not_installed':
+      return 'not scheduled';
+    case 'installed_not_loaded':
+      return 'installed but not loaded';
+    case 'invalid_schedule':
+      return 'installed schedule is unreadable';
+    case 'not_due':
+      return 'installed after the previous window; not due yet';
+    case 'within_window':
+      return 'due; still inside the two-hour completion window';
+    case 'running':
+      return 'full cycle is running';
+    case 'on_time':
+      return 'healthy';
+    case 'last_run_failed':
+      return 'latest expected full cycle failed';
+    case 'overdue':
+      return 'overdue; no full cycle receipt in the expected window';
+  }
 }
 
 function printDreamRunReceipt(run: DreamRunReceipt): void {

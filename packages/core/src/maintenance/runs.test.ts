@@ -12,6 +12,7 @@ import {
   failDreamRun,
   getDreamRun,
   latestDreamRun,
+  latestFullDreamRun,
   listDreamRuns,
   recoverInterruptedDreamRuns,
 } from './runs.ts';
@@ -40,7 +41,7 @@ describe('durable dream runs', () => {
         [],
       );
       const second = beginDreamRun(ctx, {
-        requestedPhase: 'curate',
+        requestedPhase: null,
         requestedPhases: ['curate'],
         mode: 'review',
         dryRun: false,
@@ -53,10 +54,25 @@ describe('durable dream runs', () => {
         22,
         [],
       );
+      const diagnostic = beginDreamRun(ctx, {
+        requestedPhase: 'curate',
+        requestedPhases: ['curate'],
+        mode: 'audit',
+        dryRun: true,
+        modelId: null,
+      });
+      const diagnosticFinished = failDreamRun(
+        ctx,
+        diagnostic,
+        new AknoError('interrupted', 'Invented diagnostic run.'),
+        33,
+        [],
+      );
 
-      expect(listDreamRuns(ctx, 10)).toEqual([secondFinished, firstFinished]);
-      expect(listDreamRuns(ctx, 1)).toEqual([secondFinished]);
+      expect(listDreamRuns(ctx, 10)).toEqual([diagnosticFinished, secondFinished, firstFinished]);
+      expect(listDreamRuns(ctx, 1)).toEqual([diagnosticFinished]);
       expect(getDreamRun(ctx, first.id)).toEqual(firstFinished);
+      expect(latestFullDreamRun(ctx)).toEqual(secondFinished);
       expect(() => getDreamRun(ctx, 'run_ffffffff')).toThrowError(
         expect.objectContaining({ code: 'not_found' }),
       );

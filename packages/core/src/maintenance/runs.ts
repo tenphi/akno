@@ -201,6 +201,19 @@ export function latestDreamRun(ctx: AknoContext): DreamRunReceipt | null {
   return listDreamRuns(ctx, 1)[0] ?? null;
 }
 
+/** Latest complete-cycle attempt; phase-specific diagnostics do not mask nightly health. */
+export function latestFullDreamRun(ctx: AknoContext): DreamRunReceipt | null {
+  if (!runsTableAvailable(ctx)) return null;
+  const rows = ctx.store.db
+    .prepare('SELECT receipt FROM maintenance_runs ORDER BY rowid DESC')
+    .iterate() as Iterable<ReceiptRow>;
+  for (const row of rows) {
+    const receipt = parseReceipt(row.receipt);
+    if (receipt?.requestedPhase === null) return receipt;
+  }
+  return null;
+}
+
 /** Content-safe durable receipts, newest first. */
 export function listDreamRuns(ctx: AknoContext, limit = 10): DreamRunReceipt[] {
   if (!runsTableAvailable(ctx)) return [];

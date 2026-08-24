@@ -779,6 +779,10 @@ default; `--private-details` deliberately includes page names and source-level d
 
 `akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
 how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.
+`akno dream status` reads that LaunchAgent without changing it and reports whether it is installed and loaded,
+its local-time cadence, the previous and next expected full-cycle windows, and the latest full-cycle receipt.
+A run is marked overdue only after a two-hour completion window; a newer phase-specific diagnostic cannot mask
+a missed nightly cycle.
 
 **`akno redeploy` applies a local change.** It builds, restarts `dev.akno`, and then waits for the socket
 to come back — `launchctl kickstart` returns when launchd has spawned the process, not when it is listening, so

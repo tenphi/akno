@@ -816,7 +816,10 @@ profile, cycle authority, phase authority, every transformation policy, the whol
 usage, and whether an ordinary scheduled run may write. `--last <n>` returns up to 100 content-safe durable run
 receipts, `--run <id>` expands one receipt with its phase outcomes, counts, budgets, and linked plan/change ids,
 and `--pending` lists every nonterminal plan. The same views are available as bounded JSON and contain no page
-bodies, prompts, paths, source excerpts, or provider responses.
+bodies, prompts, paths, source excerpts, or provider responses. The default view also reads the local
+`dev.akno.dream` LaunchAgent and reports installed/loaded state, daily local-time cadence, previous and next
+expected windows, and typed health. A two-hour grace period separates “due” from “overdue.” Health is based on
+the latest full-cycle receipt, so a later phase-specific diagnostic does not conceal a missed nightly run.
 A command-line `--mode` applies to a complete run or one selected phase and may only lower configured
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
 `--mode auto` cannot promote a configured review profile.
@@ -1646,7 +1649,9 @@ akno service uninstall
 The installation includes the watcher service and, unless disabled, a nightly dream schedule at 03:00. Use
 `--dream-hour` to choose another hour or `--no-dream` to omit the scheduled cycle. The job runs plain
 `akno dream` and resolves the current `maintenance.profile` at start-up, so an authority change does not
-require reinstalling the scheduler.
+require reinstalling the scheduler. `akno dream status` inspects both the plist and its live launchd job,
+calculates the next expected local-time run, and compares the previous window with the durable full-cycle
+receipt. It never prints the plist path, program arguments, environment, or log paths.
 
 For an agent host, choose one integration:
 
@@ -1941,13 +1946,14 @@ cross-phase access graph all apply, but they are not yet summarized as one path-
 There is also no configurable fail-fast alternative to the autonomous default of independent progress plus one
 bounded dependency retry.
 
-### The scheduled cycle still lacks schedule and model-operability visibility
+### The scheduled cycle still lacks model-operability visibility
 
 `akno dream status` now shows resolved profile authority, active plans, proposed items, pending verification,
 configured whole-run limits, budget-deferred items, and the latest content-safe full-cycle receipt with phase
 outcomes and budget usage. Bounded `--last`, exact `--run`, and actionable `--pending` views expose durable
-history without opening private plan bodies. Status still does not inspect launchd to show whether the schedule
-is loaded or the next run time, and receipts do not yet account for model usage or typed degradation.
+history without opening private plan bodies. The default view now inspects the nightly launchd plist and live
+job, reports its cadence and next expected window, and detects a failed or overdue full cycle after a two-hour
+grace period. Receipts do not yet account for model usage or typed degradation.
 
 ### Setup assumes too much infrastructure knowledge
 

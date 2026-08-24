@@ -19,7 +19,14 @@ import {
 import type { ContradictionDraft } from './contradictions.ts';
 import { replaceLinkTarget, type BrokenLinkDraft, type LinkIdentitySignal } from './link-repairs.ts';
 import { preservesAuthoredTokens, preservesValues } from './repair.ts';
-import { activeDreamRuns, getDreamRun, latestDreamRun, listDreamRuns, type DreamRunReceipt } from './runs.ts';
+import {
+  activeDreamRuns,
+  getDreamRun,
+  latestDreamRun,
+  latestFullDreamRun,
+  listDreamRuns,
+  type DreamRunReceipt,
+} from './runs.ts';
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
@@ -194,6 +201,8 @@ export interface MaintenanceStatus {
   authority: MaintenanceAuthority;
   latest: MaintenancePlanSummary | null;
   latestRun: DreamRunReceipt | null;
+  /** Latest run of the complete cycle; phase-specific commands do not replace it. */
+  latestFullRun: DreamRunReceipt | null;
   /** Explicitly requested historical receipts; empty in the default compact status view. */
   runs: DreamRunReceipt[];
   /** Explicitly requested nonterminal plans; empty in the default compact status view. */
@@ -1617,6 +1626,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
       authority: configuredMaintenanceAuthority(ctx.config),
       latest: null,
       latestRun: latestDreamRun(ctx),
+      latestFullRun: latestFullDreamRun(ctx),
       runs,
       pendingPlans,
       active: 0,
@@ -1656,6 +1666,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
     authority: configuredMaintenanceAuthority(ctx.config),
     latest,
     latestRun: latestDreamRun(ctx),
+    latestFullRun: latestFullDreamRun(ctx),
     runs,
     pendingPlans,
     active: active.n,
