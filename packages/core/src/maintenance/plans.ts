@@ -25,6 +25,7 @@ import {
   latestDreamRun,
   latestFullDreamRun,
   listDreamRuns,
+  type DreamAutoEstimate,
   type DreamRunReceipt,
 } from './runs.ts';
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
@@ -311,6 +312,8 @@ export const CURATOR_SCHEMA = z.object({
   outcome: z.enum(['approve', 'reject']),
   reason: z.string(),
 });
+
+const CURATOR_MAX_OUTPUT_TOKENS = 600;
 
 export interface ObservationPlanDraft {
   slug: string;
@@ -1391,29 +1394,11 @@ export async function decideMaintenancePlanWithCurator(
   for (const item of plan.items.filter(
     (candidate) => candidate.status === 'proposed' && candidate.policy === 'auto',
   )) {
-    const result = await ctx.models.derive.chat(
-      [
-        { role: 'system', content: CURATOR_SYSTEM },
-        {
-          role: 'user',
-          content: JSON.stringify({
-            plan: { id: plan.id, phase: plan.phase, mode: plan.mode, fingerprint: plan.fingerprint },
-            item: {
-              id: item.id,
-              kind: item.kind,
-              risk: item.risk,
-              componentCount: item.componentCount ?? 1,
-              subject: item.subject,
-              rationale: item.rationale,
-              operations: item.operations,
-              evidence: item.evidence,
-              checks: item.checks,
-            },
-          }).slice(0, 100_000),
-        },
-      ],
-      { schema: CURATOR_SCHEMA, maxTokens: 600 },
-    );
+    const messages = curatorMessages(plan, item);
+    const result = await ctx.models.derive.chat(messages, {
+      schema: CURATOR_SCHEMA,
+      maxTokens: CURATOR_MAX_OUTPUT_TOKENS,
+    });
     const parsed =
       result.ok && result.value
         ? parseJsonLoose<{ outcome?: unknown; reason?: unknown }>(result.value)
@@ -1433,6 +1418,95 @@ export async function decideMaintenancePlanWithCurator(
   refreshDecisionStatus(ctx, planId);
   plan = getMaintenancePlan(ctx, planId);
   return plan;
+}
+
+/** Estimate only the extra initial curator pass that distinguishes an audit from configured auto. */
+export function estimateAuditAutoCuratorWork(
+  ctx: AknoContext,
+  planIds: string[],
+  options: { sealedPlans: boolean } = { sealedPlans: true },
+): DreamAutoEstimate {
+  if (!options.sealedPlans) {
+    return {
+      status: 'no_sealed_plan',
+      scope: 'initial_curator_pass',
+      modelId: ctx.models.derive.modelId,
+      modelConfigured: ctx.models.derive.available,
+      curatorCalls: null,
+      estimatedPromptTokens: null,
+      maximumOutputTokens: null,
+      method: null,
+      postApplyRetryIncluded: false,
+    };
+  }
+  const configuredAuto = new Set(
+    Object.entries(ctx.config.maintenance.policies)
+      .filter(([, policy]) => policy === 'auto')
+      .map(([kind]) => kind),
+  );
+  if (configuredAuto.size === 0) {
+    return {
+      status: 'not_configured',
+      scope: 'initial_curator_pass',
+      modelId: ctx.models.derive.modelId,
+      modelConfigured: ctx.models.derive.available,
+      curatorCalls: null,
+      estimatedPromptTokens: null,
+      maximumOutputTokens: null,
+      method: null,
+      postApplyRetryIncluded: false,
+    };
+  }
+
+  const items = [...new Set(planIds)]
+    .map((planId) => getMaintenancePlan(ctx, planId))
+    .flatMap((plan) =>
+      plan.items
+        .filter((item) => item.status === 'proposed' && configuredAuto.has(item.kind))
+        .map((item) => ({ plan, item })),
+    );
+  return {
+    status: 'estimated',
+    scope: 'initial_curator_pass',
+    modelId: ctx.models.derive.modelId,
+    modelConfigured: ctx.models.derive.available,
+    curatorCalls: items.length,
+    estimatedPromptTokens: items.reduce(
+      (total, { plan, item }) => total + estimateMessageTokens(curatorMessages(plan, item)),
+      0,
+    ),
+    maximumOutputTokens: items.length * CURATOR_MAX_OUTPUT_TOKENS,
+    method: 'characters_div_4',
+    postApplyRetryIncluded: false,
+  };
+}
+
+function curatorMessages(plan: MaintenancePlan, item: MaintenanceItem) {
+  return [
+    { role: 'system' as const, content: CURATOR_SYSTEM },
+    {
+      role: 'user' as const,
+      content: JSON.stringify({
+        plan: { id: plan.id, phase: plan.phase, mode: plan.mode, fingerprint: plan.fingerprint },
+        item: {
+          id: item.id,
+          kind: item.kind,
+          risk: item.risk,
+          componentCount: item.componentCount ?? 1,
+          subject: item.subject,
+          rationale: item.rationale,
+          operations: item.operations,
+          evidence: item.evidence,
+          checks: item.checks,
+        },
+      }).slice(0, 100_000),
+    },
+  ];
+}
+
+function estimateMessageTokens(messages: { content: string }[]): number {
+  const characters = messages.reduce((total, message) => total + message.content.length, 0);
+  return characters === 0 ? 0 : Math.ceil(characters / 4);
 }
 
 export async function applyMaintenancePlan(

@@ -30,6 +30,7 @@ import {
   createObservationPlan,
   createReflectionPlan,
   decideMaintenancePlanWithCurator,
+  estimateAuditAutoCuratorWork,
   deferUnmetMaintenanceDependency,
   deferStaleMaintenanceItems,
   finalizeRetryableMaintenancePlans,
@@ -190,6 +191,8 @@ export interface DreamReport {
   modelUsage: DreamModelUsageReceipt;
   /** Typed model capability failures; no prompts, responses, paths, or excerpts. */
   degraded: DreamModelDegradation[];
+  /** Initial curator-pass estimate derived from sealed audit items, when configured auto exists. */
+  autoEstimate?: DreamRunReceipt['autoEstimate'];
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
@@ -254,6 +257,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
     modelUsage: telemetry.usage(),
     degraded: telemetry.degradation(),
+    autoEstimate: null,
     warnings: [],
     durationMs: 0,
   };
@@ -311,6 +315,14 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     report.budget = maintenanceBudgetReceipt(budget);
     report.modelUsage = telemetry.usage();
     report.degraded = telemetry.degradation();
+    report.autoEstimate =
+      report.run.mode === 'audit'
+        ? estimateAuditAutoCuratorWork(
+            cycle,
+            report.maintenancePlans.map((plan) => plan.id),
+            { sealedPlans: !report.run.dryRun },
+          )
+        : null;
 
     if (ctx.config.maintenance.logChanges) {
       const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });

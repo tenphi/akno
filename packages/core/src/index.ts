@@ -176,6 +176,7 @@ export type {
   MaintenanceBudgetUsage,
 } from './maintenance/budget.ts';
 export type {
+  DreamAutoEstimate,
   DreamRunCounts,
   DreamRunMode,
   DreamRunProfile,

@@ -1363,6 +1363,11 @@ describe('observe', () => {
     server.reply(OBSERVED);
     const report = await mem.dream({ phase: 'observe', dryRun: true });
     expect(report.observations[0]!.action).toBe('would-create');
+    expect(report.autoEstimate).toMatchObject({
+      status: 'no_sealed_plan',
+      curatorCalls: null,
+      estimatedPromptTokens: null,
+    });
     expect(report.changeId).toBeNull();
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
@@ -2482,6 +2487,7 @@ describe('adopt', () => {
 
     expect(report.maintenancePlan).toMatchObject({ mode: 'audit', phase: 'adopt', status: 'ready' });
     expect(report.adopted[0]).toMatchObject({ action: 'planned' });
+    expect(report.autoEstimate).toMatchObject({ status: 'not_configured', curatorCalls: null });
   });
 
   it('keeps review separate from apply and verifies document ownership', async () => {

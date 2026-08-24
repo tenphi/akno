@@ -17,7 +17,11 @@ import {
   type DreamScheduleHealth,
   type DreamScheduleStatus,
 } from './dream-schedule.ts';
-import { dreamModelDegradationSummary, dreamModelUsageSummary } from './dream-model-status.ts';
+import {
+  dreamAutoEstimateSummary,
+  dreamModelDegradationSummary,
+  dreamModelUsageSummary,
+} from './dream-model-status.ts';
 import { printMaintenancePathPolicy } from './maintenance-policy-output.ts';
 
 const DREAM_HELP = `akno dream [options]
@@ -312,6 +316,7 @@ function printDreamRunReceipt(run: DreamRunReceipt): void {
       `    ${stage.stage.padEnd(13)} ${dreamModelUsageSummary({ ...stage, modelId: run.modelUsage.modelId, stages: [] })}`,
     );
   }
+  printAutoEstimate(run.autoEstimate, run.modelUsage);
   line('\n  outcomes');
   kv([
     ['observations', run.counts.observations],
@@ -359,6 +364,28 @@ function printDreamRunHistory(runs: DreamRunReceipt[]): void {
     line(
       `  ${style.bold(run.id)}  ${run.status.padEnd(19)} ${run.mode.padEnd(6)} ${run.startedAt}  ${duration}  ${model}`,
     );
+  }
+}
+
+function printAutoEstimate(
+  estimate: DreamRunReceipt['autoEstimate'],
+  measured: DreamRunReceipt['modelUsage'],
+): void {
+  if (!estimate) return;
+  line('\n  autonomous follow-up estimate');
+  kv([
+    ['initial curator pass', dreamAutoEstimateSummary(estimate)],
+    [
+      'curator model',
+      estimate.modelConfigured
+        ? `${estimate.modelId ?? 'configured'} (configured; health not probed)`
+        : 'not configured',
+    ],
+    ["this audit's measured work", dreamModelUsageSummary(measured)],
+  ]);
+  if (estimate.status === 'estimated') {
+    line(`    ${style.grey('Prompt-message tokens use characters/4; output is a hard request ceiling.')}`);
+    line(`    ${style.grey('A later auto run replans; retry work and provider pricing are not included.')}`);
   }
 }
 
@@ -542,6 +569,8 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       line(`  ${style.grey(`${label} undo:`)} ${style.bold(`akno undo ${item.changeId}`)}`);
     }
   }
+
+  printAutoEstimate(report.autoEstimate, report.modelUsage);
 
   if (report.rejected.length > 0) {
     // A guardrail firing is the tier working. Silence here would make a prompt edit

@@ -1,4 +1,4 @@
-import type { DreamModelDegradation, DreamModelUsageReceipt } from '@tenphi/akno-core';
+import type { DreamAutoEstimate, DreamModelDegradation, DreamModelUsageReceipt } from '@tenphi/akno-core';
 import { ms } from '../output.ts';
 
 export function dreamModelUsageSummary(usage: DreamModelUsageReceipt): string {
@@ -24,4 +24,16 @@ export function dreamModelDegradationSummary(degraded: DreamModelDegradation[]):
         `${entry.occurrences === 1 ? '' : ` (${entry.occurrences}×)`}`,
     )
     .join(', ');
+}
+
+export function dreamAutoEstimateSummary(estimate: DreamAutoEstimate | null | undefined): string | null {
+  if (!estimate) return null;
+  if (estimate.status === 'not_configured') return 'unavailable; no transformation policy is auto';
+  if (estimate.status === 'no_sealed_plan') return 'unavailable; use --mode audit to seal exact plans';
+  const calls = estimate.curatorCalls ?? 0;
+  return (
+    `${calls} initial curator candidate${calls === 1 ? '' : 's'} · ` +
+    `~${estimate.estimatedPromptTokens ?? 0} prompt-message tokens · ` +
+    `≤${estimate.maximumOutputTokens ?? 0} output tokens`
+  );
 }

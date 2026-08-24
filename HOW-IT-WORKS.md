@@ -835,6 +835,17 @@ A command-line `--mode` applies to a complete run or one selected phase and may 
 authority. For example, `akno dream --mode audit` safely inspects an autonomous installation for one run;
 `--mode auto` cannot promote a configured review profile.
 
+Completed audit receipts include an autonomous follow-up estimate. Akno loads the exact sealed audit items,
+keeps only still-proposed items whose configured transformation policy is `auto`, and counts one candidate
+curator request per item. It constructs the same bounded curator message shape without sending it, estimates
+prompt-message tokens as characters divided by four, and sums the real 600-token output cap per request. The
+current audit's planner usage remains the measured reference beside that heuristic estimate. A later auto run
+must replan and may eliminate candidates during snapshot/dependency preflight or add one bounded post-apply
+retry, so neither is presented as a total-run guarantee. Provider pricing is deliberately absent: an
+OpenAI-compatible endpoint may be a hosted account, gateway, or free local model, and configuration contains no
+trustworthy price. `--dry-run` does not seal plans and therefore reports that this estimate requires
+`--mode audit`.
+
 For one relative page path, `akno dream status --explain-policy <path>` answers the narrower question: “what
 may Akno do to this page on the next ordinary cycle, and why?” It intersects the profile and optional lower
 run mode with the transformation policy, indexed role, page-owned `dream` opt-in, reserved-path boundary,
@@ -1986,8 +1997,9 @@ grace period. New receipts account for logical synchronous maintenance calls, pr
 coverage, model latency, and typed client-level degradation by planner or curator stage. Deferred post-write
 index derivation is asynchronous and therefore intentionally outside the run receipt. Planner, verifier,
 conflict-classifier, and curator responses that fail their caller-side output contracts are now reclassified as
-typed `derive_failed/bad_response` while retaining the original call's measured usage. Audit mode does not yet
-estimate the cost of a later autonomous curator pass.
+typed `derive_failed/bad_response` while retaining the original call's measured usage. Completed audit runs now
+pair that measured planning work with a content-safe initial-curator estimate derived from exact sealed items;
+post-apply replanning and endpoint-specific currency pricing remain explicitly outside its scope.
 
 ### Setup assumes too much infrastructure knowledge
 

@@ -284,6 +284,21 @@ describe('plan-backed hygiene', () => {
     expect(plan).toMatchObject({ mode: 'audit', phase: 'curate', status: 'ready' });
     expect(plan.items).toHaveLength(1);
     expect(plan.items[0]).toMatchObject({ status: 'proposed', subject: 'people/ada-marlow' });
+    expect(report.autoEstimate).toMatchObject({
+      status: 'estimated',
+      scope: 'initial_curator_pass',
+      modelId: 'stub',
+      modelConfigured: true,
+      curatorCalls: 1,
+      maximumOutputTokens: 600,
+      method: 'characters_div_4',
+      postApplyRetryIncluded: false,
+    });
+    expect(report.autoEstimate?.estimatedPromptTokens).toBeGreaterThan(0);
+    expect(report.run.autoEstimate).toEqual(report.autoEstimate);
+    expect(mem.maintenanceStatus({ runId: report.run.id }).runs[0]?.autoEstimate).toEqual(
+      report.autoEstimate,
+    );
     expect(fs.readFileSync(page, 'utf8')).toBe(before);
     expect(mem.maintenanceDiff(plan.id)).toContain('--- a/people/ada-marlow.md');
 

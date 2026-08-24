@@ -756,6 +756,14 @@ conflict-classifier, or curator output contract is reclassified as `derive_faile
 inventing a second call or losing its provider token receipt. A valid rejection or deterministic guardrail
 abstention remains a normal outcome.
 
+A completed `--mode audit` run also estimates the extra initial curator pass that the same sealed candidates
+would require under the configured autonomous policies. It reports one candidate call per still-proposed item,
+an approximate prompt-message size using the documented characters/4 heuristic, and the sum of the curator's
+hard output caps. These values are labelled estimates and remain separate from provider-reported usage. Akno
+does not invent a currency price for local or OpenAI-compatible endpoints, and it cannot predict post-apply
+replanning because audit mode performs no writes. Legacy `--dry-run` does not seal exact plans, so it directs
+cost inspection to `--mode audit` instead of reporting a misleading zero.
+
 The path explanation is an authority check, not a preview of private proposals. It reports whether the path is
 indexed, which page-owned `dream` opt-in and content-safe folder rule apply, whether each transformation may be
 inspected, who would decide it, whether automatic apply is currently possible, and every typed blocker from

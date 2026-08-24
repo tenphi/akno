@@ -49,6 +49,22 @@ export interface DreamRunCounts {
   warnings: number;
 }
 
+/** Content-safe estimate derived from sealed audit items; never provider-reported usage. */
+export interface DreamAutoEstimate {
+  status: 'estimated' | 'not_configured' | 'no_sealed_plan';
+  scope: 'initial_curator_pass';
+  modelId: string | null;
+  modelConfigured: boolean;
+  /** One candidate request per proposed item whose configured policy is auto. */
+  curatorCalls: number | null;
+  /** Prompt text only, using the repository-wide characters/4 heuristic. */
+  estimatedPromptTokens: number | null;
+  /** Hard request output caps summed across the candidate calls, not expected usage. */
+  maximumOutputTokens: number | null;
+  method: 'characters_div_4' | null;
+  postApplyRetryIncluded: false;
+}
+
 /** A durable, content-safe lifecycle receipt. Exact proposals remain in maintenance plans. */
 export interface DreamRunReceipt {
   id: string;
@@ -69,6 +85,8 @@ export interface DreamRunReceipt {
   modelUsage: DreamModelUsageReceipt;
   /** Typed capability failures grouped by phase or curator stage. */
   degraded: DreamModelDegradation[];
+  /** Present on completed audit runs; null on non-audit and historical runs. */
+  autoEstimate?: DreamAutoEstimate | null;
   durationMs: number | null;
   maintenancePlanIds: string[];
   /** Most recently touched plan, retained for older clients. */
@@ -132,6 +150,7 @@ export function beginDreamRun(
     budget: emptyBudget(ctx),
     modelUsage: emptyDreamModelUsage(options.modelId),
     degraded: [],
+    autoEstimate: null,
     durationMs: null,
     maintenancePlanIds: [],
     maintenancePlanId: null,
@@ -173,6 +192,7 @@ export function completeDreamRun(
     budget: report.budget,
     modelUsage: report.modelUsage,
     degraded: report.degraded,
+    autoEstimate: report.autoEstimate ?? null,
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
     maintenancePlanId: plans.at(-1)?.id ?? null,
@@ -503,6 +523,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
       budget: receipt.budget ?? null,
       modelUsage: receipt.modelUsage ?? emptyDreamModelUsage(receipt.snapshot.modelId),
       degraded: Array.isArray(receipt.degraded) ? receipt.degraded : [],
+      autoEstimate: receipt.autoEstimate ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')
         : receipt.maintenancePlanId

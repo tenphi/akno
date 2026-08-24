@@ -9,7 +9,11 @@ import type {
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance } from '../ops-handle.ts';
 import { heading, json, kv, line, style } from '../output.ts';
-import { dreamModelDegradationSummary, dreamModelUsageSummary } from './dream-model-status.ts';
+import {
+  dreamAutoEstimateSummary,
+  dreamModelDegradationSummary,
+  dreamModelUsageSummary,
+} from './dream-model-status.ts';
 
 const PLAN_HELP = `akno plan [list] [--limit <n>]
 akno plan show <plan_id>
@@ -200,6 +204,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
       ['started', status.latestRun.startedAt],
       ['snapshot', status.latestRun.snapshot.indexRevision.slice(0, 12)],
       ['model work', dreamModelUsageSummary(status.latestRun.modelUsage)],
+      ['auto estimate', dreamAutoEstimateSummary(status.latestRun.autoEstimate)],
       ['degraded', dreamModelDegradationSummary(status.latestRun.degraded)],
     ]);
     if (status.latestRun.budget) {
