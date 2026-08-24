@@ -963,8 +963,9 @@ there is exactly one explicit value for each requested field. Conflicting values
 prompt asking for the current value excludes stale-only evidence. A fresh fingerprint-bound v2 held-out corpus
 then passed all technical gates across five runs and 60 paired executions: all required accuracy and stability
 metrics were 100%, with zero unsupported claims or forbidden-memory leaks, 494 ms context p95, 2.257 s total
-memory-on p95, and 1.015 s paired incremental p95. Independent corpus review remains the only release blocker
-before host integration.
+memory-on p95, and 1.015 s paired incremental p95. Luna now integrates the corrected profile behind
+`memory.autoRecall`, with one hidden context call per substantive turn and an explicit opt-out. Independent
+corpus review remains a release gate, not an implementation blocker.
 
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
 knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level

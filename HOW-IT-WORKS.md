@@ -1800,8 +1800,10 @@ The two failure shapes were instead reproduced in new development data. Auto-rec
 complementary mechanical-field assembly, conflicting-value abstention, and current-versus-stale filtering. A
 fresh fingerprint-bound v2 corpus then passed every technical gate across five runs and 60 paired executions:
 all activation, evidence, answer, abstention, pairwise, safety, and stability metrics were perfect. Context p95
-was 494 ms, total memory-on p95 was 2.257 seconds, and paired incremental p95 was 1.015 seconds. Independent
-corpus review remains the only release blocker before Luna pre-turn integration.
+was 494 ms, total memory-on p95 was 2.257 seconds, and paired incremental p95 was 1.015 seconds. Luna pre-turn
+integration now ships behind `memory.autoRecall`: one hidden context call runs per substantive turn, and only
+escaped exact evidence is injected as untrusted data. Independent corpus review remains the only
+release-validation blocker.
 
 ### Recovery guarantees
 
