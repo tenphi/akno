@@ -45,6 +45,13 @@ export {
 } from './setup/openai.ts';
 export { runBench, type BenchOptions, type BenchReport, type BenchResult } from './bench.ts';
 export {
+  ANSWER_BENCH_SCHEMA_VERSION,
+  runAnswerBench,
+  type AnswerBenchCaseReport,
+  type AnswerBenchOptions,
+  type AnswerBenchReport,
+} from './bench/answer.ts';
+export {
   runMixedRetrievalBench,
   type MixedRetrievalBenchOptions,
   type MixedRetrievalBenchReport,

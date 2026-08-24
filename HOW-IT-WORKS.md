@@ -359,6 +359,8 @@ numbers, document ids, and pages itself. It then makes a separate structured ver
 judged only against its nested cited evidence; unsupported blocks are withheld, and a malformed or failed
 verifier returns `degraded/not_answered` with `answer_verification_failed` and no generated prose. A missing
 model returns `degraded/not_answered` with `no_answer_model`; complete empty recall remains `empty/not_found`.
+A deterministic or semantic guard that successfully withholds an unsupported draft is an `ok` abstention, not
+a degraded capability—the guard completed its job.
 
 ### `read`: open one exact page or document
 
@@ -1646,6 +1648,7 @@ akno bench --write
 akno bench --retrieval-only
 akno bench graph
 akno bench entities --provider openai --model gpt-5.6-luna --reasoning none
+akno bench answer --concurrency 2
 ```
 
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
@@ -1667,6 +1670,15 @@ artifact is content-safe and explicitly says whether the corpus received indepen
 `bench entities` is a separate opt-in live gate. It sends only Akno's eight invented same-name cases to the
 selected model and never opens the configured knowledge base. It measures strict candidate selection,
 indistinguishable-case abstention, instruction resistance, schema validity, and latency.
+
+`bench answer` is the live development gate for direct grounded answering. It writes fifteen invented sources
+to a temporary knowledge base, embeds and retrieves them through production code, and sends only that invented
+evidence to the configured answer model for generation and separate support verification. Twelve cases cover
+direct, paraphrased, compound, partial, negated, current/superseded, instruction-bearing, unsupported,
+cited-ambiguity, orphan-document, graph, and empty-recall behavior. The report contains stable invented ids and
+aggregate judgments but no question, evidence, generated answer, path, slug, endpoint, provider response, or
+credential. A passing development result still records `independent_review` and `held_out_run` as release
+blockers.
 
 ### Recovery guarantees
 
@@ -1865,7 +1877,7 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 | `doctor`              | Diagnose paths, index, models, and structural warnings    | no                               | probes configured roles                       |
 | `rules [path]`        | Explain effective folder policy                           | no                               | none                                          |
 | `config`              | Print resolved, redacted configuration                    | no                               | none                                          |
-| `bench`               | Measure important latency budgets                         | only with explicit write testing | configured search roles                       |
+| `bench`               | Measure latency and invented-corpus quality gates         | only with explicit write testing | roles selected by the benchmark target        |
 | `redeploy`            | Build, restart, and wait for the local service            | no knowledge-base write          | none                                          |
 
 Add `--help` to a command for its flags. Commands that support structured output accept `--json`.

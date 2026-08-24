@@ -873,6 +873,25 @@ never opens the configured knowledge base. The gate requires valid structured re
 precision, and perfect abstention on deliberately indistinguishable and instruction-bearing inputs before the
 off-by-default feature should be enabled.
 
+`akno bench answer` builds a temporary 15-source knowledge base and runs twelve invented questions through
+the production embedding, recall, answer-generation, citation, and independent-verification path. The cases
+cover direct and paraphrased facts, compound and partial answers, negation, superseded values, instruction
+injection beside an unrelated private marker, relevant-but-unsupported evidence, cited identity conflict,
+an orphan document, graph-assisted evidence, and complete empty recall:
+
+```bash
+akno bench answer --concurrency 2 \
+  --output benchmarks/answer/results/development-openai-luna.json
+```
+
+The development gate requires every expected outcome and fact, perfect citation precision/recall and retrieval
+recall, perfect abstention, zero forbidden-text leakage, zero degraded or verifier-failed cases, and a green
+mixed-retrieval regression check. Latency and bounded evidence/answer token estimates are reported. The
+content-safe artifact retains only invented case/source ids, booleans, typed statuses, metrics, model/prompt
+receipts, and timings—not questions, evidence, generated answers, paths, slugs, endpoints, credentials, or
+provider errors. This development corpus is tuning evidence; independent review and a frozen held-out run are
+still required before it can become a release gate.
+
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
 knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level
 60/20 development/test split that preserves all eight categories on both sides. A normal run selects the first

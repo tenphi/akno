@@ -11,6 +11,9 @@ import type { AknoContext } from '../context.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { recall } from './recall.ts';
 
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v1';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v1';
+
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
     blocks: z
@@ -198,11 +201,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   if (verified && !verified.ok) {
     return {
       status: 'degraded',
-      degraded: dedupeReasons([
-        ...(recalled.degraded ?? []),
-        ...(checked.rejected > 0 ? (['answer_failed'] as const) : []),
-        'answer_verification_failed',
-      ]),
+      degraded: dedupeReasons([...(recalled.degraded ?? []), 'answer_verification_failed']),
       outcome: 'not_answered',
       ...attemptedBase,
       note: verified.note,
@@ -218,10 +217,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     ...Object.entries(recalled.coverage ?? {}).flatMap(([concept, covered]) => (covered ? [] : [concept])),
   ]);
   const guardFailed = checked.rejected > 0;
-  const reasons = dedupeReasons([
-    ...(recalled.degraded ?? []),
-    ...(guardFailed ? (['answer_failed'] as const) : []),
-  ]);
+  const reasons = dedupeReasons(recalled.degraded ?? []);
   const generatedBase = {
     ...attemptedBase,
     answer: rendered || null,
@@ -234,7 +230,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
 
   if (!rendered) {
     return {
-      status: guardFailed || reasons.length > 0 ? 'degraded' : 'ok',
+      status: reasons.length > 0 ? 'degraded' : 'ok',
       ...(reasons.length > 0 ? { degraded: reasons } : {}),
       outcome: 'not_answered',
       ...generatedBase,

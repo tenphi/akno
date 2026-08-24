@@ -6,6 +6,7 @@ import {
   markRankingMatrixPersisted,
   open,
   refreshRankingMatrixReport,
+  runAnswerBench,
   runEntityResolutionBench,
   runGraphBench,
   runBench,
@@ -15,6 +16,7 @@ import {
   runRankingEndToEnd,
   runRankingMatrix,
   type Akno,
+  type AnswerBenchReport,
   type EntityResolutionBenchReport,
   type GraphBenchReport,
   type MixedRetrievalBenchReport,
@@ -49,6 +51,8 @@ const BENCH_HELP = `akno bench [options]
                       contextual entity resolution. Never opens the knowledge base.
   graph               Run the frozen, model-free held-out graph release gate.
                       Never opens the knowledge base or configured models.
+  answer              Run the invented development answer corpus through
+                      production retrieval, generation, and support verification.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
@@ -60,23 +64,26 @@ const BENCH_HELP = `akno bench [options]
                       held out from prompt tuning and must be selected explicitly.
     --candidates <n>  10, 20, or 40 for a single-system run (default 20).
     --excerpt-chars <n> 400, 800, or 1600 (default 800).
-    --concurrency <n> Simultaneous model requests, 1..16 (single default 1,
-                      matrix default 4). Latency remains per request.
+    --concurrency <n> Simultaneous cases, 1..16 (answer caps at 8; single
+                      ranking defaults 1, matrix 4). Latency remains per case.
     --runs <n>        Repetitions per LLM matrix variant, 1..10 (default 5).
     --skip-native     Omit the optional native reference from a matrix.
     --matrix-artifact <path>
                       Use its selected configuration and atomically attach
                       end-to-end evidence to that matrix artifact.
     --output <path>   Atomically persist the content-safe result artifact.
-    --provider <name> Configured provider (default openai).
-    --model <id>      Generative model (default gpt-5.6-luna).
+    --provider <name> Configured provider. Ranking defaults to openai; answer
+                      uses its configured role.
+    --model <id>      Generative model. Ranking defaults to gpt-5.6-luna;
+                      answer uses its configured role.
     --embedding-provider <name>
-                      Embedding provider for end-to-end recall.
+                      Embedding provider for end-to-end ranking or answer recall.
     --embedding-model <id>
-                      Embedding model for end-to-end recall.
+                      Embedding model for end-to-end ranking or answer recall.
     --embedding-dimensions <n>
                       Stored vector dimensions for that embedding model.
-    --reasoning <v>   none, low, medium, high, xhigh, or max (default none).
+    --reasoning <v>   none, low, medium, high, xhigh, or max. Ranking defaults
+                      to none; answer inherits its configured role.
   --write             Also measure the restart sweep, which needs the write
                       handle. Skipped otherwise rather than measured wrongly.
   --json`;
@@ -131,6 +138,69 @@ export async function benchCommand(argv: string[]): Promise<number> {
   if (values.help) {
     line(BENCH_HELP);
     return 0;
+  }
+
+  if (positionals[0] === 'answer') {
+    if (positionals.length > 1) {
+      fail(`unknown answer bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    if (
+      values['retrieval-only'] ||
+      values.write ||
+      values.probe ||
+      values.matrix ||
+      values['skip-native'] ||
+      values.track ||
+      values['matrix-artifact'] ||
+      values.system ||
+      values.candidates ||
+      values['excerpt-chars'] ||
+      values.runs ||
+      values.iterations ||
+      (values.split && values.split !== 'development')
+    ) {
+      fail(
+        'answer bench is development-only and accepts provider/model, embedding, reasoning, concurrency, output, and json options',
+      );
+      return 2;
+    }
+    const reasoning = values.reasoning ? parseReasoningEffort(values.reasoning) : undefined;
+    if (values.reasoning && !reasoning) {
+      fail(`invalid reasoning effort: ${values.reasoning}`);
+      return 2;
+    }
+    const concurrency = parseBoundedInteger(values.concurrency ?? '2', 1, 8, 'concurrency');
+    const { loadConfig } = await import('@tenphi/akno-core');
+    const config = loadConfig(openOptionsFrom(values));
+    const embeddingDimensions = parseBoundedInteger(
+      values['embedding-dimensions'] ?? String(config.models.embedding.dimensions ?? 1_536),
+      1,
+      65_536,
+      'embedding dimensions',
+    );
+    if (concurrency === null || embeddingDimensions === null) return 2;
+    const report = await runAnswerBench(config, {
+      concurrency,
+      ...(values['embedding-provider'] ? { embeddingProvider: values['embedding-provider'] } : {}),
+      ...(values['embedding-model'] ? { embeddingModel: values['embedding-model'] } : {}),
+      embeddingDimensions,
+      ...(values.provider ? { provider: values.provider } : {}),
+      ...(values.model ? { model: values.model } : {}),
+      ...(reasoning ? { reasoningEffort: reasoning } : {}),
+      ...(!values.json
+        ? {
+            onProgress: ({ done, total }: { done: number; total: number }) => {
+              if (done === 1 || done === total) line(`  answer cases  ${done}/${total}`);
+            },
+          }
+        : {}),
+    });
+    let artifactPath: string | null = null;
+    if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+    if (values.json) json(report);
+    else renderAnswerBench(report, artifactPath);
+    return report.passed ? 0 : 1;
   }
 
   if (positionals[0] === 'graph') {
@@ -641,6 +711,42 @@ function renderEntityResolution(report: EntityResolutionBenchReport, artifactPat
   line(
     `\n${report.passed ? style.green('entity-resolution gate passed') : style.red('entity-resolution gate failed')}`,
   );
+}
+
+function renderAnswerBench(report: AnswerBenchReport, artifactPath: string | null): void {
+  heading(
+    `Grounded answers — ${report.split}, ${report.corpus.cases} cases across ` +
+      `${report.corpus.categories} categories`,
+  );
+  line(`  answer model          ${report.answerModel.provider}/${report.answerModel.model}`);
+  line(`  reasoning             ${report.answerModel.reasoningEffort ?? 'provider default'}`);
+  line(`  embedding              ${report.embedding.provider}/${report.embedding.model}`);
+  line(`  execution              ${percent(report.metrics.executionRate)}`);
+  line(`  expected outcomes      ${percent(report.metrics.outcomeAccuracy)}`);
+  line(`  expected facts         ${percent(report.metrics.expectedFactAccuracy)}`);
+  line(
+    `  citation precision    ${percent(report.metrics.citationPrecision)} / recall ${percent(report.metrics.citationRecall)}`,
+  );
+  line(`  retrieval recall       ${percent(report.metrics.retrievalRecall)}`);
+  line(`  abstention accuracy    ${percent(report.metrics.abstentionAccuracy)}`);
+  line(`  privacy leak rate      ${percent(report.metrics.privacyLeakRate)}`);
+  line(`  degraded rate          ${percent(report.metrics.degradedRate)}`);
+  line(`  verifier failure rate  ${percent(report.metrics.verificationFailureRate)}`);
+  line(
+    `  latency p50 / p95     ${Math.round(report.execution.p50LatencyMs)}ms / ` +
+      `${Math.round(report.execution.p95LatencyMs)}ms`,
+  );
+  for (const benchCase of report.cases) {
+    const verdict = benchCase.passed ? style.green('pass') : style.red('FAIL');
+    line(
+      `  ${benchCase.id.padEnd(36)} ${verdict}  ` +
+        style.grey(`${benchCase.status ?? 'not run'}/${benchCase.outcome ?? benchCase.error ?? 'unknown'}`),
+    );
+  }
+  if (artifactPath) line(`  artifact               ${artifactPath}`);
+  if (report.blockers.length > 0) line(`  blockers               ${report.blockers.join(', ')}`);
+  line(`\n${report.passed ? style.green('development gate passed') : style.red('development gate failed')}`);
+  line(style.grey(`Release remains blocked by: ${report.releaseBlockers.join(', ')}.`));
 }
 
 function renderGraphBench(report: GraphBenchReport, artifactPath: string | null): void {

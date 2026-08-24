@@ -182,7 +182,7 @@ describe('grounded answer discovery surface', () => {
     });
 
     expect(result).toMatchObject({ status: 'degraded', outcome: 'not_answered', answer: null });
-    expect(result.degraded).toContain('answer_failed');
+    expect(result.degraded).not.toContain('answer_failed');
     expect(result.citations).toEqual([]);
     expect(result.context).toBeUndefined();
     expect(modelRequests).toHaveLength(1);
