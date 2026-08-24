@@ -32,6 +32,8 @@ export const RecallInput = z.object({
   expand: z.boolean().optional(),
   /** Add exact, bounded evidence-graph candidates before ordinary reranking. */
   graph: z.boolean().optional(),
+  /** Run the configured reranker and relevance qualifier. Defaults to true for recall. */
+  rerank: z.boolean().optional(),
   filter: SlugFilter.optional(),
   since: DatePrefix.optional(),
   until: DatePrefix.optional(),

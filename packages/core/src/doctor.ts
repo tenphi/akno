@@ -147,6 +147,7 @@ export async function doctor(
       'no summaries, keywords, fact derivation, remember, ingest naming or observations — recall still works',
     expansion:
       'recall searches the words you typed and nothing more: no synonyms, no hypothetical answer for a question',
+    answer: 'direct grounded answer generation is unavailable; recall still returns inspectable evidence',
     vision:
       'photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals',
   };

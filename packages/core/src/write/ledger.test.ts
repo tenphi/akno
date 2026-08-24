@@ -147,8 +147,7 @@ describe('one day, one event, however it is worded', () => {
   it('does not collapse a completed event into its earlier calendar entry', () => {
     const scheduled = insertEvent(ledger, {
       date: '2026-08-08',
-      summary:
-        'The Zephyr QX-100 launch was added to the shared calendar for a workshop at Blackwater Bay.',
+      summary: 'The Zephyr QX-100 launch was added to the shared calendar for a workshop at Blackwater Bay.',
     });
     const attended = insertEvent(scheduled.content, {
       date: '2026-08-08',

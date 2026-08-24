@@ -21,6 +21,10 @@ const ANSWER_HELP = `akno answer <question> [options]
   --until <date>      Latest evidence date: YYYY, YYYY-MM, or YYYY-MM-DD.
   --no-expand         Search the exact question without model expansion.
   --no-graph          Disable bounded graph-assisted candidate discovery.
+  --rerank            Run configured retrieval reranking/qualification. Off by default.
+  --context           Return the exact bounded evidence supplied to the answer model.
+  --max-answer-tokens <n>
+                      Limit generated answer tokens for this call.
   --json              Machine-readable compact response.`;
 
 export async function answerCommand(argv: string[]): Promise<number> {
@@ -37,6 +41,9 @@ export async function answerCommand(argv: string[]): Promise<number> {
     until?: string;
     expand: boolean;
     graph: boolean;
+    rerank: boolean;
+    context: boolean;
+    'max-answer-tokens'?: string;
   }>(argv, {
     limit: { type: 'string' },
     budget: { type: 'string' },
@@ -50,6 +57,9 @@ export async function answerCommand(argv: string[]): Promise<number> {
     until: { type: 'string' },
     expand: { type: 'boolean', default: true },
     graph: { type: 'boolean', default: true },
+    rerank: { type: 'boolean', default: false },
+    context: { type: 'boolean', default: false },
+    'max-answer-tokens': { type: 'string' },
   });
 
   if (values.help || positionals.length === 0) {
@@ -76,6 +86,9 @@ export async function answerCommand(argv: string[]): Promise<number> {
       ...(values.until ? { until: values.until } : {}),
       expand: values.expand,
       graph: values.graph,
+      rerank: values.rerank,
+      include_context: values.context,
+      ...(values['max-answer-tokens'] ? { max_answer_tokens: Number(values['max-answer-tokens']) } : {}),
     });
 
     if (values.json) json(result);
@@ -116,6 +129,19 @@ function printAnswer(result: AnswerOutput): void {
     heading('Related documents');
     for (const document of result.related_documents) {
       line(`  ${document.id}${document.owner_slug ? ` (${document.owner_slug})` : ''}`);
+    }
+  }
+  if (result.context?.length) {
+    heading('Context');
+    for (const item of result.context) {
+      if (item.type === 'page') {
+        line(`  ${item.evidence_id} · ${item.slug} — ${item.title}`);
+        for (const sourceLine of item.lines) line(`    ${sourceLine.n}: ${sourceLine.text}`);
+      } else {
+        const pages = item.pages?.length ? ` pages ${item.pages.join(',')}` : '';
+        line(`  ${item.evidence_id} · ${item.document_id}${pages}`);
+        line(`    ${item.quote}`);
+      }
     }
   }
   const missing = Object.entries(result.coverage).filter(([, covered]) => !covered);

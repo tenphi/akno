@@ -152,7 +152,7 @@ bugs found here.
 
 ## Models
 
-Five roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint can host multiple
+Six roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint can host multiple
 roles. “One endpoint” does not mean “one model”: semantic retrieval still needs an embedding model, while one
 general-purpose model may cover generation, expansion, vision, maintenance, and prompted reranking.
 
@@ -162,6 +162,7 @@ general-purpose model may cover generation, expansion, vision, maintenance, and 
 | Reranker  | hybrid score ordering instead of cross-encoder reranking; ordering is coarser                     |
 | Derive    | no summaries, keywords, fact derivation, `remember`, naming an arrival, observations              |
 | Expansion | recall searches the words you typed and nothing more                                              |
+| Answer    | direct synthesis is unavailable; `answer` still returns compact related memory identities         |
 | Vision    | photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals |
 
 The reranker supports two explicit modes. `mode: "endpoint"` calls a native cross-encoder at `/rerank`.
@@ -242,7 +243,7 @@ the wrong one. `context` is normally called by the host rather than by the agent
 | Op         | What it does                                                                                                                                                         |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `recall`   | Expand → lexical, semantic, and bounded graph candidates → rank fusion → qualification/rerank → cited cards under one budget. `--no-graph` disables graph.           |
-| `answer`   | Run question-oriented recall and return a direct-answer envelope with compact related identities. Until generation lands, evidence returns typed `no_answer_model`.  |
+| `answer`   | Run question-oriented recall and generate a cited answer. Reranking is opt-in; `include_context` returns the bounded evidence already used.                          |
 | `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                          |
 | `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                    |
 | `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |

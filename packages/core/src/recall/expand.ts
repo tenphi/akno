@@ -289,6 +289,10 @@ const STOPWORDS = new Set([
 export function extractConcepts(query: string): string[] {
   const words = query
     .toLowerCase()
+    // In these question shapes the adjective asks for the answer's dimension; it is not a term
+    // the answer must repeat. Treating "how long" as content marked an exact two-year warranty
+    // answer partial because its evidence quite correctly never contained the word "long".
+    .replace(/\bhow\s+(?:long|old|often|far|soon)\b/gu, ' ')
     .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
     .split(/\s+/)
     .filter((word) => word.length > 2 && !STOPWORDS.has(word));

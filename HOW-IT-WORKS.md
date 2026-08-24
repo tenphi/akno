@@ -48,8 +48,9 @@ It turns common requests into grounded workflows:
 
 The primary retrieval path supplies **evidence with addresses** and an explicit account of missing coverage.
 `recall` leaves reasoning to the caller. A separate `answer` surface now composes over that same retrieval path
-for direct grounded responses; its first implemented slice returns compact related identities and an honest
-`no_answer_model` result while structured generation and verification are still being added.
+for direct grounded responses. It uses structured answer blocks, maps request-local evidence ids back to exact
+citations itself, and rejects invented exact values or introduced negation before returning prose. Independent
+support verification is still being added.
 
 Akno is a good fit when:
 
@@ -335,19 +336,28 @@ akno recall "warranty" --source document --ownership orphan
 
 ```bash
 akno answer "How long is the Zephyr QX-100 warranty?"
+akno answer "How long is the Zephyr QX-100 warranty?" --context
+akno answer "How long is the Zephyr QX-100 warranty?" --rerank
 ```
 
 `answer` is a separate read operation over the same question-oriented recall pipeline. It never turns `recall`
 itself into a slower generative call, and callers should not invoke both for the same question unless they also
 need to inspect the evidence. Its compact response separates exact citations from ranked related identities:
 page results become ordered slugs, while an ownerless document remains an opaque document id. No summaries,
-quotes, paths, or scores are repeated in those related lists.
+quotes, paths, or scores are repeated in those related lists by default. `--context` explicitly adds the exact
+bounded lines and document quotes already supplied to the model, which is useful for a review UI without a
+second recall.
 
-The first implemented slice deliberately has generation disabled. When related evidence exists it returns
-`degraded`, `outcome=not_answered`, and `no_answer_model`, while still returning the compact related identities.
-A complete empty recall returns `empty/not_found` without blaming the absent answer model; degraded or
-unavailable retrieval never becomes “not recorded.” Structured answer blocks, deterministic citation mapping,
-value guards, and independent support verification are the next slice.
+Answer skips reranking by default. The answer model already selects supporting evidence, so a prompted reranker
+would add a second sequential model call on the interactive path. `--rerank` opts into the slower qualified
+path when a noisy corpus or small answer model needs it; ordinary `recall` keeps reranking by default because
+ranked evidence and irrelevance qualification are its output.
+
+The model returns structured blocks that cite opaque `E1`, `E2`, … labels. Akno validates those labels,
+checks digit-bearing values and introduced negation against the cited text, and renders persistent slugs, line
+numbers, document ids, and pages itself. A missing model returns `degraded/not_answered` with
+`no_answer_model`; complete empty recall remains `empty/not_found`. Independent semantic support verification
+is the next guardrail rather than a claim that deterministic value checks prove all prose.
 
 ### `read`: open one exact page or document
 
@@ -1386,20 +1396,22 @@ This is off by default because the log duplicates sensitive inferences outside t
 
 ## Models and graceful degradation
 
-Akno has five model roles. All are optional.
+Akno has six model roles. All are optional.
 
 | Role        | Used by                                                      | Without it                                                      |
 | ----------- | ------------------------------------------------------------ | --------------------------------------------------------------- |
 | `embedding` | Indexing and semantic recall                                 | Lexical search still works                                      |
 | `reranker`  | Final ordering of recall candidates                          | Rank-fused ordering remains                                     |
 | `expansion` | Query expansion before recall                                | Search uses the query as written                                |
+| `answer`    | Direct grounded synthesis over bounded recall evidence       | `answer` returns related identities with `no_answer_model`      |
 | `derive`    | Summaries, facts, remember, naming, and maintenance fallback | Core search/read/write still works; derived features are absent |
 | `vision`    | Description of images with no readable text                  | OCR still covers scans and screenshots                          |
 
-Two roles are on the interactive path:
+Three roles can be on the interactive path:
 
 - `expansion` should be fast because a person is waiting for it.
 - `reranker` should be sized for the configured candidate count.
+- `answer` should have an interactive timeout and a bounded output ceiling; it inherits `derive` when omitted.
 
 The reranker has two implementations. `mode: "endpoint"` calls a native `/rerank` cross-encoder. `mode: "llm"`
 uses a versioned listwise prompt over the same generative transport as other model-backed work. Every candidate
@@ -1729,7 +1741,8 @@ This does not perform open-ended entity discovery or duplicate merging. Housekee
 collisions, unresolved authored subjects, and traversal hubs as read-only graph review candidates, but those
 findings contain no operation and cannot authorize maintenance. Deliberate one-to-three-hop inspection remains
 the job of `graph`. The separate `answer` surface now composes over recall and exposes compact related
-identities with typed absence; grounded generation and verification are the next implementation slice.
+identities and grounded structured answers with typed absence; independent support verification is the next
+implementation slice.
 
 ### The durable review queue does not cover every phase yet
 
@@ -1824,34 +1837,34 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 
 ## Command reference
 
-| Command               | Purpose                                                   | Writes to the knowledge base?    | Model roles                              |
-| --------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------------------------- |
-| `init`                | Preview/check an experimental guided setup                | no                               | embedding, reranker with `--check`       |
-| `index`               | Reconcile the index with files                            | no by default                    | embedding, derive                        |
-| `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker           |
-| `answer <question>`   | Direct grounded-answer envelope over qualified recall     | no                               | recall roles; answer model not yet wired |
-| `read <slug>`         | Read one page or document directly                        | no                               | none                                     |
-| `list`                | Browse folders, pages, or a tree                          | no                               | none                                     |
-| `graph`               | Inspect bounded exact evidence paths and locators         | no                               | none                                     |
-| `timeline`            | Retrieve authored events and typed document date evidence | no                               | none                                     |
-| `context <query>`     | Assemble one bounded pre-turn bundle                      | no                               | same as recall                           |
-| `write`               | Create, append, patch, or replace a page                  | yes                              | vision only for textless attachments     |
-| `remember <text>`     | Retain durable knowledge and route it                     | yes                              | maintenance or derive, plus recall roles |
-| `folder`              | Declare a folder and its default policy                   | yes, `akno.json`               | none                                     |
-| `approve` / `decline` | Resolve a held routing proposal                           | approve may write                | depends on held action                   |
-| `forget`              | Retract a fact or trash a page/document                   | yes                              | none                                     |
-| `undo <id>`           | Restore exact bytes from a journalled change              | yes                              | none                                     |
-| `move <from> <to>`    | Move a page and its owned documents                       | yes                              | none                                     |
-| `ingest <path\|url>`  | Extract, name, route, store, and index                    | yes                              | derive; vision when needed               |
-| `inbox`               | Process arrivals in routed folders                        | yes                              | same as ingest                           |
-| `dream`               | Run the seven maintenance phases                          | depends on enabled phases        | maintenance or derive                    |
-| `plan`                | Inspect, decide, and apply durable maintenance items      | apply only                       | none after planning                      |
-| `serve`               | Run the watcher and operation doors                       | no by itself                     | none by itself                           |
-| `service`             | Install, inspect, or remove background jobs               | outside the knowledge base       | none                                     |
-| `doctor`              | Diagnose paths, index, models, and structural warnings    | no                               | probes configured roles                  |
-| `rules [path]`        | Explain effective folder policy                           | no                               | none                                     |
-| `config`              | Print resolved, redacted configuration                    | no                               | none                                     |
-| `bench`               | Measure important latency budgets                         | only with explicit write testing | configured search roles                  |
-| `redeploy`            | Build, restart, and wait for the local service            | no knowledge-base write          | none                                     |
+| Command               | Purpose                                                   | Writes to the knowledge base?    | Model roles                                   |
+| --------------------- | --------------------------------------------------------- | -------------------------------- | --------------------------------------------- |
+| `init`                | Preview/check an experimental guided setup                | no                               | embedding, reranker with `--check`            |
+| `index`               | Reconcile the index with files                            | no by default                    | embedding, derive                             |
+| `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker                |
+| `answer <question>`   | Direct grounded answer; optional context or qualification | no                               | expansion, embedding, answer; reranker opt-in |
+| `read <slug>`         | Read one page or document directly                        | no                               | none                                          |
+| `list`                | Browse folders, pages, or a tree                          | no                               | none                                          |
+| `graph`               | Inspect bounded exact evidence paths and locators         | no                               | none                                          |
+| `timeline`            | Retrieve authored events and typed document date evidence | no                               | none                                          |
+| `context <query>`     | Assemble one bounded pre-turn bundle                      | no                               | same as recall                                |
+| `write`               | Create, append, patch, or replace a page                  | yes                              | vision only for textless attachments          |
+| `remember <text>`     | Retain durable knowledge and route it                     | yes                              | maintenance or derive, plus recall roles      |
+| `folder`              | Declare a folder and its default policy                   | yes, `akno.json`               | none                                          |
+| `approve` / `decline` | Resolve a held routing proposal                           | approve may write                | depends on held action                        |
+| `forget`              | Retract a fact or trash a page/document                   | yes                              | none                                          |
+| `undo <id>`           | Restore exact bytes from a journalled change              | yes                              | none                                          |
+| `move <from> <to>`    | Move a page and its owned documents                       | yes                              | none                                          |
+| `ingest <path\|url>`  | Extract, name, route, store, and index                    | yes                              | derive; vision when needed                    |
+| `inbox`               | Process arrivals in routed folders                        | yes                              | same as ingest                                |
+| `dream`               | Run the seven maintenance phases                          | depends on enabled phases        | maintenance or derive                         |
+| `plan`                | Inspect, decide, and apply durable maintenance items      | apply only                       | none after planning                           |
+| `serve`               | Run the watcher and operation doors                       | no by itself                     | none by itself                                |
+| `service`             | Install, inspect, or remove background jobs               | outside the knowledge base       | none                                          |
+| `doctor`              | Diagnose paths, index, models, and structural warnings    | no                               | probes configured roles                       |
+| `rules [path]`        | Explain effective folder policy                           | no                               | none                                          |
+| `config`              | Print resolved, redacted configuration                    | no                               | none                                          |
+| `bench`               | Measure important latency budgets                         | only with explicit write testing | configured search roles                       |
+| `redeploy`            | Build, restart, and wait for the local service            | no knowledge-base write          | none                                          |
 
 Add `--help` to a command for its flags. Commands that support structured output accept `--json`.

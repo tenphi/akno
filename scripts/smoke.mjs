@@ -81,14 +81,7 @@ try {
   );
 
   const answer = JSON.parse(
-    run(
-      'answer',
-      'How long is the Zephyr QX-100 warranty?',
-      '--source',
-      'page',
-      '--no-expand',
-      '--no-graph',
-    ),
+    run('answer', 'How long is the Zephyr QX-100 warranty?', '--source', 'page', '--no-expand', '--no-graph'),
   );
   check(
     'answer reuses recall with honest model degradation',

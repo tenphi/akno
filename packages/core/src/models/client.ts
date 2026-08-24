@@ -647,6 +647,8 @@ function degradedReasonFor(role: ResolvedModelRole['role'], failure: ModelFailur
       return unconfigured ? 'no_reranker' : 'rerank_failed';
     case 'expansion':
       return unconfigured ? 'no_expansion_model' : 'expansion_failed';
+    case 'answer':
+      return unconfigured ? 'no_answer_model' : 'answer_failed';
     default:
       return unconfigured ? 'no_derive_model' : 'derive_failed';
   }

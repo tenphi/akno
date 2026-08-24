@@ -217,6 +217,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     reranker: new ModelClient(config.models.reranker),
     derive: new ModelClient(config.models.derive),
     expansion: new ModelClient(config.models.expansion),
+    answer: new ModelClient(config.models.answer),
     vision: new ModelClient(config.models.vision),
   };
 

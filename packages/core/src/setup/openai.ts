@@ -76,6 +76,12 @@ export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
         id: OPENAI_LUNA_GENERATIVE_MODEL,
         reasoning_effort: 'low',
       },
+      answer: {
+        provider: 'openai',
+        id: OPENAI_LUNA_GENERATIVE_MODEL,
+        max_output_tokens: 1024,
+        reasoning_effort: 'low',
+      },
       vision: {
         provider: 'openai',
         id: OPENAI_LUNA_GENERATIVE_MODEL,

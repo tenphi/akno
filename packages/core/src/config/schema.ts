@@ -93,6 +93,7 @@ const ModelsDoc = z.object({
   reranker: RerankerRoleDoc.optional(),
   derive: TextRoleDoc.optional(),
   expansion: TextRoleDoc.optional(),
+  answer: TextRoleDoc.optional(),
   vision: VisionRoleDoc.optional(),
 });
 
@@ -384,7 +385,7 @@ export interface ResolvedModelRole {
    * 03:00 says which model failed — "derive endpoint returned 401" sends someone to look at
    * the local model that was working fine.
    */
-  role: 'embedding' | 'reranker' | 'derive' | 'expansion' | 'vision' | 'maintenance';
+  role: 'embedding' | 'reranker' | 'derive' | 'expansion' | 'answer' | 'vision' | 'maintenance';
   provider: ResolvedProvider | null;
   id: string | null;
   /** True once the role resolved to something usable. */
@@ -448,6 +449,7 @@ export interface AknoConfig {
     reranker: ResolvedModelRole;
     derive: ResolvedModelRole;
     expansion: ResolvedModelRole;
+    answer: ResolvedModelRole;
     vision: ResolvedModelRole;
   };
   index: {

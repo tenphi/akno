@@ -126,7 +126,8 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
 
   let reranked = false;
   let qualification: RecallQualification | null = null;
-  if (hits.length > 0 && ctx.models.reranker.available) {
+  const shouldRerank = input.rerank ?? true;
+  if (shouldRerank && hits.length > 0 && ctx.models.reranker.available) {
     const result = await rerankHits(
       ctx.store,
       ctx.models.reranker,
@@ -142,7 +143,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     reranked = result.degraded === null;
     if (result.degraded) degraded.add(result.degraded);
     if (result.note) notes.push(result.note);
-  } else if (ctx.models.reranker.requested && !ctx.models.reranker.available) {
+  } else if (shouldRerank && ctx.models.reranker.requested && !ctx.models.reranker.available) {
     // `requested` rather than `enabled`: the resolved `enabled` is already false
     // whenever the role is unusable, so testing it here could never fire and a
     // user who asked for a reranker would never be told they are not getting one.

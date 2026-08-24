@@ -47,6 +47,14 @@ describe('extractConcepts', () => {
     expect(extractConcepts('car insurance')).toEqual(['car insurance']);
   });
 
+  it('does not require an answer to repeat the dimension word from how-long questions', () => {
+    const concepts = extractConcepts('How long is the Zephyr QX-100 warranty?');
+
+    expect(concepts.join(' ')).toContain('zephyr');
+    expect(concepts.join(' ')).toContain('warranty');
+    expect(concepts.join(' ')).not.toContain('long');
+  });
+
   it('returns nothing for a query with no content words', () => {
     expect(extractConcepts('is it the?')).toEqual([]);
   });

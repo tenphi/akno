@@ -41,6 +41,7 @@ describe('experimental OpenAI minimum setup', () => {
       },
       expansion: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'none' },
       derive: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'low' },
+      answer: { provider: 'openai', id: 'gpt-5.6-luna', reasoning_effort: 'low' },
     });
     expect(preset.maintenance).toMatchObject({
       profile: 'autonomous',
@@ -67,6 +68,25 @@ describe('experimental OpenAI minimum setup', () => {
       generative: { status: 'unavailable' },
     });
     expect(JSON.stringify(report)).not.toContain('undefined');
+  });
+
+  it('inherits the derive endpoint for answer when an existing setup has no answer override', () => {
+    const root = inventedKnowledgeBase();
+    const config = loadConfig({
+      isolated: true,
+      overrides: {
+        akno_path: root,
+        providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
+        models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
+      },
+    });
+
+    expect(config.models.answer).toMatchObject({
+      role: 'answer',
+      id: 'invented-generative-model',
+      enabled: true,
+      provider: { name: 'invented' },
+    });
   });
 
   it('reduces an access denial to one content-safe diagnostic', () => {

@@ -241,6 +241,9 @@ function envOverlay(env: NodeJS.ProcessEnv): ConfigDoc {
   if (env.AKNO_EXPANSION_MODEL) {
     doc.models = { ...doc.models, expansion: { id: env.AKNO_EXPANSION_MODEL } };
   }
+  if (env.AKNO_ANSWER_MODEL) {
+    doc.models = { ...doc.models, answer: { id: env.AKNO_ANSWER_MODEL } };
+  }
   return doc;
 }
 
@@ -450,6 +453,14 @@ function resolve(
   const maintenanceProfile = doc.maintenance?.profile ?? 'audit';
   const namedMode = namedMaintenanceMode(maintenanceProfile);
   const configuredPolicies = doc.maintenance?.policies ?? {};
+  const answerDoc =
+    doc.models?.answer?.id == null && doc.models?.answer?.enabled !== false
+      ? {
+          ...doc.models?.answer,
+          provider: doc.models?.derive?.provider ?? doc.models?.answer?.provider,
+          id: doc.models?.derive?.id ?? null,
+        }
+      : doc.models?.answer;
 
   // Rules found in the knowledge base win over machine config, so they can be
   // versioned with the notes and survive a move to another machine.
@@ -494,6 +505,9 @@ function resolve(
       // path. `recall.expansion_timeout_ms` is the deadline that actually governs a call; this
       // is the backstop for a model that accepts the connection and then goes quiet.
       expansion: resolveRole('expansion', doc.models?.expansion, providers, 30_000),
+      // A separate role gives interactive answering its own timeout and token ceiling. When omitted,
+      // inherit derive so existing single-endpoint setups gain answering without another config step.
+      answer: resolveRole('answer', answerDoc, providers, 60_000),
       vision: resolveRole('vision', doc.models?.vision, providers, 120_000),
     },
     index: {

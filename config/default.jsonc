@@ -111,7 +111,7 @@
   },
 
   // ─── Models ───────────────────────────────────────────────────────────────
-  // Five roles, all optional, each degrading rather than failing. `id: null`
+  // Six roles, all optional, each degrading rather than failing. `id: null`
   // means the role is unconfigured — Akno reports it in `doctor` and takes
   // the documented degraded path.
   "models": {
@@ -202,6 +202,18 @@
       // A backstop, not the deadline — `recall.expansion_timeout_ms` governs a
       // call. This one only catches an endpoint that accepts and goes quiet.
       "timeout_ms": 30000
+    },
+    // Direct grounded synthesis. If this block is omitted from an overlay,
+    // Akno inherits the derive model so an existing single-endpoint setup
+    // does not need another model declaration. A separate role lets interactive
+    // answering keep a smaller output ceiling and timeout.
+    "answer": {
+      "provider": "local",
+      "id": null,
+      "max_output_tokens": 1024,
+      "reasoning_effort": null,
+      "concurrency": 2,
+      "timeout_ms": 60000
     },
     // Off by default. OCR covers scans and screenshots, which is most arrivals.
     "vision": {

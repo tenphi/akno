@@ -19,6 +19,8 @@ export interface AknoContext {
     derive: ModelClient;
     /** The recall path only, where latency is felt on every question. */
     expansion: ModelClient;
+    /** Direct grounded synthesis over bounded recall evidence. */
+    answer: ModelClient;
     vision: ModelClient;
   };
   assembler: Assembler;
