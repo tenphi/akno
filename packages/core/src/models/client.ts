@@ -38,6 +38,19 @@ export interface ModelUsage {
   totalTokens: number | null;
 }
 
+/** Content-free observation of one logical model call after compatibility retries settle. */
+export interface ModelCallObservation {
+  role: ResolvedModelRole['role'];
+  modelId: string | null;
+  ok: boolean;
+  failure: ModelFailure | null;
+  degradedReason: DegradedReason | null;
+  latencyMs: number;
+  usage: ModelUsage | null;
+}
+
+export type ModelOutcomeObserver = (observation: ModelCallObservation) => void;
+
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -81,6 +94,10 @@ const UNSUPPORTED_MAX_TOKENS = /unsupported parameter.*max_tokens|use 'max_compl
  * being unable to detect it is every request, silently.
  */
 type SchemaMode = 'schema' | 'json_schema' | 'plain';
+interface ModelCompatibility {
+  tokenParam: TokenParam;
+  schemaMode: SchemaMode;
+}
 /** The rungs in order, so a demotion can be checked for direction rather than assumed. */
 const SCHEMA_RUNGS: readonly SchemaMode[] = ['schema', 'json_schema', 'plain'];
 const UNSUPPORTED_SCHEMA = /response_format|unsupported.*schema|unknown parameter.*schema|invalid.*schema/i;
@@ -99,13 +116,23 @@ export function redactProviderError(value: string): string {
 
 export class ModelClient {
   readonly #role: ResolvedModelRole;
-  /** Learned on first rejection, then reused. Per client, so per role. */
-  #tokenParam: TokenParam = 'max_tokens';
-  /** Learned the same way, and for the same reason: one probe, then remembered. */
-  #schemaMode: SchemaMode = 'schema';
+  readonly #outcomeObserver: ModelOutcomeObserver | null;
+  /** Learned on first rejection and shared by observed views of this role client. */
+  #compatibility: ModelCompatibility = { tokenParam: 'max_tokens', schemaMode: 'schema' };
 
-  constructor(role: ResolvedModelRole) {
+  constructor(role: ResolvedModelRole, outcomeObserver: ModelOutcomeObserver | null = null) {
     this.#role = role;
+    this.#outcomeObserver = outcomeObserver;
+  }
+
+  /**
+   * Isolate accounting to one workflow without mutating the process-wide role client.
+   * Compatibility discoveries are shared so instrumentation does not add a probe to a warm client.
+   */
+  withOutcomeObserver(observer: ModelOutcomeObserver): ModelClient {
+    const observed = new ModelClient(this.#role, observer);
+    observed.#compatibility = this.#compatibility;
+    return observed;
   }
 
   get available(): boolean {
@@ -399,8 +426,8 @@ export class ModelClient {
       // Measured on this install at `derive.concurrency: 4`: a service restart cost the facts of
       // the first pages it derived, every time, because a failed derivation is stamped as derived
       // and never retried. The fix is one call's own state, not the endpoint's.
-      const sentTokenParam = this.#tokenParam;
-      const sentSchemaMode = this.#schemaMode;
+      const sentTokenParam = this.#compatibility.tokenParam;
+      const sentSchemaMode = this.#compatibility.schemaMode;
 
       result = await this.post<ChatCompletionResponse>(
         '/chat/completions',
@@ -413,7 +440,7 @@ export class ModelClient {
       // life of the process rather than rediscovered per call. Both assignments are safe to
       // repeat: they name the answer rather than stepping towards it.
       if (sentTokenParam === 'max_tokens' && UNSUPPORTED_MAX_TOKENS.test(result.error ?? '')) {
-        this.#tokenParam = 'max_completion_tokens';
+        this.#compatibility.tokenParam = 'max_completion_tokens';
         continue;
       }
       if (jsonSchema && sentSchemaMode !== 'plain' && UNSUPPORTED_SCHEMA.test(result.error ?? '')) {
@@ -423,33 +450,53 @@ export class ModelClient {
         // lose constrained decoding over a race rather than over an endpoint's actual limits.
         // Monotonic, so a demotion another call has already discovered is never undone.
         const next: SchemaMode = sentSchemaMode === 'schema' ? 'json_schema' : 'plain';
-        if (SCHEMA_RUNGS.indexOf(next) > SCHEMA_RUNGS.indexOf(this.#schemaMode)) this.#schemaMode = next;
+        if (SCHEMA_RUNGS.indexOf(next) > SCHEMA_RUNGS.indexOf(this.#compatibility.schemaMode)) {
+          this.#compatibility.schemaMode = next;
+        }
         continue;
       }
       break;
     }
 
     if (!result.ok || !result.value) {
-      return { ...result, value: null, latencyMs: performance.now() - chatStarted };
+      return this.observeChat({ ...result, value: null, latencyMs: performance.now() - chatStarted });
     }
     const usage = reportedModelUsage(result.value.usage);
     const content = result.value.choices?.[0]?.message?.content;
     if (typeof content !== 'string') {
-      return {
+      return this.observeChat({
         ok: false,
         value: null,
         reason: 'bad_response',
         error: 'chat response had no content',
         latencyMs: performance.now() - chatStarted,
         ...(usage ? { usage } : {}),
-      };
+      });
     }
-    return {
+    return this.observeChat({
       ok: true,
       value: content,
       latencyMs: performance.now() - chatStarted,
       ...(usage ? { usage } : {}),
-    };
+    });
+  }
+
+  private observeChat(outcome: ModelOutcome<string>): ModelOutcome<string> {
+    if (!this.#outcomeObserver) return outcome;
+    try {
+      this.#outcomeObserver({
+        role: this.#role.role,
+        modelId: this.#role.id,
+        ok: outcome.ok,
+        failure: outcome.ok ? null : (outcome.reason ?? 'bad_response'),
+        degradedReason: outcome.ok ? null : this.degradedReason(outcome),
+        latencyMs: outcome.latencyMs,
+        usage: outcome.usage ?? null,
+      });
+    } catch {
+      // Telemetry must never turn a usable model response into a failed operation.
+    }
+    return outcome;
   }
 
   /**

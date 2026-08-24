@@ -75,6 +75,8 @@ export async function logDreamRun(
     // function of this, and a night that produced nothing useful is a different problem
     // depending on whether the strong model was reachable at all.
     model: ctx.config.maintenance.model?.id ?? ctx.config.models.derive.id,
+    modelUsage: report.modelUsage,
+    degraded: report.degraded,
     phases: report.phases,
     changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId]
       .filter((id): id is string => id !== null)

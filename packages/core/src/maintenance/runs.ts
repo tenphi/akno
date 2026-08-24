@@ -6,6 +6,11 @@ import { SCHEMA_VERSION } from '../store/migrations.ts';
 import type { DreamPhase, DreamReport, PhaseReport } from './dream.ts';
 import type { MaintenanceMode } from './plans.ts';
 import type { MaintenanceBudgetReceipt } from './budget.ts';
+import {
+  emptyDreamModelUsage,
+  type DreamModelDegradation,
+  type DreamModelUsageReceipt,
+} from './model-telemetry.ts';
 
 export type DreamRunStatus = 'running' | 'completed' | 'partially_completed' | 'awaiting_review' | 'failed';
 
@@ -60,6 +65,10 @@ export interface DreamRunReceipt {
   counts: DreamRunCounts;
   /** Content-safe cumulative apply usage; null only on receipts written before run budgets shipped. */
   budget: MaintenanceBudgetReceipt | null;
+  /** Exact logical model calls and provider-reported tokens; prompts and responses are never retained. */
+  modelUsage: DreamModelUsageReceipt;
+  /** Typed capability failures grouped by phase or curator stage. */
+  degraded: DreamModelDegradation[];
   durationMs: number | null;
   maintenancePlanIds: string[];
   /** Most recently touched plan, retained for older clients. */
@@ -121,6 +130,8 @@ export function beginDreamRun(
     phases: [],
     counts: emptyCounts(),
     budget: emptyBudget(ctx),
+    modelUsage: emptyDreamModelUsage(options.modelId),
+    degraded: [],
     durationMs: null,
     maintenancePlanIds: [],
     maintenancePlanId: null,
@@ -160,6 +171,8 @@ export function completeDreamRun(
     phases: safePhases(report.phases),
     counts: reportCounts(report),
     budget: report.budget,
+    modelUsage: report.modelUsage,
+    degraded: report.degraded,
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
     maintenancePlanId: plans.at(-1)?.id ?? null,
@@ -183,6 +196,7 @@ export function failDreamRun(
   durationMs: number,
   phases: PhaseReport[],
   budget: MaintenanceBudgetReceipt = started.budget ?? emptyBudget(ctx),
+  operability: Pick<DreamRunReceipt, 'modelUsage' | 'degraded'> = started,
 ): DreamRunReceipt {
   const receipt: DreamRunReceipt = {
     ...started,
@@ -190,6 +204,8 @@ export function failDreamRun(
     status: 'failed',
     phases: safePhases(phases),
     budget,
+    modelUsage: operability.modelUsage,
+    degraded: operability.degraded,
     durationMs,
     errorCode: error instanceof AknoError ? error.code : 'internal',
   };
@@ -485,6 +501,8 @@ function parseReceipt(value: string): DreamRunReceipt | null {
           ? receipt.profile
           : 'legacy-custom',
       budget: receipt.budget ?? null,
+      modelUsage: receipt.modelUsage ?? emptyDreamModelUsage(receipt.snapshot.modelId),
+      degraded: Array.isArray(receipt.degraded) ? receipt.degraded : [],
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')
         : receipt.maintenancePlanId

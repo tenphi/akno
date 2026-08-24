@@ -9,6 +9,7 @@ import {
   redactProviderError,
   strictModeViolations,
   toEndpointSchema,
+  type ModelCallObservation,
 } from './client.ts';
 import type { ResolvedModelRole } from '../config/schema.ts';
 import { DERIVED_SCHEMA, DOCUMENT_SUMMARY_SCHEMA, SUMMARY_ONLY_SCHEMA } from '../index/derive.ts';
@@ -194,6 +195,36 @@ describe('the token ceiling', () => {
   it('sends an explicit reasoning effort and permits a task override', async () => {
     expect((await sentBody(undefined, undefined, 'none')).reasoning_effort).toBe('none');
     expect((await sentBody(undefined, undefined, 'medium', 'low')).reasoning_effort).toBe('low');
+  });
+});
+
+describe('logical call observations', () => {
+  it('reports an unavailable maintenance call as typed content-free telemetry', async () => {
+    const observations: ModelCallObservation[] = [];
+    const client = new ModelClient({
+      role: 'maintenance',
+      provider: null,
+      id: null,
+      enabled: false,
+      requested: true,
+      timeoutMs: 5_000,
+      unavailableReason: 'Invented model is not configured.',
+    }).withOutcomeObserver((observation) => observations.push(observation));
+
+    await client.chat([{ role: 'user', content: 'Invented private prompt.' }]);
+
+    expect(observations).toEqual([
+      {
+        role: 'maintenance',
+        modelId: null,
+        ok: false,
+        failure: 'unavailable',
+        degradedReason: 'no_derive_model',
+        latencyMs: expect.any(Number),
+        usage: null,
+      },
+    ]);
+    expect(JSON.stringify(observations)).not.toContain('Invented private prompt.');
   });
 });
 

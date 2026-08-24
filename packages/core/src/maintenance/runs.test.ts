@@ -136,12 +136,18 @@ describe('durable dream runs', () => {
     });
 
     try {
-      const historical = { ...started, profile: 'custom' };
+      const { modelUsage: _usage, degraded: _degraded, ...legacyStarted } = started;
+      const historical = { ...legacyStarted, profile: 'custom' };
       store.db
         .prepare('UPDATE maintenance_runs SET receipt = ? WHERE id = ?')
         .run(JSON.stringify(historical), started.id);
 
-      expect(latestDreamRun(ctx)).toMatchObject({ id: started.id, profile: 'legacy-custom' });
+      expect(latestDreamRun(ctx)).toMatchObject({
+        id: started.id,
+        profile: 'legacy-custom',
+        modelUsage: { modelId: 'zephyr-model', calls: 0, totalTokens: null, stages: [] },
+        degraded: [],
+      });
     } finally {
       failDreamRun(ctx, started, new AknoError('interrupted', 'Invented test cleanup.'), 1, []);
       store.close();

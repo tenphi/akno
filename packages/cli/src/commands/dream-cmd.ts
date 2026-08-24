@@ -16,6 +16,7 @@ import {
   type DreamScheduleHealth,
   type DreamScheduleStatus,
 } from './dream-schedule.ts';
+import { dreamModelDegradationSummary, dreamModelUsageSummary } from './dream-model-status.ts';
 
 const DREAM_HELP = `akno dream [options]
 akno dream status [--run <run_id> | --last <n> | --pending]
@@ -41,7 +42,8 @@ akno dream status [--run <run_id> | --last <n> | --pending]
   accepted work. Per-transformation policies may only lower that profile authority.
 
   Plain status also inspects the local dev.akno.dream LaunchAgent: installed/loaded
-  state, daily interval, next expected run, and a two-hour missed-run window.
+  state, daily interval, next expected run, and a two-hour missed-run window. New
+  receipts include content-safe model calls, provider token usage, and degradation.
 
   --phase <name>   Run one phase instead of every enabled one.
   --mode <policy>  audit | review | auto. May lower configured authority for one run;
@@ -258,6 +260,22 @@ function printDreamRunReceipt(run: DreamRunReceipt): void {
     ['error', run.errorCode],
     ['snapshot', run.snapshot.indexRevision.slice(0, 12)],
   ]);
+  line('\n  model work');
+  kv([
+    ['model', run.modelUsage.modelId],
+    ['summary', dreamModelUsageSummary(run.modelUsage)],
+    ['calls succeeded', `${run.modelUsage.successfulCalls}/${run.modelUsage.calls}`],
+    ['calls failed', run.modelUsage.failedCalls],
+    ['input tokens', run.modelUsage.inputTokens],
+    ['output tokens', run.modelUsage.outputTokens],
+    ['total tokens', run.modelUsage.totalTokens],
+    ['degraded', dreamModelDegradationSummary(run.degraded)],
+  ]);
+  for (const stage of run.modelUsage.stages) {
+    line(
+      `    ${stage.stage.padEnd(13)} ${dreamModelUsageSummary({ ...stage, modelId: run.modelUsage.modelId, stages: [] })}`,
+    );
+  }
   line('\n  outcomes');
   kv([
     ['observations', run.counts.observations],
@@ -298,8 +316,12 @@ function printDreamRunHistory(runs: DreamRunReceipt[]): void {
   heading(`${runs.length} dream run${runs.length === 1 ? '' : 's'} — newest first`);
   for (const run of runs) {
     const duration = run.durationMs === null ? '-' : ms(run.durationMs);
+    const model =
+      run.modelUsage.totalTokens === null
+        ? `${run.modelUsage.calls} calls`
+        : `${run.modelUsage.totalTokens} tokens`;
     line(
-      `  ${style.bold(run.id)}  ${run.status.padEnd(19)} ${run.mode.padEnd(6)} ${run.startedAt}  ${duration}`,
+      `  ${style.bold(run.id)}  ${run.status.padEnd(19)} ${run.mode.padEnd(6)} ${run.startedAt}  ${duration}  ${model}`,
     );
   }
 }

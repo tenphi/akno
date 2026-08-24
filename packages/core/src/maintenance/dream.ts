@@ -63,6 +63,12 @@ import {
   type MaintenanceBudgetReceipt,
   type MaintenanceBudgetTracker,
 } from './budget.ts';
+import {
+  DreamModelTelemetry,
+  type DreamModelDegradation,
+  type DreamModelStage,
+  type DreamModelUsageReceipt,
+} from './model-telemetry.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -180,6 +186,10 @@ export interface DreamReport {
   maintenancePlans: DreamMaintenancePlan[];
   /** Cumulative apply limits and usage shared by plan-backed phases in this invocation. */
   budget: MaintenanceBudgetReceipt;
+  /** Exact logical calls and provider-reported tokens for synchronous maintenance model work. */
+  modelUsage: DreamModelUsageReceipt;
+  /** Typed model capability failures; no prompts, responses, paths, or excerpts. */
+  degraded: DreamModelDegradation[];
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
@@ -205,9 +215,18 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   // the same observe pass over one knowledge base produced 15 candidates worth about four with a
   // local 3B, and 8 candidates with no guard violations at all with a strong one. When
   // `maintenance.model` is set, the whole cycle uses it and nothing else does.
-  const cycle: AknoContext = ctx.config.maintenance.model
-    ? { ...ctx, models: { ...ctx.models, derive: new ModelClient(ctx.config.maintenance.model) } }
-    : ctx;
+  const baseCycleModel = ctx.config.maintenance.model
+    ? new ModelClient(ctx.config.maintenance.model)
+    : ctx.models.derive;
+  const telemetry = new DreamModelTelemetry(baseCycleModel.modelId);
+  let modelStage: DreamModelStage = options.phase ?? 'conflicts';
+  const cycle: AknoContext = {
+    ...ctx,
+    models: {
+      ...ctx.models,
+      derive: baseCycleModel.withOutcomeObserver((observation) => telemetry.observe(modelStage, observation)),
+    },
+  };
   const wanted = options.phase ? [options.phase] : DREAM_PHASES;
   const startedRun = beginDreamRun(ctx, {
     requestedPhase: options.phase ?? null,
@@ -233,6 +252,8 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     maintenancePlan: null,
     maintenancePlans: [],
     budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
+    modelUsage: telemetry.usage(),
+    degraded: telemetry.degradation(),
     warnings: [],
     durationMs: 0,
   };
@@ -256,11 +277,22 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       ['observe', 'reflect', 'curate'].includes(options.phase) &&
       cycle.config.maintenance.conflicts.enabled
     ) {
-      await inspectConflicts(cycle, report);
+      modelStage = 'conflicts';
+      await inspectConflicts(cycle, report, telemetry);
     }
     for (const [phaseIndex, phase] of wanted.entries()) {
+      modelStage = phase;
       const phaseStarted = performance.now();
-      const skipped = await runPhase(cycle, phase, options, report, applied, budget, deferAutomaticApply);
+      const skipped = await runPhase(
+        cycle,
+        phase,
+        options,
+        report,
+        applied,
+        budget,
+        deferAutomaticApply,
+        telemetry,
+      );
       report.phases.push({
         phase,
         ran: skipped === null,
@@ -268,13 +300,17 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
         durationMs: Math.round(performance.now() - phaseStarted),
       });
       if (deferAutomaticApply && phaseIndex === lastWritablePlanner) {
-        await decideAndApplyPlannedPhases(cycle, report, applied, budget);
-        await retryDependencyDeferredPhases(cycle, options, report, applied, budget);
+        await decideAndApplyPlannedPhases(cycle, report, applied, budget, telemetry);
+        await retryDependencyDeferredPhases(cycle, options, report, applied, budget, telemetry, (stage) => {
+          modelStage = stage;
+        });
       }
     }
 
     report.durationMs = Math.round(performance.now() - started);
     report.budget = maintenanceBudgetReceipt(budget);
+    report.modelUsage = telemetry.usage();
+    report.degraded = telemetry.degradation();
 
     if (ctx.config.maintenance.logChanges) {
       const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });
@@ -285,7 +321,17 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   } catch (error) {
     report.durationMs = Math.round(performance.now() - started);
     report.budget = maintenanceBudgetReceipt(budget);
-    report.run = failDreamRun(ctx, startedRun, error, report.durationMs, report.phases, report.budget);
+    report.modelUsage = telemetry.usage();
+    report.degraded = telemetry.degradation();
+    report.run = failDreamRun(
+      ctx,
+      startedRun,
+      error,
+      report.durationMs,
+      report.phases,
+      report.budget,
+      report,
+    );
     throw error;
   }
 }
@@ -323,6 +369,7 @@ async function runPhase(
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
   deferAutomaticApply: boolean,
+  telemetry: DreamModelTelemetry,
 ): Promise<string | null> {
   switch (phase) {
     case 'observe': {
@@ -331,9 +378,10 @@ async function runPhase(
         return 'observe policy is off';
       }
       if (!ctx.models.derive.available) {
+        telemetry.degrade('observe', ctx.models.derive.degradedReason({}), 'unavailable');
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await observePhase(ctx, options, report, applied, budget, deferAutomaticApply);
+      await observePhase(ctx, options, report, applied, budget, deferAutomaticApply, telemetry);
       return null;
     }
     case 'reflect': {
@@ -347,9 +395,10 @@ async function runPhase(
         return 'reflect policy is off';
       }
       if (!ctx.models.derive.available) {
+        telemetry.degrade('reflect', ctx.models.derive.degradedReason({}), 'unavailable');
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
-      await reflectPhase(ctx, options, report, applied, budget, deferAutomaticApply);
+      await reflectPhase(ctx, options, report, applied, budget, deferAutomaticApply, telemetry);
       return null;
     }
     case 'curate': {
@@ -366,6 +415,7 @@ async function runPhase(
       const mode = policyMatrix ? highestPolicyMode(Object.values(policies)) : null;
       if (policyMatrix && !mode) return 'all curation policies are off';
       if (!ctx.models.derive.available && !mode) {
+        telemetry.degrade('curate', ctx.models.derive.degradedReason({}), 'unavailable');
         return `no model for the cycle: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`;
       }
       if (mode) {
@@ -406,6 +456,9 @@ async function runPhase(
           }));
           report.repaired = repairResultFromPlan(plan);
         } else {
+          if (!ctx.models.derive.available) {
+            telemetry.degrade('curate', ctx.models.derive.degradedReason({}), 'unavailable');
+          }
           const contradictionResult =
             ctx.config.maintenance.conflicts.resolve && (!policyMatrix || policies.contradiction !== 'off')
               ? await planContradictions(ctx, report.conflicts)
@@ -493,7 +546,7 @@ async function runPhase(
         if (!plan) return null;
         if (mode === 'auto' && !deferAutomaticApply) {
           if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
-            plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+            plan = await decideDreamPlanWithCurator(ctx, plan.id, telemetry);
           }
           if (
             plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))
@@ -543,7 +596,7 @@ async function runPhase(
       }
       if (mode === 'auto' && !deferAutomaticApply) {
         if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
-          plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+          plan = await decideDreamPlanWithCurator(ctx, plan.id, telemetry);
         }
         if (
           plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))
@@ -564,7 +617,7 @@ async function runPhase(
     }
     case 'conflicts': {
       if (!ctx.config.maintenance.conflicts.enabled) return 'disabled in config';
-      await inspectConflicts(ctx, report);
+      await inspectConflicts(ctx, report, telemetry);
       return null;
     }
     case 'repair': {
@@ -578,11 +631,18 @@ async function runPhase(
   }
 }
 
-async function inspectConflicts(ctx: AknoContext, report: DreamReport): Promise<void> {
+async function inspectConflicts(
+  ctx: AknoContext,
+  report: DreamReport,
+  telemetry: DreamModelTelemetry,
+): Promise<void> {
   const candidates = findCrossPageConflicts(ctx, ctx.config.maintenance.conflicts.maxPairs);
   if (!ctx.config.maintenance.conflicts.verify) {
     report.conflicts = candidates;
     return;
+  }
+  if (candidates.length > 0 && !ctx.models.derive.available) {
+    telemetry.degrade('conflicts', ctx.models.derive.degradedReason({}), 'unavailable');
   }
   const verified = await verifyConflicts(ctx, candidates);
   report.conflicts = verified.conflicts;
@@ -686,11 +746,29 @@ function recordMaintenancePlan(report: DreamReport, plan: MaintenancePlan): void
  * later planner in the same invocation. Single-phase commands deliberately keep their immediate
  * decide/apply behavior.
  */
+async function decideDreamPlanWithCurator(
+  ctx: AknoContext,
+  planId: string,
+  telemetry: DreamModelTelemetry,
+): Promise<MaintenancePlan> {
+  const curatorContext: AknoContext = {
+    ...ctx,
+    models: {
+      ...ctx.models,
+      derive: ctx.models.derive.withOutcomeObserver((observation) =>
+        telemetry.observe('curator', observation),
+      ),
+    },
+  };
+  return decideMaintenancePlanWithCurator(curatorContext, planId);
+}
+
 async function decideAndApplyPlannedPhases(
   ctx: AknoContext,
   report: DreamReport,
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
+  telemetry: DreamModelTelemetry,
 ): Promise<void> {
   const planIds = report.maintenancePlans.map((plan) => plan.id);
   const pagePaths = new Map(
@@ -714,7 +792,7 @@ async function decideAndApplyPlannedPhases(
     let plan = getMaintenancePlan(ctx, planId);
     if (plan.mode === 'auto') {
       if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
-        plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+        plan = await decideDreamPlanWithCurator(ctx, plan.id, telemetry);
       }
     }
   }
@@ -760,6 +838,8 @@ async function retryDependencyDeferredPhases(
   report: DreamReport,
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
+  telemetry: DreamModelTelemetry,
+  setModelStage: (stage: DreamModelStage) => void,
 ): Promise<void> {
   const deferred = report.maintenancePlans.filter(
     (plan) =>
@@ -793,9 +873,10 @@ async function retryDependencyDeferredPhases(
   }
   for (const phase of DREAM_PHASES) {
     if (!retryPhases.has(phase)) continue;
-    await runPhase(ctx, phase, options, retryReport, applied, budget, true);
+    setModelStage(phase);
+    await runPhase(ctx, phase, options, retryReport, applied, budget, true, telemetry);
   }
-  await decideAndApplyPlannedPhases(ctx, retryReport, applied, budget);
+  await decideAndApplyPlannedPhases(ctx, retryReport, applied, budget, telemetry);
   mergeRetryReport(report, retryReport);
 }
 
@@ -971,6 +1052,7 @@ async function observePhase(
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
   deferAutomaticApply: boolean,
+  telemetry: DreamModelTelemetry,
 ): Promise<void> {
   if (options.dryRun) {
     await previewObservePhase(ctx, report);
@@ -1003,7 +1085,7 @@ async function observePhase(
 
   if (observePolicy === 'auto' && !deferAutomaticApply) {
     if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
-      plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+      plan = await decideDreamPlanWithCurator(ctx, plan.id, telemetry);
     }
     if (plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
       const result = await applyMaintenancePlan(ctx, plan.id, budget);
@@ -1450,6 +1532,7 @@ async function reflectPhase(
   applied: AppliedChange[],
   budget: MaintenanceBudgetTracker,
   deferAutomaticApply: boolean,
+  telemetry: DreamModelTelemetry,
 ): Promise<void> {
   if (options.dryRun) {
     await previewReflectPhase(ctx, report);
@@ -1482,7 +1565,7 @@ async function reflectPhase(
 
   if (reflectPolicy === 'auto' && !deferAutomaticApply) {
     if (plan.items.some((item) => item.status === 'proposed' && item.policy === 'auto')) {
-      plan = await decideMaintenancePlanWithCurator(ctx, plan.id);
+      plan = await decideDreamPlanWithCurator(ctx, plan.id, telemetry);
     }
     if (plan.items.some((item) => ['approved', 'applying', 'verification_pending'].includes(item.status))) {
       const result = await applyMaintenancePlan(ctx, plan.id, budget);

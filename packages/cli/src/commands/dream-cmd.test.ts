@@ -139,6 +139,41 @@ describe('dream wait progress', () => {
 });
 
 function privateReport(): DreamReport {
+  const modelUsage: DreamReport['modelUsage'] = {
+    modelId: 'zephyr-model',
+    calls: 2,
+    successfulCalls: 2,
+    failedCalls: 0,
+    usageReportedCalls: 2,
+    inputTokens: 222,
+    outputTokens: 44,
+    totalTokens: 266,
+    latencyMs: 111,
+    stages: [
+      {
+        stage: 'curate',
+        calls: 1,
+        successfulCalls: 1,
+        failedCalls: 0,
+        usageReportedCalls: 1,
+        inputTokens: 111,
+        outputTokens: 22,
+        totalTokens: 133,
+        latencyMs: 55,
+      },
+      {
+        stage: 'curator',
+        calls: 1,
+        successfulCalls: 1,
+        failedCalls: 0,
+        usageReportedCalls: 1,
+        inputTokens: 111,
+        outputTokens: 22,
+        totalTokens: 133,
+        latencyMs: 56,
+      },
+    ],
+  };
   return {
     run: {
       id: 'run_example',
@@ -175,6 +210,8 @@ function privateReport(): DreamReport {
         used: { items: 1, filesChanged: 1, bytesWritten: 111, highRiskItems: 1 },
         deferredItems: 0,
       },
+      modelUsage,
+      degraded: [],
       durationMs: 111,
       maintenancePlanIds: ['pln_example'],
       maintenancePlanId: 'pln_example',
@@ -282,6 +319,8 @@ function privateReport(): DreamReport {
       used: { items: 1, filesChanged: 1, bytesWritten: 111, highRiskItems: 1 },
       deferredItems: 0,
     },
+    modelUsage,
+    degraded: [],
     warnings: ['people/ada-marlow: private warning'],
     durationMs: 111,
     logPath: '/private/state/dream.jsonl',

@@ -106,7 +106,12 @@ async function startStubChat(): Promise<StubServer> {
                 : scripted;
 
       response.writeHead(200, { 'content-type': 'application/json' });
-      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(answer) } }] }));
+      response.end(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify(answer) } }],
+          usage: { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
+        }),
+      );
     });
   });
 
@@ -2058,6 +2063,29 @@ describe('the cycle', () => {
     expect(mem.maintenanceStatus({ runId: first.run.id }).runs).toEqual([first.run]);
   });
 
+  it('persists exact provider-reported model usage by stage', async () => {
+    await mem.close();
+    mem = await openMem({ maintenance: { conflicts: { enabled: false } } });
+    server.reply({ observations: [] });
+
+    const report = await mem.dream({ phase: 'observe', mode: 'audit' });
+
+    expect(report.modelUsage).toMatchObject({
+      modelId: 'stub-derive',
+      calls: 1,
+      successfulCalls: 1,
+      failedCalls: 0,
+      usageReportedCalls: 1,
+      inputTokens: 111,
+      outputTokens: 22,
+      totalTokens: 133,
+      stages: [{ stage: 'observe', calls: 1, totalTokens: 133 }],
+    });
+    expect(report.degraded).toEqual([]);
+    expect(report.run.modelUsage).toEqual(report.modelUsage);
+    expect(mem.maintenanceStatus({ runId: report.run.id }).runs[0]?.modelUsage).toEqual(report.modelUsage);
+  });
+
   it('runs every enabled phase, and says why the others did not', async () => {
     server.reply({ observations: [] });
     const report = await mem.dream({});
@@ -2080,6 +2108,13 @@ describe('the cycle', () => {
     const observe = report.phases.find((phase) => phase.phase === 'observe');
     expect(observe?.ran).toBe(false);
     expect(observe?.skipped).toMatch(/no model for the cycle/);
+    expect(report.degraded).toContainEqual({
+      stage: 'observe',
+      reason: 'no_derive_model',
+      failure: 'unavailable',
+      occurrences: 1,
+    });
+    expect(report.run.degraded).toEqual(report.degraded);
     // The phases that need no model still run: degrade, never fail.
     expect(report.phases.find((phase) => phase.phase === 'housekeeping')?.ran).toBe(true);
   });
@@ -2516,6 +2551,8 @@ describe('the run log', () => {
     expect(record.changeIds).toEqual([report.changeId]);
     expect(record.rejected.map((entry: { reason: string }) => entry.reason)).toContain('hedged language');
     expect(record.dryRun).toBe(false);
+    expect(record.modelUsage).toEqual(report.modelUsage);
+    expect(record.degraded).toEqual(report.degraded);
 
     // A second run appends rather than replacing: the point is the history.
     await mem.dream({ phase: 'observe' });

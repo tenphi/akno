@@ -743,6 +743,12 @@ akno dream status --pending          # every nonterminal plan still needing work
 The status views never include page bodies, prompts, paths, source excerpts, or provider responses. `--run`
 shows the receipt tied to one invocation; `--last` is bounded to 100 receipts; and `--pending` separates plans
 that can still be decided, retried, applied, or verified from completed history. All three support `--json`.
+Each new run receipt also records the maintenance model id, logical call counts, succeeded/failed calls, summed
+provider-reported input/output/total tokens, usage-report coverage, model latency, and a planner/curator stage
+breakdown. If an endpoint omits usage, status says so instead of treating the call as zero tokens. Needed but
+unavailable capabilities and failed model calls are durable typed degradation such as `no_derive_model` or
+`derive_failed`, with an `unavailable`, `timeout`, `request_failed`, or `bad_response` subtype; prompts,
+responses, and provider errors are excluded.
 
 All three modes seal the same exact operations and each item retains its effective transformation policy.
 Apply refuses changed inputs, journals each item separately,
