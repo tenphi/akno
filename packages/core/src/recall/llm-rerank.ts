@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ReasoningEffort } from '../config/schema.ts';
-import type { ModelClient, ModelOutcome } from '../models/client.ts';
+import type { ModelClient, ModelOutcome, ModelUsage } from '../models/client.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import type { RecallMatchArm } from '@tenphi/akno-protocol';
 
@@ -101,6 +101,7 @@ export async function rerankWithLlm(
   const messages = llmRerankMessages(query, candidates);
   const schema = llmRerankSchema(candidates);
   let latencyMs = 0;
+  let usage: ModelUsage | undefined;
   for (let attempt = 0; attempt < 2; attempt++) {
     const response = await model.chat(messages, {
       schema,
@@ -109,11 +110,14 @@ export async function rerankWithLlm(
       maxTokens: llmRerankTokenBudget(candidates.length, model.reasoningEffort),
     });
     latencyMs += response.latencyMs;
+    usage = combineUsage(usage, response.usage);
     // A retry cannot repair transport, configuration, or output-budget failure. Only a complete
     // JSON response that violates the permutation contract gets one more independent attempt.
-    if (!response.ok || response.value === null) return { ...response, value: null, latencyMs };
+    if (!response.ok || response.value === null) {
+      return { ...response, value: null, latencyMs, ...(usage ? { usage } : {}) };
+    }
 
-    const validation = validateRanking(response.value, candidates, latencyMs);
+    const validation = validateRanking(response.value, candidates, latencyMs, usage);
     if (validation.outcome.ok || !validation.retryable || attempt === 1) return validation.outcome;
   }
   return badResponse(latencyMs, 'LLM reranker exhausted semantic validation attempts');
@@ -123,16 +127,20 @@ function validateRanking(
   value: string,
   candidates: LlmRerankCandidate[],
   latencyMs: number,
+  usage?: ModelUsage,
 ): { outcome: ModelOutcome<LlmRerankEntry[]>; retryable: boolean } {
   const parsed = LLM_RERANK_SCHEMA.safeParse(parseJsonLoose<unknown>(value));
   if (!parsed.success) {
-    return { outcome: badResponse(latencyMs, 'LLM reranker returned invalid JSON'), retryable: false };
+    return {
+      outcome: badResponse(latencyMs, 'LLM reranker returned invalid JSON', usage),
+      retryable: false,
+    };
   }
 
   const expected = new Map(candidates.map((candidate, index) => [candidate.id, index]));
   if (parsed.data.order.length !== candidates.length) {
     return {
-      outcome: badResponse(latencyMs, 'LLM reranker did not return every candidate'),
+      outcome: badResponse(latencyMs, 'LLM reranker did not return every candidate', usage),
       retryable: true,
     };
   }
@@ -141,11 +149,14 @@ function validateRanking(
   for (const entry of parsed.data.order) {
     const index = expected.get(entry.id);
     if (index === undefined) {
-      return { outcome: badResponse(latencyMs, 'LLM reranker invented a candidate id'), retryable: true };
+      return {
+        outcome: badResponse(latencyMs, 'LLM reranker invented a candidate id', usage),
+        retryable: true,
+      };
     }
     if (seen.has(entry.id)) {
       return {
-        outcome: badResponse(latencyMs, 'LLM reranker returned a duplicate candidate id'),
+        outcome: badResponse(latencyMs, 'LLM reranker returned a duplicate candidate id', usage),
         retryable: true,
       };
     }
@@ -157,9 +168,23 @@ function validateRanking(
   // themselves about whether ordering or grading is authoritative. Grades drive qualification, so make
   // them authoritative for the coarse order as well; stable sorting preserves model order within a grade.
   ranked.sort((a, b) => b.relevance - a.relevance);
-  return { outcome: { ok: true, value: ranked, latencyMs }, retryable: false };
+  return { outcome: { ok: true, value: ranked, latencyMs, ...(usage ? { usage } : {}) }, retryable: false };
 }
 
-function badResponse(latencyMs: number, error: string): ModelOutcome<LlmRerankEntry[]> {
-  return { ok: false, value: null, reason: 'bad_response', error, latencyMs };
+function badResponse(latencyMs: number, error: string, usage?: ModelUsage): ModelOutcome<LlmRerankEntry[]> {
+  return { ok: false, value: null, reason: 'bad_response', error, latencyMs, ...(usage ? { usage } : {}) };
+}
+
+function combineUsage(left: ModelUsage | undefined, right: ModelUsage | undefined): ModelUsage | undefined {
+  if (!left) return right;
+  if (!right) return left;
+  return {
+    inputTokens: addTokenCounts(left.inputTokens, right.inputTokens),
+    outputTokens: addTokenCounts(left.outputTokens, right.outputTokens),
+    totalTokens: addTokenCounts(left.totalTokens, right.totalTokens),
+  };
+}
+
+function addTokenCounts(left: number | null, right: number | null): number | null {
+  return left === null && right === null ? null : (left ?? 0) + (right ?? 0);
 }

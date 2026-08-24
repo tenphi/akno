@@ -330,6 +330,12 @@ export type ResultEnvelope = z.infer<typeof ResultEnvelope>;
 /** What the reranker was allowed to remove, kept visible so fewer results never looks accidental. */
 export const RecallQualification = z.object({
   model: z.enum(['llm', 'native']),
+  /** Content-free runtime identity and cost receipt for the qualification request. */
+  model_id: z.string().optional(),
+  latency_ms: z.number().nonnegative().optional(),
+  input_tokens: z.number().int().nonnegative().nullable().optional(),
+  output_tokens: z.number().int().nonnegative().nullable().optional(),
+  total_tokens: z.number().int().nonnegative().nullable().optional(),
   applied: z.boolean(),
   judged: z.number().int().nonnegative(),
   rejected: z.number().int().nonnegative(),

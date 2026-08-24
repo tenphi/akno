@@ -390,6 +390,11 @@ export async function rerankHits(
       });
     return finishRerank(hits, candidates.length, reordered, {
       model: 'llm',
+      model_id: reranker.modelId ?? undefined,
+      latency_ms: result.latencyMs,
+      input_tokens: result.usage?.inputTokens ?? null,
+      output_tokens: result.usage?.outputTokens ?? null,
+      total_tokens: result.usage?.totalTokens ?? null,
       applied: excludeIrrelevant,
       judged: candidates.length,
       rejected,
@@ -437,6 +442,8 @@ export async function rerankHits(
         reordered,
         {
           model: 'native',
+          model_id: reranker.modelId ?? undefined,
+          latency_ms: result.latencyMs,
           applied: false,
           judged: candidates.length,
           rejected: 0,
@@ -475,6 +482,8 @@ export async function rerankHits(
 
   return finishRerank(hits, candidates.length, reordered, {
     model: 'native',
+    model_id: reranker.modelId ?? undefined,
+    latency_ms: result.latencyMs,
     applied: excludeIrrelevant,
     judged: candidates.length,
     rejected: excludeIrrelevant ? judged.length - reordered.length : 0,

@@ -907,6 +907,31 @@ guards—not generated wording. The artifact also carries the frozen corpus SHA-
 corpus edit that did not update its versioned fingerprint. A stored held-out artifact clears the technical
 release gates; independent corpus review remains a deliberately external requirement.
 
+`akno bench auto-recall` runs the precision-first host context profile against a separate disposable invented
+knowledge base. Fourteen development cases cover exact identity plus requested attributes, semantic support,
+local-reference resolution, topically related but unsupported pages, missing attributes, instruction-bearing
+negatives and relevant evidence, filtered empty results, conversation that must not affect a prompt without a
+reference, ambiguous singular references, hard budgets, current versus superseded pages, and orphan documents.
+The default command is the tuning split; the frozen twelve-case held-out split is selected explicitly:
+
+```bash
+akno bench auto-recall --split development --concurrency 2
+akno bench auto-recall --split test --runs 5 --concurrency 2 \
+  --output benchmarks/auto-recall/results/test.json
+```
+
+The gate requires perfect activation and source precision/recall, zero irrelevant injection, exact locators,
+summary-free evidence isolation, conversation privacy, hard-budget compliance, no degradation, stable repeated
+decisions, and p95 at or below 10 seconds. It also caps qualifier activation at 75%, so a correct profile that
+reranks every turn still fails its latency design. Qualification receipts report model identity, latency, and
+real provider token counts when supplied; native rerank endpoints correctly report token use as unavailable.
+Artifacts contain only invented ids and content-free decisions/metrics. They contain no prompt, recent turn,
+evidence, slug, path, endpoint, credential, provider error, or configured knowledge-base content.
+
+The frozen local-stack result passes all technical gates over five runs and 60 executions: perfect activation
+and source precision/recall, zero irrelevant injection, 41.7% qualifier activation, 100% decision stability,
+and 361 ms p95. Independent corpus review remains the only release blocker.
+
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
 knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level
 60/20 development/test split that preserves all eight categories on both sides. A normal run selects the first

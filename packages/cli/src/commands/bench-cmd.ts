@@ -4,10 +4,12 @@ import path from 'node:path';
 import {
   attachRankingEndToEndEvidence,
   markAnswerBenchPersisted,
+  markAutoRecallBenchPersisted,
   markRankingMatrixPersisted,
   open,
   refreshRankingMatrixReport,
   runAnswerBench,
+  runAutoRecallBench,
   runEntityResolutionBench,
   runGraphBench,
   runBench,
@@ -18,6 +20,7 @@ import {
   runRankingMatrix,
   type Akno,
   type AnswerBenchReport,
+  type AutoRecallBenchReport,
   type EntityResolutionBenchReport,
   type GraphBenchReport,
   type MixedRetrievalBenchReport,
@@ -55,6 +58,9 @@ const BENCH_HELP = `akno bench [options]
   answer              Run the invented answer corpus through production retrieval,
                       generation, and support verification. Development is default;
                       use --split test --runs 5 for the frozen held-out gate.
+  auto-recall         Run invented prompts through the production precision-first
+                      context profile. Development is default; use --split test
+                      --runs 5 for the frozen held-out injection gate.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
@@ -76,9 +82,9 @@ const BENCH_HELP = `akno bench [options]
                       end-to-end evidence to that matrix artifact.
     --output <path>   Atomically persist the content-safe result artifact.
     --provider <name> Configured provider. Ranking defaults to openai; answer
-                      uses its configured role.
+                      uses its configured role; auto-recall uses reranker.
     --model <id>      Generative model. Ranking defaults to gpt-5.6-luna;
-                      answer uses its configured role.
+                      answer uses its configured role; auto-recall uses reranker.
     --embedding-provider <name>
                       Embedding provider for end-to-end ranking or answer recall.
     --embedding-model <id>
@@ -210,6 +216,76 @@ export async function benchCommand(argv: string[]): Promise<number> {
     }
     if (values.json) json(report);
     else renderAnswerBench(report, artifactPath);
+    return report.passed ? 0 : 1;
+  }
+
+  if (positionals[0] === 'auto-recall') {
+    if (positionals.length > 1) {
+      fail(`unknown auto-recall bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    if (
+      values['retrieval-only'] ||
+      values.write ||
+      values.probe ||
+      values.matrix ||
+      values['skip-native'] ||
+      values.track ||
+      values['matrix-artifact'] ||
+      values.system ||
+      values.candidates ||
+      values['excerpt-chars'] ||
+      values.iterations ||
+      (values.split && !['development', 'test'].includes(values.split))
+    ) {
+      fail(
+        'auto-recall bench accepts development/test split, runs, provider/model, embedding, reasoning, concurrency, output, and json options',
+      );
+      return 2;
+    }
+    const reasoning = values.reasoning ? parseReasoningEffort(values.reasoning) : undefined;
+    if (values.reasoning && !reasoning) {
+      fail(`invalid reasoning effort: ${values.reasoning}`);
+      return 2;
+    }
+    const split = (values.split ?? 'development') as 'development' | 'test';
+    const runs = parseBoundedInteger(values.runs ?? (split === 'test' ? '5' : '1'), 1, 10, 'runs');
+    const concurrency = parseBoundedInteger(values.concurrency ?? '2', 1, 8, 'concurrency');
+    const { loadConfig } = await import('@tenphi/akno-core');
+    const config = loadConfig(openOptionsFrom(values));
+    const embeddingDimensions = parseBoundedInteger(
+      values['embedding-dimensions'] ?? String(config.models.embedding.dimensions ?? 1_536),
+      1,
+      65_536,
+      'embedding dimensions',
+    );
+    if (runs === null || concurrency === null || embeddingDimensions === null) return 2;
+    let report = await runAutoRecallBench(config, {
+      split,
+      runs,
+      concurrency,
+      ...(values['embedding-provider'] ? { embeddingProvider: values['embedding-provider'] } : {}),
+      ...(values['embedding-model'] ? { embeddingModel: values['embedding-model'] } : {}),
+      embeddingDimensions,
+      ...(values.provider ? { provider: values.provider } : {}),
+      ...(values.model ? { model: values.model } : {}),
+      ...(reasoning ? { reasoningEffort: reasoning } : {}),
+      ...(!values.json
+        ? {
+            onProgress: ({ run, runs: totalRuns, done, total }) => {
+              if (done === 1 || done === total)
+                line(`  auto-recall run ${run}/${totalRuns}  ${done}/${total} cases`);
+            },
+          }
+        : {}),
+    });
+    let artifactPath: string | null = null;
+    if (values.output) {
+      report = markAutoRecallBenchPersisted(report);
+      artifactPath = await writeJsonArtifact(values.output, report);
+    }
+    if (values.json) json(report);
+    else renderAutoRecallBench(report, artifactPath);
     return report.passed ? 0 : 1;
   }
 
@@ -779,6 +855,70 @@ function renderAnswerBench(report: AnswerBenchReport, artifactPath: string | nul
   if (report.blockers.length > 0) line(`  blockers               ${report.blockers.join(', ')}`);
   line(
     `\n${report.passed ? style.green(`${report.split} quality gate passed`) : style.red(`${report.split} quality gate failed`)}`,
+  );
+  line(
+    report.releaseEligible
+      ? style.green('Stored held-out evidence satisfies every release gate.')
+      : style.grey(`Release remains blocked by: ${report.releaseBlockers.join(', ')}.`),
+  );
+}
+
+function renderAutoRecallBench(report: AutoRecallBenchReport, artifactPath: string | null): void {
+  heading(
+    `Auto-recall — ${report.split}, ${report.corpus.cases} cases across ` +
+      `${report.corpus.categories} categories, ${report.stability.requestedRuns} run(s)`,
+  );
+  line(`  qualifier               ${report.qualifier.provider}/${report.qualifier.model}`);
+  line(`  mode / reasoning        ${report.qualifier.mode}/${report.qualifier.reasoningEffort ?? 'default'}`);
+  line(`  embedding               ${report.embedding.provider}/${report.embedding.model}`);
+  line(`  execution               ${percent(report.metrics.executionRate)}`);
+  line(
+    `  activation precision   ${percent(report.metrics.activationPrecision)} / recall ${percent(report.metrics.activationRecall)}`,
+  );
+  line(`  activation accuracy    ${percent(report.metrics.activationAccuracy)}`);
+  line(
+    `  source precision       ${percent(report.metrics.sourcePrecision)} / recall ${percent(report.metrics.sourceRecall)}`,
+  );
+  line(`  irrelevant injection   ${percent(report.metrics.irrelevantInjectionRate)}`);
+  line(`  qualification policy   ${percent(report.metrics.qualificationAccuracy)}`);
+  line(`  exact locators          ${percent(report.metrics.locatorAccuracy)}`);
+  line(`  evidence isolation      ${percent(report.metrics.evidenceIsolation)}`);
+  line(`  hard-budget compliance  ${percent(report.metrics.budgetCompliance)}`);
+  line(`  degraded rate           ${percent(report.metrics.degradedRate)}`);
+  line(
+    `  qualifier activation   ${percent(report.execution.qualificationRate)} ` +
+      style.grey(`(gate ≤ ${percent(report.thresholds.maximumQualificationRate)})`),
+  );
+  line(
+    `  latency p50 / p95      ${Math.round(report.execution.p50LatencyMs)}ms / ` +
+      `${Math.round(report.execution.p95LatencyMs)}ms ` +
+      style.grey(`(gate ≤ ${report.thresholds.p95LatencyMs}ms)`),
+  );
+  line(
+    `  provider usage         ${report.execution.providerTotalTokens} tokens across ` +
+      `${report.execution.usageReportedCalls}/${report.execution.qualificationCalls} reported calls`,
+  );
+  line(
+    `  case stability         ${
+      report.stability.stableCaseRate === null ? 'n/a (one run)' : percent(report.stability.stableCaseRate)
+    }`,
+  );
+  line(`  minimum run pass rate  ${percent(report.stability.minimumRunPassRate)}`);
+  for (const benchCase of report.cases) {
+    const verdict = benchCase.passed ? style.green('pass') : style.red('FAIL');
+    const outcome = benchCase.activated ? `activated/${benchCase.activationBasis}` : 'empty';
+    line(
+      `  ${benchCase.id.padEnd(40)} ${verdict}  ` +
+        style.grey(`${outcome}; ${benchCase.selectedCount} selected; q=${benchCase.qualificationRun}`),
+    );
+  }
+  if (report.stability.flakyCaseIds.length > 0) {
+    line(`  flaky cases             ${report.stability.flakyCaseIds.join(', ')}`);
+  }
+  if (artifactPath) line(`  artifact                ${artifactPath}`);
+  if (report.blockers.length > 0) line(`  blockers                ${report.blockers.join(', ')}`);
+  line(
+    `\n${report.passed ? style.green(`${report.split} injection gate passed`) : style.red(`${report.split} injection gate failed`)}`,
   );
   line(
     report.releaseEligible

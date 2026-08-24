@@ -459,6 +459,17 @@ describe('context', () => {
     expect(result.results).toEqual([]);
   });
 
+  it('does not treat an exact identity as evidence for an absent attribute', async () => {
+    const result = await mem.context({
+      profile: 'auto_recall',
+      query: 'What is Ada Marlow phone number?',
+      budget: 240,
+    });
+
+    expect(result.activation).toMatchObject({ activated: false, qualification_run: true });
+    expect(result.results).toEqual([]);
+  });
+
   it('treats the auto-recall budget as a hard evidence ceiling', async () => {
     const result = await mem.context({
       profile: 'auto_recall',

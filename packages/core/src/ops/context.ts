@@ -170,6 +170,13 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   };
 }
 
+export const AUTO_RECALL_POLICY_VERSION = 'auto-recall-v1';
+export const AUTO_RECALL_SEMANTIC_THRESHOLD = 0.9;
+// Auto-injection needs a substantially stronger boundary than explicit recall. On the invented development
+// corpus, calibrated native scores for topical-but-non-answering pages reached 0.9728 while direct support
+// reached 0.9999. Freezing 0.99 keeps that measured separation; the held-out gate checks it independently.
+export const AUTO_RECALL_NATIVE_QUALIFICATION_THRESHOLD = 0.99;
+const AUTO_RECALL_DUAL_ARM_THRESHOLD = 0.85;
 const AUTO_RECALL_DEFAULT_BUDGET = 1200;
 const AUTO_RECALL_CANDIDATE_LIMIT = 8;
 const AUTO_RECALL_CANDIDATE_BUDGET = 6000;
@@ -214,12 +221,20 @@ async function autoRecallContext(
 
   const degraded = new Set(initial.degraded ?? []);
   const signals = initial.results.map((result) => activationSignal(result, input.query, resolutionContext));
-  const deterministic = signals
+  const strongSignals = signals
     .filter((signal) => signal.strong)
-    .sort((left, right) => right.strength - left.strength)
-    .slice(0, AUTO_RECALL_MAX_RESULTS);
+    .sort((left, right) => right.strength - left.strength);
+  // An exact marker, identity plus supported attribute, or exact phrase is stronger than a nearby
+  // semantic duplicate. Once one exists, adding semantic neighbours only increases disclosure.
+  const deterministic = (
+    strongSignals.some((signal) => signal.basis === 'exact')
+      ? strongSignals.filter((signal) => signal.basis === 'exact')
+      : strongSignals
+  ).slice(0, AUTO_RECALL_MAX_RESULTS);
+  const ambiguousSingularReference =
+    Boolean(resolutionContext) && hasSingularReference(input.query) && deterministic.length > 1;
 
-  if (deterministic.length > 0) {
+  if (deterministic.length > 0 && !ambiguousSingularReference) {
     return assembledAutoRecall({
       budget,
       searched: [input.query],
@@ -259,14 +274,17 @@ async function autoRecallContext(
   }
 
   const qualificationApplied = qualified.qualification?.applied === true;
-  const minimumRelevance = qualified.qualification?.model === 'llm' ? 2 / 3 : 0.5;
+  const minimumRelevance =
+    qualified.qualification?.model === 'llm' ? 2 / 3 : AUTO_RECALL_NATIVE_QUALIFICATION_THRESHOLD;
   const selected = qualificationApplied
     ? qualified.results
         .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
         .slice(0, AUTO_RECALL_MAX_RESULTS)
     : [];
+  const qualifiedReferenceAmbiguous =
+    Boolean(resolutionContext) && hasSingularReference(input.query) && selected.length > 1;
 
-  if (selected.length === 0) {
+  if (selected.length === 0 || qualifiedReferenceAmbiguous) {
     return emptyAutoRecall({
       status: degraded.size > 0 ? 'degraded' : 'empty',
       budget,
@@ -275,9 +293,11 @@ async function autoRecallContext(
       degraded: [...degraded],
       qualification: qualified.qualification,
       qualificationRun: true,
-      note: qualificationApplied
-        ? 'qualification found no evidence strong enough for automatic injection'
-        : 'automatic injection requires calibrated qualification for ambiguous evidence',
+      note: qualifiedReferenceAmbiguous
+        ? 'recent context left a singular reference ambiguous between multiple sources'
+        : qualificationApplied
+          ? 'qualification found no evidence strong enough for automatic injection'
+          : 'automatic injection requires calibrated qualification for ambiguous evidence',
     });
   }
 
@@ -402,11 +422,18 @@ function activationSignal(
             .replaceAll('-', ' ') ?? '',
         ];
   const promptHaystack = normalize(`${query} ${resolutionContext ?? ''}`);
-  const exactIdentity = identities.some((identity) => {
+  const matchedIdentityTokens = identities.flatMap((identity) => {
     const normalized = normalize(identity);
-    return meaningfulTokens(identity).length >= 2 && promptHaystack.includes(normalized);
+    const tokens = meaningfulTokens(identity);
+    return tokens.length >= 2 && promptHaystack.includes(normalized) ? [tokens] : [];
   });
-  const exactEvidence = queryTokens.length >= 2 && overlap >= 0.75;
+  const identityResidual = matchedIdentityTokens
+    .map((identityTokens) => queryTokens.filter((token) => !identityTokens.includes(token)))
+    .sort((left, right) => left.length - right.length)[0];
+  const identityRelationSupported =
+    identityResidual !== undefined &&
+    (identityResidual.length === 0 || overlapRatio(identityResidual, evidence) === 1);
+  const exactEvidence = queryTokens.length >= 2 && overlap === 1;
   const resolvedIdentity =
     Boolean(resolutionContext) &&
     identities.some((identity) => {
@@ -416,13 +443,16 @@ function activationSignal(
       );
     });
   const semantic = result.relevance ?? 0;
-  const strongSemantic = semantic >= 0.82 && overlap > 0;
+  const semanticRelationSupported = identityResidual === undefined || identityRelationSupported;
+  const strongSemantic =
+    semantic >= AUTO_RECALL_SEMANTIC_THRESHOLD && overlap >= 0.5 && semanticRelationSupported;
   const dualArmSemantic =
-    semantic >= 0.72 &&
+    semantic >= AUTO_RECALL_DUAL_ARM_THRESHOLD &&
     overlap >= 0.5 &&
+    semanticRelationSupported &&
     result.matched_by?.includes('lexical') === true &&
     result.matched_by.includes('vector');
-  const exact = exactIdentity || exactEvidence || (resolvedIdentity && overlap > 0);
+  const exact = identityRelationSupported || exactEvidence || (resolvedIdentity && overlap > 0);
   const strong = exact || strongSemantic || dualArmSemantic;
   const plausible = strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45;
   return {
@@ -457,6 +487,10 @@ function hasLocalReference(query: string): boolean {
   );
 }
 
+function hasSingularReference(query: string): boolean {
+  return /\b(it|its|that|this|one|other|former|latter|same)\b/i.test(query);
+}
+
 const AUTO_RECALL_STOPWORDS = new Set([
   'about',
   'again',
@@ -473,6 +507,7 @@ const AUTO_RECALL_STOPWORDS = new Set([
   'into',
   'its',
   'memory',
+  'under',
   'please',
   'remember',
   'tell',

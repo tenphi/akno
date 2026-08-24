@@ -486,6 +486,13 @@ is sent through the configured qualifier, and candidates that are irrelevant or 
 boundary are omitted. `empty` is therefore a normal “inject nothing” result. `degraded` means a retrieval or
 qualification capability was missing or failed, and `unavailable` means evidence could not be read.
 
+Exact evidence wins exclusively over semantic neighbours: once any exact candidate exists, a semantically close
+duplicate cannot ride beside it. An exact page identity is sufficient by itself only for an identity-only prompt;
+when the prompt asks for an attribute, that attribute must also occur in the evidence. The development corpus
+freezes direct semantic activation at 0.9. Native qualification uses a stricter 0.99 calibrated relevance floor
+for automatic injection—the ordinary 0.5 recall boundary is appropriate for explicit discovery, but measured
+topical hard negatives reached 0.9728 and are not safe to insert before a host model can object.
+
 Recent turns are accepted only to resolve local expressions such as “it” or “the other one”: at most six turns
 and 6,000 characters pass validation, only the last two turns and 1,000 characters can affect retrieval, and the
 current prompt still has to match the selected evidence. The response's `searched` receipt contains only the
@@ -1693,6 +1700,8 @@ akno bench graph
 akno bench entities --provider openai --model gpt-5.6-luna --reasoning none
 akno bench answer --concurrency 2
 akno bench answer --split test --runs 5 --output benchmarks/answer/held-out.json
+akno bench auto-recall --concurrency 2
+akno bench auto-recall --split test --runs 5 --output benchmarks/auto-recall/held-out.json
 ```
 
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
@@ -1736,6 +1745,20 @@ per-run pass rate, the mixed-retrieval regression gate, and aggregate p95 no hig
 stored test artifact also records the corpus SHA-256; execution refuses an edit that did not update the
 versioned frozen fingerprint. It clears every technical blocker, but the corpus remains ineligible for release
 until it receives independent review.
+
+`bench auto-recall` separately exercises the production host-injection profile. Its fourteen-case development
+corpus measures exact and semantic activation, requested-attribute support, local and ambiguous references,
+irrelevant disqualification, instruction-bearing evidence, empty and tiny-budget outcomes, temporal selection,
+and orphan-document evidence. The frozen held-out corpus has disjoint source ids, paths, bodies, complete request
+inputs, markers, and values, plus a versioned SHA-256 that execution verifies before any case runs.
+
+Every returned excerpt must match its invented source locator, contain no generated summary or ambient
+pin/timeline/structure, fit the hard budget, and avoid echoing reference-resolving conversation into `searched`.
+Every activation and required source must be correct, irrelevant injection and degradation must be zero,
+qualifier activation must stay at or below 75%, repeated decisions must be completely stable, and aggregate p95
+must remain at or below 10 seconds. The report includes qualifier identity, measured latency, and actual provider
+token usage when reported. The stored five-run local native result passed all technical gates over 60 executions
+with 41.7% qualifier activation and 361 ms p95; independent corpus review remains its only release blocker.
 
 ### Recovery guarantees
 

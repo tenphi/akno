@@ -156,6 +156,7 @@ describe('rerankHits', () => {
             order: entries.map((entry) => ({ id: entry.candidate_id, grade: entry.relevance })),
           }),
           latencyMs: 1,
+          usage: { inputTokens: 111, outputTokens: 22, totalTokens: 133 },
         };
       },
     } as unknown as Partial<ModelClient>);
@@ -224,8 +225,13 @@ describe('rerankHits', () => {
     ]);
     const result = await rerankHits(store, model, 'Zephyr warranty', hits, 3, 800, 0, true);
     expect(result.hits.map((hit) => hit.chunkId)).toEqual([1, 2]);
-    expect(result.qualification).toEqual({
+    expect(result.qualification).toMatchObject({
       model: 'llm',
+      model_id: 'fake',
+      latency_ms: 1,
+      input_tokens: 111,
+      output_tokens: 22,
+      total_tokens: 133,
       applied: true,
       judged: 3,
       rejected: 1,
