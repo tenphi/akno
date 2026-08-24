@@ -884,6 +884,9 @@ an orphan document, graph-assisted evidence, and complete empty recall:
 ```bash
 akno bench answer --concurrency 2 \
   --output benchmarks/answer/results/development-openai-luna.json
+
+akno bench answer --split test --runs 5 --concurrency 2 \
+  --output benchmarks/answer/results/held-out-openai-luna.json
 ```
 
 The development gate requires every expected outcome and fact, perfect citation precision/recall and retrieval
@@ -892,8 +895,17 @@ mixed-retrieval regression check. Latency, bounded evidence/answer token estimat
 receipts are reported separately. The
 content-safe artifact retains only invented case/source ids, booleans, typed statuses, metrics, model/prompt
 receipts, and timings—not questions, evidence, generated answers, paths, slugs, endpoints, credentials, or
-provider errors. This development corpus is tuning evidence; independent review and a frozen held-out run are
-still required before it can become a release gate.
+provider errors. This development corpus is tuning evidence only; it cannot substitute for the explicit frozen
+test split or independent review.
+
+The test split is a separate frozen 16-source, twelve-case corpus with disjoint ids, paths, source bodies,
+questions, markers, values, and layouts. It is never selected by the default command. Five repeated runs must
+keep every quality metric perfect, produce the same content-safe decision fingerprint for every case, retain a
+100% minimum per-run pass rate, and keep aggregate answer p95 at or below 10 seconds. The fingerprint compares
+typed outcomes, degradation, fact coverage, citations, related-source identities, abstention, and privacy
+guards—not generated wording. The artifact also carries the frozen corpus SHA-256, and execution refuses a
+corpus edit that did not update its versioned fingerprint. A stored held-out artifact clears the technical
+release gates; independent corpus review remains a deliberately external requirement.
 
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
 knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level

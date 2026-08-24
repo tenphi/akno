@@ -46,10 +46,12 @@ export {
 export { runBench, type BenchOptions, type BenchReport, type BenchResult } from './bench.ts';
 export {
   ANSWER_BENCH_SCHEMA_VERSION,
+  markAnswerBenchPersisted,
   runAnswerBench,
   type AnswerBenchCaseReport,
   type AnswerBenchOptions,
   type AnswerBenchReport,
+  type AnswerBenchRunSummary,
 } from './bench/answer.ts';
 export {
   runMixedRetrievalBench,

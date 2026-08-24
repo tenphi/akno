@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
   attachRankingEndToEndEvidence,
+  markAnswerBenchPersisted,
   markRankingMatrixPersisted,
   open,
   refreshRankingMatrixReport,
@@ -51,8 +52,9 @@ const BENCH_HELP = `akno bench [options]
                       contextual entity resolution. Never opens the knowledge base.
   graph               Run the frozen, model-free held-out graph release gate.
                       Never opens the knowledge base or configured models.
-  answer              Run the invented development answer corpus through
-                      production retrieval, generation, and support verification.
+  answer              Run the invented answer corpus through production retrieval,
+                      generation, and support verification. Development is default;
+                      use --split test --runs 5 for the frozen held-out gate.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
@@ -66,7 +68,8 @@ const BENCH_HELP = `akno bench [options]
     --excerpt-chars <n> 400, 800, or 1600 (default 800).
     --concurrency <n> Simultaneous cases, 1..16 (answer caps at 8; single
                       ranking defaults 1, matrix 4). Latency remains per case.
-    --runs <n>        Repetitions per LLM matrix variant, 1..10 (default 5).
+    --runs <n>        Answer repetitions or repetitions per LLM matrix variant,
+                      1..10 (answer: development 1, held-out 5; matrix 5).
     --skip-native     Omit the optional native reference from a matrix.
     --matrix-artifact <path>
                       Use its selected configuration and atomically attach
@@ -156,12 +159,11 @@ export async function benchCommand(argv: string[]): Promise<number> {
       values.system ||
       values.candidates ||
       values['excerpt-chars'] ||
-      values.runs ||
       values.iterations ||
-      (values.split && values.split !== 'development')
+      (values.split && !['development', 'test'].includes(values.split))
     ) {
       fail(
-        'answer bench is development-only and accepts provider/model, embedding, reasoning, concurrency, output, and json options',
+        'answer bench accepts development/test split, runs, provider/model, embedding, reasoning, concurrency, output, and json options',
       );
       return 2;
     }
@@ -170,6 +172,8 @@ export async function benchCommand(argv: string[]): Promise<number> {
       fail(`invalid reasoning effort: ${values.reasoning}`);
       return 2;
     }
+    const split = (values.split ?? 'development') as 'development' | 'test';
+    const runs = parseBoundedInteger(values.runs ?? (split === 'test' ? '5' : '1'), 1, 10, 'runs');
     const concurrency = parseBoundedInteger(values.concurrency ?? '2', 1, 8, 'concurrency');
     const { loadConfig } = await import('@tenphi/akno-core');
     const config = loadConfig(openOptionsFrom(values));
@@ -179,8 +183,10 @@ export async function benchCommand(argv: string[]): Promise<number> {
       65_536,
       'embedding dimensions',
     );
-    if (concurrency === null || embeddingDimensions === null) return 2;
-    const report = await runAnswerBench(config, {
+    if (runs === null || concurrency === null || embeddingDimensions === null) return 2;
+    let report = await runAnswerBench(config, {
+      split,
+      runs,
       concurrency,
       ...(values['embedding-provider'] ? { embeddingProvider: values['embedding-provider'] } : {}),
       ...(values['embedding-model'] ? { embeddingModel: values['embedding-model'] } : {}),
@@ -190,14 +196,18 @@ export async function benchCommand(argv: string[]): Promise<number> {
       ...(reasoning ? { reasoningEffort: reasoning } : {}),
       ...(!values.json
         ? {
-            onProgress: ({ done, total }: { done: number; total: number }) => {
-              if (done === 1 || done === total) line(`  answer cases  ${done}/${total}`);
+            onProgress: ({ run, runs: totalRuns, done, total }) => {
+              if (done === 1 || done === total)
+                line(`  answer run ${run}/${totalRuns}  ${done}/${total} cases`);
             },
           }
         : {}),
     });
     let artifactPath: string | null = null;
-    if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+    if (values.output) {
+      report = markAnswerBenchPersisted(report);
+      artifactPath = await writeJsonArtifact(values.output, report);
+    }
     if (values.json) json(report);
     else renderAnswerBench(report, artifactPath);
     return report.passed ? 0 : 1;
@@ -716,7 +726,7 @@ function renderEntityResolution(report: EntityResolutionBenchReport, artifactPat
 function renderAnswerBench(report: AnswerBenchReport, artifactPath: string | null): void {
   heading(
     `Grounded answers — ${report.split}, ${report.corpus.cases} cases across ` +
-      `${report.corpus.categories} categories`,
+      `${report.corpus.categories} categories, ${report.stability.requestedRuns} run(s)`,
   );
   line(`  answer model          ${report.answerModel.provider}/${report.answerModel.model}`);
   line(`  reasoning             ${report.answerModel.reasoningEffort ?? 'provider default'}`);
@@ -733,9 +743,28 @@ function renderAnswerBench(report: AnswerBenchReport, artifactPath: string | nul
   line(`  degraded rate          ${percent(report.metrics.degradedRate)}`);
   line(`  verifier failure rate  ${percent(report.metrics.verificationFailureRate)}`);
   line(
-    `  latency p50 / p95     ${Math.round(report.execution.p50LatencyMs)}ms / ` +
-      `${Math.round(report.execution.p95LatencyMs)}ms`,
+    `  case stability        ${
+      report.stability.stableCaseRate === null ? 'n/a (one run)' : percent(report.stability.stableCaseRate)
+    }`,
   );
+  line(`  minimum run pass rate ${percent(report.stability.minimumRunPassRate)}`);
+  line(
+    `  latency p50 / p95     ${Math.round(report.execution.p50LatencyMs)}ms / ` +
+      `${Math.round(report.execution.p95LatencyMs)}ms ` +
+      style.grey(`(gate ≤ ${report.thresholds.p95LatencyMs}ms)`),
+  );
+  line(
+    `  provider usage        ${report.execution.providerTotalTokens} tokens across ` +
+      `${report.execution.usageReportedCalls}/${report.execution.modelCalls} reported calls`,
+  );
+  if (report.runs.length > 1) {
+    for (const run of report.runs) {
+      line(
+        `  run ${String(run.run).padEnd(2)}                ${run.casesPassed}/${run.casesTotal} passed, ` +
+          `p95 ${Math.round(run.p95LatencyMs)}ms`,
+      );
+    }
+  }
   for (const benchCase of report.cases) {
     const verdict = benchCase.passed ? style.green('pass') : style.red('FAIL');
     line(
@@ -743,10 +772,19 @@ function renderAnswerBench(report: AnswerBenchReport, artifactPath: string | nul
         style.grey(`${benchCase.status ?? 'not run'}/${benchCase.outcome ?? benchCase.error ?? 'unknown'}`),
     );
   }
+  if (report.stability.flakyCaseIds.length > 0) {
+    line(`  flaky cases            ${report.stability.flakyCaseIds.join(', ')}`);
+  }
   if (artifactPath) line(`  artifact               ${artifactPath}`);
   if (report.blockers.length > 0) line(`  blockers               ${report.blockers.join(', ')}`);
-  line(`\n${report.passed ? style.green('development gate passed') : style.red('development gate failed')}`);
-  line(style.grey(`Release remains blocked by: ${report.releaseBlockers.join(', ')}.`));
+  line(
+    `\n${report.passed ? style.green(`${report.split} quality gate passed`) : style.red(`${report.split} quality gate failed`)}`,
+  );
+  line(
+    report.releaseEligible
+      ? style.green('Stored held-out evidence satisfies every release gate.')
+      : style.grey(`Release remains blocked by: ${report.releaseBlockers.join(', ')}.`),
+  );
 }
 
 function renderGraphBench(report: GraphBenchReport, artifactPath: string | null): void {

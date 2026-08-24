@@ -55,6 +55,22 @@ describe('extractConcepts', () => {
     expect(concepts.join(' ')).not.toContain('long');
   });
 
+  it('does not require a frequency answer to repeat frequently', () => {
+    const concepts = extractConcepts('How frequently should the Zephyr QX-100 be inspected?');
+
+    expect(concepts.join(' ')).toContain('zephyr');
+    expect(concepts.join(' ')).toContain('inspected');
+    expect(concepts.join(' ')).not.toContain('frequently');
+  });
+
+  it('does not treat a record-scoping preposition as evidence content', () => {
+    const concepts = extractConcepts('Under the Cormorant record, what does coverage exclude?');
+
+    expect(concepts.join(' ')).toContain('cormorant');
+    expect(concepts.join(' ')).toContain('coverage');
+    expect(concepts.join(' ')).not.toContain('under');
+  });
+
   it('returns nothing for a query with no content words', () => {
     expect(extractConcepts('is it the?')).toEqual([]);
   });

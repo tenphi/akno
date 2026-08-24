@@ -362,6 +362,10 @@ model returns `degraded/not_answered` with `no_answer_model`; complete empty rec
 A deterministic or semantic guard that successfully withholds an unsupported draft is an `ok` abstention, not
 a degraded capability—the guard completed its job.
 
+When equally applicable evidence gives incompatible values and establishes no authority, the canonical answer
+policy is also abstention: `not_answered`, a compact unresolved-concept note, and the related source identities.
+Akno does not alternate between selecting a value, generating a conflict narrative, and saying nothing.
+
 The response keeps two kinds of accounting deliberately separate. `budget_used` contains Akno's local token
 estimates for fitting evidence and rendered output into request budgets. `model_usage` contains one receipt per
 actual generation or verification request: the model id, measured latency, and provider-reported input, output,
@@ -1658,6 +1662,7 @@ akno bench --retrieval-only
 akno bench graph
 akno bench entities --provider openai --model gpt-5.6-luna --reasoning none
 akno bench answer --concurrency 2
+akno bench answer --split test --runs 5 --output benchmarks/answer/held-out.json
 ```
 
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
@@ -1688,7 +1693,19 @@ cited-ambiguity, orphan-document, graph, and empty-recall behavior. The report c
 aggregate judgments but no question, evidence, generated answer, path, slug, endpoint, provider response, or
 credential. Its report separates bounded evidence/output estimates from real provider-reported model-call token
 totals and records how many endpoints omitted usage. A passing development result still records
-`independent_review` and `held_out_run` as release blockers.
+`held_out_split`, `independent_review`, `five_runs`, and `persisted_artifact` as release blockers.
+
+`--split test` selects a distinct frozen corpus only when asked. It has sixteen invented sources and twelve
+cases whose ids, paths, bodies, questions, markers, values, and layouts are disjoint from development. The test
+command defaults to five runs; development remains one run for quick iteration. Quality is aggregated across
+every case execution, while stability compares a content-safe decision fingerprint per case across runs. That
+fingerprint ignores prose variation but includes typed outcome, degradation, answer presence, supported-fact
+count, citations, related identities, forbidden-text detection, and pass/failure. The frozen thresholds require
+perfect quality and abstention metrics, no degradation or privacy leakage, 100% stable cases, a 100% minimum
+per-run pass rate, the mixed-retrieval regression gate, and aggregate p95 no higher than 10 seconds. A five-run
+stored test artifact also records the corpus SHA-256; execution refuses an edit that did not update the
+versioned frozen fingerprint. It clears every technical blocker, but the corpus remains ineligible for release
+until it receives independent review.
 
 ### Recovery guarantees
 

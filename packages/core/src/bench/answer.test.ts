@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AknoConfig, ResolvedModelRole } from '../config/schema.ts';
-import { runAnswerBench } from './answer.ts';
+import { markAnswerBenchPersisted, runAnswerBench } from './answer.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -25,15 +25,24 @@ describe('grounded-answer benchmark', () => {
 
     expect(report).toMatchObject({
       kind: 'invented_answer_benchmark',
-      schemaVersion: 'answer-benchmark-v2',
+      schemaVersion: 'answer-benchmark-v3',
       development: true,
+      artifactPersisted: false,
       releaseEligible: false,
       passed: true,
-      corpus: { cases: 12, sources: 15, categories: 12, independentlyReviewed: false },
+      split: 'development',
+      corpus: {
+        cases: 12,
+        sources: 15,
+        categories: 12,
+        fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/u),
+        frozen: false,
+        independentlyReviewed: false,
+      },
       embedding: { available: true, totalChunks: 15, embeddedChunks: 15 },
       answerModel: {
         available: true,
-        generationPromptVersion: 'answer-generation-v1',
+        generationPromptVersion: 'answer-generation-v3',
         verifierPromptVersion: 'answer-verifier-v1',
       },
       metrics: {
@@ -58,13 +67,25 @@ describe('grounded-answer benchmark', () => {
       },
       blockers: [],
     });
+    expect(report.stability).toEqual({
+      requestedRuns: 1,
+      completedRuns: 1,
+      stableCaseRate: null,
+      minimumRunPassRate: 1,
+      flakyCaseIds: [],
+    });
     expect(report.execution.modelCalls).toBeGreaterThan(0);
     expect(report.execution.usageReportedCalls).toBe(report.execution.modelCalls);
     expect(report.execution.providerTotalTokens).toBe(
       report.execution.providerInputTokens + report.execution.providerOutputTokens,
     );
     expect(report.cases.every((benchCase) => benchCase.passed)).toBe(true);
-    expect(report.releaseBlockers).toEqual(['independent_review', 'held_out_run']);
+    expect(report.releaseBlockers).toEqual([
+      'held_out_split',
+      'independent_review',
+      'five_runs',
+      'persisted_artifact',
+    ]);
     const serialized = JSON.stringify(report);
     expect(serialized).not.toContain('silverpine-direct');
     expect(serialized).not.toContain('violet-gull');
@@ -94,9 +115,74 @@ describe('grounded-answer benchmark', () => {
     expect(report.blockers).toContain('embedding_available');
     expect(report.cases.every((benchCase) => benchCase.error === 'embedding_unavailable')).toBe(true);
   });
+
+  it('runs the explicit frozen held-out split repeatedly and reports decision stability', async () => {
+    vi.stubGlobal('fetch', inventedProvider());
+
+    const report = await runAnswerBench(config(), { split: 'test', runs: 2, concurrency: 3 });
+
+    expect(
+      report.cases
+        .filter((benchCase) => !benchCase.passed)
+        .map((benchCase) => ({
+          id: benchCase.id,
+          status: benchCase.status,
+          outcome: benchCase.outcome,
+          degraded: benchCase.degraded,
+          facts: `${benchCase.supportedFacts}/${benchCase.requiredFacts}`,
+          cited: benchCase.citedSources,
+          related: benchCase.relatedSources,
+        })),
+    ).toEqual([]);
+    expect(report).toMatchObject({
+      schemaVersion: 'answer-benchmark-v3',
+      development: false,
+      split: 'test',
+      passed: true,
+      corpus: {
+        version: 'answer-held-out-v1',
+        fingerprint: '25118179977f288c4ad7cce26d9cb4c31a3a20936f2cb08fa4938860d7688db2',
+        cases: 12,
+        sources: 16,
+        categories: 12,
+        frozen: true,
+        independentlyReviewed: false,
+      },
+      execution: { operations: 24 },
+      stability: {
+        requestedRuns: 2,
+        completedRuns: 2,
+        stableCaseRate: 1,
+        minimumRunPassRate: 1,
+        flakyCaseIds: [],
+      },
+      blockers: [],
+    });
+    expect(report.runs).toHaveLength(2);
+    expect(report.runs.every((run) => run.passed)).toBe(true);
+    expect(report.releaseBlockers).toEqual(['independent_review', 'five_runs', 'persisted_artifact']);
+    const persisted = markAnswerBenchPersisted(report);
+    expect(persisted.artifactPersisted).toBe(true);
+    expect(persisted.releaseBlockers).toEqual(['independent_review', 'five_runs']);
+  });
+
+  it('fails the stability gate when repeated decisions disagree', async () => {
+    vi.stubGlobal('fetch', inventedProvider({ alternateHeldOutAmbiguity: true }));
+
+    const report = await runAnswerBench(config(), { split: 'test', runs: 2, concurrency: 3 });
+
+    expect(report.stability).toMatchObject({
+      stableCaseRate: 11 / 12,
+      minimumRunPassRate: 11 / 12,
+      flakyCaseIds: ['held-indistinguishable-bo-winters'],
+    });
+    expect(report.passed).toBe(false);
+    expect(report.blockers).toContain('case_stability');
+  });
 });
 
-function inventedProvider(): typeof fetch {
+function inventedProvider(options: { alternateHeldOutAmbiguity?: boolean } = {}): typeof fetch {
+  let heldOutAmbiguityCalls = 0;
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     const body = JSON.parse(String(init?.body)) as {
@@ -128,7 +214,15 @@ function inventedProvider(): typeof fetch {
             supported: true,
           })),
         }
-      : generation(user.question ?? '', user.evidence ?? []);
+      : generation(
+          user.question ?? '',
+          user.evidence ?? [],
+          Boolean(
+            options.alternateHeldOutAmbiguity &&
+            (user.question ?? '').toLowerCase().includes('sanderling held-out') &&
+            heldOutAmbiguityCalls++ % 2 === 1,
+          ),
+        );
     return new Response(
       JSON.stringify({
         choices: [{ message: { content: JSON.stringify(content) } }],
@@ -145,6 +239,7 @@ function inventedProvider(): typeof fetch {
 function generation(
   question: string,
   evidence: Array<{ evidence_id: string; excerpt: string }>,
+  answerHeldOutAmbiguity = false,
 ): { blocks: Array<{ text: string; evidence_ids: string[] }>; missing_concepts: string[] } {
   const cited = (marker: string): string =>
     evidence.find((item) => item.excerpt.toLowerCase().includes(marker))?.evidence_id ?? 'missing';
@@ -182,15 +277,7 @@ function generation(
     return { blocks: [], missing_concepts: ['requested value'] };
   }
   if (lower.includes('albatross-ambiguous')) {
-    return {
-      blocks: [
-        {
-          text: 'Two records conflict: one says blue and the other says green.',
-          evidence_ids: [cited('blue access'), cited('green access')],
-        },
-      ],
-      missing_concepts: ['unambiguous identity'],
-    };
+    return { blocks: [], missing_concepts: ['unambiguous identity'] };
   }
   if (lower.includes('heron-orphan')) {
     return draft('The archive closes at 18:00.', cited('heron-orphan'));
@@ -201,6 +288,65 @@ function generation(
         {
           text: 'The destination value is moonstone.',
           evidence_ids: [cited('albatross-graph'), cited('conduit continues to'), cited('terminal value')],
+        },
+      ],
+      missing_concepts: [],
+    };
+  }
+  if (lower.includes('juniper held-out')) return draft('The warranty lasts four years.', cited('four years'));
+  if (lower.includes('seabright held-out')) {
+    return draft('Inspections are required every nine months.', cited('every nine months'));
+  }
+  if (lower.includes('bramble held-out')) {
+    return {
+      blocks: [
+        { text: 'The next renewal date is 22 June 2028.', evidence_ids: [cited('22 june 2028')] },
+        { text: 'The amount due is 2222 EUR.', evidence_ids: [cited('2222 eur')] },
+      ],
+      missing_concepts: [],
+    };
+  }
+  if (lower.includes('lantern held-out')) {
+    return {
+      blocks: [{ text: 'The access phrase is starlight.', evidence_ids: [cited('starlight')] }],
+      missing_concepts: ['permitted arrival window'],
+    };
+  }
+  if (lower.includes('cormorant held-out')) {
+    return draft('Coverage excludes volcanic-ash damage.', cited('volcanic-ash'));
+  }
+  if (lower.includes('rowan held-out')) {
+    return draft('The current cadence is every three months.', cited('active inspection'));
+  }
+  if (lower.includes('petrel held-out')) {
+    return draft('The warranty lasts eight years.', cited('eight years'));
+  }
+  if (lower.includes('marigold held-out')) {
+    return { blocks: [], missing_concepts: ['price'] };
+  }
+  if (lower.includes('sanderling held-out')) {
+    if (answerHeldOutAmbiguity) {
+      return {
+        blocks: [
+          {
+            text: 'Two registers conflict: one says gold and the other says silver.',
+            evidence_ids: [cited('gold access'), cited('silver access')],
+          },
+        ],
+        missing_concepts: ['unambiguous identity'],
+      };
+    }
+    return { blocks: [], missing_concepts: ['unambiguous identity'] };
+  }
+  if (lower.includes('kingfisher held-out')) {
+    return draft('The archive opens at 07:30.', cited('kingfisher held-out'));
+  }
+  if (lower.includes('ibis held-out')) {
+    return {
+      blocks: [
+        {
+          text: 'The terminal codeword is sunstone.',
+          evidence_ids: [cited('ibis held-out'), cited('continue to'), cited('sunstone')],
         },
       ],
       missing_concepts: [],

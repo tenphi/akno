@@ -574,9 +574,19 @@ export function computeCoverage(
     // Every content word of the concept must appear somewhere in what came back.
     // Partial credit would defeat the purpose: "found the policy but not the
     // renewal date" is the answer that matters.
-    coverage[concept] = terms.every((term) => haystack.includes(stem(term)));
+    coverage[concept] = terms.every((term) => coverageTermPresent(haystack, term));
   }
   return coverage;
+}
+
+function coverageTermPresent(haystack: string, term: string): boolean {
+  const root = stem(term);
+  if (haystack.includes(root)) return true;
+  // A yes/no inclusion question is answered just as completely by an explicit exclusion. Coverage
+  // measures whether the relationship was addressed, not whether its polarity was affirmative.
+  if (root.startsWith('includ')) return haystack.includes('exclud');
+  if (root.startsWith('exclud')) return haystack.includes('includ');
+  return false;
 }
 
 /** Just enough stemming to survive plurals. A real stemmer is FTS5's job. */

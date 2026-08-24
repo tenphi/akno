@@ -260,6 +260,7 @@ const STOPWORDS = new Set([
   'they',
   'this',
   'to',
+  'under',
   'was',
   'we',
   'were',
@@ -292,7 +293,7 @@ export function extractConcepts(query: string): string[] {
     // In these question shapes the adjective asks for the answer's dimension; it is not a term
     // the answer must repeat. Treating "how long" as content marked an exact two-year warranty
     // answer partial because its evidence quite correctly never contained the word "long".
-    .replace(/\bhow\s+(?:long|old|often|far|soon)\b/gu, ' ')
+    .replace(/\bhow\s+(?:long|old|often|frequently|far|soon)\b/gu, ' ')
     .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
     .split(/\s+/)
     .filter((word) => word.length > 2 && !STOPWORDS.has(word));

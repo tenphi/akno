@@ -10,15 +10,23 @@ import { ANSWER_PROMPT_VERSION, ANSWER_VERIFIER_PROMPT_VERSION } from '../ops/an
 import { runMixedRetrievalBench } from './mixed-retrieval.ts';
 import {
   ANSWER_BENCH_CORPUS,
-  ANSWER_BENCH_CORPUS_VERSION,
+  ANSWER_BENCH_HELD_OUT_CORPUS,
+  ANSWER_BENCH_HELD_OUT_FINGERPRINT,
   ANSWER_BENCH_ROOT,
+  answerBenchCorpus,
   type AnswerBenchCase,
   type AnswerBenchCategory,
+  type AnswerBenchCorpus,
+  type AnswerBenchSplit,
 } from './answer-corpus.ts';
 
-export const ANSWER_BENCH_SCHEMA_VERSION = 'answer-benchmark-v2';
+export const ANSWER_BENCH_SCHEMA_VERSION = 'answer-benchmark-v3';
+const REQUIRED_STABILITY_RUNS = 5;
+const MAX_P95_LATENCY_MS = 10_000;
 
 export interface AnswerBenchOptions {
+  split?: AnswerBenchSplit;
+  runs?: number;
   concurrency?: number;
   embeddingProvider?: string;
   embeddingModel?: string;
@@ -26,7 +34,7 @@ export interface AnswerBenchOptions {
   provider?: string;
   model?: string;
   reasoningEffort?: ReasoningEffort;
-  onProgress?: (progress: { done: number; total: number }) => void;
+  onProgress?: (progress: { run: number; runs: number; done: number; total: number }) => void;
 }
 
 export interface AnswerBenchCaseReport {
@@ -64,16 +72,34 @@ export interface AnswerBenchReport {
   kind: 'invented_answer_benchmark';
   schemaVersion: string;
   createdAt: string;
-  development: true;
-  releaseEligible: false;
+  development: boolean;
+  artifactPersisted: boolean;
+  releaseEligible: boolean;
   passed: boolean;
-  split: 'development';
+  split: AnswerBenchSplit;
   corpus: {
     version: string;
+    fingerprint: string;
     cases: number;
     sources: number;
     categories: number;
+    frozen: boolean;
     independentlyReviewed: boolean;
+  };
+  thresholds: {
+    executionRate: number;
+    outcomeAccuracy: number;
+    expectedFactAccuracy: number;
+    citationPrecision: number;
+    citationRecall: number;
+    retrievalRecall: number;
+    abstentionAccuracy: number;
+    privacyLeakRate: number;
+    degradedRate: number;
+    verificationFailureRate: number;
+    stableCaseRate: number;
+    minimumRunPassRate: number;
+    p95LatencyMs: number;
   };
   embedding: {
     provider: string | null;
@@ -117,9 +143,27 @@ export interface AnswerBenchReport {
     verificationFailureRate: number;
     mixedRetrievalPassed: boolean;
   };
+  stability: {
+    requestedRuns: number;
+    completedRuns: number;
+    stableCaseRate: number | null;
+    minimumRunPassRate: number;
+    flakyCaseIds: string[];
+  };
+  runs: AnswerBenchRunSummary[];
   cases: AnswerBenchCaseReport[];
   blockers: string[];
   releaseBlockers: string[];
+}
+
+export interface AnswerBenchRunSummary {
+  run: number;
+  passed: boolean;
+  casesPassed: number;
+  casesTotal: number;
+  p95LatencyMs: number;
+  modelCalls: number;
+  providerTotalTokens: number;
 }
 
 interface CorpusIdentities {
@@ -135,7 +179,10 @@ export async function runAnswerBench(
   config: AknoConfig,
   options: AnswerBenchOptions = {},
 ): Promise<AnswerBenchReport> {
-  validateAnswerCorpus();
+  validateAnswerCorpora();
+  const split = options.split ?? 'development';
+  const corpus = answerBenchCorpus(split);
+  const requestedRuns = normalizeRuns(options.runs ?? (split === 'test' ? REQUIRED_STABILITY_RUNS : 1));
   const concurrency = normalizeConcurrency(options.concurrency ?? 2);
   const embeddingProvider = options.embeddingProvider ?? config.models.embedding.provider?.name ?? 'openai';
   const embeddingModel = options.embeddingModel ?? config.models.embedding.id;
@@ -152,7 +199,7 @@ export async function runAnswerBench(
     options.reasoningEffort ?? config.models.answer.reasoningEffort ?? config.models.derive.reasoningEffort;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-bench-kb-'));
   const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-bench-state-'));
-  const identities = writeCorpus(root);
+  const identities = writeCorpus(root, corpus);
   const env = benchmarkEnvironment(config);
   let memory: Akno | null = null;
 
@@ -196,15 +243,38 @@ export async function runAnswerBench(
       : !answerReceipt.available
         ? 'answer_model_unavailable'
         : null;
-    const cases = prerequisite
-      ? ANSWER_BENCH_CORPUS.cases.map((benchCase) => skippedCase(benchCase, prerequisite))
-      : await runCases(memory, identities, concurrency, options.onProgress);
+    const caseRuns: AnswerBenchCaseReport[][] = [];
+    for (let run = 1; run <= requestedRuns; run++) {
+      if (prerequisite) {
+        caseRuns.push(corpus.cases.map((benchCase) => skippedCase(benchCase, prerequisite)));
+        options.onProgress?.({
+          run,
+          runs: requestedRuns,
+          done: corpus.cases.length,
+          total: corpus.cases.length,
+        });
+      } else {
+        caseRuns.push(
+          await runCases(
+            memory,
+            identities,
+            corpus.cases,
+            concurrency,
+            run,
+            requestedRuns,
+            options.onProgress,
+          ),
+        );
+      }
+    }
     const mixedRetrieval = await runMixedRetrievalBench({ iterations: 3 });
     return buildReport({
+      corpus,
+      requestedRuns,
       concurrency,
       embedding,
       answerModel: answerReceipt,
-      cases,
+      caseRuns,
       mixedRetrievalPassed: mixedRetrieval.passed,
     });
   } finally {
@@ -215,24 +285,31 @@ export async function runAnswerBench(
 }
 
 function buildReport(options: {
+  corpus: AnswerBenchCorpus;
+  requestedRuns: number;
   concurrency: number;
   embedding: AnswerBenchReport['embedding'];
   answerModel: AnswerBenchReport['answerModel'];
-  cases: AnswerBenchCaseReport[];
+  caseRuns: AnswerBenchCaseReport[][];
   mixedRetrievalPassed: boolean;
 }): AnswerBenchReport {
-  const cases = options.cases;
+  const cases = options.caseRuns.flat();
+  const representativeCases = options.caseRuns[0] ?? [];
   const expectations = new Map<string, AnswerBenchCase['expectation']>(
-    ANSWER_BENCH_CORPUS.cases.map((benchCase) => [benchCase.id, benchCase.expectation]),
+    options.corpus.cases.map((benchCase) => [benchCase.id, benchCase.expectation]),
   );
   const requiredFacts = sum(cases.map((benchCase) => benchCase.requiredFacts));
   const cited = cases.flatMap((benchCase) => benchCase.citedSources);
   const requiredCitations = sum(cases.map((benchCase) => benchCase.requiredCitations));
-  const requiredRelated = ANSWER_BENCH_CORPUS.cases.flatMap(
-    (benchCase) => benchCase.expectation.requiredRelated,
+  const requiredRelated = options.caseRuns.flatMap(() =>
+    options.corpus.cases.flatMap((benchCase) => benchCase.expectation.requiredRelated),
   );
-  const abstentions = cases.filter((benchCase) => ['unsupported', 'empty'].includes(benchCase.category));
+  const abstentions = cases.filter((benchCase) =>
+    ['unsupported', 'ambiguous', 'empty'].includes(benchCase.category),
+  );
   const latencies = cases.filter((benchCase) => benchCase.executed).map((benchCase) => benchCase.latencyMs);
+  const stability = stabilityFor(options.caseRuns, options.corpus.cases, options.requestedRuns);
+  const thresholds = answerThresholds();
   const metrics = {
     executionRate: ratio(cases.filter((benchCase) => benchCase.executed).length, cases.length),
     outcomeAccuracy: ratio(cases.filter((benchCase) => benchCase.outcomeCorrect).length, cases.length),
@@ -278,39 +355,50 @@ function buildReport(options: {
   const blockers: string[] = [];
   if (!options.embedding.available) blockers.push('embedding_available');
   if (!options.answerModel.available) blockers.push('answer_model_available');
-  if (metrics.executionRate < 1) blockers.push('execution_rate');
-  if (metrics.outcomeAccuracy < 1) blockers.push('outcome_accuracy');
-  if (metrics.expectedFactAccuracy < 1) blockers.push('expected_fact_accuracy');
-  if (metrics.citationPrecision < 1) blockers.push('citation_precision');
-  if (metrics.citationRecall < 1) blockers.push('citation_recall');
-  if (metrics.retrievalRecall < 1) blockers.push('retrieval_recall');
-  if (metrics.abstentionAccuracy < 1) blockers.push('abstention_accuracy');
-  if (metrics.privacyLeakRate > 0) blockers.push('privacy_leak_rate');
-  if (metrics.degradedRate > 0) blockers.push('degraded_rate');
-  if (metrics.verificationFailureRate > 0) blockers.push('verification_failure_rate');
+  if (metrics.executionRate < thresholds.executionRate) blockers.push('execution_rate');
+  if (metrics.outcomeAccuracy < thresholds.outcomeAccuracy) blockers.push('outcome_accuracy');
+  if (metrics.expectedFactAccuracy < thresholds.expectedFactAccuracy) blockers.push('expected_fact_accuracy');
+  if (metrics.citationPrecision < thresholds.citationPrecision) blockers.push('citation_precision');
+  if (metrics.citationRecall < thresholds.citationRecall) blockers.push('citation_recall');
+  if (metrics.retrievalRecall < thresholds.retrievalRecall) blockers.push('retrieval_recall');
+  if (metrics.abstentionAccuracy < thresholds.abstentionAccuracy) blockers.push('abstention_accuracy');
+  if (metrics.privacyLeakRate > thresholds.privacyLeakRate) blockers.push('privacy_leak_rate');
+  if (metrics.degradedRate > thresholds.degradedRate) blockers.push('degraded_rate');
+  if (metrics.verificationFailureRate > thresholds.verificationFailureRate)
+    blockers.push('verification_failure_rate');
   if (!metrics.mixedRetrievalPassed) blockers.push('mixed_retrieval_regression');
-  return {
+  if (stability.stableCaseRate !== null && stability.stableCaseRate < thresholds.stableCaseRate)
+    blockers.push('case_stability');
+  if (stability.minimumRunPassRate < thresholds.minimumRunPassRate) blockers.push('minimum_run_pass_rate');
+  const p95LatencyMs = percentile(latencies, 0.95);
+  if (p95LatencyMs > thresholds.p95LatencyMs) blockers.push('p95_latency');
+
+  return refreshAnswerRelease({
     kind: 'invented_answer_benchmark',
     schemaVersion: ANSWER_BENCH_SCHEMA_VERSION,
     createdAt: new Date().toISOString(),
-    development: true,
+    development: options.corpus.split === 'development',
+    artifactPersisted: false,
     releaseEligible: false,
     passed: blockers.length === 0,
-    split: 'development',
+    split: options.corpus.split,
     corpus: {
-      version: ANSWER_BENCH_CORPUS_VERSION,
-      cases: ANSWER_BENCH_CORPUS.cases.length,
-      sources: ANSWER_BENCH_CORPUS.sources.length,
-      categories: new Set(ANSWER_BENCH_CORPUS.cases.map((benchCase) => benchCase.category)).size,
-      independentlyReviewed: ANSWER_BENCH_CORPUS.independentlyReviewed,
+      version: options.corpus.version,
+      fingerprint: corpusFingerprint(options.corpus),
+      cases: options.corpus.cases.length,
+      sources: options.corpus.sources.length,
+      categories: new Set(options.corpus.cases.map((benchCase) => benchCase.category)).size,
+      frozen: options.corpus.frozen,
+      independentlyReviewed: options.corpus.independentlyReviewed,
     },
+    thresholds,
     embedding: options.embedding,
     answerModel: options.answerModel,
     execution: {
       concurrency: options.concurrency,
       operations: cases.filter((benchCase) => benchCase.executed).length,
       p50LatencyMs: percentile(latencies, 0.5),
-      p95LatencyMs: percentile(latencies, 0.95),
+      p95LatencyMs,
       maxLatencyMs: latencies.length === 0 ? 0 : Math.max(...latencies),
       evidenceTokens: sum(cases.map((benchCase) => benchCase.evidenceTokens)),
       answerTokens: sum(cases.map((benchCase) => benchCase.answerTokens)),
@@ -321,22 +409,125 @@ function buildReport(options: {
       providerTotalTokens: sum(cases.map((benchCase) => benchCase.providerTotalTokens)),
     },
     metrics,
-    cases,
+    stability,
+    runs: options.caseRuns.map((casesInRun, index) => summarizeRun(index + 1, casesInRun)),
+    cases: representativeCases,
     blockers,
-    releaseBlockers: [...blockers, 'independent_review', 'held_out_run'],
+    releaseBlockers: [],
+  });
+}
+
+/** Marks the exact report that is about to be stored; an output flag cannot be inferred after the fact. */
+export function markAnswerBenchPersisted(report: AnswerBenchReport): AnswerBenchReport {
+  return refreshAnswerRelease({ ...report, artifactPersisted: true });
+}
+
+function refreshAnswerRelease(report: AnswerBenchReport): AnswerBenchReport {
+  const releaseBlockers = [...report.blockers];
+  if (report.split !== 'test') releaseBlockers.push('held_out_split');
+  if (!report.corpus.independentlyReviewed) releaseBlockers.push('independent_review');
+  if (report.stability.requestedRuns < REQUIRED_STABILITY_RUNS) releaseBlockers.push('five_runs');
+  if (!report.artifactPersisted) releaseBlockers.push('persisted_artifact');
+  return {
+    ...report,
+    releaseEligible: releaseBlockers.length === 0,
+    releaseBlockers: dedupe(releaseBlockers),
+  };
+}
+
+function answerThresholds(): AnswerBenchReport['thresholds'] {
+  return {
+    executionRate: 1,
+    outcomeAccuracy: 1,
+    expectedFactAccuracy: 1,
+    citationPrecision: 1,
+    citationRecall: 1,
+    retrievalRecall: 1,
+    abstentionAccuracy: 1,
+    privacyLeakRate: 0,
+    degradedRate: 0,
+    verificationFailureRate: 0,
+    stableCaseRate: 1,
+    minimumRunPassRate: 1,
+    p95LatencyMs: MAX_P95_LATENCY_MS,
+  };
+}
+
+function stabilityFor(
+  caseRuns: AnswerBenchCaseReport[][],
+  corpusCases: AnswerBenchCase[],
+  requestedRuns: number,
+): AnswerBenchReport['stability'] {
+  const completedRuns = caseRuns.filter((cases) => cases.every((benchCase) => benchCase.executed)).length;
+  const passRates = caseRuns.map((cases) =>
+    ratio(cases.filter((benchCase) => benchCase.passed).length, cases.length),
+  );
+  if (caseRuns.length < 2) {
+    return {
+      requestedRuns,
+      completedRuns,
+      stableCaseRate: null,
+      minimumRunPassRate: passRates.length > 0 ? Math.min(...passRates) : 0,
+      flakyCaseIds: [],
+    };
+  }
+  const flakyCaseIds = corpusCases.flatMap((benchCase) => {
+    const reports = caseRuns.map((run) => run.find((entry) => entry.id === benchCase.id));
+    if (reports.some((report) => report === undefined)) return [benchCase.id];
+    const fingerprints = new Set(reports.map((report) => decisionFingerprint(report!)));
+    return fingerprints.size === 1 ? [] : [benchCase.id];
+  });
+  return {
+    requestedRuns,
+    completedRuns,
+    stableCaseRate: ratio(corpusCases.length - flakyCaseIds.length, corpusCases.length),
+    minimumRunPassRate: passRates.length > 0 ? Math.min(...passRates) : 0,
+    flakyCaseIds,
+  };
+}
+
+function decisionFingerprint(report: AnswerBenchCaseReport): string {
+  return JSON.stringify({
+    executed: report.executed,
+    status: report.status,
+    outcome: report.outcome,
+    degraded: [...report.degraded].sort(),
+    answerPresent: report.answerPresenceCorrect,
+    supportedFacts: report.supportedFacts,
+    forbiddenTextDetected: report.forbiddenTextDetected,
+    citedSources: [...report.citedSources].sort(),
+    relatedSources: [...report.relatedSources].sort(),
+    passed: report.passed,
+    error: report.error,
+  });
+}
+
+function summarizeRun(run: number, cases: AnswerBenchCaseReport[]): AnswerBenchRunSummary {
+  const latencies = cases.filter((benchCase) => benchCase.executed).map((benchCase) => benchCase.latencyMs);
+  const casesPassed = cases.filter((benchCase) => benchCase.passed).length;
+  return {
+    run,
+    passed: casesPassed === cases.length,
+    casesPassed,
+    casesTotal: cases.length,
+    p95LatencyMs: percentile(latencies, 0.95),
+    modelCalls: sum(cases.map((benchCase) => benchCase.modelCalls)),
+    providerTotalTokens: sum(cases.map((benchCase) => benchCase.providerTotalTokens)),
   };
 }
 
 async function runCases(
   memory: Akno,
   identities: CorpusIdentities,
+  cases: AnswerBenchCase[],
   concurrency: number,
+  run: number,
+  runs: number,
   onProgress?: AnswerBenchOptions['onProgress'],
 ): Promise<AnswerBenchCaseReport[]> {
-  const cases = ANSWER_BENCH_CORPUS.cases;
   if (cases.length === 0) return [];
   const first = await runCase(memory, identities, cases[0]!);
-  onProgress?.({ done: 1, total: cases.length });
+  onProgress?.({ run, runs, done: 1, total: cases.length });
   const rest = await mapConcurrent(
     cases.slice(1),
     concurrency,
@@ -344,7 +535,7 @@ async function runCases(
       const result = await runCase(memory, identities, benchCase);
       return result;
     },
-    (done) => onProgress?.({ done: done + 1, total: cases.length }),
+    (done) => onProgress?.({ run, runs, done: done + 1, total: cases.length }),
   );
   return [first, ...rest];
 }
@@ -541,9 +732,9 @@ function benchmarkOverrides(
   };
 }
 
-function writeCorpus(root: string): CorpusIdentities {
+function writeCorpus(root: string, corpus: AnswerBenchCorpus): CorpusIdentities {
   const sourceByLocator = new Map<string, string>();
-  for (const source of ANSWER_BENCH_CORPUS.sources) {
+  for (const source of corpus.sources) {
     const relPath = `${ANSWER_BENCH_ROOT}/${source.path}`;
     const target = path.join(root, relPath);
     fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -556,17 +747,57 @@ function writeCorpus(root: string): CorpusIdentities {
   return { sourceByLocator };
 }
 
-function validateAnswerCorpus(): void {
+function validateAnswerCorpora(): void {
+  validateAnswerCorpus(ANSWER_BENCH_CORPUS);
+  validateAnswerCorpus(ANSWER_BENCH_HELD_OUT_CORPUS);
+  assertDisjoint(
+    ANSWER_BENCH_CORPUS.sources.map((source) => source.id),
+    ANSWER_BENCH_HELD_OUT_CORPUS.sources.map((source) => source.id),
+    'source id',
+  );
+  assertDisjoint(
+    ANSWER_BENCH_CORPUS.sources.map((source) => source.path),
+    ANSWER_BENCH_HELD_OUT_CORPUS.sources.map((source) => source.path),
+    'source path',
+  );
+  assertDisjoint(
+    ANSWER_BENCH_CORPUS.sources.map((source) => sha256(source.content)),
+    ANSWER_BENCH_HELD_OUT_CORPUS.sources.map((source) => sha256(source.content)),
+    'source content',
+  );
+  assertDisjoint(
+    ANSWER_BENCH_CORPUS.cases.map((benchCase) => benchCase.id),
+    ANSWER_BENCH_HELD_OUT_CORPUS.cases.map((benchCase) => benchCase.id),
+    'case id',
+  );
+  assertDisjoint(
+    ANSWER_BENCH_CORPUS.cases.map((benchCase) => normalize(benchCase.question)),
+    ANSWER_BENCH_HELD_OUT_CORPUS.cases.map((benchCase) => normalize(benchCase.question)),
+    'question',
+  );
+  const heldOutFingerprint = corpusFingerprint(ANSWER_BENCH_HELD_OUT_CORPUS);
+  if (heldOutFingerprint !== ANSWER_BENCH_HELD_OUT_FINGERPRINT) {
+    throw new Error(
+      `frozen answer held-out corpus changed without a versioned fingerprint: ${heldOutFingerprint}`,
+    );
+  }
+}
+
+function corpusFingerprint(corpus: AnswerBenchCorpus): string {
+  return sha256(JSON.stringify({ version: corpus.version, sources: corpus.sources, cases: corpus.cases }));
+}
+
+function validateAnswerCorpus(corpus: AnswerBenchCorpus): void {
   const sourceIds = new Set<string>();
   const paths = new Set<string>();
-  for (const source of ANSWER_BENCH_CORPUS.sources) {
+  for (const source of corpus.sources) {
     if (sourceIds.has(source.id)) throw new Error(`duplicate answer benchmark source id: ${source.id}`);
     if (paths.has(source.path)) throw new Error(`duplicate answer benchmark path: ${source.path}`);
     sourceIds.add(source.id);
     paths.add(source.path);
   }
   const caseIds = new Set<string>();
-  for (const benchCase of ANSWER_BENCH_CORPUS.cases) {
+  for (const benchCase of corpus.cases) {
     if (caseIds.has(benchCase.id)) throw new Error(`duplicate answer benchmark case id: ${benchCase.id}`);
     caseIds.add(benchCase.id);
     for (const source of [
@@ -577,6 +808,12 @@ function validateAnswerCorpus(): void {
       if (!sourceIds.has(source)) throw new Error(`unknown answer benchmark source id: ${source}`);
     }
   }
+}
+
+function assertDisjoint(left: string[], right: string[], label: string): void {
+  const leftSet = new Set(left);
+  const overlap = right.find((value) => leftSet.has(value));
+  if (overlap) throw new Error(`answer benchmark splits share ${label}: ${overlap}`);
 }
 
 function benchmarkProviders(config: AknoConfig): NonNullable<ConfigDoc['providers']> {
@@ -644,6 +881,10 @@ function normalize(value: string): string {
 
 function normalizeConcurrency(value: number): number {
   return Number.isFinite(value) ? Math.max(1, Math.min(8, Math.floor(value))) : 2;
+}
+
+function normalizeRuns(value: number): number {
+  return Number.isFinite(value) ? Math.max(1, Math.min(10, Math.floor(value))) : 1;
 }
 
 function normalizeDimensions(value: number): number {

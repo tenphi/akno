@@ -243,6 +243,35 @@ describe('grounded answer discovery surface', () => {
     ]);
   });
 
+  it('accepts an explicit exclusion as support for equivalent negative wording', async () => {
+    write(
+      'coverage/cormorant-exclusions.md',
+      '# Cormorant exclusions\n\nThe cormorant marker says coverage excludes volcanic-ash damage.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'Coverage does not include volcanic-ash damage.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'Does the cormorant coverage include volcanic-ash damage?',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+
+    expect(result).toMatchObject({
+      status: 'degraded',
+      outcome: 'partial',
+      answer: 'Coverage does not include volcanic-ash damage. [coverage/cormorant-exclusions:3]',
+    });
+    expect(result.degraded).toContain('partial_index');
+    expect(modelRequests).toHaveLength(2);
+  });
+
   it('fails closed when independent verification returns an invalid verdict', async () => {
     await useAnswerModel({
       generation: {

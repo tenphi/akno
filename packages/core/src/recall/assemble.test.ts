@@ -62,6 +62,21 @@ describe('computeCoverage', () => {
     );
     expect(coverage['household car']).toBe(true);
   });
+
+  it('treats an explicit exclusion as covering an inclusion question', () => {
+    const coverage = computeCoverage(
+      ['coverage include', 'volcanic-ash damage'],
+      [
+        card({
+          lines: [{ n: 7, text: 'Coverage expressly excludes volcanic-ash damage.' }],
+          summary: null,
+        }),
+      ],
+    );
+
+    expect(coverage['coverage include']).toBe(true);
+    expect(coverage['volcanic-ash damage']).toBe(true);
+  });
 });
 
 describe('estimateTokens', () => {
