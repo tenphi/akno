@@ -1610,6 +1610,7 @@ source files in precedence order.
 ```bash
 akno bench --write
 akno bench --retrieval-only
+akno bench graph
 akno bench entities --provider openai --model gpt-5.6-luna --reasoning none
 ```
 
@@ -1619,6 +1620,15 @@ corpus and asserts orphan recall, no owned/standalone duplication, unchanged pag
 typed lexical degradation, two-hop graph-only discovery with complete path provenance, direct-query top-result
 preservation, and mixed budget-fitting latency. `--retrieval-only` runs that reproducible quality gate without
 opening the configured knowledge base or calling its models.
+
+`bench graph` is the model-free held-out graph release gate. It constructs 62 invented pages and two documents,
+then runs 25 cases across exact identity signals, stable identity after a move, ambiguity abstention, authored
+subjects, provenance, one-to-three-hop traversal, current/scalar/historical/conflicting facts, bounded hubs,
+document availability, fixed-budget recall, adversarial text, hygiene discovery, rebuild equivalence, and
+knowledge-byte preservation. All expected outcomes, identities, provenance, paths, abstentions, and maintenance
+classes must pass; graph-only false positives must remain zero; graph p95 has a 100 ms budget; and the ordinary
+mixed-retrieval gate must remain green. The configured knowledge base and models are never opened. A stored
+artifact is content-safe and explicitly says whether the corpus received independent review.
 
 `bench entities` is a separate opt-in live gate. It sends only Akno's eight invented same-name cases to the
 selected model and never opens the configured knowledge base. It measures strict candidate selection,

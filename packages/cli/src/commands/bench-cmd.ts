@@ -7,6 +7,7 @@ import {
   open,
   refreshRankingMatrixReport,
   runEntityResolutionBench,
+  runGraphBench,
   runBench,
   runLlmRankingProbe,
   runMixedRetrievalBench,
@@ -15,6 +16,7 @@ import {
   runRankingMatrix,
   type Akno,
   type EntityResolutionBenchReport,
+  type GraphBenchReport,
   type MixedRetrievalBenchReport,
   type RankingBenchReport,
   type RankingBenchSplit,
@@ -45,6 +47,8 @@ const BENCH_HELP = `akno bench [options]
                       generative endpoint. This is not the ranking release gate.
   entities            Run the invented select-or-abstain release gate for
                       contextual entity resolution. Never opens the knowledge base.
+  graph               Run the frozen, model-free held-out graph release gate.
+                      Never opens the knowledge base or configured models.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
@@ -127,6 +131,45 @@ export async function benchCommand(argv: string[]): Promise<number> {
   if (values.help) {
     line(BENCH_HELP);
     return 0;
+  }
+
+  if (positionals[0] === 'graph') {
+    if (positionals.length > 1) {
+      fail(`unknown graph bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    if (
+      values['retrieval-only'] ||
+      values.write ||
+      values.probe ||
+      values.matrix ||
+      values['skip-native'] ||
+      values.track ||
+      values['matrix-artifact'] ||
+      values.provider ||
+      values.model ||
+      values['embedding-provider'] ||
+      values['embedding-model'] ||
+      values['embedding-dimensions'] ||
+      values.reasoning ||
+      values.split ||
+      values.system ||
+      values.candidates ||
+      values['excerpt-chars'] ||
+      values.concurrency ||
+      values.runs
+    ) {
+      fail('graph bench is one frozen test split and accepts only --iterations, --output, and --json');
+      return 2;
+    }
+    const report = await runGraphBench({
+      ...(values.iterations ? { iterations: Number(values.iterations) } : {}),
+    });
+    let artifactPath: string | null = null;
+    if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+    if (values.json) json(report);
+    else renderGraphBench(report, artifactPath);
+    return report.passed ? 0 : 1;
   }
 
   if (positionals[0] === 'entities') {
@@ -598,6 +641,37 @@ function renderEntityResolution(report: EntityResolutionBenchReport, artifactPat
   line(
     `\n${report.passed ? style.green('entity-resolution gate passed') : style.red('entity-resolution gate failed')}`,
   );
+}
+
+function renderGraphBench(report: GraphBenchReport, artifactPath: string | null): void {
+  heading(
+    `Graph release gate — frozen ${report.split} corpus, ${report.corpus.pages} invented pages, ` +
+      `${report.corpus.cases} cases`,
+  );
+  line(`  expected outcomes            ${percent(report.metrics.expectedOutcomeAccuracy)}`);
+  line(`  exact identity               ${percent(report.metrics.identityAccuracy)}`);
+  line(`  ambiguous abstention         ${percent(report.metrics.ambiguousAbstention)}`);
+  line(`  traversable provenance       ${percent(report.metrics.provenanceAccuracy)}`);
+  line(`  bounded path recall          ${percent(report.metrics.pathRecall)}`);
+  line(`  graph-only false positives   ${percent(report.metrics.graphOnlyFalsePositiveRate)}`);
+  line(`  maintenance discovery        ${percent(report.metrics.maintenanceRecall)}`);
+  line(
+    `  graph latency p50 / p95      ${Math.round(report.metrics.p50LatencyMs)}ms / ` +
+      `${Math.round(report.metrics.p95LatencyMs)}ms`,
+  );
+  line(`  mixed retrieval regression   ${report.metrics.mixedRetrievalPassed ? 'none' : style.red('FAIL')}`);
+  for (const bench of report.cases) {
+    const verdict = bench.passed ? style.green('pass') : style.red('FAIL');
+    line(`  ${bench.id.padEnd(36)} ${verdict}  ${style.grey(bench.detail)}`);
+  }
+  if (artifactPath) line(`  artifact  ${artifactPath}`);
+  if (report.blockers.length > 0) line(`  blockers  ${report.blockers.join(', ')}`);
+  line(
+    `\n${report.passed ? style.green('graph release gate passed') : style.red('graph release gate failed')}`,
+  );
+  if (!report.corpus.independentlyReviewed) {
+    line(style.grey('The corpus is held out from user data but still awaits independent corpus review.'));
+  }
 }
 
 function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string | null): void {

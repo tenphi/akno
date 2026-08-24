@@ -59,6 +59,14 @@ export {
   type EntityResolutionBenchReport,
 } from './bench/entity-resolution.ts';
 export {
+  GRAPH_BENCH_SCHEMA_VERSION,
+  runGraphBench,
+  type GraphBenchCaseReport,
+  type GraphBenchCategory,
+  type GraphBenchOptions,
+  type GraphBenchReport,
+} from './bench/graph.ts';
+export {
   runLlmRankingProbe,
   type LlmRankingProbeOptions,
   type LlmRankingProbeReport,

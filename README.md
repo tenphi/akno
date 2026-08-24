@@ -852,6 +852,15 @@ The fixed mixed-result corpus is asserted on every run:
 `akno bench --retrieval-only` runs only that invented corpus. It neither opens the configured knowledge base
 nor calls its models, which makes it the safe, reproducible quality gate for CI and ranking changes.
 
+`akno bench graph` runs the separate frozen, model-free graph gate. Its 62-page, 25-case held-out corpus
+covers every exact identity signal, Unicode/case normalization, a stable-id move, ambiguous names, explicit
+subjects, one-to-three-hop traversal, edge provenance, scalar and entity facts, history, unverified conflicts,
+hub truncation, missing and orphan documents, instruction-shaped evidence, graph-only false positives,
+maintenance discovery, rebuild equivalence, and index byte preservation. Every correctness ratio must be
+100%, graph-only false positives must be zero, graph p95 must stay within 100 ms, and the existing mixed
+retrieval gate must also pass. It opens neither the configured knowledge base nor any model. `--output` stores
+the content-safe result atomically; the artifact records that independent corpus review is still pending.
+
 `akno bench ranking --probe` is the separate opt-in live smoke check for prompted reranking. It sends three
 invented excerpts—including one instruction-bearing irrelevant passage—to the selected provider, and reports
 transport, schema, order, labels, and latency. It never opens the index. Passing verifies the integration, not
