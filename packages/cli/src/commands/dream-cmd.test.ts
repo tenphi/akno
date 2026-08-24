@@ -23,6 +23,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('chg_example');
     expect(safe).toContain('run_example');
     expect(safe).toContain('"componentCount":2');
+    expect(safe).toContain('"graphCandidates":1');
   });
 
   it('collapses raw source contexts into one guardrail category per page', () => {
@@ -174,7 +175,22 @@ function privateReport(): DreamReport {
     conflicts: [],
     repaired: null,
     repairChangeId: null,
-    housekeeping: null,
+    housekeeping: {
+      brokenLinks: [],
+      orphanedDocuments: [],
+      drift: [],
+      graphCandidates: [
+        {
+          kind: 'identity_collision',
+          subject: 'people/ada-marlow',
+          related: ['people/ada-marlow-private'],
+          occurrences: 1,
+          reason: 'Ada Marlow has a private graph identity collision.',
+          fingerprint: 'graph_fingerprint_example',
+        },
+      ],
+      counts: { brokenLinks: 0, orphanedDocuments: 0, drift: 0, graphCandidates: 1 },
+    },
     changeId: null,
     adoptChangeId: null,
     curateChangeId: null,

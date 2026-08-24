@@ -1982,6 +1982,42 @@ describe('housekeeping', () => {
     expect(drift?.expected).toBe('type: appliance');
     expect(drift?.found).toBe('type: chore');
   });
+
+  it('includes graph findings as read-only housekeeping candidates', async () => {
+    fs.writeFileSync(
+      path.join(root, 'home/zephyr-one.md'),
+      '---\ntitle: Zephyr One\nakno:\n  aliases: [Zephyr]\n---\n\n# Zephyr One\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'home/zephyr-two.md'),
+      '---\ntitle: Zephyr Two\nakno:\n  aliases: [Zephyr]\n---\n\n# Zephyr Two\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'home/graph-review.md'),
+      '---\ntitle: Graph Review\nakno:\n  about: [Zephyr, Missing Fixture]\n---\n\n# Graph Review\n',
+      'utf8',
+    );
+    await mem.index({ structuralOnly: true, verify: true });
+
+    const report = await mem.dream({ phase: 'housekeeping' });
+    const candidates = report.housekeeping!.graphCandidates;
+
+    expect(report.housekeeping!.counts.graphCandidates).toBeGreaterThanOrEqual(2);
+    expect(candidates).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'identity_collision', subject: 'zephyr' }),
+        expect.objectContaining({
+          kind: 'unresolved_about',
+          subject: 'home/graph-review',
+          related: ['Missing Fixture'],
+        }),
+      ]),
+    );
+    expect(report.maintenancePlans).toEqual([]);
+    expect(report.run.maintenancePlanIds).toEqual([]);
+  });
 });
 
 describe('the cycle', () => {

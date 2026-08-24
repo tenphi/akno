@@ -869,8 +869,8 @@ Order matters at several boundaries:
   status `snapshot_drift`; the next full cycle plans it again from current state. Unrelated file changes do not
   invalidate the whole run. Apply repeats the preflight after approval, closing the later curator-to-write
   window as far as an external, unlocked Markdown tree allows.
-- `housekeeping` runs last so its counts describe the state after plan-backed observation, reflection, curation, and adoption. The
-  compatibility `repair` phase is read-only.
+- `housekeeping` runs last so its counts describe the state after plan-backed observation, reflection, curation,
+  and adoption. It also derives read-only graph review candidates; the compatibility `repair` phase is read-only.
 
 ### Phase summary
 
@@ -882,7 +882,7 @@ Order matters at several boundaries:
 | `curate`       | Explicitly opted-in pages, evidence, typed conflicts, broken links, and event state | Verified page, link, and contradiction plans   | no; audit proposals only          | page/curator work yes; link audit no |
 | `adopt`        | Readable documents with no owning page                                              | Exact low-risk filing-page plans               | no; audit proposals, capped at 20 | planner no; auto curator yes         |
 | `repair`       | Broken links                                                                        | Read-only view of exact proposals and refusals | no; phase disabled                | no                                   |
-| `housekeeping` | Links, documents, pages, and folder rules                                           | Counts and actionable diagnostics              | no                                | no                                   |
+| `housekeeping` | Links, documents, pages, folder rules, and the evidence graph                       | Counts and read-only actionable diagnostics    | no                                | no                                   |
 
 The default `audit` profile has no automatic write-capable phase. It may seal curation and adoption proposals,
 but never decides or applies them. `conflicts` and `housekeeping` report; `observe` and `reflect` remain disabled
@@ -1297,9 +1297,15 @@ Housekeeping reports:
 - broken non-embed wikilinks;
 - documents with no owning page, including whether their text is readable or the original is missing;
 - pages whose type, slug pattern, or nesting depth conflicts with a matching folder rule.
+- exact entity names declared by several canonical pages, unresolved authored `akno.about` targets, and
+  entity hubs beyond the traversal fan-out boundary.
 
 It always reports and never writes. Lists are capped for readability, while counts show the full total.
 Because it runs last, the report reflects anything `adopt` or plan-backed `curate` changed earlier in the cycle.
+Graph findings carry a stable fingerprint, subjects, related slugs, and a reason, but deliberately contain no
+operation or target path. They can guide a human or future planner; they cannot authorize a merge, alias edit,
+page creation, or any other transformation. Default output shows only their count. `--private-details` shows
+the identities and explanation.
 
 ### Reviewing and undoing a dream
 
@@ -1688,9 +1694,10 @@ provenance and conservative confidence; malformed output, endpoint failure, indi
 changed evidence all leave the mention ambiguous. Run `akno bench entities` before enabling it; the invented
 gate requires perfect selection precision and abstention on indistinguishable and instruction-bearing cases.
 
-This does not perform open-ended entity discovery or duplicate merging. Recall also does not request three-hop
-traversal or use graph findings to authorize maintenance; deliberate one-to-three-hop inspection remains the
-job of `graph`, and grounded answer synthesis remains a separate proposed operation.
+This does not perform open-ended entity discovery or duplicate merging. Housekeeping now reports identity
+collisions, unresolved authored subjects, and traversal hubs as read-only graph review candidates, but those
+findings contain no operation and cannot authorize maintenance. Deliberate one-to-three-hop inspection remains
+the job of `graph`, and grounded answer synthesis remains a separate proposed operation.
 
 ### The durable review queue does not cover every phase yet
 

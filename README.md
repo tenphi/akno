@@ -597,13 +597,14 @@ unverified claims cannot feed observation, reflection, or synthesis. Selecting `
 | `curate`       | plan/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
 | `adopt`        | plan/write | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                                             |
 | `repair`       | no         | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                                         |
-| `housekeeping` | no         | Broken links, orphaned documents, pages that have drifted from their folder's rules.                                                                                                                              |
+| `housekeeping` | no         | Broken links, orphaned documents, rule drift, and read-only graph review candidates for identity collisions, unresolved authored subjects, and traversal hubs.                                                    |
 
 `observe` and `reflect` only ever append: a changed conclusion gets a new dated line, nothing is deleted. Both
 use durable per-conclusion plans under their resolved transformation policy. Writing phases are journalled by
 purpose, so reversing a night's
 inferences does not also reverse the pages that made documents searchable. `conflicts`, legacy `repair`, and
-`housekeeping` only report.
+`housekeeping` only report. Graph candidates carry no operation and grant no merge, creation, or rewrite
+authority; private identities appear only with `--private-details`.
 
 For a coherent scheduled policy, set one profile:
 

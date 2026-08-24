@@ -409,6 +409,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       ['broken links', house.counts.brokenLinks],
       ['orphaned documents', house.counts.orphanedDocuments],
       ['pages off their rules', house.counts.drift],
+      ['graph review candidates', house.counts.graphCandidates],
     ]);
     if (privateDetails) {
       for (const entry of house.orphanedDocuments.slice(0, 5)) {
@@ -423,6 +424,13 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       if (house.brokenLinks.length > 0) {
         const shown = house.brokenLinks.slice(0, 5).map((link) => `${link.from} → ${link.to}`);
         line(`  ${style.grey(`links: ${shown.join(', ')}`)}`);
+      }
+      for (const entry of house.graphCandidates.slice(0, 5)) {
+        line(`  ${style.yellow('·')} [${entry.kind}] ${entry.subject}`);
+        line(`    ${style.grey(entry.reason)}`);
+        if (entry.related.length > 0) {
+          line(`    ${style.grey(`related: ${entry.related.join(', ')}`)}`);
+        }
       }
     }
   }

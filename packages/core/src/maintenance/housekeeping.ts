@@ -1,6 +1,7 @@
 import type { AknoContext } from '../context.ts';
 import { configuredTransformPolicy } from './profile.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
+import { discoverGraphMaintenanceCandidates, type GraphMaintenanceCandidate } from './graph-candidates.ts';
 
 /**
  * The cycle reports broken links, orphaned documents, and pages that have drifted from their
@@ -36,8 +37,10 @@ export interface Housekeeping {
   brokenLinks: BrokenLink[];
   orphanedDocuments: OrphanedDocument[];
   drift: RuleDrift[];
+  /** Read-only graph findings. They carry no operation and grant no transformation authority. */
+  graphCandidates: GraphMaintenanceCandidate[];
   /** Totals, because the lists are capped for a readable report. */
-  counts: { brokenLinks: number; orphanedDocuments: number; drift: number };
+  counts: { brokenLinks: number; orphanedDocuments: number; drift: number; graphCandidates: number };
 }
 
 const LIST_CAP = 20;
@@ -67,6 +70,7 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
   const orphanTotal = count(ctx, 'SELECT count(*) AS c FROM documents WHERE page_id IS NULL');
 
   const drift = findDrift(ctx);
+  const graphCandidates = discoverGraphMaintenanceCandidates(ctx.store);
   const adoptEnabled = configuredTransformPolicy(ctx.config, 'adopt') !== 'off';
 
   return {
@@ -89,7 +93,13 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
             : 'unfiled and visible by filename, but nothing could be read from it',
     })),
     drift: drift.slice(0, LIST_CAP),
-    counts: { brokenLinks: brokenTotal, orphanedDocuments: orphanTotal, drift: drift.length },
+    graphCandidates: graphCandidates.slice(0, LIST_CAP),
+    counts: {
+      brokenLinks: brokenTotal,
+      orphanedDocuments: orphanTotal,
+      drift: drift.length,
+      graphCandidates: graphCandidates.length,
+    },
   };
 }
 
