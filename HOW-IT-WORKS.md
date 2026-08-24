@@ -489,9 +489,13 @@ qualification capability was missing or failed, and `unavailable` means evidence
 Exact evidence wins exclusively over semantic neighbours: once any exact candidate exists, a semantically close
 duplicate cannot ride beside it. An exact page identity is sufficient by itself only for an identity-only prompt;
 when the prompt asks for an attribute, that attribute must also occur in the evidence. The development corpus
-freezes direct semantic activation at 0.9. Native qualification uses a stricter 0.99 calibrated relevance floor
-for automatic injection—the ordinary 0.5 recall boundary is appropriate for explicit discovery, but measured
-topical hard negatives reached 0.9728 and are not safe to insert before a host model can object.
+freezes direct semantic activation at 0.9. A singular fact with multiple exact sources abstains instead of
+injecting a conflict. Mechanical price, amount, and duration questions also require an explicit value, so a page
+saying only that “the price record was reviewed” must go through qualification rather than count as the price.
+Interrogative framing such as “how long” is not itself treated as a required evidence term. Native qualification
+uses a stricter 0.99 calibrated relevance floor for automatic injection—the ordinary 0.5 recall boundary is
+appropriate for explicit discovery, but measured topical hard negatives reached 0.9728 and are not safe to
+insert before a host model can object.
 
 Recent turns are accepted only to resolve local expressions such as “it” or “the other one”: at most six turns
 and 6,000 characters pass validation, only the last two turns and 1,000 characters can affect retrieval, and the
@@ -1702,6 +1706,9 @@ akno bench answer --concurrency 2
 akno bench answer --split test --runs 5 --output benchmarks/answer/held-out.json
 akno bench auto-recall --concurrency 2
 akno bench auto-recall --split test --runs 5 --output benchmarks/auto-recall/held-out.json
+akno bench auto-recall-answer --concurrency 2
+akno bench auto-recall-answer --split test --runs 5 \
+  --output benchmarks/auto-recall-answer/held-out.json
 ```
 
 Deterministic storage budgets are asserted. Model-dependent latency is reported rather than failed simply
@@ -1759,6 +1766,27 @@ qualifier activation must stay at or below 75%, repeated decisions must be compl
 must remain at or below 10 seconds. The report includes qualifier identity, measured latency, and actual provider
 token usage when reported. The stored five-run local native result passed all technical gates over 60 executions
 with 41.7% qualifier activation and 361 ms p95; independent corpus review remains its only release blocker.
+
+`bench auto-recall-answer` then evaluates the host boundary without changing the public retrieval API. It
+reuses the invented answer corpus except for its graph-only case and sends each current prompt to the same host
+model twice. The memory-on arm receives the exact, locator-bearing auto-recall bundle inside a clearly delimited
+untrusted-data section. The memory-off arm receives no memory. Both arms use the same frozen structured host
+prompt, model, reasoning setting, and output budget.
+
+The gate requires perfect activation, supported-fact coverage, unsupported/conflicting-evidence abstention,
+memory-off abstention, pairwise improvement, and repeated decision stability. Any answer without evidence is an
+unsupported claim. Evidence instructions and unrelated protected markers must never appear in an answer.
+Context p95 is bounded at 10 seconds, memory-on total p95 at 20 seconds, and paired incremental p95 at 10
+seconds. Host and qualifier latency and provider usage are accounted separately. The artifact stores no current
+prompt, evidence, answer text, source locator, endpoint, provider error, or credential.
+
+The first five-run OpenAI Luna held-out artifact failed the quality gate while passing its safety boundaries.
+Across 55 paired executions, activation and both abstention metrics were 100%, with zero unsupported claims and
+zero forbidden-memory leakage. Memory-on answer accuracy was 81.8%, fact accuracy 75.6%, pairwise improvement
+75%, and decision stability 90.9%. A list-form cadence was not answered; a two-page compound answer was
+incomplete and varied between runs. Akno therefore must not enable the Luna pre-turn integration from this
+evidence. The failed frozen artifact is retained as the regression target, not used to tune the same held-out
+split.
 
 ### Recovery guarantees
 

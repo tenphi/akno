@@ -64,6 +64,19 @@ export {
   type AutoRecallBenchRunSummary,
 } from './bench/auto-recall.ts';
 export {
+  AUTO_RECALL_ANSWER_BENCH_SCHEMA_VERSION,
+  AUTO_RECALL_ANSWER_HELD_OUT_FINGERPRINT,
+  AUTO_RECALL_HOST_PROMPT_VERSION,
+  markAutoRecallAnswerBenchPersisted,
+  runAutoRecallAnswerBench,
+  validateAutoRecallAnswerCorpora,
+  type AutoRecallAnswerArmReport,
+  type AutoRecallAnswerBenchOptions,
+  type AutoRecallAnswerBenchReport,
+  type AutoRecallAnswerCaseReport,
+  type AutoRecallAnswerRunSummary,
+} from './bench/auto-recall-answer.ts';
+export {
   runMixedRetrievalBench,
   type MixedRetrievalBenchOptions,
   type MixedRetrievalBenchReport,

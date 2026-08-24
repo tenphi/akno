@@ -4,11 +4,13 @@ import path from 'node:path';
 import {
   attachRankingEndToEndEvidence,
   markAnswerBenchPersisted,
+  markAutoRecallAnswerBenchPersisted,
   markAutoRecallBenchPersisted,
   markRankingMatrixPersisted,
   open,
   refreshRankingMatrixReport,
   runAnswerBench,
+  runAutoRecallAnswerBench,
   runAutoRecallBench,
   runEntityResolutionBench,
   runGraphBench,
@@ -20,6 +22,7 @@ import {
   runRankingMatrix,
   type Akno,
   type AnswerBenchReport,
+  type AutoRecallAnswerBenchReport,
   type AutoRecallBenchReport,
   type EntityResolutionBenchReport,
   type GraphBenchReport,
@@ -61,6 +64,9 @@ const BENCH_HELP = `akno bench [options]
   auto-recall         Run invented prompts through the production precision-first
                       context profile. Development is default; use --split test
                       --runs 5 for the frozen held-out injection gate.
+  auto-recall-answer  Compare the same invented host-model turns with and without
+                      production auto-recall evidence. Development is default;
+                      use --split test --runs 5 for the held-out quality gate.
   ranking --system <s> Run frozen pools with fusion, native, or llm (default
                       fusion).
   ranking --matrix    Run fusion, optional native, Luna none at 10/20/40, and
@@ -74,17 +80,19 @@ const BENCH_HELP = `akno bench [options]
     --excerpt-chars <n> 400, 800, or 1600 (default 800).
     --concurrency <n> Simultaneous cases, 1..16 (answer caps at 8; single
                       ranking defaults 1, matrix 4). Latency remains per case.
-    --runs <n>        Answer repetitions or repetitions per LLM matrix variant,
-                      1..10 (answer: development 1, held-out 5; matrix 5).
+    --runs <n>        Answer/auto-recall-answer repetitions or repetitions per LLM
+                      matrix variant, 1..10 (development 1, held-out/matrix 5).
     --skip-native     Omit the optional native reference from a matrix.
     --matrix-artifact <path>
                       Use its selected configuration and atomically attach
                       end-to-end evidence to that matrix artifact.
     --output <path>   Atomically persist the content-safe result artifact.
     --provider <name> Configured provider. Ranking defaults to openai; answer
-                      uses its configured role; auto-recall uses reranker.
+                      and auto-recall-answer use the answer role; auto-recall
+                      uses reranker.
     --model <id>      Generative model. Ranking defaults to gpt-5.6-luna;
-                      answer uses its configured role; auto-recall uses reranker.
+                      answer and auto-recall-answer use the answer role;
+                      auto-recall uses reranker.
     --embedding-provider <name>
                       Embedding provider for end-to-end ranking or answer recall.
     --embedding-model <id>
@@ -286,6 +294,76 @@ export async function benchCommand(argv: string[]): Promise<number> {
     }
     if (values.json) json(report);
     else renderAutoRecallBench(report, artifactPath);
+    return report.passed ? 0 : 1;
+  }
+
+  if (positionals[0] === 'auto-recall-answer') {
+    if (positionals.length > 1) {
+      fail(`unknown auto-recall-answer bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    if (
+      values['retrieval-only'] ||
+      values.write ||
+      values.probe ||
+      values.matrix ||
+      values['skip-native'] ||
+      values.track ||
+      values['matrix-artifact'] ||
+      values.system ||
+      values.candidates ||
+      values['excerpt-chars'] ||
+      values.iterations ||
+      (values.split && !['development', 'test'].includes(values.split))
+    ) {
+      fail(
+        'auto-recall-answer bench accepts development/test split, runs, provider/model, embedding, reasoning, concurrency, output, and json options',
+      );
+      return 2;
+    }
+    const reasoning = values.reasoning ? parseReasoningEffort(values.reasoning) : undefined;
+    if (values.reasoning && !reasoning) {
+      fail(`invalid reasoning effort: ${values.reasoning}`);
+      return 2;
+    }
+    const split = (values.split ?? 'development') as 'development' | 'test';
+    const runs = parseBoundedInteger(values.runs ?? (split === 'test' ? '5' : '1'), 1, 10, 'runs');
+    const concurrency = parseBoundedInteger(values.concurrency ?? '2', 1, 8, 'concurrency');
+    const { loadConfig } = await import('@tenphi/akno-core');
+    const config = loadConfig(openOptionsFrom(values));
+    const embeddingDimensions = parseBoundedInteger(
+      values['embedding-dimensions'] ?? String(config.models.embedding.dimensions ?? 1_536),
+      1,
+      65_536,
+      'embedding dimensions',
+    );
+    if (runs === null || concurrency === null || embeddingDimensions === null) return 2;
+    let report = await runAutoRecallAnswerBench(config, {
+      split,
+      runs,
+      concurrency,
+      ...(values['embedding-provider'] ? { embeddingProvider: values['embedding-provider'] } : {}),
+      ...(values['embedding-model'] ? { embeddingModel: values['embedding-model'] } : {}),
+      embeddingDimensions,
+      ...(values.provider ? { provider: values.provider } : {}),
+      ...(values.model ? { model: values.model } : {}),
+      ...(reasoning ? { reasoningEffort: reasoning } : {}),
+      ...(!values.json
+        ? {
+            onProgress: ({ run, runs: totalRuns, done, total }) => {
+              if (done === 1 || done === total)
+                line(`  auto-recall-answer run ${run}/${totalRuns}  ${done}/${total} cases`);
+            },
+          }
+        : {}),
+    });
+    let artifactPath: string | null = null;
+    if (values.output) {
+      report = markAutoRecallAnswerBenchPersisted(report);
+      artifactPath = await writeJsonArtifact(values.output, report);
+    }
+    if (values.json) json(report);
+    else renderAutoRecallAnswerBench(report, artifactPath);
     return report.passed ? 0 : 1;
   }
 
@@ -919,6 +997,70 @@ function renderAutoRecallBench(report: AutoRecallBenchReport, artifactPath: stri
   if (report.blockers.length > 0) line(`  blockers                ${report.blockers.join(', ')}`);
   line(
     `\n${report.passed ? style.green(`${report.split} injection gate passed`) : style.red(`${report.split} injection gate failed`)}`,
+  );
+  line(
+    report.releaseEligible
+      ? style.green('Stored held-out evidence satisfies every release gate.')
+      : style.grey(`Release remains blocked by: ${report.releaseBlockers.join(', ')}.`),
+  );
+}
+
+function renderAutoRecallAnswerBench(report: AutoRecallAnswerBenchReport, artifactPath: string | null): void {
+  heading(
+    `Auto-recall host answers — ${report.split}, ${report.corpus.cases} paired cases across ` +
+      `${report.corpus.categories} categories, ${report.stability.requestedRuns} run(s)`,
+  );
+  line(`  host model                    ${report.hostModel.provider}/${report.hostModel.model}`);
+  line(`  reasoning                     ${report.hostModel.reasoningEffort ?? 'provider default'}`);
+  line(`  qualifier                     ${report.qualifier.provider}/${report.qualifier.model}`);
+  line(`  embedding                     ${report.embedding.provider}/${report.embedding.model}`);
+  line(`  execution                     ${percent(report.metrics.executionRate)}`);
+  line(`  context activation            ${percent(report.metrics.activationAccuracy)}`);
+  line(`  answers with memory           ${percent(report.metrics.withMemoryAccuracy)}`);
+  line(`  facts with memory             ${percent(report.metrics.withMemoryFactAccuracy)}`);
+  line(`  abstention with memory        ${percent(report.metrics.withMemoryAbstentionAccuracy)}`);
+  line(`  abstention without memory     ${percent(report.metrics.withoutMemoryAbstentionAccuracy)}`);
+  line(`  pairwise improvement          ${percent(report.metrics.pairwiseImprovementRate)}`);
+  line(`  unsupported claim rate        ${percent(report.metrics.unsupportedClaimRate)}`);
+  line(`  forbidden-memory leak rate    ${percent(report.metrics.forbiddenLeakRate)}`);
+  line(
+    `  context latency p50 / p95     ${Math.round(report.execution.p50ContextLatencyMs)}ms / ` +
+      `${Math.round(report.execution.p95ContextLatencyMs)}ms`,
+  );
+  line(
+    `  on total latency p50 / p95    ${Math.round(report.execution.p50OnTotalLatencyMs)}ms / ` +
+      `${Math.round(report.execution.p95OnTotalLatencyMs)}ms`,
+  );
+  line(
+    `  incremental p95               ${Math.round(report.execution.p95IncrementalLatencyMs)}ms ` +
+      style.grey(`(gate ≤ ${report.thresholds.incrementalP95LatencyMs}ms)`),
+  );
+  line(
+    `  host provider usage           ${report.execution.hostProviderTotalTokens} tokens across ` +
+      `${report.execution.hostUsageReportedCalls}/${report.execution.hostModelCalls} reported calls`,
+  );
+  line(
+    `  qualifier provider usage      ${report.execution.qualificationProviderTotalTokens} tokens across ` +
+      `${report.execution.qualificationUsageReportedCalls}/${report.execution.qualificationCalls} reported calls`,
+  );
+  line(
+    `  case stability                ${
+      report.stability.stableCaseRate === null ? 'n/a (one run)' : percent(report.stability.stableCaseRate)
+    }`,
+  );
+  for (const benchCase of report.cases) {
+    const verdict = benchCase.passed ? style.green('pass') : style.red('FAIL');
+    const memory = benchCase.contextActivated ? `${benchCase.evidenceCount} evidence` : 'empty';
+    const answer = benchCase.withMemory.answered ? 'answered' : 'abstained';
+    line(`  ${benchCase.id.padEnd(40)} ${verdict}  ${style.grey(`${memory}; on=${answer}`)}`);
+  }
+  if (report.stability.flakyCaseIds.length > 0) {
+    line(`  flaky cases                    ${report.stability.flakyCaseIds.join(', ')}`);
+  }
+  if (artifactPath) line(`  artifact                       ${artifactPath}`);
+  if (report.blockers.length > 0) line(`  blockers                       ${report.blockers.join(', ')}`);
+  line(
+    `\n${report.passed ? style.green(`${report.split} host-answer gate passed`) : style.red(`${report.split} host-answer gate failed`)}`,
   );
   line(
     report.releaseEligible

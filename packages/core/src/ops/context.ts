@@ -231,10 +231,9 @@ async function autoRecallContext(
       ? strongSignals.filter((signal) => signal.basis === 'exact')
       : strongSignals
   ).slice(0, AUTO_RECALL_MAX_RESULTS);
-  const ambiguousSingularReference =
-    Boolean(resolutionContext) && hasSingularReference(input.query) && deterministic.length > 1;
+  const ambiguousSingularFact = asksForSingularFact(input.query) && deterministic.length > 1;
 
-  if (deterministic.length > 0 && !ambiguousSingularReference) {
+  if (deterministic.length > 0 && !ambiguousSingularFact) {
     return assembledAutoRecall({
       budget,
       searched: [input.query],
@@ -281,8 +280,7 @@ async function autoRecallContext(
         .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
         .slice(0, AUTO_RECALL_MAX_RESULTS)
     : [];
-  const qualifiedReferenceAmbiguous =
-    Boolean(resolutionContext) && hasSingularReference(input.query) && selected.length > 1;
+  const qualifiedReferenceAmbiguous = asksForSingularFact(input.query) && selected.length > 1;
 
   if (selected.length === 0 || qualifiedReferenceAmbiguous) {
     return emptyAutoRecall({
@@ -294,7 +292,7 @@ async function autoRecallContext(
       qualification: qualified.qualification,
       qualificationRun: true,
       note: qualifiedReferenceAmbiguous
-        ? 'recent context left a singular reference ambiguous between multiple sources'
+        ? 'a singular fact remained ambiguous between multiple sources'
         : qualificationApplied
           ? 'qualification found no evidence strong enough for automatic injection'
           : 'automatic injection requires calibrated qualification for ambiguous evidence',
@@ -443,16 +441,29 @@ function activationSignal(
       );
     });
   const semantic = result.relevance ?? 0;
+  // A topical page can repeat the requested field without containing its value: “the price record was
+  // reviewed” is not the price. Mechanical numeric and duration questions therefore need an explicit value
+  // before lexical overlap may bypass qualification. The qualifier handles less mechanical attribute/value
+  // boundaries.
+  const requestedValueMissing =
+    (asksForNumericValue(query) && !containsExplicitNumericValue(evidence)) ||
+    (asksForDurationValue(query) && !containsExplicitDurationValue(evidence));
   const semanticRelationSupported = identityResidual === undefined || identityRelationSupported;
   const strongSemantic =
-    semantic >= AUTO_RECALL_SEMANTIC_THRESHOLD && overlap >= 0.5 && semanticRelationSupported;
+    !requestedValueMissing &&
+    semantic >= AUTO_RECALL_SEMANTIC_THRESHOLD &&
+    overlap >= 0.5 &&
+    semanticRelationSupported;
   const dualArmSemantic =
+    !requestedValueMissing &&
     semantic >= AUTO_RECALL_DUAL_ARM_THRESHOLD &&
     overlap >= 0.5 &&
     semanticRelationSupported &&
     result.matched_by?.includes('lexical') === true &&
     result.matched_by.includes('vector');
-  const exact = identityRelationSupported || exactEvidence || (resolvedIdentity && overlap > 0);
+  const exact =
+    !requestedValueMissing &&
+    (identityRelationSupported || exactEvidence || (resolvedIdentity && overlap > 0));
   const strong = exact || strongSemantic || dualArmSemantic;
   const plausible = strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45;
   return {
@@ -491,6 +502,35 @@ function hasSingularReference(query: string): boolean {
   return /\b(it|its|that|this|one|other|former|latter|same)\b/i.test(query);
 }
 
+function asksForSingularFact(query: string): boolean {
+  if (/\b(and|both|compare|list)\b/i.test(query) || /\bwhat are\b/i.test(query)) return false;
+  return (
+    hasSingularReference(query) ||
+    /\bwhat (?:is|was)\b/i.test(query) ||
+    /\bwhen (?:does|did|is|was)\b/i.test(query) ||
+    /\bhow (?:long|often|much|many)\b/i.test(query) ||
+    /\bdoes\b/i.test(query)
+  );
+}
+
+function asksForNumericValue(query: string): boolean {
+  return /\b(price|cost|fee|amount|total|balance|rate)\b/i.test(query);
+}
+
+function asksForDurationValue(query: string): boolean {
+  return /\bhow (?:long|often)\b/i.test(query);
+}
+
+function containsExplicitNumericValue(evidence: string): boolean {
+  return /(?:[$€£¥]\s*\d|\b\d+(?:[.,]\d+)?\s*(?:eur|usd|gbp|jpy|%|percent)\b)/i.test(evidence);
+}
+
+function containsExplicitDurationValue(evidence: string): boolean {
+  return /\b(?:(?:\d+(?:[.,]\d+)?)|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)[ -](?:minute|hour|day|week|month|year)s?\b|\b(?:hourly|daily|weekly|monthly|quarterly|annually|yearly|twice a year)\b/i.test(
+    evidence,
+  );
+}
+
 const AUTO_RECALL_STOPWORDS = new Set([
   'about',
   'again',
@@ -506,7 +546,11 @@ const AUTO_RECALL_STOPWORDS = new Set([
   'how',
   'into',
   'its',
+  'long',
+  'many',
   'memory',
+  'much',
+  'often',
   'under',
   'please',
   'remember',

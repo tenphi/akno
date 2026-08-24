@@ -932,6 +932,29 @@ The frozen local-stack result passes all technical gates over five runs and 60 e
 and source precision/recall, zero irrelevant injection, 41.7% qualifier activation, 100% decision stability,
 and 361 ms p95. Independent corpus review remains the only release blocker.
 
+`akno bench auto-recall-answer` measures the next boundary: whether the same host model answers better when
+the exact auto-recall bundle is present. It reuses the invented answer corpus, excluding only its graph-only
+case, and runs every prompt in paired memory-on and memory-off arms. The memory-off arm must always abstain;
+the memory-on arm must answer every supported fact, abstain on unsupported or conflicting evidence, and ignore
+instructions and unrelated private markers inside evidence:
+
+```bash
+akno bench auto-recall-answer --split development --concurrency 2
+akno bench auto-recall-answer --split test --runs 5 --concurrency 2 \
+  --output benchmarks/auto-recall-answer/results/test.json
+```
+
+The content-safe report includes activation and answer accuracy, fact coverage, pairwise improvement,
+unsupported-claim and forbidden-text rates, decision stability, context/host/incremental latency, and separate
+host/qualifier usage receipts. It includes no prompt, evidence, answer prose, locator, endpoint, credential, or
+provider error.
+
+The first frozen OpenAI Luna held-out run correctly blocked host integration. Across 55 paired cases it kept
+activation and both abstention metrics at 100%, with zero unsupported claims and zero forbidden-memory leakage.
+Memory-on answer accuracy was 81.8%, fact accuracy 75.6%, and stability 90.9%: list-form cadence evidence was
+not used, and a two-page compound answer was incomplete and unstable. Its failed artifact is retained under
+`benchmarks/auto-recall-answer/results/`; the frozen result is evidence, not tuning data.
+
 `akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
 knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level
 60/20 development/test split that preserves all eight categories on both sides. A normal run selects the first
