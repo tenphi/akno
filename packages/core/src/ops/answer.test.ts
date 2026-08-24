@@ -131,8 +131,11 @@ describe('grounded answer discovery surface', () => {
 
   it('generates cited blocks and returns their already-retrieved evidence only when requested', async () => {
     await useAnswerModel({
-      blocks: [{ text: 'The warranty lasts 5 years.', evidence_ids: ['E1'] }],
-      missing_concepts: [],
+      generation: {
+        blocks: [{ text: 'The warranty lasts 5 years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
     });
     const before = treeFingerprint();
     const result = await memory.answer({
@@ -157,16 +160,19 @@ describe('grounded answer discovery surface', () => {
         lines: [{ n: 3, text: 'The silverpine warranty marker says the warranty lasts five years.' }],
       },
     ]);
-    expect(modelRequests).toHaveLength(1);
-    expect(JSON.stringify(modelRequests[0])).not.toContain('products/zephyr-qx-100');
+    expect(modelRequests).toHaveLength(2);
+    expect(JSON.stringify(modelRequests)).not.toContain('products/zephyr-qx-100');
     expect(treeFingerprint()).toBe(before);
     expect(memory.changes()).toEqual([]);
   });
 
   it('removes a block whose invented exact value does not occur in its citation', async () => {
     await useAnswerModel({
-      blocks: [{ text: 'The warranty lasts 8 years.', evidence_ids: ['E1'] }],
-      missing_concepts: [],
+      generation: {
+        blocks: [{ text: 'The warranty lasts 8 years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
     });
     const result = await memory.answer({
       question: 'What does the silverpine warranty marker say?',
@@ -179,18 +185,78 @@ describe('grounded answer discovery surface', () => {
     expect(result.degraded).toContain('answer_failed');
     expect(result.citations).toEqual([]);
     expect(result.context).toBeUndefined();
+    expect(modelRequests).toHaveLength(1);
+  });
+
+  it('withholds semantically unsupported prose without reporting verification failure', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          { text: 'The warranty lasts five years.', evidence_ids: ['E1'] },
+          { text: 'Replacement shipping is included.', evidence_ids: ['E1'] },
+        ],
+        missing_concepts: [],
+      },
+      verification: {
+        verdicts: [
+          { block_id: 'B1', supported: true },
+          { block_id: 'B2', supported: false },
+        ],
+      },
+    });
+    const result = await memory.answer({
+      question: 'What does the silverpine warranty marker say?',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+
+    expect(result).toMatchObject({
+      status: 'degraded',
+      outcome: 'partial',
+      answer: 'The warranty lasts five years. [products/zephyr-qx-100:3]',
+    });
+    expect(result.degraded).not.toContain('answer_failed');
+    expect(result.degraded).not.toContain('answer_verification_failed');
+    expect(result.answer).not.toContain('shipping');
+    expect(result.citations).toEqual([
+      { id: 'E1', type: 'page', slug: 'products/zephyr-qx-100', lines: [3] },
+    ]);
+  });
+
+  it('fails closed when independent verification returns an invalid verdict', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The warranty lasts five years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [] },
+    });
+    const result = await memory.answer({
+      question: 'What does the silverpine warranty marker say?',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+
+    expect(result).toMatchObject({ status: 'degraded', outcome: 'not_answered', answer: null });
+    expect(result.degraded).toContain('answer_verification_failed');
+    expect(result.citations).toEqual([]);
   });
 });
 
-async function useAnswerModel(draft: unknown): Promise<void> {
+async function useAnswerModel(script: { generation: unknown; verification: unknown }): Promise<void> {
   await memory.close();
   modelServer = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
     request.on('end', () => {
-      modelRequests.push(JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>);
+      const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
+      modelRequests.push(body);
+      const system = String((body.messages as Array<{ content?: unknown }> | undefined)?.[0]?.content ?? '');
+      const content = system.includes('independently verify') ? script.verification : script.generation;
       response.writeHead(200, { 'content-type': 'application/json' });
-      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(draft) } }] }));
+      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(content) } }] }));
     });
   });
   await new Promise<void>((resolve) => modelServer!.listen(0, '127.0.0.1', resolve));

@@ -5,9 +5,10 @@ import { resolveOps } from '../ops-handle.ts';
 
 const ANSWER_HELP = `akno answer <question> [options]
 
-  Ask memory for a direct grounded answer. This internally performs qualified
-  recall and returns compact related page slugs/document ids, never evidence
-  excerpts. Use recall when you need to inspect or quote the evidence itself.
+  Ask memory for a direct grounded answer. This internally performs recall,
+  generates structured cited blocks, and independently verifies their support.
+  It returns compact related page slugs/document ids, never evidence excerpts.
+  Use recall when you need to inspect or quote the evidence itself.
 
   --limit <n>         Maximum qualified retrieval candidates.
   --budget <n>        Internal retrieval evidence budget.

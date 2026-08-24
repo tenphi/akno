@@ -75,14 +75,16 @@ export const OPS = {
     output: AnswerOutput,
     implemented: true,
     description:
-      'Answer a direct factual question using only bounded memory evidence. Returns compact exact ' +
+      'Answer a direct factual question using only bounded memory evidence and an independent support ' +
+      'verification pass. Returns compact exact ' +
       'citations plus ranked related page slugs and orphan document ids. It skips reranking by default to avoid ' +
       'a redundant interactive model call; request rerank for strict retrieval qualification, or include_context ' +
       'to return the exact evidence already supplied to the answer model. ' +
       'Use recall instead when evidence must be inspected, compared, or quoted. Do not call both by default: ' +
       'answer already performs recall internally. Check status and outcome: only empty/not_found proves memory ' +
       'has no matching evidence; degraded or unavailable never proves absence. When answer generation is not ' +
-      'configured, it returns compact related identities with degraded/not_answered and no_answer_model.',
+      'configured, it returns compact related identities with degraded/not_answered and no_answer_model. A ' +
+      'failed verifier returns answer_verification_failed and no generated prose.',
   }),
   read: op({
     name: 'read',

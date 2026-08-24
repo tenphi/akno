@@ -49,8 +49,8 @@ It turns common requests into grounded workflows:
 The primary retrieval path supplies **evidence with addresses** and an explicit account of missing coverage.
 `recall` leaves reasoning to the caller. A separate `answer` surface now composes over that same retrieval path
 for direct grounded responses. It uses structured answer blocks, maps request-local evidence ids back to exact
-citations itself, and rejects invented exact values or introduced negation before returning prose. Independent
-support verification is still being added.
+citations itself, rejects invented exact values or introduced negation, and runs a separate semantic support
+verifier before returning prose.
 
 Akno is a good fit when:
 
@@ -349,15 +349,16 @@ bounded lines and document quotes already supplied to the model, which is useful
 second recall.
 
 Answer skips reranking by default. The answer model already selects supporting evidence, so a prompted reranker
-would add a second sequential model call on the interactive path. `--rerank` opts into the slower qualified
-path when a noisy corpus or small answer model needs it; ordinary `recall` keeps reranking by default because
-ranked evidence and irrelevance qualification are its output.
+would add another sequential model call before generation and verification. `--rerank` opts into the slower
+qualified path when a noisy corpus or small answer model needs it; ordinary `recall` keeps reranking by default
+because ranked evidence and irrelevance qualification are its output.
 
 The model returns structured blocks that cite opaque `E1`, `E2`, … labels. Akno validates those labels,
 checks digit-bearing values and introduced negation against the cited text, and renders persistent slugs, line
-numbers, document ids, and pages itself. A missing model returns `degraded/not_answered` with
-`no_answer_model`; complete empty recall remains `empty/not_found`. Independent semantic support verification
-is the next guardrail rather than a claim that deterministic value checks prove all prose.
+numbers, document ids, and pages itself. It then makes a separate structured verifier request. Each block is
+judged only against its nested cited evidence; unsupported blocks are withheld, and a malformed or failed
+verifier returns `degraded/not_answered` with `answer_verification_failed` and no generated prose. A missing
+model returns `degraded/not_answered` with `no_answer_model`; complete empty recall remains `empty/not_found`.
 
 ### `read`: open one exact page or document
 
@@ -1741,8 +1742,8 @@ This does not perform open-ended entity discovery or duplicate merging. Housekee
 collisions, unresolved authored subjects, and traversal hubs as read-only graph review candidates, but those
 findings contain no operation and cannot authorize maintenance. Deliberate one-to-three-hop inspection remains
 the job of `graph`. The separate `answer` surface now composes over recall and exposes compact related
-identities and grounded structured answers with typed absence; independent support verification is the next
-implementation slice.
+identities and independently verified grounded answers with typed absence. Its invented end-to-end answer
+benchmark is the next implementation slice.
 
 ### The durable review queue does not cover every phase yet
 
