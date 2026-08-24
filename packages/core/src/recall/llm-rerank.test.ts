@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { toEndpointSchema, type ModelClient } from '../models/client.ts';
 import {
+  allocateLlmRerankIds,
   llmRerankMessages,
   llmRerankSchema,
   llmRerankTokenBudget,
@@ -30,6 +31,14 @@ function fakeModel(value: string): ModelClient {
 }
 
 describe('prompted LLM reranking', () => {
+  it('uses a stable opaque id set that can be assigned without exposing rank', () => {
+    const first = allocateLlmRerankIds(10);
+    const second = allocateLlmRerankIds(10);
+    expect([...first].sort()).toEqual([...second].sort());
+    expect(new Set(first).size).toBe(10);
+    expect(first.every((id) => /^c_[A-Za-z0-9_-]{12}$/.test(id))).toBe(true);
+  });
+
   it('reserves completion tokens for hidden reasoning without inflating reasoning-free calls', () => {
     expect(llmRerankTokenBudget(10, 'none')).toBe(224);
     expect(llmRerankTokenBudget(20, 'none')).toBe(384);
@@ -37,14 +46,14 @@ describe('prompted LLM reranking', () => {
     expect(llmRerankTokenBudget(100, 'low')).toBe(2048);
   });
 
-  it('maps a complete validated permutation back to input positions', async () => {
+  it('maps a complete validated judgment map back to input positions', async () => {
     const result = await rerankWithLlm(
       fakeModel(
         JSON.stringify({
-          order: [
-            { id: 'c_M2rT8nWa', grade: 3 },
-            { id: 'c_K7vJ3pQx', grade: 1 },
-          ],
+          j: {
+            c_K7vJ3pQx: { g: 1, r: 2 },
+            c_M2rT8nWa: { g: 3, r: 1 },
+          },
         }),
       ),
       'Which warranty applies?',
@@ -60,7 +69,7 @@ describe('prompted LLM reranking', () => {
     });
   });
 
-  it('retries one invalid permutation and reports the total latency', async () => {
+  it('retries one invalid judgment map and reports the total latency', async () => {
     let calls = 0;
     const model = {
       chat: async () => {
@@ -68,16 +77,16 @@ describe('prompted LLM reranking', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            order:
+            j:
               calls === 1
-                ? [
-                    { id: 'c_K7vJ3pQx', grade: 3 },
-                    { id: 'c_K7vJ3pQx', grade: 1 },
-                  ]
-                : [
-                    { id: 'c_K7vJ3pQx', grade: 3 },
-                    { id: 'c_M2rT8nWa', grade: 1 },
-                  ],
+                ? {
+                    c_K7vJ3pQx: { g: 3, r: 1 },
+                    c_unknown: { g: 1, r: 2 },
+                  }
+                : {
+                    c_K7vJ3pQx: { g: 3, r: 1 },
+                    c_M2rT8nWa: { g: 1, r: 2 },
+                  },
           }),
           latencyMs: 11,
         };
@@ -128,24 +137,25 @@ describe('prompted LLM reranking', () => {
 
   it.each([
     [
-      'an invented id',
+      'an invented id in place of a candidate',
       {
-        order: [
-          { id: 'c_unknown', grade: 3 },
-          { id: 'c_K7vJ3pQx', grade: 1 },
-        ],
+        j: {
+          c_unknown: { g: 3, r: 1 },
+          c_K7vJ3pQx: { g: 1, r: 2 },
+        },
       },
     ],
     [
-      'a duplicate id',
+      'an extra id',
       {
-        order: [
-          { id: 'c_K7vJ3pQx', grade: 3 },
-          { id: 'c_K7vJ3pQx', grade: 1 },
-        ],
+        j: {
+          c_K7vJ3pQx: { g: 3, r: 1 },
+          c_M2rT8nWa: { g: 1, r: 2 },
+          c_unknown: { g: 0, r: 3 },
+        },
       },
     ],
-    ['a missing candidate', { order: [{ id: 'c_K7vJ3pQx', grade: 3 }] }],
+    ['a missing candidate', { j: { c_K7vJ3pQx: { g: 3, r: 1 } } }],
   ])('rejects %s', async (_case, body) => {
     const result = await rerankWithLlm(
       fakeModel(JSON.stringify(body)),
@@ -155,14 +165,14 @@ describe('prompted LLM reranking', () => {
     expect(result).toMatchObject({ ok: false, value: null, reason: 'bad_response' });
   });
 
-  it('canonicalizes coarse relevance while preserving model order within a grade', async () => {
+  it('uses rank to order candidates within a grade', async () => {
     const result = await rerankWithLlm(
       fakeModel(
         JSON.stringify({
-          order: [
-            { id: 'c_K7vJ3pQx', grade: 1 },
-            { id: 'c_M2rT8nWa', grade: 3 },
-          ],
+          j: {
+            c_K7vJ3pQx: { g: 2, r: 2 },
+            c_M2rT8nWa: { g: 2, r: 1 },
+          },
         }),
       ),
       'Which warranty applies?',
@@ -172,8 +182,31 @@ describe('prompted LLM reranking', () => {
     expect(result).toMatchObject({
       ok: true,
       value: [
-        { index: 1, relevance: 3 },
-        { index: 0, relevance: 1 },
+        { index: 1, relevance: 2 },
+        { index: 0, relevance: 2 },
+      ],
+    });
+  });
+
+  it('preserves fusion order when same-grade ranks tie', async () => {
+    const result = await rerankWithLlm(
+      fakeModel(
+        JSON.stringify({
+          j: {
+            c_K7vJ3pQx: { g: 2, r: 1 },
+            c_M2rT8nWa: { g: 2, r: 1 },
+          },
+        }),
+      ),
+      'Which warranty applies?',
+      candidates,
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: [
+        { index: 0, relevance: 2 },
+        { index: 1, relevance: 2 },
       ],
     });
   });
@@ -182,28 +215,34 @@ describe('prompted LLM reranking', () => {
     const schema = llmRerankSchema(candidates);
     expect(
       schema.safeParse({
-        order: [
-          { id: 'c_M2rT8nWa', grade: 3 },
-          { id: 'c_K7vJ3pQx', grade: 1 },
-        ],
+        j: {
+          c_K7vJ3pQx: { g: 1, r: 2 },
+          c_M2rT8nWa: { g: 3, r: 1 },
+        },
       }).success,
     ).toBe(true);
     expect(
       schema.safeParse({
-        order: [
-          { id: 'c_unknown', grade: 3 },
-          { id: 'c_K7vJ3pQx', grade: 1 },
-        ],
+        j: {
+          c_unknown: { g: 3, r: 1 },
+          c_K7vJ3pQx: { g: 1, r: 2 },
+        },
       }).success,
     ).toBe(false);
     expect(
       schema.safeParse({
-        order: [{ id: 'c_K7vJ3pQx', grade: 3 }],
+        j: { c_K7vJ3pQx: { g: 3, r: 1 } },
       }).success,
     ).toBe(false);
     expect(toEndpointSchema(schema)).toMatchObject({
-      properties: { order: { minItems: 2, maxItems: 2 } },
+      properties: {
+        j: {
+          required: ['c_K7vJ3pQx', 'c_M2rT8nWa'],
+          additionalProperties: false,
+        },
+      },
     });
+    expect(toEndpointSchema(llmRerankSchema([...candidates].reverse()))).toEqual(toEndpointSchema(schema));
   });
 
   it('serializes candidate instructions as data under a fixed untrusted-content rule', () => {

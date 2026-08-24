@@ -175,13 +175,18 @@ function inventedProvider(): typeof fetch {
               : query.includes('arrival window')
                 ? ['oriole-reference']
                 : [];
-    const order = (payload.candidates ?? []).map((candidate) => ({
-      id: candidate.candidate_id,
-      grade: directMarkers.some((marker) => candidate.excerpt.toLowerCase().includes(marker)) ? 3 : 0,
-    }));
+    const judgments = Object.fromEntries(
+      (payload.candidates ?? []).map((candidate, index) => [
+        candidate.candidate_id,
+        {
+          g: directMarkers.some((marker) => candidate.excerpt.toLowerCase().includes(marker)) ? 3 : 0,
+          r: index + 1,
+        },
+      ]),
+    );
     return new Response(
       JSON.stringify({
-        choices: [{ message: { content: JSON.stringify({ order }) } }],
+        choices: [{ message: { content: JSON.stringify({ j: judgments }) } }],
         usage: { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
       }),
       { status: 200, headers: { 'content-type': 'application/json' } },

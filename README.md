@@ -1089,11 +1089,12 @@ p95. `none` at 20 and 40 candidates reached 0.958/0.941 nDCG and 3.71/9.82 s p95
 reasoning is therefore both the selected quality-equivalent configuration and the fastest prompted-ranking
 variant tested.
 
-Every development-side release check now passes: current persisted contract, five runs, overall and category
-quality, exact-entity MRR, response validity, fallback preservation, instruction safety, top-three stability,
-latency, and cheapest-equivalent selection. This is still tuning evidence rather than release authorization.
+For that v4/v3 contract, every development-side release check passed: matching persisted contract, five runs,
+overall and category quality, exact-entity MRR, response validity, fallback preservation, instruction safety,
+top-three stability, latency, and cheapest-equivalent selection. This is still tuning evidence rather than
+release authorization.
 
-The current [held-out v4/v3 matrix](benchmarks/ranking/results/test-openai-luna-v4-2026-08-22.json) also selects
+The frozen [held-out v4/v3 matrix](benchmarks/ranking/results/test-openai-luna-v4-2026-08-22.json) also selects
 Luna with `none` reasoning and 10 candidates. It reached 0.921 mean nDCG@10 against fusion's 0.483, 100% median
 top-three overlap, complete direct-answer retention, and 1.90 s p95 latency. One of its 100 responses remained
 invalid after the bounded semantic retry and fell back exactly to fusion, leaving response validity and
@@ -1102,14 +1103,20 @@ but its 3.36 s p95 missed the latency gate; `low` at 20 was slower still at 4.74
 therefore satisfies both reliability and latency. This artifact is final test evidence, not another prompt-tuning
 input, and the preset remains experimental.
 
-The current `akno-listwise-v4` / `compact-entries-v3` contract uses per-request candidate-id enums, requires
-the output array to have exactly the candidate count, and explicitly grades instruction-only excerpts as 0.
-Semantic validation still rejects duplicates and invented ids. A complete but invalid permutation receives one
-bounded retry; transport, configuration, and output-budget failures do not retry, and a second invalid response
-falls back to fusion. Five targeted 10-candidate development runs under v3 produced 300/300 valid responses,
-100% instruction-negative rejection and direct-answer retention, 0.959 mean nDCG@10, and per-run p95 latency
-from 2.08 to 2.53 seconds. The full matrix above confirms the same reliability and safety over another 300
-selected-variant responses.
+The runtime has since advanced to `akno-judgment-map-v5` / `compact-judgment-map-v4`. Instead of asking the
+model to reproduce opaque ids in a failure-prone array permutation, the strict schema makes every permitted id
+a required property and rejects additional properties. Each fixed-id judgment carries a four-point grade for
+qualification and a rank that only orders candidates within that grade; tied ranks preserve fusion order.
+The reusable opaque id set is randomly assigned to candidates on every request, so it reveals neither source
+identity nor initial rank while keeping the schema cacheable. Compatible endpoints that return unconstrained
+JSON still receive one bounded retry for an invalid map; other failures preserve exact fusion order.
+
+One 60-query development run of the final v5/v4 shape reached 0.963 nDCG@10 against fusion's 0.483, 100% valid
+responses, complete direct-answer retention, and perfect instruction-negative rejection. Its 4.07 s p95 missed
+the provisional 2.5 s latency gate. This is tuning evidence only: v5/v4 needs repeated development evidence,
+independent corpus review, embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation.
+The immutable v4/v3 held-out artifact cannot authorize the changed runtime contract, so the preset remains
+experimental.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

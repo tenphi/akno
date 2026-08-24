@@ -127,10 +127,12 @@ describe('experimental OpenAI minimum setup', () => {
               {
                 message: {
                   content: JSON.stringify({
-                    order: requestBody.candidates.map((candidate, index) => ({
-                      id: candidate.candidate_id,
-                      grade: [3, 1, 0][index],
-                    })),
+                    j: Object.fromEntries(
+                      requestBody.candidates.map((candidate, index) => [
+                        candidate.candidate_id,
+                        { g: [3, 1, 0][index], r: index + 1 },
+                      ]),
+                    ),
                   }),
                 },
               },
@@ -160,8 +162,8 @@ describe('experimental OpenAI minimum setup', () => {
         embedding: { status: 'ok', dimensions: OPENAI_LUNA_EMBEDDING_DIMENSIONS },
         generative: {
           status: 'ok',
-          promptVersion: 'akno-listwise-v4',
-          schemaVersion: 'compact-entries-v3',
+          promptVersion: 'akno-judgment-map-v5',
+          schemaVersion: 'compact-judgment-map-v4',
         },
       });
       expect(JSON.stringify(report)).not.toContain('sk-invented-fixture-key');

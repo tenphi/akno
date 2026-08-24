@@ -1516,13 +1516,17 @@ Three roles can be on the interactive path:
 
 The reranker has two implementations. `mode: "endpoint"` calls a native `/rerank` cross-encoder. `mode: "llm"`
 uses a versioned listwise prompt over the same generative transport as other model-backed work. Every candidate
-gets a fresh opaque id; the query, metadata, and excerpts are JSON-serialized; and the fixed instruction says
-candidate content is untrusted data. Strict decoding receives the request's exact ids as an enum and returns
-compact `{id, grade}` entries, keeping each judgment attached while reducing generated structure. Akno still
-validates a complete permutation with `0..3` relevance labels itself. It then sorts grade groups from `3` to `0`
-while preserving the model's order within each group. This makes the labels authoritative for both qualification
-and coarse ordering when a small model contradicts its own labels. Any malformed, missing, duplicated, or
-invented id produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
+gets an opaque id randomly assigned from a stable set; the query, metadata, and excerpts are JSON-serialized;
+and the fixed instruction says candidate content is untrusted data. Because assignment changes every request,
+an id reveals neither source identity nor initial rank. Stable membership lets a provider reuse the strict
+schema instead of compiling a different one for every query.
+
+Strict decoding returns a compact map with one required property for every permitted id and no additional
+properties. Each judgment carries a `0..3` grade and an integer rank. Akno sorts grade groups from `3` to `0`,
+then uses rank only inside a grade; tied ranks preserve the existing fusion order. The map shape makes missing,
+invented, and duplicate candidates structurally impossible on capable endpoints. A compatible endpoint that
+falls back to unconstrained JSON gets one bounded retry for an invalid map. Any remaining invalid response
+produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
 
 On a valid response, reranking may also qualify candidates out. LLM grade `0` means irrelevant and is removed.
 A native cross-encoder uses its calibrated raw-score boundary. In both cases, candidates beyond `top_k` are

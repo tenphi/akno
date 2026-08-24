@@ -1,7 +1,7 @@
-import { randomBytes } from 'node:crypto';
 import type { AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { ModelClient } from '../models/client.ts';
 import {
+  allocateLlmRerankIds,
   LLM_RERANK_PROMPT_VERSION,
   LLM_RERANK_SCHEMA_VERSION,
   rerankWithLlm,
@@ -450,10 +450,11 @@ async function runLlmCase(
   benchCase: RankingCase,
   excerptChars: RankingExcerptChars,
 ): Promise<QueryOutcome> {
-  const candidates: LlmRerankCandidate[] = benchCase.pool.map((id) => {
+  const opaqueIds = allocateLlmRerankIds(benchCase.pool.length);
+  const candidates: LlmRerankCandidate[] = benchCase.pool.map((id, index) => {
     const candidate = RANKING_CORPUS.candidates[id]!;
     return {
-      id: `c_${randomBytes(9).toString('base64url')}`,
+      id: opaqueIds[index]!,
       text: candidate.text.slice(0, excerptChars),
       sourceKind: candidate.sourceKind,
       matchedBy: ['lexical'],

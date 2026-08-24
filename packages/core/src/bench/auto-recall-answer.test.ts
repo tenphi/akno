@@ -163,11 +163,13 @@ function inventedProvider(): typeof fetch {
       memory_evidence?: string | null;
     };
     if (body.model === 'invented-qualifier-model') {
-      const order = (payload.candidates ?? []).map((candidate) => ({
-        id: candidate.candidate_id,
-        grade: supports(payload.query ?? '', candidate.excerpt) ? 3 : 0,
-      }));
-      return completion({ order });
+      const judgments = Object.fromEntries(
+        (payload.candidates ?? []).map((candidate, index) => [
+          candidate.candidate_id,
+          { g: supports(payload.query ?? '', candidate.excerpt) ? 3 : 0, r: index + 1 },
+        ]),
+      );
+      return completion({ j: judgments });
     }
     return completion(hostAnswer(payload.current_user_prompt ?? '', payload.memory_evidence ?? null));
   }) as typeof fetch;

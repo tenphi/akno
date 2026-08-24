@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto';
 import type {
   DegradedReason,
   RecallGraphPath,
@@ -7,7 +6,7 @@ import type {
 } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
-import { rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
+import { allocateLlmRerankIds, rerankWithLlm, type LlmRerankCandidate } from './llm-rerank.ts';
 import { nativeRerankerCalibration } from './reranker-calibration.ts';
 
 export interface ChunkHit {
@@ -351,14 +350,10 @@ export async function rerankHits(
   });
 
   if (reranker.rerankerMode === 'llm') {
-    const ids = new Set<string>();
+    const ids = allocateLlmRerankIds(candidates.length);
     const llmCandidates: LlmRerankCandidate[] = candidates.map((hit, index) => {
-      let id: string;
-      do id = `c_${randomBytes(9).toString('base64url')}`;
-      while (ids.has(id));
-      ids.add(id);
       return {
-        id,
+        id: ids[index]!,
         text: texts[index] ?? '',
         sourceKind: hit.pageId ? 'page' : 'document',
         matchedBy: hit.from,

@@ -1,7 +1,7 @@
-import { randomBytes } from 'node:crypto';
 import type { AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { ModelClient } from '../models/client.ts';
 import {
+  allocateLlmRerankIds,
   LLM_RERANK_PROMPT_VERSION,
   LLM_RERANK_SCHEMA_VERSION,
   rerankWithLlm,
@@ -93,8 +93,9 @@ export async function runLlmRankingProbe(
     reasoningEffort,
     unavailableReason: null,
   };
-  const candidates: LlmRerankCandidate[] = PROBE_FIXTURES.map((fixture) => ({
-    id: `c_${randomBytes(9).toString('base64url')}`,
+  const opaqueIds = allocateLlmRerankIds(PROBE_FIXTURES.length);
+  const candidates: LlmRerankCandidate[] = PROBE_FIXTURES.map((fixture, index) => ({
+    id: opaqueIds[index]!,
     text: fixture.text,
     sourceKind: fixture.sourceKind,
     matchedBy: fixture.matchedBy,

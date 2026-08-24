@@ -153,7 +153,9 @@ describe('rerankHits', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            order: entries.map((entry) => ({ id: entry.candidate_id, grade: entry.relevance })),
+            j: Object.fromEntries(
+              entries.map((entry, index) => [entry.candidate_id, { g: entry.relevance, r: index + 1 }]),
+            ),
           }),
           latencyMs: 1,
           usage: { inputTokens: 111, outputTokens: 22, totalTokens: 133 },
@@ -318,7 +320,7 @@ describe('rerankHits', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            order: [{ id: payload.candidates[0]!.candidate_id, grade: 3 }],
+            j: { [payload.candidates[0]!.candidate_id]: { g: 3, r: 1 } },
           }),
           latencyMs: 1,
         };
@@ -352,7 +354,7 @@ describe('rerankHits', () => {
     });
   });
 
-  it('preserves exact fusion order when the LLM returns an invalid permutation', async () => {
+  it('preserves exact fusion order when the LLM returns an incomplete judgment map', async () => {
     const model = fakeLlmReranker(([first]) => [
       { candidate_id: first!, relevance: 3 },
       { candidate_id: first!, relevance: 2 },
@@ -360,7 +362,7 @@ describe('rerankHits', () => {
     const result = await rerankHits(store, model, 'Zephyr warranty', hits, 2);
     expect(result.hits).toEqual(hits);
     expect(result.degraded).toBe('rerank_failed');
-    expect(result.note).toContain('duplicate candidate id');
+    expect(result.note).toContain('incomplete or invalid judgment map');
   });
 
   it('keeps a judged hit above every un-judged one, whatever its logit', async () => {
