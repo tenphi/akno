@@ -133,10 +133,14 @@ The OpenAI minimum is a benchmark-qualified guided preset. In a terminal, start 
 akno init
 ```
 
-It asks for the knowledge-base folder, how Akno will be used, and the maintenance profile. A trusted-agent use
-recommends `autonomous`, standalone use recommends `review`, and read-only evaluation recommends `audit`; each
-recommendation can be overridden. Setup reports only whether `AKNO_OPENAI_API_KEY` resolves, never its value,
-and offers an optional content-safe model preflight before showing the exact write and asking for confirmation.
+It asks for the knowledge-base folder, model strategy, how Akno will be used, and the maintenance profile. The
+model choices are the qualified OpenAI minimum, an explicit model-free lexical setup, or preservation of
+specialist roles for manual configuration. Model-free setup disables every model role while retaining dormant
+provider definitions for a later upgrade; manual setup changes neither provider nor model blocks. A
+trusted-agent use recommends `autonomous`, standalone use recommends `review`, and read-only evaluation
+recommends `audit`; each recommendation can be overridden. The summary explains that future authority before
+the write. OpenAI setup reports only whether `AKNO_OPENAI_API_KEY` resolves, never its value, and offers an
+optional content-safe model preflight before showing the exact write and asking for confirmation.
 
 For automation, provide the preset and path explicitly. Preview its exact one-endpoint/two-model overlay and
 path-only config diff first; `--check` sends only invented fixtures to verify both embedding access and Luna's
@@ -145,13 +149,17 @@ ranking transport/schema:
 ```bash
 akno init --preset openai-luna --akno-path /path/to/markdown \
   --maintenance autonomous --dry-run --check
+
+# Fully local lexical setup; sends no content to a model.
+akno init --preset no-model --akno-path /path/to/markdown --maintenance audit
 ```
 
 Omit `--dry-run` to create a new config. Guided setup shows the same value-free diff and asks before creating or
 updating it; an existing config defaults to no. Non-interactive replacement requires explicit `--force`.
-Unrelated settings and unknown top-level keys survive, while the preset-owned provider and model blocks are
-replaced together so stale native-reranker fields cannot contaminate the OpenAI setup. JSONC comments outside
-those owned values are retained. A
+Unrelated settings and unknown top-level keys survive. The OpenAI preset replaces its provider and model blocks
+together so stale native-reranker fields cannot contaminate the setup; the no-model preset replaces all model
+roles and the maintenance override but deliberately retains provider definitions. JSONC comments outside owned
+values are retained. A
 checkout writes its gitignored `config/local.jsonc`; an installed copy writes `<state_dir>/config.json`, and
 `AKNO_CONFIG` selects an explicit target. Writes are fsynced and atomically renamed, with a concurrent-edit
 check. Requested preflight failure writes nothing. A non-interactive or `--json` invocation with missing required

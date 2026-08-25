@@ -14,7 +14,7 @@ afterEach(() => {
   for (const target of temporary.splice(0)) fs.rmSync(target, { recursive: true, force: true });
 });
 
-describe('OpenAI init', () => {
+describe('guided init', () => {
   it('is explicit about authority, model count, and preflight failure', () => {
     const config = openAiLunaPreset({
       aknoPath: '/invented/knowledge-base',
@@ -146,7 +146,7 @@ describe('OpenAI init', () => {
     vi.stubEnv('AKNO_CONFIG', target);
     vi.stubEnv('AKNO_OPENAI_API_KEY', 'sk-invented-fixture-key');
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '', '', 'n', '']);
+    const prompt = scriptedPrompt([knowledgeBase, '', '', '', 'n', '']);
 
     const result = await initCommand([], { prompt });
 
@@ -157,6 +157,7 @@ describe('OpenAI init', () => {
     });
     expect(prompt.questions).toEqual([
       'Knowledge-base folder: ',
+      'Model setup [1]: ',
       'Usage [1]: ',
       'Maintenance profile [autonomous]: ',
       'Run the content-safe model preflight now? [Y/n]: ',
@@ -197,9 +198,109 @@ describe('OpenAI init', () => {
     expect(result).toBe(2);
     expect(stderr).toHaveBeenCalledWith(
       expect.stringContaining(
-        'guided setup requires a terminal; provide --preset openai-luna and --akno-path',
+        'guided setup requires a terminal; provide --preset <openai-luna|no-model> and --akno-path',
       ),
     );
+  });
+
+  it('disables all model roles while retaining dormant provider definitions', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    fs.mkdirSync(knowledgeBase);
+    fs.writeFileSync(
+      target,
+      `${JSON.stringify(
+        {
+          akno_path: knowledgeBase,
+          providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
+          models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
+          maintenance: { model: { provider: 'invented', id: 'invented-maintenance-model' } },
+        },
+        null,
+        2,
+      )}\n`,
+      'utf8',
+    );
+    vi.stubEnv('AKNO_CONFIG', target);
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const result = await initCommand([
+      '--preset',
+      'no-model',
+      '--akno-path',
+      knowledgeBase,
+      '--maintenance',
+      'audit',
+      '--force',
+    ]);
+
+    expect(result).toBe(0);
+    const written = JSON.parse(fs.readFileSync(target, 'utf8')) as Record<string, unknown>;
+    expect(written).toMatchObject({
+      providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
+      models: {
+        embedding: { id: null, enabled: false },
+        reranker: { id: null, enabled: false },
+        derive: { id: null, enabled: false },
+        expansion: { id: null, enabled: false },
+        answer: { id: null, enabled: false },
+        vision: { id: null, enabled: false },
+      },
+      maintenance: { profile: 'audit', model: null },
+    });
+    expect(stdout.mock.calls.flat().join('')).toContain(
+      'lexical retrieval; every model role disabled; existing provider definitions retained',
+    );
+    expect(stdout.mock.calls.flat().join('')).toContain(
+      'reports only; model-dependent phases are unavailable',
+    );
+  });
+
+  it('preserves specialist roles when manual setup is selected', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    fs.mkdirSync(knowledgeBase);
+    fs.writeFileSync(
+      target,
+      `${JSON.stringify(
+        {
+          akno_path: knowledgeBase,
+          providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
+          models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
+        },
+        null,
+        2,
+      )}\n`,
+      'utf8',
+    );
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const prompt = scriptedPrompt([knowledgeBase, '3', '2', '', 'y']);
+
+    const result = await initCommand([], { prompt });
+
+    expect(result).toBe(0);
+    expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
+      providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
+      models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
+      maintenance: { profile: 'review' },
+    });
+  });
+
+  it('rejects an OpenAI model preflight for a model-free setup', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    fs.mkdirSync(knowledgeBase);
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    const result = await initCommand(['--preset', 'no-model', '--akno-path', knowledgeBase, '--check']);
+
+    expect(result).toBe(2);
+    expect(fs.existsSync(target)).toBe(false);
   });
 });
 

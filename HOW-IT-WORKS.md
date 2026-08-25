@@ -2220,16 +2220,20 @@ post-apply replanning and endpoint-specific currency pricing remain explicitly o
 
 ### Setup assumes too much infrastructure knowledge
 
-The first useful result currently requires editing JSON, knowing an OpenAI-compatible endpoint, choosing model
-roles, indexing, diagnosing, and then connecting an agent host. The graceful no-model path helps, but the user
-still has to discover it from prose.
+The first useful result used to require editing JSON, knowing an OpenAI-compatible endpoint, choosing model
+roles, indexing, diagnosing, and then connecting an agent host. That made graceful degradation available but
+left users to discover every setup decision from prose.
 
-A guided `akno init` flow now asks for and checks the knowledge-base path, maps trusted-agent, standalone, and
-read-only uses to overridable `autonomous`, `review`, and `audit` recommendations, reports only whether the
-credential resolves, and previews the exact qualified OpenAI overlay before asking to write it. `--check`, or
-the optional guided preflight, sends one invented embedding input and the existing three-candidate invented
-ranking probe through the same provider, reporting the roles separately. This catches the otherwise confusing
-case where a project can call Luna but cannot call its configured embedding model. The receipt contains no
+A guided `akno init` flow now asks for and checks the knowledge-base path; offers the qualified OpenAI minimum,
+an explicit model-free setup, or preservation of specialist roles for manual configuration; and maps
+trusted-agent, standalone, and read-only uses to overridable `autonomous`, `review`, and `audit`
+recommendations. Its summary explains the selected future maintenance authority. Model-free setup replaces all
+model roles with explicit disabled values and clears the maintenance model override while retaining dormant
+provider definitions; manual setup touches neither providers nor model roles. OpenAI setup reports only whether
+the credential resolves and previews the exact qualified overlay before asking to write it. `--check`, or the
+optional guided preflight, sends one invented embedding input and the existing three-candidate invented ranking
+probe through the same provider, reporting the roles separately. This catches the otherwise confusing case
+where a project can call Luna but cannot call its configured embedding model. The receipt contains no
 credential, raw response, or private knowledge-base content.
 
 `--dry-run` prints a path-only diff and the safe preset overlay. Guided creation defaults to yes; a guided update
@@ -2239,8 +2243,9 @@ blocks are replaced as one preset-owned unit. The planner fingerprints the input
 preview and rename aborts instead of losing the edit. Requested preflight failure also aborts, and incomplete
 non-interactive or JSON invocations fail rather than waiting for input. The command writes no knowledge-base
 file and does not index, install a service, or create a schedule. It prints explicit commands for the first
-index and recall, an audit dream, diagnostics, and optional service installation. Alternative preset selection
-and running those follow-up actions inside setup remain future slices.
+index and recall, an audit dream, diagnostics, and optional service installation. A dedicated OpenAI Responses
+adapter and persisted capability resolution remain future slices; setup currently uses Akno's qualified
+Chat-Completions-compatible generative transport.
 
 A minimum hosted setup uses the qualified single-endpoint OpenAI preset: one endpoint and credential,
 `text-embedding-3-small` for semantic candidate generation, and `gpt-5.6-luna` for generative work and prompted

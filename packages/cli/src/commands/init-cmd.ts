@@ -3,8 +3,11 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   applySetupConfigWrite,
+  MODEL_FREE_PRESET,
+  MODEL_FREE_PRESET_STATUS,
   OPENAI_LUNA_PRESET,
   OPENAI_LUNA_PRESET_STATUS,
+  modelFreePreset,
   openAiLunaPreset,
   planSetupConfigWrite,
   preflightOpenAiLuna,
@@ -20,16 +23,16 @@ import {
   confirmInitAction,
   terminalInitPrompt,
   type InitPromptSession,
+  type InitSetupChoice,
 } from './init-prompts.ts';
 
-const INIT_HELP = `akno init [--preset openai-luna --akno-path <path>] [options]
+const INIT_HELP = `akno init [--preset <name> --akno-path <path>] [options]
 
   Run without preset/path arguments in a terminal for guided setup, or provide both
-  for non-interactive use. The recommended single-endpoint OpenAI setup uses one
-  credential, with text-embedding-3-small for embeddings and gpt-5.6-luna for
-  generation and prompted reranking.
+  for non-interactive use. Choose the recommended single-endpoint OpenAI setup,
+  explicitly disable all model roles, or preserve specialist roles for manual setup.
 
-  --preset <name>       openai-luna.
+  --preset <name>       openai-luna or no-model.
   --maintenance <mode>  audit, review, or autonomous. Guided setup recommends one
                         from the use case; non-interactive default is audit.
   --dry-run             Print the exact overlay and path-only diff without writing.
@@ -63,7 +66,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
     line(INIT_HELP);
     return 0;
   }
-  if (values.preset && values.preset !== OPENAI_LUNA_PRESET) {
+  if (values.preset && values.preset !== OPENAI_LUNA_PRESET && values.preset !== MODEL_FREE_PRESET) {
     fail(`unknown setup preset: ${values.preset}`);
     return 2;
   }
@@ -74,12 +77,12 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
   try {
     if (needsGuidance) {
       if (values.json) {
-        fail('--json setup is non-interactive; provide --preset openai-luna and --akno-path');
+        fail('--json setup is non-interactive; provide --preset <openai-luna|no-model> and --akno-path');
         return 2;
       }
       const interactive = options.interactive ?? Boolean(process.stdin.isTTY && process.stdout.isTTY);
       if (!prompt && !interactive) {
-        fail('guided setup requires a terminal; provide --preset openai-luna and --akno-path');
+        fail('guided setup requires a terminal; provide --preset <openai-luna|no-model> and --akno-path');
         return 2;
       }
       if (!prompt) {
@@ -88,6 +91,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       }
     }
 
+    let setup = values.preset as InitSetupChoice | undefined;
     let maintenance = setupMaintenanceMode(values.maintenance);
     if (!maintenance) {
       fail(`invalid maintenance mode: ${values.maintenance}`);
@@ -97,18 +101,28 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
     if (needsGuidance) {
       const answers = await collectInteractiveInitAnswers(prompt!, {
         aknoPath,
+        setup,
         maintenance: values.maintenance ? maintenance : undefined,
         readablePath: readableKnowledgeBasePath,
       });
       aknoPath = answers.aknoPath;
+      setup = answers.setup;
       maintenance = answers.maintenance;
     }
     if (!aknoPath) {
       fail('--akno-path is required; setup never guesses which folder contains your knowledge base');
       return 2;
     }
+    if (!setup) {
+      fail('--preset is required for non-interactive setup');
+      return 2;
+    }
+    if (values.check && setup !== OPENAI_LUNA_PRESET) {
+      fail('--check is available only for the openai-luna preset');
+      return 2;
+    }
 
-    const preset = openAiLunaPreset({ aknoPath, maintenance });
+    const preset = setupPreset(setup, aknoPath, maintenance);
     const { loadConfig } = await import('@tenphi/akno-core');
     let resolved: ReturnType<typeof loadConfig>;
     let writePlan: SetupConfigWritePlan;
@@ -118,9 +132,11 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
         fail(`knowledge-base folder is not readable: ${presetConfig.aknoPath}`);
         return 2;
       }
-      writePlan = planSetupConfigWrite(setupConfigTarget({ stateDir: values['state-dir'] }), preset, {
-        replacePaths: ['providers', 'models', 'maintenance.model'],
-      });
+      writePlan = planSetupConfigWrite(
+        setupConfigTarget({ stateDir: values['state-dir'] }),
+        preset,
+        setupWriteOptions(setup),
+      );
       resolved = loadConfig({ isolated: true, overrides: writePlan.document });
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
@@ -132,7 +148,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
     }
 
     let check = values.check;
-    if (needsGuidance) {
+    if (needsGuidance && setup === OPENAI_LUNA_PRESET) {
       const credentialPresent = Boolean(resolved.providers.openai?.apiKey);
       prompt!.say(
         credentialPresent
@@ -148,21 +164,21 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       }
     }
     const preflight = check ? await preflightOpenAiLuna(resolved) : null;
-    const preview = openAiInitPreview(resolved.aknoPath, maintenance, preset, preflight, writePlan);
+    const preview = setupInitPreview(setup, resolved.aknoPath, maintenance, preset, preflight, writePlan);
 
     if (values['dry-run']) {
       if (values.json) json(preview);
-      else renderOpenAiInitPreview(preview);
+      else renderInitPreview(preview);
       return preflight && !preflight.passed ? 1 : 0;
     }
     if (preflight && !preflight.passed) {
       if (values.json) json(preview);
-      else renderOpenAiInitPreview(preview);
+      else renderInitPreview(preview);
       fail('requested preflight failed; configuration was not written');
       return 1;
     }
     if (needsGuidance && writePlan.changed) {
-      renderOpenAiInitPreview(preview, { interactiveWrite: true });
+      renderInitPreview(preview, { interactiveWrite: true });
       const confirmed = await confirmInitAction(
         prompt!,
         writePlan.existed ? 'Apply this configuration update?' : 'Write this configuration?',
@@ -174,7 +190,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       }
     } else if (writePlan.existed && writePlan.changed && !values.force) {
       if (values.json) json(preview);
-      else renderOpenAiInitPreview(preview);
+      else renderInitPreview(preview);
       fail(
         `configuration already exists at ${writePlan.targetPath}; inspect the diff and rerun with --force`,
       );
@@ -185,7 +201,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       const write = await applySetupConfigWrite(writePlan);
       const result = { ...preview, kind: 'setup_result' as const, applied: write.changed };
       if (values.json) json(result);
-      else renderOpenAiInitResult(result);
+      else renderInitResult(result);
       return 0;
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
@@ -203,10 +219,26 @@ export function openAiInitPreview(
   preflight: OpenAiLunaPreflightReport | null,
   writePlan: SetupConfigWritePlan | null = null,
 ) {
+  return setupInitPreview(OPENAI_LUNA_PRESET, aknoPath, maintenance, config, preflight, writePlan);
+}
+
+function setupInitPreview(
+  setup: InitSetupChoice,
+  aknoPath: string,
+  maintenance: SetupMaintenanceMode,
+  config: ReturnType<typeof openAiLunaPreset>,
+  preflight: OpenAiLunaPreflightReport | null,
+  writePlan: SetupConfigWritePlan | null = null,
+) {
   return {
     kind: 'setup_preview' as const,
-    preset: OPENAI_LUNA_PRESET,
-    presetStatus: OPENAI_LUNA_PRESET_STATUS,
+    preset: setup,
+    presetStatus:
+      setup === OPENAI_LUNA_PRESET
+        ? OPENAI_LUNA_PRESET_STATUS
+        : setup === MODEL_FREE_PRESET
+          ? MODEL_FREE_PRESET_STATUS
+          : ('manual' as const),
     writable: true,
     writeBlocker: preflight && !preflight.passed ? 'the requested model preflight did not pass' : null,
     applied: false,
@@ -216,9 +248,13 @@ export function openAiInitPreview(
       willModify: false,
     },
     maintenance,
-    endpointCount: 1,
-    modelCount: 2,
-    credential: { env: 'AKNO_OPENAI_API_KEY', present: preflight?.credentialPresent ?? null },
+    maintenanceAuthority: maintenanceAuthorityCopy(setup, maintenance),
+    endpointCount: setup === OPENAI_LUNA_PRESET ? 1 : setup === MODEL_FREE_PRESET ? 0 : null,
+    modelCount: setup === OPENAI_LUNA_PRESET ? 2 : setup === MODEL_FREE_PRESET ? 0 : null,
+    credential:
+      setup === OPENAI_LUNA_PRESET
+        ? { env: 'AKNO_OPENAI_API_KEY', present: preflight?.credentialPresent ?? null }
+        : null,
     preflight,
     write: writePlan
       ? {
@@ -234,14 +270,16 @@ export function openAiInitPreview(
   };
 }
 
-function renderOpenAiInitPreview(
-  preview: ReturnType<typeof openAiInitPreview>,
+function renderInitPreview(
+  preview: ReturnType<typeof setupInitPreview>,
   options: { interactiveWrite?: boolean } = {},
 ): void {
-  heading('OpenAI minimum setup — recommended');
-  line('  one endpoint, two models: dedicated embeddings plus GPT-5.6 Luna');
+  const copy = setupCopy(preview.preset);
+  heading(copy.title);
+  line(`  ${copy.summary}`);
   line(`  knowledge base         ${preview.knowledgeBase.path}`);
   line(`  maintenance            ${preview.maintenance}`);
+  line(`  maintenance authority  ${preview.maintenanceAuthority}`);
   if (preview.write) {
     line(`  configuration          ${preview.write.path}`);
     line(
@@ -280,21 +318,23 @@ function renderOpenAiInitPreview(
       line(`  ${change.action === 'add' ? '+' : '~'} ${change.path}`);
     }
   }
-  heading('Preset overlay');
+  heading('Configuration overlay');
   json(preview.config);
   line(style.grey('\nNo configuration, service, index, schedule, or knowledge-base file was changed.'));
 }
 
-function renderOpenAiInitResult(
-  result: Omit<ReturnType<typeof openAiInitPreview>, 'kind'> & {
+function renderInitResult(
+  result: Omit<ReturnType<typeof setupInitPreview>, 'kind'> & {
     kind: 'setup_result';
     applied: boolean;
   },
 ): void {
-  heading('OpenAI minimum setup — recommended');
-  line('  one endpoint, two models: dedicated embeddings plus GPT-5.6 Luna');
+  const copy = setupCopy(result.preset);
+  heading(copy.title);
+  line(`  ${copy.summary}`);
   line(`  knowledge base         ${result.knowledgeBase.path}`);
   line(`  maintenance            ${result.maintenance}`);
+  line(`  maintenance authority  ${result.maintenanceAuthority}`);
   line(`  configuration          ${result.write?.path ?? '-'}`);
   line(
     `  configuration write    ${result.applied ? style.green('written atomically') : style.green('already matched')}`,
@@ -305,6 +345,56 @@ function renderOpenAiInitResult(
   line(style.grey('Check: akno doctor'));
   line(style.grey('Safe maintenance trial: akno dream --mode audit'));
   line(style.grey('Optional background service: akno service install'));
+}
+
+function setupPreset(
+  setup: InitSetupChoice,
+  aknoPath: string,
+  maintenance: SetupMaintenanceMode,
+): ReturnType<typeof openAiLunaPreset> {
+  if (setup === OPENAI_LUNA_PRESET) return openAiLunaPreset({ aknoPath, maintenance });
+  if (setup === MODEL_FREE_PRESET) return modelFreePreset({ aknoPath, maintenance });
+  return { akno_path: aknoPath, maintenance: { profile: maintenance } };
+}
+
+function setupWriteOptions(setup: InitSetupChoice): { replacePaths: string[] } {
+  if (setup === OPENAI_LUNA_PRESET) {
+    return { replacePaths: ['providers', 'models', 'maintenance.model'] };
+  }
+  if (setup === MODEL_FREE_PRESET) return { replacePaths: ['models', 'maintenance.model'] };
+  return { replacePaths: [] };
+}
+
+function setupCopy(setup: InitSetupChoice): { title: string; summary: string } {
+  if (setup === OPENAI_LUNA_PRESET) {
+    return {
+      title: 'OpenAI minimum setup — recommended',
+      summary: 'one endpoint, two models: dedicated embeddings plus GPT-5.6 Luna',
+    };
+  }
+  if (setup === MODEL_FREE_PRESET) {
+    return {
+      title: 'Model-free setup',
+      summary: 'lexical retrieval; every model role disabled; existing provider definitions retained',
+    };
+  }
+  return {
+    title: 'Specialist/manual setup',
+    summary: 'knowledge-base and maintenance settings only; existing provider and model roles retained',
+  };
+}
+
+function maintenanceAuthorityCopy(setup: InitSetupChoice, maintenance: SetupMaintenanceMode): string {
+  if (setup === MODEL_FREE_PRESET) {
+    if (maintenance === 'audit') return 'reports only; model-dependent phases are unavailable';
+    if (maintenance === 'review') {
+      return 'deterministic proposals wait for approval; model-dependent phases are unavailable';
+    }
+    return 'eligible deterministic work may apply; model-dependent phases are unavailable';
+  }
+  if (maintenance === 'audit') return 'plans and reports only; no maintenance writes';
+  if (maintenance === 'review') return 'exact proposed diffs wait for human approval';
+  return 'a separate curator may apply policy-eligible guarded diffs when dream runs';
 }
 
 function setupMaintenanceMode(value: string | undefined): SetupMaintenanceMode | null {

@@ -10,11 +10,15 @@ export interface InitPromptSession {
 
 export interface InteractiveInitAnswers {
   aknoPath: string;
+  setup: InitSetupChoice;
   maintenance: SetupMaintenanceMode;
 }
 
+export type InitSetupChoice = 'openai-luna' | 'no-model' | 'manual';
+
 interface InteractiveInitOptions {
   aknoPath?: string;
+  setup?: InitSetupChoice;
   maintenance?: SetupMaintenanceMode;
   readablePath(target: string): boolean;
 }
@@ -40,7 +44,16 @@ export async function collectInteractiveInitAnswers(
   prompt.say('Setup writes only the machine configuration; it does not modify the knowledge base.');
 
   const aknoPath = await knowledgeBasePath(prompt, options.aknoPath, options.readablePath);
-  if (options.maintenance) return { aknoPath, maintenance: options.maintenance };
+  let setup = options.setup;
+  if (!setup) {
+    prompt.say('Choose a model setup:');
+    prompt.say('  1. OpenAI minimum (recommended: embeddings + GPT-5.6 Luna)');
+    prompt.say('  2. No models (lexical retrieval; no content is sent to a model)');
+    prompt.say('  3. Specialist/manual roles (preserve them and configure the model blocks yourself)');
+    const selected = await choice(prompt, 'Model setup [1]: ', ['1', '2', '3'], '1');
+    setup = selected === '1' ? 'openai-luna' : selected === '2' ? 'no-model' : 'manual';
+  }
+  if (options.maintenance) return { aknoPath, setup, maintenance: options.maintenance };
 
   prompt.say('How will this memory be used?');
   prompt.say('  1. Connected to a trusted agent (recommended: autonomous maintenance)');
@@ -54,7 +67,7 @@ export async function collectInteractiveInitAnswers(
     ['audit', 'review', 'autonomous'],
     recommended,
   );
-  return { aknoPath, maintenance };
+  return { aknoPath, setup, maintenance };
 }
 
 export async function confirmInitAction(
