@@ -102,7 +102,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v8');
+    expect(report.schemaVersion).toBe('ranking-matrix-v9');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -142,6 +142,21 @@ describe('ranking benchmark matrix', () => {
     expect(refreshed.variants.every((entry) => entry.comparisonEligible)).toBe(true);
     expect(refreshed.selection).toMatchObject({
       variantId: 'llm-none-c20',
+      reasoningEffort: 'none',
+    });
+  });
+
+  it('selects the cheapest globally equivalent variant instead of comparing effort at one window', () => {
+    const report = passingReport();
+    report.variants = [
+      { ...variant('llm-none-c10', 'none', 0.992), candidateCount: 10 },
+      variant('llm-none-c20', 'none', 0.976),
+      variant('llm-low-c20', 'low', 0.992),
+    ];
+
+    expect(refreshRankingMatrixReport(report).selection).toMatchObject({
+      variantId: 'llm-none-c10',
+      candidateCount: 10,
       reasoningEffort: 'none',
     });
   });
@@ -241,7 +256,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v8',
+    schemaVersion: 'ranking-matrix-v9',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {

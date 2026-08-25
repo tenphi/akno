@@ -1801,19 +1801,26 @@ fallback. All development gates pass.
 This result does not repair or overwrite the v6/v6 held-out failure. V9 changed the contract after that test was
 observed, so the old test corpus remains frozen and unavailable for tuning.
 
-Corpus v5 supplies the one fresh v9 release boundary. Before any v5 model call, Akno replaced the five observed
-held-out fact families with five new invented families while retaining the same 60 development cases and
-category-stratified 60/20 shape. The unchanged development fusion baseline verifies that its tuning pools did
-not move. The whole-corpus fingerprint is
+Corpus v5 supplies the immutable fresh v9 release boundary. Before any v5 model call, Akno replaced the five
+observed held-out fact families with five new invented families while retaining the same 60 development cases
+and category-stratified 60/20 shape. The whole-corpus fingerprint is
 `9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`; changing any source, query, pool, or grade
-now fails a regression assertion.
+fails a regression assertion. Independent review approved all 120 sources, all 80 cases, and the global
+attestations before evaluation. Only the content-free receipt is attached to benchmark evidence.
 
-Exact review rebasing carries 100 source and 60 case approvals from v4. A separate reviewer must decide the 20
-new sources, 20 new cases, and reset global attestations without seeing ranking output. Only then may Akno run
-one held-out matrix: five repetitions for each of the four LLM variants, or 400 logical ranking calls over 20
-queries. A passing selection authorizes one 120-call latency track and one 20-query end-to-end track. Retries
-remain visible as additional physical requests. A failed gate freezes the result and ends this release attempt;
-it does not trigger indefinite prompt-version iteration.
+The one authorized five-repeat matrix passes every release gate and selects `llm-none-c10`: 0.992 nDCG, 98%
+success@1, 100% success@3, complete relevant-evidence retention, perfect instruction-negative rejection, 100%
+top-three stability, and no fallback. The exact latency track kept every warm response valid with one physical
+request; single-flight p50/p95 was 1.34/2.67 seconds. The bound production-path run embedded all 120 sources,
+retained every direct answer in the fusion pool, ten-candidate judgment window, and final output, reached 100%
+success@1/@3, and recorded no degradation or fallback.
+
+The first aggregate selector compared reasoning efforts at 20 candidates before choosing a window. That would
+have selected `low`/20 even though `none`/10 reached the same best nDCG at lower reasoning and candidate cost.
+Matrix schema v9 implements the declared global rule: filter every tested variant to within 0.01 nDCG of the
+best, then prefer the lowest reasoning effort and smallest window. Akno refreshed the persisted measurements
+mechanically and ran no held-out query again. The resulting matrix, latency receipt, and end-to-end receipt are
+final evidence and cannot become prompt-tuning inputs.
 
 An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
 failure-handling evidence. Current access covers both OpenAI embedding models; the successful evidence above

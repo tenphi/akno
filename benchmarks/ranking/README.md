@@ -195,18 +195,28 @@ assembly, reached 98.3% success@1 and 100% success@3, and recorded no fallback o
 These are development results. The frozen v6/v6 test artifact remains final evidence for that earlier
 contract and is not a tuning set for v9.
 
-`invented-ranking-v5` is the single fresh v9 release corpus. Before any v5 model call, it replaced the five
+`invented-ranking-v5` is the immutable fresh v9 release corpus. Before any v5 model call, it replaced the five
 observed held-out fact families with five new invented families, retained all 60 development cases, kept the
 predeclared gates unchanged, and froze fingerprint
-`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`. Its development fusion metrics exactly
-match v4. Rebasing the approved v4 review carries 100 source and 60 case passes; only 20 new sources, 20 new
-cases, and every reset global attestation require independent review.
+`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`. Independent review approved all 120
+sources, all 80 cases, and the global attestations without benchmark output.
 
-Once that review is approved, v9 gets one release attempt: a `--split test --runs 5 --skip-native` matrix over
-the four LLM variants. This is 400 logical ranking calls. Only a passing matrix proceeds to the exact 120-call
-latency track and 20-query end-to-end track. Semantic or compatibility retries are counted separately as extra
-physical endpoint requests. A failed artifact is frozen; it does not authorize repeated runs or an automatic
-new prompt version.
+The single authorized `--split test --runs 5 --skip-native` matrix is
+[`test-openai-luna-v9-stable-ids-corpus-v5-2026-08-25.json`](results/test-openai-luna-v9-stable-ids-corpus-v5-2026-08-25.json).
+It selects `llm-none-c10` with 0.992 nDCG, 98% success@1, 100% success@3, complete relevant-evidence retention,
+perfect instruction-negative rejection, 100% top-three stability, and no fallback. Its exact
+[latency track](results/test-openai-luna-v9-stable-ids-corpus-v5-latency-2026-08-25.json) passes at 2.67-second
+warm single-flight p95. The bound
+[end-to-end track](results/test-end-to-end-openai-luna-v9-stable-ids-corpus-v5-semantic-tail-2026-08-25.json)
+embeds 120/120 chunks, retains every direct answer through all three retrieval boundaries, reaches 100%
+success@1/@3, and records zero fallback or degradation.
+
+The initial aggregate selector exposed a code-only defect: it chose the reasoning effort at 20 candidates
+before comparing candidate windows. Since `low`/20 and `none`/10 both reached the best 0.992 nDCG, that ordering
+violated the predeclared cheapest-equivalent rule. Matrix schema v9 evaluates every variant globally, keeps
+those within 0.01 nDCG of the best, then prefers lower reasoning cost and fewer candidates. The existing
+measurements were refreshed without another provider call. All release checks now pass; preserve these three
+artifacts as final evidence and do not rerun or tune against the held-out cases.
 
 To reproduce and attach the selected configuration's latency profiles:
 

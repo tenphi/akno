@@ -22,7 +22,7 @@ import {
 } from './ranking.ts';
 import { rankingReviewEvidenceMatches, type RankingReviewEvidence } from './ranking-review.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v8';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v9';
 export const RANKING_MATRIX_VARIANT_IDS = [
   'llm-none-c10',
   'llm-none-c20',
@@ -642,32 +642,35 @@ function sumNullable(values: Array<number | null>): number | null {
 }
 
 function selectConfiguration(variants: RankingMatrixVariant[]): RankingMatrixSelection | null {
-  const none20 = variants.find((variant) => variant.id === 'llm-none-c20');
-  const low20 = variants.find((variant) => variant.id === 'llm-low-c20');
-  if (!none20?.comparisonEligible || !low20?.comparisonEligible) return null;
-  const effort: ReasoningEffort = none20.quality.ndcgAt10 >= low20.quality.ndcgAt10 - 0.01 ? 'none' : 'low';
-  if (effort === 'low') {
-    return {
-      variantId: low20.id,
-      candidateCount: 20,
-      reasoningEffort: 'low',
-      rationale: 'Low reasoning improved nDCG by more than 0.01 at 20 candidates.',
-    };
-  }
   const candidates = variants.filter(
-    (variant) => variant.system === 'llm' && variant.reasoningEffort === 'none',
+    (variant): variant is RankingMatrixVariant & { reasoningEffort: ReasoningEffort } =>
+      variant.system === 'llm' && variant.reasoningEffort !== null && variant.comparisonEligible,
   );
+  if (candidates.length === 0) return null;
   const best = Math.max(...candidates.map((variant) => variant.quality.ndcgAt10));
   const selected = candidates
-    .filter((variant) => variant.comparisonEligible && variant.quality.ndcgAt10 >= best - 0.01)
-    .sort((a, b) => a.candidateCount - b.candidateCount)[0];
+    .filter((variant) => variant.quality.ndcgAt10 >= best - 0.01)
+    .sort(
+      (a, b) =>
+        reasoningCost(a.reasoningEffort) - reasoningCost(b.reasoningEffort) ||
+        a.candidateCount - b.candidateCount ||
+        a.p95LatencyMs - b.p95LatencyMs ||
+        a.id.localeCompare(b.id),
+    )[0];
   if (!selected) return null;
   return {
     variantId: selected.id,
     candidateCount: selected.candidateCount,
-    reasoningEffort: 'none',
-    rationale: 'Reasoning none is within 0.01 nDCG of low; the smallest equivalent candidate pool wins.',
+    reasoningEffort: selected.reasoningEffort,
+    rationale:
+      selected.reasoningEffort === 'none'
+        ? 'Reasoning none is within 0.01 nDCG of the best tested variant; the smallest equivalent pool wins.'
+        : 'No cheaper reasoning effort is within 0.01 nDCG of the best tested variant; the smallest equivalent pool wins.',
   };
+}
+
+function reasoningCost(effort: ReasoningEffort): number {
+  return ['none', 'low', 'medium', 'high', 'xhigh', 'max'].indexOf(effort);
 }
 
 function hasComparableMeasurements(variant: RankingMatrixVariant): boolean {

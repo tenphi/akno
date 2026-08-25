@@ -1301,18 +1301,29 @@ grade-only targeted artifacts remain checked-in negative evidence.
 All v9 development gates pass. The immutable v6/v6 held-out result cannot authorize this changed contract and
 will not be rerun or mined for case-specific tuning.
 
-`invented-ranking-v5` is now the single fresh v9 release set. Before any v5 model call, Akno replaced the five
+`invented-ranking-v5` is the immutable fresh v9 release set. Before any v5 model call, Akno replaced the five
 previously observed held-out fact families with five new invented families, preserved all 60 development cases,
 froze the existing thresholds, and pinned fingerprint
-`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`. Review rebasing carried forward exact
-passes for 100 of 120 sources and 60 of 80 cases; the 20 new sources, 20 new cases, and global attestations await
-independent review.
+`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`. Independent review approved all 120
+sources and 80 cases before evaluation; its content-free receipt is bound to the exact corpus fingerprint.
 
-After approval there is exactly one v9 release attempt: one held-out matrix with five repetitions of each of
-four LLM variants, followed only on success by one bound latency track and one end-to-end track. That is 400
-logical ranking calls in the matrix, then 120 latency calls and 20 end-to-end ranking calls if the matrix passes;
-provider negotiation or semantic retries may add physical requests. Failure ends the attempt rather than
-starting an automatic v10 loop. The setup preset remains experimental until this fixed sequence passes.
+The single authorized
+[v9 held-out matrix](benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-2026-08-25.json)
+selects Luna with no reasoning and 10 candidates. It reached 0.992 nDCG, 98% success@1, 100% success@3,
+complete relevant-evidence retention, perfect instruction-negative rejection, 100% top-three stability, and
+zero fallback across 100 logical calls for the selected variant. Its bound
+[latency receipt](benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-latency-2026-08-25.json)
+measured 1.34-second warm single-flight p50 and 2.67-second p95. The
+[production-path receipt](benchmarks/ranking/results/test-end-to-end-openai-luna-v9-stable-ids-corpus-v5-semantic-tail-2026-08-25.json)
+embedded 120/120 chunks with `text-embedding-3-small`, retained every direct answer through the fusion pool,
+10-candidate judgment window, and final assembly, reached 100% success@1/@3, and recorded no fallback or
+degradation. Every release check passes.
+
+The first aggregate selection exposed a mechanical bug: it compared reasoning efforts only at 20 candidates
+before choosing a window, so it preferred `low`/20 even though `none`/10 had the same best nDCG and was cheaper.
+Akno now applies the predeclared rule globally: among all variants within 0.01 nDCG of the best tested result,
+choose the lowest reasoning effort and smallest candidate window. The stored measurements were refreshed under
+matrix schema v9; no held-out query was rerun. This artifact is final release evidence, not a tuning set.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

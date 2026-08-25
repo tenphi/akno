@@ -1,0 +1,4269 @@
+{
+  "kind": "ranking_matrix",
+  "schemaVersion": "ranking-matrix-v9",
+  "createdAt": "2026-08-25T16:10:47.874Z",
+  "split": "test",
+  "corpus": {
+    "queries": 20,
+    "sources": 120,
+    "judgments": 400,
+    "categories": 8,
+    "version": "invented-ranking-v5",
+    "fingerprint": "9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c"
+  },
+  "requestedRuns": 5,
+  "concurrency": 4,
+  "targetedVariants": null,
+  "variants": [
+    {
+      "id": "fusion-c20",
+      "system": "fusion",
+      "provider": null,
+      "model": null,
+      "reasoningEffort": null,
+      "promptVersion": null,
+      "schemaVersion": null,
+      "candidateCount": 20,
+      "excerptChars": 800,
+      "runCount": 1,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0
+        }
+      ],
+      "qualification": null,
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 0,
+      "p95LatencyMs": 0,
+      "maxLatencyMs": 0,
+      "medianTop3Overlap": null,
+      "execution": {
+        "requests": 0,
+        "endpointRequests": 0,
+        "extraEndpointRequests": 0,
+        "tokenUsage": null
+      },
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.4827694231220949,
+            "mrrAt10": 0.1916666666666666,
+            "successAt1": 0,
+            "successAt3": 0.15,
+            "precisionAt5": 0.23000000000000007,
+            "gradeZeroAboveGradeThree": 2.7
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 0,
+          "p95LatencyMs": 0,
+          "maxLatencyMs": 0,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "bo-lantern-inspection-date-negative",
+              "ada-archive-key-location-marginal",
+              "ada-archive-key-location-direct"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-negative",
+              "ada-archive-key-location-marginal",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-negative",
+              "ada-archive-key-location-marginal",
+              "qx100-calibration-code-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-negative",
+              "ada-archive-key-location-marginal",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "vulpine-claim-notice-window-negative",
+              "bo-lantern-inspection-date-marginal",
+              "bo-lantern-inspection-date-direct"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-negative",
+              "bo-lantern-inspection-date-marginal",
+              "qx100-calibration-code-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-negative",
+              "bo-lantern-inspection-date-marginal",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-negative",
+              "bo-lantern-inspection-date-marginal",
+              "ada-archive-key-location-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "qx100-calibration-code-negative",
+              "vulpine-claim-notice-window-marginal",
+              "vulpine-claim-notice-window-direct"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-negative",
+              "vulpine-claim-notice-window-marginal",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-negative",
+              "vulpine-claim-notice-window-marginal",
+              "ada-archive-key-location-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-negative",
+              "vulpine-claim-notice-window-marginal",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-negative",
+              "qx100-calibration-code-marginal",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-negative",
+              "qx100-calibration-code-marginal",
+              "ada-archive-key-location-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-negative",
+              "qx100-calibration-code-marginal",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-negative",
+              "qx100-calibration-code-marginal",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-negative",
+              "blackwater-ferry-case-limit-marginal",
+              "ada-archive-key-location-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-negative",
+              "blackwater-ferry-case-limit-marginal",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-negative",
+              "blackwater-ferry-case-limit-marginal",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "instruction-08",
+              "blackwater-ferry-case-limit-negative",
+              "blackwater-ferry-case-limit-marginal"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 0,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 0,
+            "extraEndpointRequests": 0,
+            "tokenUsage": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "llm-none-c10",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-judgment-map-v9",
+      "schemaVersion": "tuple-judgment-map-v6",
+      "candidateCount": 10,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9922416405946002,
+        "mrrAt10": 0.99,
+        "successAt1": 0.9800000000000001,
+        "successAt3": 1,
+        "precisionAt5": 0.4000000000000001,
+        "gradeZeroAboveGradeThree": 0
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.5094722174725053,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9952606571584216,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.43190423252246257
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9784166273809862,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5082251203683079
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9980318677799206,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5278403607672423
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9945876363947814,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5243961293821031
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9933575537572319,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5231660467445536
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.996309752087351,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5261182450746726
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9977858512524106,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5275943442397323
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.992619504174702,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5503644278435372
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.8214285714285714,
+        "retainedPrecision": 0.47058823529411764,
+        "instructionNegativeRejection": 1
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 1752.564792000001,
+      "p95LatencyMs": 3403.714417000003,
+      "maxLatencyMs": 8595.004249999998,
+      "medianTop3Overlap": 1,
+      "execution": {
+        "requests": 100,
+        "endpointRequests": 110,
+        "extraEndpointRequests": 10,
+        "tokenUsage": {
+          "reportedQueries": 100,
+          "inputTokens": 80380,
+          "outputTokens": 7200,
+          "totalTokens": 87580,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9955717025048211,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1688.3309590000008,
+          "p95LatencyMs": 4031.8064580000005,
+          "maxLatencyMs": 8595.004249999998,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 16076,
+              "outputTokens": 1440,
+              "totalTokens": 17516,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9939980601114271,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1991.158374999999,
+          "p95LatencyMs": 2654.346458,
+          "maxLatencyMs": 4858.726708999999,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "distractor-21"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "distractor-06"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 16076,
+              "outputTokens": 1440,
+              "totalTokens": 17516,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.987713115748868,
+            "mrrAt10": 0.975,
+            "successAt1": 0.95,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2012.0639169999995,
+          "p95LatencyMs": 2493.993542,
+          "maxLatencyMs": 3558.2979170000035,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-marginal"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 16076,
+              "outputTokens": 1440,
+              "totalTokens": 17516,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.988955930904128,
+            "mrrAt10": 0.975,
+            "successAt1": 0.95,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1696.6037920000017,
+          "p95LatencyMs": 3403.714417000003,
+          "maxLatencyMs": 3742.5627500000046,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "distractor-06"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-marginal"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 16076,
+              "outputTokens": 1440,
+              "totalTokens": 17516,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9949693937037566,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1523.2871670000022,
+          "p95LatencyMs": 1979.2954580000005,
+          "maxLatencyMs": 2044.184709000001,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "distractor-06"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 16076,
+              "outputTokens": 1440,
+              "totalTokens": 17516,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "llm-none-c20",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-judgment-map-v9",
+      "schemaVersion": "tuple-judgment-map-v6",
+      "candidateCount": 20,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9764581442951685,
+        "mrrAt10": 0.95,
+        "successAt1": 0.9,
+        "successAt3": 1,
+        "precisionAt5": 0.4000000000000001,
+        "gradeZeroAboveGradeThree": 0
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.49368872117307366,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9957348035015837,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.4323783788656247
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9532518416471045,
+            "mrrAt10": 0.875,
+            "successAt1": 0.75,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4830603346344262
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9929449556237799,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5227534486111016
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9939655457019823,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.523774038689304
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9894938285419315,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5193023215292532
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9116692313684205,
+            "mrrAt10": 0.75,
+            "successAt1": 0.5,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4414777243557422
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9851608912536942,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5149693842410159
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9955717025048212,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5533166261736564
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.8264705882352942,
+        "retainedPrecision": 0.33668369088060557,
+        "instructionNegativeRejection": 1
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 2357.9340000000084,
+      "p95LatencyMs": 4545.167957999991,
+      "maxLatencyMs": 16765.83454099999,
+      "medianTop3Overlap": 1,
+      "execution": {
+        "requests": 100,
+        "endpointRequests": 110,
+        "extraEndpointRequests": 10,
+        "tokenUsage": {
+          "reportedQueries": 100,
+          "inputTokens": 124990,
+          "outputTokens": 13200,
+          "totalTokens": 138190,
+          "cachedInputTokens": 96027,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9774834913417875,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2157.6802089999983,
+          "p95LatencyMs": 4935.545041999998,
+          "maxLatencyMs": 9349.209583000003,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 2640,
+              "totalTokens": 27638,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9728914420106982,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2481.5777910000033,
+          "p95LatencyMs": 9107.822083000006,
+          "maxLatencyMs": 9398.939541,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "qx100-calibration-code-support"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "distractor-12"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "distractor-13"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "distractor-08"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-marginal",
+              "qx100-calibration-code-support"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-24"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-marginal",
+              "qx100-calibration-code-support"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 2640,
+              "totalTokens": 27638,
+              "cachedInputTokens": 23670,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9761597025846467,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2709.361625000005,
+          "p95LatencyMs": 4230.029875000007,
+          "maxLatencyMs": 16765.83454099999,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-marginal",
+              "qx100-calibration-code-support"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 2640,
+              "totalTokens": 27638,
+              "cachedInputTokens": 24938,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9778850317404697,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2451.241624999995,
+          "p95LatencyMs": 3880.2044999999925,
+          "maxLatencyMs": 4545.167957999991,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "distractor-01"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 2640,
+              "totalTokens": 27638,
+              "cachedInputTokens": 23711,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9778710537982407,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 2143.1157079999975,
+          "p95LatencyMs": 2598.090291999979,
+          "maxLatencyMs": 3289.1200409999874,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-marginal"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 2640,
+              "totalTokens": 27638,
+              "cachedInputTokens": 23708,
+              "reasoningOutputTokens": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "llm-none-c40",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-judgment-map-v9",
+      "schemaVersion": "tuple-judgment-map-v6",
+      "candidateCount": 40,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9675538084333445,
+        "mrrAt10": 0.93,
+        "successAt1": 0.86,
+        "successAt3": 1,
+        "precisionAt5": 0.39800000000000013,
+        "gradeZeroAboveGradeThree": 0
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.48478438531124957,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9430510664940213,
+            "mrrAt10": 0.8333333333333334,
+            "successAt1": 0.6666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.37969464185806223
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9594927213356632,
+            "mrrAt10": 0.9,
+            "successAt1": 0.8,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4893012143229849
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9742274057702163,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.38666666666666677,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.504035898757538
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.939631305095592,
+            "mrrAt10": 0.8333333333333334,
+            "successAt1": 0.6666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4694397980829137
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9902318781244613,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.520040371111783
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9926958992809636,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5225043922682853
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9904743469645381,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5202828399518598
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9955717025048212,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5533166261736564
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 0.99,
+        "marginalRetention": 0.95,
+        "irrelevantRejection": 0.8564864864864864,
+        "retainedPrecision": 0.24150760089084594,
+        "instructionNegativeRejection": 1
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 3356.920167000004,
+      "p95LatencyMs": 4704.420584000007,
+      "maxLatencyMs": 10454.558667000005,
+      "medianTop3Overlap": 0.6666666666666666,
+      "execution": {
+        "requests": 100,
+        "endpointRequests": 110,
+        "extraEndpointRequests": 10,
+        "tokenUsage": {
+          "reportedQueries": 100,
+          "inputTokens": 214325,
+          "outputTokens": 25200,
+          "totalTokens": 239525,
+          "cachedInputTokens": 166942,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9590609515445326,
+            "mrrAt10": 0.925,
+            "successAt1": 0.85,
+            "successAt3": 1,
+            "precisionAt5": 0.3900000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3340.30250000002,
+          "p95LatencyMs": 3780.8971670000174,
+          "maxLatencyMs": 3911.8575409999758,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "distractor-28"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-marginal",
+              "qx100-calibration-code-support"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-24"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "qx100-calibration-code-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 40,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 42865,
+              "outputTokens": 5040,
+              "totalTokens": 47905,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.966560637893294,
+            "mrrAt10": 0.925,
+            "successAt1": 0.85,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3586.1837499999965,
+          "p95LatencyMs": 4822.870874999993,
+          "maxLatencyMs": 10454.558667000005,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "distractor-27"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-marginal",
+              "vulpine-claim-notice-window-support"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "vulpine-claim-notice-window-direct"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 40,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 42865,
+              "outputTokens": 5040,
+              "totalTokens": 47905,
+              "cachedInputTokens": 40648,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9696294643087938,
+            "mrrAt10": 0.925,
+            "successAt1": 0.85,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3325.0230000000156,
+          "p95LatencyMs": 4063.259458000015,
+          "maxLatencyMs": 4704.420584000007,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-marginal"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "distractor-17"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "distractor-17"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-14"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-24"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 40,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 42865,
+              "outputTokens": 5040,
+              "totalTokens": 47905,
+              "cachedInputTokens": 42805,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.973039814367897,
+            "mrrAt10": 0.95,
+            "successAt1": 0.9,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3292.525834,
+          "p95LatencyMs": 3926.948166999995,
+          "maxLatencyMs": 6602.170166000025,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "distractor-03"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-24"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "qx100-calibration-code-support",
+              "blackwater-ferry-case-limit-support"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 40,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 42865,
+              "outputTokens": 5040,
+              "totalTokens": 47905,
+              "cachedInputTokens": 40684,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9694781740522045,
+            "mrrAt10": 0.925,
+            "successAt1": 0.85,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 3344.869207999989,
+          "p95LatencyMs": 4514.482332999993,
+          "maxLatencyMs": 4840.646624999994,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-24"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "distractor-24"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "qx100-calibration-code-support"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-marginal"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 40,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 42865,
+              "outputTokens": 5040,
+              "totalTokens": 47905,
+              "cachedInputTokens": 42805,
+              "reasoningOutputTokens": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "llm-low-c20",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "low",
+      "promptVersion": "akno-judgment-map-v9",
+      "schemaVersion": "tuple-judgment-map-v6",
+      "candidateCount": 20,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.9917262610551811,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1,
+        "precisionAt5": 0.4000000000000001,
+        "gradeZeroAboveGradeThree": 0
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4827694231220949,
+        "mrrAt10": 0.1916666666666666,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23000000000000007,
+        "gradeZeroAboveGradeThree": 2.7
+      },
+      "ndcgDeltaFromFusion": 0.5089568379330862,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9912198025118485,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.42786337787588946
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 4,
+          "quality": {
+            "ndcgAt10": 0.9937265785484966,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5235350715358182
+        },
+        {
+          "category": "direct_answer",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.992619504174702,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5224279971620237
+        },
+        {
+          "category": "temporal",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.9905467817482083,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.52035527473553
+        },
+        {
+          "category": "negation",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9896669354942709,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5194754284815926
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9913601006203289,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5211685936076506
+        },
+        {
+          "category": "provenance",
+          "queries": 2,
+          "quality": {
+            "ndcgAt10": 0.9916863681355034,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5214948611228251
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 1,
+          "quality": {
+            "ndcgAt10": 0.9910338331051541,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.2,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.5487787567739894
+        }
+      ],
+      "qualification": {
+        "answerRetention": 1,
+        "supportRetention": 1,
+        "marginalRetention": 0.85,
+        "irrelevantRejection": 0.8629411764705882,
+        "retainedPrecision": 0.3863352161546687,
+        "instructionNegativeRejection": 1
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 4351.663208000013,
+      "p95LatencyMs": 8027.93200000003,
+      "maxLatencyMs": 10762.33254199999,
+      "medianTop3Overlap": 1,
+      "execution": {
+        "requests": 100,
+        "endpointRequests": 110,
+        "extraEndpointRequests": 10,
+        "tokenUsage": {
+          "reportedQueries": 100,
+          "inputTokens": 124990,
+          "outputTokens": 32720,
+          "totalTokens": 157710,
+          "cachedInputTokens": 97232,
+          "reasoningOutputTokens": 18920
+        }
+      },
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.9931242697474321,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4343.0282919999445,
+          "p95LatencyMs": 8137.83720899999,
+          "maxLatencyMs": 10762.33254199999,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 6356,
+              "totalTokens": 31354,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 3596
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.993124269747432,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 5210.249000000011,
+          "p95LatencyMs": 6433.4681669999845,
+          "maxLatencyMs": 8817.106750000035,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 6760,
+              "totalTokens": 31758,
+              "cachedInputTokens": 24938,
+              "reasoningOutputTokens": 4000
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.989985095782003,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4265.250791999977,
+          "p95LatencyMs": 8158.978417000035,
+          "maxLatencyMs": 8600.321708999982,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-marginal"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 6732,
+              "totalTokens": 31730,
+              "cachedInputTokens": 23670,
+              "reasoningOutputTokens": 3972
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9906685445874446,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4298.425457999983,
+          "p95LatencyMs": 6390.011583000014,
+          "maxLatencyMs": 8027.93200000003,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-marginal"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 6501,
+              "totalTokens": 31499,
+              "cachedInputTokens": 24938,
+              "reasoningOutputTokens": 3741
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.9917291254115934,
+            "mrrAt10": 1,
+            "successAt1": 1,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 4450.179416999978,
+          "p95LatencyMs": 5660.125041000021,
+          "maxLatencyMs": 7051.95974999998,
+          "topThree": {
+            "ada-archive-key-location-exact_entity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-paraphrased_attribute-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "ada-archive-key-location-temporal-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-marginal"
+            ],
+            "ada-archive-key-location-ambiguous_identity-01": [
+              "ada-archive-key-location-direct",
+              "ada-archive-key-location-support",
+              "ada-archive-key-location-negative"
+            ],
+            "bo-lantern-inspection-date-exact_entity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-paraphrased_attribute-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-temporal-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "bo-lantern-inspection-date-ambiguous_identity-02": [
+              "bo-lantern-inspection-date-direct",
+              "bo-lantern-inspection-date-support",
+              "bo-lantern-inspection-date-negative"
+            ],
+            "vulpine-claim-notice-window-exact_entity-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-direct_answer-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-temporal-03": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "vulpine-claim-notice-window-provenance-01": [
+              "vulpine-claim-notice-window-direct",
+              "vulpine-claim-notice-window-support",
+              "vulpine-claim-notice-window-negative"
+            ],
+            "qx100-calibration-code-paraphrased_attribute-03": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-direct_answer-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-negation-01": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "qx100-calibration-code-provenance-02": [
+              "qx100-calibration-code-direct",
+              "qx100-calibration-code-support",
+              "qx100-calibration-code-negative"
+            ],
+            "blackwater-ferry-case-limit-paraphrased_attribute-04": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-direct_answer-03": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-negation-02": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ],
+            "blackwater-ferry-case-limit-instruction_bearing-01": [
+              "blackwater-ferry-case-limit-direct",
+              "blackwater-ferry-case-limit-support",
+              "blackwater-ferry-case-limit-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 20,
+            "concurrency": 4,
+            "candidateCount": 20,
+            "excerptChars": 800,
+            "maxExcerptChars": 93,
+            "endpointRequests": 22,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 20,
+              "inputTokens": 24998,
+              "outputTokens": 6371,
+              "totalTokens": 31369,
+              "cachedInputTokens": 23686,
+              "reasoningOutputTokens": 3611
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "variantId": "llm-none-c10",
+    "candidateCount": 10,
+    "reasoningEffort": "none",
+    "rationale": "Reasoning none is within 0.01 nDCG of the best tested variant; the smallest equivalent pool wins."
+  },
+  "reviewEvidence": {
+    "kind": "ranking_corpus_review_evidence",
+    "schemaVersion": "ranking-corpus-review-evidence-v1",
+    "corpusVersion": "invented-ranking-v5",
+    "corpusFingerprint": "9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c",
+    "packetFingerprint": "2ce2f259fe4080639fc2554a62b0ade5b7299f56c3a1c4d8e0dc5d0a6ef4a4cb",
+    "receiptFingerprint": "adf3f92824ea9360fe27781838acecf762eba767880daf2f357b89df1ac4cfad",
+    "reviewerKind": "model",
+    "reviewedAt": "2026-08-25T15:52:53.000Z",
+    "sourceReviews": 120,
+    "caseReviews": 80,
+    "independenceConfirmed": true,
+    "checksConfirmed": true
+  },
+  "endToEndEvidence": {
+    "split": "test",
+    "corpusVersion": "invented-ranking-v5",
+    "corpusFingerprint": "9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c",
+    "candidateCount": 10,
+    "retrievalPoolCount": 20,
+    "candidateSelectionVersion": "fusion-semantic-tail-v1",
+    "directAnswerFusionPoolRecall": 1,
+    "directAnswerCandidateRecall": 1,
+    "directAnswerRankedRecall": 1,
+    "candidateDegradedQueries": 0,
+    "rankedDegradedQueries": 0,
+    "rerankFallbackRate": 0,
+    "embeddingProvider": "openai",
+    "embeddingModel": "text-embedding-3-small",
+    "embeddingDimensions": 1536,
+    "embeddingAvailable": true,
+    "totalChunks": 120,
+    "embeddedChunks": 120,
+    "rerankerProvider": "openai",
+    "rerankerModel": "gpt-5.6-luna",
+    "rerankerAvailable": true,
+    "reasoningEffort": "none",
+    "promptVersion": "akno-judgment-map-v9",
+    "schemaVersion": "tuple-judgment-map-v6"
+  },
+  "latencyEvidence": {
+    "kind": "ranking_latency",
+    "schemaVersion": "ranking-latency-v1",
+    "createdAt": "2026-08-25T16:17:30.888Z",
+    "development": true,
+    "releaseEligible": false,
+    "split": "test",
+    "corpus": {
+      "queries": 20,
+      "sources": 120,
+      "judgments": 200,
+      "categories": 8,
+      "version": "invented-ranking-v5",
+      "fingerprint": "9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c"
+    },
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "none",
+    "promptVersion": "akno-judgment-map-v9",
+    "schemaVersionContract": "tuple-judgment-map-v6",
+    "candidateCount": 10,
+    "excerptChars": 800,
+    "thresholds": {
+      "interactiveP95LatencyMs": 4000
+    },
+    "interactive": {
+      "concurrency": 1,
+      "cold": {
+        "samples": 1,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 1600.25775,
+        "p95LatencyMs": 1600.25775,
+        "maxLatencyMs": 1600.25775,
+        "endpointRequests": 3,
+        "extraEndpointRequests": 2,
+        "tokenUsage": {
+          "reportedQueries": 1,
+          "inputTokens": 791,
+          "outputTokens": 72,
+          "totalTokens": 863,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "warm": {
+        "samples": 19,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 1338.065749999998,
+        "p95LatencyMs": 2667.0310420000005,
+        "maxLatencyMs": 2667.0310420000005,
+        "endpointRequests": 19,
+        "extraEndpointRequests": 0,
+        "tokenUsage": {
+          "reportedQueries": 19,
+          "inputTokens": 15285,
+          "outputTokens": 1368,
+          "totalTokens": 16653,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      }
+    },
+    "loaded": {
+      "concurrency": 4,
+      "cold": {
+        "samples": 1,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 2083.3726669999996,
+        "p95LatencyMs": 2083.3726669999996,
+        "maxLatencyMs": 2083.3726669999996,
+        "endpointRequests": 3,
+        "extraEndpointRequests": 2,
+        "tokenUsage": {
+          "reportedQueries": 1,
+          "inputTokens": 791,
+          "outputTokens": 72,
+          "totalTokens": 863,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "warm": {
+        "samples": 19,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 1356.0862909999996,
+        "p95LatencyMs": 2333.0143330000064,
+        "maxLatencyMs": 2333.0143330000064,
+        "endpointRequests": 19,
+        "extraEndpointRequests": 0,
+        "tokenUsage": {
+          "reportedQueries": 19,
+          "inputTokens": 15285,
+          "outputTokens": 1368,
+          "totalTokens": 16653,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      }
+    },
+    "checks": [
+      {
+        "id": "interactive_cold",
+        "passed": true,
+        "actual": true,
+        "target": "successful fresh-client call with a physical endpoint receipt"
+      },
+      {
+        "id": "interactive_integrity",
+        "passed": true,
+        "actual": true,
+        "target": "all warm responses valid with one endpoint request each"
+      },
+      {
+        "id": "interactive_latency",
+        "passed": true,
+        "actual": 2667.0310420000005,
+        "target": "at most 4000ms warm single-flight p95"
+      },
+      {
+        "id": "loaded_cold",
+        "passed": true,
+        "actual": true,
+        "target": "successful fresh-client call with a physical endpoint receipt"
+      },
+      {
+        "id": "loaded_integrity",
+        "passed": true,
+        "actual": true,
+        "target": "all warm responses valid with one endpoint request each"
+      }
+    ],
+    "blockers": [],
+    "passed": true
+  },
+  "artifactPersisted": true,
+  "releaseEligible": true,
+  "releaseGate": {
+    "passed": true,
+    "checks": [
+      {
+        "id": "held_out_split",
+        "passed": true,
+        "actual": "test",
+        "target": "test"
+      },
+      {
+        "id": "independent_review",
+        "passed": true,
+        "actual": true,
+        "target": "completed content-free receipt for this exact corpus fingerprint"
+      },
+      {
+        "id": "persisted_artifact",
+        "passed": true,
+        "actual": true,
+        "target": "true"
+      },
+      {
+        "id": "runtime_contract",
+        "passed": true,
+        "actual": "akno-judgment-map-v9/tuple-judgment-map-v6",
+        "target": "akno-judgment-map-v9/tuple-judgment-map-v6"
+      },
+      {
+        "id": "end_to_end_configuration",
+        "passed": true,
+        "actual": true,
+        "target": "same split, corpus, and selected configuration with a fully embedded index and both models available"
+      },
+      {
+        "id": "end_to_end_candidate_recall",
+        "passed": true,
+        "actual": 1,
+        "target": "1.0 at the selected candidate count"
+      },
+      {
+        "id": "end_to_end_ranked_recall",
+        "passed": true,
+        "actual": 1,
+        "target": "1.0 after reranking and assembly"
+      },
+      {
+        "id": "end_to_end_integrity",
+        "passed": true,
+        "actual": 0,
+        "target": "zero degraded queries and zero rerank fallbacks"
+      },
+      {
+        "id": "latency_configuration",
+        "passed": true,
+        "actual": true,
+        "target": "same split, corpus, and selected configuration with warm single-flight and loaded profiles"
+      },
+      {
+        "id": "latency_integrity",
+        "passed": true,
+        "actual": true,
+        "target": "cold negotiation succeeds; every warm response is valid with one endpoint request"
+      },
+      {
+        "id": "five_runs",
+        "passed": true,
+        "actual": 5,
+        "target": "at least 5"
+      },
+      {
+        "id": "ndcg_gain",
+        "passed": true,
+        "actual": 0.5094722174725053,
+        "target": "at least +0.05"
+      },
+      {
+        "id": "category_regression",
+        "passed": true,
+        "actual": 0.43190423252246257,
+        "target": "no category below -0.03"
+      },
+      {
+        "id": "exact_entity_mrr",
+        "passed": true,
+        "actual": 0.6666666666666667,
+        "target": "at least -0.01"
+      },
+      {
+        "id": "valid_responses",
+        "passed": true,
+        "actual": 1,
+        "target": "at least 0.995"
+      },
+      {
+        "id": "fallback_preserved",
+        "passed": true,
+        "actual": true,
+        "target": "true"
+      },
+      {
+        "id": "instruction_safety",
+        "passed": true,
+        "actual": 1,
+        "target": "1.0"
+      },
+      {
+        "id": "top3_stability",
+        "passed": true,
+        "actual": 1,
+        "target": "at least 0.90"
+      },
+      {
+        "id": "latency",
+        "passed": true,
+        "actual": 2667.0310420000005,
+        "target": "warm single-flight p95 at most 4000ms"
+      },
+      {
+        "id": "cheapest_equivalent_effort",
+        "passed": true,
+        "actual": "none",
+        "target": "none unless low improves nDCG by more than 0.01"
+      }
+    ],
+    "blockers": []
+  }
+}
