@@ -1144,7 +1144,8 @@ schema must also match the current runtime contract, so refreshing an old artifa
 unbenchmarked code. A useful development result can therefore recommend the next experiment without silently
 authorizing the setup preset.
 
-The current [v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
+The historical
+[listwise-v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
 selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.962 mean nDCG@10, 100%
 median top-three overlap, 100% valid responses, 100% direct-answer and instruction-negative retention/rejection,
 zero fallbacks, and 2.26 s aggregate p95 latency. The optional native reference reached 0.907 nDCG and 1.13 s
@@ -1153,10 +1154,10 @@ p95. `none` at 20 and 40 candidates reached 0.958/0.941 nDCG and 3.71/9.82 s p95
 reasoning is therefore both the selected quality-equivalent configuration and the fastest prompted-ranking
 variant tested.
 
-For that v4/v3 contract, every development-side release check passed: matching persisted contract, five runs,
-overall and category quality, exact-entity MRR, response validity, fallback preservation, instruction safety,
-top-three stability, latency, and cheapest-equivalent selection. This is still tuning evidence rather than
-release authorization.
+For that listwise-v4/entries-v3 contract, every development-side release check passed: matching persisted
+contract, five runs, overall and category quality, exact-entity MRR, response validity, fallback preservation,
+instruction safety, top-three stability, latency, and cheapest-equivalent selection. This is still tuning
+evidence rather than release authorization.
 
 The frozen [held-out v4/v3 matrix](benchmarks/ranking/results/test-openai-luna-v4-2026-08-22.json) also selects
 Luna with `none` reasoning and 10 candidates. It reached 0.921 mean nDCG@10 against fusion's 0.483, 100% median
@@ -1195,12 +1196,8 @@ The checked-in [bound latency evidence](benchmarks/ranking/results/development-o
 then measured the selected shape through fresh clients. Each first call took three endpoint requests while
 learning the token and schema dialect, and was excluded from the warm distribution. The 59 warm single-flight
 calls were 100% valid with 2.34-second p50, 3.12-second p95, and one endpoint request each. At four-way load,
-the 59 warm calls stayed 100% valid and one-request, with 2.26-second p50 and 4.12-second p95. The round
-4-second warm single-flight UX gate therefore passes without mistaking either cold negotiation or saturation
-for normal user-perceived latency. The review handoff is implemented but no independent receipt has been
-completed yet. The preset remains experimental because that review,
-embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation remain open. The immutable
-v4/v3 held-out artifact cannot authorize the changed runtime contract.
+the 59 warm calls stayed 100% valid and one-request, with 2.26-second p50 and 4.12-second p95. This evidence is
+historical because it is bound to the earlier corpus fingerprint; v4 needs its own latency receipt.
 
 The first independent review of the `invented-ranking-v2` corpus completed on 25 August 2026 with changes
 requested. It found one negation query whose supposed false claim was true in the invented data and three
@@ -1208,10 +1205,17 @@ location cases whose date candidates repeated the location while being graded ir
 claim, graded the overlapping date sources as relevant location evidence, and bumped the corpus to
 `invented-ranking-v3`. A second review caught a finer distinction in three cases: the date candidate explicitly
 answered the requested location and therefore needed direct grade 3, not supporting grade 2. That correction is
-regression-tested in `invented-ranking-v4`. Exact rebasing carries all 120 source approvals and 77 unchanged case
-approvals into `/tmp/akno-ranking-review-v4.json`; only the three corrected cases remain pending. Older
-development, latency, held-out, and review evidence remains immutable historical evidence whose fingerprints
-cannot authorize v4. Development selection and held-out evaluation wait for independent v4 approval.
+regression-tested in `invented-ranking-v4`. Exact rebasing carried all 120 source approvals and 77 unchanged case
+approvals forward; the independent follow-up approved the three corrected cases, every global check, and the
+whole v4 fingerprint. The content-free receipt is attached to the fresh
+[v6/v5 development matrix over corpus v4](benchmarks/ranking/results/development-openai-luna-v6-corpus-v4-2026-08-25.json).
+That matrix again selects Luna with no reasoning and 10 candidates: 300/300 valid responses, zero fallbacks,
+0.962 mean nDCG, complete relevant-evidence retention, perfect instruction-negative rejection, 100% top-three
+stability, and 2.56-second p95 under four-way load. The configured native BGE reference reached 0.919 nDCG.
+No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reasoning was only 85.3% valid,
+reached 0.892 nDCG, and took 9.36 seconds at p95. Older development, latency, held-out, and review evidence
+remains immutable historical evidence whose fingerprints cannot authorize v4. Matching v4 latency and
+end-to-end receipts plus one pre-declared held-out matrix remain before the preset can be authorized.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

@@ -1647,18 +1647,19 @@ selected prompt and schema must also equal the current runtime versions, prevent
 authorizing changed ranking code. Development artifacts remain tuning
 evidence rather than a recommended preset.
 
-The current full five-run v4 development matrix selects Luna `none` with 10 candidates. It measured 0.962 mean
-nDCG@10, 100% median top-three overlap, 100% valid responses, 100% direct-answer and instruction-negative
-retention/rejection, zero fallbacks, and 2.26-second aggregate p95 latency. At 20 and 40 candidates, `none`
-measured 0.958/0.941 nDCG and 3.71/9.82-second p95; the 40-candidate variant had 12 fallbacks. `low` at 20 measured
-0.943 nDCG and 5.65-second p95 with one fallback. The smallest no-reasoning window therefore wins the matrix's
-quality-equivalence, reliability, and latency tradeoff.
+The historical full five-run listwise-v4 development matrix selects Luna `none` with 10 candidates. It measured
+0.962 mean nDCG@10, 100% median top-three overlap, 100% valid responses, 100% direct-answer and
+instruction-negative retention/rejection, zero fallbacks, and 2.26-second aggregate p95 latency. At 20 and 40
+candidates, `none` measured 0.958/0.941 nDCG and 3.71/9.82-second p95; the 40-candidate variant had 12 fallbacks.
+`low` at 20 measured 0.943 nDCG and 5.65-second p95 with one fallback. The smallest no-reasoning window therefore
+wins the matrix's quality-equivalence, reliability, and latency tradeoff.
 
-This v4 run uses compact id/grade entries, a per-request enum of permitted ids, and an explicit grade-0 rule for
-instruction-only text with no answer evidence. OpenAI completion limits cover hidden reasoning and visible JSON
-together, so reasoning-enabled calls receive an additional task-level reserve; the configured role ceiling
-still wins when it is lower. Without that reserve, the first full v4 attempt exhausted every `low` response
-before visible JSON and correctly produced no selection. The corrected matrix verifies both effort modes.
+This listwise-v4 run uses compact id/grade entries, a per-request enum of permitted ids, and an explicit grade-0
+rule for instruction-only text with no answer evidence. OpenAI completion limits cover hidden reasoning and
+visible JSON together, so reasoning-enabled calls receive an additional task-level reserve; the configured role
+ceiling still wins when it is lower. Without that reserve, the first full v4 attempt exhausted every `low`
+response before visible JSON and correctly produced no selection. The corrected matrix verifies both effort
+modes.
 
 The v3 live schema adds exact array cardinality to the per-request id enum. This prevents structured decoding
 from returning a valid prefix, while semantic validation still detects duplicates and invented ids. One bounded
@@ -1699,15 +1700,13 @@ tokens across its 300 queries. The configured native reference was unavailable a
 order. The c10 shape therefore passes every development quality, safety, reliability, and selection check, but
 the matrix alone cannot distinguish normal interaction latency from cold negotiation and saturation.
 
-The bound latency track makes that distinction explicit. Its fresh single-flight and loaded clients each paid
-three physical requests on their first call while learning two compatibility differences. The following 59
+The earlier bound latency track made that distinction explicit. Its fresh single-flight and loaded clients each
+paid three physical requests on their first call while learning two compatibility differences. The following 59
 single-flight calls were 100% valid with exactly one request each and measured 2.34-second p50 and 3.12-second
 p95. The 59 calls under four-way load stayed 100% valid and one-request, measuring 2.26-second p50 and
 4.12-second p95. A 2.5-second p95 was below the observed warm operating range—the matrix and targeted studies
 were already 3.63 and 3.39 seconds—so the pre-held-out development decision fixes a round 4-second warm
-single-flight SLO. That gate passes. The independent-review handoff and receipt validation now ship, but an
-external reviewer has not completed the packet. That review, embedding-backed end-to-end evidence, and a new
-pre-declared held-out evaluation remain open.
+single-flight SLO. That artifact remains useful historical evidence but cannot satisfy the v4 corpus fingerprint.
 
 The first external review exercised the guard instead of rubber-stamping it. It requested four changes in
 `invented-ranking-v2`: one negation claim was actually true, and three meeting-location cases graded date
@@ -1716,15 +1715,23 @@ direct date candidate did more than support the location answer: its sentence ex
 so three query-specific judgments needed grade 3 rather than grade 2. The negation and the direct/supporting/
 marginal evidence distinctions are now regression-tested in `invented-ranking-v4`, with a new whole-corpus
 fingerprint. All older model, latency, held-out, and review artifacts remain readable historical evidence but
-cannot attach to or authorize v4. Exact rebasing preserves all 120 source decisions and 77 unchanged case
-decisions; only the three corrected cases remain pending before development selection and a fresh held-out run.
+cannot attach to or authorize v4. Exact rebasing preserved all 120 source decisions and 77 unchanged case
+decisions; the independent follow-up approved the three corrections and every global attestation.
+
+The fresh v6/v5 development matrix over corpus v4 carries that content-free review receipt and again selects
+Luna with no reasoning and 10 candidates. Five repetitions produced 300/300 valid responses, zero fallbacks,
+0.962 mean nDCG, complete direct/support/marginal retention, perfect instruction-negative rejection, 100%
+top-three stability, and 2.56-second p95 under four-way load. The current native BGE reference reached 0.919
+nDCG. Wider no-reasoning windows were slower without improving quality, and low reasoning was only 85.3% valid
+at 9.36-second p95. The review and development-selection gates are therefore complete. Matching v4 latency and
+end-to-end evidence plus the single pre-declared held-out evaluation remain open.
 
 Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
 role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call
 Luna but receives a redacted 403 for `text-embedding-3-small`, and `/v1/models` exposes no embedding model id.
 That proves honest prerequisite handling and a provider-capability gap; it cannot authorize lexical fallback or
-a second endpoint under the single-endpoint preset. The review workflow exists; an independent receipt remains
-open.
+a second endpoint under the single-endpoint preset. The independent review is complete, but provider access for
+matching end-to-end evidence remains open.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

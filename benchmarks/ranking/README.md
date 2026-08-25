@@ -83,6 +83,7 @@ JSON Schema definitions. The checked-in artifacts for this contract are:
 - `development-openai-luna-v6-targeted-2026-08-24.json`
 - `development-openai-luna-v6-2026-08-24.json`
 - `development-openai-luna-v6-latency-2026-08-24.json`
+- `development-openai-luna-v6-corpus-v4-2026-08-25.json`
 
 The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
 fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second concurrency-four p95. Provider usage
@@ -103,10 +104,17 @@ was true in the invented corpus, and three meeting-location pools contained date
 location while carrying grade 0. A second review of the corrected v3 corpus found that three of those candidates
 were not merely supporting evidence: each explicitly answered the location query and required direct grade 3.
 The final distinction between direct, supporting, and marginal cross-fact evidence is regression-tested in
-`invented-ranking-v4`. Exact rebasing carries 120 source and 77 unchanged case approvals into the v4 packet,
-leaving only the three corrected cases pending. Every older matrix, latency receipt, held-out result, and review
-packet is historical evidence whose fingerprint intentionally fails attachment to v4. Approve v4 before paying
-for another development matrix or touching the held-out split.
+`invented-ranking-v4`. Exact rebasing carried 120 source and 77 unchanged case approvals into the v4 packet;
+independent follow-up then approved the three corrected cases and every global attestation. The content-free
+receipt is attached to `development-openai-luna-v6-corpus-v4-2026-08-25.json`.
+
+The fresh v4-corpus matrix again selects `llm-none-c10`. Its five repetitions were 300/300 valid with zero
+fallbacks, 0.962 mean nDCG, complete relevant-evidence retention, perfect instruction-negative rejection, 100%
+top-three stability, and 2.56-second p95 under four-way load. The current local BGE reference reached 0.919
+nDCG. No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reasoning was only 85.3% valid,
+reached 0.892 nDCG, and took 9.36 seconds at p95. Every older matrix, latency receipt, held-out result, and review
+packet is historical evidence whose fingerprint intentionally fails attachment to v4. Run matching v4 latency
+and end-to-end tracks before the single pre-declared held-out matrix.
 
 To reproduce and attach the selected configuration's latency profiles:
 
