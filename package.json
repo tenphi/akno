@@ -19,8 +19,8 @@
     "smoke": "node scripts/smoke.mjs && node scripts/smoke-demo.mjs",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format": "prettier --write \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md}\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\"",
-    "format:check": "prettier --check \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md}\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\"",
+    "format": "prettier --write \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\"",
+    "format:check": "prettier --check \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\"",
     "bench": "node packages/cli/src/bin.ts bench",
     "knip": "knip"
   },

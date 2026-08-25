@@ -8,7 +8,7 @@ that knowledge, while you keep editing the same files by hand.
 
 Developed and measured against a real knowledge base of a few hundred pages. Two parts of the maintenance
 cycle ship switched **off** for reasons measured on that base rather than guessed — see
-[What ships switched off](README.md#what-ships-switched-off).
+[Defaults and opt-ins](docs/dream-cycle.md#defaults-and-opt-ins).
 
 ### Retrieval
 
@@ -53,4 +53,4 @@ codes are stated once. Exactly one process holds the write handle; a second open
 | `@tenphi/akno-client`   | Thin typed client over a running service; no native dependencies |
 | `@tenphi/akno-protocol` | Op registry, zod schemas, wire format                            |
 
-macOS only, [on purpose](README.md#platform) — except `@tenphi/akno-client`, which is portable.
+macOS only, [on purpose](docs/operations.md#platform) — except `@tenphi/akno-client`, which is portable.

@@ -25,7 +25,7 @@ Node 22.18+ (native type stripping) and pnpm 10+. `pnpm-workspace.yaml` sets `mi
 days), so a brand-new release of a dependency will not resolve; that is deliberate.
 
 **macOS only.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin"]`, and there is no plan to change
-that — see [Platform](README.md#platform). Do not add a Linux or Windows code path "just in case": an untested
+that — see [Platform](docs/operations.md#platform). Do not add a Linux or Windows code path "just in case": an untested
 second watcher is a correctness claim nobody has checked. `@tenphi/akno-client` is the exception and must stay
 portable, because a Linux container talking to a macOS host over the HTTP door is a supported deployment.
 

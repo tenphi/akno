@@ -71,7 +71,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     -h, --help           Help for any command.
 
   ${style.grey('Start with: akno init')}
-  ${style.grey('How each command works, with examples: HOW-IT-WORKS.md')}`;
+  ${style.grey('Guides and command reference: https://github.com/tenphi/akno/tree/main/docs')}`;
 
 type Command = (argv: string[]) => Promise<number>;
 

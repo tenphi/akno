@@ -1,80 +1,46 @@
 # @tenphi/akno
 
-**A two-way memory layer for agents, on top of a Markdown knowledge base you already have.**
+The Akno command-line interface and service.
 
-Point it at a folder of notes. It indexes what is there, keeps watching, and gives agents a small set of
-operations for reading and writing that knowledge — while you keep editing the same files by hand, in
-Obsidian or any editor, with no import step and no proprietary store.
+Akno gives agents cited reading and guarded writing operations over a Markdown knowledge base while the files
+remain authoritative and editable in any normal editor.
 
-Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
-event and link from the Markdown.
-
-macOS only, [on purpose](https://github.com/tenphi/akno#platform). Requires Node 22.18+.
+Akno's runtime currently supports macOS and Node 22.18 or newer.
 
 ```bash
 npm install -g @tenphi/akno
-```
-
-Akno refuses to start until you tell it which folder holds your notes — there is no sensible default for
-that. Point it at one and give it a model endpoint:
-
-```bash
-mkdir -p ~/.akno && cat > ~/.akno/config.json <<'JSON'
-{
-  "akno_path": "~/Notes",
-  "providers": { "local": { "base_url": "http://127.0.0.1:8080/v1" } },
-  "models": {
-    "embedding": { "id": "text-embedding-qwen3-embedding-0.6b", "dimensions": 1024 },
-    "derive":    { "id": "gemma-4-12b-it" },
-    "expansion": { "id": "llama-3.2-3b-instruct" }
-  }
-}
-JSON
+akno init
 akno index
 akno doctor
-akno recall "when does the car insurance renew?"
+akno recall "How long is the Zephyr QX-100 warranty?"
 ```
 
-`index` before `doctor`: most of what `doctor` reports is counted out of the index.
+`akno init` offers the qualified OpenAI single-endpoint setup, a model-free lexical setup, or preservation of
+manually configured specialist roles. Model roles degrade independently, so `doctor` explains both availability
+and the consequence of a missing role.
 
-No notes to point it at yet? The repo ships a small invented one —
-[`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples).
+## Main operations
 
-Every model role is optional and degrades rather than fails: with no embedding model you get lexical search,
-with no derive model you get no summaries or facts, and recall still works. `akno doctor` reports which
-roles resolved and what each missing one costs.
-
-## What you get
-
-```
-akno recall <query>       Search memory with lexical, semantic, and bounded graph candidates.
-akno read <slug>          One exact page or document, in full.
-akno graph [seed]         Bounded exact evidence paths and locators; no bodies.
-akno timeline             Authored events plus typed orphan-document date evidence.
-akno adopt <document-id>  Organize one orphan document through its trust policy.
-akno context <query>      The whole pre-turn bundle against one budget.
-akno remember <text>      Hand over notes; Akno decides what to keep and where.
-akno write                Create, append, patch or replace a page.
-akno ingest <path|url>    Extract, OCR, name, summarize and route a file or folder.
-akno dream                The nightly maintenance cycle.
-akno plan                 Inspect, decide and apply durable curation plans.
-akno bench                Assert performance and mixed page/document retrieval quality.
-akno serve                Hold the index, watcher and models in one process.
+```text
+recall / answer / read / list / graph / timeline / context
+write / remember / forget / undo / move / folder
+ingest / inbox / adopt
+dream / plan
+serve / service / doctor / rules / config / bench / redeploy
 ```
 
-`akno dream` prints a content-free operational summary by default, including progress for long model calls.
-Use `--private-details` only when page names, source diagnostics, and full JSON content are appropriate for the
-current terminal or log destination. `akno plan diff` is always an explicit private-content inspection.
-
-`akno --help` lists all of them. Three doors — in-process, a Unix socket, and MCP — are generated from one
-op registry, so a caller gets the same schemas and the same errors however it connects.
+`akno --help` and `akno <command> --help` describe the installed interface. The service exposes the same typed
+operation registry in process, over an owner-only Unix socket, through loopback HTTP for containers, and over
+stdio MCP for agent hosts.
 
 ## Documentation
 
-- [README](https://github.com/tenphi/akno#readme) — why it is built this way
-- [HOW-IT-WORKS](https://github.com/tenphi/akno/blob/main/HOW-IT-WORKS.md) — every command and background
-  process in plain language, with examples
+- [Project overview](https://github.com/tenphi/akno#readme)
+- [Getting started](https://github.com/tenphi/akno/blob/main/docs/getting-started.md)
+- [How Akno works](https://github.com/tenphi/akno/blob/main/docs/how-it-works.md)
+- [Command reference](https://github.com/tenphi/akno/blob/main/docs/commands.md)
+- [All guides](https://github.com/tenphi/akno/tree/main/docs)
 
 ## License
 
-PolyForm Noncommercial License 1.0.0 © Andrey Yamanov — noncommercial use only.
+PolyForm Noncommercial License 1.0.0 — noncommercial use only.

@@ -1,1491 +1,162 @@
 # Akno
 
-**A two-way memory layer for agents, on top of a Markdown knowledge base you already have.**
+Akno is a memory layer for agents built on a Markdown knowledge base you own.
 
-Point it at a folder of notes. It indexes what is there, keeps watching, and gives agents a small set of
-operations for reading and writing that knowledge — while you keep editing the same files by hand, in Obsidian
-or any editor, with no import step and no proprietary store.
+It lets an agent search, answer from, and deliberately update the same files you edit in Obsidian, vim, or any
+other editor. The files remain the source of truth; Akno's SQLite index is disposable and can be rebuilt at any
+time.
 
-Delete the index and the folder is untouched. `akno index` rebuilds every chunk, embedding, summary, fact,
-event and link from the Markdown.
+Akno is useful when an agent needs continuity across conversations but its memory must remain inspectable,
+citable, reversible, and independent of a chat provider.
 
-> **Status: complete and in use.** Indexing, watching, retrieval, the write path, the inbox, `ingest` from a
-> file, a folder or a URL with extraction and OCR, and the nightly maintenance cycle — developed and measured
-> against a real 223-page knowledge base. Two parts ship switched **off** for reasons measured on that base
-> rather than guessed: see [The maintenance cycle](#the-maintenance-cycle).
+> **Status:** active development and used on a real personal knowledge base. The core reading, writing,
+> ingestion, evidence-graph, grounded-answering, and guarded maintenance paths are implemented. Defaults remain
+> conservative: model-dependent inference is opt-in and scheduled maintenance starts in audit mode.
 
-**New here?** [HOW-IT-WORKS.md](HOW-IT-WORKS.md) walks through every command and every background process in
-plain language, with examples and diagrams. This README is the argument for why it is built this way.
+## Why use it?
 
----
+Ordinary retrieval gives an agent fragments. Akno gives it evidence with enough structure to act responsibly:
 
-## Why
+- Every returned claim has a page line or document-page citation.
+- `empty`, `degraded`, and `unavailable` are different results, so “not recorded” is never inferred from a
+  broken search path.
+- `recall` finds and ranks evidence; `answer` produces a separately verified grounded response.
+- Pages, source documents, inferred observations, and ignored material have different retrieval policies.
+- Writes are journalled and undoable.
+- Nightly maintenance plans exact diffs before a human or separate curator decides what may apply.
+- Orphan documents are searchable immediately; organization never blocks retrieval.
 
-Agents make things up when retrieval is thin. They get back disconnected fragments, no indication of what was
-searched or what was missing, and no way to cite anything. Then they fill the gaps.
-
-The usual answer is a longer prompt — "always retrieve first", "never claim it isn't recorded", "notice when a
-value is superseded". A prompt is a suggestion. Akno's position is that this belongs in the memory layer,
-where it runs every time:
-
-- Retrieval returns **page and document cards with citations**, so every claim traces to its source.
-- Absence is **a result** — and it distinguishes _nothing matched_ from _the index is unavailable_.
-- A superseded value comes back **labelled as superseded**, not as a competing current claim.
-- `question` mode reports **coverage**: which concepts of the question the results actually cover.
-- Structure rules — where things go, what is quotable — are **enforced**, not requested.
+Akno does not replace your editor, backup system, or judgment. It only knows what the indexed files and
+documents contain.
 
 ## Quick start
 
-macOS only, [on purpose](#platform). Requires Node 22.18+.
+Akno currently supports macOS and requires Node 22.18 or newer.
 
 ```bash
 npm install -g @tenphi/akno
-```
-
-Akno refuses to start until you say which folder holds your notes — there is no sensible default for that.
-The machine config lives beside the state directory:
-
-```bash
-mkdir -p ~/.akno && cat > ~/.akno/config.json <<'JSON'
-{
-  "akno_path": "~/Notes",
-  "providers": { "local": { "base_url": "http://127.0.0.1:8080/v1" } },
-  "models": {
-    "embedding": { "id": "text-embedding-qwen3-embedding-0.6b", "dimensions": 1024 },
-    "derive":    { "id": "gemma-4-12b-it" },
-    "expansion": { "id": "llama-3.2-3b-instruct" }
-  }
-}
-JSON
-akno index
-akno doctor
-```
-
-`index` before `doctor`: most of what `doctor` reports is counted out of the index. Then ask it something:
-
-```bash
-akno recall "when does the car insurance renew?"
-```
-
-```
-ok mode=question 2 results 1180 tokens
-  coverage ✓ car insurance  ✗ renewal date
-  nothing returned covers "renewal date" — do not answer that part
-
-household/car-insurance (knowledge, 0.931)
-  Car insurance › Policy
-  Vulpine Mutual policy for the household car, renews 4 Nov 2026.
-  household/car-insurance:11  Premium: 33 EUR/month (raised at the 2026 renewal; was 28 EUR) ~0.94
-```
-
-Every line carries `file:line`. The `~0.94` is derivation confidence — how sure the deriver is that the line
-states a well-formed durable claim, not how sure it is that the claim is true.
-
-No notes to point it at yet? [`examples/demo-brain`](examples) is a small invented one — eleven pages with
-the shapes that matter, and a table of things to try.
-
-**Working on Akno itself** is a checkout rather than an install, and needs pnpm:
-
-```bash
-pnpm install && pnpm build
-cp config/local.example.jsonc config/local.jsonc   # set akno_path and your model ids
-pnpm akno index
-```
-
-`bin/akno` is a launcher that resolves the checkout and pins the Node major from `.nvmrc`; symlink it
-somewhere on `PATH` and `akno` works from any directory without shadowing an installed copy's config.
-
-## Configuration
-
-Two files, and only one of them is ever committed.
-
-| File                         | Committed           | Holds                                                                                  |
-| ---------------------------- | ------------------- | -------------------------------------------------------------------------------------- |
-| `config/default.jsonc`       | **yes**             | Every key, with a machine-independent default. Documentation as much as configuration. |
-| `config/local.example.jsonc` | **yes**             | The template you copy.                                                                 |
-| `config/local.jsonc`         | **no** — gitignored | Your knowledge base path, your endpoints, your model ids.                              |
-| `.env`                       | **no** — gitignored | Secrets only.                                                                          |
-
-Precedence, lowest to highest:
-
-```
-config/default.jsonc  →  <state_dir>/config.json  →  config/local.jsonc  →  AKNO_* env
-```
-
-An **installed** copy only sees the first, second and fourth: there is no checkout, so there is no
-`local.jsonc`, and `config/default.jsonc` is the copy shipped inside `@tenphi/akno-core`. That is why the
-quick start above writes `~/.akno/config.json` — for an install, the machine config _is_ the config. A
-**checkout** adds `config/local.jsonc` on top, which is the layer that never gets committed.
-
-**A config file never contains a credential.** It names the environment variable that holds one:
-
-```jsonc
-"providers": { "openai": { "api_key": { "env": "AKNO_OPENAI_API_KEY" } } }
-```
-
-So a config file is always safe to read, diff and paste into an issue. `akno config` prints the resolved
-configuration with secrets redacted, and tells you which files it came from — the fastest way to check that
-your `local.jsonc` is actually being read.
-
-The OpenAI minimum is a benchmark-qualified guided preset. In a terminal, start the guided path with:
-
-```bash
 akno init
 ```
 
-It asks for the knowledge-base folder, model strategy, how Akno will be used, and the maintenance profile. The
-model choices are the qualified OpenAI minimum, an explicit model-free lexical setup, or preservation of
-specialist roles for manual configuration. Model-free setup disables every model role while retaining dormant
-provider definitions for a later upgrade; manual setup changes neither provider nor model blocks. A
-trusted-agent use recommends `autonomous`, standalone use recommends `review`, and read-only evaluation
-recommends `audit`; each recommendation can be overridden. The summary explains that future authority before
-the write. OpenAI setup reports only whether `AKNO_OPENAI_API_KEY` resolves, never its value, and offers an
-optional content-safe model preflight before showing the exact write and asking for confirmation.
+Guided setup asks for the notes folder, model strategy, and maintenance authority. It can configure:
 
-For automation, provide the preset and path explicitly. Preview its exact one-endpoint/two-model overlay and
-path-only config diff first; `--check` sends only invented fixtures to verify both embedding access and Luna's
-ranking transport/schema:
+- the benchmark-qualified OpenAI minimum: `text-embedding-3-small` plus `gpt-5.6-luna` through one endpoint;
+- a model-free lexical setup that sends no content to a model; or
+- a specialist/manual setup that preserves existing provider and model blocks.
+
+For the OpenAI setup, provide the credential through the environment. Akno stores only the variable name:
 
 ```bash
-akno init --preset openai-luna --akno-path /path/to/markdown \
-  --maintenance autonomous --dry-run --check
-
-# Fully local lexical setup; sends no content to a model.
-akno init --preset no-model --akno-path /path/to/markdown --maintenance audit
+export AKNO_OPENAI_API_KEY="..."
+akno init
 ```
 
-Omit `--dry-run` to create a new config. Guided setup shows the same value-free diff and asks before creating or
-updating it; an existing config defaults to no. Non-interactive replacement requires explicit `--force`.
-Unrelated settings and unknown top-level keys survive. The OpenAI preset replaces its provider and model blocks
-together so stale native-reranker fields cannot contaminate the setup; the no-model preset replaces all model
-roles and the maintenance override but deliberately retains provider definitions. JSONC comments outside owned
-values are retained. A
-checkout writes its gitignored `config/local.jsonc`; an installed copy writes `<state_dir>/config.json`, and
-`AKNO_CONFIG` selects an explicit target. Writes are fsynced and atomically renamed, with a concurrent-edit
-check. Requested preflight failure writes nothing. A non-interactive or `--json` invocation with missing required
-arguments fails instead of waiting for input. Setup never indexes, installs a service, creates a schedule, or
-changes the knowledge base; it prints the explicit index, first-recall, audit-dream, diagnostics, and optional
-service-install commands when the config is ready.
-
-Rules can also travel with the notes: if `<akno_path>/akno.jsonc` exists, its `folders` block wins over both
-config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as
-configuration and never indexed as a note.
-
-The `.jsonc` extension is deliberate: comments are valid and preserved when `akno folder` adds a rule, so the
-filename should not make editors report valid content as broken JSON. The former `akno.json` name is rejected
-with an exact rename instruction; if both files exist, Akno refuses to guess which taxonomy is authoritative.
-
-Changing a rule takes effect on the next `akno index`, including for pages nobody has touched since. The
-resolved rules are fingerprinted, so a pass that would otherwise report "223 unchanged" re-examines the pages
-whose role or management policy actually moved — a rule edit that silently did nothing was one of the first
-bugs found here.
-
-## Models
-
-Six roles, all optional, each degrading rather than failing. Any OpenAI-compatible endpoint can host multiple
-roles. “One endpoint” does not mean “one model”: semantic retrieval still needs an embedding model, while one
-general-purpose model may cover generation, expansion, vision, maintenance, and prompted reranking.
-
-| Role      | Without it                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------- |
-| Embedding | lexical search only — no semantic matching, and question-mode hypothetical expansion is inert     |
-| Reranker  | hybrid score ordering instead of cross-encoder reranking; ordering is coarser                     |
-| Derive    | no summaries, keywords, fact derivation, `remember`, naming an arrival, observations              |
-| Expansion | recall searches the words you typed and nothing more                                              |
-| Answer    | direct synthesis is unavailable; `answer` still returns compact related memory identities         |
-| Vision    | photos with no text yield no page; OCR still covers scans and screenshots, which is most arrivals |
-
-The reranker supports two explicit modes. `mode: "endpoint"` calls a native cross-encoder at `/rerank`.
-`mode: "llm"` sends a bounded listwise request through the ordinary generative endpoint. The latter uses opaque
-per-request candidate ids, constrains strict decoding to that request's exact id set, treats candidate text as
-untrusted JSON data, requires every candidate exactly once, canonicalizes the coarse relevance grades, and
-preserves the untouched fusion order with typed `rerank_failed` degradation if the response is missing,
-duplicated, invented, or malformed. The compact response keeps each id attached to its grade; the model's
-ordering is preserved within each grade, while grades remain authoritative across grades because they also
-decide qualification.
-
-Successful reranking also qualifies results. LLM grade `0` candidates are removed; native candidates below their
-calibrated relevance boundary are removed. Candidates outside the bounded `top_k` window are reported as
-`qualification.unjudged` and omitted rather than used to fill holes the ranker never approved. If every judged
-candidate is rejected, recall returns honest `empty`. A failed reranker still preserves fusion order and reports
-degradation—the filter is never applied to a response Akno could not validate.
-
-Native score scales are learned automatically by default. `score_offset: "auto"` runs a small wholly invented
-anchor suite, chooses a conservative boundary that rejects no positive anchor, and caches it in derived state for
-seven days. If the model cannot separate the anchors, `qualification.basis` is `calibration_failed` and Akno
-keeps all candidates. A measured numeric `score_offset` remains an explicit override; users do not need to guess
-one during setup. `akno bench ranking --system native` reports how that portable boundary transfers to a
-larger invented corpus, including direct-answer, supporting, marginal, irrelevant, and adversarial retention.
-
-**`derive` and `expansion` are split because their constraints are opposite.** Derive runs off the hot path —
-during indexing, on arrival, at night — and what it produces ends up in the notes, so it is allowed to be slow
-and good. Expansion runs on every recall that asks for it, where a second of latency is felt in the answer.
-Pointing both at one model is a perfectly good answer; pointing `derive` at a 12B and `expansion` at a 3B is
-what a laptop wants, and it is what `config/local.example.jsonc` shows.
-
-Reasoning effort is configurable per generative role and sent explicitly when set. The benchmarked hosted
-minimum uses one OpenAI endpoint and credential, `text-embedding-3-small` for embeddings, and
-`gpt-5.6-luna` for generative roles and prompted reranking. Expansion and reranking can use
-`reasoning_effort: "none"`; slower derivation or maintenance can choose a higher effort independently. The
-prompted reranker is recommended because its checked-in v9 held-out matrix and bound latency/end-to-end tracks
-meet the release threshold.
-`akno init --preset openai-luna --akno-path /path/to/markdown --dry-run --check` verifies the two required
-model roles separately before setup, so “the provider works” cannot hide an embedding-specific access
-restriction.
-
-**Every prompt that asks for JSON also sends the shape as a JSON Schema**, so the endpoint constrains decoding
-rather than the prompt requesting it politely — a llama-server compiles it to a GBNF grammar, and OpenAI's
-strict structured outputs does the equivalent. The two speak different dialects, so the client tries
-llama.cpp's `{"type":"json_object","schema":…}` first, steps down to OpenAI's `{"type":"json_schema",…}` on the
-rejection OpenAI actually sends, and finally to a plain JSON request. That order is chosen by which rejection
-is _detectable_: llama.cpp answers an unknown `response_format` shape with an error, but has a history of
-accepting `json_schema` and applying no constraint at all. Each rung is learned once per role per process, and
-the loose JSON parser stays behind all three — a schema removes the syntactic failures, not the need to check
-that a fact's line number is one the model was actually shown.
-
-**A rate limit is retried; a timeout is not.** A 429 or a transient 5xx backs off — obeying `Retry-After` when
-one is sent, otherwise exponentially with full jitter — up to `providers.<name>.max_retries` times. A timeout
-is left alone: the attempt has already spent its deadline, and the callers that care have a better answer than
-repetition — a derivation that times out asks for the summary alone, which is both cheaper and likelier to
-land. So is a transport error, which is usually nothing listening, and `doctor` should say so at once rather
-than three backoffs later.
-
-**The two deadlines bound different things, so retries spend them differently.** `recall.expansion_timeout_ms`
-bounds _felt latency_ — someone is waiting — so it is the budget for the whole sequence, and a retrying recall
-can never outlast one with retrying switched off. A role's `timeout_ms` bounds _an endpoint that has stopped
-answering_, and nothing waits on a background derivation, so it applies per attempt: a 500 arriving late into a
-long generation must not leave the retry a fraction of the budget that number was tuned for. Only refusals
-returned without doing work are retried, which keeps a real sequence backoff-dominated and measured in seconds.
-
-`akno doctor` reports which roles resolved, their latency, and **what each missing one costs**. Its answer-role
-check runs both production structured contracts—generation and independent verification—against one tiny,
-invented fact and reports them separately with provider token usage when available. It never samples the
-configured knowledge base. Model latency and index latency are reported separately, because a memory system
-that feels slow after idling is almost never suffering from its storage engine.
-
-The maintenance cycle can point at a different model than indexing uses — see
-[The maintenance cycle](#the-maintenance-cycle) for why that turned out to matter more than any other setting.
-
-There is no model downloading or serving in this repo. Models are configuration, pointed at an endpoint you run.
-
-## The ops
-
-The operation surface stays small on purpose: every additional choice is another chance for an agent to pick
-the wrong one. `context` is normally called by the host rather than by the agent.
-
-| Op         | What it does                                                                                                                                                       |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `recall`   | Expand → lexical, semantic, and bounded graph candidates → rank fusion → qualification/rerank → cited cards under one budget. `--no-graph` disables graph.         |
-| `answer`   | Run question-oriented recall, generate cited blocks, and independently verify their support. Reranking is opt-in; `include_context` returns the bounded evidence.  |
-| `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                        |
-| `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                  |
-| `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                      |
-| `timeline` | Authored events and typed orphan-document date evidence — by range, subject, source, or match.                                                                     |
-| `context`  | One pre-turn budget. The default profile combines pins, timeline, structure, and recall; `auto_recall` injects only strongly relevant exact evidence.              |
-| `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                                |
-| `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                              |
-| `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. It sees the complete folder taxonomy and only writes into existing eligible folders. |
-| `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                                |
-| `undo`     | Reverse a change by id.                                                                                                                                            |
-| `move`     | Relocate a page with its documents.                                                                                                                                |
-| `ingest`   | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                     |
-
-Every op is advertised over every door from one registry, with its schema, so a caller discovers what exists
-rather than being told in prose.
-
-## Three doors, one registry
-
-```ts
-import { open } from '@tenphi/akno-core';
-const mem = await open({ aknoPath: '~/Notes' });
-const { results } = await mem.recall({ query: 'car insurance renewal', budget: 8000 });
-```
-
-```ts
-import { connect } from '@tenphi/akno-client';
-const mem = await connect(); // unix socket, identical interface
-```
+Setup writes configuration only. Build the disposable index, inspect diagnostics, and ask the first question:
 
 ```bash
-akno serve                                 # unix socket — the default door
-akno serve --mcp                           # stdio MCP, for any agent
-akno serve --http 127.0.0.1:7777           # for agents in containers or on another host
+akno index
+akno doctor
+akno recall "How long is the Zephyr QX-100 warranty?"
 ```
 
-```json
-{ "mcpServers": { "memory": { "command": "akno", "args": ["serve", "--mcp"] } } }
+Need invented notes to try? Copy [`examples/demo-brain`](examples/demo-brain) and follow the
+[getting-started guide](docs/getting-started.md#try-the-demo-knowledge-base).
+
+## The working model
+
+```text
+Markdown pages + documents
+          │
+          ├── index/watch ──> disposable search, facts, events, and evidence graph
+          │                         │
+          │                         └── recall / answer / read / timeline / context
+          │
+          └── journalled writes <── write / remember / ingest / guarded dream plans
 ```
 
-Every door is generated from one op registry with one schema per op, so they cannot drift into different
-behaviour. Trust is a parameter, not a property of the transport: `server.mcp_allow` restricts what a door
-exposes without a second code path that can grow its own bugs — it defaults to the five read ops, so an agent
-reaching Akno over MCP cannot write until you say so. Add `"adopt"` to that list when the agent should be
-able to invoke a document card's scoped, plan-backed filing action; this does not expose human plan decisions.
+Four ideas explain most of Akno:
 
-**Exactly one process may write.** It takes a lock file with its pid; a second process opens read-only and says
-so, rather than racing. That is why `akno index`, `akno inbox` and `akno dream` are sent over the socket
-to a running service and executed _there_, falling back to in-process only when no service answers. They are
-commands rather than ops — the ops above are what an agent calls about memory, these are operator work about
-the process — and they are socket-only, because that is the door where filesystem permissions are the auth.
+1. **Files are authoritative.** Indexing reads the knowledge base and writes nothing there by default.
+2. **Evidence and knowledge differ.** A contract or transcript can be searchable without becoming a fact Akno
+   treats as canonical.
+3. **Discovery and synthesis differ.** Use `recall` to inspect relevant evidence and `answer` when you want a
+   direct, verified response.
+4. **Autonomy is policy.** `audit`, `review`, and `autonomous` select who decides a sealed maintenance proposal;
+   they do not bypass page opt-ins, folder rules, limits, or verification.
 
-**Why a long-lived process:** spawning a process per memory call costs ~33 ms against ~0.04 ms for a long-lived
-handle. None of that is the database — opening a SQLite file is half a millisecond regardless of size. A unix
-socket round trip is ~18 µs, which is why IPC cost is not a reason to embed.
+See [How Akno works](docs/how-it-works.md) for the complete data flow.
 
-## How your files are treated
+## Main commands
 
-**An index pass writes nothing into your knowledge base by default.** Not frontmatter, not fact tables, not a
-`timeline.md` you did not ask for. Explicit write operations do. The scheduled dream cycle starts under the
-`audit` profile, which may seal proposals but applies none until the owner chooses `review` or `autonomous`.
-Install the watcher with `akno service install --no-dream` if you do not want scheduled maintenance at all.
+| Intent                      | Commands                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------- |
+| Find or inspect memory      | `recall`, `answer`, `read`, `list`, `timeline`, `graph`, `context`                    |
+| Capture or correct memory   | `write`, `remember`, `forget`, `undo`, `move`, `folder`                               |
+| Bring in documents          | `ingest`, `inbox`, `adopt`                                                            |
+| Maintain the knowledge base | `dream`, `plan`, `approve`, `decline`                                                 |
+| Operate Akno                | `init`, `index`, `serve`, `service`, `doctor`, `rules`, `config`, `bench`, `redeploy` |
 
-- Identity lives in the index (`pages.id`), and a rename is followed by body hash. Set `write_ids: true` to have
-  Akno add a frontmatter `id:` — the only index-time write into a page you wrote — for identity that
-  survives a database rebuild and a move to another machine.
-- `create_reserved_paths: false` by default, so a first run against an existing folder creates nothing.
-- If a reserved path exists and isn't what Akno expects — a `timeline.md` that is a project plan — it is left
-  completely alone. `doctor` reports it and points at the config key to remap it.
-- Every frontmatter key except Akno's own `id` and `akno` policy block is preserved byte for byte.
-- The one way a caller changes a declaration is to send it: `write({content})` whose text opens with a
-  frontmatter block adopts that block as the page's, verbatim, and the reply names any key the old block had
-  and the new one does not. `role`, `management` and `temporal` are declarable nowhere else in the write API,
-  so this is deliberate rather than a leak — and it is what stops a page accumulating a second block, since
-  `read` returns the file with its frontmatter and a revised page comes back carrying one. `append`, `patch`
-  and `replace` never touch the head; a block arriving in one of those is text somebody pasted.
+`akno --help` and `akno <command> --help` describe the installed interface. The
+[command reference](docs/commands.md) explains which operation to choose and whether it writes.
 
-Four workflows author files, and each is journalled and reversible with `akno undo`: `write`, `remember`,
-`ingest`, and enabled maintenance phases. Dream can append observations, curate opted-in pages, adopt unowned
-documents, and apply bounded broken-link items through maintenance plans. The default `audit` profile allows no
-automatic maintenance write.
+## Autonomous maintenance
 
-A separate optional output is maintained rather than journalled. `ingest.text_rendition: true` keeps the
-extracted text of each readable document as `<file>.txt` beside it — so a `grep`, an editor, a git diff or an
-agent holding the folder can read a scanned contract without OCRing it again. Akno itself never needs it: the
-text is indexed against the document and `read({document})` returns all of it. A rendition is recognised as the
-same document rather than a second one, so it costs no extra summary and returns no second hit; one you have
-edited by hand is left alone, and one you delete stays deleted.
+`akno dream` is a seven-phase maintenance cycle, not a prompt that rewrites the whole folder. It detects
+conflicts before inference, plans observations and page maintenance, files orphan documents, then reports
+remaining repair and housekeeping work.
 
-## Page roles and management
+Every writable item is a durable exact proposal with sealed inputs. The configured profile determines the
+decision point:
 
-Not everything in a knowledge base is knowledge. A lot of it is **evidence**: contract text, emails, statutes,
-transcripts. You want it stored and findable. You do not want a fact extractor asserting things from it, or
-eleven pages of contract text landing in a retrieval budget.
+| Profile      | Behavior                                                                          |
+| ------------ | --------------------------------------------------------------------------------- |
+| `audit`      | Produce inspectable plans; apply nothing. This is the default.                    |
+| `review`     | Wait for explicit human decisions.                                                |
+| `autonomous` | Ask a separate curator turn and apply only accepted, still-valid, budgeted items. |
 
-| Role                    | Indexed | `recall` returns                                        | Fact-mined |
-| ----------------------- | ------- | ------------------------------------------------------- | ---------- |
-| `knowledge` _(default)_ | yes     | summary + matching lines; whole body on `depth: "full"` | yes        |
-| `source`                | yes     | summary + a capped quote window                         | **no**     |
-| `inference`             | yes     | matching derived interpretation, ranked below knowledge | no         |
-| `ignored`               | no      | nothing                                                 | no         |
-
-> Source pages are evidence. Knowledge pages are claims. Only claims become facts.
-
-A knowledge page can switch to evidence mid-body at a `<!-- source -->` fence: above it, canonical and mined;
-below it, indexed for search but never mined and never returned whole.
-
-Role is a **relevance policy, not access control** — `read({slug})` returns the full body of a `source` page
-every time, and `recall({ include: ['source'], depth: 'full' })` lifts the cap.
-
-Automatic write authority is a separate dimension. `remember: integrate|deny` controls whether retained
-knowledge may be placed on a page; page frontmatter overrides folder policy, which overrides role defaults.
-`dream: none|hygiene|synthesize` is deliberately page-only and controls unattended maintenance: hygiene may
-make conservative formatting and local-language repairs, while synthesis may rewrite and reorganize a
-canonical page, accumulate linked evidence, preserve unresolved conflicts, and split oversized coherent
-sections beneath the canonical slug. Synthesis may also extract one reusable subject from a mixed-purpose
-page into an independent page in an existing or declared eligible knowledge folder. A split says “this is part of the
-same subject”; an extraction says “this deserves its own subject and can be reused elsewhere.”
-
-Opt-in is permission, not a nightly work order. Hygiene runs again only after the page or its policy changes.
-Synthesis also watches its linked evidence and unresolved conflicts. Unchanged drafts and guard-rejected
-rewrites are fingerprinted in the disposable index; they are reconsidered only when those inputs change. An
-unfinished plan is reused at the same authority; changing authority can reseal the current exact input through
-the newly authorized lifecycle.
-
-Bounded event pages are time-aware. Curation first uses explicit date fields and structured event slugs, then
-lets the model select only from complete dates actually present in an ambiguous page. With writes enabled it
-adds a journalled, surgically inserted Akno-owned boundary:
-
-```yaml
-akno:
-  temporal:
-    kind: event
-    start: '2031-04-10'
-    until: '2031-04-12'
-    timezone: 'Europe/Amsterdam'
-  management:
-    dream: synthesize
-```
-
-A date-only `until` includes the whole day in the event timezone; an exact timestamp is used only when the page
-actually supplies an end time. Set `akno.temporal: false` to keep a date-heavy evergreen page out of automatic
-classification. The current timestamp and timezone are supplied to drafting and verification but do not enter
-the daily fingerprint. Crossing `until` changes the page exactly once into archival synthesis. After that,
-only a direct page edit, explicit `about` evidence, a directly relevant fact, or a targeted timeline event wakes
-it; ordinary link churn does not. The archival pass never treats a plan as something that happened merely
-because its date passed, and an event with no meaningful later knowledge is left byte-for-byte alone.
-
-```yaml
-akno:
-  role: knowledge
-  management:
-    remember: integrate
-    dream: synthesize
-  about:
-    - people/ada-marlow
-```
-
-`about` names the entities a page contributes evidence about. A canonical entity page does not point at
-itself, and aliases equal to its title, slug, or basename are discarded as redundant.
-
-Indexing also projects exact page links, `about`, document ownership, and event participation into a disposable
-evidence graph. Every knowledge page anchors a separate canonical entity node; source and inference pages stay
-evidence rather than silently becoming canonical records. Canonical slugs, declared aliases, and unique exact
-title or basename matches resolve after Unicode, case, and punctuation normalization. Every `about` value is
-recorded as exact, ambiguous, or unresolved, but only an exact result becomes a traversable edge. Valid links
-to knowledge pages also produce exact mention edges.
-
-Every edge retains a current source hash and a line, frontmatter field, document, or event locator. This graph
-also projects derived facts whose subjects resolve exactly. Scalar values remain attribute facts; values that
-resolve exactly to another entity create entity-to-entity relationships. Low-confidence, unresolved,
-unverified, qualified, and non-current conflict claims do not become current traversable edges. Superseded
-authored facts may remain as explicitly historical edges with their original validity bounds.
-
-`akno graph` exposes this derived state as bounded, read-only evidence paths. Seed one exact page slug,
-canonical entity id, or query containing exact declared entity names; restrict direction or relation; and
-traverse one to three hops. Results contain compact node identities and source locators, never page bodies or
-copied claims. Ambiguity, partial indexing, unavailable document evidence, and safety-cap truncation remain
-typed rather than becoming guessed paths or false proof of absence.
-
-`recall` also uses exact query entities and up to three qualified lexical page hits as bounded two-hop graph
-seeds. Graph candidates join lexical and semantic candidates through rank fusion, then pass through the same
-reranker, irrelevance qualification, filters, assembly, and budget. Returned cards expose `matched_by` and a
-compact node/relation/locator path; they still cite ordinary page lines or document quotes as evidence.
-Optional contextual disambiguation can choose only among existing exact-name candidates. It is off by default
-and should be enabled only after `akno bench entities` passes for the configured derive model. A choice needs
-one grade-3 candidate and no alternative above grade 1; everything else abstains. Accepted edges are marked
-`contextual`, use conservative confidence, and are invalidated when the source, candidate pages, model, or
-prompt changes. The model cannot discover, create, merge, rename, or write entities.
-
-## Documents
-
-`akno ingest <path>` does in one call what is otherwise three instructions in a prompt: run extraction and
-OCR, give `IMG_4821.HEIC` a name that means something, and decide where a dropped file belongs.
-
-**Extraction uses what macOS already has.** PDFKit reads a text layer; the Vision framework does OCR. A
-~200-line Swift helper is compiled on first use (about 6 seconds) and cached in `~/Library/Caches`. Measured on
-Apple Silicon:
-
-|                                            |                                                     |
-| ------------------------------------------ | --------------------------------------------------- |
-| PDF text layer, 9 pages                    | 0.12 s                                              |
-| Receipt photo, OCR                         | 1.4 s at 0.99 mean confidence                       |
-| 4-page bill, forced OCR                    | 2.4 s, recovering 99.5% of what its text layer held |
-| Whole `ingest`: OCR + name + route + index | ~8 s                                                |
-
-The alternative was `brew install poppler tesseract`, which makes a memory layer's first run depend on two
-unrelated projects being installed and on their CLI flags not changing. Since Akno is macOS-only on purpose,
-using the platform's own frameworks is the honest choice rather than a shortcut — and Vision is both faster and
-more accurate than tesseract.
-
-Office formats go through `textutil`, which also ships with macOS. The vision role is optional and only reached
-when OCR finds _no_ text in an image — a photo rather than a document.
-
-**Three things `ingest` refuses to do:**
-
-- **Rename a file whose name already says something.** `2024-lease-agreement.pdf` is kept; `IMG_4821.HEIC` is
-  not. Renaming is the one destructive act here, and a name someone chose carries intent no model can
-  reconstruct.
-- **Name a file it could not read.** Below `ingest.name_confidence` the file keeps its name, gets no page, and is
-  reported. A confident wrong name is worse than none.
-- **File a document it cannot place.** Nothing clears `route_threshold` → the file stays where it is with a
-  proposal. An inbox with three things in it is a to-do list; a misfiled document is a lost one.
-
-Stored files are content-addressed as `<page-basename>-<sha8>.<ext>`, so they are unique by construction and
-re-ingesting the same bytes is a no-op that tells you where they already live. Every page records **where its
-text came from** — a text layer, OCR with its confidence, or a vision model's _description_ — because those are
-different claims and reporting them identically would be a false one.
-
-### A file, a folder, or a URL
+Start by inspecting one audit run:
 
 ```bash
-akno ingest ~/Downloads/policy.pdf          # one file
-akno ingest ~/Downloads --limit 20          # one level deep, a verdict per file
-akno ingest https://example.com/policy.pdf  # fetched, then treated identically
+akno dream --mode audit
+akno dream status --pending
 ```
 
-A folder is walked **one level deep**. A recursive pass over a folder someone pointed at by mistake is a
-thousand model calls and a knowledge base full of pages nobody asked for; a flat pass over `~/Downloads` is the
-case that actually comes up. Every file gets its own verdict, one unreadable file does not abandon the rest, and
-a `--limit` that cut the pass short says so — a silent cap reads as "that was all of them".
-
-A URL is fetched with three limits worth naming: **http and https only** (`file://` would make `ingest` a way to
-read any path on the machine through something that looks like it fetches the web), the size cap applies to
-**the bytes that arrive** rather than to the `Content-Length` a server claims, and the filename comes from
-`Content-Disposition`, then the URL, then the content type — each of which can be useless, which is fine,
-because naming happens from the content anyway. The final URL lands in the page's `source_url`, since "where did
-this come from" is the one question a downloaded document cannot otherwise answer.
-
-### The inbox
-
-A folder where you drop anything and it files itself. `route: true` is what makes a folder an inbox — not its
-name:
-
-```jsonc
-"folders": {
-  "inbox/**": { "ingest": "auto", "route": true }
-}
-```
-
-`akno serve` processes arrivals as they land; `akno inbox` does a one-off pass. Above `route_threshold` the
-file and its page move to where they belong. Below it, the file **stays in the inbox** with a proposal — visible
-where you dropped it, rather than filed confidently into the wrong place where you would never look for it.
-
-**The inbox is the only place Akno moves files.** A file dropped straight into `documents/` was put there on
-purpose: Akno will name it, page it and index it, but never relocate it. Every move is journalled and
-reversible with `akno undo`.
-
-Routing scores candidate folders by relevance and refuses below the threshold, and both halves of that are
-load-bearing. Two bugs found on real data: a query built from the document's summary _plus 400 characters of its
-text_ collapsed the spread across folders from 0.49 to 0.014 — everything at 0.98, so nothing could fail the
-threshold and the winner was noise. And below the threshold, routing used to fall through to whatever folder the
-model suggested, overriding a correct refusal with a weaker signal. A water bill reached `travel/2026`
-twice before both were fixed.
-
-### A document's own text is indexed as the document
-
-Every attachment is extracted on arrival — including the ones that predate Akno, or that someone dropped into
-a folder by hand. Their text is chunked **per page of the document** and indexed against the document itself, so
-a stored PDF is searchable by its own content and a hit can say which page it is on:
-
-```
-recall "who replaced the drain pump"
-
-  household/dishwasher-repair-2026-08 (knowledge, 0.91)
-    household/dishwasher-repair-2026-08-8e7705eb.pdf p1
-      MERIDIAN APPLIANCE CARE
-      Replaced the drain pump
-```
-
-The text deliberately does **not** go into the Markdown page. Document text is derived from the _file_ and
-invalidated when the file's hash changes, which a page body cannot honour; indexing the same words twice made
-every match inside a document arrive as two hits against one recall budget; and a copy pasted into someone's
-page is a copy no later change to the file can ever correct. The page says what the document is and where it
-lives — what a person would have written — and recall quotes the document as a quote, attributed to the document
-and its page, never as a line citation on a page that has no such line.
-
-A document does not need an owning page to be found. Readable orphan documents are indexed under their own
-stable identity and returned as `type: "document"`, with their relative path, bounded quote, extraction method,
-and a handle accepted by `read({document})`. Owned document hits remain nested under their page and are never
-duplicated as standalone results. Ownership still adds useful organization; it comes from a matching stem,
-Akno's content-addressed filename, or a page embedding the file with `![[filename]]`.
-
-If an original document disappears outside Akno, its identity and extracted evidence are retained instead
-of becoming “nothing recorded.” Recall and read expose a typed `availability`: a surviving indexed copy or text
-rendition is `degraded`; an identity with no readable copy is `unavailable`; restoring the original returns it
-to `available`. Exact filename recall still finds an unreadable identity. Explicit `forget({document})` remains
-the retraction boundary and removes the retained chunks as well as trashing files that are present.
-
-`timeline` can also return dated orphan documents as `type: "document_evidence"`. A date found in the text is
-returned with a bounded quote, page number when available, and extraction provenance. If no supported date can
-be extracted, one explicitly labelled `file_created` or `file_modified` metadata result may be used instead.
-Model-generated image descriptions cannot supply extracted dates. These are
-source observations, never authored events; `results` is the mixed view and the compatibility `events` field
-continues to contain authored events only.
-
-**A scanner that produced `passport.pdf` and `passport-2.pdf` produced one document, not two.** Files that
-differ only by a trailing `-<n>` are read as parts of one document: one owning page, one summary, and page
-numbers that run through the whole thing — so a hit on the second file's first page is cited as page 5 of the
-passport, which is a page a reader can actually look up. `read({document})` on any part returns all of it, and
-says how many files it is made of.
-
-The rule is narrow on purpose, because the cost of a wrong guess is two unrelated documents welded together with
-one summary describing neither: the extension has to match (`passport.jpg` beside `passport.pdf` is another
-rendition, not a second half), the suffix has to be one or two digits and not follow another digit
-(`waternet-annual-bill-2026-07-28.pdf` is not part 28), the folder has to match (two people can each have a
-`residence-permit-2.jpg`), and part one has to exist.
-
-### Attachments on `write`
-
-`write` takes documents too, for when the caller already knows where something belongs:
-
-```bash
-akno write --slug home/dishwasher --append "Repaired on 4 August." \
-             --attach ~/Desktop/receipt.pdf=The invoice
-```
-
-The file is copied in beside the page, content-addressed off it, extracted, and embedded with `![[…]]` plus a
-line recording where its text came from. The document's own text is indexed against the document, exactly as
-above — so the receipt is searchable by its contents without a word of it being pasted into the page you wrote.
-Nothing is routed or named, because the caller already decided both.
-
-## The maintenance cycle
-
-`akno dream` runs seven selectable, repeat-safe phases. Conflict classification runs first so unresolved or
-unverified claims cannot feed observation, reflection, or synthesis. Selecting `observe`, `reflect`, or
-`curate` alone still performs that prerequisite inspection.
-
-| Phase          | Writes?    | What it does                                                                                                                                                                                                      |
-| -------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `conflicts`    | no         | Classifies incompatible cross-page facts as safe, time-scoped, superseded, qualified, unresolved, or unverified; disputed claims are withheld from inference.                                                     |
-| `observe`      | plan/write | Combines conflict-eligible repeated facts into stable patterns, then seals exact append-only items with source hashes. Off by default.                                                                            |
-| `reflect`      | plan/write | Decision principles built from sealed observation-page evidence, with append-only verified plans. Off by default.                                                                                                 |
-| `curate`       | plan/write | Hygiene, synthesis, split, extraction, exact-alias merge, broken-link fixes, and plan-backed contradiction handling for explicitly opted-in pages. Draft, verifier, curator, and deterministic guards must agree. |
-| `adopt`        | plan/write | Exact low-risk filing-page items for readable orphan documents, with sealed source hashes and ownership verification.                                                                                             |
-| `repair`       | no         | Legacy compatibility view of exact broken-link proposals. Durable fixes are low-risk `curate` plan items.                                                                                                         |
-| `housekeeping` | no         | Broken links, orphaned documents, rule drift, and read-only graph review candidates for identity collisions, unresolved authored subjects, and traversal hubs.                                                    |
-
-`observe` and `reflect` only ever append: a changed conclusion gets a new dated line, nothing is deleted. Both
-use durable per-conclusion plans under their resolved transformation policy. Writing phases are journalled by
-purpose, so reversing a night's
-inferences does not also reverse the pages that made documents searchable. `conflicts`, legacy `repair`, and
-`housekeeping` only report. Graph candidates carry no operation and grant no merge, creation, or rewrite
-authority; private identities appear only with `--private-details`.
-
-For a coherent scheduled policy, set one profile:
-
-```jsonc
-{
-  "maintenance": { "profile": "audit" }, // or review, autonomous
-}
-```
-
-`audit` seals plans without applying them. `review` waits for human decisions. `autonomous` uses a separate
-curator call and applies only accepted, verified items. Enabled observation and reflection phases follow that
-lifecycle. Profiles enable plan-backed observe/reflect/curate/adopt behavior but
-do not override page opt-ins, folder restrictions, merge allowlists, guards, or limits, and do not enable the
-model-sensitive observe or reflect phases themselves.
-
-Individual transformation classes can be stricter than the profile:
-
-```jsonc
-{
-  "maintenance": {
-    "profile": "autonomous",
-    "policies": {
-      "observe": "auto",
-      "reflect": "auto",
-      "hygiene": "auto",
-      "broken_link": "auto",
-      "merge": "review",
-      "contradiction": "off",
-    },
-    "limits": {
-      "max_items": 30,
-      "max_files_changed": 40,
-      "max_bytes_written": 500000,
-      "max_high_risk_items": 3,
-    },
-  },
-}
-```
-
-Policy keys are `observe`, `reflect`, `hygiene`, `synthesis`, `split`, `extract`, `merge`, `contradiction`,
-`broken_link`, and `adopt`; values are `off`, `audit`, `review`, or `auto`. Omitted keys inherit the profile.
-Policy is sealed per item, allowing one plan to apply autonomous repairs while leaving higher-risk proposals
-for human review. A command-line mode can only lower every effective item policy.
-
-Both inference tiers use the same modes when enabled:
-
-```bash
-akno dream --phase observe --mode audit   # exact append/create diff; no observation write
-akno dream --phase observe --mode review  # wait for a human decision per pattern
-akno dream --phase observe --mode auto    # separate curator, append, reindex, verify
-akno dream --phase reflect --mode audit   # exact principle diff; no write
-akno dream --phase reflect --mode review  # wait for a human decision per principle
-akno dream --phase reflect --mode auto    # separate curator, append, reindex, verify
-```
-
-Each observation item seals the exact output plus the current hash of every cited knowledge page. Apply refuses
-changed evidence, never edits an earlier pattern, journals each accepted pattern independently, and verifies
-that the result is indexed as derived inference with exactly the sealed citations. An unchanged human or
-curator rejection is not resubmitted until the conclusion, evidence, or destination input changes. Reflection
-uses the same checks with a floor of at least three distinct live observation pages and writes only
-`observations/principles.md`.
-
-A full named-profile or explicit-policy run has a planning barrier: conflicts and every enabled writable
-planner seal their phase plans before the first curator call or knowledge-base write. Automatic plans are then
-decided in `observe` → `reflect` → `curate` → `adopt` order, then accepted items apply in stable dependency
-order with one shared budget; repair and housekeeping inspect the resulting state. A selected `--phase` remains
-immediate while using the same policy and plan lifecycle.
-
-Before the curation plan is sealed, Akno can resolve one narrow dependency cycle without guessing at a merged
-document. If two to four independently drafted `hygiene` or `synthesis` replacements target different pages
-and each page was evidence for another replacement, compatible drafts with the same policy and risk become one
-atomic plan item. Their exact proposed bytes are not regenerated or text-merged: one curator sees every complete
-before/after operation and all sealed evidence, then all preimages are rechecked and every page applies,
-reindexes, verifies, rolls back, recovers, and undoes as one unit. A rejection suppresses every unchanged
-component. Same-path edits, mixed transformation classes or policies, more than four components, and oversized
-review payloads remain separate and use the ordinary dependency/replan path.
-
-At the barrier Akno blocks a remaining later automatic item if it would write the same path as an earlier item, or if
-an earlier write would invalidate its sealed input. The item skips its curator call and all writes, reports
-`dependency_conflict`, and unrelated work continues. After those independent items apply and reindex, Akno
-replans every affected phase once from the resulting state, seals all of those retry plans, and passes them
-through one final decision/apply barrier with the same run budget. The obsolete pre-apply plan remains visible
-as `superseded`. A dependency that still exists after this bounded retry waits for the next full cycle.
-
-The barrier also parses exact proposed Markdown outputs. If one item creates a canonical page referenced by
-another item's wikilink, Markdown link, or `akno.about`, the creator is applied and verified first even when
-its phase normally comes later. Curator decisions still all finish before either write. Duplicate planned page
-identities and reference cycles are blocked; if the creator is rejected, stale, or budget-deferred, its
-dependant writes nothing with typed status `dependency_unmet` and is replanned on the next full cycle. A same-run
-retry would be unsafe because its required page still does not exist. Deletions are checked in the other
-direction: if another sealed output would still reference the deleted canonical page, the new deletion waits
-and replans after that output is indexed. Interrupted deletion recovery retains priority, so a new referencer
-waits instead. Both cases report `dependency_conflict` without exposing either path.
-
-Akno also revalidates every automatic item's sealed operation and evidence bytes before any curator call. A
-changed item reports `snapshot_drift` and is replanned next cycle rather than in the same run, while apply
-repeats the check after approval in case a later edit arrives.
-
-The `limits` block is one cumulative apply budget. A full `akno dream` shares it across observe, reflect, curate, and adopt;
-`akno plan apply` and direct `akno adopt` each receive a fresh budget. Planning and audit/review output are
-not truncated. Instead, apply reserves a complete atomic item before its first write. `max_items` counts logical
-transformations—normally one per plan item, but every independently drafted component in a composed curation
-item still counts. `max_high_risk_items` follows the same rule for high-risk components.
-`max_files_changed` counts distinct paths, `max_bytes_written` counts the full UTF-8 output of creates and
-replacements. Zero is valid, including zero high-risk writes.
-An item that would cross any ceiling changes nothing, returns to `proposed` with the typed
-`budget_exhausted` reason, and can be reconsidered with a fresh budget on a later run. `akno dream status`
-shows both configured ceilings and any budget-deferred backlog; each run receipt records exact usage.
-
-Curate is included whenever at least one curation transformation policy is not `off`. Opted-in hygiene and
-synthesis pages use the profile, a lower per-transformation policy, or a lower one-run mode:
-
-```bash
-akno dream --phase curate --mode audit   # persistent exact diffs; no note changes
-akno dream --phase curate --mode review  # wait for human item decisions
-akno dream --phase curate --mode auto    # separate curator turn, then verified apply
-akno dream --phase curate --mode audit --private-details  # include private page-level diagnostics
-akno dream --phase adopt --mode audit    # exact filing-page diffs; no page creation
-akno dream --phase adopt --mode review   # human decides each document group
-akno dream --phase adopt --mode auto     # separate curator, apply, ownership verification
-akno adopt <document-id>                 # same policy, one recalled document group only
-
-akno plan diff <plan-id>
-akno plan decide <plan-id> --item <item-id> --approve
-akno plan apply <plan-id>
-akno dream status
-akno dream status --last 10          # content-safe run history, newest first
-akno dream status --run <run-id>     # one durable receipt with counts, phases, and ids
-akno dream status --pending          # every nonterminal plan still needing work
-akno dream status --explain-policy people/ada-marlow.md
-akno rules people/ada-marlow.md       # folder rule plus page-specific maintenance authority
-```
-
-The general status and history views never include page bodies, prompts, paths, source excerpts, or provider
-responses. The explicit policy explanation echoes only the relative path the operator supplied. `--run` shows
-the receipt tied to one invocation; `--last` is bounded to 100 receipts; and `--pending` separates plans that
-can still be decided, retried, applied, or verified from completed history. All support `--json`.
-Each new run receipt also records the maintenance model id, logical call counts, succeeded/failed calls, summed
-provider-reported input/output/total tokens, usage-report coverage, model latency, and a planner/curator stage
-breakdown. If an endpoint omits usage, status says so instead of treating the call as zero tokens. Needed but
-unavailable capabilities and failed model calls are durable typed degradation such as `no_derive_model` or
-`derive_failed`, with an `unavailable`, `timeout`, `request_failed`, or `bad_response` subtype; prompts,
-responses, and provider errors are excluded. A response that reaches Akno but fails the planner, verifier,
-conflict-classifier, or curator output contract is reclassified as `derive_failed/bad_response` without
-inventing a second call or losing its provider token receipt. A valid rejection or deterministic guardrail
-abstention remains a normal outcome.
-
-A completed `--mode audit` run also estimates the extra initial curator pass that the same sealed candidates
-would require under the configured autonomous policies. It reports one candidate call per still-proposed item,
-an approximate prompt-message size using the documented characters/4 heuristic, and the sum of the curator's
-hard output caps. These values are labelled estimates and remain separate from provider-reported usage. Akno
-does not invent a currency price for local or OpenAI-compatible endpoints, and it cannot predict post-apply
-replanning because audit mode performs no writes. Legacy `--dry-run` does not seal exact plans, so it directs
-cost inspection to `--mode audit` instead of reporting a misleading zero.
-
-The path explanation is an authority check, not a preview of private proposals. It reports whether the path is
-indexed, which page-owned `dream` opt-in and content-safe folder rule apply, whether each transformation may be
-inspected, who would decide it, whether automatic apply is currently possible, and every typed blocker from
-protected paths, thresholds, allowlists, disabled planners, missing model configuration, or zero budgets. Pass
-`--mode audit` or `--mode review` to see the effect of lowering one run without changing configuration. Actual
-candidates still depend on current content, evidence, deterministic guards, remaining run budget, and
-sealed-input checks.
-
-All three modes seal the same exact operations and each item retains its effective transformation policy.
-Apply refuses changed inputs, journals each item separately,
-re-indexes it, verifies disk and index state, and rolls back a proven failed result. Synthesis items retain the
-bounded evidence graph given to the independent curator. A split is one atomic item: it replaces the canonical
-page and creates every child together, or changes nothing. A command-line mode can cover the full run or one
-selected phase and may lower, but never raise, configured authority. Stable item markers and provenance survive rewrites and moves,
-and a split keeps the canonical `page.md` while adding children under `page/`. An extraction instead moves
-one exact source section of authored Markdown verbatim into an independent page, leaves a managed source bridge
-and destination backlink, and uses only an existing or declared folder whose effective policy is integrated knowledge.
-The replacement and creation are still one collision-checked item and one undo. See the
-[dream-cycle guide](HOW-IT-WORKS.md#the-dream-cycle-phase-by-phase) before enabling writes.
-
-An exact-alias merge is a high-risk plan item available only in configured `merge_folders`. It preserves every
-unique authored line, rewrites all eligible inbound links, records the retired slug and title as aliases, and
-deletes the duplicate in one verified, undoable transaction. Conflicts, document ownership, protected inbound
-pages, ambiguous identity, or unique frontmatter without a lossless disposition block the merge.
-
-Contradictions use the same high-risk plan path. `not_a_conflict` and explicitly `time_scoped` claims need no
-edit. `unresolved` adds a managed warning while retaining both authored claims. `superseded` may turn only the
-stale line into history. `qualified` may prefix one broad claim with a short scope copied exactly from a
-different claim that also states the broad claim's value. Every affected page must declare
-`dream: synthesize`, and exact before bytes for all evidence pages are sealed. Supersession additionally
-requires an explicit dated as-of/effective/from/since boundary; the same date is copied into history and no
-other numeric value may be added. Qualification adds only the evidence phrase and fixed connective Markdown;
-it cannot invent an opposite scope or paraphrase the authored claim. Model confidence, page order, and indexing
-date cannot select a winner.
-
-Synthesis has a deterministic materiality floor: cosmetic headings, formatting-only rewrites, and pure
-reorganization never reach the curator. Completed unchanged and rejected inputs are fingerprinted in
-plan-backed mode too, so later runs do not resample them unless page, evidence, conflict, or temporal inputs
-change. Long runs print content-free planning/curator/apply progress. Dream output and `--json` are redacted by
-default; `--private-details` deliberately includes page names and source-level diagnostics.
-
-`akno service install` also writes a nightly launchd agent (`dev.akno.dream`, 03:00 by default), which is
-how the cycle runs on a schedule. `--no-dream` skips it, `--dream-hour` moves it.
-`akno dream status` reads that LaunchAgent without changing it and reports whether it is installed and loaded,
-its local-time cadence, the previous and next expected full-cycle windows, and the latest full-cycle receipt.
-A run is marked overdue only after a two-hour completion window; a newer phase-specific diagnostic cannot mask
-a missed nightly cycle.
-
-Scheduled maintenance can emit content-safe local macOS notifications. Set
-`maintenance.notifications` to `"actionable"` for review backlog, failed or incomplete work, pending
-verification, budget deferral, degradation repeated across three full cycles, and missed-run alerts. Successful
-no-op runs stay quiet. `"all"` also confirms every successful scheduled run; `"off"` is the default. A companion
-`dev.akno.dream-health` LaunchAgent runs just after the grace window so a cycle that never started can still be
-reported. Notification text contains counts, typed status, timestamps, and run ids only—never page text, paths,
-diffs, prompts, or model responses. Re-run `akno service install` after upgrading an older schedule so both
-agents and the `--scheduled` marker are installed. `akno dream status` reports the missed-cycle check's own
-installed, loaded, and cadence state as well as the main schedule.
-
-**`akno redeploy` applies a local change.** It builds, restarts `dev.akno`, and then waits for the socket
-to come back — `launchctl kickstart` returns when launchd has spawned the process, not when it is listening, so
-without the wait the next command fails with "no Akno service at …" and reads like a broken deploy. The two
-steps serve different consumers: launchd runs the CLI TypeScript directly, but that CLI imports
-`@tenphi/akno-core` from `packages/core/dist`, so core changes require the build and the running service needs
-the restart. Hosts importing `@tenphi/akno-client` also read package `dist` output. `--no-build` restarts only;
-`--no-restart` builds only. A failed build restarts nothing, so a deploy never reports success with the previous
-code back in service.
-
-**`adopt` files documents; it does not make them searchable.** An orphan is already returned as a document card.
-`adopt` plans the page `ingest` would have written — the title from the filename, the body from the summary
-extraction already produced, then the embed that gives the document a browsable home. One document group is one
-low-risk item. Apply re-hashes every source, confirms it is still unowned, creates and journals only the sealed
-page, forces ownership re-indexing, and verifies the relationship. It honours a folder rule of `ingest: "file"`,
-turns a target-path collision into a blocked plan instead of inventing a near-duplicate, and is capped per run
-so a folder of 500 unowned PDFs does not become 500 pages before anyone has read the first report. A recall
-document card includes a typed action for the single-document form, `akno adopt <document-id>`; invoking it
-plans only that document group. The nightly `adopt` phase remains the bounded bulk form. Both use the configured
-audit/review/auto policy, and auto still requires a separate curator decision.
-
-Here “owned” means “attached to a Markdown page by an embed.” It does not mean a human account, access control,
-or multi-user ownership; Akno currently treats the brain as one shared knowledge base.
-
-**`observe` ships off, and what it produces is almost entirely a function of the model behind it.** Its
-guardrails are enforced in code, not asked for in a prompt: at least two distinct source pages, every cited slug
-checked against what the model was actually shown, `full` pages only, no observation admissible as evidence for
-another, no hedged language, nothing about a person's private life, and nothing that describes the records
-rather than what they record. The same pass over the same knowledge base:
-
-| Cycle model        | Candidates | Refused by a guard | Worth keeping |
-| ------------------ | ---------- | ------------------ | ------------- |
-| local 3B           | 15         | 18                 | about four    |
-| a strong API model | 8          | **0**              | most of them  |
-
-The guards hold either way — with the better model they never had to fire. What they cannot do is make a small
-model insightful, which is why the tier is opt-in and why `maintenance.model` exists: the cycle runs unattended
-once a night and is worth a better model than per-turn work needs, without sending every recall expansion to a
-paid API. Read the first run with `--dry-run`.
-
-Two findings from that base shaped the tier. Grouping facts by the subject a deriver assigned joined a bag with
-a drum kit and a Roman church with a person's page, because a small model writes the _attribute_ into that field
-— grouping is now by folder and subject. And the prompt rule against inferring about someone's private life was
-not enough on its own: a run wrote "…lives with a wife" anyway, which is why that rule is now a code guard with
-a test.
-
-The same run is why the conflict pass reports rather than repairs. It found five cross-page candidates and the
-model correctly cleared all five — three months of banking pages stating different totals, and three Rome
-addresses under one `location` heading. A pass that had "fixed" those would have destroyed correct records.
-
-## Performance
-
-`akno bench` asserts storage-path budgets against the configured knowledge base and retrieval quality against
-a fixed corpus of invented pages, owned documents, and orphan documents. That split catches both kinds of
-regression: a fast wrong answer and a correct slow one. The configured-base timings below were measured against
-221 indexed pages and 1,142 chunks (1,069 from page bodies and 73 from inside documents), Apple Silicon:
-
-|                              |            |                          |
-| ---------------------------- | ---------- | ------------------------ |
-| Structural index, cold       | 255 ms     |                          |
-| Re-index, nothing changed    | **5.4 ms** | budget 50 ms             |
-| First query, index path only | 3.4 ms     | budget 50 ms             |
-| `recall`, lexical only       | 2.0 ms     | budget 20 ms             |
-| Point lookup by slug         | 0.3 ms     | budget 10 ms             |
-| `timeline`, 6-month window   | 0.1 ms     | budget 20 ms             |
-| `recall`, hybrid + rerank    | 2,010 ms   | _reported, not budgeted_ |
-
-The fixed mixed-result corpus is asserted on every run:
-
-| Assertion                                  | Required |
-| ------------------------------------------ | -------- |
-| Orphan recall at 3                         | 100%     |
-| Owned/standalone duplicate document rate   | 0%       |
-| Page-only recall at 2                      | 100%     |
-| Page-recall change after mixed assembly    | ≥ 0      |
-| Two-hop graph-only discovery at 5          | 100%     |
-| Graph path provenance completeness         | 100%     |
-| Direct-query top-1 preservation with graph | 100%     |
-| Lexical hits with typed model degradation  | 100%     |
-| Mixed assembly and budget fitting, p50     | ≤ 20 ms  |
-
-`akno bench --retrieval-only` runs only that invented corpus. It neither opens the configured knowledge base
-nor calls its models, which makes it the safe, reproducible quality gate for CI and ranking changes.
-
-`akno bench graph` runs the separate frozen, model-free graph gate. Its 62-page, 25-case held-out corpus
-covers every exact identity signal, Unicode/case normalization, a stable-id move, ambiguous names, explicit
-subjects, one-to-three-hop traversal, edge provenance, scalar and entity facts, history, unverified conflicts,
-hub truncation, missing and orphan documents, instruction-shaped evidence, graph-only false positives,
-maintenance discovery, rebuild equivalence, and index byte preservation. Every correctness ratio must be
-100%, graph-only false positives must be zero, graph p95 must stay within 100 ms, and the existing mixed
-retrieval gate must also pass. It opens neither the configured knowledge base nor any model. `--output` stores
-the content-safe result atomically; the artifact records that independent corpus review is still pending.
-
-`akno bench ranking --probe` is the separate opt-in live smoke check for prompted reranking. It sends three
-invented excerpts—including one instruction-bearing irrelevant passage—to the selected provider, and reports
-transport, schema, order, labels, and latency. It never opens the index. Passing verifies the integration, not
-the larger relevance release gate.
-
-`akno bench entities` runs the separate contextual-identity gate against eight invented same-name cases. It
-never opens the configured knowledge base. The gate requires valid structured responses, perfect selection
-precision, and perfect abstention on deliberately indistinguishable and instruction-bearing inputs before the
-off-by-default feature should be enabled.
-
-`akno bench answer` builds a temporary 15-source knowledge base and runs twelve invented questions through
-the production embedding, recall, answer-generation, citation, and independent-verification path. The cases
-cover direct and paraphrased facts, compound and partial answers, negation, superseded values, instruction
-injection beside an unrelated private marker, relevant-but-unsupported evidence, cited identity conflict,
-an orphan document, graph-assisted evidence, and complete empty recall:
-
-```bash
-akno bench answer --concurrency 2 \
-  --output benchmarks/answer/results/development-openai-luna.json
-
-akno bench answer --split test --runs 5 --concurrency 2 \
-  --output benchmarks/answer/results/held-out-openai-luna.json
-```
-
-The development gate requires every expected outcome and fact, perfect citation precision/recall and retrieval
-recall, perfect abstention, zero forbidden-text leakage, zero degraded or verifier-failed cases, and a green
-mixed-retrieval regression check. Latency, bounded evidence/answer token estimates, and actual provider token
-receipts are reported separately. The
-content-safe artifact retains only invented case/source ids, booleans, typed statuses, metrics, model/prompt
-receipts, and timings—not questions, evidence, generated answers, paths, slugs, endpoints, credentials, or
-provider errors. This development corpus is tuning evidence only; it cannot substitute for the explicit frozen
-test split or independent review.
-
-The test split is a separate frozen 16-source, twelve-case corpus with disjoint ids, paths, source bodies,
-questions, markers, values, and layouts. It is never selected by the default command. Five repeated runs must
-keep every quality metric perfect, produce the same content-safe decision fingerprint for every case, retain a
-100% minimum per-run pass rate, and keep aggregate answer p95 at or below 10 seconds. The fingerprint compares
-typed outcomes, degradation, fact coverage, citations, related-source identities, abstention, and privacy
-guards—not generated wording. The artifact also carries the frozen corpus SHA-256, and execution refuses a
-corpus edit that did not update its versioned fingerprint. A stored held-out artifact clears the technical
-release gates; independent corpus review remains a deliberately external requirement.
-
-`akno bench auto-recall` runs the precision-first host context profile against a separate disposable invented
-knowledge base. Fourteen development cases cover exact identity plus requested attributes, semantic support,
-local-reference resolution, topically related but unsupported pages, missing attributes, instruction-bearing
-negatives and relevant evidence, filtered empty results, conversation that must not affect a prompt without a
-reference, ambiguous singular references, hard budgets, current versus superseded pages, and orphan documents.
-The default command is the tuning split; the frozen twelve-case held-out split is selected explicitly:
-
-```bash
-akno bench auto-recall --split development --concurrency 2
-akno bench auto-recall --split test --runs 5 --concurrency 2 \
-  --output benchmarks/auto-recall/results/test.json
-```
-
-The gate requires perfect activation and source precision/recall, zero irrelevant injection, exact locators,
-summary-free evidence isolation, conversation privacy, hard-budget compliance, no degradation, stable repeated
-decisions, and p95 at or below 10 seconds. It also caps qualifier activation at 75%, so a correct profile that
-reranks every turn still fails its latency design. Qualification receipts report model identity, latency, and
-real provider token counts when supplied; native rerank endpoints correctly report token use as unavailable.
-Artifacts contain only invented ids and content-free decisions/metrics. They contain no prompt, recent turn,
-evidence, slug, path, endpoint, credential, provider error, or configured knowledge-base content.
-
-The frozen local-stack result passes all technical gates over five runs and 60 executions: perfect activation
-and source precision/recall, zero irrelevant injection, 41.7% qualifier activation, 100% decision stability,
-and 361 ms p95. Independent corpus review remains the only release blocker.
-
-`akno bench auto-recall-answer` measures the next boundary: whether the same host model answers better when
-the exact auto-recall bundle is present. Dedicated sixteen-source, twelve-case development and held-out corpora
-exercise the host boundary without borrowing questions from the explicit-answer benchmark. Every prompt runs in
-paired memory-on and memory-off arms. The memory-off arm must always abstain; the memory-on arm must answer every
-supported fact, abstain on unsupported or conflicting evidence, and ignore instructions and unrelated protected
-markers inside evidence:
-
-```bash
-akno bench auto-recall-answer --split development --concurrency 2
-akno bench auto-recall-answer --split test --runs 5 --concurrency 2 \
-  --output benchmarks/auto-recall-answer/results/test.json
-```
-
-The content-safe report includes activation, evidence-fact and answer-fact coverage, pairwise improvement,
-unsupported-claim and forbidden-text rates, decision stability, context/host/incremental latency, and separate
-host/qualifier usage receipts. It includes no prompt, evidence, answer prose, locator, endpoint, credential, or
-provider error. The extra evidence-fact gate distinguishes a retrieval/assembly omission from a host that was
-given complete evidence but failed to use it.
-
-The first frozen OpenAI Luna v1 held-out run correctly blocked host integration. Across 55 paired cases it kept
-activation and both abstention metrics at 100%, with zero unsupported claims and zero forbidden-memory leakage.
-Memory-on answer accuracy was 81.8%, fact accuracy 75.6%, and stability 90.9%: list-form cadence evidence was
-not used, and a two-page compound answer was incomplete and unstable. Its failed artifact is retained under
-`benchmarks/auto-recall-answer/results/`; the frozen result is evidence, not tuning data.
-
-Those failure structures were reproduced only in disjoint development cases. The resulting assembly rule can
-combine complementary date, amount, or duration sources only when every source matches the complete subject and
-there is exactly one explicit value for each requested field. Conflicting values produce an empty bundle, and a
-prompt asking for the current value excludes stale-only evidence. A fresh fingerprint-bound v2 held-out corpus
-then passed all technical gates across five runs and 60 paired executions: all required accuracy and stability
-metrics were 100%, with zero unsupported claims or forbidden-memory leaks, 494 ms context p95, 2.257 s total
-memory-on p95, and 1.015 s paired incremental p95. Luna now integrates the corrected profile behind
-`memory.autoRecall`, with one hidden context call per substantive turn and an explicit opt-out. Independent
-corpus review remains a release gate, not an implementation blocker.
-
-`akno bench ranking` runs the 60-query development side of an invented 80-query corpus without opening the
-knowledge base. The corpus has 120 sources, 40 candidates per query, 3,200 stable-id judgments, and a fact-level
-60/20 development/test split that preserves all eight categories on both sides. A normal run selects the first
-20 candidates; `--candidates 10|20|40` changes that window without changing the frozen pool. It compares the
-same candidates across rank fusion, the configured native reranker, or a prompted LLM:
-
-```bash
-akno bench ranking --system fusion
-akno bench ranking --system native
-akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning none
-akno bench ranking --system llm --provider openai --model gpt-5.6-luna --reasoning low
-```
-
-The repeatability matrix compares no reasoning at 10, 20, and 40 candidates with low reasoning at 20. Fusion
-and an available native reranker provide references. LLM variants run five times by default, with bounded
-request concurrency; reported latency remains per request rather than hiding it behind wall-clock parallelism.
-
-```bash
-akno bench ranking --matrix --concurrency 4 \
-  --output benchmarks/ranking/results/development-openai-luna.json
-```
-
-The artifact contains aggregate metrics, prompt/schema identifiers, and stable invented candidate ids for the
-top three results. It contains no knowledge-base text, endpoint URL, credential, or raw model request. Writes
-are atomic, so an interrupted benchmark cannot leave a result that appears complete.
-
-Independent review is a receipt, not a source-code switch. Export a handoff packet before the held-out run:
-
-```bash
-akno bench ranking review --output /tmp/akno-ranking-review.json
-```
-
-The packet contains the complete invented source catalog and every query, intent, candidate id, and grade, but
-no runtime prompt, model response, benchmark score, or outcome. A human or model reviewer working separately
-from corpus authorship and prompt tuning marks every source and case, records any issue, and completes the
-global quality and independence attestations. An approved packet attaches to a matrix like this:
-
-```bash
-akno bench ranking review --input /tmp/akno-ranking-review.json \
-  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json
-```
-
-Akno verifies the packet against the current whole-corpus SHA-256 and copies only a content-free receipt into
-the matrix. Any corpus change makes that receipt stale. Pending entries, unresolved issues, incomplete checks,
-or a changed packet are rejected before the matrix is written. The receipt proves coverage and content
-identity; reviewer independence itself is a workflow property that should be visible in the handoff or code
-review history, not a claim the local process can authenticate.
-
-When review requests corpus changes, exact earlier passes need not be repeated. After correcting and versioning
-the corpus, rebase the prior packet:
-
-```bash
-akno bench ranking review --input /tmp/akno-ranking-review.json \
-  --output /tmp/akno-ranking-review-v3.json
-```
-
-Only source or case entries whose complete review content is byte-for-byte equivalent keep `pass`. Changed
-entries return to `pending`, their issue descriptions remain for resolution checks, and the verdict, reviewer,
-timestamp, global checks, and independence attestations reset. The new fingerprint still requires explicit
-independent approval.
-
-After a shape has already been selected, `--matrix --variant llm-none-c10` repeats only that development
-variant. The targeted artifact still records each run's token usage, logical and physical request counts,
-latency, fallbacks, and top-three stability. It intentionally makes no preset selection and cannot be release
-evidence by itself.
-
-The latency track binds itself to that selected shape and separates one fresh-client compatibility call from
-the warm calls users normally feel. It measures the warm path once at single-flight concurrency and once under
-bounded load, then attaches the content-safe receipt to the matrix:
-
-```bash
-akno bench ranking --track latency \
-  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json \
-  --concurrency 4 --output benchmarks/ranking/results/development-openai-luna-latency.json
-```
-
-The release SLO is warm single-flight p95 at or below 4 seconds. Both cold calls must succeed, and every warm
-call in both profiles must be valid with exactly one endpoint request. Loaded p95 is capacity evidence rather
-than the single-owner interaction gate. The command accepts no provider/model/prompt overrides: a receipt can
-attach only when split, corpus, candidate count, excerpt limit, provider, model, reasoning, prompt, and schema
-match the matrix selection. Refreshing an artifact preserves its stored threshold; changing the SLO requires a
-new latency schema and new pre-declared evidence.
-
-The end-to-end track then tests the matrix selection through the production index and recall path. It creates a
-temporary knowledge base containing the same invented 120 sources, embeds it, measures the broader fusion pool,
-the exact candidates selected for judgment, and the final assembled order after reranking. When a case has
-multiple grade-3 answers, recall succeeds if any one is present and rank metrics use the best-ranked one.
-End-to-end schema v4 records all accepted direct-answer ids and binds the embedding dimensions, retrieval-pool
-size, and candidate-selection version into the evidence. It never opens the configured knowledge base. Passing
-`--matrix-artifact` binds the run to that
-matrix's exact split, candidate count, excerpt limit, provider, model, reasoning effort, prompt, and schema, then
-attaches the evidence atomically:
-
-```bash
-akno bench ranking --track end-to-end \
-  --matrix-artifact benchmarks/ranking/results/development-openai-luna.json \
-  --output benchmarks/ranking/results/development-end-to-end-openai-luna.json
-```
-
-For an OpenAI matrix selection, the single-endpoint choice is `text-embedding-3-small` at 1,536 dimensions plus
-`gpt-5.6-luna`; both roles must use the same provider. The report records dimensions and embedded/total chunks
-and fails before candidate queries when the embedding role is disabled, denied, or incomplete. This prevents
-lexical fallback from being reported as evidence for an embedding model that never ran. Candidate misses and
-ranking misses remain separate because a reranker cannot recover evidence absent from its input window.
-
-Development is the default. `--split test` explicitly selects the held-out 20 queries; prompt work must use the
-default split so test evidence is not quietly turned into tuning data. Akno refuses every ranking `test` or
-`all` run unless `--input` supplies a completed packet first. A held-out matrix therefore uses
-`akno bench ranking --matrix --split test --input /tmp/akno-ranking-review.json --output <path>` and embeds
-the content-free receipt automatically. Latency and end-to-end tracks consume that reviewed matrix rather than
-accepting a packet independently. Only generic distractors and adversarial snippets cross the boundary—answer,
-support, marginal, and stale fact sources do not.
-
-The report covers overall and category-level nDCG, reciprocal rank, top-result success, hard-negative inversions,
-response validity, latency, and qualification separately. Qualification distinguishes retained direct answers,
-strong support, marginal context, rejected grade-0 candidates, and instruction-bearing negatives. Its
-development gate requires a valid response for every query, no nDCG regression from fusion, every direct answer
-retained, and every instruction-bearing negative rejected.
-
-Matrix selection is deliberately separate from release. It chooses the least expensive comparable variant:
-`none` wins unless `low` improves nDCG@10 by more than 0.01, then the smallest equivalent candidate window
-wins. The mechanical release gate still requires an explicitly selected held-out run, a matching independent
-review receipt, a persisted artifact, end-to-end direct-answer candidate recall at the selected window, five
-repetitions, quality and exact-entity floors, valid/fallback-safe responses, perfect instruction-negative
-rejection, stable top-three results, and a bound warm single-flight latency receipt. The selected prompt and
-schema must also match the current runtime contract, so refreshing an old artifact cannot authorize
-unbenchmarked code. A useful development result can therefore recommend the next experiment without silently
-authorizing the setup preset.
-
-The historical
-[listwise-v4 development matrix](benchmarks/ranking/results/development-openai-luna-v4-2026-08-22.json)
-selects Luna with `none` reasoning and 10 candidates. Across five runs it reached 0.962 mean nDCG@10, 100%
-median top-three overlap, 100% valid responses, 100% direct-answer and instruction-negative retention/rejection,
-zero fallbacks, and 2.26 s aggregate p95 latency. The optional native reference reached 0.907 nDCG and 1.13 s
-p95. `none` at 20 and 40 candidates reached 0.958/0.941 nDCG and 3.71/9.82 s p95; the 40-candidate variant had
-12 fallbacks. `low` at 20 reached 0.943 nDCG and 5.65 s p95 with one fallback. The smallest window without
-reasoning is therefore both the selected quality-equivalent configuration and the fastest prompted-ranking
-variant tested.
-
-For that listwise-v4/entries-v3 contract, every development-side release check passed: matching persisted
-contract, five runs, overall and category quality, exact-entity MRR, response validity, fallback preservation,
-instruction safety, top-three stability, latency, and cheapest-equivalent selection. This is still tuning
-evidence rather than release authorization.
-
-The frozen [held-out v4/v3 matrix](benchmarks/ranking/results/test-openai-luna-v4-2026-08-22.json) also selects
-Luna with `none` reasoning and 10 candidates. It reached 0.921 mean nDCG@10 against fusion's 0.483, 100% median
-top-three overlap, complete direct-answer retention, and 1.90 s p95 latency. One of its 100 responses remained
-invalid after the bounded semantic retry and fell back exactly to fusion, leaving response validity and
-instruction-negative rejection at 99%. The 20-candidate `none` variant was 100% valid and reached 0.927 nDCG,
-but its 3.36 s p95 missed the latency gate; `low` at 20 was slower still at 4.74 s. No tested held-out variant
-therefore satisfied both reliability and the then-provisional mixed matrix latency gate. The artifact also has
-no bound warm single-flight receipt required by the current gate. This is final test evidence, not another
-prompt-tuning input, and the preset remains experimental.
-
-The preceding runtime advanced to `akno-judgment-map-v6` / `tuple-judgment-map-v5`. Instead of asking the
-model to reproduce opaque ids in a failure-prone array permutation, the strict schema makes every permitted id
-a required property and rejects additional properties. Each property carries `[grade, rank]`: the grade drives
-qualification, while rank only orders candidates within the same grade and ties preserve fusion order. The
-repeated pair schema is sent once through a reusable JSON Schema definition. The opaque id set is randomly
-assigned to candidates on every request, so it reveals neither source identity nor initial rank while keeping
-the schema cacheable. Compatible endpoints that return unconstrained JSON still receive one bounded retry for
-an invalid map; other failures preserve exact fusion order.
-
-The checked-in [v6 development matrix](benchmarks/ranking/results/development-openai-luna-v6-2026-08-24.json)
-selects Luna with `none` reasoning and 10 candidates. Across five runs it produced 300/300 valid responses,
-zero fallbacks, 0.957 mean nDCG@10 against fusion's 0.483, complete direct/support/marginal retention, perfect
-instruction-negative rejection, and 100% median top-three overlap. Usage averaged 958 input and 157 output
-tokens per query. Its 2.41-second p50 and 3.63-second p95 were measured under four-way matrix load. The earlier
-[targeted repetition](benchmarks/ranking/results/development-openai-luna-v6-targeted-2026-08-24.json) reached
-the same quality, validity, retention, and stability conclusions.
-
-Larger windows did not buy quality: `none` at 20 and 40 candidates reached 0.949/0.944 nDCG, 67% median
-top-three overlap, 4.16/6.99-second p95, and averaged 1,581/306 and 2,808/596 input/output tokens per query.
-`low` at 20 was only 88% valid, reached 0.894 nDCG, and took 10.15 seconds at p95. The configured native
-reference was unavailable and preserved fusion order for all 60 calls, so it is not comparison evidence. The
-selected c10 shape is therefore the smallest, fastest, highest-quality prompted variant in this matrix.
-
-The checked-in [bound latency evidence](benchmarks/ranking/results/development-openai-luna-v6-latency-2026-08-24.json)
-then measured the selected shape through fresh clients. Each first call took three endpoint requests while
-learning the token and schema dialect, and was excluded from the warm distribution. The 59 warm single-flight
-calls were 100% valid with 2.34-second p50, 3.12-second p95, and one endpoint request each. At four-way load,
-the 59 warm calls stayed 100% valid and one-request, with 2.26-second p50 and 4.12-second p95. This evidence is
-historical because it is bound to the earlier corpus fingerprint; v4 needs its own latency receipt.
-
-The first independent review of the `invented-ranking-v2` corpus completed on 25 August 2026 with changes
-requested. It found one negation query whose supposed false claim was true in the invented data and three
-location cases whose date candidates repeated the location while being graded irrelevant. Akno corrected the
-claim, graded the overlapping date sources as relevant location evidence, and bumped the corpus to
-`invented-ranking-v3`. A second review caught a finer distinction in three cases: the date candidate explicitly
-answered the requested location and therefore needed direct grade 3, not supporting grade 2. That correction is
-regression-tested in `invented-ranking-v4`. Exact rebasing carried all 120 source approvals and 77 unchanged case
-approvals forward; the independent follow-up approved the three corrected cases, every global check, and the
-whole v4 fingerprint. The content-free receipt is attached to the fresh
-[v6/v5 development matrix over corpus v4](benchmarks/ranking/results/development-openai-luna-v6-corpus-v4-2026-08-25.json).
-That matrix again selects Luna with no reasoning and 10 candidates: 300/300 valid responses, zero fallbacks,
-0.962 mean nDCG, complete relevant-evidence retention, perfect instruction-negative rejection, 100% top-three
-stability, and 2.56-second p95 under four-way load. The configured native BGE reference reached 0.919 nDCG.
-No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reasoning was only 85.3% valid,
-reached 0.892 nDCG, and took 9.36 seconds at p95. Older development, latency, held-out, and review evidence
-remains immutable historical evidence whose fingerprints cannot authorize v4.
-
-The matching v6/v5 v4 latency evidence exposed its remaining development blocker. The
-[latency receipt](benchmarks/ranking/results/development-openai-luna-v6-corpus-v4-latency-2026-08-25.json)
-was 100% valid and one-request on every warm call, but its 4.071-second single-flight p95 narrowly exceeds the
-fixed 4-second SLO. OpenAI embedding access is available and both current models were compared through the full
-production path. `text-embedding-3-small` at 1,536 dimensions and `text-embedding-3-large` at 3,072 dimensions
-both embedded 120/120 chunks without degradation and reached 98.3% direct-answer recall. Small had better
-candidate MRR, half the vector width, and roughly 6.5 times the pages per dollar according to the
-[official OpenAI embedding guide](https://developers.openai.com/api/docs/guides/embeddings), so it remains the
-quality-price choice. Both models initially missed the same canonical source at fusion rank 11 while an
-answer-bearing support source was already in the top 10.
-
-The production reranker now keeps Luna's measured 10-candidate request but retrieves a 20-candidate fusion pool.
-It preserves the first nine fusion candidates and selects the final judgment slot by vector rank from fusion
-positions 10–20. Cosine is compared only with cosine; it is never mixed with reciprocal-rank scores. On the full
-development corpus this recovered the rank-11 direct source, reached 100% fusion-pool, judged-candidate, and
-final direct-answer recall, and produced 100% final success@1 with zero degradation or fallback. End-to-end
-schema v4 and matrix schema v8 bind that selection contract. Its end-to-end gate passed, while its preserved
-latency receipt remained 71 ms above the SLO.
-
-The preceding runtime contract was `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It replaces the long
-candidate hashes with a compact stable alphabet: the selected 10-candidate request uses one-character opaque
-ids, and larger benchmark windows use one or two characters. Akno freshly shuffles the fixed id set among
-candidates on every request, so neither identity nor input rank is exposed; strict fixed properties still make
-missing, invented, and duplicate judgments invalid. This reduces the schema and response instead of weakening
-the contract.
-
-The checked-in
-[v6/v6 development matrix](benchmarks/ranking/results/development-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json)
-again selects Luna with no reasoning and 10 candidates. Across five runs it recorded 300/300 valid responses,
-zero fallbacks, 0.963 mean nDCG, complete direct/support/marginal retention, perfect instruction-negative
-rejection, and 100% top-three stability. Average reported usage fell from 958/157 to 788/72 input/output tokens
-per query, and concurrency-four p95 fell from 2.56 to 2.30 seconds. Its exact
-[latency receipt](benchmarks/ranking/results/development-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json)
-kept every warm call valid and one-request, with 1.55-second p50 and 1.94-second p95 at single flight; the fixed
-4-second interaction gate passes. Four-way warm p95 was 3.75 seconds and remains capacity evidence. The matching
-[production-path run](benchmarks/ranking/results/development-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json)
-embedded all 120 invented chunks with Small at 1,536 dimensions, retained 100% direct answers in the fusion
-pool, judged window, and final results, put a direct answer first for all 60 development queries, and recorded
-zero degradation or fallback. All development gates passed. At that point only the explicitly untouched,
-pre-declared held-out split remained, so the preset was still experimental.
-
-That one pre-declared
-[v6/v6 held-out matrix](benchmarks/ranking/results/test-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json)
-is now frozen. It selected the same no-reasoning, 10-candidate shape, kept all 100 responses valid with zero
-fallbacks, retained every relevant candidate, rejected every instruction-bearing negative, and reached 0.940
-mean nDCG against fusion's 0.483. It did not pass release: median pairwise top-three overlap was 66.7% against
-the frozen 90% stability floor. Every direct answer stayed in the top three, but success@1 varied from 50% to
-75% across runs. The bound
-[held-out latency receipt](benchmarks/ranking/results/test-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json)
-passed at 2.20-second warm single-flight p95 with 100% valid, one-request warm calls. The matching
-[held-out production-path run](benchmarks/ranking/results/test-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json)
-embedded 120/120 invented chunks, retained 100% direct answers in the fusion pool, judged window, and final
-results, reached 95% success@1 and 100% success@3, and recorded zero degradation or fallback. The sole release
-blocker is `top3_stability`. This is final test evidence, not a prompt-tuning input, so the setup preset remains
-experimental.
-
-Two simpler grade-only response contracts were evaluated next on development data and rejected. Both produced
-300/300 valid responses and stable top-three sets, but v7 reduced nDCG to 0.896, direct-answer retention to
-98.4%, and success@3 to 95.7%; v8 reached only 0.889 nDCG, 99.0% direct-answer retention, and 97.7% success@3.
-This confirms that asking Luna for an explicit within-grade order improves its relevance judgments even when
-Akno could otherwise preserve fusion order deterministically.
-
-The current runtime contract is `akno-judgment-map-v9` / `tuple-judgment-map-v6`. It keeps the proven compact
-`[grade, rank]` map and makes opaque-id assignment deterministic for an identical complete request. Akno hashes
-the query plus ordered local candidate keys into a request-local permutation; changing the query, candidates,
-or their order changes the permutation. Only compact symbols are sent to the endpoint, never the seed or local
-candidate keys. Identical recall work therefore produces identical prompt bytes without encoding fused rank or
-source identity in an id.
-
-The approved five-run
-[v9 development matrix](benchmarks/ranking/results/development-openai-luna-v9-stable-ids-corpus-v4-2026-08-25.json)
-selects Luna with no reasoning and 10 candidates. It recorded 300/300 valid responses, zero fallback, 0.968
-mean nDCG against fusion's 0.482, complete direct/support/marginal retention, perfect instruction-negative
-rejection, and 100% top-three stability. The bound
-[latency receipt](benchmarks/ranking/results/development-openai-luna-v9-stable-ids-corpus-v4-latency-2026-08-25.json)
-measured 1.39-second warm single-flight p50 and 2.00-second p95 with one endpoint request per warm call. The
-[production-path receipt](benchmarks/ranking/results/development-end-to-end-openai-luna-v9-stable-ids-corpus-v4-semantic-tail-2026-08-25.json)
-embedded 120/120 invented chunks with `text-embedding-3-small`, retained 100% direct answers at every retrieval
-boundary, reached 98.3% success@1 and 100% success@3, and recorded zero fallback or degradation. The two
-grade-only targeted artifacts remain checked-in negative evidence.
-
-All v9 development gates pass. The immutable v6/v6 held-out result cannot authorize this changed contract and
-will not be rerun or mined for case-specific tuning.
-
-`invented-ranking-v5` is the immutable fresh v9 release set. Before any v5 model call, Akno replaced the five
-previously observed held-out fact families with five new invented families, preserved all 60 development cases,
-froze the existing thresholds, and pinned fingerprint
-`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`. Independent review approved all 120
-sources and 80 cases before evaluation; its content-free receipt is bound to the exact corpus fingerprint.
-
-The single authorized
-[v9 held-out matrix](benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-2026-08-25.json)
-selects Luna with no reasoning and 10 candidates. It reached 0.992 nDCG, 98% success@1, 100% success@3,
-complete relevant-evidence retention, perfect instruction-negative rejection, 100% top-three stability, and
-zero fallback across 100 logical calls for the selected variant. Its bound
-[latency receipt](benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-latency-2026-08-25.json)
-measured 1.34-second warm single-flight p50 and 2.67-second p95. The
-[production-path receipt](benchmarks/ranking/results/test-end-to-end-openai-luna-v9-stable-ids-corpus-v5-semantic-tail-2026-08-25.json)
-embedded 120/120 chunks with `text-embedding-3-small`, retained every direct answer through the fusion pool,
-10-candidate judgment window, and final assembly, reached 100% success@1/@3, and recorded no fallback or
-degradation. Every release check passes.
-
-The first aggregate selection exposed a mechanical bug: it compared reasoning efforts only at 20 candidates
-before choosing a window, so it preferred `low`/20 even though `none`/10 had the same best nDCG and was cheaper.
-Akno now applies the predeclared rule globally: among all variants within 0.01 nDCG of the best tested result,
-choose the lowest reasoning effort and smallest candidate window. The stored measurements were refreshed under
-matrix schema v9; no held-out query was rerun. This artifact is final release evidence, not a tuning set.
-
-Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
-hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The
-earlier end-to-end development run remains useful failure-handling evidence—it stopped when the selected
-embedding model produced 0 of 120 vectors—but it cannot satisfy the current contract's release gate. Current
-access covers both OpenAI embedding models, and the fresh comparison above replaces provider availability with
-measured retrieval evidence without ever opening the configured knowledge base.
-
-**Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
-2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL
-has measured somebody's GPU, not this code, and gets ignored within a week. `doctor` reports the two apart for
-the same reason. That row was 1,820 ms before documents' own text joined the index: more candidates now reach
-the reranker, which is the cost of a stored PDF being searchable at all.
-
-Where the model time goes, measured by removing one stage at a time:
-
-| Pipeline                | p50       |
-| ----------------------- | --------- |
-| Lexical only            | 4 ms      |
-| \+ embedding            | 33 ms     |
-| \+ cross-encoder rerank | ~1,030 ms |
-| \+ query expansion      | ~1,820 ms |
-
-The reranker dominates, and its cost is per _candidate_, not per character — truncating candidates from 4,000
-chars to 800 changed neither latency nor a single result, while dropping `top_k` from 40 to 20 saved 400 ms and
-changed which pages came back. So `top_k` stays at 40 and `config/default.jsonc` records the trade. Set
-`recall.expansion: false` or point the `expansion` role at something faster if you would rather have the
-latency — that split is exactly what the role is for.
-
-A restart does not re-index — it **stats**. Only files whose mtime or size moved get hashed. mtime is a fast
-path, not a correctness guarantee, so a full hash sweep runs on the periodic backstop and on `index --verify`.
-
-Vector search is exact brute force by decision, not omission: below ~20,000 chunks an approximate index costs
-build time, recall accuracy and a second structure to keep in sync, to save milliseconds nobody notices.
-
-## What ships switched off
-
-Named plainly, because a README that implies more than exists is the same failure mode Akno is built to
-prevent. These defaults keep inference and unattended edits behind explicit permission:
-
-- **`observe`** — the tier that infers patterns and can write them as derived prose. Under named profiles or an
-  explicit policy/mode, every accepted pattern goes through a sealed evidence-backed plan, separate curator or
-  human decision, budgeted append, reindex, and verification. Its guardrails hold; the quality of what survives
-  them is the model's, and on a small local model most of it was not worth keeping.
-- **`reflect`** — the tier above that, off until a knowledge base has the volume to make a "pattern" more than
-  one coincidence. When enabled under a named profile or policy, each principle seals exact observation-page
-  hashes, receives a separate decision, and is appended and verified through the same plan lifecycle.
-- **automatic `curate` writes** — off under the default `audit` profile. Curate only considers pages whose own
-  frontmatter opts into `hygiene` or `synthesize`; set a stricter transformation to `off` to skip even planning.
-  `review` waits for a human and `autonomous` uses the independent curator before any verified write.
-- **`repair`** — the legacy standalone phase, now a report-only compatibility view and off by default.
-  `maintenance.repair.links` defaults on, but it produces durable link items only when plan-backed curate is
-  enabled. Those items require exact move, alias, or canonical identity evidence; similarity never authorizes
-  a write. Audit/review/auto controls them alongside other curation work.
-- **`maintenance.log_changes`** — a full record of every cycle run appended to
-  `<state_dir>/logs/dream.jsonl`: what it applied with the lines it added, what a guardrail refused and which
-  guard refused it, what was skipped and why. It is the fastest way to decide whether to trust the cycle, and
-  it is off by default because a log of inferences drawn from private notes is a second copy of the sensitive
-  part, kept outside the notes. That is the owner's call, not a default.
-- **`maintenance.notifications`** — local scheduled-run alerts. It defaults to `"off"`; `"actionable"` stays
-  silent on healthy no-op nights and reports only an owner-actionable backlog, failure, repeated degradation,
-  budget deferral, or missed cycle. `"all"` additionally confirms every completed scheduled run. The payload is
-  safe for a lock screen and the deduplication file in `<state_dir>` stores only run/window fingerprints.
-
-Everything else is on: extraction for every attachment including the ones that predate Akno, audit-mode
-`adopt` planning, the cross-page conflict pass, and the housekeeping report.
-
-## Platform
-
-**macOS only, on purpose — not a gap.** There is no plan for Linux or Windows.
-
-The engine leans on things macOS gives: FSEvents through recursive `fs.watch`, which reports renames as renames;
-the dataless-file flag, because a notes folder lives in iCloud Drive or Dropbox more often than not; launchd for
-`akno service`; and reconciliation on wake, because a closed laptop is exactly when the folder gets edited on
-another device. A port would not be a build-matrix entry, it would be a second watcher with its own correctness
-argument, and one tested watcher is worth more than two hopeful ones.
-
-`@tenphi/akno-core` and the `akno` CLI declare `"os": ["darwin"]`.
-
-**`@tenphi/akno-client` stays portable, and that is the useful part.** It has no native dependencies, so a Linux
-container reaching a macOS host over the loopback HTTP door is a supported shape — the knowledge base and the
-index never enter the sandbox, which is also what keeps the single-writer property intact.
-
-## Repo layout
-
-```
-packages/protocol   op registry, zod schemas, wire format — no dependencies beyond zod
-packages/core       the memory layer: config, store, indexer, models, recall, watcher, maintenance
-packages/client     thin typed client over a running service; no native dependencies
-packages/cli        commands and the three doors
-config/             default.jsonc (committed) + local.jsonc (never)
-```
-
-Runtime dependencies, all of them: `better-sqlite3`, `sqlite-vec`, `yaml`, `zod`, and
-`@modelcontextprotocol/sdk` for the MCP door. Terminal colour is `node:util`'s `styleText`, request deadlines
-are `AbortSignal.timeout`, and the file walker is `node:fs` — none of that needs a package.
-
-`@tenphi/akno-protocol` exists so `@tenphi/akno-client` can share schemas with `@tenphi/akno-core` without pulling
-`better-sqlite3` and `sqlite-vec` into a host's build.
+Read [The dream cycle](docs/dream-cycle.md) before enabling scheduled writes.
+
+## Documentation
+
+| Guide                                      | Use it for                                                            |
+| ------------------------------------------ | --------------------------------------------------------------------- |
+| [Getting started](docs/getting-started.md) | Installation, guided setup, the demo, and a safe adoption path        |
+| [Core concepts](docs/concepts.md)          | Pages, documents, roles, rules, evidence, identity, and result states |
+| [Configuration](docs/configuration.md)     | Config layers, secrets, models, profiles, and knowledge-base rules    |
+| [Reading memory](docs/reading.md)          | Recall, grounded answers, graph, timeline, and automatic context      |
+| [Writing and ingestion](docs/writing.md)   | Exact writes, remember, documents, inbox, undo, and adoption          |
+| [The dream cycle](docs/dream-cycle.md)     | Phases, plans, policies, budgets, decisions, and verification         |
+| [How Akno works](docs/how-it-works.md)     | Architecture, indexing, retrieval, writes, and service boundaries     |
+| [Operations](docs/operations.md)           | Service installation, diagnostics, recovery, privacy, and platform    |
+| [Benchmarks](docs/benchmarks.md)           | Quality gates, latency evidence, and the qualified OpenAI preset      |
+| [Limitations](docs/limitations.md)         | Current capability boundaries and intentionally unsupported cases     |
+| [Command reference](docs/commands.md)      | Complete command-purpose/write/model map                              |
+
+The [`docs/` index](docs/README.md) groups these by common user journeys.
 
 ## Development
 
+For a checkout:
+
 ```bash
-pnpm build         # tsc --build across the workspace
-pnpm test          # vitest — no models required; includes the fixed mixed-retrieval corpus
-pnpm smoke         # both end-to-end scripts, through the built dist
-pnpm lint          # oxlint
-pnpm knip          # dead exports and unused dependencies
-pnpm bench
-pnpm akno …      # the CLI from source, no bundler
+pnpm install
+pnpm build
+cp config/local.example.jsonc config/local.jsonc
+pnpm test
+pnpm akno init
 ```
 
-The source runs on Node directly: `node packages/cli/src/bin.ts recall "…"`. That works because relative imports
-name the file that is actually on disk (`./output.ts`, rewritten to `.js` on emit by
-`rewriteRelativeImportExtensions`) and `erasableSyntaxOnly` keeps the source inside what Node's own type
-stripping supports. There is no bundler or loader in the dev path.
-
-The integration suite builds a real knowledge base on disk and indexes it **with no models configured** — the
-most important thing to prove is that Akno degrades rather than fails. It also asserts that the knowledge base
-is left byte-identical, and that deleting the index and re-indexing reproduces the same counts.
-
-Anything model-shaped is tested against a stub endpoint rather than a live model, because every assertion is
-about the conclusion Akno draws from a _given_ answer — a real model cannot be scripted into producing the
-case you need. That is how the maintenance guardrails are covered: each one has a test that feeds it exactly the
-output it exists to refuse.
-
-[CONTRIBUTING.md](CONTRIBUTING.md) collects the invariants worth knowing before changing the indexer, the write
-path or the recall pipeline — most of them written down because breaking one produced a bug that was hard to see.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for architecture and testing invariants, and [AGENTS.md](AGENTS.md) for
+the repository's strict rule against copying real knowledge-base data into tests, documentation, or commits.
 
 ## License
 
-Source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE): personal and other
-noncommercial use is free, commercial use is not granted. Dependencies keep their own licences.
-For a commercial licence, ask.
+Akno is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). Personal and other
+noncommercial use is permitted; commercial use requires a separate licence.
