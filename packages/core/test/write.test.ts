@@ -319,7 +319,7 @@ describe('declaring a folder', () => {
     await mem.close();
   });
 
-  it('writes the rule into akno.json, where the taxonomy travels with the notes', async () => {
+  it('writes the rule into akno.jsonc, where the taxonomy travels with the notes', async () => {
     const mem = await openAs('agent');
     await mem.folder({
       path: 'research',
@@ -330,7 +330,7 @@ describe('declaring a folder', () => {
     // Read the way Akno reads it: the file is JSONC, and it is written with comments on
     // purpose — a plain JSON.parse failing here is the format working.
     const rules = readJsoncFile<{ folders: Record<string, { description: string }> }>(
-      path.join(root, 'akno.json'),
+      path.join(root, 'akno.jsonc'),
     )!;
     expect(rules.folders['research/**']!.description).toBe('Findings about the world.');
     await mem.close();

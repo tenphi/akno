@@ -5,7 +5,7 @@ import { resolveOps } from '../ops-handle.ts';
 const FOLDER_HELP = `akno folder <path> --description <text> [options]
 
   Declare a folder and what belongs in it. The rule is written to
-  <akno_path>/akno.json, so the taxonomy travels with the notes.
+  <akno_path>/akno.jsonc, so the taxonomy travels with the notes.
 
   Never gated: nothing here waits on approval. What it asks for is a sentence —
   \`description\` is what the next caller reads before filing a page there.

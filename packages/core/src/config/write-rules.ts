@@ -1,7 +1,7 @@
 import type { FolderRuleDoc } from './schema.ts';
 
 /**
- * **Adding a folder rule to `<akno_path>/akno.json` without rewriting the file.**
+ * **Adding a folder rule to `<akno_path>/akno.jsonc` without rewriting the file.**
  *
  * This is the one config file Akno writes, and it is also the one config file that lives
  * inside the user's own folder — a git repo under active hand editing, full of comments
@@ -59,7 +59,7 @@ export function addFolderRule(source: string | null, entry: FolderEntry): string
   const text = source ?? HEADER;
   const block = findObjectValue(text, 'folders');
   if (!block) {
-    throw new Error('akno.json has no `folders` block to add a rule to');
+    throw new Error('akno.jsonc has no `folders` block to add a rule to');
   }
 
   const indent = `${indentOfLineAt(text, block.close)}  `;

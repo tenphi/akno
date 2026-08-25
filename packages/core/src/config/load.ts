@@ -21,7 +21,8 @@ import {
  * the indexer has to know to skip it: it lives *inside* the knowledge base but is Akno's
  * own configuration, and indexing it files the taxonomy as a memory object.
  */
-export const KB_RULES_FILE = 'akno.json';
+export const KB_RULES_FILE = 'akno.jsonc';
+const LEGACY_KB_RULES_FILE = 'akno.json';
 
 export interface LoadOptions {
   /** Wins over every file, for `open({ aknoPath })` and `--akno-path`. */
@@ -53,7 +54,7 @@ export interface LoadOptions {
  * here rather than by a launcher, because a service started by launchd inherits almost nothing and
  * "put it in .env" has to be true for the person who read that in `.env.example`.
  *
- * Rules are a fifth, narrower layer: `<akno_path>/akno.json` wins over all
+ * Rules are a fifth, narrower layer: `<akno_path>/akno.jsonc` wins over all
  * of the above for `folders`, so rules can travel with the notes.
  */
 export function loadConfig(options: LoadOptions = {}): AknoConfig {
@@ -465,6 +466,21 @@ function resolve(
   // Rules found in the knowledge base win over machine config, so they can be
   // versioned with the notes and survive a move to another machine.
   const kbRulesPath = path.join(aknoPath, KB_RULES_FILE);
+  const legacyKbRulesPath = path.join(aknoPath, LEGACY_KB_RULES_FILE);
+  if (fs.existsSync(legacyKbRulesPath)) {
+    if (fs.existsSync(kbRulesPath)) {
+      throw new AknoError(
+        'invalid',
+        `both ${LEGACY_KB_RULES_FILE} and ${KB_RULES_FILE} exist in ${aknoPath}; merge or remove the old file`,
+        { reason: 'conflicting_configuration', files: [LEGACY_KB_RULES_FILE, KB_RULES_FILE] },
+      );
+    }
+    throw new AknoError(
+      'invalid',
+      `knowledge-base rules now use ${KB_RULES_FILE}; rename ${legacyKbRulesPath} before starting Akno`,
+      { reason: 'renamed_configuration', from: LEGACY_KB_RULES_FILE, to: KB_RULES_FILE },
+    );
+  }
   const kbRules = readJsoncFile<{ folders?: Record<string, unknown>; gate?: string }>(kbRulesPath);
   const rules = compileRules([
     ...ruleLayers,

@@ -465,7 +465,7 @@ export class Indexer {
    * What the scan skips: the configured list, plus Akno's own files inside the knowledge
    * base.
    *
-   * `akno.json` is not memory — it is the rules that decide what memory *is*. It was
+   * `akno.jsonc` is not memory — it is the rules that decide what memory *is*. It was
    * being registered as an attachment of the root, which is how a taxonomy ends up
    * described in `doctor` as a document whose contents could not be extracted.
    */

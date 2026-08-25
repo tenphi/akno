@@ -1,7 +1,7 @@
 # examples/demo-brain
 
 A small invented knowledge base, so a first run has something to index. Eleven pages, an event ledger, one
-folder of quotable source material, and an `akno.json` that declares what belongs where.
+folder of quotable source material, and an `akno.jsonc` that declares what belongs where.
 
 Every name, number, address and body of text in it is made up — see
 [AGENTS.md](../AGENTS.md#never-use-real-data-in-tests-fixtures-docs-or-comments) for why that rule is

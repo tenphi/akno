@@ -145,9 +145,13 @@ checkout writes its gitignored `config/local.jsonc`; an installed copy writes `<
 check. Requested preflight failure writes nothing. Setup never indexes, installs a service, creates a schedule,
 or changes the knowledge base.
 
-Rules can also travel with the notes: if `<akno_path>/akno.json` exists, its `folders` block wins over both
+Rules can also travel with the notes: if `<akno_path>/akno.jsonc` exists, its `folders` block wins over both
 config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as
 configuration and never indexed as a note.
+
+The `.jsonc` extension is deliberate: comments are valid and preserved when `akno folder` adds a rule, so the
+filename should not make editors report valid content as broken JSON. The former `akno.json` name is rejected
+with an exact rename instruction; if both files exist, Akno refuses to guess which taxonomy is authoritative.
 
 Changing a rule takes effect on the next `akno index`, including for pages nobody has touched since. The
 resolved rules are fingerprinted, so a pass that would otherwise report "223 unchanged" re-examines the pages

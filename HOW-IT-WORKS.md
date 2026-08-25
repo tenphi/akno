@@ -640,8 +640,12 @@ akno folder conversations \
 The description helps later agents decide where pages belong. Role and management defaults prevent
 evidence folders from receiving canonical remembered claims.
 
-Rules can live in machine config or in `<akno_path>/akno.json`. Rules beside the notes win, so a
+Rules can live in machine config or in `<akno_path>/akno.jsonc`. Rules beside the notes win, so a
 taxonomy can travel with the knowledge base. They are glob-scoped and the most specific match wins.
+
+The extension is part of the contract. This file supports comments and `akno folder` preserves them, so it is
+named `.jsonc` rather than making editor validation lie. Akno rejects the former `akno.json` name with a rename
+instruction and rejects an ambiguous base containing both names.
 
 ```jsonc
 {
@@ -2263,7 +2267,7 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 | `context <query>`     | Assemble broad context or precision-first auto-recall     | no                               | embedding; reranker only at ambiguous boundary |
 | `write`               | Create, append, patch, or replace a page                  | yes                              | vision only for textless attachments           |
 | `remember <text>`     | Retain durable knowledge and route it                     | yes                              | maintenance or derive, plus recall roles       |
-| `folder`              | Declare a folder and its default policy                   | yes, `akno.json`                 | none                                           |
+| `folder`              | Declare a folder and its default policy                   | yes, `akno.jsonc`                | none                                           |
 | `approve` / `decline` | Resolve a held routing proposal                           | approve may write                | depends on held action                         |
 | `forget`              | Retract a fact or trash a page/document                   | yes                              | none                                           |
 | `undo <id>`           | Restore exact bytes from a journalled change              | yes                              | none                                           |

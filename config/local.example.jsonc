@@ -131,7 +131,7 @@
   //   "contextual_resolution": { "enabled": true }
   // },
 
-  // Rules can live here, or travel with the notes at <akno_path>/akno.json —
+  // Rules can live here, or travel with the notes at <akno_path>/akno.jsonc —
   // which wins over both config files. Glob-scoped, most-specific-wins.
   // `akno rules <path>` prints which rule won and why.
   "folders": {

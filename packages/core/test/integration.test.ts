@@ -817,12 +817,12 @@ describe('changing a rule', () => {
   });
 
   it('reads rules from the knowledge base without indexing the file that holds them', async () => {
-    // `akno.json` lives inside the notes, and rules travel with them — but the file
+    // `akno.jsonc` lives inside the notes, and rules travel with them — but the file
     // is Akno's own configuration, not memory. It was being registered as an attachment
     // of the root, which is how a taxonomy ends up reported by `doctor` as a document whose
     // contents could not be extracted.
     fs.writeFileSync(
-      path.join(scratch, 'akno.json'),
+      path.join(scratch, 'akno.jsonc'),
       JSON.stringify({ folders: { 'logs/**': { role: 'source' } } }),
     );
 

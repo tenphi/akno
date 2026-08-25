@@ -510,7 +510,7 @@
   // ─── Rules ────────────────────────────────────────────────────────────────
   // Glob-scoped, most-specific-wins. Empty by default: Akno ships no folder
   // taxonomy. A knowledge base with no rules at all works — every page has the
-  // `knowledge` role. Rules at `<akno_path>/akno.json` win over these, so they can
+  // `knowledge` role. Rules at `<akno_path>/akno.jsonc` win over these, so they can
   // travel with the notes.
   //
   // `route: true` is what turns a folder into an inbox: files dropped there are

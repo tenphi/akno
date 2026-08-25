@@ -1,4 +1,5 @@
 {
+  // Rules travel with this invented knowledge base and are not indexed as memory.
   "folders": {
     "sources/**": { "role": "source", "remember": "deny" },
     "people/**": { "role": "knowledge", "remember": "integrate" },

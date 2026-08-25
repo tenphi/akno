@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 /**
- * `akno.json` lives inside the user's own folder, under their own git history, full of
+ * `akno.jsonc` lives inside the user's own folder, under their own git history, full of
  * comments explaining why each rule is what it is. Every assertion here is about the same
  * promise: **adding a rule changes one place in the file and nothing else.**
  *
@@ -25,7 +25,7 @@ const entry = {
 
 /** Round-trips the result through the reader the rest of Akno uses. */
 function parse(text: string): { folders?: Record<string, unknown> } {
-  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'akno-rules-')), 'akno.json');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'akno-rules-')), 'akno.jsonc');
   fs.writeFileSync(file, text);
   return readJsoncFile<{ folders?: Record<string, unknown> }>(file)!;
 }

@@ -66,16 +66,16 @@ try {
     `${doctor.counts.brokenLinks} broken — a link points outside the folder or at a page that is not there`,
   );
   check('every page indexed', doctor.counts.pages === pages, `${doctor.counts.pages} of ${pages}`);
-  // `sources/**` is declared `role: source` in the example's own akno.json. If that stops being
+  // `sources/**` is declared `role: source` in the example's own akno.jsonc. If that stops being
   // true the example silently loses the one thing it demonstrates about quotable material.
   check('the rules file is in force', doctor.byRole?.source === 1, JSON.stringify(doctor.byRole));
 
-  // akno.json is configuration that lives inside the knowledge base, and must not be a memory.
+  // akno.jsonc is configuration that lives inside the knowledge base, and must not be a memory.
   const list = JSON.parse(run('list', '--kind', 'pages', '--limit', '100'));
   check(
     'does not index its own rules file',
-    !JSON.stringify(list).includes('akno.json'),
-    'akno.json was indexed as a page',
+    !JSON.stringify(list).includes('akno.jsonc'),
+    'akno.jsonc was indexed as a page',
   );
 
   check('re-index is a no-op', JSON.parse(run('index')).pagesIndexed === 0, 'a second pass re-indexed pages');

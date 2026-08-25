@@ -27,7 +27,7 @@ import { normalizeSlug } from './write.ts';
  * not paperwork — `list` and the pre-turn bundle return it, so it is what the *next* caller
  * reads before filing a page, and it is the difference between a taxonomy and a pile of globs.
  *
- * The rule is written to `<akno_path>/akno.json`, which is where a taxonomy belongs: it
+ * The rule is written to `<akno_path>/akno.jsonc`, which is where a taxonomy belongs: it
  * travels with the notes, it is readable by anything that can read a file, and it is under the
  * user's own git history. See `config/write-rules.ts` for why that write is textual.
  */
