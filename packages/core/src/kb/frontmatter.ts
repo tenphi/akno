@@ -140,9 +140,7 @@ export function withAknoAliases(content: string, aliases: string[]): string | nu
   if (fm.present && fm.raw.trim().length > 0 && Object.keys(fm.data).length === 0) return null;
   const akno = fm.data.akno;
   const record =
-    akno && typeof akno === 'object' && !Array.isArray(akno)
-      ? (akno as Record<string, unknown>)
-      : null;
+    akno && typeof akno === 'object' && !Array.isArray(akno) ? (akno as Record<string, unknown>) : null;
   if (akno !== undefined && !record) return null;
   const existingValue = record?.aliases;
   if (existingValue !== undefined && !Array.isArray(existingValue)) return null;

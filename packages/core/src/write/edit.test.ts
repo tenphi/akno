@@ -71,16 +71,9 @@ describe('applyEdit', () => {
  * one Shinkansen fact that happened to create it.
  */
 describe('applyEdit adopting a frontmatter block the caller sent', () => {
-  const SENT = [
-    '---',
-    'title: Lease 2027',
-    'akno:',
-    '  role: knowledge',
-    '---',
-    '',
-    '# Lease 2027',
-    '',
-  ].join('\n');
+  const SENT = ['---', 'title: Lease 2027', 'akno:', '  role: knowledge', '---', '', '# Lease 2027', ''].join(
+    '\n',
+  );
 
   it('replaces the page block rather than nesting a second one under it', () => {
     const result = applyEdit(PAGE, { kind: 'content', content: SENT });

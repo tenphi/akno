@@ -338,10 +338,7 @@ function resolveQuerySeeds(
   };
 }
 
-function queryEntityMatches(
-  ctx: AknoContext,
-  query: string,
-): { name: string; start: number; end: number }[] {
+function queryEntityMatches(ctx: AknoContext, query: string): { name: string; start: number; end: number }[] {
   const normalizedQuery = normalizeEntityName(query);
   if (!normalizedQuery) return [];
   const rows = ctx.store.db

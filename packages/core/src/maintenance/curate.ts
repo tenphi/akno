@@ -457,9 +457,7 @@ export async function curatePages(
     ) {
       continue;
     }
-    const before = await fsp
-      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
-      .catch(() => null);
+    const before = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
     if (before === null) {
       result.warnings.push(`${row.slug}: could not read page`);
       continue;
@@ -1283,11 +1281,7 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 }
 
-function mergeAliasCollision(
-  ctx: AknoContext,
-  candidate: MergeCandidate,
-  aliases: string[],
-): string | null {
+function mergeAliasCollision(ctx: AknoContext, candidate: MergeCandidate, aliases: string[]): string | null {
   const other = ctx.store.db
     .prepare('SELECT slug, title FROM pages WHERE id NOT IN (?, ?)')
     .all(candidate.canonical.id, candidate.duplicate.id) as { slug: string; title: string }[];

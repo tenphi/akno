@@ -41,7 +41,7 @@ Things worth trying once it is indexed:
 | `timeline`                                          | Dated lines plus typed orphan-document date evidence     |
 | `read people/ada-marlow`                            | One page in full, with its backlinks                     |
 | `rules household/boiler.md`                         | Which rule governs a path, and why                       |
-| `list --kind tree`                                  | The folder taxonomy as Akno understands it             |
+| `list --kind tree`                                  | The folder taxonomy as Akno understands it               |
 | `context "who pays for the boiler service?"`        | The whole pre-turn bundle against one token budget       |
 | `dream --dry-run`                                   | What the nightly cycle would do, without doing it        |
 

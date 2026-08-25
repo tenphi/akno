@@ -358,10 +358,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     async index(indexOptions: IndexOptions = {}): Promise<IndexReport> {
       if (!writable) {
-        throw new AknoError(
-          'read_only',
-          `cannot index — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
-        );
+        throw new AknoError('read_only', `cannot index — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`);
       }
       return indexer.run(indexOptions);
     },

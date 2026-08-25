@@ -163,11 +163,7 @@ function normalize(value: string): string {
     .trim();
 }
 
-function candidatesFromOutputs(
-  ctx: AknoContext,
-  outputs: GraphOutput[],
-  chunkIds?: Set<number>,
-): ChunkHit[] {
+function candidatesFromOutputs(ctx: AknoContext, outputs: GraphOutput[], chunkIds?: Set<number>): ChunkHit[] {
   const candidates = new Map<string, ChunkHit>();
 
   for (const output of outputs) {

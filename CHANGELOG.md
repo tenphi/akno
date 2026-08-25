@@ -46,9 +46,9 @@ codes are stated once. Exactly one process holds the write handle; a second open
 
 ### Packages
 
-| Package                   | What it is                                                       |
-| ------------------------- | ---------------------------------------------------------------- |
-| `@tenphi/akno`          | The CLI. `npm install -g @tenphi/akno`                         |
+| Package                 | What it is                                                       |
+| ----------------------- | ---------------------------------------------------------------- |
+| `@tenphi/akno`          | The CLI. `npm install -g @tenphi/akno`                           |
 | `@tenphi/akno-core`     | The memory layer, for a host embedding it in-process             |
 | `@tenphi/akno-client`   | Thin typed client over a running service; no native dependencies |
 | `@tenphi/akno-protocol` | Op registry, zod schemas, wire format                            |

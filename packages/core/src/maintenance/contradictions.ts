@@ -166,9 +166,7 @@ async function eligiblePages(
     ) {
       return null;
     }
-    const before = await fsp
-      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
-      .catch(() => null);
+    const before = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
     if (before === null) return null;
     pages.set(slug, { slug, relPath: row.rel_path, before });
   }

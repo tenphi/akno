@@ -128,7 +128,7 @@ much you already know about the answer or change.
 | Ask what happened in a period               | `timeline`               | Uses structured events and dated lines                          | no               |
 | Prepare everything an agent turn needs      | `context`                | Fits pins, recent events, structure, and recall into one budget | no               |
 | Put exact wording on an exact page          | `write`                  | The caller controls destination and text                        | yes              |
-| Keep the durable parts of unstructured text | `remember`               | Akno decides what lasts and where it belongs                  | yes              |
+| Keep the durable parts of unstructured text | `remember`               | Akno decides what lasts and where it belongs                    | yes              |
 | Bring in a file, folder, or URL             | `ingest`                 | Extracts, names, routes, stores, and indexes                    | yes              |
 | Process a drop folder                       | `inbox`                  | Applies ingest automatically to arrivals                        | yes              |
 | Correct, remove, or relocate something      | `forget`, `undo`, `move` | Preserves file-level semantics and history                      | yes              |
@@ -2213,7 +2213,7 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 | `context <query>`     | Assemble broad context or precision-first auto-recall     | no                               | embedding; reranker only at ambiguous boundary |
 | `write`               | Create, append, patch, or replace a page                  | yes                              | vision only for textless attachments           |
 | `remember <text>`     | Retain durable knowledge and route it                     | yes                              | maintenance or derive, plus recall roles       |
-| `folder`              | Declare a folder and its default policy                   | yes, `akno.json`               | none                                           |
+| `folder`              | Declare a folder and its default policy                   | yes, `akno.json`                 | none                                           |
 | `approve` / `decline` | Resolve a held routing proposal                           | approve may write                | depends on held action                         |
 | `forget`              | Retract a fact or trash a page/document                   | yes                              | none                                           |
 | `undo <id>`           | Restore exact bytes from a journalled change              | yes                              | none                                           |

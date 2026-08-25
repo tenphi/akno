@@ -981,8 +981,7 @@ export class Indexer {
   private entriesOf(directory: string): string[] {
     const cached = this.#entriesCache.get(directory);
     if (cached) return cached;
-    const absDir =
-      directory === '.' ? this.#config.aknoPath : path.join(this.#config.aknoPath, directory);
+    const absDir = directory === '.' ? this.#config.aknoPath : path.join(this.#config.aknoPath, directory);
     let entries: string[];
     try {
       entries = fs.readdirSync(absDir);

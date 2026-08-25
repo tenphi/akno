@@ -83,10 +83,7 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
     const next = destinations.get(document.rel_path)!;
     if (next === document.rel_path) continue;
     await fsp.mkdir(path.dirname(path.join(ctx.config.aknoPath, next)), { recursive: true });
-    await fsp.rename(
-      path.join(ctx.config.aknoPath, document.rel_path),
-      path.join(ctx.config.aknoPath, next),
-    );
+    await fsp.rename(path.join(ctx.config.aknoPath, document.rel_path), path.join(ctx.config.aknoPath, next));
     // One entry naming the destination, not a `moved`/`created` pair. Reversing that pair
     // deleted the new file and then tried to restore a path holding nothing — an attachment
     // has no text in `before` to put back — so undoing a move used to eat the binary.

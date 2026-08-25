@@ -63,10 +63,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
 }
 
 /** Fully resolved authority for one transformation before a one-run ceiling is applied. */
-export function configuredTransformPolicy(
-  config: AknoConfig,
-  kind: MaintenanceTransform,
-): MaintenancePolicy {
+export function configuredTransformPolicy(config: AknoConfig, kind: MaintenanceTransform): MaintenancePolicy {
   return config.maintenance.policies[kind];
 }
 

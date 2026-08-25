@@ -242,22 +242,22 @@ There is no model downloading or serving in this repo. Models are configuration,
 The operation surface stays small on purpose: every additional choice is another chance for an agent to pick
 the wrong one. `context` is normally called by the host rather than by the agent.
 
-| Op         | What it does                                                                                                                                                         |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `recall`   | Expand → lexical, semantic, and bounded graph candidates → rank fusion → qualification/rerank → cited cards under one budget. `--no-graph` disables graph.           |
-| `answer`   | Run question-oriented recall, generate cited blocks, and independently verify their support. Reranking is opt-in; `include_context` returns the bounded evidence.    |
-| `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                          |
-| `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                    |
-| `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                        |
-| `timeline` | Authored events and typed orphan-document date evidence — by range, subject, source, or match.                                                                       |
-| `context`  | One pre-turn budget. The default profile combines pins, timeline, structure, and recall; `auto_recall` injects only strongly relevant exact evidence.                |
-| `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                                  |
-| `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                                |
+| Op         | What it does                                                                                                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `recall`   | Expand → lexical, semantic, and bounded graph candidates → rank fusion → qualification/rerank → cited cards under one budget. `--no-graph` disables graph.         |
+| `answer`   | Run question-oriented recall, generate cited blocks, and independently verify their support. Reranking is opt-in; `include_context` returns the bounded evidence.  |
+| `read`     | One exact thing: a page by slug or id, or a document by id.                                                                                                        |
+| `graph`    | Inspect bounded exact evidence paths and locators without returning page bodies or copied claims.                                                                  |
+| `list`     | Browse structure: folders, pages by type/tag/role/recency, or a tree outline.                                                                                      |
+| `timeline` | Authored events and typed orphan-document date evidence — by range, subject, source, or match.                                                                     |
+| `context`  | One pre-turn budget. The default profile combines pins, timeline, structure, and recall; `auto_recall` injects only strongly relevant exact evidence.              |
+| `write`    | Create, append, patch or replace a page. Carries documents, events, tags and links.                                                                                |
+| `folder`   | Declare a folder and what belongs in it. Never gated — a folder needs a description, not an approval.                                                              |
 | `remember` | Hand over a transcript; Akno decides what is worth keeping and where it goes. It sees the complete folder taxonomy and only writes into existing eligible folders. |
-| `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                                  |
-| `undo`     | Reverse a change by id.                                                                                                                                              |
-| `move`     | Relocate a page with its documents.                                                                                                                                  |
-| `ingest`   | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                       |
+| `forget`   | Retract a fact by removing the sentence that produced it; trash a page or document.                                                                                |
+| `undo`     | Reverse a change by id.                                                                                                                                            |
+| `move`     | Relocate a page with its documents.                                                                                                                                |
+| `ingest`   | Extract, OCR, name, summarize and route a file, folder or URL.                                                                                                     |
 
 Every op is advertised over every door from one registry, with its schema, so a caller discovers what exists
 rather than being told in prose.

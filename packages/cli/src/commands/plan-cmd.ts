@@ -283,8 +283,7 @@ function printApplyResult(result: ApplyMaintenanceResult): void {
     line(`  ${itemStatus(item.status)}  ${item.id}${components}  ${item.subject}`);
     if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
     if (!item.decision && item.statusReason) line(`    ${style.grey(item.statusReason)}`);
-    if (item.changeId)
-      line(`    ${style.grey('reverse with')} ${style.bold(`akno undo ${item.changeId}`)}`);
+    if (item.changeId) line(`    ${style.grey('reverse with')} ${style.bold(`akno undo ${item.changeId}`)}`);
   }
   line(
     style.grey(

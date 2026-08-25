@@ -95,11 +95,7 @@ export async function folder(ctx: AknoContext, rawInput: unknown): Promise<Folde
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
   }
 
-  const written = await writeFileAtomic(
-    ctx.config.aknoPath,
-    relPath,
-    addFolderRule(source, { glob, rule }),
-  );
+  const written = await writeFileAtomic(ctx.config.aknoPath, relPath, addFolderRule(source, { glob, rule }));
 
   // The directory too. A rule for a folder nobody has created describes nothing, and the point
   // of this op is that the *next* write lands rather than being refused again.

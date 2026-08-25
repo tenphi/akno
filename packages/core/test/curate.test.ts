@@ -1419,9 +1419,7 @@ async function startStub(): Promise<typeof server> {
                           : JSON.stringify({
                               body:
                                 '# Ada Marlow\n\n## Details\n\n' +
-                                (drop
-                                  ? ''
-                                  : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                                (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
                                 `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
                             });
       response.writeHead(200, { 'content-type': 'application/json' });

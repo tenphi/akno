@@ -794,10 +794,7 @@ function statusById(rows: FactStatusRow[], id: string): FactStatusRow | undefine
   return rows.find((row) => row.fact_id === id);
 }
 
-async function measureGraphLatency(
-  memory: Akno,
-  iterations: number,
-): Promise<{ p50: number; p95: number }> {
+async function measureGraphLatency(memory: Akno, iterations: number): Promise<{ p50: number; p95: number }> {
   await memory.graph({ slug: 'people/ada-marlow', max_hops: 3, limit: 100 });
   const samples: number[] = [];
   for (let index = 0; index < iterations; index++) {
