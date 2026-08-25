@@ -163,7 +163,7 @@ describe('experimental OpenAI minimum setup', () => {
         generative: {
           status: 'ok',
           promptVersion: 'akno-judgment-map-v6',
-          schemaVersion: 'tuple-judgment-map-v5',
+          schemaVersion: 'tuple-judgment-map-v6',
         },
       });
       expect(JSON.stringify(report)).not.toContain('sk-invented-fixture-key');

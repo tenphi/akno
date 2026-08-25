@@ -76,9 +76,9 @@ The checked-in development and held-out artifacts for the historical
 The held-out artifact is immutable release evidence. Do not replace it with another run merely because a
 stochastic response missed a gate; a later contract needs a new version and a new pre-declared evaluation.
 
-The runtime now uses `akno-judgment-map-v6` / `tuple-judgment-map-v5`. The fixed-id map remains structurally
+The preceding runtime used `akno-judgment-map-v6` / `tuple-judgment-map-v5`. The fixed-id map remains structurally
 complete, but each value is the compact `[grade, rank]` pair and repeated pair schemas are sent once through
-JSON Schema definitions. The checked-in artifacts for this contract are:
+JSON Schema definitions. The checked-in historical artifacts for this contract are:
 
 - `development-openai-luna-v6-targeted-2026-08-24.json`
 - `development-openai-luna-v6-2026-08-24.json`
@@ -88,6 +88,17 @@ JSON Schema definitions. The checked-in artifacts for this contract are:
 - `development-end-to-end-openai-luna-v6-corpus-v4-embedding-small-2026-08-25.json`
 - `development-end-to-end-openai-luna-v6-corpus-v4-embedding-large-2026-08-25.json`
 - `development-end-to-end-openai-luna-v6-corpus-v4-semantic-tail-2026-08-25.json`
+
+The current runtime is `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It shortens each opaque candidate id
+to one character for the selected 10-candidate window (and one or two characters for the benchmark's larger
+windows). The same fixed id set is shuffled among candidates for every request, so ids disclose neither source
+identity nor input rank. Short ids reduce both the generated schema and the response without weakening exact
+id-set validation. Its checked-in development artifacts are:
+
+- `development-openai-luna-v6-schema-v6-compact-ids-probe-2026-08-25.json`
+- `development-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json`
+- `development-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json`
+- `development-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json`
 
 The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
 fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second concurrency-four p95. Provider usage
@@ -133,8 +144,17 @@ The bounded semantic-tail selector keeps the first nine fused candidates and cho
 vector rank from positions 10–20. The number of candidates sent to Luna remains 10, and cosine is never compared
 with reciprocal-rank scores. Its full production-path Small run reached 100% fusion-pool, judged-candidate, and
 ranked direct-answer recall, 100% final success@1, zero degradation, and zero fallback. The result is bound by
-end-to-end schema v4 and matrix schema v8. Candidate-window development is complete; the remaining development
-work is the 71 ms latency miss, not another embedding model or a held-out run.
+end-to-end schema v4 and matrix schema v8.
+
+The compact-id matrix again selected `llm-none-c10`. Five runs produced 300/300 valid responses, zero fallbacks,
+0.963 mean nDCG, complete direct/support/marginal retention, perfect instruction-negative rejection, and 100%
+top-three stability. Average reported usage fell from 958/157 to 788/72 input/output tokens per query, and the
+matrix's four-way p95 fell from 2.56 to 2.30 seconds. Its exact latency track was 100% valid and one-request on
+all warm calls; warm single-flight p50/p95 was 1.55/1.94 seconds, so the fixed 4-second UX gate passes. Warm
+four-way p95 was 3.75 seconds and remains capacity evidence. The matching production-path Small run retained
+100% pool, judged-window, and final direct-answer recall, put a direct answer first for all 60 queries, and had
+zero degradation or fallback. Every development gate now passes. Only the pre-declared held-out split remains;
+these development artifacts do not authorize the preset by themselves.
 
 To reproduce and attach the selected configuration's latency profiles:
 

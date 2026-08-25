@@ -1,4 +1,4 @@
-import { createHash, randomInt } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 import { z } from 'zod';
 import type { ReasoningEffort } from '../config/schema.ts';
 import type { ModelClient, ModelOutcome, ModelUsage } from '../models/client.ts';
@@ -6,7 +6,7 @@ import { parseJsonLoose } from '../models/client.ts';
 import type { RecallMatchArm } from '@tenphi/akno-protocol';
 
 export const LLM_RERANK_PROMPT_VERSION = 'akno-judgment-map-v6';
-export const LLM_RERANK_SCHEMA_VERSION = 'tuple-judgment-map-v5';
+export const LLM_RERANK_SCHEMA_VERSION = 'tuple-judgment-map-v6';
 
 export interface LlmRerankCandidate {
   /** Opaque, per-request identifier. It must reveal neither source identity nor initial rank. */
@@ -28,18 +28,24 @@ export interface LlmRerankEntry {
  * an identifier from revealing the candidate's fused rank.
  */
 export function allocateLlmRerankIds(candidateCount: number): string[] {
-  const ids = Array.from({ length: candidateCount }, (_, index) => {
-    const digest = createHash('sha256')
-      .update(`akno-rerank-candidate-${index}`)
-      .digest('base64url')
-      .slice(0, 12);
-    return `c_${digest}`;
-  });
+  const ids = Array.from({ length: candidateCount }, (_, index) => compactOpaqueId(index));
   for (let index = ids.length - 1; index > 0; index--) {
     const swap = randomInt(index + 1);
     [ids[index], ids[swap]] = [ids[swap]!, ids[index]!];
   }
   return ids;
+}
+
+const OPAQUE_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function compactOpaqueId(index: number): string {
+  let value = index;
+  let id = '';
+  do {
+    id = OPAQUE_ID_ALPHABET[value % OPAQUE_ID_ALPHABET.length]! + id;
+    value = Math.floor(value / OPAQUE_ID_ALPHABET.length) - 1;
+  } while (value >= 0);
+  return id;
 }
 
 // `[grade, rank]` avoids repeating object keys for every candidate. The homogeneous integer

@@ -1685,7 +1685,7 @@ fell back exactly to fusion, so validity and instruction-negative rejection are 
 and 100% gates. The fully valid 20-candidate variant missed latency at 3.36 seconds. The preset therefore stays
 experimental; the held-out result is evidence to preserve, not a test set to tune against.
 
-The current runtime contract is `akno-judgment-map-v6` / `tuple-judgment-map-v5`. It retains the strict
+The preceding runtime contract was `akno-judgment-map-v6` / `tuple-judgment-map-v5`. It retained the strict
 fixed-id map introduced by v5, so missing, invented, and extra ids remain structurally impossible on a strict
 endpoint. Each id now maps to `[grade, rank]`, avoiding repeated object keys in the generated answer. The
 identical pair schema is also represented once and reused by reference, while Akno's own validator still
@@ -1746,8 +1746,24 @@ The bounded semantic-tail selector resolves that gap without increasing Luna's 1
 the first nine fused candidates and chooses the tenth judgment slot by vector rank from a 20-candidate fusion
 pool. The fresh Small run reached 100% fusion-pool, judged-candidate, and ranked direct-answer recall, 100% final
 success@1, zero degradation, and zero fallback. End-to-end schema v4 and matrix schema v8 bind the selected 1,536
-dimensions and the candidate-selection contract into the receipt. The remaining development blocker is the
-71 ms latency miss; the pre-declared held-out split remains untouched.
+dimensions and the candidate-selection contract into the receipt. That left only the v6/v5 contract's 71 ms
+latency miss.
+
+The current runtime contract is `akno-judgment-map-v6` / `tuple-judgment-map-v6`. The fixed properties are
+now drawn from a compact stable alphabet: ten candidates use one-character opaque ids, and larger benchmark
+windows use one or two characters. The id set is newly shuffled among candidates for each request, preserving
+the rank and identity privacy of the earlier random hashes. The schema still requires every permitted id exactly
+once and rejects every unknown property, so this is a wire-size optimization rather than a weaker contract.
+
+The matching five-run v6/v6 matrix over approved corpus v4 selected `llm-none-c10` again. It recorded 300/300
+valid responses, zero fallbacks, 0.963 mean nDCG, complete direct/support/marginal retention, perfect
+instruction-negative rejection, and 100% top-three stability. Reported usage averaged 788 input and 72 output
+tokens per query, down from 958/157 under v6/v5, while four-way matrix p95 fell from 2.56 to 2.30 seconds. The
+bound latency track kept all 118 warm responses valid with exactly one endpoint request: single-flight p50/p95
+was 1.55/1.94 seconds, passing the fixed 4-second interaction SLO, and four-way p95 was 3.75 seconds. The exact
+production-path Small run embedded all 120 invented chunks, retained every direct answer in the fusion pool,
+judged window, and final results, produced 100% success@1, and recorded zero degradation or fallback. Every
+development gate now passes. The sole release blocker is the deliberately untouched held-out split.
 
 An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
 failure-handling evidence. Current access covers both OpenAI embedding models; the successful evidence above

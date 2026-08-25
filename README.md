@@ -1170,7 +1170,7 @@ therefore satisfied both reliability and the then-provisional mixed matrix laten
 no bound warm single-flight receipt required by the current gate. This is final test evidence, not another
 prompt-tuning input, and the preset remains experimental.
 
-The runtime has since advanced to `akno-judgment-map-v6` / `tuple-judgment-map-v5`. Instead of asking the
+The preceding runtime advanced to `akno-judgment-map-v6` / `tuple-judgment-map-v5`. Instead of asking the
 model to reproduce opaque ids in a failure-prone array permutation, the strict schema makes every permitted id
 a required property and rejects additional properties. Each property carries `[grade, rank]`: the grade drives
 qualification, while rank only orders candidates within the same grade and ties preserve fusion order. The
@@ -1217,7 +1217,7 @@ No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reaso
 reached 0.892 nDCG, and took 9.36 seconds at p95. Older development, latency, held-out, and review evidence
 remains immutable historical evidence whose fingerprints cannot authorize v4.
 
-Fresh v4 latency evidence exposes the remaining development blocker. The
+The matching v6/v5 v4 latency evidence exposed its remaining development blocker. The
 [latency receipt](benchmarks/ranking/results/development-openai-luna-v6-corpus-v4-latency-2026-08-25.json)
 was 100% valid and one-request on every warm call, but its 4.071-second single-flight p95 narrowly exceeds the
 fixed 4-second SLO. OpenAI embedding access is available and both current models were compared through the full
@@ -1233,8 +1233,30 @@ It preserves the first nine fusion candidates and selects the final judgment slo
 positions 10–20. Cosine is compared only with cosine; it is never mixed with reciprocal-rank scores. On the full
 development corpus this recovered the rank-11 direct source, reached 100% fusion-pool, judged-candidate, and
 final direct-answer recall, and produced 100% final success@1 with zero degradation or fallback. End-to-end
-schema v4 and matrix schema v8 bind that selection contract. The end-to-end gate now passes; only the 71 ms
-latency miss remains before the pre-declared held-out run. The held-out split remains untouched.
+schema v4 and matrix schema v8 bind that selection contract. Its end-to-end gate passed, while its preserved
+latency receipt remained 71 ms above the SLO.
+
+The current runtime contract is `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It replaces the long
+candidate hashes with a compact stable alphabet: the selected 10-candidate request uses one-character opaque
+ids, and larger benchmark windows use one or two characters. Akno freshly shuffles the fixed id set among
+candidates on every request, so neither identity nor input rank is exposed; strict fixed properties still make
+missing, invented, and duplicate judgments invalid. This reduces the schema and response instead of weakening
+the contract.
+
+The checked-in
+[v6/v6 development matrix](benchmarks/ranking/results/development-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json)
+again selects Luna with no reasoning and 10 candidates. Across five runs it recorded 300/300 valid responses,
+zero fallbacks, 0.963 mean nDCG, complete direct/support/marginal retention, perfect instruction-negative
+rejection, and 100% top-three stability. Average reported usage fell from 958/157 to 788/72 input/output tokens
+per query, and concurrency-four p95 fell from 2.56 to 2.30 seconds. Its exact
+[latency receipt](benchmarks/ranking/results/development-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json)
+kept every warm call valid and one-request, with 1.55-second p50 and 1.94-second p95 at single flight; the fixed
+4-second interaction gate passes. Four-way warm p95 was 3.75 seconds and remains capacity evidence. The matching
+[production-path run](benchmarks/ranking/results/development-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json)
+embedded all 120 invented chunks with Small at 1,536 dimensions, retained 100% direct answers in the fusion
+pool, judged window, and final results, put a direct answer first for all 60 development queries, and recorded
+zero degradation or fallback. All development gates now pass. Only the explicitly untouched, pre-declared
+held-out split remains, so the preset is still experimental.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

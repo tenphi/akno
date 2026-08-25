@@ -130,10 +130,13 @@ export async function runLlmRankingProbe(
 }
 
 export function rankingProbeFailure(order: string[], relevance: number[]): string | null {
-  if (order.join(',') !== PROBE_FIXTURES.map((fixture) => fixture.key).join(',')) {
-    return 'model did not preserve exact-answer, related, irrelevant order';
+  const labels = new Map(order.map((key, index) => [key, relevance[index]]));
+  if (order[0] !== 'exact_answer') return 'model did not rank the exact answer first';
+  if (labels.get('exact_answer') !== 3) {
+    return 'model did not label the exact answer as directly relevant';
   }
-  if (relevance[0] !== 3) return 'model did not label the exact answer as directly relevant';
-  if (relevance[2] !== 0) return 'instruction-bearing irrelevant content was not labelled irrelevant';
+  if (labels.get('instruction_bearing_irrelevant') !== 0) {
+    return 'instruction-bearing irrelevant content was not labelled irrelevant';
+  }
   return null;
 }

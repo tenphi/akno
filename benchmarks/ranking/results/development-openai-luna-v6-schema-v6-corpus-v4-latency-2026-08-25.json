@@ -1,0 +1,138 @@
+{
+  "kind": "ranking_latency",
+  "schemaVersion": "ranking-latency-v1",
+  "createdAt": "2026-08-25T12:20:27.892Z",
+  "development": true,
+  "releaseEligible": false,
+  "split": "development",
+  "corpus": {
+    "queries": 60,
+    "sources": 120,
+    "judgments": 600,
+    "categories": 8,
+    "version": "invented-ranking-v4",
+    "fingerprint": "c48203f7fb05975720d447a151f7d9e8660834b1ec107f2fa9e6ca0ba602f83e"
+  },
+  "provider": "openai",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "none",
+  "promptVersion": "akno-judgment-map-v6",
+  "schemaVersionContract": "tuple-judgment-map-v6",
+  "candidateCount": 10,
+  "excerptChars": 800,
+  "thresholds": {
+    "interactiveP95LatencyMs": 4000
+  },
+  "interactive": {
+    "concurrency": 1,
+    "cold": {
+      "samples": 1,
+      "validResponseRate": 1,
+      "fallbackCount": 0,
+      "p50LatencyMs": 2088.6341669999997,
+      "p95LatencyMs": 2088.6341669999997,
+      "maxLatencyMs": 2088.6341669999997,
+      "endpointRequests": 3,
+      "extraEndpointRequests": 2,
+      "tokenUsage": {
+        "reportedQueries": 1,
+        "inputTokens": 781,
+        "outputTokens": 72,
+        "totalTokens": 853,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    "warm": {
+      "samples": 59,
+      "validResponseRate": 1,
+      "fallbackCount": 0,
+      "p50LatencyMs": 1549.1671249999927,
+      "p95LatencyMs": 1940.2859999999928,
+      "maxLatencyMs": 2720.386125000001,
+      "endpointRequests": 59,
+      "extraEndpointRequests": 0,
+      "tokenUsage": {
+        "reportedQueries": 59,
+        "inputTokens": 46474,
+        "outputTokens": 4248,
+        "totalTokens": 50722,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    }
+  },
+  "loaded": {
+    "concurrency": 4,
+    "cold": {
+      "samples": 1,
+      "validResponseRate": 1,
+      "fallbackCount": 0,
+      "p50LatencyMs": 1792.9831669999985,
+      "p95LatencyMs": 1792.9831669999985,
+      "maxLatencyMs": 1792.9831669999985,
+      "endpointRequests": 3,
+      "extraEndpointRequests": 2,
+      "tokenUsage": {
+        "reportedQueries": 1,
+        "inputTokens": 781,
+        "outputTokens": 72,
+        "totalTokens": 853,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    },
+    "warm": {
+      "samples": 59,
+      "validResponseRate": 1,
+      "fallbackCount": 0,
+      "p50LatencyMs": 1599.0772909999941,
+      "p95LatencyMs": 3746.383625000002,
+      "maxLatencyMs": 8657.140958000004,
+      "endpointRequests": 59,
+      "extraEndpointRequests": 0,
+      "tokenUsage": {
+        "reportedQueries": 59,
+        "inputTokens": 46474,
+        "outputTokens": 4248,
+        "totalTokens": 50722,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 0
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "interactive_cold",
+      "passed": true,
+      "actual": true,
+      "target": "successful fresh-client call with a physical endpoint receipt"
+    },
+    {
+      "id": "interactive_integrity",
+      "passed": true,
+      "actual": true,
+      "target": "all warm responses valid with one endpoint request each"
+    },
+    {
+      "id": "interactive_latency",
+      "passed": true,
+      "actual": 1940.2859999999928,
+      "target": "at most 4000ms warm single-flight p95"
+    },
+    {
+      "id": "loaded_cold",
+      "passed": true,
+      "actual": true,
+      "target": "successful fresh-client call with a physical endpoint receipt"
+    },
+    {
+      "id": "loaded_integrity",
+      "passed": true,
+      "actual": true,
+      "target": "all warm responses valid with one endpoint request each"
+    }
+  ],
+  "blockers": [],
+  "passed": true
+}

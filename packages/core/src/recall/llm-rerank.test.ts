@@ -36,7 +36,9 @@ describe('prompted LLM reranking', () => {
     const second = allocateLlmRerankIds(10);
     expect([...first].sort()).toEqual([...second].sort());
     expect(new Set(first).size).toBe(10);
-    expect(first.every((id) => /^c_[A-Za-z0-9_-]{12}$/.test(id))).toBe(true);
+    expect(first.every((id) => /^[A-Za-z]$/.test(id))).toBe(true);
+    expect(new Set(allocateLlmRerankIds(60)).size).toBe(60);
+    expect(allocateLlmRerankIds(60).every((id) => id.length <= 2)).toBe(true);
   });
 
   it('reserves completion tokens for hidden reasoning without inflating reasoning-free calls', () => {
