@@ -1064,6 +1064,19 @@ or a changed packet are rejected before the matrix is written. The receipt prove
 identity; reviewer independence itself is a workflow property that should be visible in the handoff or code
 review history, not a claim the local process can authenticate.
 
+When review requests corpus changes, exact earlier passes need not be repeated. After correcting and versioning
+the corpus, rebase the prior packet:
+
+```bash
+akno bench ranking review --input /tmp/akno-ranking-review.json \
+  --output /tmp/akno-ranking-review-v3.json
+```
+
+Only source or case entries whose complete review content is byte-for-byte equivalent keep `pass`. Changed
+entries return to `pending`, their issue descriptions remain for resolution checks, and the verdict, reviewer,
+timestamp, global checks, and independence attestations reset. The new fingerprint still requires explicit
+independent approval.
+
 After a shape has already been selected, `--matrix --variant llm-none-c10` repeats only that development
 variant. The targeted artifact still records each run's token usage, logical and physical request counts,
 latency, fallbacks, and top-three stability. It intentionally makes no preset selection and cannot be release
@@ -1186,6 +1199,16 @@ for normal user-perceived latency. The review handoff is implemented but no inde
 completed yet. The preset remains experimental because that review,
 embedding-backed end-to-end evidence, and a new pre-declared held-out evaluation remain open. The immutable
 v4/v3 held-out artifact cannot authorize the changed runtime contract.
+
+The first independent review of the `invented-ranking-v2` corpus completed on 25 August 2026 with changes
+requested. It found one negation query whose supposed false claim was true in the invented data and three
+location cases whose date candidates repeated the location while being graded irrelevant. Akno corrected the
+claim, graded those overlapping date sources as relevant location support, added semantic regression assertions,
+and bumped the corpus to `invented-ranking-v3`. The v2 development, latency, and historical held-out artifacts remain
+immutable evidence about v2, but their fingerprint cannot authorize v3. Rebasing the completed review carries
+forward all 120 unchanged sources and 75 unchanged cases; five changed cases remain pending with the original
+four issue descriptions. The packet is `/tmp/akno-ranking-review-v3.json`. V3 development selection and
+held-out evaluation wait for its independent approval.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

@@ -131,6 +131,7 @@ export {
   createRankingReviewPacket,
   rankingCorpusFingerprint,
   rankingReviewEvidenceMatches,
+  rebaseRankingReviewPacket,
   reviewPacketFingerprint,
   RANKING_REVIEW_EVIDENCE_SCHEMA_VERSION,
   RANKING_REVIEW_PACKET_SCHEMA_VERSION,

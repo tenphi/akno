@@ -105,7 +105,7 @@ const FACTS: FactFixture[] = [
     label: 'policy issuer',
     question: "Which company issued Ada Marlow's policy?",
     paraphrase: "Who is the insurer behind Ada Marlow's coverage?",
-    negativeClaim: "Bo Winters's issuer is the issuer of Ada Marlow's policy",
+    negativeClaim: "Ada Marlow's policy was not issued by Vulpine Mutual",
     direct: "Ada Marlow's policy was issued by Vulpine Mutual.",
     support: "Ada Marlow's declarations page names Vulpine Mutual as insurer.",
     marginal: 'Ada Marlow keeps renewal notes beside the policy page.',
@@ -440,7 +440,7 @@ function buildCorpus(): RankingCorpus {
   });
 
   return {
-    version: 'invented-ranking-v2',
+    version: 'invented-ranking-v3',
     candidates,
     cases,
   };
@@ -489,6 +489,11 @@ function gradeFor(candidateId: string, fact: FactFixture): RelevanceGrade {
   if (candidateId === `${fact.id}-direct`) return 3;
   if (candidateId === `${fact.id}-support`) return 2;
   if (candidateId === `${fact.id}-marginal`) return 1;
+  if (fact.id === 'blackwater-meeting-place') {
+    if (candidateId === 'blackwater-meeting-date-direct' || candidateId === 'blackwater-meeting-date-support')
+      return 2;
+    if (candidateId === 'blackwater-meeting-date-marginal') return 1;
+  }
   return 0;
 }
 

@@ -13,6 +13,7 @@ import {
   markRankingMatrixPersisted,
   open,
   refreshRankingMatrixReport,
+  rebaseRankingReviewPacket,
   runAnswerBench,
   runAutoRecallAnswerBench,
   runAutoRecallBench,
@@ -91,7 +92,8 @@ const BENCH_HELP = `akno bench [options]
                       single-flight UX, and warm loaded latency separately.
   ranking review      Export the model-output-free corpus review packet with
                       --output, or attach a completed packet with --input and
-                      --matrix-artifact. Review must happen in a separate session.
+                      --matrix-artifact. Combine --input from a prior review with
+                      --output to carry forward only exact unchanged passes.
     --split <name>    development, test, or all (default development). Test is
                       held out from prompt tuning and must be selected explicitly.
     --candidates <n>  10, 20, or 40 for a single-system run (default 20).
@@ -494,8 +496,22 @@ export async function benchCommand(argv: string[]): Promise<number> {
         return 2;
       }
       if (values.input) {
+        if (values.output && !values['matrix-artifact']) {
+          try {
+            const packet = rebaseRankingReviewPacket(await readJsonArtifact(values.input));
+            const artifactPath = await writeJsonArtifact(values.output, packet);
+            if (values.json) json(packet);
+            else renderRankingReviewPacket(packet, artifactPath);
+            return 0;
+          } catch (error) {
+            fail(error instanceof Error ? error.message : 'ranking review rebase failed');
+            return 2;
+          }
+        }
         if (!values['matrix-artifact'] || values.output) {
-          fail('attaching a ranking review requires --input and --matrix-artifact, without --output');
+          fail(
+            'ranking review --input requires either --output for a corrected packet or --matrix-artifact for attachment',
+          );
           return 2;
         }
         try {

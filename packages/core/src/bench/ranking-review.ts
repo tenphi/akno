@@ -190,6 +190,59 @@ export function createRankingReviewPacket(now = new Date()): RankingReviewPacket
   return packet;
 }
 
+export function rebaseRankingReviewPacket(previousValue: unknown, now = new Date()): RankingReviewPacket {
+  if (!isReviewPacket(previousValue)) throw new Error('invalid previous ranking review packet shape');
+  const previous = previousValue;
+  if (previous.schemaVersion !== RANKING_REVIEW_PACKET_SCHEMA_VERSION) {
+    throw new Error('unsupported previous ranking review packet schema');
+  }
+  if (reviewPacketFingerprint(previous) !== previous.packetFingerprint) {
+    throw new Error('previous ranking review packet content does not match its fingerprint');
+  }
+
+  const current = createRankingReviewPacket(now);
+  const previousSources = new Map(previous.sources.map((source) => [source.id, source]));
+  const previousCases = new Map(previous.cases.map((benchCase) => [benchCase.id, benchCase]));
+  current.sources = current.sources.map((source) => {
+    const before = previousSources.get(source.id);
+    return {
+      ...source,
+      review:
+        before?.review === 'pass' && reviewEntryContent(before) === reviewEntryContent(source)
+          ? 'pass'
+          : 'pending',
+    };
+  });
+  current.cases = current.cases.map((benchCase) => {
+    const before = previousCases.get(benchCase.id);
+    return {
+      ...benchCase,
+      review:
+        before?.review === 'pass' && reviewEntryContent(before) === reviewEntryContent(benchCase)
+          ? 'pass'
+          : 'pending',
+    };
+  });
+  const pendingSources = new Set(
+    current.sources.filter((source) => source.review !== 'pass').map((source) => source.id),
+  );
+  const pendingCases = new Set(
+    current.cases.filter((benchCase) => benchCase.review !== 'pass').map((benchCase) => benchCase.id),
+  );
+  current.instructions = [
+    `Exact prior decisions carried forward: ${current.sources.length - pendingSources.size} sources and ${current.cases.length - pendingCases.size} cases.`,
+    'Review every pending entry against the corrected content and remove an issue only after verifying its resolution.',
+    ...current.instructions,
+  ];
+  current.review.issues = previous.review.issues.filter(
+    (issue) =>
+      issue.scope === 'corpus' ||
+      (issue.scope === 'source' && issue.id !== null && pendingSources.has(issue.id)) ||
+      (issue.scope === 'case' && issue.id !== null && pendingCases.has(issue.id)),
+  );
+  return current;
+}
+
 export function reviewPacketFingerprint(packet: RankingReviewPacket): string {
   return sha256(
     JSON.stringify({
@@ -302,4 +355,9 @@ function isReviewPacket(value: unknown): value is RankingReviewPacket {
 
 function sha256(value: string): string {
   return createHash('sha256').update(value).digest('hex');
+}
+
+function reviewEntryContent(value: RankingReviewSource | RankingReviewCase): string {
+  const { review: _review, ...content } = value;
+  return JSON.stringify(content);
 }

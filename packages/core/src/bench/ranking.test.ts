@@ -61,13 +61,43 @@ describe('ranking benchmark metrics', () => {
       sources: 120,
       judgments: 1200,
       categories: 8,
-      version: 'invented-ranking-v2',
+      version: 'invented-ranking-v3',
       fingerprint: rankingCorpusFingerprint(),
     });
     expect(report.split).toBe('development');
     expect(report.byCategory).toHaveLength(8);
     expect(report.quality).toEqual(report.fusionBaseline);
     expect(report.qualification).toBeNull();
+  });
+
+  it('keeps negative claims false and grades overlapping cross-fact evidence by meaning', () => {
+    const issuerNegation = RANKING_CORPUS.cases.find(
+      (benchCase) => benchCase.id === 'ada-policy-issuer-negation-02',
+    );
+    expect(issuerNegation?.query).toContain('was not issued by Vulpine Mutual');
+    expect(issuerNegation?.query).not.toContain("Bo Winters's issuer");
+
+    const meetingDateDirect = RANKING_CORPUS.candidates['blackwater-meeting-date-direct']!;
+    const meetingDateSupport = RANKING_CORPUS.candidates['blackwater-meeting-date-support']!;
+    const meetingDateMarginal = RANKING_CORPUS.candidates['blackwater-meeting-date-marginal']!;
+    expect(meetingDateDirect.text).toContain('Blackwater Bay');
+    expect(meetingDateSupport.text).toContain('Blackwater Bay');
+    const crossFactGrades = RANKING_CORPUS.cases
+      .filter((entry) => entry.id.startsWith('blackwater-meeting-place'))
+      .flatMap((benchCase) =>
+        [meetingDateDirect.id, meetingDateSupport.id].flatMap((id) =>
+          benchCase.pool.includes(id) ? [benchCase.judgments[id]] : [],
+        ),
+      );
+    expect(crossFactGrades.length).toBeGreaterThan(0);
+    expect(crossFactGrades.every((grade) => grade === 2)).toBe(true);
+    const marginalGrades = RANKING_CORPUS.cases
+      .filter((entry) => entry.id.startsWith('blackwater-meeting-place'))
+      .flatMap((benchCase) =>
+        benchCase.pool.includes(meetingDateMarginal.id) ? [benchCase.judgments[meetingDateMarginal.id]] : [],
+      );
+    expect(marginalGrades.length).toBeGreaterThan(0);
+    expect(marginalGrades.every((grade) => grade === 1)).toBe(true);
   });
 
   it('uses the held-out split only when explicitly selected', async () => {

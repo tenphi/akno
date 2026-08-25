@@ -1596,6 +1596,13 @@ it is persisted. Development runs reject the packet so it cannot become an accid
 latency and end-to-end tracks inherit review evidence from their matrix instead of accepting an independent
 override.
 
+`akno bench ranking review --input <old> --output <new>` supports correction cycles without turning review
+into repetitive ceremony. It first verifies the old packet's own content fingerprint, then carries `pass` only
+for source and case entries whose entire non-review content exactly equals the new packet. Changed entries become
+pending, applicable issues remain, and every global check, identity field, timestamp, verdict, and independence
+attestation resets. Consequently a prior reviewer can focus on the exact delta without an old approval leaking
+across changed judgments.
+
 `akno bench ranking --track latency --matrix-artifact <matrix> --output <result>` measures the selected shape
 without mixing lifecycle phases. For each profile, `runRankingBench` serializes the first call before starting
 workers; the latency track records that fresh-client call as cold compatibility negotiation and excludes it
@@ -1700,6 +1707,15 @@ were already 3.63 and 3.39 seconds—so the pre-held-out development decision fi
 single-flight SLO. That gate passes. The independent-review handoff and receipt validation now ship, but an
 external reviewer has not completed the packet. That review, embedding-backed end-to-end evidence, and a new
 pre-declared held-out evaluation remain open.
+
+The first external review exercised the guard instead of rubber-stamping it. It requested four changes in
+`invented-ranking-v2`: one negation claim was actually true, and three meeting-location cases graded date
+sources as irrelevant even though those sources repeated the location. Those sources now carry relevant support
+grades, the negation is directly refutable from its own pool, and regression tests hold both properties. The
+corpus version is now `invented-ranking-v3`, with a new whole-corpus fingerprint. All v2
+model and latency artifacts remain readable historical evidence but cannot attach to or authorize v3. The v3
+rebased review packet carries 120 unchanged source decisions and 75 unchanged case decisions; five changed
+cases remain pending. It must be approved before development selection and a fresh held-out run continue.
 
 Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
 role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call

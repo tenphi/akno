@@ -29,6 +29,16 @@ source, query, intent, pool order, or grade invalidates it. Akno validates compl
 model independence is established by the separate handoff and review history, not authenticated by the CLI.
 Do not check a working packet into `results/`—it deliberately contains the held-out corpus and judgments.
 
+After resolving `changes_requested`, preserve exact earlier decisions without trusting approximate similarity:
+
+```bash
+akno bench ranking review --input /tmp/akno-ranking-review.json \
+  --output /tmp/akno-ranking-review-v3.json
+```
+
+The rebase carries only byte-equivalent `pass` entries. It resets changed entries and all global attestations,
+and keeps applicable issue descriptions until the reviewer removes them after verification.
+
 The CLI will not run any ranking `--split test` or `--split all` command without that completed packet. A fresh
 held-out matrix takes it directly and carries the receipt into its result:
 
@@ -87,6 +97,14 @@ requests while each fresh client learned two compatibility differences. The 4-se
 gate passes; loaded latency remains capacity evidence rather than the single-owner interaction SLO. These are
 development artifacts, not held-out release evidence. Do not treat the v4/v3 files as release evidence for
 this changed contract.
+
+An independent review subsequently returned `changes_requested` for `invented-ranking-v2`: one negative claim
+was true in the invented corpus, and three meeting-location pools contained date evidence that also stated the
+location while carrying grade 0. Those sources carry relevant support grades in `invented-ranking-v3`, covered by
+regression assertions. All checked-in v2 matrices and latency receipts are now historical evidence only; their
+fingerprints intentionally fail attachment to v3. The rebased v3 packet carries 120 source and 75 case passes,
+leaving five changed cases pending. Approve it before paying for another development matrix or touching the
+held-out split.
 
 To reproduce and attach the selected configuration's latency profiles:
 

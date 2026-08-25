@@ -61,7 +61,13 @@ describe('end-to-end ranking benchmark', () => {
         embeddedChunks: 120,
       });
       expect(report.candidateGeneration.degradedQueries).toBe(0);
-      expect(report.candidateGeneration.directAnswerRecall).toBeGreaterThanOrEqual(0.9);
+      const misses = report.queries
+        .filter((query) => query.candidateRank === null)
+        .map((query) => query.queryId);
+      expect(
+        report.candidateGeneration.directAnswerRecall,
+        `candidate misses: ${misses.join(', ')}`,
+      ).toBeGreaterThanOrEqual(0.9);
       expect(report.rankedRecall).toEqual(report.candidateGeneration);
       expect(report.queries.some((query) => query.candidateOrder.length > 0)).toBe(true);
     } finally {

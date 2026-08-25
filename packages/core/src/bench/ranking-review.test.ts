@@ -4,6 +4,7 @@ import {
   createRankingReviewPacket,
   rankingCorpusFingerprint,
   rankingReviewEvidenceMatches,
+  rebaseRankingReviewPacket,
   reviewPacketFingerprint,
 } from './ranking-review.ts';
 
@@ -13,7 +14,7 @@ describe('ranking corpus review handoff', () => {
     const second = createRankingReviewPacket(new Date('2027-02-03T04:05:06.000Z'));
 
     expect(first.corpus).toEqual({
-      version: 'invented-ranking-v2',
+      version: 'invented-ranking-v3',
       fingerprint: rankingCorpusFingerprint(),
       sources: 120,
       queries: 80,
@@ -58,6 +59,43 @@ describe('ranking corpus review handoff', () => {
 
     changed.packetFingerprint = reviewPacketFingerprint(changed);
     expect(() => completeRankingReview(changed)).toThrow('does not match the current corpus');
+  });
+
+  it('carries forward only exact pass decisions and preserves changed-entry issues', () => {
+    const previous = approvedPacket();
+    const changedId = previous.cases[0]!.id;
+    previous.corpus = {
+      ...previous.corpus,
+      version: 'invented-ranking-previous',
+      fingerprint: 'a'.repeat(64),
+    };
+    previous.cases[0] = {
+      ...previous.cases[0]!,
+      query: 'Invented previous query wording?',
+      review: 'issue',
+    };
+    previous.review.verdict = 'changes_requested';
+    previous.review.issues = [
+      { scope: 'case', id: changedId, description: 'The invented query needs correction.' },
+    ];
+    previous.packetFingerprint = reviewPacketFingerprint(previous);
+
+    const rebased = rebaseRankingReviewPacket(previous, new Date('2027-02-03T04:05:06.000Z'));
+
+    expect(rebased.corpus.version).toBe('invented-ranking-v3');
+    expect(rebased.sources.every((source) => source.review === 'pass')).toBe(true);
+    expect(rebased.cases.filter((benchCase) => benchCase.review === 'pending').map(({ id }) => id)).toEqual([
+      changedId,
+    ]);
+    expect(rebased.review).toMatchObject({
+      verdict: 'pending',
+      reviewerKind: null,
+      reviewedAt: null,
+      issues: [{ scope: 'case', id: changedId }],
+    });
+    expect(Object.values(rebased.review.independence).every((value) => value === false)).toBe(true);
+    expect(Object.values(rebased.review.checks).every((value) => value === false)).toBe(true);
+    expect(rebased.instructions[0]).toContain('120 sources and 79 cases');
   });
 });
 
