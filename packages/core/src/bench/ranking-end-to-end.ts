@@ -15,7 +15,7 @@ import type {
   RankingExcerptChars,
 } from './ranking.ts';
 
-export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v1';
+export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v2';
 
 export type RankingEndToEndSystem = 'fusion' | 'llm';
 
@@ -65,7 +65,7 @@ export interface RankingEndToEndStageReport {
 export interface RankingEndToEndQueryReport {
   queryId: string;
   category: RankingCategory;
-  directAnswerId: string;
+  directAnswerIds: string[];
   candidateOrder: string[];
   candidateRank: number | null;
   candidateStatus: RecallOutput['status'];
@@ -205,11 +205,11 @@ export async function runRankingEndToEnd(
           : []),
       ];
       const queryReports = cases.map((benchCase): RankingEndToEndQueryReport => {
-        const directAnswerId = directAnswerFor(benchCase.judgments);
+        const directAnswerIds = directAnswersFor(benchCase.judgments);
         return {
           queryId: benchCase.id,
           category: benchCase.category,
-          directAnswerId,
+          directAnswerIds,
           candidateOrder: [],
           candidateRank: null,
           candidateStatus: 'unavailable',
@@ -316,20 +316,20 @@ export async function runRankingEndToEnd(
     }
 
     const queryReports = cases.map((benchCase, index): RankingEndToEndQueryReport => {
-      const directAnswerId = directAnswerFor(benchCase.judgments);
+      const directAnswerIds = directAnswersFor(benchCase.judgments);
       const candidate = candidateRuns[index]!;
       const final = rankedRuns[index]!;
       return {
         queryId: benchCase.id,
         category: benchCase.category,
-        directAnswerId,
+        directAnswerIds,
         candidateOrder: candidate.order,
-        candidateRank: rankOf(candidate.order, directAnswerId),
+        candidateRank: bestRankOf(candidate.order, directAnswerIds),
         candidateStatus: candidate.output.status,
         candidateDegraded: candidate.output.degraded ?? [],
         candidateLatencyMs: candidate.latencyMs,
         rankedOrder: final.order,
-        rankedRank: rankOf(final.order, directAnswerId),
+        rankedRank: bestRankOf(final.order, directAnswerIds),
         rankedStatus: final.output.status,
         degraded: final.output.degraded ?? [],
         rerankFallback: final.output.degraded?.includes('rerank_failed') ?? false,
@@ -621,15 +621,20 @@ function metricsFor(
   };
 }
 
-function directAnswerFor(judgments: Record<string, number>): string {
-  const direct = Object.entries(judgments).find(([, grade]) => grade === 3)?.[0];
-  if (!direct) throw new Error('ranking case has no direct answer');
+function directAnswersFor(judgments: Record<string, number>): string[] {
+  const direct = Object.entries(judgments)
+    .flatMap(([id, grade]) => (grade === 3 ? [id] : []))
+    .sort();
+  if (direct.length === 0) throw new Error('ranking case has no direct answer');
   return direct;
 }
 
-function rankOf(order: string[], id: string): number | null {
-  const index = order.indexOf(id);
-  return index < 0 ? null : index + 1;
+function bestRankOf(order: string[], ids: string[]): number | null {
+  const ranks = ids.flatMap((id) => {
+    const index = order.indexOf(id);
+    return index < 0 ? [] : [index + 1];
+  });
+  return ranks.length === 0 ? null : Math.min(...ranks);
 }
 
 function roleReceipt(role: ResolvedModelRole): {

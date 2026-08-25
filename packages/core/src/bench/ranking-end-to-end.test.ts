@@ -11,7 +11,7 @@ describe('end-to-end ranking benchmark', () => {
       concurrency: 4,
     });
 
-    expect(report.schemaVersion).toBe('ranking-end-to-end-v1');
+    expect(report.schemaVersion).toBe('ranking-end-to-end-v2');
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120, categories: 8 });
     expect(report.embedding.available).toBe(false);
     expect(report.embedding).toMatchObject({ totalChunks: 120, embeddedChunks: 0 });
@@ -70,6 +70,11 @@ describe('end-to-end ranking benchmark', () => {
       ).toBeGreaterThanOrEqual(0.9);
       expect(report.rankedRecall).toEqual(report.candidateGeneration);
       expect(report.queries.some((query) => query.candidateOrder.length > 0)).toBe(true);
+      expect(
+        report.queries.find((query) => query.queryId === 'blackwater-meeting-place-direct_answer-05'),
+      ).toMatchObject({
+        directAnswerIds: ['blackwater-meeting-date-direct', 'blackwater-meeting-place-direct'],
+      });
     } finally {
       server.close();
       server.closeAllConnections();

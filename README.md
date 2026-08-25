@@ -1102,7 +1102,9 @@ new latency schema and new pre-declared evidence.
 The end-to-end track then tests the matrix selection through the production index and recall path. It creates a
 temporary knowledge base containing the same invented 120 sources, embeds it, measures whether each direct
 answer reaches the selected candidate window, and separately measures the final assembled order after
-reranking. It never opens the configured knowledge base. Passing `--matrix-artifact` binds the run to that
+reranking. When a case has multiple grade-3 answers, recall succeeds if any one is present and rank metrics use
+the best-ranked one; the v2 end-to-end report records all accepted direct-answer ids. It never opens the
+configured knowledge base. Passing `--matrix-artifact` binds the run to that
 matrix's exact split, candidate count, excerpt limit, provider, model, reasoning effort, prompt, and schema, then
 attaches the evidence atomically:
 
@@ -1203,12 +1205,13 @@ v4/v3 held-out artifact cannot authorize the changed runtime contract.
 The first independent review of the `invented-ranking-v2` corpus completed on 25 August 2026 with changes
 requested. It found one negation query whose supposed false claim was true in the invented data and three
 location cases whose date candidates repeated the location while being graded irrelevant. Akno corrected the
-claim, graded those overlapping date sources as relevant location support, added semantic regression assertions,
-and bumped the corpus to `invented-ranking-v3`. The v2 development, latency, and historical held-out artifacts remain
-immutable evidence about v2, but their fingerprint cannot authorize v3. Rebasing the completed review carries
-forward all 120 unchanged sources and 75 unchanged cases; five changed cases remain pending with the original
-four issue descriptions. The packet is `/tmp/akno-ranking-review-v3.json`. V3 development selection and
-held-out evaluation wait for its independent approval.
+claim, graded the overlapping date sources as relevant location evidence, and bumped the corpus to
+`invented-ranking-v3`. A second review caught a finer distinction in three cases: the date candidate explicitly
+answered the requested location and therefore needed direct grade 3, not supporting grade 2. That correction is
+regression-tested in `invented-ranking-v4`. Exact rebasing carries all 120 source approvals and 77 unchanged case
+approvals into `/tmp/akno-ranking-review-v4.json`; only the three corrected cases remain pending. Older
+development, latency, held-out, and review evidence remains immutable historical evidence whose fingerprints
+cannot authorize v4. Development selection and held-out evaluation wait for independent v4 approval.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

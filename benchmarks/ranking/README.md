@@ -100,11 +100,13 @@ this changed contract.
 
 An independent review subsequently returned `changes_requested` for `invented-ranking-v2`: one negative claim
 was true in the invented corpus, and three meeting-location pools contained date evidence that also stated the
-location while carrying grade 0. Those sources carry relevant support grades in `invented-ranking-v3`, covered by
-regression assertions. All checked-in v2 matrices and latency receipts are now historical evidence only; their
-fingerprints intentionally fail attachment to v3. The rebased v3 packet carries 120 source and 75 case passes,
-leaving five changed cases pending. Approve it before paying for another development matrix or touching the
-held-out split.
+location while carrying grade 0. A second review of the corrected v3 corpus found that three of those candidates
+were not merely supporting evidence: each explicitly answered the location query and required direct grade 3.
+The final distinction between direct, supporting, and marginal cross-fact evidence is regression-tested in
+`invented-ranking-v4`. Exact rebasing carries 120 source and 77 unchanged case approvals into the v4 packet,
+leaving only the three corrected cases pending. Every older matrix, latency receipt, held-out result, and review
+packet is historical evidence whose fingerprint intentionally fails attachment to v4. Approve v4 before paying
+for another development matrix or touching the held-out split.
 
 To reproduce and attach the selected configuration's latency profiles:
 
@@ -129,8 +131,10 @@ akno bench ranking --track end-to-end \
 ```
 
 The end-to-end artifact stores embedded/total chunk counts, candidate-window and final-ranked metrics, typed
-degradation counts, latency, and stable failed-case ids. It stores no query or source text and never opens the
-configured knowledge base. When embedding is unavailable or incomplete, it fails before recall rather than
-publishing lexical fallback scores under the selected embedding model's name.
+degradation counts, latency, and stable failed-case ids. Schema v2 records every grade-3 answer accepted for a
+case and uses the best returned rank, so overlapping direct evidence is not treated as a retrieval miss. It
+stores no query or source text and never opens the configured knowledge base. When embedding is unavailable or
+incomplete, it fails before recall rather than publishing lexical fallback scores under the selected embedding
+model's name.
 
 Artifacts are written through a uniquely named temporary file and renamed only after the JSON is complete.

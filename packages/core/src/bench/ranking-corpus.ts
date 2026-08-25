@@ -440,7 +440,7 @@ function buildCorpus(): RankingCorpus {
   });
 
   return {
-    version: 'invented-ranking-v3',
+    version: 'invented-ranking-v4',
     candidates,
     cases,
   };
@@ -490,8 +490,8 @@ function gradeFor(candidateId: string, fact: FactFixture): RelevanceGrade {
   if (candidateId === `${fact.id}-support`) return 2;
   if (candidateId === `${fact.id}-marginal`) return 1;
   if (fact.id === 'blackwater-meeting-place') {
-    if (candidateId === 'blackwater-meeting-date-direct' || candidateId === 'blackwater-meeting-date-support')
-      return 2;
+    if (candidateId === 'blackwater-meeting-date-direct') return 3;
+    if (candidateId === 'blackwater-meeting-date-support') return 2;
     if (candidateId === 'blackwater-meeting-date-marginal') return 1;
   }
   return 0;

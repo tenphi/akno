@@ -143,6 +143,18 @@ describe('ranking benchmark matrix', () => {
       rerankFallbackRate: 0,
     });
     expect(attached.releaseGate.blockers).toEqual(['persisted_artifact']);
+    expect(
+      attachRankingEndToEndEvidence(matrix, {
+        ...endToEnd,
+        schemaVersion: 'ranking-end-to-end-v1',
+      }).endToEndEvidence,
+    ).not.toBeNull();
+    expect(() =>
+      attachRankingEndToEndEvidence(matrix, {
+        ...endToEnd,
+        schemaVersion: 'ranking-end-to-end-unknown',
+      }),
+    ).toThrow('unsupported end-to-end artifact schema');
     expect(() => attachRankingEndToEndEvidence(matrix, { ...endToEnd, candidateCount: 10 })).toThrow(
       'does not match',
     );
@@ -207,7 +219,7 @@ function passingReport(): RankingMatrixReport {
       sources: 120,
       judgments: 400,
       categories: 8,
-      version: 'invented-ranking-v3',
+      version: 'invented-ranking-v4',
       fingerprint: rankingCorpusFingerprint(),
     },
     requestedRuns: 5,
@@ -223,7 +235,7 @@ function passingReport(): RankingMatrixReport {
     reviewEvidence: passingReviewEvidence(),
     endToEndEvidence: {
       split: 'test',
-      corpusVersion: 'invented-ranking-v3',
+      corpusVersion: 'invented-ranking-v4',
       corpusFingerprint: rankingCorpusFingerprint(),
       candidateCount: 20,
       directAnswerCandidateRecall: 1,
@@ -274,7 +286,7 @@ function passingLatencyReport(): RankingLatencyReport {
       sources: 120,
       judgments: 400,
       categories: 8,
-      version: 'invented-ranking-v3',
+      version: 'invented-ranking-v4',
       fingerprint: rankingCorpusFingerprint(),
     },
     provider: 'invented-provider',
@@ -374,7 +386,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
   };
   return {
     kind: 'ranking_end_to_end',
-    schemaVersion: 'ranking-end-to-end-v1',
+    schemaVersion: 'ranking-end-to-end-v2',
     createdAt: '2027-01-02T03:04:05.000Z',
     development: true,
     releaseEligible: false,
@@ -384,7 +396,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
       queries: 20,
       sources: 120,
       categories: 8,
-      version: 'invented-ranking-v3',
+      version: 'invented-ranking-v4',
       fingerprint: rankingCorpusFingerprint(),
     },
     system: 'llm',

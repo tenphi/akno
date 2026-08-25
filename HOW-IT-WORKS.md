@@ -1621,7 +1621,8 @@ current default. A threshold change therefore requires a new latency schema and 
 the frozen pool and real recall. It writes the invented 120-source corpus to a temporary knowledge base, indexes
 it with the selected embedding role, measures direct-answer recall at the candidate-window boundary, reopens the
 same derived index read-only with the selected LLM reranker, and measures the final assembled result. The
-configured knowledge base is never opened or copied.
+configured knowledge base is never opened or copied. A case may legitimately have more than one grade-3
+answer; end-to-end schema v2 records every accepted id and measures the best rank among those actually returned.
 
 When a matrix selects OpenAI, the track defaults to `text-embedding-3-small` at 1,536 dimensions and uses the
 matrix's `gpt-5.6-luna` selection on that same provider. Its artifact binds both model receipts to the corpus,
@@ -1710,12 +1711,13 @@ pre-declared held-out evaluation remain open.
 
 The first external review exercised the guard instead of rubber-stamping it. It requested four changes in
 `invented-ranking-v2`: one negation claim was actually true, and three meeting-location cases graded date
-sources as irrelevant even though those sources repeated the location. Those sources now carry relevant support
-grades, the negation is directly refutable from its own pool, and regression tests hold both properties. The
-corpus version is now `invented-ranking-v3`, with a new whole-corpus fingerprint. All v2
-model and latency artifacts remain readable historical evidence but cannot attach to or authorize v3. The v3
-rebased review packet carries 120 unchanged source decisions and 75 unchanged case decisions; five changed
-cases remain pending. It must be approved before development selection and a fresh held-out run continue.
+sources as irrelevant even though those sources repeated the location. The v3 follow-up review caught that the
+direct date candidate did more than support the location answer: its sentence explicitly stated the location,
+so three query-specific judgments needed grade 3 rather than grade 2. The negation and the direct/supporting/
+marginal evidence distinctions are now regression-tested in `invented-ranking-v4`, with a new whole-corpus
+fingerprint. All older model, latency, held-out, and review artifacts remain readable historical evidence but
+cannot attach to or authorize v4. Exact rebasing preserves all 120 source decisions and 77 unchanged case
+decisions; only the three corrected cases remain pending before development selection and a fresh held-out run.
 
 Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
 role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call

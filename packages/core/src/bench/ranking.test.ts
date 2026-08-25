@@ -61,7 +61,7 @@ describe('ranking benchmark metrics', () => {
       sources: 120,
       judgments: 1200,
       categories: 8,
-      version: 'invented-ranking-v3',
+      version: 'invented-ranking-v4',
       fingerprint: rankingCorpusFingerprint(),
     });
     expect(report.split).toBe('development');
@@ -82,15 +82,20 @@ describe('ranking benchmark metrics', () => {
     const meetingDateMarginal = RANKING_CORPUS.candidates['blackwater-meeting-date-marginal']!;
     expect(meetingDateDirect.text).toContain('Blackwater Bay');
     expect(meetingDateSupport.text).toContain('Blackwater Bay');
-    const crossFactGrades = RANKING_CORPUS.cases
+    const directGrades = RANKING_CORPUS.cases
       .filter((entry) => entry.id.startsWith('blackwater-meeting-place'))
       .flatMap((benchCase) =>
-        [meetingDateDirect.id, meetingDateSupport.id].flatMap((id) =>
-          benchCase.pool.includes(id) ? [benchCase.judgments[id]] : [],
-        ),
+        benchCase.pool.includes(meetingDateDirect.id) ? [benchCase.judgments[meetingDateDirect.id]] : [],
       );
-    expect(crossFactGrades.length).toBeGreaterThan(0);
-    expect(crossFactGrades.every((grade) => grade === 2)).toBe(true);
+    expect(directGrades.length).toBeGreaterThan(0);
+    expect(directGrades.every((grade) => grade === 3)).toBe(true);
+    const supportGrades = RANKING_CORPUS.cases
+      .filter((entry) => entry.id.startsWith('blackwater-meeting-place'))
+      .flatMap((benchCase) =>
+        benchCase.pool.includes(meetingDateSupport.id) ? [benchCase.judgments[meetingDateSupport.id]] : [],
+      );
+    expect(supportGrades.length).toBeGreaterThan(0);
+    expect(supportGrades.every((grade) => grade === 2)).toBe(true);
     const marginalGrades = RANKING_CORPUS.cases
       .filter((entry) => entry.id.startsWith('blackwater-meeting-place'))
       .flatMap((benchCase) =>

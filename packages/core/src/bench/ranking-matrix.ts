@@ -325,7 +325,7 @@ export function attachRankingEndToEndEvidence(
   report: RankingEndToEndReport,
 ): RankingMatrixReport {
   if (report.system !== 'llm') throw new Error('end-to-end release evidence must exercise the LLM reranker');
-  if (report.schemaVersion !== 'ranking-end-to-end-v1') {
+  if (!['ranking-end-to-end-v1', 'ranking-end-to-end-v2'].includes(report.schemaVersion)) {
     throw new Error('unsupported end-to-end artifact schema');
   }
   if (matrix.split !== report.split) throw new Error('matrix and end-to-end splits do not match');
