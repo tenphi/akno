@@ -31,6 +31,9 @@ describe('ranking benchmark metrics', () => {
     expect(RANKING_CORPUS.cases).toHaveLength(80);
     expect(rankingCorpusCases('development')).toHaveLength(60);
     expect(rankingCorpusCases('test')).toHaveLength(20);
+    expect(rankingCorpusFingerprint()).toBe(
+      '9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c',
+    );
     expect(
       Object.fromEntries(
         rankingCorpusCases('test').map((entry) => [
@@ -61,7 +64,7 @@ describe('ranking benchmark metrics', () => {
       sources: 120,
       judgments: 1200,
       categories: 8,
-      version: 'invented-ranking-v4',
+      version: 'invented-ranking-v5',
       fingerprint: rankingCorpusFingerprint(),
     });
     expect(report.split).toBe('development');
@@ -70,12 +73,14 @@ describe('ranking benchmark metrics', () => {
     expect(report.qualification).toBeNull();
   });
 
-  it('keeps negative claims false and grades overlapping cross-fact evidence by meaning', () => {
-    const issuerNegation = RANKING_CORPUS.cases.find(
-      (benchCase) => benchCase.id === 'ada-policy-issuer-negation-02',
+  it('keeps fresh negative claims false and grades overlapping cross-fact evidence by meaning', () => {
+    const calibrationNegation = RANKING_CORPUS.cases.find(
+      (benchCase) => benchCase.id === 'qx100-calibration-code-negation-01',
     );
-    expect(issuerNegation?.query).toContain('was not issued by Vulpine Mutual');
-    expect(issuerNegation?.query).not.toContain("Bo Winters's issuer");
+    expect(calibrationNegation?.query).toContain('the current calibration code is CAL-1111');
+    expect(calibrationNegation?.judgments['qx100-calibration-code-direct']).toBe(3);
+    expect(calibrationNegation?.judgments['qx100-calibration-code-negative']).toBe(0);
+    expect(RANKING_CORPUS.candidates['qx100-calibration-code-direct']?.text).toContain('CAL-2222');
 
     const meetingDateDirect = RANKING_CORPUS.candidates['blackwater-meeting-date-direct']!;
     const meetingDateSupport = RANKING_CORPUS.candidates['blackwater-meeting-date-support']!;

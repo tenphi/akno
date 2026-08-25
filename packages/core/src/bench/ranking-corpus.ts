@@ -293,6 +293,72 @@ const FACTS: FactFixture[] = [
   },
 ];
 
+// Frozen before the first v9 held-out model run. Once reviewed or evaluated, changes require another corpus
+// version and another fresh set. The builder deliberately excludes the previously observed held-out prefix.
+const PREVIOUS_HELD_OUT_FACT_COUNT = 5;
+const FRESH_HELD_OUT_FACTS_V9: FactFixture[] = [
+  {
+    id: 'ada-archive-key-location',
+    subject: 'Ada Marlow',
+    label: 'current archive cabinet key location',
+    question: 'Where does Ada Marlow keep the current archive cabinet key?',
+    paraphrase: "Find Ada Marlow's present storage place for the archive cabinet key.",
+    negativeClaim: 'the current archive cabinet key is in the green wall box',
+    direct: 'Ada Marlow keeps the current archive cabinet key in the blue desk drawer.',
+    support: "Ada Marlow's current key log assigns the archive cabinet key to her blue-drawer storage area.",
+    marginal: 'Ada Marlow uses locked cabinets for completed archive records.',
+    negative: 'An obsolete moving checklist placed the archive cabinet key in the green wall box.',
+  },
+  {
+    id: 'bo-lantern-inspection-date',
+    subject: 'Bo Winters',
+    label: 'next lantern inspection date',
+    question: "When is Bo Winters's next lantern inspection?",
+    paraphrase: "Find the upcoming inspection appointment for Bo Winters's lantern.",
+    negativeClaim: 'the next lantern inspection is on 2026-09-09',
+    direct: "Bo Winters's next lantern inspection is scheduled for 2027-09-09.",
+    support: "Bo Winters's current calendar confirms a lantern inspection during September 2027.",
+    marginal: 'The lantern checklist describes how to prepare an item for inspection.',
+    negative: 'A superseded appointment card scheduled the lantern inspection for 2026-09-09.',
+  },
+  {
+    id: 'vulpine-claim-notice-window',
+    subject: 'Vulpine Mutual',
+    label: 'current claim notice window',
+    question: 'How soon must a current Vulpine Mutual claim notice be filed?',
+    paraphrase: 'Find the present deadline for notifying Vulpine Mutual about a claim.',
+    negativeClaim: 'a current claim notice may be filed within thirty calendar days',
+    direct: 'A current Vulpine Mutual claim notice must be filed within eleven calendar days.',
+    support: 'The current Vulpine Mutual claim guide says the notice window is shorter than two weeks.',
+    marginal: 'The Vulpine Mutual claim form includes a field for the notice date.',
+    negative: 'An obsolete Vulpine Mutual leaflet allowed thirty calendar days for a claim notice.',
+  },
+  {
+    id: 'qx100-calibration-code',
+    subject: 'Zephyr QX-100',
+    label: 'current calibration code',
+    question: 'What is the current calibration code for the Zephyr QX-100?',
+    paraphrase: 'Find the code technicians presently use to calibrate the QX-100.',
+    negativeClaim: 'the current calibration code is CAL-1111',
+    direct: 'The current Zephyr QX-100 calibration code is CAL-2222.',
+    support: 'The current QX-100 certificate assigns the device to the CAL-2200 calibration series.',
+    marginal: 'The Zephyr QX-100 manual indexes a general calibration procedure.',
+    negative: 'A withdrawn QX-100 worksheet lists the calibration code as CAL-1111.',
+  },
+  {
+    id: 'blackwater-ferry-case-limit',
+    subject: 'Blackwater Bay ferry',
+    label: 'current sealed-case allowance',
+    question: 'How many sealed cases may one passenger take on the current Blackwater Bay ferry?',
+    paraphrase: 'Find the present per-passenger limit for sealed cases on the Blackwater Bay ferry.',
+    negativeClaim: 'one passenger may take four sealed cases',
+    direct: 'The current Blackwater Bay ferry allowance is two sealed cases per passenger.',
+    support: 'A current ferry booking confirms that two requested sealed cases fit within the allowance.',
+    marginal: 'The Blackwater Bay ferry guide says all cases receive a luggage label.',
+    negative: 'An old Blackwater Bay route card allowed four sealed cases per passenger.',
+  },
+];
+
 const DISTRACTOR_TEXTS = [
   'Ada Marlow keeps a blank checklist for reviewing new records.',
   'Bo Winters catalogues lantern designs for an archive.',
@@ -371,8 +437,11 @@ export function rankingCorpusCases(split: RankingBenchSplit): RankingCase[] {
 }
 
 function buildCorpus(): RankingCorpus {
+  const developmentFacts = FACTS.slice(PREVIOUS_HELD_OUT_FACT_COUNT);
+  const testFacts = FRESH_HELD_OUT_FACTS_V9;
+  const corpusFacts = [...testFacts, ...developmentFacts];
   const candidates: Record<string, RankingCandidate> = {};
-  for (const fact of FACTS) {
+  for (const fact of corpusFacts) {
     addCandidate(candidates, `${fact.id}-direct`, fact.direct, 'document');
     addCandidate(candidates, `${fact.id}-support`, fact.support, 'page');
     addCandidate(candidates, `${fact.id}-marginal`, fact.marginal, 'page');
@@ -400,10 +469,8 @@ function buildCorpus(): RankingCorpus {
   const sharedCandidateIds = Object.keys(candidates).filter(
     (id) => id.startsWith('distractor-') && !id.startsWith('instruction-'),
   );
-  const testFacts = FACTS.slice(0, 5);
-  const developmentFacts = FACTS.slice(5);
   const cases: RankingCase[] = [];
-  FACTS.forEach((fact, factIndex) => {
+  corpusFacts.forEach((fact, factIndex) => {
     const split = factIndex < testFacts.length ? 'test' : 'development';
     const splitFacts = split === 'test' ? testFacts : developmentFacts;
     const splitFactIndex = splitFacts.findIndex((entry) => entry.id === fact.id);
@@ -440,7 +507,7 @@ function buildCorpus(): RankingCorpus {
   });
 
   return {
-    version: 'invented-ranking-v4',
+    version: 'invented-ranking-v5',
     candidates,
     cases,
   };

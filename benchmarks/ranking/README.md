@@ -193,8 +193,20 @@ with `text-embedding-3-small`, retained every direct answer through the fusion p
 assembly, reached 98.3% success@1 and 100% success@3, and recorded no fallback or degradation.
 
 These are development results. The frozen v6/v6 test artifact remains final evidence for that earlier
-contract and is not a tuning set for v9. A newly pre-declared, independently reviewed held-out corpus is the
-only remaining release step for the v9 contract.
+contract and is not a tuning set for v9.
+
+`invented-ranking-v5` is the single fresh v9 release corpus. Before any v5 model call, it replaced the five
+observed held-out fact families with five new invented families, retained all 60 development cases, kept the
+predeclared gates unchanged, and froze fingerprint
+`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`. Its development fusion metrics exactly
+match v4. Rebasing the approved v4 review carries 100 source and 60 case passes; only 20 new sources, 20 new
+cases, and every reset global attestation require independent review.
+
+Once that review is approved, v9 gets one release attempt: a `--split test --runs 5 --skip-native` matrix over
+the four LLM variants. This is 400 logical ranking calls. Only a passing matrix proceeds to the exact 120-call
+latency track and 20-query end-to-end track. Semantic or compatibility retries are counted separately as extra
+physical endpoint requests. A failed artifact is frozen; it does not authorize repeated runs or an automatic
+new prompt version.
 
 To reproduce and attach the selected configuration's latency profiles:
 

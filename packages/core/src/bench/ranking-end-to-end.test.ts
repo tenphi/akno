@@ -18,7 +18,7 @@ describe('end-to-end ranking benchmark', () => {
     });
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120, categories: 8 });
     expect(report.embedding.available).toBe(false);
-    expect(report.embedding).toMatchObject({ dimensions: 8, totalChunks: 120, embeddedChunks: 0 });
+    expect(report.embedding).toMatchObject({ dimensions: 32, totalChunks: 120, embeddedChunks: 0 });
     expect(report.passed).toBe(false);
     expect(report.candidateGeneration.degradedQueries).toBe(60);
     expect(report.candidateGeneration.unavailableQueries).toBe(60);
@@ -61,7 +61,7 @@ describe('end-to-end ranking benchmark', () => {
       expect(report.embedding).toMatchObject({
         provider: 'invented-provider',
         model: 'invented-embedding-model',
-        dimensions: 8,
+        dimensions: 32,
         available: true,
         totalChunks: 120,
         embeddedChunks: 120,
@@ -90,7 +90,16 @@ describe('end-to-end ranking benchmark', () => {
 });
 
 function inventedEmbedding(text: string): number[] {
-  return Array.from({ length: 8 }, (_, index) => ((text.charCodeAt(index % text.length) || 1) % 11) + 1);
+  const embedding = Array.from({ length: 32 }, () => 0);
+  for (const token of text.toLowerCase().match(/[a-z0-9]+/g) ?? []) {
+    let hash = 2166136261;
+    for (const character of token) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    embedding[(hash >>> 0) % embedding.length]! += 1;
+  }
+  return embedding;
 }
 
 function embeddingConfig(baseUrl: string): AknoConfig {
@@ -111,7 +120,7 @@ function embeddingConfig(baseUrl: string): AknoConfig {
     requested: true,
     timeoutMs: 1111,
     unavailableReason: null,
-    dimensions: 8,
+    dimensions: 32,
     batch: 8,
   };
   return config;
@@ -130,7 +139,7 @@ function unavailableConfig(): AknoConfig {
   return {
     providers: {},
     models: {
-      embedding: { ...role('embedding'), dimensions: 8, batch: 8 },
+      embedding: { ...role('embedding'), dimensions: 32, batch: 8 },
       reranker: role('reranker'),
       derive: role('derive'),
       expansion: role('expansion'),

@@ -14,7 +14,7 @@ describe('ranking corpus review handoff', () => {
     const second = createRankingReviewPacket(new Date('2027-02-03T04:05:06.000Z'));
 
     expect(first.corpus).toEqual({
-      version: 'invented-ranking-v4',
+      version: 'invented-ranking-v5',
       fingerprint: rankingCorpusFingerprint(),
       sources: 120,
       queries: 80,
@@ -82,7 +82,7 @@ describe('ranking corpus review handoff', () => {
 
     const rebased = rebaseRankingReviewPacket(previous, new Date('2027-02-03T04:05:06.000Z'));
 
-    expect(rebased.corpus.version).toBe('invented-ranking-v4');
+    expect(rebased.corpus.version).toBe('invented-ranking-v5');
     expect(rebased.sources.every((source) => source.review === 'pass')).toBe(true);
     expect(rebased.cases.filter((benchCase) => benchCase.review === 'pending').map(({ id }) => id)).toEqual([
       changedId,

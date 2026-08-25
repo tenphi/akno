@@ -1799,8 +1799,21 @@ window, and final assembly, reached 98.3% success@1 and 100% success@3, and reco
 fallback. All development gates pass.
 
 This result does not repair or overwrite the v6/v6 held-out failure. V9 changed the contract after that test was
-observed, so the old test corpus remains frozen and unavailable for tuning. Release requires a new versioned,
-independently reviewed held-out corpus with thresholds declared before its first model call.
+observed, so the old test corpus remains frozen and unavailable for tuning.
+
+Corpus v5 supplies the one fresh v9 release boundary. Before any v5 model call, Akno replaced the five observed
+held-out fact families with five new invented families while retaining the same 60 development cases and
+category-stratified 60/20 shape. The unchanged development fusion baseline verifies that its tuning pools did
+not move. The whole-corpus fingerprint is
+`9a758cb92065206eeab499ca53199d4c39f9e0287913b2040273c06edd62e05c`; changing any source, query, pool, or grade
+now fails a regression assertion.
+
+Exact review rebasing carries 100 source and 60 case approvals from v4. A separate reviewer must decide the 20
+new sources, 20 new cases, and reset global attestations without seeing ranking output. Only then may Akno run
+one held-out matrix: five repetitions for each of the four LLM variants, or 400 logical ranking calls over 20
+queries. A passing selection authorizes one 120-call latency track and one 20-query end-to-end track. Retries
+remain visible as additional physical requests. A failed gate freezes the result and ends this release attempt;
+it does not trigger indefinite prompt-version iteration.
 
 An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
 failure-handling evidence. Current access covers both OpenAI embedding models; the successful evidence above
