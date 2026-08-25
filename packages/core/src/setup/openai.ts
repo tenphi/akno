@@ -3,7 +3,7 @@ import { ModelClient } from '../models/client.ts';
 import { runLlmRankingProbe, type LlmRankingProbeReport } from '../bench/llm-ranking-probe.ts';
 
 export const OPENAI_LUNA_PRESET = 'openai-luna';
-export const OPENAI_LUNA_PRESET_STATUS = 'experimental';
+export const OPENAI_LUNA_PRESET_STATUS = 'recommended';
 export const OPENAI_LUNA_EMBEDDING_MODEL = 'text-embedding-3-small';
 export const OPENAI_LUNA_GENERATIVE_MODEL = 'gpt-5.6-luna';
 export const OPENAI_LUNA_EMBEDDING_DIMENSIONS = 1536;
@@ -37,8 +37,8 @@ export interface OpenAiLunaPreflightReport {
 }
 
 /**
- * The minimum is one endpoint and credential, not one model. The exact ranking window is
- * development evidence and remains explicitly experimental until the release artifact passes.
+ * The minimum is one endpoint and credential, not one model. The exact ranking window is the
+ * release-qualified v9 selection; changing it requires new benchmark evidence.
  */
 export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
   return {

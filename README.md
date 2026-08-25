@@ -127,19 +127,23 @@ So a config file is always safe to read, diff and paste into an issue. `akno con
 configuration with secrets redacted, and tells you which files it came from — the fastest way to check that
 your `local.jsonc` is actually being read.
 
-The first guided setup slice exposes the OpenAI minimum as an **experimental, non-writing preview**. It prints
-the exact one-endpoint/two-model overlay and, with `--check`, sends only invented fixtures to verify both
-embedding access and Luna's ranking transport/schema:
+The OpenAI minimum is a benchmark-qualified guided preset. Preview its exact one-endpoint/two-model overlay and
+path-only config diff first; `--check` sends only invented fixtures to verify both embedding access and Luna's
+ranking transport/schema:
 
 ```bash
 akno init --preset openai-luna --akno-path /path/to/markdown \
   --maintenance autonomous --dry-run --check
 ```
 
-The command never writes configuration, installs a service, indexes, schedules maintenance, or changes the
-knowledge base. Configuration writing remains mechanically blocked until the checked-in ranking release gate
-passes. This is deliberate: model access is role-specific, and writing a preset after checking only Luna could
-silently replace semantic recall with lexical degradation when embedding access is unavailable.
+Omit `--dry-run` to create a new config. If one exists, Akno prints the same value-free diff and requires an
+explicit `--force`; unrelated settings and unknown top-level keys survive, while the preset-owned provider and
+model blocks are replaced together so stale native-reranker fields cannot contaminate the OpenAI setup. JSONC
+comments outside those owned values are retained. A
+checkout writes its gitignored `config/local.jsonc`; an installed copy writes `<state_dir>/config.json`, and
+`AKNO_CONFIG` selects an explicit target. Writes are fsynced and atomically renamed, with a concurrent-edit
+check. Requested preflight failure writes nothing. Setup never indexes, installs a service, creates a schedule,
+or changes the knowledge base.
 
 Rules can also travel with the notes: if `<akno_path>/akno.json` exists, its `folders` block wins over both
 config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as
@@ -197,7 +201,8 @@ Reasoning effort is configurable per generative role and sent explicitly when se
 minimum uses one OpenAI endpoint and credential, `text-embedding-3-small` for embeddings, and
 `gpt-5.6-luna` for generative roles and prompted reranking. Expansion and reranking can use
 `reasoning_effort: "none"`; slower derivation or maintenance can choose a higher effort independently. The
-prompted reranker remains experimental until the relevance benchmark meets its release threshold.
+prompted reranker is recommended because its checked-in v9 held-out matrix and bound latency/end-to-end tracks
+meet the release threshold.
 `akno init --preset openai-luna --akno-path /path/to/markdown --dry-run --check` verifies the two required
 model roles separately before setup, so “the provider works” cannot hide an embedding-specific access
 restriction.

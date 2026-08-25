@@ -7,6 +7,16 @@
 
 export { open, readOnlyExplanation, type Akno, type OpenOptions } from './open.ts';
 export { loadConfig, type LoadOptions } from './config/load.ts';
+export {
+  applySetupConfigWrite,
+  planSetupConfigWrite,
+  setupConfigTarget,
+  type SetupConfigChange,
+  type SetupConfigTargetOptions,
+  type SetupConfigWriteOptions,
+  type SetupConfigWritePlan,
+  type SetupConfigWriteResult,
+} from './config/write-setup.ts';
 export type {
   AknoConfig,
   FolderRule,

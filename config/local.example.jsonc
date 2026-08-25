@@ -63,14 +63,14 @@
 
   // Minimum hosted setup uses one OpenAI endpoint and credential, but still two
   // models because semantic recall requires an embedding model. Preview and
-  // preflight the exact experimental overlay before copying it:
+  // preflight the benchmark-qualified overlay before applying it:
   //
   //   akno init --preset openai-luna --akno-path /path/to/markdown \
   //     --maintenance autonomous --dry-run --check
   //
-  // The command cannot write this preset until its ranking release gate passes.
-  // Replace the `providers` and `models` blocks above manually only when you
-  // deliberately accept that experimental status:
+  // Omit `--dry-run` to create a config. An existing config requires `--force`
+  // after inspecting the path-only diff. The preset replaces `providers` and
+  // `models` as one unit while preserving unrelated top-level settings:
   //
   // "providers": {
   //   "openai": {

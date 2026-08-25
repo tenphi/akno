@@ -51,7 +51,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     adopt <document_id>  Organize one orphan document through its trust policy.
 
   ${style.bold('Admin')}
-    init                 Preview/check a guided setup preset. Never guesses or writes silently.
+    init                 Configure/check a guided setup preset. Never guesses or overwrites silently.
     dream                Seven maintenance phases: infer, curate, adopt, inspect, repair.
     plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.

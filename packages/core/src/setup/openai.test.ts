@@ -17,7 +17,7 @@ afterEach(() => {
   for (const target of temporary.splice(0)) fs.rmSync(target, { recursive: true, force: true });
 });
 
-describe('experimental OpenAI minimum setup', () => {
+describe('recommended OpenAI minimum setup', () => {
   it('keeps one endpoint, two model ids, and task-specific reasoning explicit', () => {
     const preset = openAiLunaPreset({
       aknoPath: '/invented/knowledge-base',

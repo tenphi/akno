@@ -2220,21 +2220,24 @@ The first useful result currently requires editing JSON, knowing an OpenAI-compa
 roles, indexing, diagnosing, and then connecting an agent host. The graceful no-model path helps, but the user
 still has to discover it from prose.
 
-A first guided `akno init` slice now previews the exact OpenAI overlay and checks the knowledge-base path.
+A guided `akno init` flow now previews or writes the exact qualified OpenAI overlay and checks the
+knowledge-base path.
 `--check` sends one invented embedding input and the existing three-candidate invented ranking probe through
 the same provider, reporting the roles separately. This catches the otherwise confusing case where a project
 can call Luna but cannot call its configured embedding model. The receipt contains no credential, raw response,
 or private knowledge-base content.
 
-The preset is still mechanically preview-only. `--dry-run` is required, and the command changes no
-configuration, service, schedule, index, or knowledge-base file. Interactive questions, atomic config writing,
-a first recall, and optional service installation remain future slices; configuration writing stays blocked
-until the ranking release gate passes.
+`--dry-run` prints a path-only diff and the safe preset overlay. Without it, a missing config is created
+atomically. An existing config is never changed without `--force`; unrelated settings and unknown top-level
+keys are retained, while provider/model blocks are replaced as one preset-owned unit. The planner fingerprints
+the input, so an editor save between preview and rename aborts instead of losing the edit. Requested preflight
+failure also aborts. The command writes no knowledge-base file and does not index, install a service, or create
+a schedule. Interactive questions, a first recall, and optional service installation remain future slices.
 
-A minimum hosted setup should add a single-endpoint OpenAI preset: one endpoint and credential,
+A minimum hosted setup uses the qualified single-endpoint OpenAI preset: one endpoint and credential,
 `text-embedding-3-small` for semantic candidate generation, and `gpt-5.6-luna` for generative work and prompted
-reranking. This is deliberately not described as one model. The prompted-ranker recommendation remains gated
-by a relevance benchmark, including an explicit comparison of `none` and `low` reasoning effort.
+reranking. This is deliberately not described as one model. The recommendation is bound to the passing v9
+held-out ranking, latency, and end-to-end evidence.
 
 ### Inference should remain visibly separate from authored memory
 
@@ -2249,7 +2252,7 @@ screening runs before inference so an unresolved claim cannot quietly become a n
 
 | Command               | Purpose                                                   | Writes to the knowledge base?    | Model roles                                    |
 | --------------------- | --------------------------------------------------------- | -------------------------------- | ---------------------------------------------- |
-| `init`                | Preview/check an experimental guided setup                | no                               | embedding, reranker with `--check`             |
+| `init`                | Configure/check the recommended guided setup              | no                               | embedding, reranker with `--check`             |
 | `index`               | Reconcile the index with files                            | no by default                    | embedding, derive                              |
 | `recall <query>`      | Search and return cited page/document cards               | no                               | expansion, embedding, reranker                 |
 | `answer <question>`   | Direct grounded answer; optional context or qualification | no                               | expansion, embedding, answer; reranker opt-in  |
