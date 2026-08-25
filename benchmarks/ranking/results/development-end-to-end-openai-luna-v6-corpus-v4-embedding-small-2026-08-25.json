@@ -1,0 +1,2353 @@
+{
+  "kind": "ranking_end_to_end",
+  "schemaVersion": "ranking-end-to-end-v3",
+  "createdAt": "2026-08-25T10:45:45.620Z",
+  "development": true,
+  "releaseEligible": false,
+  "passed": false,
+  "split": "development",
+  "corpus": {
+    "queries": 60,
+    "sources": 120,
+    "categories": 8,
+    "version": "invented-ranking-v4",
+    "fingerprint": "c48203f7fb05975720d447a151f7d9e8660834b1ec107f2fa9e6ca0ba602f83e"
+  },
+  "system": "llm",
+  "candidateCount": 10,
+  "excerptChars": 800,
+  "concurrency": 4,
+  "embedding": {
+    "provider": "openai",
+    "model": "text-embedding-3-small",
+    "available": true,
+    "dimensions": 1536,
+    "totalChunks": 120,
+    "embeddedChunks": 120
+  },
+  "reranker": {
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "available": true,
+    "reasoningEffort": "none",
+    "promptVersion": "akno-judgment-map-v6",
+    "schemaVersion": "tuple-judgment-map-v5"
+  },
+  "candidateGeneration": {
+    "directAnswerRecall": 0.9833333333333333,
+    "mrrAt10": 0.6240277777777778,
+    "successAt1": 0.4166666666666667,
+    "successAt3": 0.8166666666666667,
+    "byCategory": [
+      {
+        "category": "exact_entity",
+        "queries": 9,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.7222222222222222,
+        "successAt1": 0.5555555555555556,
+        "successAt3": 1
+      },
+      {
+        "category": "paraphrased_attribute",
+        "queries": 12,
+        "directAnswerRecall": 0.9166666666666666,
+        "mrrAt10": 0.6131944444444445,
+        "successAt1": 0.5,
+        "successAt3": 0.6666666666666666
+      },
+      {
+        "category": "direct_answer",
+        "queries": 9,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.7129629629629629,
+        "successAt1": 0.5555555555555556,
+        "successAt3": 0.8888888888888888
+      },
+      {
+        "category": "temporal",
+        "queries": 9,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.75,
+        "successAt1": 0.5555555555555556,
+        "successAt3": 0.8888888888888888
+      },
+      {
+        "category": "negation",
+        "queries": 6,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.5972222222222222,
+        "successAt1": 0.3333333333333333,
+        "successAt3": 0.8333333333333334
+      },
+      {
+        "category": "ambiguous_identity",
+        "queries": 6,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.4166666666666667,
+        "successAt1": 0,
+        "successAt3": 1
+      },
+      {
+        "category": "provenance",
+        "queries": 6,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.5833333333333334,
+        "successAt1": 0.3333333333333333,
+        "successAt3": 0.6666666666666666
+      },
+      {
+        "category": "instruction_bearing",
+        "queries": 3,
+        "directAnswerRecall": 1,
+        "mrrAt10": 0.27777777777777773,
+        "successAt1": 0,
+        "successAt3": 0.3333333333333333
+      }
+    ],
+    "degradedQueries": 0,
+    "unavailableQueries": 0,
+    "p50LatencyMs": 148.14358400000037,
+    "p95LatencyMs": 184.32716700000037,
+    "maxLatencyMs": 219.20116700000017
+  },
+  "rankedRecall": {
+    "directAnswerRecall": 0.9833333333333333,
+    "mrrAt10": 0.9833333333333333,
+    "successAt1": 0.9833333333333333,
+    "successAt3": 0.9833333333333333,
+    "byCategory": [
+      {
+        "category": "exact_entity",
+        "queries": 9,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      },
+      {
+        "category": "paraphrased_attribute",
+        "queries": 12,
+        "directAnswerRecall": 0.9166666666666666,
+        "mrrAt10": 0.9166666666666666,
+        "successAt1": 0.9166666666666666,
+        "successAt3": 0.9166666666666666
+      },
+      {
+        "category": "direct_answer",
+        "queries": 9,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      },
+      {
+        "category": "temporal",
+        "queries": 9,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      },
+      {
+        "category": "negation",
+        "queries": 6,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      },
+      {
+        "category": "ambiguous_identity",
+        "queries": 6,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      },
+      {
+        "category": "provenance",
+        "queries": 6,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      },
+      {
+        "category": "instruction_bearing",
+        "queries": 3,
+        "directAnswerRecall": 1,
+        "mrrAt10": 1,
+        "successAt1": 1,
+        "successAt3": 1
+      }
+    ],
+    "degradedQueries": 0,
+    "unavailableQueries": 0,
+    "p50LatencyMs": 2116.454582999999,
+    "p95LatencyMs": 2708.985999999999,
+    "maxLatencyMs": 9083.5375
+  },
+  "rerankFallbackRate": 0,
+  "queries": [
+    {
+      "queryId": "bo-policy-issuer-paraphrased_attribute-05",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "bo-policy-issuer-direct"
+      ],
+      "candidateOrder": [
+        "bo-policy-issuer-support",
+        "bo-deductible-marginal",
+        "distractor-32",
+        "bo-receipt-owner-direct",
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-negative",
+        "bo-deductible-direct",
+        "blackwater-meeting-date-marginal",
+        "distractor-27",
+        "bo-policy-issuer-marginal"
+      ],
+      "candidateRank": 5,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 167.0210420000003,
+      "rankedOrder": [
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-support",
+        "bo-policy-issuer-negative",
+        "bo-deductible-direct",
+        "bo-receipt-owner-direct",
+        "bo-policy-issuer-marginal",
+        "bo-deductible-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2444.707042
+    },
+    {
+      "queryId": "bo-policy-issuer-temporal-04",
+      "category": "temporal",
+      "directAnswerIds": [
+        "bo-policy-issuer-direct"
+      ],
+      "candidateOrder": [
+        "bo-policy-issuer-direct",
+        "bo-deductible-direct",
+        "bo-policy-issuer-negative",
+        "bo-policy-issuer-support",
+        "ada-policy-issuer-negative",
+        "bo-deductible-marginal",
+        "ada-policy-issuer-direct",
+        "qx100-service-place-marginal",
+        "bo-receipt-owner-support",
+        "bo-policy-issuer-marginal"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 155.0764589999999,
+      "rankedOrder": [
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-support",
+        "bo-receipt-owner-support",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-negative",
+        "bo-deductible-direct",
+        "bo-policy-issuer-marginal",
+        "ada-policy-issuer-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1986.7321250000005
+    },
+    {
+      "queryId": "bo-policy-issuer-ambiguous_identity-03",
+      "category": "ambiguous_identity",
+      "directAnswerIds": [
+        "bo-policy-issuer-direct"
+      ],
+      "candidateOrder": [
+        "bo-deductible-marginal",
+        "bo-policy-issuer-marginal",
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "bo-deductible-direct",
+        "bo-policy-issuer-support",
+        "bo-receipt-owner-direct",
+        "qx100-service-place-marginal",
+        "distractor-32"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 199.34304100000008,
+      "rankedOrder": [
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-support",
+        "bo-policy-issuer-negative",
+        "bo-deductible-direct",
+        "bo-receipt-owner-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2112.248208000001
+    },
+    {
+      "queryId": "bo-policy-issuer-exact_entity-04",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "bo-policy-issuer-direct"
+      ],
+      "candidateOrder": [
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "bo-deductible-direct",
+        "bo-deductible-marginal",
+        "ada-policy-issuer-direct",
+        "bo-receipt-owner-direct",
+        "bo-policy-issuer-marginal",
+        "distractor-07",
+        "bo-policy-issuer-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 219.20116700000017,
+      "rankedOrder": [
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-support",
+        "bo-deductible-direct",
+        "bo-receipt-owner-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2038.7356249999993
+    },
+    {
+      "queryId": "vulpine-renewal-amount-paraphrased_attribute-06",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "vulpine-renewal-amount-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "ada-renewal-date-negative",
+        "ada-renewal-date-direct",
+        "qx100-service-date-marginal",
+        "bo-deductible-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-negative",
+        "ada-policy-issuer-marginal",
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 166.18379099999947,
+      "rankedOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "bo-deductible-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-negative",
+        "vulpine-coverage-start-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2271.960832999999
+    },
+    {
+      "queryId": "vulpine-renewal-amount-temporal-05",
+      "category": "temporal",
+      "directAnswerIds": [
+        "vulpine-renewal-amount-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-renewal-amount-marginal",
+        "qx100-service-place-support",
+        "blackwater-ferry-time-support",
+        "vulpine-lantern-exclusion-direct",
+        "blackwater-meeting-date-support",
+        "bo-receipt-owner-marginal"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 125.9711670000006,
+      "rankedOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-coverage-start-direct",
+        "vulpine-lantern-exclusion-direct",
+        "bo-receipt-owner-marginal",
+        "vulpine-renewal-amount-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1965.658125
+    },
+    {
+      "queryId": "vulpine-renewal-amount-ambiguous_identity-04",
+      "category": "ambiguous_identity",
+      "directAnswerIds": [
+        "vulpine-renewal-amount-direct"
+      ],
+      "candidateOrder": [
+        "distractor-23",
+        "vulpine-renewal-amount-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-start-direct",
+        "vulpine-renewal-amount-marginal",
+        "bo-receipt-owner-marginal",
+        "vulpine-lantern-exclusion-direct",
+        "distractor-28"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 151.64558300000044,
+      "rankedOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-lantern-exclusion-direct",
+        "bo-receipt-owner-marginal",
+        "vulpine-renewal-amount-marginal",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-start-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2022.7745830000003
+    },
+    {
+      "queryId": "vulpine-renewal-amount-exact_entity-05",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "vulpine-renewal-amount-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-direct",
+        "distractor-23",
+        "vulpine-coverage-start-direct",
+        "vulpine-renewal-amount-marginal",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-end-direct",
+        "ada-renewal-date-negative"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 149.40554200000042,
+      "rankedOrder": [
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-renewal-amount-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2186.4336669999993
+    },
+    {
+      "queryId": "vulpine-coverage-start-direct_answer-04",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-coverage-start-marginal",
+        "distractor-13",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-direct",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-negative"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 143.67741699999988,
+      "rankedOrder": [
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-start-marginal",
+        "distractor-13",
+        "vulpine-coverage-end-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1988.4747499999994
+    },
+    {
+      "queryId": "vulpine-coverage-start-temporal-06",
+      "category": "temporal",
+      "directAnswerIds": [
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-coverage-start-marginal",
+        "distractor-13",
+        "vulpine-lantern-exclusion-marginal",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-renewal-amount-marginal"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 152.08566599999995,
+      "rankedOrder": [
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2708.985999999999
+    },
+    {
+      "queryId": "vulpine-coverage-start-provenance-03",
+      "category": "provenance",
+      "directAnswerIds": [
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateOrder": [
+        "distractor-13",
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-negative",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-start-support",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-direct"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 143.8952079999999,
+      "rankedOrder": [
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-support",
+        "vulpine-coverage-start-marginal",
+        "distractor-13"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2099.1089169999996
+    },
+    {
+      "queryId": "vulpine-coverage-start-exact_entity-06",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateOrder": [
+        "distractor-13",
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 135.51916699999947,
+      "rankedOrder": [
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-end-direct",
+        "distractor-13",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2247.970916
+    },
+    {
+      "queryId": "blackwater-meeting-place-direct_answer-05",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-negative",
+        "blackwater-meeting-place-marginal",
+        "distractor-06",
+        "ada-policy-issuer-direct",
+        "bo-policy-issuer-direct",
+        "bo-receipt-owner-negative",
+        "bo-receipt-owner-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 130.8449580000006,
+      "rankedOrder": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-place-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2035.499167
+    },
+    {
+      "queryId": "blackwater-meeting-place-negation-03",
+      "category": "negation",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-place-negative",
+        "blackwater-meeting-date-marginal",
+        "bo-policy-issuer-negative",
+        "instruction-08",
+        "ada-policy-issuer-negative",
+        "qx100-service-place-support",
+        "blackwater-meeting-date-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 135.8642920000002,
+      "rankedOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-place-negative",
+        "blackwater-meeting-date-marginal",
+        "qx100-service-place-support",
+        "blackwater-meeting-date-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1984.5192500000012
+    },
+    {
+      "queryId": "blackwater-meeting-place-provenance-04",
+      "category": "provenance",
+      "directAnswerIds": [
+        "blackwater-meeting-place-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "distractor-06",
+        "blackwater-meeting-place-marginal",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "blackwater-meeting-place-negative",
+        "blackwater-meeting-date-marginal",
+        "ada-renewal-date-direct",
+        "blackwater-meeting-place-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 161.05862499999967,
+      "rankedOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-place-marginal",
+        "blackwater-meeting-place-negative",
+        "blackwater-meeting-date-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 9083.5375
+    },
+    {
+      "queryId": "blackwater-meeting-place-paraphrased_attribute-07",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-negative",
+        "blackwater-meeting-place-marginal",
+        "distractor-06",
+        "blackwater-meeting-date-marginal",
+        "blackwater-meeting-place-negative",
+        "blackwater-meeting-place-support",
+        "bo-receipt-owner-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 162.5097080000005,
+      "rankedOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-place-marginal",
+        "blackwater-meeting-date-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2105.003625000001
+    },
+    {
+      "queryId": "blackwater-meeting-date-direct_answer-06",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-date-marginal",
+        "ada-policy-issuer-negative",
+        "blackwater-ferry-time-direct",
+        "bo-policy-issuer-negative",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-place-marginal",
+        "blackwater-meeting-date-support",
+        "ada-policy-issuer-direct"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 138.80383299999994,
+      "rankedOrder": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-date-support",
+        "blackwater-meeting-place-marginal",
+        "blackwater-ferry-time-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2153.975083000001
+    },
+    {
+      "queryId": "blackwater-meeting-date-negation-04",
+      "category": "negation",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "ada-renewal-date-direct",
+        "blackwater-meeting-date-negative",
+        "distractor-06",
+        "blackwater-meeting-place-marginal",
+        "ada-policy-issuer-negative",
+        "instruction-08",
+        "bo-policy-issuer-negative",
+        "blackwater-meeting-date-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 184.32716700000037,
+      "rankedOrder": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-date-negative",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-support",
+        "blackwater-meeting-place-marginal",
+        "distractor-06"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2436.3613750000004
+    },
+    {
+      "queryId": "blackwater-meeting-date-instruction_bearing-02",
+      "category": "instruction_bearing",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-date-marginal",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-negative",
+        "instruction-06",
+        "blackwater-meeting-place-marginal",
+        "blackwater-meeting-place-support",
+        "qx100-manual-revision-marginal",
+        "blackwater-meeting-date-support"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 164.82324999999946,
+      "rankedOrder": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-place-marginal",
+        "blackwater-meeting-date-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2022.114583999999
+    },
+    {
+      "queryId": "blackwater-meeting-date-paraphrased_attribute-08",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "blackwater-meeting-date-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-meeting-place-support",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "blackwater-ferry-time-direct",
+        "blackwater-meeting-date-negative",
+        "blackwater-meeting-date-support",
+        "blackwater-meeting-place-negative",
+        "qx100-service-place-direct",
+        "blackwater-meeting-date-marginal",
+        "distractor-10"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 138.66404200000034,
+      "rankedOrder": [
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-support",
+        "blackwater-meeting-date-negative",
+        "qx100-service-place-direct",
+        "blackwater-ferry-time-direct",
+        "blackwater-meeting-date-marginal",
+        "blackwater-meeting-place-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2070.9178329999995
+    },
+    {
+      "queryId": "blackwater-ferry-time-temporal-07",
+      "category": "temporal",
+      "directAnswerIds": [
+        "blackwater-ferry-time-direct"
+      ],
+      "candidateOrder": [
+        "distractor-05",
+        "blackwater-ferry-time-direct",
+        "distractor-30",
+        "blackwater-ferry-time-marginal",
+        "blackwater-ferry-time-negative",
+        "qx100-service-place-support",
+        "blackwater-ferry-time-support",
+        "blackwater-meeting-date-marginal",
+        "blackwater-meeting-date-support",
+        "blackwater-meeting-date-direct"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 130.82995799999935,
+      "rankedOrder": [
+        "blackwater-ferry-time-direct",
+        "distractor-30",
+        "blackwater-ferry-time-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2052.812750000001
+    },
+    {
+      "queryId": "blackwater-ferry-time-ambiguous_identity-05",
+      "category": "ambiguous_identity",
+      "directAnswerIds": [
+        "blackwater-ferry-time-direct"
+      ],
+      "candidateOrder": [
+        "distractor-05",
+        "blackwater-ferry-time-marginal",
+        "blackwater-ferry-time-direct",
+        "distractor-30",
+        "blackwater-ferry-time-negative",
+        "blackwater-meeting-place-direct",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-date-marginal",
+        "distractor-25",
+        "bo-deductible-marginal"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 168.72062500000084,
+      "rankedOrder": [
+        "blackwater-ferry-time-direct",
+        "blackwater-ferry-time-marginal",
+        "blackwater-ferry-time-negative",
+        "distractor-30"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2285.014665999999
+    },
+    {
+      "queryId": "blackwater-ferry-time-exact_entity-07",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "blackwater-ferry-time-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-ferry-time-negative",
+        "blackwater-ferry-time-direct",
+        "blackwater-ferry-time-marginal",
+        "distractor-30",
+        "distractor-05",
+        "blackwater-meeting-date-direct",
+        "blackwater-meeting-place-direct",
+        "blackwater-ferry-time-support",
+        "blackwater-meeting-place-support",
+        "qx100-service-place-support"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 142.03099999999995,
+      "rankedOrder": [
+        "blackwater-ferry-time-direct",
+        "blackwater-ferry-time-support",
+        "blackwater-ferry-time-negative",
+        "distractor-05",
+        "blackwater-ferry-time-marginal",
+        "distractor-30"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1990.638665999999
+    },
+    {
+      "queryId": "blackwater-ferry-time-paraphrased_attribute-09",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "blackwater-ferry-time-direct"
+      ],
+      "candidateOrder": [
+        "blackwater-ferry-time-direct",
+        "blackwater-ferry-time-negative",
+        "blackwater-ferry-time-support",
+        "distractor-30",
+        "distractor-05",
+        "blackwater-ferry-time-marginal",
+        "distractor-20",
+        "qx100-service-place-direct",
+        "blackwater-meeting-place-support",
+        "vulpine-payment-frequency-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 164.136125,
+      "rankedOrder": [
+        "blackwater-ferry-time-direct",
+        "blackwater-ferry-time-support",
+        "blackwater-ferry-time-negative",
+        "distractor-30",
+        "distractor-05",
+        "blackwater-ferry-time-marginal",
+        "distractor-20"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2083.7487500000025
+    },
+    {
+      "queryId": "ada-renewal-date-temporal-08",
+      "category": "temporal",
+      "directAnswerIds": [
+        "ada-renewal-date-direct"
+      ],
+      "candidateOrder": [
+        "ada-policy-issuer-marginal",
+        "ada-renewal-date-direct",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-marginal",
+        "ada-renewal-date-negative",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "vulpine-renewal-amount-direct",
+        "ada-policy-issuer-support",
+        "distractor-16"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 138.94495800000004,
+      "rankedOrder": [
+        "ada-renewal-date-direct",
+        "ada-policy-issuer-support",
+        "ada-renewal-date-negative",
+        "vulpine-renewal-amount-direct",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1993.3653339999983
+    },
+    {
+      "queryId": "ada-renewal-date-ambiguous_identity-06",
+      "category": "ambiguous_identity",
+      "directAnswerIds": [
+        "ada-renewal-date-direct"
+      ],
+      "candidateOrder": [
+        "ada-policy-issuer-marginal",
+        "ada-renewal-date-direct",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-marginal",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-negative",
+        "ada-renewal-date-negative",
+        "distractor-31",
+        "distractor-16",
+        "distractor-01"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 146.25704099999984,
+      "rankedOrder": [
+        "ada-renewal-date-direct",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "ada-renewal-date-marginal",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1892.752958000001
+    },
+    {
+      "queryId": "ada-renewal-date-exact_entity-08",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "ada-renewal-date-direct"
+      ],
+      "candidateOrder": [
+        "ada-renewal-date-direct",
+        "ada-renewal-date-negative",
+        "ada-policy-issuer-direct",
+        "ada-policy-issuer-marginal",
+        "ada-policy-issuer-negative",
+        "ada-renewal-date-marginal",
+        "blackwater-meeting-date-direct",
+        "distractor-21",
+        "bo-policy-issuer-negative",
+        "bo-policy-issuer-marginal"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 151.1889170000004,
+      "rankedOrder": [
+        "ada-renewal-date-direct",
+        "ada-renewal-date-negative",
+        "ada-policy-issuer-marginal",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-marginal",
+        "blackwater-meeting-date-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2088.6596250000002
+    },
+    {
+      "queryId": "ada-renewal-date-paraphrased_attribute-10",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "ada-renewal-date-direct"
+      ],
+      "candidateOrder": [
+        "ada-renewal-date-direct",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-negative",
+        "bo-policy-issuer-negative",
+        "ada-renewal-date-support",
+        "ada-policy-issuer-marginal",
+        "ada-renewal-date-marginal",
+        "vulpine-coverage-end-marginal",
+        "ada-policy-issuer-support",
+        "distractor-06"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 130.40195799999947,
+      "rankedOrder": [
+        "ada-renewal-date-direct",
+        "ada-policy-issuer-direct",
+        "ada-renewal-date-negative",
+        "ada-renewal-date-support",
+        "vulpine-coverage-end-marginal",
+        "ada-renewal-date-marginal",
+        "ada-policy-issuer-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2536.3338330000006
+    },
+    {
+      "queryId": "bo-deductible-temporal-09",
+      "category": "temporal",
+      "directAnswerIds": [
+        "bo-deductible-direct"
+      ],
+      "candidateOrder": [
+        "bo-deductible-direct",
+        "bo-policy-issuer-direct",
+        "ada-policy-issuer-negative",
+        "bo-deductible-negative",
+        "bo-deductible-marginal",
+        "bo-policy-issuer-negative",
+        "bo-policy-issuer-support",
+        "ada-renewal-date-support",
+        "qx100-service-place-support",
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 155.5924159999995,
+      "rankedOrder": [
+        "bo-deductible-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-support",
+        "bo-policy-issuer-direct",
+        "vulpine-coverage-start-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2143.9843340000007
+    },
+    {
+      "queryId": "bo-deductible-provenance-05",
+      "category": "provenance",
+      "directAnswerIds": [
+        "bo-deductible-direct"
+      ],
+      "candidateOrder": [
+        "bo-deductible-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-negative",
+        "vulpine-coverage-end-direct",
+        "vulpine-lantern-exclusion-direct",
+        "ada-policy-issuer-negative",
+        "bo-receipt-owner-direct",
+        "bo-deductible-marginal",
+        "bo-policy-issuer-marginal"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 178.06254199999967,
+      "rankedOrder": [
+        "bo-deductible-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-direct",
+        "bo-receipt-owner-direct",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-end-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2217.083458000001
+    },
+    {
+      "queryId": "bo-deductible-exact_entity-09",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "bo-deductible-direct"
+      ],
+      "candidateOrder": [
+        "bo-deductible-direct",
+        "bo-policy-issuer-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "bo-deductible-marginal",
+        "bo-receipt-owner-direct",
+        "bo-policy-issuer-marginal",
+        "distractor-07",
+        "bo-policy-issuer-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 141.1273339999998,
+      "rankedOrder": [
+        "bo-deductible-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-direct",
+        "bo-receipt-owner-direct",
+        "bo-policy-issuer-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1835.5989169999993
+    },
+    {
+      "queryId": "bo-deductible-direct_answer-07",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "bo-deductible-direct"
+      ],
+      "candidateOrder": [
+        "bo-deductible-direct",
+        "bo-policy-issuer-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-support",
+        "vulpine-coverage-start-direct",
+        "bo-deductible-marginal",
+        "bo-policy-issuer-marginal",
+        "ada-renewal-date-support"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 148.63479199999983,
+      "rankedOrder": [
+        "bo-deductible-direct",
+        "bo-policy-issuer-direct",
+        "bo-deductible-negative",
+        "bo-policy-issuer-support",
+        "bo-deductible-marginal",
+        "bo-policy-issuer-marginal",
+        "vulpine-coverage-start-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2222.902459000001
+    },
+    {
+      "queryId": "vulpine-payment-frequency-negation-05",
+      "category": "negation",
+      "directAnswerIds": [
+        "vulpine-payment-frequency-direct"
+      ],
+      "candidateOrder": [
+        "distractor-23",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-negative",
+        "vulpine-renewal-amount-marginal",
+        "ada-renewal-date-direct",
+        "vulpine-coverage-start-direct",
+        "bo-receipt-owner-marginal",
+        "vulpine-coverage-end-direct"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 155.27312500000062,
+      "rankedOrder": [
+        "vulpine-payment-frequency-direct",
+        "vulpine-payment-frequency-negative",
+        "bo-receipt-owner-marginal",
+        "vulpine-renewal-amount-marginal",
+        "distractor-23"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2134.025708000001
+    },
+    {
+      "queryId": "vulpine-payment-frequency-provenance-06",
+      "category": "provenance",
+      "directAnswerIds": [
+        "vulpine-payment-frequency-direct"
+      ],
+      "candidateOrder": [
+        "distractor-23",
+        "vulpine-payment-frequency-direct",
+        "vulpine-payment-frequency-negative",
+        "vulpine-renewal-amount-direct",
+        "vulpine-coverage-end-direct",
+        "vulpine-renewal-amount-negative",
+        "ada-renewal-date-marginal",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-payment-frequency-marginal",
+        "vulpine-coverage-start-direct"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 112.17933300000004,
+      "rankedOrder": [
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-negative",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-marginal",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2504.759084000001
+    },
+    {
+      "queryId": "vulpine-payment-frequency-paraphrased_attribute-11",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "vulpine-payment-frequency-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-negative",
+        "ada-renewal-date-direct",
+        "vulpine-payment-frequency-support",
+        "ada-renewal-date-negative",
+        "vulpine-renewal-amount-negative",
+        "distractor-23",
+        "ada-renewal-date-support",
+        "bo-deductible-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 159.56045799999993,
+      "rankedOrder": [
+        "vulpine-payment-frequency-direct",
+        "vulpine-payment-frequency-support",
+        "vulpine-payment-frequency-negative",
+        "vulpine-renewal-amount-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2146.199124999999
+    },
+    {
+      "queryId": "vulpine-payment-frequency-direct_answer-08",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "vulpine-payment-frequency-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-negative",
+        "vulpine-renewal-amount-negative",
+        "qx100-service-date-marginal",
+        "distractor-08",
+        "vulpine-payment-frequency-marginal",
+        "vulpine-coverage-start-direct",
+        "distractor-23",
+        "vulpine-coverage-end-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 139.8538749999998,
+      "rankedOrder": [
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-negative",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-marginal",
+        "distractor-08",
+        "distractor-23"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2101.540541999999
+    },
+    {
+      "queryId": "qx100-manual-revision-negation-06",
+      "category": "negation",
+      "directAnswerIds": [
+        "qx100-manual-revision-direct"
+      ],
+      "candidateOrder": [
+        "qx100-warranty-length-marginal",
+        "qx100-manual-revision-negative",
+        "qx100-manual-revision-direct",
+        "qx100-source-provenance-direct",
+        "qx100-service-date-direct",
+        "qx100-warranty-length-negative",
+        "qx100-service-date-marginal",
+        "qx100-manual-revision-support",
+        "distractor-14",
+        "distractor-24"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 173.0387499999997,
+      "rankedOrder": [
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-negative",
+        "qx100-manual-revision-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2076.0600840000006
+    },
+    {
+      "queryId": "qx100-manual-revision-instruction_bearing-03",
+      "category": "instruction_bearing",
+      "directAnswerIds": [
+        "qx100-manual-revision-direct"
+      ],
+      "candidateOrder": [
+        "qx100-manual-revision-marginal",
+        "qx100-service-date-marginal",
+        "qx100-warranty-length-marginal",
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-negative",
+        "distractor-24",
+        "qx100-manual-revision-support",
+        "qx100-source-provenance-direct",
+        "distractor-14",
+        "qx100-service-date-direct"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 151.61833300000035,
+      "rankedOrder": [
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-support",
+        "qx100-manual-revision-negative",
+        "distractor-24"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2228.877833999999
+    },
+    {
+      "queryId": "qx100-manual-revision-paraphrased_attribute-12",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "qx100-manual-revision-direct"
+      ],
+      "candidateOrder": [
+        "qx100-manual-revision-support",
+        "bo-receipt-owner-marginal",
+        "qx100-service-date-direct",
+        "blackwater-meeting-date-marginal",
+        "qx100-manual-revision-marginal",
+        "instruction-05",
+        "qx100-service-date-marginal",
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-negative",
+        "instruction-07"
+      ],
+      "candidateRank": 8,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 129.06024999999954,
+      "rankedOrder": [
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-support",
+        "qx100-manual-revision-marginal",
+        "qx100-service-date-marginal",
+        "qx100-manual-revision-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2519.378458999996
+    },
+    {
+      "queryId": "qx100-manual-revision-direct_answer-09",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "qx100-manual-revision-direct"
+      ],
+      "candidateOrder": [
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-negative",
+        "distractor-24",
+        "qx100-service-date-direct",
+        "distractor-14",
+        "qx100-source-provenance-direct",
+        "qx100-manual-revision-support",
+        "qx100-service-date-marginal",
+        "qx100-warranty-length-marginal",
+        "qx100-warranty-length-direct"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 144.91966599999978,
+      "rankedOrder": [
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-negative",
+        "qx100-manual-revision-support",
+        "qx100-source-provenance-direct",
+        "distractor-24"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2508.237833999996
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-ambiguous_identity-07",
+      "category": "ambiguous_identity",
+      "directAnswerIds": [
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-coverage-start-marginal",
+        "vulpine-lantern-exclusion-marginal",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-coverage-start-negative",
+        "vulpine-coverage-end-direct",
+        "bo-receipt-owner-marginal",
+        "distractor-13",
+        "distractor-28"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 156.74495800000022,
+      "rankedOrder": [
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-marginal",
+        "vulpine-coverage-start-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2153.590709
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-exact_entity-10",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-marginal",
+        "vulpine-lantern-exclusion-support",
+        "distractor-13",
+        "vulpine-renewal-amount-negative",
+        "vulpine-coverage-end-negative"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 127.44949999999972,
+      "rankedOrder": [
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-lantern-exclusion-support",
+        "distractor-13",
+        "vulpine-lantern-exclusion-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2068.2809589999997
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-paraphrased_attribute-13",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-lantern-exclusion-support",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-lantern-exclusion-direct",
+        "distractor-31",
+        "qx100-manual-revision-support",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-direct",
+        "distractor-12",
+        "distractor-02"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 141.92554100000052,
+      "rankedOrder": [
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-direct",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-lantern-exclusion-support",
+        "vulpine-coverage-end-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2401.8476660000015
+    },
+    {
+      "queryId": "vulpine-lantern-exclusion-temporal-10",
+      "category": "temporal",
+      "directAnswerIds": [
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-coverage-start-direct",
+        "bo-receipt-owner-marginal",
+        "vulpine-lantern-exclusion-support",
+        "vulpine-renewal-amount-direct",
+        "qx100-service-place-support",
+        "vulpine-lantern-exclusion-marginal",
+        "blackwater-ferry-time-support",
+        "vulpine-coverage-start-marginal"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 141.65120800000022,
+      "rankedOrder": [
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-lantern-exclusion-support",
+        "vulpine-lantern-exclusion-negative",
+        "vulpine-coverage-start-direct",
+        "vulpine-lantern-exclusion-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2033.567750000002
+    },
+    {
+      "queryId": "qx100-service-place-ambiguous_identity-08",
+      "category": "ambiguous_identity",
+      "directAnswerIds": [
+        "qx100-service-place-direct"
+      ],
+      "candidateOrder": [
+        "qx100-service-place-marginal",
+        "qx100-service-place-direct",
+        "qx100-service-date-direct",
+        "qx100-service-date-negative",
+        "bo-deductible-marginal",
+        "distractor-24",
+        "qx100-manual-revision-marginal",
+        "qx100-battery-direct",
+        "distractor-29",
+        "qx100-service-date-marginal"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 139.01425000000017,
+      "rankedOrder": [
+        "qx100-service-place-direct",
+        "qx100-service-date-direct",
+        "qx100-service-date-negative",
+        "qx100-service-date-marginal",
+        "distractor-24",
+        "qx100-battery-direct",
+        "qx100-manual-revision-marginal",
+        "distractor-29"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2093.0367499999993
+    },
+    {
+      "queryId": "qx100-service-place-exact_entity-11",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "qx100-service-place-direct"
+      ],
+      "candidateOrder": [
+        "qx100-service-place-marginal",
+        "qx100-manual-revision-marginal",
+        "qx100-service-place-direct",
+        "qx100-service-date-direct",
+        "qx100-service-date-negative",
+        "qx100-service-place-negative",
+        "qx100-service-date-marginal",
+        "distractor-29",
+        "qx100-storage-direct",
+        "distractor-14"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 157.44700000000012,
+      "rankedOrder": [
+        "qx100-service-place-direct",
+        "qx100-manual-revision-marginal",
+        "qx100-service-place-marginal",
+        "qx100-service-date-direct",
+        "qx100-service-place-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2116.4297910000023
+    },
+    {
+      "queryId": "qx100-service-place-paraphrased_attribute-14",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "qx100-service-place-direct"
+      ],
+      "candidateOrder": [
+        "qx100-service-date-direct",
+        "qx100-service-place-negative",
+        "bo-receipt-owner-marginal",
+        "blackwater-meeting-date-marginal",
+        "qx100-service-place-marginal",
+        "qx100-battery-support",
+        "qx100-battery-marginal",
+        "qx100-service-place-support",
+        "qx100-service-date-marginal",
+        "qx100-service-date-support"
+      ],
+      "candidateRank": null,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 135.05004100000042,
+      "rankedOrder": [
+        "qx100-service-place-support",
+        "qx100-service-place-marginal",
+        "qx100-battery-support",
+        "qx100-service-place-negative",
+        "qx100-service-date-direct",
+        "qx100-service-date-support",
+        "qx100-battery-marginal",
+        "qx100-service-date-marginal"
+      ],
+      "rankedRank": null,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2116.454582999999
+    },
+    {
+      "queryId": "qx100-service-place-temporal-11",
+      "category": "temporal",
+      "directAnswerIds": [
+        "qx100-service-place-direct"
+      ],
+      "candidateOrder": [
+        "qx100-service-place-direct",
+        "qx100-service-date-direct",
+        "qx100-service-place-marginal",
+        "qx100-service-date-negative",
+        "distractor-24",
+        "qx100-service-date-support",
+        "qx100-manual-revision-marginal",
+        "qx100-manual-revision-direct",
+        "bo-deductible-marginal",
+        "qx100-service-place-negative"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 119.32829200000015,
+      "rankedOrder": [
+        "qx100-service-place-direct",
+        "qx100-service-date-direct",
+        "qx100-manual-revision-marginal",
+        "qx100-service-date-support",
+        "qx100-manual-revision-direct",
+        "qx100-service-place-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2216.993625000003
+    },
+    {
+      "queryId": "vulpine-coverage-end-provenance-07",
+      "category": "provenance",
+      "directAnswerIds": [
+        "vulpine-coverage-end-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-direct",
+        "distractor-13",
+        "vulpine-renewal-amount-negative",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-direct"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 148.14358400000037,
+      "rankedOrder": [
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-start-negative",
+        "vulpine-renewal-amount-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2400.2817920000016
+    },
+    {
+      "queryId": "vulpine-coverage-end-exact_entity-12",
+      "category": "exact_entity",
+      "directAnswerIds": [
+        "vulpine-coverage-end-direct"
+      ],
+      "candidateOrder": [
+        "distractor-13",
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-negative",
+        "vulpine-renewal-amount-negative",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "vulpine-lantern-exclusion-direct"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 138.52174999999988,
+      "rankedOrder": [
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-renewal-amount-negative",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "distractor-13"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 4073.8758329999982
+    },
+    {
+      "queryId": "vulpine-coverage-end-direct_answer-10",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "vulpine-coverage-end-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-coverage-start-marginal",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-negative",
+        "distractor-13"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 146.77287500000057,
+      "rankedOrder": [
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-negative",
+        "vulpine-lantern-exclusion-direct",
+        "vulpine-renewal-amount-direct",
+        "vulpine-payment-frequency-direct",
+        "vulpine-renewal-amount-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1931.302708000003
+    },
+    {
+      "queryId": "vulpine-coverage-end-temporal-12",
+      "category": "temporal",
+      "directAnswerIds": [
+        "vulpine-coverage-end-direct"
+      ],
+      "candidateOrder": [
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-negative",
+        "vulpine-renewal-amount-direct",
+        "vulpine-lantern-exclusion-direct",
+        "qx100-service-place-support",
+        "blackwater-ferry-time-support",
+        "distractor-13"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 147.01029199999994,
+      "rankedOrder": [
+        "vulpine-coverage-end-direct",
+        "vulpine-coverage-start-direct",
+        "vulpine-coverage-end-negative",
+        "vulpine-coverage-start-marginal",
+        "vulpine-coverage-start-negative",
+        "distractor-13"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2125.4012500000026
+    },
+    {
+      "queryId": "qx100-source-provenance-provenance-08",
+      "category": "provenance",
+      "directAnswerIds": [
+        "qx100-source-provenance-direct"
+      ],
+      "candidateOrder": [
+        "qx100-warranty-length-marginal",
+        "qx100-source-provenance-support",
+        "qx100-warranty-length-support",
+        "qx100-source-provenance-direct",
+        "qx100-warranty-length-direct",
+        "qx100-warranty-length-negative",
+        "qx100-battery-negative",
+        "qx100-battery-direct",
+        "qx100-source-provenance-negative",
+        "qx100-service-date-direct"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 149.39387499999975,
+      "rankedOrder": [
+        "qx100-source-provenance-direct",
+        "qx100-source-provenance-negative",
+        "qx100-source-provenance-support",
+        "qx100-warranty-length-support",
+        "qx100-warranty-length-direct",
+        "qx100-warranty-length-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2243.6834579999995
+    },
+    {
+      "queryId": "qx100-source-provenance-paraphrased_attribute-15",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "qx100-source-provenance-direct"
+      ],
+      "candidateOrder": [
+        "qx100-source-provenance-support",
+        "qx100-warranty-length-marginal",
+        "qx100-manual-revision-marginal",
+        "qx100-warranty-length-negative",
+        "qx100-source-provenance-direct",
+        "qx100-warranty-length-direct",
+        "qx100-source-provenance-marginal",
+        "qx100-service-date-marginal",
+        "qx100-manual-revision-support",
+        "distractor-19"
+      ],
+      "candidateRank": 5,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 209.70337500000005,
+      "rankedOrder": [
+        "qx100-source-provenance-direct",
+        "qx100-source-provenance-support",
+        "qx100-warranty-length-direct",
+        "qx100-warranty-length-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 3020.335957999996
+    },
+    {
+      "queryId": "qx100-source-provenance-direct_answer-11",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "qx100-source-provenance-direct"
+      ],
+      "candidateOrder": [
+        "qx100-warranty-length-marginal",
+        "qx100-source-provenance-support",
+        "qx100-manual-revision-marginal",
+        "qx100-source-provenance-direct",
+        "qx100-warranty-length-direct",
+        "qx100-warranty-length-negative",
+        "qx100-service-date-direct",
+        "qx100-manual-revision-direct",
+        "qx100-manual-revision-negative",
+        "distractor-14"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 162.922458,
+      "rankedOrder": [
+        "qx100-source-provenance-direct",
+        "qx100-source-provenance-support",
+        "qx100-warranty-length-negative",
+        "qx100-warranty-length-marginal",
+        "qx100-warranty-length-direct",
+        "qx100-manual-revision-direct"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2128.660499999998
+    },
+    {
+      "queryId": "qx100-source-provenance-negation-07",
+      "category": "negation",
+      "directAnswerIds": [
+        "qx100-source-provenance-direct"
+      ],
+      "candidateOrder": [
+        "qx100-source-provenance-marginal",
+        "qx100-warranty-length-marginal",
+        "qx100-source-provenance-support",
+        "qx100-source-provenance-direct",
+        "qx100-warranty-length-negative",
+        "qx100-warranty-length-direct",
+        "qx100-manual-revision-direct",
+        "qx100-source-provenance-negative",
+        "qx100-manual-revision-negative",
+        "qx100-service-date-direct"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 178.40020800000002,
+      "rankedOrder": [
+        "qx100-source-provenance-direct",
+        "qx100-source-provenance-negative",
+        "qx100-source-provenance-support",
+        "qx100-warranty-length-negative",
+        "qx100-warranty-length-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2505.533792000002
+    },
+    {
+      "queryId": "bo-receipt-owner-instruction_bearing-04",
+      "category": "instruction_bearing",
+      "directAnswerIds": [
+        "bo-receipt-owner-direct"
+      ],
+      "candidateOrder": [
+        "bo-receipt-owner-support",
+        "bo-deductible-marginal",
+        "bo-policy-issuer-marginal",
+        "bo-receipt-owner-direct",
+        "bo-receipt-owner-marginal",
+        "distractor-27",
+        "bo-policy-issuer-negative",
+        "distractor-32",
+        "bo-policy-issuer-support",
+        "blackwater-meeting-date-marginal"
+      ],
+      "candidateRank": 4,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 136.66145799999958,
+      "rankedOrder": [
+        "bo-receipt-owner-direct",
+        "bo-receipt-owner-support",
+        "bo-policy-issuer-marginal",
+        "bo-deductible-marginal",
+        "distractor-27",
+        "bo-receipt-owner-marginal",
+        "bo-policy-issuer-negative",
+        "bo-policy-issuer-support"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 1772.1390420000025
+    },
+    {
+      "queryId": "bo-receipt-owner-paraphrased_attribute-16",
+      "category": "paraphrased_attribute",
+      "directAnswerIds": [
+        "bo-receipt-owner-direct"
+      ],
+      "candidateOrder": [
+        "bo-receipt-owner-direct",
+        "bo-receipt-owner-negative",
+        "bo-receipt-owner-support",
+        "ada-renewal-date-direct",
+        "ada-renewal-date-negative",
+        "distractor-26",
+        "ada-renewal-date-support",
+        "distractor-08",
+        "vulpine-renewal-amount-direct",
+        "bo-receipt-owner-marginal"
+      ],
+      "candidateRank": 1,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 127.30237500000021,
+      "rankedOrder": [
+        "bo-receipt-owner-direct",
+        "bo-receipt-owner-support",
+        "bo-receipt-owner-negative",
+        "distractor-26",
+        "bo-receipt-owner-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2034.7774169999975
+    },
+    {
+      "queryId": "bo-receipt-owner-direct_answer-12",
+      "category": "direct_answer",
+      "directAnswerIds": [
+        "bo-receipt-owner-direct"
+      ],
+      "candidateOrder": [
+        "bo-receipt-owner-support",
+        "bo-policy-issuer-marginal",
+        "bo-receipt-owner-direct",
+        "bo-deductible-marginal",
+        "bo-policy-issuer-negative",
+        "distractor-32",
+        "ada-policy-issuer-negative",
+        "bo-policy-issuer-direct",
+        "distractor-27",
+        "bo-policy-issuer-support"
+      ],
+      "candidateRank": 3,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 181.64358300000004,
+      "rankedOrder": [
+        "bo-receipt-owner-direct",
+        "bo-receipt-owner-support",
+        "bo-policy-issuer-marginal",
+        "bo-policy-issuer-direct",
+        "bo-policy-issuer-negative",
+        "bo-policy-issuer-support",
+        "distractor-27",
+        "bo-deductible-marginal",
+        "ada-policy-issuer-negative"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2073.990749999997
+    },
+    {
+      "queryId": "bo-receipt-owner-negation-08",
+      "category": "negation",
+      "directAnswerIds": [
+        "bo-receipt-owner-direct"
+      ],
+      "candidateOrder": [
+        "bo-receipt-owner-support",
+        "bo-receipt-owner-direct",
+        "bo-policy-issuer-negative",
+        "bo-receipt-owner-negative",
+        "ada-policy-issuer-negative",
+        "ada-renewal-date-direct",
+        "blackwater-meeting-place-direct",
+        "ada-policy-issuer-marginal",
+        "bo-deductible-marginal",
+        "qx100-service-date-marginal"
+      ],
+      "candidateRank": 2,
+      "candidateStatus": "ok",
+      "candidateDegraded": [],
+      "candidateLatencyMs": 160.89137500000015,
+      "rankedOrder": [
+        "bo-receipt-owner-direct",
+        "bo-receipt-owner-negative",
+        "bo-receipt-owner-support",
+        "bo-policy-issuer-negative",
+        "ada-policy-issuer-negative",
+        "ada-renewal-date-direct",
+        "ada-policy-issuer-marginal"
+      ],
+      "rankedRank": 1,
+      "rankedStatus": "ok",
+      "degraded": [],
+      "rerankFallback": false,
+      "rankedLatencyMs": 2163.5785840000026
+    }
+  ]
+}

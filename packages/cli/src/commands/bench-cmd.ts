@@ -1530,7 +1530,7 @@ function renderRankingEndToEnd(
   );
   line(
     `  embedding              ${report.embedding.provider ?? 'unavailable'}/${report.embedding.model ?? 'unavailable'}` +
-      `${report.embedding.available ? '' : ' [unavailable]'}`,
+      ` (${report.embedding.dimensions}d)${report.embedding.available ? '' : ' [unavailable]'}`,
   );
   line(`  embedded chunks        ${report.embedding.embeddedChunks}/${report.embedding.totalChunks}`);
   line(

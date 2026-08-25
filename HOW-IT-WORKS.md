@@ -1622,9 +1622,10 @@ the frozen pool and real recall. It writes the invented 120-source corpus to a t
 it with the selected embedding role, measures direct-answer recall at the candidate-window boundary, reopens the
 same derived index read-only with the selected LLM reranker, and measures the final assembled result. The
 configured knowledge base is never opened or copied. A case may legitimately have more than one grade-3
-answer; end-to-end schema v2 records every accepted id and measures the best rank among those actually returned.
+answer; end-to-end schema v3 records every accepted id, measures the best rank among those actually returned,
+and binds the embedding dimensions so a different vector width cannot reuse the receipt.
 
-When a matrix selects OpenAI, the track defaults to `text-embedding-3-small` at 1,536 dimensions and uses the
+When a matrix selects OpenAI, the track uses the benchmarked `text-embedding-3-small` at 1,536 dimensions and uses the
 matrix's `gpt-5.6-luna` selection on that same provider. Its artifact binds both model receipts to the corpus,
 split, candidate count, excerpt size, reasoning effort, prompt, and schema. The embedding model must produce a
 vector for every indexed chunk before recall begins. A disabled, denied, or partial embedding pass records the
@@ -1723,15 +1724,26 @@ Luna with no reasoning and 10 candidates. Five repetitions produced 300/300 vali
 0.962 mean nDCG, complete direct/support/marginal retention, perfect instruction-negative rejection, 100%
 top-three stability, and 2.56-second p95 under four-way load. The current native BGE reference reached 0.919
 nDCG. Wider no-reasoning windows were slower without improving quality, and low reasoning was only 85.3% valid
-at 9.36-second p95. The review and development-selection gates are therefore complete. Matching v4 latency and
-end-to-end evidence plus the single pre-declared held-out evaluation remain open.
+at 9.36-second p95. The review and development-selection gates are therefore complete. Matching v4 latency,
+end-to-end evidence, and the single pre-declared held-out evaluation were still open at that point; the first
+two have since produced the measured results below.
 
-Matching end-to-end evidence remains blocked separately. An older run stopped when its configured embedding
-role produced 0 of 120 vectors. A fresh invented-fixture preflight confirms that this OpenAI project can call
-Luna but receives a redacted 403 for `text-embedding-3-small`, and `/v1/models` exposes no embedding model id.
-That proves honest prerequisite handling and a provider-capability gap; it cannot authorize lexical fallback or
-a second endpoint under the single-endpoint preset. The independent review is complete, but provider access for
-matching end-to-end evidence remains open.
+The matching v4 latency track kept every warm response valid and one-request, but measured 4.071-second warm
+single-flight p95 against the fixed 4-second SLO. The receipt is preserved as a failure rather than rerun or used
+to relax the threshold after observation.
+
+OpenAI embedding access then allowed a production-path comparison. Small at 1,536 dimensions and Large at 3,072
+both embedded all 120 chunks without degradation and reached the same 98.3% direct-answer candidate and ranked
+recall. Small had stronger candidate MRR, half-width vectors, and about 6.5 times the documented pages per dollar,
+so it is the quality-price selection. Both missed the same canonical source at fusion rank 11; its answer-bearing
+grade-2 support source was already inside the top 10, and a Small diagnostic at 20 candidates reached 100%
+candidate recall. This isolates the remaining end-to-end blocker to candidate-window/fusion policy rather than
+embedding quality. End-to-end schema v3 and matrix schema v7 bind the selected 1,536 dimensions into the receipt.
+
+An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
+failure-handling evidence. Current access covers both OpenAI embedding models; the new comparison above replaces
+the provider-capability blocker with a measured candidate-window blocker. It still cannot authorize lexical
+fallback, a second endpoint, or a held-out run.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

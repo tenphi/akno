@@ -84,6 +84,9 @@ JSON Schema definitions. The checked-in artifacts for this contract are:
 - `development-openai-luna-v6-2026-08-24.json`
 - `development-openai-luna-v6-latency-2026-08-24.json`
 - `development-openai-luna-v6-corpus-v4-2026-08-25.json`
+- `development-openai-luna-v6-corpus-v4-latency-2026-08-25.json`
+- `development-end-to-end-openai-luna-v6-corpus-v4-embedding-small-2026-08-25.json`
+- `development-end-to-end-openai-luna-v6-corpus-v4-embedding-large-2026-08-25.json`
 
 The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
 fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second concurrency-four p95. Provider usage
@@ -113,8 +116,19 @@ fallbacks, 0.962 mean nDCG, complete relevant-evidence retention, perfect instru
 top-three stability, and 2.56-second p95 under four-way load. The current local BGE reference reached 0.919
 nDCG. No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reasoning was only 85.3% valid,
 reached 0.892 nDCG, and took 9.36 seconds at p95. Every older matrix, latency receipt, held-out result, and review
-packet is historical evidence whose fingerprint intentionally fails attachment to v4. Run matching v4 latency
-and end-to-end tracks before the single pre-declared held-out matrix.
+packet is historical evidence whose fingerprint intentionally fails attachment to v4.
+
+The matching v4 latency receipt kept every warm response valid with one endpoint request, but warm single-flight
+p95 was 4.071 seconds against the fixed 4-second gate. The result is retained as failed development evidence.
+
+The dimension-bound end-to-end comparison evaluated both OpenAI embeddings through the production path. Small
+at 1,536 dimensions and Large at 3,072 dimensions each embedded 120/120 chunks without degradation and reached
+98.3% direct-answer candidate and ranked recall. Small had 0.624 candidate MRR versus Large's 0.487, uses
+half-width vectors, and has about 6.5 times the pages-per-dollar rate documented by OpenAI. Small is therefore
+the quality-price choice. Both models missed the same direct source at fusion rank 11; an answer-bearing support
+source was already inside the top 10, and a Small diagnostic with 20 candidates reached 100% candidate recall.
+The remaining development work is candidate-window/fusion policy plus the 71 ms latency miss—not another
+embedding model or a held-out run.
 
 To reproduce and attach the selected configuration's latency profiles:
 

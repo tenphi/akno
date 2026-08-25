@@ -21,7 +21,7 @@ import {
 } from './ranking.ts';
 import { rankingReviewEvidenceMatches, type RankingReviewEvidence } from './ranking-review.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v6';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v7';
 export const RANKING_MATRIX_VARIANT_IDS = [
   'llm-none-c10',
   'llm-none-c20',
@@ -114,6 +114,7 @@ export interface RankingEndToEndEvidence {
   rerankFallbackRate: number;
   embeddingProvider: string | null;
   embeddingModel: string | null;
+  embeddingDimensions: number | null;
   embeddingAvailable: boolean;
   totalChunks: number;
   embeddedChunks: number;
@@ -325,7 +326,11 @@ export function attachRankingEndToEndEvidence(
   report: RankingEndToEndReport,
 ): RankingMatrixReport {
   if (report.system !== 'llm') throw new Error('end-to-end release evidence must exercise the LLM reranker');
-  if (!['ranking-end-to-end-v1', 'ranking-end-to-end-v2'].includes(report.schemaVersion)) {
+  if (
+    !['ranking-end-to-end-v1', 'ranking-end-to-end-v2', 'ranking-end-to-end-v3'].includes(
+      report.schemaVersion,
+    )
+  ) {
     throw new Error('unsupported end-to-end artifact schema');
   }
   if (matrix.split !== report.split) throw new Error('matrix and end-to-end splits do not match');
@@ -363,6 +368,7 @@ export function attachRankingEndToEndEvidence(
       rerankFallbackRate: report.rerankFallbackRate,
       embeddingProvider: report.embedding.provider,
       embeddingModel: report.embedding.model,
+      embeddingDimensions: report.embedding.dimensions ?? null,
       embeddingAvailable: report.embedding.available,
       totalChunks: report.embedding.totalChunks,
       embeddedChunks: report.embedding.embeddedChunks,
@@ -684,6 +690,8 @@ function endToEndConfigurationMatches(
     evidence.embeddedChunks === evidence.totalChunks &&
     evidence.embeddingProvider === selected.provider &&
     evidence.embeddingModel !== null &&
+    evidence.embeddingDimensions !== null &&
+    evidence.embeddingDimensions > 0 &&
     evidence.rerankerAvailable &&
     evidence.rerankerProvider === selected.provider &&
     evidence.rerankerModel === selected.model &&

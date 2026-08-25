@@ -1,6 +1,6 @@
 {
   "kind": "ranking_matrix",
-  "schemaVersion": "ranking-matrix-v6",
+  "schemaVersion": "ranking-matrix-v7",
   "createdAt": "2026-08-25T10:01:17.766Z",
   "split": "development",
   "corpus": {
@@ -8772,8 +8772,169 @@
     "independenceConfirmed": true,
     "checksConfirmed": true
   },
-  "endToEndEvidence": null,
-  "latencyEvidence": null,
+  "endToEndEvidence": {
+    "split": "development",
+    "corpusVersion": "invented-ranking-v4",
+    "corpusFingerprint": "c48203f7fb05975720d447a151f7d9e8660834b1ec107f2fa9e6ca0ba602f83e",
+    "candidateCount": 10,
+    "directAnswerCandidateRecall": 0.9833333333333333,
+    "directAnswerRankedRecall": 0.9833333333333333,
+    "candidateDegradedQueries": 0,
+    "rankedDegradedQueries": 0,
+    "rerankFallbackRate": 0,
+    "embeddingProvider": "openai",
+    "embeddingModel": "text-embedding-3-small",
+    "embeddingDimensions": 1536,
+    "embeddingAvailable": true,
+    "totalChunks": 120,
+    "embeddedChunks": 120,
+    "rerankerProvider": "openai",
+    "rerankerModel": "gpt-5.6-luna",
+    "rerankerAvailable": true,
+    "reasoningEffort": "none",
+    "promptVersion": "akno-judgment-map-v6",
+    "schemaVersion": "tuple-judgment-map-v5"
+  },
+  "latencyEvidence": {
+    "kind": "ranking_latency",
+    "schemaVersion": "ranking-latency-v1",
+    "createdAt": "2026-08-25T10:35:49.838Z",
+    "development": true,
+    "releaseEligible": false,
+    "split": "development",
+    "corpus": {
+      "queries": 60,
+      "sources": 120,
+      "judgments": 600,
+      "categories": 8,
+      "version": "invented-ranking-v4",
+      "fingerprint": "c48203f7fb05975720d447a151f7d9e8660834b1ec107f2fa9e6ca0ba602f83e"
+    },
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "none",
+    "promptVersion": "akno-judgment-map-v6",
+    "schemaVersionContract": "tuple-judgment-map-v5",
+    "candidateCount": 10,
+    "excerptChars": 800,
+    "thresholds": {
+      "interactiveP95LatencyMs": 4000
+    },
+    "interactive": {
+      "concurrency": 1,
+      "cold": {
+        "samples": 1,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 4404.783708,
+        "p95LatencyMs": 4404.783708,
+        "maxLatencyMs": 4404.783708,
+        "endpointRequests": 3,
+        "extraEndpointRequests": 2,
+        "tokenUsage": {
+          "reportedQueries": 1,
+          "inputTokens": 951,
+          "outputTokens": 157,
+          "totalTokens": 1108,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "warm": {
+        "samples": 59,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 2057.312541000001,
+        "p95LatencyMs": 4070.649875000003,
+        "maxLatencyMs": 8841.449250000005,
+        "endpointRequests": 59,
+        "extraEndpointRequests": 0,
+        "tokenUsage": {
+          "reportedQueries": 59,
+          "inputTokens": 56504,
+          "outputTokens": 9263,
+          "totalTokens": 65767,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      }
+    },
+    "loaded": {
+      "concurrency": 4,
+      "cold": {
+        "samples": 1,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 3004.175166000001,
+        "p95LatencyMs": 3004.175166000001,
+        "maxLatencyMs": 3004.175166000001,
+        "endpointRequests": 3,
+        "extraEndpointRequests": 2,
+        "tokenUsage": {
+          "reportedQueries": 1,
+          "inputTokens": 951,
+          "outputTokens": 157,
+          "totalTokens": 1108,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "warm": {
+        "samples": 59,
+        "validResponseRate": 1,
+        "fallbackCount": 0,
+        "p50LatencyMs": 2053.0728749999835,
+        "p95LatencyMs": 5024.773458999989,
+        "maxLatencyMs": 9453.652959,
+        "endpointRequests": 59,
+        "extraEndpointRequests": 0,
+        "tokenUsage": {
+          "reportedQueries": 59,
+          "inputTokens": 56504,
+          "outputTokens": 9263,
+          "totalTokens": 65767,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      }
+    },
+    "checks": [
+      {
+        "id": "interactive_cold",
+        "passed": true,
+        "actual": true,
+        "target": "successful fresh-client call with a physical endpoint receipt"
+      },
+      {
+        "id": "interactive_integrity",
+        "passed": true,
+        "actual": true,
+        "target": "all warm responses valid with one endpoint request each"
+      },
+      {
+        "id": "interactive_latency",
+        "passed": false,
+        "actual": 4070.649875000003,
+        "target": "at most 4000ms warm single-flight p95"
+      },
+      {
+        "id": "loaded_cold",
+        "passed": true,
+        "actual": true,
+        "target": "successful fresh-client call with a physical endpoint receipt"
+      },
+      {
+        "id": "loaded_integrity",
+        "passed": true,
+        "actual": true,
+        "target": "all warm responses valid with one endpoint request each"
+      }
+    ],
+    "blockers": [
+      "interactive_latency"
+    ],
+    "passed": false
+  },
   "artifactPersisted": true,
   "releaseEligible": false,
   "releaseGate": {
@@ -8805,38 +8966,38 @@
       },
       {
         "id": "end_to_end_configuration",
-        "passed": false,
-        "actual": false,
+        "passed": true,
+        "actual": true,
         "target": "same split, corpus, and selected configuration with a fully embedded index and both models available"
       },
       {
         "id": "end_to_end_candidate_recall",
         "passed": false,
-        "actual": null,
+        "actual": 0.9833333333333333,
         "target": "1.0 at the selected candidate count"
       },
       {
         "id": "end_to_end_ranked_recall",
         "passed": false,
-        "actual": null,
+        "actual": 0.9833333333333333,
         "target": "1.0 after reranking and assembly"
       },
       {
         "id": "end_to_end_integrity",
-        "passed": false,
-        "actual": null,
+        "passed": true,
+        "actual": 0,
         "target": "zero degraded queries and zero rerank fallbacks"
       },
       {
         "id": "latency_configuration",
-        "passed": false,
-        "actual": false,
+        "passed": true,
+        "actual": true,
         "target": "same split, corpus, and selected configuration with warm single-flight and loaded profiles"
       },
       {
         "id": "latency_integrity",
-        "passed": false,
-        "actual": null,
+        "passed": true,
+        "actual": true,
         "target": "cold negotiation succeeds; every warm response is valid with one endpoint request"
       },
       {
@@ -8890,7 +9051,7 @@
       {
         "id": "latency",
         "passed": false,
-        "actual": null,
+        "actual": 4070.649875000003,
         "target": "warm single-flight p95 at most 4000ms"
       },
       {
@@ -8902,12 +9063,8 @@
     ],
     "blockers": [
       "held_out_split",
-      "end_to_end_configuration",
       "end_to_end_candidate_recall",
       "end_to_end_ranked_recall",
-      "end_to_end_integrity",
-      "latency_configuration",
-      "latency_integrity",
       "latency"
     ]
   }

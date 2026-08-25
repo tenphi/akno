@@ -15,7 +15,7 @@ import type {
   RankingExcerptChars,
 } from './ranking.ts';
 
-export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v2';
+export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v3';
 
 export type RankingEndToEndSystem = 'fusion' | 'llm';
 
@@ -101,6 +101,7 @@ export interface RankingEndToEndReport {
   embedding: {
     provider: string | null;
     model: string | null;
+    dimensions: number;
     available: boolean;
     totalChunks: number;
     embeddedChunks: number;
@@ -183,6 +184,7 @@ export async function runRankingEndToEnd(
     const indexHealth = await baseline.doctor();
     const embedding = {
       ...embeddingRole,
+      dimensions: embeddingDimensions,
       available:
         embeddingRole.available &&
         indexHealth.counts.chunks > 0 &&

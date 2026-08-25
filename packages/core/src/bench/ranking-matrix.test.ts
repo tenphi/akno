@@ -69,6 +69,12 @@ describe('ranking benchmark matrix', () => {
     };
     expect(evaluateRankingRelease(partialIndex).blockers).toContain('end_to_end_configuration');
 
+    const unboundDimensions = {
+      ...persisted,
+      endToEndEvidence: { ...persisted.endToEndEvidence!, embeddingDimensions: null },
+    };
+    expect(evaluateRankingRelease(unboundDimensions).blockers).toContain('end_to_end_configuration');
+
     const staleLatencyContract = {
       ...persisted,
       latencyEvidence: { ...persisted.latencyEvidence!, schemaVersion: 'invented-stale-latency' },
@@ -84,7 +90,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v6');
+    expect(report.schemaVersion).toBe('ranking-matrix-v7');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -149,6 +155,12 @@ describe('ranking benchmark matrix', () => {
         schemaVersion: 'ranking-end-to-end-v1',
       }).endToEndEvidence,
     ).not.toBeNull();
+    expect(
+      attachRankingEndToEndEvidence(matrix, {
+        ...endToEnd,
+        schemaVersion: 'ranking-end-to-end-v2',
+      }).endToEndEvidence,
+    ).not.toBeNull();
     expect(() =>
       attachRankingEndToEndEvidence(matrix, {
         ...endToEnd,
@@ -211,7 +223,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v6',
+    schemaVersion: 'ranking-matrix-v7',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -245,6 +257,7 @@ function passingReport(): RankingMatrixReport {
       rerankFallbackRate: 0,
       embeddingProvider: 'invented-provider',
       embeddingModel: 'invented-embedding-model',
+      embeddingDimensions: 8,
       embeddingAvailable: true,
       totalChunks: 120,
       embeddedChunks: 120,
@@ -386,7 +399,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
   };
   return {
     kind: 'ranking_end_to_end',
-    schemaVersion: 'ranking-end-to-end-v2',
+    schemaVersion: 'ranking-end-to-end-v3',
     createdAt: '2027-01-02T03:04:05.000Z',
     development: true,
     releaseEligible: false,
@@ -406,6 +419,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
     embedding: {
       provider: 'invented-provider',
       model: 'invented-embedding-model',
+      dimensions: 8,
       available: true,
       totalChunks: 120,
       embeddedChunks: 120,

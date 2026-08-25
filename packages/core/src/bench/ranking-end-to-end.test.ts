@@ -11,10 +11,10 @@ describe('end-to-end ranking benchmark', () => {
       concurrency: 4,
     });
 
-    expect(report.schemaVersion).toBe('ranking-end-to-end-v2');
+    expect(report.schemaVersion).toBe('ranking-end-to-end-v3');
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120, categories: 8 });
     expect(report.embedding.available).toBe(false);
-    expect(report.embedding).toMatchObject({ totalChunks: 120, embeddedChunks: 0 });
+    expect(report.embedding).toMatchObject({ dimensions: 8, totalChunks: 120, embeddedChunks: 0 });
     expect(report.passed).toBe(false);
     expect(report.candidateGeneration.degradedQueries).toBe(60);
     expect(report.candidateGeneration.unavailableQueries).toBe(60);
@@ -56,6 +56,7 @@ describe('end-to-end ranking benchmark', () => {
       expect(report.embedding).toMatchObject({
         provider: 'invented-provider',
         model: 'invented-embedding-model',
+        dimensions: 8,
         available: true,
         totalChunks: 120,
         embeddedChunks: 120,

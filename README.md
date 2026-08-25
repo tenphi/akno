@@ -138,8 +138,8 @@ akno init --preset openai-luna --akno-path /path/to/markdown \
 
 The command never writes configuration, installs a service, indexes, schedules maintenance, or changes the
 knowledge base. Configuration writing remains mechanically blocked until the checked-in ranking release gate
-passes. This is deliberate: a valid credential may allow Luna while the same OpenAI project denies every
-embedding model, and writing that preset would silently replace semantic recall with lexical degradation.
+passes. This is deliberate: model access is role-specific, and writing a preset after checking only Luna could
+silently replace semantic recall with lexical degradation when embedding access is unavailable.
 
 Rules can also travel with the notes: if `<akno_path>/akno.json` exists, its `folders` block wins over both
 config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as
@@ -193,8 +193,8 @@ and good. Expansion runs on every recall that asks for it, where a second of lat
 Pointing both at one model is a perfectly good answer; pointing `derive` at a 12B and `expansion` at a 3B is
 what a laptop wants, and it is what `config/local.example.jsonc` shows.
 
-Reasoning effort is configurable per generative role and sent explicitly when set. A practical hosted minimum
-therefore uses one OpenAI endpoint and credential, `text-embedding-3-small` for embeddings, and
+Reasoning effort is configurable per generative role and sent explicitly when set. The benchmarked hosted
+minimum uses one OpenAI endpoint and credential, `text-embedding-3-small` for embeddings, and
 `gpt-5.6-luna` for generative roles and prompted reranking. Expansion and reranking can use
 `reasoning_effort: "none"`; slower derivation or maintenance can choose a higher effort independently. The
 prompted reranker remains experimental until the relevance benchmark meets its release threshold.
@@ -1103,8 +1103,9 @@ The end-to-end track then tests the matrix selection through the production inde
 temporary knowledge base containing the same invented 120 sources, embeds it, measures whether each direct
 answer reaches the selected candidate window, and separately measures the final assembled order after
 reranking. When a case has multiple grade-3 answers, recall succeeds if any one is present and rank metrics use
-the best-ranked one; the v2 end-to-end report records all accepted direct-answer ids. It never opens the
-configured knowledge base. Passing `--matrix-artifact` binds the run to that
+the best-ranked one. End-to-end schema v3 records all accepted direct-answer ids and binds the embedding model's
+vector dimensions into the evidence. It never opens the configured knowledge base. Passing `--matrix-artifact`
+binds the run to that
 matrix's exact split, candidate count, excerpt limit, provider, model, reasoning effort, prompt, and schema, then
 attaches the evidence atomically:
 
@@ -1114,11 +1115,11 @@ akno bench ranking --track end-to-end \
   --output benchmarks/ranking/results/development-end-to-end-openai-luna.json
 ```
 
-For an OpenAI matrix selection, the single-endpoint defaults are `text-embedding-3-small` at 1,536 dimensions
-plus `gpt-5.6-luna`; both roles must use the same provider. The report records embedded/total chunks and fails
-before candidate queries when the embedding role is disabled, denied, or incomplete. This prevents lexical
-fallback from being reported as evidence for an embedding model that never ran. Candidate misses and ranking
-misses remain separate because a reranker cannot recover evidence absent from its input window.
+For an OpenAI matrix selection, the single-endpoint choice is `text-embedding-3-small` at 1,536 dimensions plus
+`gpt-5.6-luna`; both roles must use the same provider. The report records dimensions and embedded/total chunks
+and fails before candidate queries when the embedding role is disabled, denied, or incomplete. This prevents
+lexical fallback from being reported as evidence for an embedding model that never ran. Candidate misses and
+ranking misses remain separate because a reranker cannot recover evidence absent from its input window.
 
 Development is the default. `--split test` explicitly selects the held-out 20 queries; prompt work must use the
 default split so test evidence is not quietly turned into tuning data. Akno refuses every ranking `test` or
@@ -1214,16 +1215,27 @@ That matrix again selects Luna with no reasoning and 10 candidates: 300/300 vali
 stability, and 2.56-second p95 under four-way load. The configured native BGE reference reached 0.919 nDCG.
 No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reasoning was only 85.3% valid,
 reached 0.892 nDCG, and took 9.36 seconds at p95. Older development, latency, held-out, and review evidence
-remains immutable historical evidence whose fingerprints cannot authorize v4. Matching v4 latency and
-end-to-end receipts plus one pre-declared held-out matrix remain before the preset can be authorized.
+remains immutable historical evidence whose fingerprints cannot authorize v4.
+
+Fresh v4 latency and end-to-end evidence now expose two development blockers rather than clearing them. The
+[latency receipt](benchmarks/ranking/results/development-openai-luna-v6-corpus-v4-latency-2026-08-25.json)
+was 100% valid and one-request on every warm call, but its 4.071-second single-flight p95 narrowly exceeds the
+fixed 4-second SLO. OpenAI embedding access is available and both current models were compared through the full
+production path. `text-embedding-3-small` at 1,536 dimensions and `text-embedding-3-large` at 3,072 dimensions
+both embedded 120/120 chunks without degradation and reached 98.3% direct-answer recall. Small had better
+candidate MRR, half the vector width, and roughly 6.5 times the pages per dollar according to the
+[official OpenAI embedding guide](https://developers.openai.com/api/docs/guides/embeddings), so it remains the
+quality-price choice. Both models missed the same canonical source at fusion rank 11 while an answer-bearing
+support source was already in the top 10; a 20-result Small diagnostic reached 100% candidate recall. The next
+development task is therefore candidate-window/fusion policy, not a more expensive embedding model. The
+held-out split remains untouched.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The
 earlier end-to-end development run remains useful failure-handling evidence—it stopped when the selected
-embedding model produced 0 of 120 vectors—but it cannot satisfy the current contract's release gate. A fresh
-setup preflight confirms the configured OpenAI project can call Luna but receives a redacted 403 for
-`text-embedding-3-small`; its model list exposes no embedding model id. End-to-end single-endpoint evidence is
-therefore blocked on provider capability, not replaced with lexical fallback or a second endpoint.
+embedding model produced 0 of 120 vectors—but it cannot satisfy the current contract's release gate. Current
+access covers both OpenAI embedding models, and the fresh comparison above replaces provider availability with
+measured retrieval evidence without ever opening the configured knowledge base.
 
 **Index-path budgets are asserted; model-path timings are reported.** On the last row the model stack is
 2,008 ms of the 2,010 ms — 99.9%. A bench that adds a local 3B model's latency to a 20 ms budget and prints FAIL
