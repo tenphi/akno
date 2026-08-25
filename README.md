@@ -1255,8 +1255,23 @@ kept every warm call valid and one-request, with 1.55-second p50 and 1.94-second
 [production-path run](benchmarks/ranking/results/development-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json)
 embedded all 120 invented chunks with Small at 1,536 dimensions, retained 100% direct answers in the fusion
 pool, judged window, and final results, put a direct answer first for all 60 development queries, and recorded
-zero degradation or fallback. All development gates now pass. Only the explicitly untouched, pre-declared
-held-out split remains, so the preset is still experimental.
+zero degradation or fallback. All development gates passed. At that point only the explicitly untouched,
+pre-declared held-out split remained, so the preset was still experimental.
+
+That one pre-declared
+[v6/v6 held-out matrix](benchmarks/ranking/results/test-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json)
+is now frozen. It selected the same no-reasoning, 10-candidate shape, kept all 100 responses valid with zero
+fallbacks, retained every relevant candidate, rejected every instruction-bearing negative, and reached 0.940
+mean nDCG against fusion's 0.483. It did not pass release: median pairwise top-three overlap was 66.7% against
+the frozen 90% stability floor. Every direct answer stayed in the top three, but success@1 varied from 50% to
+75% across runs. The bound
+[held-out latency receipt](benchmarks/ranking/results/test-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json)
+passed at 2.20-second warm single-flight p95 with 100% valid, one-request warm calls. The matching
+[held-out production-path run](benchmarks/ranking/results/test-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json)
+embedded 120/120 invented chunks, retained 100% direct answers in the fusion pool, judged window, and final
+results, reached 95% success@1 and 100% success@3, and recorded zero degradation or fallback. The sole release
+blocker is `top3_stability`. This is final test evidence, not a prompt-tuning input, so the setup preset remains
+experimental.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

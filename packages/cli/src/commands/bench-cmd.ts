@@ -1591,7 +1591,13 @@ function renderRankingEndToEnd(
   line(
     `\n${report.passed ? style.green('end-to-end recall gate passed') : style.red('end-to-end recall gate failed')}`,
   );
-  line(style.grey('Development evidence cannot substitute for independent review or a held-out run.'));
+  line(style.grey(rankingEndToEndEvidenceNote(report.split)));
+}
+
+export function rankingEndToEndEvidenceNote(split: RankingBenchSplit): string {
+  return split === 'test'
+    ? 'Held-out evidence is final; preserve this result instead of rerunning or using it as tuning input.'
+    : 'Development evidence cannot substitute for independent review or a held-out run.';
 }
 
 function renderRankingEndToEndProgress(): (progress: {

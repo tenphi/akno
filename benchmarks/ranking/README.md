@@ -99,6 +99,9 @@ id-set validation. Its checked-in development artifacts are:
 - `development-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json`
 - `development-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json`
 - `development-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json`
+- `test-openai-luna-v6-schema-v6-corpus-v4-2026-08-25.json`
+- `test-openai-luna-v6-schema-v6-corpus-v4-latency-2026-08-25.json`
+- `test-end-to-end-openai-luna-v6-schema-v6-corpus-v4-semantic-tail-2026-08-25.json`
 
 The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
 fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second concurrency-four p95. Provider usage
@@ -153,8 +156,18 @@ matrix's four-way p95 fell from 2.56 to 2.30 seconds. Its exact latency track wa
 all warm calls; warm single-flight p50/p95 was 1.55/1.94 seconds, so the fixed 4-second UX gate passes. Warm
 four-way p95 was 3.75 seconds and remains capacity evidence. The matching production-path Small run retained
 100% pool, judged-window, and final direct-answer recall, put a direct answer first for all 60 queries, and had
-zero degradation or fallback. Every development gate now passes. Only the pre-declared held-out split remains;
-these development artifacts do not authorize the preset by themselves.
+zero degradation or fallback. Every development gate now passes. At that point only the pre-declared held-out
+split remained; these development artifacts do not authorize the preset by themselves.
+
+The one pre-declared v6/v6 held-out matrix is now frozen. It selected the same `llm-none-c10` shape and kept
+all 100 responses valid with zero fallbacks, complete direct/support/marginal retention, perfect
+instruction-negative rejection, 0.940 mean nDCG against fusion's 0.483, and 100% success@3. It failed the
+predeclared stability gate: median pairwise top-three overlap was 66.7% against the 90% floor. Per-run
+success@1 ranged from 50% to 75%, despite every direct answer remaining in the top three. The exact latency
+receipt passed at 2.20-second warm single-flight p95 with one endpoint request per warm call. The matching
+production-path run embedded all 120 chunks, retained every direct answer through the pool, judged window, and
+final assembly, reached 95% success@1 and 100% success@3, and recorded no degradation or fallback. The matrix's
+sole blocker is `top3_stability`; it is final test evidence and must not be rerun or used as a tuning set.
 
 To reproduce and attach the selected configuration's latency profiles:
 

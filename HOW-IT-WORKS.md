@@ -1763,7 +1763,17 @@ bound latency track kept all 118 warm responses valid with exactly one endpoint 
 was 1.55/1.94 seconds, passing the fixed 4-second interaction SLO, and four-way p95 was 3.75 seconds. The exact
 production-path Small run embedded all 120 invented chunks, retained every direct answer in the fusion pool,
 judged window, and final results, produced 100% success@1, and recorded zero degradation or fallback. Every
-development gate now passes. The sole release blocker is the deliberately untouched held-out split.
+development gate passed. At that point the sole release blocker was the deliberately untouched held-out split.
+
+The single pre-declared v6/v6 held-out matrix is now immutable. It selected `llm-none-c10` again, returned
+100/100 valid maps with zero fallback, retained every relevant candidate, rejected every instruction-bearing
+negative, and reached 0.940 mean nDCG against fusion's 0.483. However, median pairwise top-three overlap was
+66.7%, below the frozen 90% stability floor. Each run kept a direct answer in the top three, but success@1
+ranged from 50% to 75%. The bound latency track passed with 2.20-second warm single-flight p95 and one endpoint
+request per warm call. The exact production-path Small run embedded all 120 invented chunks, retained every
+direct answer through fusion-pool, judged-window, and final recall, reached 95% success@1 and 100% success@3,
+and recorded zero degradation or fallback. `top3_stability` is therefore the sole release blocker. The held-out
+artifact must be preserved rather than rerun or mined for case-specific prompt tuning.
 
 An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
 failure-handling evidence. Current access covers both OpenAI embedding models; the successful evidence above
