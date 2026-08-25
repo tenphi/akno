@@ -474,7 +474,7 @@ async function runLlmCase(
   benchCase: RankingCase,
   excerptChars: RankingExcerptChars,
 ): Promise<QueryOutcome> {
-  const opaqueIds = allocateLlmRerankIds(benchCase.pool.length);
+  const opaqueIds = allocateLlmRerankIds(benchCase.query, benchCase.pool);
   const candidates: LlmRerankCandidate[] = benchCase.pool.map((id, index) => {
     const candidate = RANKING_CORPUS.candidates[id]!;
     return {

@@ -1236,7 +1236,7 @@ final direct-answer recall, and produced 100% final success@1 with zero degradat
 schema v4 and matrix schema v8 bind that selection contract. Its end-to-end gate passed, while its preserved
 latency receipt remained 71 ms above the SLO.
 
-The current runtime contract is `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It replaces the long
+The preceding runtime contract was `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It replaces the long
 candidate hashes with a compact stable alphabet: the selected 10-candidate request uses one-character opaque
 ids, and larger benchmark windows use one or two characters. Akno freshly shuffles the fixed id set among
 candidates on every request, so neither identity nor input rank is exposed; strict fixed properties still make
@@ -1272,6 +1272,35 @@ embedded 120/120 invented chunks, retained 100% direct answers in the fusion poo
 results, reached 95% success@1 and 100% success@3, and recorded zero degradation or fallback. The sole release
 blocker is `top3_stability`. This is final test evidence, not a prompt-tuning input, so the setup preset remains
 experimental.
+
+Two simpler grade-only response contracts were evaluated next on development data and rejected. Both produced
+300/300 valid responses and stable top-three sets, but v7 reduced nDCG to 0.896, direct-answer retention to
+98.4%, and success@3 to 95.7%; v8 reached only 0.889 nDCG, 99.0% direct-answer retention, and 97.7% success@3.
+This confirms that asking Luna for an explicit within-grade order improves its relevance judgments even when
+Akno could otherwise preserve fusion order deterministically.
+
+The current runtime contract is `akno-judgment-map-v9` / `tuple-judgment-map-v6`. It keeps the proven compact
+`[grade, rank]` map and makes opaque-id assignment deterministic for an identical complete request. Akno hashes
+the query plus ordered local candidate keys into a request-local permutation; changing the query, candidates,
+or their order changes the permutation. Only compact symbols are sent to the endpoint, never the seed or local
+candidate keys. Identical recall work therefore produces identical prompt bytes without encoding fused rank or
+source identity in an id.
+
+The approved five-run
+[v9 development matrix](benchmarks/ranking/results/development-openai-luna-v9-stable-ids-corpus-v4-2026-08-25.json)
+selects Luna with no reasoning and 10 candidates. It recorded 300/300 valid responses, zero fallback, 0.968
+mean nDCG against fusion's 0.482, complete direct/support/marginal retention, perfect instruction-negative
+rejection, and 100% top-three stability. The bound
+[latency receipt](benchmarks/ranking/results/development-openai-luna-v9-stable-ids-corpus-v4-latency-2026-08-25.json)
+measured 1.39-second warm single-flight p50 and 2.00-second p95 with one endpoint request per warm call. The
+[production-path receipt](benchmarks/ranking/results/development-end-to-end-openai-luna-v9-stable-ids-corpus-v4-semantic-tail-2026-08-25.json)
+embedded 120/120 invented chunks with `text-embedding-3-small`, retained 100% direct answers at every retrieval
+boundary, reached 98.3% success@1 and 100% success@3, and recorded zero fallback or degradation. The two
+grade-only targeted artifacts remain checked-in negative evidence.
+
+All v9 development gates pass. The immutable v6/v6 held-out result cannot authorize this changed contract and
+will not be rerun or mined for case-specific tuning. The setup preset remains experimental until v9 passes a
+newly pre-declared, independently reviewed held-out corpus.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

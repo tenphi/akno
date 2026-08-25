@@ -374,7 +374,10 @@ export async function rerankHits(
   });
 
   if (reranker.rerankerMode === 'llm') {
-    const ids = allocateLlmRerankIds(candidates.length);
+    const ids = allocateLlmRerankIds(
+      query,
+      candidates.map((hit) => `${hit.pageId ?? 'document'}:${hit.chunkId}`),
+    );
     const llmCandidates: LlmRerankCandidate[] = candidates.map((hit, index) => {
       return {
         id: ids[index]!,

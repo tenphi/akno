@@ -1,0 +1,2072 @@
+{
+  "kind": "ranking_matrix",
+  "schemaVersion": "ranking-matrix-v8",
+  "createdAt": "2026-08-25T14:54:32.441Z",
+  "split": "development",
+  "corpus": {
+    "queries": 60,
+    "sources": 120,
+    "judgments": 600,
+    "categories": 8,
+    "version": "invented-ranking-v4",
+    "fingerprint": "c48203f7fb05975720d447a151f7d9e8660834b1ec107f2fa9e6ca0ba602f83e"
+  },
+  "requestedRuns": 5,
+  "concurrency": 4,
+  "targetedVariants": [
+    "llm-none-c10"
+  ],
+  "variants": [
+    {
+      "id": "llm-none-c10",
+      "system": "llm",
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "akno-relevance-grades-v8",
+      "schemaVersion": "grade-map-v7",
+      "candidateCount": 10,
+      "excerptChars": 800,
+      "runCount": 5,
+      "comparisonEligible": true,
+      "quality": {
+        "ndcgAt10": 0.8892794823754911,
+        "mrrAt10": 0.7033333333333334,
+        "successAt1": 0.42666666666666664,
+        "successAt3": 0.9766666666666666,
+        "precisionAt5": 0.4079999999999996,
+        "gradeZeroAboveGradeThree": 0.06666666666666667
+      },
+      "fusionBaseline": {
+        "ndcgAt10": 0.4848977333571079,
+        "mrrAt10": 0.19222222222222213,
+        "successAt1": 0,
+        "successAt3": 0.15,
+        "precisionAt5": 0.23333333333333311,
+        "gradeZeroAboveGradeThree": 2.683333333333333
+      },
+      "ndcgDeltaFromFusion": 0.4043817490183832,
+      "byCategory": [
+        {
+          "category": "exact_entity",
+          "queries": 9,
+          "quality": {
+            "ndcgAt10": 0.95775686588079,
+            "mrrAt10": 0.9314814814814815,
+            "successAt1": 0.888888888888889,
+            "successAt3": 0.9777777777777779,
+            "precisionAt5": 0.39999999999999997,
+            "gradeZeroAboveGradeThree": 0.02222222222222222
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.563356424635959,
+            "mrrAt10": 0.3333333333333333,
+            "successAt1": 0,
+            "successAt3": 1,
+            "precisionAt5": 0.39999999999999997,
+            "gradeZeroAboveGradeThree": 1
+          },
+          "ndcgDeltaFromFusion": 0.394400441244831
+        },
+        {
+          "category": "paraphrased_attribute",
+          "queries": 12,
+          "quality": {
+            "ndcgAt10": 0.8657044503727356,
+            "mrrAt10": 0.5888888888888889,
+            "successAt1": 0.1833333333333333,
+            "successAt3": 1,
+            "precisionAt5": 0.4333333333333334,
+            "gradeZeroAboveGradeThree": 0.016666666666666666
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4745762352203018,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.19999999999999998,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.3911282151524338
+        },
+        {
+          "category": "direct_answer",
+          "queries": 9,
+          "quality": {
+            "ndcgAt10": 0.8891701385062152,
+            "mrrAt10": 0.6666666666666666,
+            "successAt1": 0.33333333333333337,
+            "successAt3": 1,
+            "precisionAt5": 0.42222222222222217,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.47725622138889345,
+            "mrrAt10": 0.1703703703703704,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.22222222222222224,
+            "gradeZeroAboveGradeThree": 2.888888888888889
+          },
+          "ndcgDeltaFromFusion": 0.4119139171173217
+        },
+        {
+          "category": "temporal",
+          "queries": 9,
+          "quality": {
+            "ndcgAt10": 0.8678478753300984,
+            "mrrAt10": 0.6203703703703705,
+            "successAt1": 0.26666666666666666,
+            "successAt3": 0.9555555555555555,
+            "precisionAt5": 0.39555555555555555,
+            "gradeZeroAboveGradeThree": 0.08888888888888888
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126784,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.19999999999999998,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.39765636831742
+        },
+        {
+          "category": "negation",
+          "queries": 6,
+          "quality": {
+            "ndcgAt10": 0.7998605448555969,
+            "mrrAt10": 0.5777777777777777,
+            "successAt1": 0.26666666666666666,
+            "successAt3": 0.8666666666666666,
+            "precisionAt5": 0.3866666666666666,
+            "gradeZeroAboveGradeThree": 0.4666666666666666
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.19999999999999998,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.32966903784291857
+        },
+        {
+          "category": "ambiguous_identity",
+          "queries": 6,
+          "quality": {
+            "ndcgAt10": 0.9277367904110981,
+            "mrrAt10": 0.8333333333333334,
+            "successAt1": 0.6666666666666666,
+            "successAt3": 1,
+            "precisionAt5": 0.39999999999999997,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4701915070126783,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.19999999999999998,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4575452833984198
+        },
+        {
+          "category": "provenance",
+          "queries": 6,
+          "quality": {
+            "ndcgAt10": 0.919821951707827,
+            "mrrAt10": 0.7833333333333334,
+            "successAt1": 0.5666666666666667,
+            "successAt3": 1,
+            "precisionAt5": 0.39999999999999997,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.47210808138323834,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.19999999999999998,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.44771387032458865
+        },
+        {
+          "category": "instruction_bearing",
+          "queries": 3,
+          "quality": {
+            "ndcgAt10": 0.8836086329185271,
+            "mrrAt10": 0.6666666666666666,
+            "successAt1": 0.3333333333333333,
+            "successAt3": 1,
+            "precisionAt5": 0.4000000000000001,
+            "gradeZeroAboveGradeThree": 0
+          },
+          "fusionBaseline": {
+            "ndcgAt10": 0.4422550763311648,
+            "mrrAt10": 0.16666666666666666,
+            "successAt1": 0,
+            "successAt3": 0,
+            "precisionAt5": 0.20000000000000004,
+            "gradeZeroAboveGradeThree": 3
+          },
+          "ndcgDeltaFromFusion": 0.4413535565873623
+        }
+      ],
+      "qualification": {
+        "answerRetention": 0.9903225806451612,
+        "supportRetention": 1,
+        "marginalRetention": 1,
+        "irrelevantRejection": 0.6973493975903615,
+        "retainedPrecision": 0.39490107642154015,
+        "instructionNegativeRejection": 0.99
+      },
+      "validResponseRate": 1,
+      "fallbackPreserved": true,
+      "p50LatencyMs": 1293.6670409999997,
+      "p95LatencyMs": 2141.702333000001,
+      "maxLatencyMs": 8542.27375,
+      "medianTop3Overlap": 1,
+      "execution": {
+        "requests": 300,
+        "endpointRequests": 310,
+        "extraEndpointRequests": 10,
+        "tokenUsage": {
+          "reportedQueries": 300,
+          "inputTokens": 229075,
+          "outputTokens": 15300,
+          "totalTokens": 244375,
+          "cachedInputTokens": 0,
+          "reasoningOutputTokens": 0
+        }
+      },
+      "runs": [
+        {
+          "quality": {
+            "ndcgAt10": 0.8932738048298828,
+            "mrrAt10": 0.7083333333333334,
+            "successAt1": 0.43333333333333335,
+            "successAt3": 0.9833333333333333,
+            "precisionAt5": 0.4066666666666663,
+            "gradeZeroAboveGradeThree": 0.06666666666666667
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1253.1838750000024,
+          "p95LatencyMs": 1564.8775,
+          "maxLatencyMs": 8357.69175,
+          "topThree": {
+            "bo-policy-issuer-paraphrased_attribute-05": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-temporal-04": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-ambiguous_identity-03": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-exact_entity-04": [
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-marginal"
+            ],
+            "vulpine-renewal-amount-paraphrased_attribute-06": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-negative"
+            ],
+            "vulpine-renewal-amount-temporal-05": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-ambiguous_identity-04": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-renewal-amount-exact_entity-05": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-coverage-start-direct_answer-04": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-temporal-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-provenance-03": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-marginal",
+              "vulpine-coverage-start-support"
+            ],
+            "vulpine-coverage-start-exact_entity-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "ada-renewal-date-negative"
+            ],
+            "blackwater-meeting-place-direct_answer-05": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-place-marginal"
+            ],
+            "blackwater-meeting-place-negation-03": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-negative",
+              "blackwater-meeting-place-marginal"
+            ],
+            "blackwater-meeting-place-provenance-04": [
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-date-marginal"
+            ],
+            "blackwater-meeting-place-paraphrased_attribute-07": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-direct"
+            ],
+            "blackwater-meeting-date-direct_answer-06": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-negation-04": [
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-meeting-date-instruction_bearing-02": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-paraphrased_attribute-08": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-ferry-time-temporal-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-ambiguous_identity-05": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-support"
+            ],
+            "blackwater-ferry-time-exact_entity-07": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-paraphrased_attribute-09": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "ada-renewal-date-temporal-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-ambiguous_identity-06": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "ada-renewal-date-exact_entity-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-marginal"
+            ],
+            "ada-renewal-date-paraphrased_attribute-10": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "bo-deductible-temporal-09": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-provenance-05": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-marginal"
+            ],
+            "bo-deductible-exact_entity-09": [
+              "bo-deductible-direct",
+              "bo-deductible-support",
+              "vulpine-payment-frequency-support"
+            ],
+            "bo-deductible-direct_answer-07": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-marginal"
+            ],
+            "vulpine-payment-frequency-negation-05": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal",
+              "vulpine-payment-frequency-support"
+            ],
+            "vulpine-payment-frequency-provenance-06": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-negative"
+            ],
+            "vulpine-payment-frequency-paraphrased_attribute-11": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-negative"
+            ],
+            "vulpine-payment-frequency-direct_answer-08": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "qx100-manual-revision-negation-06": [
+              "qx100-manual-revision-negative",
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct"
+            ],
+            "qx100-manual-revision-instruction_bearing-03": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-paraphrased_attribute-12": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-direct_answer-09": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-marginal"
+            ],
+            "vulpine-lantern-exclusion-ambiguous_identity-07": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-payment-frequency-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-exact_entity-10": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-paraphrased_attribute-13": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "bo-policy-issuer-direct"
+            ],
+            "vulpine-lantern-exclusion-temporal-10": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "qx100-service-place-ambiguous_identity-08": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-exact_entity-11": [
+              "qx100-service-place-marginal",
+              "qx100-service-place-direct",
+              "qx100-service-place-support"
+            ],
+            "qx100-service-place-paraphrased_attribute-14": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-temporal-11": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "vulpine-coverage-end-provenance-07": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-exact_entity-12": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-direct_answer-10": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "vulpine-coverage-end-temporal-12": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "qx100-source-provenance-provenance-08": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-paraphrased_attribute-15": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-direct_answer-11": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-negation-07": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-negative",
+              "qx100-source-provenance-support"
+            ],
+            "bo-receipt-owner-instruction_bearing-04": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ],
+            "bo-receipt-owner-paraphrased_attribute-16": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-direct_answer-12": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-negation-08": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 60,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 80,
+            "endpointRequests": 62,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 60,
+              "inputTokens": 45815,
+              "outputTokens": 3060,
+              "totalTokens": 48875,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.8711856274465909,
+            "mrrAt10": 0.6680555555555555,
+            "successAt1": 0.36666666666666664,
+            "successAt3": 0.95,
+            "precisionAt5": 0.4099999999999996,
+            "gradeZeroAboveGradeThree": 0.08333333333333333
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1330.5143749999952,
+          "p95LatencyMs": 2268.439333000002,
+          "maxLatencyMs": 8542.27375,
+          "topThree": {
+            "bo-policy-issuer-paraphrased_attribute-05": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-temporal-04": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "vulpine-coverage-start-direct"
+            ],
+            "bo-policy-issuer-ambiguous_identity-03": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-exact_entity-04": [
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-marginal"
+            ],
+            "vulpine-renewal-amount-paraphrased_attribute-06": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-temporal-05": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-ambiguous_identity-04": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-renewal-amount-exact_entity-05": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-coverage-start-direct_answer-04": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-temporal-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-provenance-03": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-negative",
+              "vulpine-coverage-start-support"
+            ],
+            "vulpine-coverage-start-exact_entity-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-negative",
+              "vulpine-coverage-start-support"
+            ],
+            "blackwater-meeting-place-direct_answer-05": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-place-direct"
+            ],
+            "blackwater-meeting-place-negation-03": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-place-negative"
+            ],
+            "blackwater-meeting-place-provenance-04": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-marginal"
+            ],
+            "blackwater-meeting-place-paraphrased_attribute-07": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-direct"
+            ],
+            "blackwater-meeting-date-direct_answer-06": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-meeting-date-negation-04": [
+              "blackwater-meeting-date-negative",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-instruction_bearing-02": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-paraphrased_attribute-08": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-ferry-time-temporal-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-negative"
+            ],
+            "blackwater-ferry-time-ambiguous_identity-05": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-support"
+            ],
+            "blackwater-ferry-time-exact_entity-07": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-paraphrased_attribute-09": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "ada-renewal-date-temporal-08": [
+              "ada-renewal-date-support",
+              "ada-renewal-date-direct",
+              "ada-renewal-date-negative"
+            ],
+            "ada-renewal-date-ambiguous_identity-06": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "ada-renewal-date-exact_entity-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-paraphrased_attribute-10": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "bo-deductible-temporal-09": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-provenance-05": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-exact_entity-09": [
+              "bo-deductible-direct",
+              "bo-deductible-support",
+              "bo-deductible-marginal"
+            ],
+            "bo-deductible-direct_answer-07": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "vulpine-payment-frequency-negation-05": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal",
+              "vulpine-payment-frequency-support"
+            ],
+            "vulpine-payment-frequency-provenance-06": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-negative"
+            ],
+            "vulpine-payment-frequency-paraphrased_attribute-11": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "vulpine-payment-frequency-direct_answer-08": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-negative"
+            ],
+            "qx100-manual-revision-negation-06": [
+              "qx100-manual-revision-negative",
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct"
+            ],
+            "qx100-manual-revision-instruction_bearing-03": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-paraphrased_attribute-12": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-direct_answer-09": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "vulpine-lantern-exclusion-ambiguous_identity-07": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-exact_entity-10": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-paraphrased_attribute-13": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-temporal-10": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "qx100-service-place-ambiguous_identity-08": [
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal",
+              "qx100-service-place-support"
+            ],
+            "qx100-service-place-exact_entity-11": [
+              "qx100-service-place-marginal",
+              "qx100-service-place-negative",
+              "qx100-service-place-support"
+            ],
+            "qx100-service-place-paraphrased_attribute-14": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-temporal-11": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "vulpine-coverage-end-provenance-07": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-exact_entity-12": [
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-direct_answer-10": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "vulpine-coverage-end-temporal-12": [
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support",
+              "distractor-11"
+            ],
+            "qx100-source-provenance-provenance-08": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-paraphrased_attribute-15": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-direct_answer-11": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-negation-07": [
+              "qx100-source-provenance-negative",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support"
+            ],
+            "bo-receipt-owner-instruction_bearing-04": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ],
+            "bo-receipt-owner-paraphrased_attribute-16": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ],
+            "bo-receipt-owner-direct_answer-12": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "vulpine-coverage-start-direct"
+            ],
+            "bo-receipt-owner-negation-08": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 60,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 80,
+            "endpointRequests": 62,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 60,
+              "inputTokens": 45815,
+              "outputTokens": 3060,
+              "totalTokens": 48875,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.8984947166667863,
+            "mrrAt10": 0.7263888888888889,
+            "successAt1": 0.4666666666666667,
+            "successAt3": 0.9833333333333333,
+            "precisionAt5": 0.4099999999999996,
+            "gradeZeroAboveGradeThree": 0.03333333333333333
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1336.4492909999972,
+          "p95LatencyMs": 2141.702333000001,
+          "maxLatencyMs": 4143.067499999997,
+          "topThree": {
+            "bo-policy-issuer-paraphrased_attribute-05": [
+              "vulpine-renewal-amount-negative",
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct"
+            ],
+            "bo-policy-issuer-temporal-04": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "vulpine-coverage-start-direct"
+            ],
+            "bo-policy-issuer-ambiguous_identity-03": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "vulpine-coverage-start-negative"
+            ],
+            "bo-policy-issuer-exact_entity-04": [
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-marginal"
+            ],
+            "vulpine-renewal-amount-paraphrased_attribute-06": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-temporal-05": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-ambiguous_identity-04": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-renewal-amount-exact_entity-05": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-coverage-start-direct_answer-04": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-temporal-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-provenance-03": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-exact_entity-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-negative",
+              "vulpine-coverage-start-support"
+            ],
+            "blackwater-meeting-place-direct_answer-05": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-place-direct"
+            ],
+            "blackwater-meeting-place-negation-03": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-place-negative"
+            ],
+            "blackwater-meeting-place-provenance-04": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-marginal"
+            ],
+            "blackwater-meeting-place-paraphrased_attribute-07": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-direct"
+            ],
+            "blackwater-meeting-date-direct_answer-06": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-negation-04": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-negative",
+              "blackwater-meeting-date-marginal"
+            ],
+            "blackwater-meeting-date-instruction_bearing-02": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-meeting-date-paraphrased_attribute-08": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-ferry-time-temporal-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-ambiguous_identity-05": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-support"
+            ],
+            "blackwater-ferry-time-exact_entity-07": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-paraphrased_attribute-09": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "ada-renewal-date-temporal-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "ada-renewal-date-ambiguous_identity-06": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-negative"
+            ],
+            "ada-renewal-date-exact_entity-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-paraphrased_attribute-10": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "bo-deductible-temporal-09": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-provenance-05": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-exact_entity-09": [
+              "bo-deductible-direct",
+              "bo-deductible-support",
+              "bo-deductible-marginal"
+            ],
+            "bo-deductible-direct_answer-07": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-marginal"
+            ],
+            "vulpine-payment-frequency-negation-05": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal",
+              "vulpine-payment-frequency-support"
+            ],
+            "vulpine-payment-frequency-provenance-06": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-negative"
+            ],
+            "vulpine-payment-frequency-paraphrased_attribute-11": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-negative"
+            ],
+            "vulpine-payment-frequency-direct_answer-08": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "qx100-manual-revision-negation-06": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-instruction_bearing-03": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-paraphrased_attribute-12": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-direct_answer-09": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "vulpine-lantern-exclusion-ambiguous_identity-07": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal",
+              "vulpine-lantern-exclusion-support"
+            ],
+            "vulpine-lantern-exclusion-exact_entity-10": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-paraphrased_attribute-13": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-temporal-10": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "qx100-service-place-ambiguous_identity-08": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-exact_entity-11": [
+              "qx100-service-place-direct",
+              "qx100-service-place-support",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-paraphrased_attribute-14": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-negative"
+            ],
+            "qx100-service-place-temporal-11": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "vulpine-coverage-end-provenance-07": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "vulpine-coverage-end-exact_entity-12": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-direct_answer-10": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-temporal-12": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "qx100-source-provenance-provenance-08": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-paraphrased_attribute-15": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-direct_answer-11": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-negation-07": [
+              "qx100-source-provenance-negative",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-marginal"
+            ],
+            "bo-receipt-owner-instruction_bearing-04": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-policy-issuer-negative"
+            ],
+            "bo-receipt-owner-paraphrased_attribute-16": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ],
+            "bo-receipt-owner-direct_answer-12": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-negation-08": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 60,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 80,
+            "endpointRequests": 62,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 60,
+              "inputTokens": 45815,
+              "outputTokens": 3060,
+              "totalTokens": 48875,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.8958149199339406,
+            "mrrAt10": 0.7194444444444444,
+            "successAt1": 0.45,
+            "successAt3": 1,
+            "precisionAt5": 0.4099999999999996,
+            "gradeZeroAboveGradeThree": 0.03333333333333333
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1277.3130840000085,
+          "p95LatencyMs": 1943.8000420000026,
+          "maxLatencyMs": 4364.282249999989,
+          "topThree": {
+            "bo-policy-issuer-paraphrased_attribute-05": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-temporal-04": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "vulpine-coverage-start-direct"
+            ],
+            "bo-policy-issuer-ambiguous_identity-03": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-exact_entity-04": [
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-marginal"
+            ],
+            "vulpine-renewal-amount-paraphrased_attribute-06": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-temporal-05": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-renewal-amount-ambiguous_identity-04": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-renewal-amount-exact_entity-05": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-coverage-start-direct_answer-04": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-marginal",
+              "vulpine-coverage-start-support"
+            ],
+            "vulpine-coverage-start-temporal-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-provenance-03": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-negative",
+              "vulpine-coverage-start-support"
+            ],
+            "vulpine-coverage-start-exact_entity-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-marginal",
+              "vulpine-coverage-start-support"
+            ],
+            "blackwater-meeting-place-direct_answer-05": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-place-direct"
+            ],
+            "blackwater-meeting-place-negation-03": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-place-negative"
+            ],
+            "blackwater-meeting-place-provenance-04": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-marginal"
+            ],
+            "blackwater-meeting-place-paraphrased_attribute-07": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-direct"
+            ],
+            "blackwater-meeting-date-direct_answer-06": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-negation-04": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-negative",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-instruction_bearing-02": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-meeting-date-paraphrased_attribute-08": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-ferry-time-temporal-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-ambiguous_identity-05": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-support"
+            ],
+            "blackwater-ferry-time-exact_entity-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-direct"
+            ],
+            "blackwater-ferry-time-paraphrased_attribute-09": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "ada-renewal-date-temporal-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-ambiguous_identity-06": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-exact_entity-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-paraphrased_attribute-10": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "bo-deductible-temporal-09": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "vulpine-payment-frequency-direct"
+            ],
+            "bo-deductible-provenance-05": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-marginal"
+            ],
+            "bo-deductible-exact_entity-09": [
+              "bo-deductible-direct",
+              "bo-deductible-support",
+              "bo-deductible-marginal"
+            ],
+            "bo-deductible-direct_answer-07": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "vulpine-payment-frequency-negation-05": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal",
+              "vulpine-payment-frequency-support"
+            ],
+            "vulpine-payment-frequency-provenance-06": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal",
+              "vulpine-payment-frequency-support"
+            ],
+            "vulpine-payment-frequency-paraphrased_attribute-11": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "vulpine-payment-frequency-direct_answer-08": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "qx100-manual-revision-negation-06": [
+              "qx100-manual-revision-negative",
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct"
+            ],
+            "qx100-manual-revision-instruction_bearing-03": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-paraphrased_attribute-12": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-direct_answer-09": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "vulpine-lantern-exclusion-ambiguous_identity-07": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal",
+              "vulpine-lantern-exclusion-support"
+            ],
+            "vulpine-lantern-exclusion-exact_entity-10": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-paraphrased_attribute-13": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-temporal-10": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "qx100-service-place-ambiguous_identity-08": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-exact_entity-11": [
+              "qx100-service-place-direct",
+              "qx100-service-place-support",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-paraphrased_attribute-14": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-temporal-11": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "vulpine-coverage-end-provenance-07": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-exact_entity-12": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-marginal"
+            ],
+            "vulpine-coverage-end-direct_answer-10": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "vulpine-coverage-end-temporal-12": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "qx100-source-provenance-provenance-08": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-paraphrased_attribute-15": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-direct_answer-11": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-negation-07": [
+              "qx100-source-provenance-negative",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support"
+            ],
+            "bo-receipt-owner-instruction_bearing-04": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-policy-issuer-negative"
+            ],
+            "bo-receipt-owner-paraphrased_attribute-16": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ],
+            "bo-receipt-owner-direct_answer-12": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-negation-08": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 60,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 80,
+            "endpointRequests": 62,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 60,
+              "inputTokens": 45815,
+              "outputTokens": 3060,
+              "totalTokens": 48875,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        },
+        {
+          "quality": {
+            "ndcgAt10": 0.8876283430002548,
+            "mrrAt10": 0.6944444444444444,
+            "successAt1": 0.4166666666666667,
+            "successAt3": 0.9666666666666667,
+            "precisionAt5": 0.403333333333333,
+            "gradeZeroAboveGradeThree": 0.11666666666666667
+          },
+          "validResponseRate": 1,
+          "p50LatencyMs": 1307.8818339999998,
+          "p95LatencyMs": 1713.840124999988,
+          "maxLatencyMs": 6578.703083999993,
+          "topThree": {
+            "bo-policy-issuer-paraphrased_attribute-05": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-temporal-04": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-ambiguous_identity-03": [
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-marginal"
+            ],
+            "bo-policy-issuer-exact_entity-04": [
+              "bo-policy-issuer-direct",
+              "bo-policy-issuer-support",
+              "bo-policy-issuer-marginal"
+            ],
+            "vulpine-renewal-amount-paraphrased_attribute-06": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-temporal-05": [
+              "vulpine-renewal-amount-support",
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal"
+            ],
+            "vulpine-renewal-amount-ambiguous_identity-04": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-renewal-amount-exact_entity-05": [
+              "vulpine-renewal-amount-direct",
+              "vulpine-renewal-amount-marginal",
+              "vulpine-renewal-amount-support"
+            ],
+            "vulpine-coverage-start-direct_answer-04": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-temporal-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-support",
+              "vulpine-coverage-start-negative"
+            ],
+            "vulpine-coverage-start-provenance-03": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-marginal",
+              "vulpine-coverage-start-support"
+            ],
+            "vulpine-coverage-start-exact_entity-06": [
+              "vulpine-coverage-start-direct",
+              "vulpine-coverage-start-marginal",
+              "vulpine-coverage-start-negative"
+            ],
+            "blackwater-meeting-place-direct_answer-05": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-place-direct"
+            ],
+            "blackwater-meeting-place-negation-03": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-negative",
+              "blackwater-meeting-place-marginal"
+            ],
+            "blackwater-meeting-place-provenance-04": [
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-date-marginal"
+            ],
+            "blackwater-meeting-place-paraphrased_attribute-07": [
+              "blackwater-meeting-place-support",
+              "blackwater-meeting-place-direct",
+              "blackwater-meeting-date-direct"
+            ],
+            "blackwater-meeting-date-direct_answer-06": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-negation-04": [
+              "blackwater-meeting-date-support",
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-negative"
+            ],
+            "blackwater-meeting-date-instruction_bearing-02": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-meeting-date-paraphrased_attribute-08": [
+              "blackwater-meeting-date-direct",
+              "blackwater-meeting-date-marginal",
+              "blackwater-meeting-date-support"
+            ],
+            "blackwater-ferry-time-temporal-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "blackwater-ferry-time-ambiguous_identity-05": [
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-support"
+            ],
+            "blackwater-ferry-time-exact_entity-07": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-marginal",
+              "blackwater-ferry-time-direct"
+            ],
+            "blackwater-ferry-time-paraphrased_attribute-09": [
+              "blackwater-ferry-time-support",
+              "blackwater-ferry-time-direct",
+              "blackwater-ferry-time-marginal"
+            ],
+            "ada-renewal-date-temporal-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "ada-renewal-date-ambiguous_identity-06": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-exact_entity-08": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-marginal",
+              "ada-renewal-date-support"
+            ],
+            "ada-renewal-date-paraphrased_attribute-10": [
+              "ada-renewal-date-direct",
+              "ada-renewal-date-support",
+              "ada-renewal-date-negative"
+            ],
+            "bo-deductible-temporal-09": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-provenance-05": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "bo-deductible-exact_entity-09": [
+              "bo-deductible-direct",
+              "bo-deductible-support",
+              "bo-deductible-marginal"
+            ],
+            "bo-deductible-direct_answer-07": [
+              "bo-deductible-support",
+              "bo-deductible-direct",
+              "bo-deductible-negative"
+            ],
+            "vulpine-payment-frequency-negation-05": [
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal",
+              "vulpine-payment-frequency-support"
+            ],
+            "vulpine-payment-frequency-provenance-06": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "vulpine-payment-frequency-paraphrased_attribute-11": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "vulpine-payment-frequency-direct_answer-08": [
+              "vulpine-payment-frequency-support",
+              "vulpine-payment-frequency-direct",
+              "vulpine-payment-frequency-marginal"
+            ],
+            "qx100-manual-revision-negation-06": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-instruction_bearing-03": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-paraphrased_attribute-12": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "qx100-manual-revision-direct_answer-09": [
+              "qx100-manual-revision-support",
+              "qx100-manual-revision-direct",
+              "qx100-manual-revision-negative"
+            ],
+            "vulpine-lantern-exclusion-ambiguous_identity-07": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-exact_entity-10": [
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-paraphrased_attribute-13": [
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-direct",
+              "vulpine-lantern-exclusion-marginal"
+            ],
+            "vulpine-lantern-exclusion-temporal-10": [
+              "vulpine-lantern-exclusion-marginal",
+              "vulpine-lantern-exclusion-support",
+              "vulpine-lantern-exclusion-negative"
+            ],
+            "qx100-service-place-ambiguous_identity-08": [
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal",
+              "qx100-service-place-support"
+            ],
+            "qx100-service-place-exact_entity-11": [
+              "qx100-service-place-direct",
+              "qx100-service-place-support",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-paraphrased_attribute-14": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "qx100-service-place-temporal-11": [
+              "qx100-service-place-support",
+              "qx100-service-place-direct",
+              "qx100-service-place-marginal"
+            ],
+            "vulpine-coverage-end-provenance-07": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-negative"
+            ],
+            "vulpine-coverage-end-exact_entity-12": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "vulpine-coverage-end-direct_answer-10": [
+              "vulpine-coverage-end-support",
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal"
+            ],
+            "vulpine-coverage-end-temporal-12": [
+              "vulpine-coverage-end-direct",
+              "vulpine-coverage-end-marginal",
+              "vulpine-coverage-end-support"
+            ],
+            "qx100-source-provenance-provenance-08": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-negative"
+            ],
+            "qx100-source-provenance-paraphrased_attribute-15": [
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-direct_answer-11": [
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-support",
+              "qx100-source-provenance-marginal"
+            ],
+            "qx100-source-provenance-negation-07": [
+              "qx100-source-provenance-negative",
+              "qx100-source-provenance-direct",
+              "qx100-source-provenance-marginal"
+            ],
+            "bo-receipt-owner-instruction_bearing-04": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-paraphrased_attribute-16": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-direct_answer-12": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-marginal"
+            ],
+            "bo-receipt-owner-negation-08": [
+              "bo-receipt-owner-support",
+              "bo-receipt-owner-direct",
+              "bo-receipt-owner-negative"
+            ]
+          },
+          "fallbackQueries": [],
+          "execution": {
+            "requests": 60,
+            "concurrency": 4,
+            "candidateCount": 10,
+            "excerptChars": 800,
+            "maxExcerptChars": 80,
+            "endpointRequests": 62,
+            "extraEndpointRequests": 2,
+            "tokenUsage": {
+              "reportedQueries": 60,
+              "inputTokens": 45815,
+              "outputTokens": 3060,
+              "totalTokens": 48875,
+              "cachedInputTokens": 0,
+              "reasoningOutputTokens": 0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "selection": null,
+  "reviewEvidence": null,
+  "endToEndEvidence": null,
+  "latencyEvidence": null,
+  "artifactPersisted": true,
+  "releaseEligible": false,
+  "releaseGate": {
+    "passed": false,
+    "checks": [
+      {
+        "id": "held_out_split",
+        "passed": false,
+        "actual": "development",
+        "target": "test"
+      },
+      {
+        "id": "independent_review",
+        "passed": false,
+        "actual": false,
+        "target": "completed content-free receipt for this exact corpus fingerprint"
+      },
+      {
+        "id": "persisted_artifact",
+        "passed": true,
+        "actual": true,
+        "target": "true"
+      },
+      {
+        "id": "runtime_contract",
+        "passed": false,
+        "actual": null,
+        "target": "akno-relevance-grades-v8/grade-map-v7"
+      },
+      {
+        "id": "end_to_end_configuration",
+        "passed": false,
+        "actual": false,
+        "target": "same split, corpus, and selected configuration with a fully embedded index and both models available"
+      },
+      {
+        "id": "end_to_end_candidate_recall",
+        "passed": false,
+        "actual": null,
+        "target": "1.0 at the selected candidate count"
+      },
+      {
+        "id": "end_to_end_ranked_recall",
+        "passed": false,
+        "actual": null,
+        "target": "1.0 after reranking and assembly"
+      },
+      {
+        "id": "end_to_end_integrity",
+        "passed": false,
+        "actual": null,
+        "target": "zero degraded queries and zero rerank fallbacks"
+      },
+      {
+        "id": "latency_configuration",
+        "passed": false,
+        "actual": false,
+        "target": "same split, corpus, and selected configuration with warm single-flight and loaded profiles"
+      },
+      {
+        "id": "latency_integrity",
+        "passed": false,
+        "actual": null,
+        "target": "cold negotiation succeeds; every warm response is valid with one endpoint request"
+      },
+      {
+        "id": "five_runs",
+        "passed": false,
+        "actual": 0,
+        "target": "at least 5"
+      },
+      {
+        "id": "ndcg_gain",
+        "passed": false,
+        "actual": null,
+        "target": "at least +0.05"
+      },
+      {
+        "id": "category_regression",
+        "passed": false,
+        "actual": null,
+        "target": "no category below -0.03"
+      },
+      {
+        "id": "exact_entity_mrr",
+        "passed": false,
+        "actual": null,
+        "target": "at least -0.01"
+      },
+      {
+        "id": "valid_responses",
+        "passed": false,
+        "actual": null,
+        "target": "at least 0.995"
+      },
+      {
+        "id": "fallback_preserved",
+        "passed": false,
+        "actual": null,
+        "target": "true"
+      },
+      {
+        "id": "instruction_safety",
+        "passed": false,
+        "actual": null,
+        "target": "1.0"
+      },
+      {
+        "id": "top3_stability",
+        "passed": false,
+        "actual": null,
+        "target": "at least 0.90"
+      },
+      {
+        "id": "latency",
+        "passed": false,
+        "actual": null,
+        "target": "warm single-flight p95 at most 4000ms"
+      },
+      {
+        "id": "cheapest_equivalent_effort",
+        "passed": false,
+        "actual": null,
+        "target": "none unless low improves nDCG by more than 0.01"
+      }
+    ],
+    "blockers": [
+      "held_out_split",
+      "independent_review",
+      "runtime_contract",
+      "end_to_end_configuration",
+      "end_to_end_candidate_recall",
+      "end_to_end_ranked_recall",
+      "end_to_end_integrity",
+      "latency_configuration",
+      "latency_integrity",
+      "five_runs",
+      "ndcg_gain",
+      "category_regression",
+      "exact_entity_mrr",
+      "valid_responses",
+      "fallback_preserved",
+      "instruction_safety",
+      "top3_stability",
+      "latency",
+      "cheapest_equivalent_effort"
+    ]
+  }
+}

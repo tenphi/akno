@@ -32,13 +32,23 @@ function fakeModel(value: string): ModelClient {
 
 describe('prompted LLM reranking', () => {
   it('uses a stable opaque id set that can be assigned without exposing rank', () => {
-    const first = allocateLlmRerankIds(10);
-    const second = allocateLlmRerankIds(10);
-    expect([...first].sort()).toEqual([...second].sort());
+    const keys = Array.from({ length: 10 }, (_, index) => `invented-candidate-${index}`);
+    const first = allocateLlmRerankIds('Which warranty applies?', keys);
+    const second = allocateLlmRerankIds('Which warranty applies?', keys);
+    expect(first).toEqual(second);
+    expect(allocateLlmRerankIds('Which service applies?', keys)).not.toEqual(first);
+    expect(allocateLlmRerankIds('Which warranty applies?', [...keys].reverse())).not.toEqual(first);
+    expect(
+      allocateLlmRerankIds('Which warranty applies?', [...keys.slice(0, -1), 'invented-replacement']),
+    ).not.toEqual(first);
     expect(new Set(first).size).toBe(10);
     expect(first.every((id) => /^[A-Za-z]$/.test(id))).toBe(true);
-    expect(new Set(allocateLlmRerankIds(60)).size).toBe(60);
-    expect(allocateLlmRerankIds(60).every((id) => id.length <= 2)).toBe(true);
+    const sixty = allocateLlmRerankIds(
+      'Which warranty applies?',
+      Array.from({ length: 60 }, (_, index) => `invented-candidate-${index}`),
+    );
+    expect(new Set(sixty).size).toBe(60);
+    expect(sixty.every((id) => id.length <= 2)).toBe(true);
   });
 
   it('reserves completion tokens for hidden reasoning without inflating reasoning-free calls', () => {

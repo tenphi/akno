@@ -1749,7 +1749,7 @@ success@1, zero degradation, and zero fallback. End-to-end schema v4 and matrix 
 dimensions and the candidate-selection contract into the receipt. That left only the v6/v5 contract's 71 ms
 latency miss.
 
-The current runtime contract is `akno-judgment-map-v6` / `tuple-judgment-map-v6`. The fixed properties are
+The preceding runtime contract was `akno-judgment-map-v6` / `tuple-judgment-map-v6`. The fixed properties are
 now drawn from a compact stable alphabet: ten candidates use one-character opaque ids, and larger benchmark
 windows use one or two characters. The id set is newly shuffled among candidates for each request, preserving
 the rank and identity privacy of the earlier random hashes. The schema still requires every permitted id exactly
@@ -1774,6 +1774,33 @@ request per warm call. The exact production-path Small run embedded all 120 inve
 direct answer through fusion-pool, judged-window, and final recall, reached 95% success@1 and 100% success@3,
 and recorded zero degradation or fallback. `top3_stability` is therefore the sole release blocker. The held-out
 artifact must be preserved rather than rerun or mined for case-specific prompt tuning.
+
+Development then tested a more deterministic-looking API: return only an absolute grade for each candidate
+and preserve fusion order inside a grade. Two prompt versions produced complete structured maps and stable
+top-three sets, but both weakened semantic qualification. V7 reached 0.896 nDCG, 98.4% direct-answer retention,
+99.7% instruction-negative rejection, and 95.7% success@3. A v8 wording revision reached 0.889 nDCG, 99.0%
+direct-answer retention and instruction-negative rejection, and 97.7% success@3. Akno retained those results
+as rejected development evidence and restored the `[grade, rank]` task.
+
+The current `akno-judgment-map-v9` / `tuple-judgment-map-v6` contract instead removes randomness from the
+request envelope, not judgment semantics. For each call, Akno hashes the complete query and ordered local
+candidate keys, uses that digest to assign the compact opaque alphabet pseudorandomly, and discards the seed.
+The endpoint receives the query and excerpts required for reranking plus only the one- or two-character ids;
+it never receives page ids, chunk ids, or the digest. Identical inputs now produce byte-identical prompts,
+while a changed query, candidate identity, or order yields another permutation. Because the symbols themselves
+do not encode array position, they still reveal neither fused rank nor source identity.
+
+The approved five-run v9 development matrix selected `llm-none-c10` and recorded 300/300 valid responses, zero
+fallback, 0.968 mean nDCG against fusion's 0.482, complete direct/support/marginal retention, perfect
+instruction-negative rejection, and 100% median top-three overlap. The exact latency track kept every warm
+call valid with one endpoint request; warm single-flight p50/p95 was 1.39/2.00 seconds. The bound end-to-end run
+embedded all 120 invented chunks with OpenAI Small, retained every direct answer in the fusion pool, judgment
+window, and final assembly, reached 98.3% success@1 and 100% success@3, and recorded zero degradation or
+fallback. All development gates pass.
+
+This result does not repair or overwrite the v6/v6 held-out failure. V9 changed the contract after that test was
+observed, so the old test corpus remains frozen and unavailable for tuning. Release requires a new versioned,
+independently reviewed held-out corpus with thresholds declared before its first model call.
 
 An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
 failure-handling evidence. Current access covers both OpenAI embedding models; the successful evidence above

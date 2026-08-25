@@ -93,18 +93,18 @@ export async function runLlmRankingProbe(
     reasoningEffort,
     unavailableReason: null,
   };
-  const opaqueIds = allocateLlmRerankIds(PROBE_FIXTURES.length);
+  const query = 'How long is the Zephyr QX-100 warranty?';
+  const opaqueIds = allocateLlmRerankIds(
+    query,
+    PROBE_FIXTURES.map((fixture) => fixture.key),
+  );
   const candidates: LlmRerankCandidate[] = PROBE_FIXTURES.map((fixture, index) => ({
     id: opaqueIds[index]!,
     text: fixture.text,
     sourceKind: fixture.sourceKind,
     matchedBy: fixture.matchedBy,
   }));
-  const result = await rerankWithLlm(
-    new ModelClient(role),
-    'How long is the Zephyr QX-100 warranty?',
-    candidates,
-  );
+  const result = await rerankWithLlm(new ModelClient(role), query, candidates);
   if (!result.ok || !result.value) {
     return {
       ...base,

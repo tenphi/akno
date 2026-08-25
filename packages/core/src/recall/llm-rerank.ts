@@ -1,11 +1,11 @@
-import { randomInt } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { ReasoningEffort } from '../config/schema.ts';
 import type { ModelClient, ModelOutcome, ModelUsage } from '../models/client.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import type { RecallMatchArm } from '@tenphi/akno-protocol';
 
-export const LLM_RERANK_PROMPT_VERSION = 'akno-judgment-map-v6';
+export const LLM_RERANK_PROMPT_VERSION = 'akno-judgment-map-v9';
 export const LLM_RERANK_SCHEMA_VERSION = 'tuple-judgment-map-v6';
 
 export interface LlmRerankCandidate {
@@ -23,17 +23,30 @@ export interface LlmRerankEntry {
 }
 
 /**
- * Returns a randomly assigned set of opaque ids whose membership is stable for a candidate count.
- * Stable membership lets structured-output providers cache the strict schema; random assignment keeps
- * an identifier from revealing the candidate's fused rank.
+ * Returns a deterministic pseudorandom assignment of opaque ids for one complete request.
+ * Identical requests produce identical prompt bytes, while changing the query, candidate identity, or order
+ * produces another permutation. Only the compact symbols leave this process; the local seed is never sent.
  */
-export function allocateLlmRerankIds(candidateCount: number): string[] {
-  const ids = Array.from({ length: candidateCount }, (_, index) => compactOpaqueId(index));
-  for (let index = ids.length - 1; index > 0; index--) {
-    const swap = randomInt(index + 1);
-    [ids[index], ids[swap]] = [ids[swap]!, ids[index]!];
-  }
-  return ids;
+export function allocateLlmRerankIds(query: string, candidateKeys: readonly string[]): string[] {
+  const seed = createHash('sha256')
+    .update(JSON.stringify([query, candidateKeys]))
+    .digest();
+  return Array.from({ length: candidateKeys.length }, (_, index) => ({
+    id: compactOpaqueId(index),
+    priority: createHash('sha256').update(seed).update(String(index)).digest('hex'),
+  }))
+    .sort((left, right) =>
+      left.priority < right.priority
+        ? -1
+        : left.priority > right.priority
+          ? 1
+          : left.id < right.id
+            ? -1
+            : left.id > right.id
+              ? 1
+              : 0,
+    )
+    .map(({ id }) => id);
 }
 
 const OPAQUE_ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

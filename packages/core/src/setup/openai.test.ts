@@ -162,7 +162,7 @@ describe('experimental OpenAI minimum setup', () => {
         embedding: { status: 'ok', dimensions: OPENAI_LUNA_EMBEDDING_DIMENSIONS },
         generative: {
           status: 'ok',
-          promptVersion: 'akno-judgment-map-v6',
+          promptVersion: 'akno-judgment-map-v9',
           schemaVersion: 'tuple-judgment-map-v6',
         },
       });

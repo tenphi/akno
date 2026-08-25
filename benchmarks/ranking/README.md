@@ -89,7 +89,7 @@ JSON Schema definitions. The checked-in historical artifacts for this contract a
 - `development-end-to-end-openai-luna-v6-corpus-v4-embedding-large-2026-08-25.json`
 - `development-end-to-end-openai-luna-v6-corpus-v4-semantic-tail-2026-08-25.json`
 
-The current runtime is `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It shortens each opaque candidate id
+The preceding runtime was `akno-judgment-map-v6` / `tuple-judgment-map-v6`. It shortens each opaque candidate id
 to one character for the selected 10-candidate window (and one or two characters for the benchmark's larger
 windows). The same fixed id set is shuffled among candidates for every request, so ids disclose neither source
 identity nor input rank. Short ids reduce both the generated schema and the response without weakening exact
@@ -168,6 +168,33 @@ receipt passed at 2.20-second warm single-flight p95 with one endpoint request p
 production-path run embedded all 120 chunks, retained every direct answer through the pool, judged window, and
 final assembly, reached 95% success@1 and 100% success@3, and recorded no degradation or fallback. The matrix's
 sole blocker is `top3_stability`; it is final test evidence and must not be rerun or used as a tuning set.
+
+Two development-only attempts then tested whether removing the model's within-grade rank task would improve
+stability. `akno-relevance-grades-v7` and `akno-relevance-grades-v8` both returned 300/300 structurally valid
+grade maps with 100% top-three stability, but weakened the more important retrieval behavior. The v7 run
+reached 0.896 nDCG, 98.4% direct-answer retention, 99.7% instruction-negative rejection, and 95.7% success@3;
+v8 reached 0.889 nDCG, 99.0% direct-answer retention and instruction-negative rejection, and 97.7% success@3.
+Both artifacts are retained as rejected development evidence and neither contract reached the runtime.
+
+The current runtime is `akno-judgment-map-v9` / `tuple-judgment-map-v6`. It restores the proven v6 grading and
+within-grade ranking task and changes only opaque-id assignment. Akno derives a pseudorandom permutation from
+the complete local query and ordered candidate keys: an identical request gets identical ids and prompt bytes,
+while any query, candidate, or order change gets another permutation. The local seed and candidate keys never
+leave the process; the model still receives only the compact one- or two-character symbols. This removes an
+avoidable source of request-to-request variation without revealing source identity or fused rank.
+
+The targeted five-run v9 development artifact reached 0.972 nDCG, 100% valid responses, zero fallback, perfect
+instruction-negative rejection, and 100% top-three stability. Its one run-level direct-answer miss did not
+repeat in the full comparison. The approved full matrix selected `llm-none-c10` with 300/300 valid responses,
+zero fallback, 0.968 nDCG against fusion's 0.482, complete direct/support/marginal retention, perfect
+instruction-negative rejection, and 100% top-three stability. Its exact latency receipt measured 2.00-second
+warm single-flight p95 with one request per warm call. The bound production-path run embedded 120/120 chunks
+with `text-embedding-3-small`, retained every direct answer through the fusion pool, judged window, and final
+assembly, reached 98.3% success@1 and 100% success@3, and recorded no fallback or degradation.
+
+These are development results. The frozen v6/v6 test artifact remains final evidence for that earlier
+contract and is not a tuning set for v9. A newly pre-declared, independently reviewed held-out corpus is the
+only remaining release step for the v9 contract.
 
 To reproduce and attach the selected configuration's latency profiles:
 
