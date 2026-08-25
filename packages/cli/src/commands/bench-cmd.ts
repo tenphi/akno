@@ -1538,6 +1538,11 @@ function renderRankingEndToEnd(
       `(${report.reranker.reasoningEffort ?? 'none'})${report.reranker.available ? '' : ' [unavailable]'}`,
   );
   if (report.embedding.available) {
+    line(
+      `  retrieval / judged     ${report.retrievalPoolCount} / ${report.candidateCount} ` +
+        `(${report.candidateSelectionVersion})`,
+    );
+    line(`  fusion-pool recall     ${percent(report.fusionPool.directAnswerRecall)}`);
     line(`  candidate answer recall ${percent(report.candidateGeneration.directAnswerRecall)}`);
     line(`  ranked answer recall    ${percent(report.rankedRecall.directAnswerRecall)}`);
     line(

@@ -1,5 +1,6 @@
 import type { AknoConfig, ReasoningEffort } from '../config/schema.ts';
 import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
+import { RERANK_CANDIDATE_POOL_MULTIPLIER, RERANK_CANDIDATE_SELECTION_VERSION } from '../recall/search.ts';
 import { rankingCorpusCases } from './ranking-corpus.ts';
 import type { RankingEndToEndReport } from './ranking-end-to-end.ts';
 import {
@@ -21,7 +22,7 @@ import {
 } from './ranking.ts';
 import { rankingReviewEvidenceMatches, type RankingReviewEvidence } from './ranking-review.ts';
 
-export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v7';
+export const RANKING_MATRIX_SCHEMA_VERSION = 'ranking-matrix-v8';
 export const RANKING_MATRIX_VARIANT_IDS = [
   'llm-none-c10',
   'llm-none-c20',
@@ -107,6 +108,9 @@ export interface RankingEndToEndEvidence {
   corpusVersion: string;
   corpusFingerprint: string;
   candidateCount: RankingCandidateCount;
+  retrievalPoolCount: number | null;
+  candidateSelectionVersion: string | null;
+  directAnswerFusionPoolRecall: number | null;
   directAnswerCandidateRecall: number;
   directAnswerRankedRecall: number;
   candidateDegradedQueries: number;
@@ -327,9 +331,12 @@ export function attachRankingEndToEndEvidence(
 ): RankingMatrixReport {
   if (report.system !== 'llm') throw new Error('end-to-end release evidence must exercise the LLM reranker');
   if (
-    !['ranking-end-to-end-v1', 'ranking-end-to-end-v2', 'ranking-end-to-end-v3'].includes(
-      report.schemaVersion,
-    )
+    ![
+      'ranking-end-to-end-v1',
+      'ranking-end-to-end-v2',
+      'ranking-end-to-end-v3',
+      'ranking-end-to-end-v4',
+    ].includes(report.schemaVersion)
   ) {
     throw new Error('unsupported end-to-end artifact schema');
   }
@@ -361,6 +368,9 @@ export function attachRankingEndToEndEvidence(
       corpusVersion: report.corpus.version,
       corpusFingerprint: report.corpus.fingerprint,
       candidateCount: report.candidateCount,
+      retrievalPoolCount: report.retrievalPoolCount ?? null,
+      candidateSelectionVersion: report.candidateSelectionVersion ?? null,
+      directAnswerFusionPoolRecall: report.fusionPool?.directAnswerRecall ?? null,
       directAnswerCandidateRecall: report.candidateGeneration.directAnswerRecall,
       directAnswerRankedRecall: report.rankedRecall.directAnswerRecall,
       candidateDegradedQueries: report.candidateGeneration.degradedQueries,
@@ -685,6 +695,9 @@ function endToEndConfigurationMatches(
     evidence.corpusVersion === report.corpus.version &&
     evidence.corpusFingerprint === report.corpus.fingerprint &&
     evidence.candidateCount === selected.candidateCount &&
+    evidence.retrievalPoolCount === selected.candidateCount * RERANK_CANDIDATE_POOL_MULTIPLIER &&
+    evidence.candidateSelectionVersion === RERANK_CANDIDATE_SELECTION_VERSION &&
+    evidence.directAnswerFusionPoolRecall === 1 &&
     evidence.embeddingAvailable &&
     evidence.totalChunks > 0 &&
     evidence.embeddedChunks === evidence.totalChunks &&

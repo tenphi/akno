@@ -198,6 +198,29 @@ function intersect(left?: Set<number>, right?: Set<number>): Set<number> | undef
  */
 const RRF_K = 60;
 
+/**
+ * The LLM still judges exactly `topK` candidates. One boundary slot is selected by vector rank from a
+ * bounded 2× fusion pool, which lets a strong paraphrase just outside the fused window compete without
+ * increasing model tokens or comparing cosine with reciprocal-rank scores.
+ */
+export const RERANK_CANDIDATE_SELECTION_VERSION = 'fusion-semantic-tail-v1';
+export const RERANK_CANDIDATE_POOL_MULTIPLIER = 2;
+
+export function selectRerankCandidates<T extends { relevance?: number }>(hits: T[], topK: number): T[] {
+  if (topK <= 0 || hits.length === 0) return [];
+  if (hits.length <= topK || topK < 2) return hits.slice(0, topK);
+
+  const fixed = hits.slice(0, topK - 1);
+  const boundary = hits.slice(topK - 1, topK * RERANK_CANDIDATE_POOL_MULTIPLIER);
+  let selected = boundary[0]!;
+  for (const candidate of boundary.slice(1)) {
+    if (candidate.relevance !== undefined && candidate.relevance > (selected.relevance ?? -Infinity)) {
+      selected = candidate;
+    }
+  }
+  return [...fixed, selected];
+}
+
 export function fuseHits(lists: ChunkHit[][]): ChunkHit[] {
   const populated = lists.filter((list) => list.length > 0);
   // One list needs no fusion, and passing it through keeps its own scores rather
@@ -325,7 +348,8 @@ export async function rerankHits(
         };
   }
 
-  const candidates = hits.slice(0, topK);
+  const candidates =
+    reranker.rerankerMode === 'llm' ? selectRerankCandidates(hits, topK) : hits.slice(0, topK);
   // One prepared statement for the whole batch rather than one per candidate.
   const select = store.db.prepare('SELECT heading_path, text FROM chunks WHERE id = ?');
   const graphEvidence = graphEvidenceReader(store);
@@ -383,7 +407,7 @@ export async function rerankHits(
           relevance: entry.relevance / 3,
         };
       });
-    return finishRerank(hits, candidates.length, reordered, {
+    return finishRerank(hits, candidates, reordered, {
       model: 'llm',
       model_id: reranker.modelId ?? undefined,
       latency_ms: result.latencyMs,
@@ -433,7 +457,7 @@ export async function rerankHits(
         }));
       return finishRerank(
         hits,
-        candidates.length,
+        candidates,
         reordered,
         {
           model: 'native',
@@ -475,7 +499,7 @@ export async function rerankHits(
   judged.sort((a, b) => b.score - a.score);
   const reordered = excludeIrrelevant ? judged.filter((hit) => (hit.relevance ?? 0) >= 0.5) : judged;
 
-  return finishRerank(hits, candidates.length, reordered, {
+  return finishRerank(hits, candidates, reordered, {
     model: 'native',
     model_id: reranker.modelId ?? undefined,
     latency_ms: result.latencyMs,
@@ -555,7 +579,7 @@ function renderGraphRerankContext(
 
 function finishRerank(
   hits: ChunkHit[],
-  judgedCount: number,
+  judged: ChunkHit[],
   reordered: ChunkHit[],
   qualification: RecallQualification,
   note: string | null = null,
@@ -570,10 +594,10 @@ function finishRerank(
   if (qualification.applied) return { hits: reordered, degraded: null, note, qualification };
 
   const seen = new Set(reordered.map((hit) => hit.chunkId));
-  const judgedIds = new Set(hits.slice(0, judgedCount).map((hit) => hit.chunkId));
+  const judgedIds = new Set(judged.map((hit) => hit.chunkId));
   const tail = hits.filter((hit) => !seen.has(hit.chunkId) && !judgedIds.has(hit.chunkId));
 
-  // The reranker judged the top K; the tail was never looked at, so it cannot
+  // The reranker judged the bounded selection; the tail was never looked at, so it cannot
   // outrank a judged hit. Compress it into the band below the weakest judged one,
   // preserving its fused order.
   const floor = reordered.at(-1)?.score ?? 0;

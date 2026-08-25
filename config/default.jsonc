@@ -146,6 +146,11 @@
       // 40 is the default because the cheaper settings change *which pages come
       // back*, and 400 ms is not worth a different answer. Lower it if you would
       // rather have the latency, now that you know what it costs.
+      //
+      // LLM mode still sends exactly top_k candidates. It preserves the first
+      // top_k - 1 fused hits and uses the final slot for the strongest vector-ranked
+      // candidate from a bounded 2 × top_k pool. This recovers a strong paraphrase
+      // just beyond the fusion boundary without increasing model tokens.
       "top_k": 40,
       // Characters of each candidate sent. Measured free — truncating from 4,000 to
       // 800 changed neither latency (1036 → 1028 ms) nor a single result. Kept

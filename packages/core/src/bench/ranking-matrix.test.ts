@@ -75,6 +75,18 @@ describe('ranking benchmark matrix', () => {
     };
     expect(evaluateRankingRelease(unboundDimensions).blockers).toContain('end_to_end_configuration');
 
+    const unboundCandidateSelection = {
+      ...persisted,
+      endToEndEvidence: { ...persisted.endToEndEvidence!, candidateSelectionVersion: null },
+    };
+    expect(evaluateRankingRelease(unboundCandidateSelection).blockers).toContain('end_to_end_configuration');
+
+    const incompleteFusionPool = {
+      ...persisted,
+      endToEndEvidence: { ...persisted.endToEndEvidence!, directAnswerFusionPoolRecall: 0.99 },
+    };
+    expect(evaluateRankingRelease(incompleteFusionPool).blockers).toContain('end_to_end_configuration');
+
     const staleLatencyContract = {
       ...persisted,
       latencyEvidence: { ...persisted.latencyEvidence!, schemaVersion: 'invented-stale-latency' },
@@ -90,7 +102,7 @@ describe('ranking benchmark matrix', () => {
       includeNative: false,
     });
 
-    expect(report.schemaVersion).toBe('ranking-matrix-v7');
+    expect(report.schemaVersion).toBe('ranking-matrix-v8');
     expect(report.variants).toHaveLength(5);
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120 });
     expect(report.selection).toBeNull();
@@ -161,6 +173,12 @@ describe('ranking benchmark matrix', () => {
         schemaVersion: 'ranking-end-to-end-v2',
       }).endToEndEvidence,
     ).not.toBeNull();
+    expect(
+      attachRankingEndToEndEvidence(matrix, {
+        ...endToEnd,
+        schemaVersion: 'ranking-end-to-end-v3',
+      }).endToEndEvidence,
+    ).not.toBeNull();
     expect(() =>
       attachRankingEndToEndEvidence(matrix, {
         ...endToEnd,
@@ -223,7 +241,7 @@ function passingReport(): RankingMatrixReport {
   const low = variant('llm-low-c20', 'low', 0.805);
   return {
     kind: 'ranking_matrix',
-    schemaVersion: 'ranking-matrix-v7',
+    schemaVersion: 'ranking-matrix-v8',
     createdAt: '2027-01-02T03:04:05.000Z',
     split: 'test',
     corpus: {
@@ -250,6 +268,9 @@ function passingReport(): RankingMatrixReport {
       corpusVersion: 'invented-ranking-v4',
       corpusFingerprint: rankingCorpusFingerprint(),
       candidateCount: 20,
+      retrievalPoolCount: 40,
+      candidateSelectionVersion: 'fusion-semantic-tail-v1',
+      directAnswerFusionPoolRecall: 1,
       directAnswerCandidateRecall: 1,
       directAnswerRankedRecall: 1,
       candidateDegradedQueries: 0,
@@ -399,7 +420,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
   };
   return {
     kind: 'ranking_end_to_end',
-    schemaVersion: 'ranking-end-to-end-v3',
+    schemaVersion: 'ranking-end-to-end-v4',
     createdAt: '2027-01-02T03:04:05.000Z',
     development: true,
     releaseEligible: false,
@@ -413,6 +434,8 @@ function passingEndToEndReport(): RankingEndToEndReport {
       fingerprint: rankingCorpusFingerprint(),
     },
     system: 'llm',
+    retrievalPoolCount: 40,
+    candidateSelectionVersion: 'fusion-semantic-tail-v1',
     candidateCount: 20,
     excerptChars: 800,
     concurrency: 4,
@@ -432,6 +455,7 @@ function passingEndToEndReport(): RankingEndToEndReport {
       schemaVersion: LLM_RERANK_SCHEMA_VERSION,
       available: true,
     },
+    fusionPool: stage,
     candidateGeneration: stage,
     rankedRecall: stage,
     rerankFallbackRate: 0,

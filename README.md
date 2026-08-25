@@ -1100,12 +1100,12 @@ match the matrix selection. Refreshing an artifact preserves its stored threshol
 new latency schema and new pre-declared evidence.
 
 The end-to-end track then tests the matrix selection through the production index and recall path. It creates a
-temporary knowledge base containing the same invented 120 sources, embeds it, measures whether each direct
-answer reaches the selected candidate window, and separately measures the final assembled order after
-reranking. When a case has multiple grade-3 answers, recall succeeds if any one is present and rank metrics use
-the best-ranked one. End-to-end schema v3 records all accepted direct-answer ids and binds the embedding model's
-vector dimensions into the evidence. It never opens the configured knowledge base. Passing `--matrix-artifact`
-binds the run to that
+temporary knowledge base containing the same invented 120 sources, embeds it, measures the broader fusion pool,
+the exact candidates selected for judgment, and the final assembled order after reranking. When a case has
+multiple grade-3 answers, recall succeeds if any one is present and rank metrics use the best-ranked one.
+End-to-end schema v4 records all accepted direct-answer ids and binds the embedding dimensions, retrieval-pool
+size, and candidate-selection version into the evidence. It never opens the configured knowledge base. Passing
+`--matrix-artifact` binds the run to that
 matrix's exact split, candidate count, excerpt limit, provider, model, reasoning effort, prompt, and schema, then
 attaches the evidence atomically:
 
@@ -1217,7 +1217,7 @@ No-reasoning c20/c40 reached 0.959/0.945 nDCG at 4.25/5.70-second p95; low reaso
 reached 0.892 nDCG, and took 9.36 seconds at p95. Older development, latency, held-out, and review evidence
 remains immutable historical evidence whose fingerprints cannot authorize v4.
 
-Fresh v4 latency and end-to-end evidence now expose two development blockers rather than clearing them. The
+Fresh v4 latency evidence exposes the remaining development blocker. The
 [latency receipt](benchmarks/ranking/results/development-openai-luna-v6-corpus-v4-latency-2026-08-25.json)
 was 100% valid and one-request on every warm call, but its 4.071-second single-flight p95 narrowly exceeds the
 fixed 4-second SLO. OpenAI embedding access is available and both current models were compared through the full
@@ -1225,10 +1225,16 @@ production path. `text-embedding-3-small` at 1,536 dimensions and `text-embeddin
 both embedded 120/120 chunks without degradation and reached 98.3% direct-answer recall. Small had better
 candidate MRR, half the vector width, and roughly 6.5 times the pages per dollar according to the
 [official OpenAI embedding guide](https://developers.openai.com/api/docs/guides/embeddings), so it remains the
-quality-price choice. Both models missed the same canonical source at fusion rank 11 while an answer-bearing
-support source was already in the top 10; a 20-result Small diagnostic reached 100% candidate recall. The next
-development task is therefore candidate-window/fusion policy, not a more expensive embedding model. The
-held-out split remains untouched.
+quality-price choice. Both models initially missed the same canonical source at fusion rank 11 while an
+answer-bearing support source was already in the top 10.
+
+The production reranker now keeps Luna's measured 10-candidate request but retrieves a 20-candidate fusion pool.
+It preserves the first nine fusion candidates and selects the final judgment slot by vector rank from fusion
+positions 10–20. Cosine is compared only with cosine; it is never mixed with reciprocal-rank scores. On the full
+development corpus this recovered the rank-11 direct source, reached 100% fusion-pool, judged-candidate, and
+final direct-answer recall, and produced 100% final success@1 with zero degradation or fallback. End-to-end
+schema v4 and matrix schema v8 bind that selection contract. The end-to-end gate now passes; only the 71 ms
+latency miss remains before the pre-declared held-out run. The held-out split remains untouched.
 
 Completion limits reserve extra space when reasoning is enabled, because OpenAI's completion budget includes
 hidden reasoning tokens as well as visible JSON. A role's configured output ceiling remains the hard cap. The

@@ -1529,10 +1529,14 @@ falls back to unconstrained JSON gets one bounded retry for an invalid map. Any 
 produces typed `rerank_failed` degradation and leaves fusion order exactly intact.
 
 On a valid response, reranking may also qualify candidates out. LLM grade `0` means irrelevant and is removed.
-A native cross-encoder uses its calibrated raw-score boundary. In both cases, candidates beyond `top_k` are
-counted as unjudged and omitted rather than silently promoted to replace rejected hits. The recall response
-includes a typed `qualification` receipt with the model kind, boundary basis, judged, rejected, and unjudged
-counts. Rejecting every judged candidate yields `empty`; a failed reranker yields degraded fusion fallback.
+A native cross-encoder uses its calibrated raw-score boundary. The LLM judges exactly `top_k` items but selects
+them from a bounded fusion pool twice that size: it preserves the first `top_k - 1` fused candidates, then fills
+the boundary slot with the strongest vector-ranked candidate from the remaining pool. This compares cosine only
+with cosine, never with reciprocal-rank scores; lexical-only recall keeps the ordinary fused window. Candidates
+not selected for judgment are counted as unjudged and omitted rather than silently promoted to replace rejected
+hits. The recall response includes a typed `qualification` receipt with the model kind, boundary basis, judged,
+rejected, and unjudged counts. Rejecting every judged candidate yields `empty`; a failed reranker yields degraded
+fusion fallback.
 
 Native models do not share a score scale, so the default `score_offset: "auto"` calibrates against a fixed suite
 of invented direct, related, wrong-identity, stale, and unrelated excerpts. The selected boundary must retain
@@ -1619,11 +1623,11 @@ current default. A threshold change therefore requires a new latency schema and 
 
 `akno bench ranking --track end-to-end --matrix-artifact <matrix> --output <result>` closes the gap between
 the frozen pool and real recall. It writes the invented 120-source corpus to a temporary knowledge base, indexes
-it with the selected embedding role, measures direct-answer recall at the candidate-window boundary, reopens the
-same derived index read-only with the selected LLM reranker, and measures the final assembled result. The
-configured knowledge base is never opened or copied. A case may legitimately have more than one grade-3
-answer; end-to-end schema v3 records every accepted id, measures the best rank among those actually returned,
-and binds the embedding dimensions so a different vector width cannot reuse the receipt.
+it with the selected embedding role, measures direct-answer recall in the broad fusion pool and the exact judged
+window, reopens the same derived index read-only with the selected LLM reranker, and measures the final assembled
+result. The configured knowledge base is never opened or copied. A case may legitimately have more than one
+grade-3 answer; end-to-end schema v4 records every accepted id, measures the best rank among those actually
+returned, and binds embedding dimensions plus the retrieval-pool and candidate-selection contracts.
 
 When a matrix selects OpenAI, the track uses the benchmarked `text-embedding-3-small` at 1,536 dimensions and uses the
 matrix's `gpt-5.6-luna` selection on that same provider. Its artifact binds both model receipts to the corpus,
@@ -1632,9 +1636,10 @@ vector for every indexed chunk before recall begins. A disabled, denied, or part
 embedded/total counts, marks the role unavailable, and stops before 60 repeated query calls. In particular,
 lexical degradation cannot masquerade as end-to-end evidence for a model that did not run.
 
-Candidate generation and final ranking have separate recall, MRR, success, degradation, availability, and
-latency fields. Stable failed-case ids show whether an answer never entered the candidate window or entered and
-was later lost. Reports contain no query text, source text, provider response body, endpoint, or credential.
+The fusion pool, judged candidates, and final ranking have separate recall, MRR, success, degradation,
+availability, and latency fields. Stable failed-case ids show whether an answer never entered retrieval, was not
+selected for judgment, or entered and was later lost. Reports contain no query text, source text, provider
+response body, endpoint, or credential.
 
 Selection is not authorization. A variant with at least one valid response can remain in the tuning comparison
 so reliability failures do not erase the evidence about it. The separate mechanical release gate then checks
@@ -1733,17 +1738,21 @@ single-flight p95 against the fixed 4-second SLO. The receipt is preserved as a 
 to relax the threshold after observation.
 
 OpenAI embedding access then allowed a production-path comparison. Small at 1,536 dimensions and Large at 3,072
-both embedded all 120 chunks without degradation and reached the same 98.3% direct-answer candidate and ranked
-recall. Small had stronger candidate MRR, half-width vectors, and about 6.5 times the documented pages per dollar,
-so it is the quality-price selection. Both missed the same canonical source at fusion rank 11; its answer-bearing
-grade-2 support source was already inside the top 10, and a Small diagnostic at 20 candidates reached 100%
-candidate recall. This isolates the remaining end-to-end blocker to candidate-window/fusion policy rather than
-embedding quality. End-to-end schema v3 and matrix schema v7 bind the selected 1,536 dimensions into the receipt.
+both embedded all 120 chunks without degradation and initially reached the same 98.3% direct-answer candidate
+and ranked recall. Small had stronger candidate MRR, half-width vectors, and about 6.5 times the documented pages
+per dollar, so it is the quality-price selection. Both placed the same canonical source at fusion rank 11.
+
+The bounded semantic-tail selector resolves that gap without increasing Luna's 10-candidate request. It keeps
+the first nine fused candidates and chooses the tenth judgment slot by vector rank from a 20-candidate fusion
+pool. The fresh Small run reached 100% fusion-pool, judged-candidate, and ranked direct-answer recall, 100% final
+success@1, zero degradation, and zero fallback. End-to-end schema v4 and matrix schema v8 bind the selected 1,536
+dimensions and the candidate-selection contract into the receipt. The remaining development blocker is the
+71 ms latency miss; the pre-declared held-out split remains untouched.
 
 An older end-to-end run stopped when its configured embedding role produced 0 of 120 vectors and remains useful
-failure-handling evidence. Current access covers both OpenAI embedding models; the new comparison above replaces
-the provider-capability blocker with a measured candidate-window blocker. It still cannot authorize lexical
-fallback, a second endpoint, or a held-out run.
+failure-handling evidence. Current access covers both OpenAI embedding models; the successful evidence above
+replaces the provider-capability and candidate-window blockers. It still cannot authorize lexical fallback, a
+second endpoint, or a held-out run.
 
 `derive` runs during indexing, ingestion, remembering, and maintenance, where output quality matters more
 than interactive latency. `maintenance.model` can override it for `remember` and dream without changing the

@@ -87,6 +87,7 @@ JSON Schema definitions. The checked-in artifacts for this contract are:
 - `development-openai-luna-v6-corpus-v4-latency-2026-08-25.json`
 - `development-end-to-end-openai-luna-v6-corpus-v4-embedding-small-2026-08-25.json`
 - `development-end-to-end-openai-luna-v6-corpus-v4-embedding-large-2026-08-25.json`
+- `development-end-to-end-openai-luna-v6-corpus-v4-semantic-tail-2026-08-25.json`
 
 The full development matrix selects `llm-none-c10`. Across five runs it records 300/300 valid responses, zero
 fallbacks, 0.957 mean nDCG, 100% median top-three overlap, and 3.63-second concurrency-four p95. Provider usage
@@ -126,9 +127,14 @@ at 1,536 dimensions and Large at 3,072 dimensions each embedded 120/120 chunks w
 98.3% direct-answer candidate and ranked recall. Small had 0.624 candidate MRR versus Large's 0.487, uses
 half-width vectors, and has about 6.5 times the pages-per-dollar rate documented by OpenAI. Small is therefore
 the quality-price choice. Both models missed the same direct source at fusion rank 11; an answer-bearing support
-source was already inside the top 10, and a Small diagnostic with 20 candidates reached 100% candidate recall.
-The remaining development work is candidate-window/fusion policy plus the 71 ms latency miss—not another
-embedding model or a held-out run.
+source was already inside the top 10, and a Small diagnostic with 20 candidates reached 100% fusion-pool recall.
+
+The bounded semantic-tail selector keeps the first nine fused candidates and chooses the tenth judgment slot by
+vector rank from positions 10–20. The number of candidates sent to Luna remains 10, and cosine is never compared
+with reciprocal-rank scores. Its full production-path Small run reached 100% fusion-pool, judged-candidate, and
+ranked direct-answer recall, 100% final success@1, zero degradation, and zero fallback. The result is bound by
+end-to-end schema v4 and matrix schema v8. Candidate-window development is complete; the remaining development
+work is the 71 ms latency miss, not another embedding model or a held-out run.
 
 To reproduce and attach the selected configuration's latency profiles:
 

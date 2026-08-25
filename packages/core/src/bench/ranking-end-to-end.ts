@@ -2,10 +2,15 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { performance } from 'node:perf_hooks';
-import type { DegradedReason, RecallOutput } from '@tenphi/akno-protocol';
+import type { DegradedReason, RecallOutput, RecallResult } from '@tenphi/akno-protocol';
 import type { ConfigDoc, AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import { open, type Akno } from '../open.ts';
 import { LLM_RERANK_PROMPT_VERSION, LLM_RERANK_SCHEMA_VERSION } from '../recall/llm-rerank.ts';
+import {
+  RERANK_CANDIDATE_POOL_MULTIPLIER,
+  RERANK_CANDIDATE_SELECTION_VERSION,
+  selectRerankCandidates,
+} from '../recall/search.ts';
 import { RANKING_CATEGORIES, RANKING_CORPUS, rankingCorpusCases } from './ranking-corpus.ts';
 import { rankingCorpusFingerprint } from './ranking-review.ts';
 import type {
@@ -15,7 +20,7 @@ import type {
   RankingExcerptChars,
 } from './ranking.ts';
 
-export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v3';
+export const RANKING_END_TO_END_SCHEMA_VERSION = 'ranking-end-to-end-v4';
 
 export type RankingEndToEndSystem = 'fusion' | 'llm';
 
@@ -66,6 +71,8 @@ export interface RankingEndToEndQueryReport {
   queryId: string;
   category: RankingCategory;
   directAnswerIds: string[];
+  fusionOrder: string[];
+  fusionRank: number | null;
   candidateOrder: string[];
   candidateRank: number | null;
   candidateStatus: RecallOutput['status'];
@@ -95,6 +102,8 @@ export interface RankingEndToEndReport {
     fingerprint: string;
   };
   system: RankingEndToEndSystem;
+  retrievalPoolCount: number;
+  candidateSelectionVersion: string;
   candidateCount: RankingCandidateCount;
   excerptChars: RankingExcerptChars;
   concurrency: number;
@@ -114,6 +123,7 @@ export interface RankingEndToEndReport {
     schemaVersion: string | null;
     available: boolean;
   };
+  fusionPool: RankingEndToEndStageReport;
   candidateGeneration: RankingEndToEndStageReport;
   rankedRecall: RankingEndToEndStageReport;
   rerankFallbackRate: number;
@@ -122,6 +132,7 @@ export interface RankingEndToEndReport {
 
 interface QueryRun {
   output: RecallOutput;
+  fusionOrder: string[];
   order: string[];
   latencyMs: number;
 }
@@ -140,6 +151,7 @@ export async function runRankingEndToEnd(
   const split = options.split ?? 'development';
   const system = options.system ?? 'llm';
   const candidateCount = options.candidateCount ?? 20;
+  const retrievalPoolCount = candidateCount * RERANK_CANDIDATE_POOL_MULTIPLIER;
   const excerptChars = options.excerptChars ?? 800;
   const concurrency = normalizeConcurrency(options.concurrency ?? 4);
   const embeddingProvider = options.embeddingProvider ?? config.models.embedding.provider?.name ?? 'local';
@@ -212,6 +224,8 @@ export async function runRankingEndToEnd(
           queryId: benchCase.id,
           category: benchCase.category,
           directAnswerIds,
+          fusionOrder: [],
+          fusionRank: null,
           candidateOrder: [],
           candidateRank: null,
           candidateStatus: 'unavailable',
@@ -251,10 +265,19 @@ export async function runRankingEndToEnd(
           mode: 'lookup',
           depth: 'summary',
           expand: false,
-          limit: candidateCount,
+          limit: system === 'llm' ? retrievalPoolCount : candidateCount,
           budget: 100_000,
         });
-        return { output, order: resultIds(output, identities), latencyMs: performance.now() - started };
+        const selected =
+          system === 'llm'
+            ? selectRerankCandidates(output.results, candidateCount)
+            : output.results.slice(0, candidateCount);
+        return {
+          output,
+          fusionOrder: resultIds(output.results, identities),
+          order: resultIds(selected, identities),
+          latencyMs: performance.now() - started,
+        };
       },
       (done) => options.onProgress?.({ phase: 'candidate_generation', done, total: cases.length }),
     );
@@ -300,7 +323,12 @@ export async function runRankingEndToEnd(
             limit: candidateCount,
             budget: 100_000,
           });
-          return { output, order: resultIds(output, identities), latencyMs: performance.now() - started };
+          return {
+            output,
+            fusionOrder: [],
+            order: resultIds(output.results, identities),
+            latencyMs: performance.now() - started,
+          };
         },
         (done) => options.onProgress?.({ phase: 'ranked_recall', done, total: cases.length }),
       );
@@ -325,6 +353,8 @@ export async function runRankingEndToEnd(
         queryId: benchCase.id,
         category: benchCase.category,
         directAnswerIds,
+        fusionOrder: candidate.fusionOrder,
+        fusionRank: bestRankOf(candidate.fusionOrder, directAnswerIds),
         candidateOrder: candidate.order,
         candidateRank: bestRankOf(candidate.order, directAnswerIds),
         candidateStatus: candidate.output.status,
@@ -368,6 +398,7 @@ function buildReport(options: {
   reranker: RankingEndToEndReport['reranker'];
   queryReports: RankingEndToEndQueryReport[];
 }): RankingEndToEndReport {
+  const fusionPool = aggregateStage(options.queryReports, 'fusion');
   const candidateGeneration = aggregateStage(options.queryReports, 'candidate');
   const rankedRecall = aggregateStage(options.queryReports, 'ranked');
   const rerankFallbackRate = ratio(
@@ -398,11 +429,17 @@ function buildReport(options: {
       fingerprint: rankingCorpusFingerprint(),
     },
     system: options.system,
+    retrievalPoolCount:
+      options.system === 'llm'
+        ? options.candidateCount * RERANK_CANDIDATE_POOL_MULTIPLIER
+        : options.candidateCount,
+    candidateSelectionVersion: RERANK_CANDIDATE_SELECTION_VERSION,
     candidateCount: options.candidateCount,
     excerptChars: options.excerptChars,
     concurrency: options.concurrency,
     embedding: options.embedding,
     reranker: options.reranker,
+    fusionPool,
     candidateGeneration,
     rankedRecall,
     rerankFallbackRate,
@@ -539,8 +576,8 @@ function writeCorpus(root: string): Map<string, string> {
   return identities;
 }
 
-function resultIds(result: RecallOutput, identities: Map<string, string>): string[] {
-  return result.results.flatMap((candidate) => {
+function resultIds(results: RecallResult[], identities: Map<string, string>): string[] {
+  return results.flatMap((candidate) => {
     const identity = candidate.type === 'page' ? candidate.slug : candidate.path;
     const id = identities.get(identity);
     return id ? [id] : [];
@@ -582,13 +619,13 @@ async function mapCases<T, R>(
 
 function aggregateStage(
   queries: RankingEndToEndQueryReport[],
-  stage: 'candidate' | 'ranked',
+  stage: 'fusion' | 'candidate' | 'ranked',
 ): RankingEndToEndStageReport {
   const rank = (query: RankingEndToEndQueryReport): number | null =>
-    stage === 'candidate' ? query.candidateRank : query.rankedRank;
+    stage === 'fusion' ? query.fusionRank : stage === 'candidate' ? query.candidateRank : query.rankedRank;
   const metrics = metricsFor(queries.map(rank));
   const latencies = queries.map((query) =>
-    stage === 'candidate' ? query.candidateLatencyMs : query.rankedLatencyMs,
+    stage === 'ranked' ? query.rankedLatencyMs : query.candidateLatencyMs,
   );
   return {
     ...metrics,
@@ -598,10 +635,10 @@ function aggregateStage(
       return [{ category, queries: selected.length, ...metricsFor(selected.map(rank)) }];
     }),
     degradedQueries: queries.filter((query) =>
-      stage === 'candidate' ? query.candidateDegraded.length > 0 : query.degraded.length > 0,
+      stage === 'ranked' ? query.degraded.length > 0 : query.candidateDegraded.length > 0,
     ).length,
     unavailableQueries: queries.filter((query) =>
-      stage === 'candidate' ? query.candidateStatus === 'unavailable' : query.rankedStatus === 'unavailable',
+      stage === 'ranked' ? query.rankedStatus === 'unavailable' : query.candidateStatus === 'unavailable',
     ).length,
     p50LatencyMs: percentile(latencies, 0.5),
     p95LatencyMs: percentile(latencies, 0.95),

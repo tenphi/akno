@@ -2,7 +2,14 @@ import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
 import type { Store } from '../store/db.ts';
-import { fuseHits, normalizeScores, rerankHits, toMatchExpression, type ChunkHit } from './search.ts';
+import {
+  fuseHits,
+  normalizeScores,
+  rerankHits,
+  selectRerankCandidates,
+  toMatchExpression,
+  type ChunkHit,
+} from './search.ts';
 
 describe('toMatchExpression', () => {
   it('turns a natural-language query into a legal FTS5 expression', () => {
@@ -76,6 +83,25 @@ describe('fuseHits', () => {
 
     expect(fused[0]).toMatchObject({ chunkId: 2, from: ['lexical', 'graph'] });
     expect(fused.find((hit) => hit.chunkId === 1)?.score).toBe(fused.find((hit) => hit.chunkId === 3)?.score);
+  });
+});
+
+describe('selectRerankCandidates', () => {
+  it('keeps the fused window unchanged without semantic evidence', () => {
+    const candidates = Array.from({ length: 20 }, (_, index) => ({ id: index + 1 }));
+    expect(selectRerankCandidates(candidates, 10).map((candidate) => candidate.id)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    ]);
+  });
+
+  it('uses one boundary slot for the strongest vector-ranked candidate in the bounded tail', () => {
+    const candidates = Array.from({ length: 21 }, (_, index) => ({
+      id: index + 1,
+      relevance: index === 10 ? 0.91 : index === 19 ? 0.8 : 0.4,
+    }));
+    expect(selectRerankCandidates(candidates, 10).map((candidate) => candidate.id)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 11,
+    ]);
   });
 });
 
@@ -217,6 +243,41 @@ describe('rerankHits', () => {
     expect(result.hits[1]!.relevance).toBeCloseTo(1 / 3);
     expect(result.hits[2]!.score).toBeLessThan(result.hits[1]!.score);
     expect(result.qualification).toMatchObject({ applied: false, basis: 'disabled', rejected: 0 });
+  });
+
+  it('keeps an unjudged fusion-boundary candidate in the tail after selecting a semantic probe', async () => {
+    const semanticHits: ChunkHit[] = Array.from({ length: 11 }, (_, index) => ({
+      chunkId: index + 1,
+      pageId: `semantic-page-${index + 1}`,
+      score: 1 - index / 100,
+      relevance: index === 10 ? 0.95 : 0.4,
+      from: ['vector'],
+    }));
+    const semanticStore = fakeStore(
+      semanticHits.map((hit) => ({ id: hit.chunkId, text: `semantic chunk ${hit.chunkId}` })),
+    );
+    const model = stubReranker({
+      rerankerMode: 'llm',
+      chat: async (messages) => {
+        const payload = JSON.parse(messages.at(-1)!.content) as {
+          candidates: { candidate_id: string; excerpt: string }[];
+        };
+        expect(payload.candidates.map((candidate) => candidate.excerpt)).toContain('semantic chunk 11');
+        expect(payload.candidates.map((candidate) => candidate.excerpt)).not.toContain('semantic chunk 10');
+        return {
+          ok: true,
+          value: JSON.stringify({
+            j: Object.fromEntries(
+              payload.candidates.map((candidate, index) => [candidate.candidate_id, [3, index + 1]]),
+            ),
+          }),
+          latencyMs: 1,
+        };
+      },
+    } as unknown as Partial<ModelClient>);
+    const result = await rerankHits(semanticStore, model, 'invented semantic query', semanticHits, 10);
+    expect(result.hits.map((hit) => hit.chunkId)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 10]);
+    expect(result.qualification).toMatchObject({ judged: 10, unjudged: 1 });
   });
 
   it('removes LLM grade-zero candidates and never fills from the unjudged tail', async () => {

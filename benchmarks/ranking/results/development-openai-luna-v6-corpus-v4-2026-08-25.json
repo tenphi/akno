@@ -1,6 +1,6 @@
 {
   "kind": "ranking_matrix",
-  "schemaVersion": "ranking-matrix-v7",
+  "schemaVersion": "ranking-matrix-v8",
   "createdAt": "2026-08-25T10:01:17.766Z",
   "split": "development",
   "corpus": {
@@ -8777,8 +8777,11 @@
     "corpusVersion": "invented-ranking-v4",
     "corpusFingerprint": "c48203f7fb05975720d447a151f7d9e8660834b1ec107f2fa9e6ca0ba602f83e",
     "candidateCount": 10,
-    "directAnswerCandidateRecall": 0.9833333333333333,
-    "directAnswerRankedRecall": 0.9833333333333333,
+    "retrievalPoolCount": 20,
+    "candidateSelectionVersion": "fusion-semantic-tail-v1",
+    "directAnswerFusionPoolRecall": 1,
+    "directAnswerCandidateRecall": 1,
+    "directAnswerRankedRecall": 1,
     "candidateDegradedQueries": 0,
     "rankedDegradedQueries": 0,
     "rerankFallbackRate": 0,
@@ -8972,14 +8975,14 @@
       },
       {
         "id": "end_to_end_candidate_recall",
-        "passed": false,
-        "actual": 0.9833333333333333,
+        "passed": true,
+        "actual": 1,
         "target": "1.0 at the selected candidate count"
       },
       {
         "id": "end_to_end_ranked_recall",
-        "passed": false,
-        "actual": 0.9833333333333333,
+        "passed": true,
+        "actual": 1,
         "target": "1.0 after reranking and assembly"
       },
       {
@@ -9063,8 +9066,6 @@
     ],
     "blockers": [
       "held_out_split",
-      "end_to_end_candidate_recall",
-      "end_to_end_ranked_recall",
       "latency"
     ]
   }

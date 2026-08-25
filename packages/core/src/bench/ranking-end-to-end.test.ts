@@ -11,13 +11,18 @@ describe('end-to-end ranking benchmark', () => {
       concurrency: 4,
     });
 
-    expect(report.schemaVersion).toBe('ranking-end-to-end-v3');
+    expect(report.schemaVersion).toBe('ranking-end-to-end-v4');
+    expect(report).toMatchObject({
+      retrievalPoolCount: 10,
+      candidateSelectionVersion: 'fusion-semantic-tail-v1',
+    });
     expect(report.corpus).toMatchObject({ queries: 60, sources: 120, categories: 8 });
     expect(report.embedding.available).toBe(false);
     expect(report.embedding).toMatchObject({ dimensions: 8, totalChunks: 120, embeddedChunks: 0 });
     expect(report.passed).toBe(false);
     expect(report.candidateGeneration.degradedQueries).toBe(60);
     expect(report.candidateGeneration.unavailableQueries).toBe(60);
+    expect(report.fusionPool).toEqual(report.candidateGeneration);
     expect(report.rankedRecall).toEqual(report.candidateGeneration);
     expect(report.queries).toHaveLength(60);
     expect(report.queries.every((query) => query.candidateOrder.length === 0)).toBe(true);
@@ -62,6 +67,7 @@ describe('end-to-end ranking benchmark', () => {
         embeddedChunks: 120,
       });
       expect(report.candidateGeneration.degradedQueries).toBe(0);
+      expect(report.fusionPool).toEqual(report.candidateGeneration);
       const misses = report.queries
         .filter((query) => query.candidateRank === null)
         .map((query) => query.queryId);
