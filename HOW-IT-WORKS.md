@@ -2224,19 +2224,23 @@ The first useful result currently requires editing JSON, knowing an OpenAI-compa
 roles, indexing, diagnosing, and then connecting an agent host. The graceful no-model path helps, but the user
 still has to discover it from prose.
 
-A guided `akno init` flow now previews or writes the exact qualified OpenAI overlay and checks the
-knowledge-base path.
-`--check` sends one invented embedding input and the existing three-candidate invented ranking probe through
-the same provider, reporting the roles separately. This catches the otherwise confusing case where a project
-can call Luna but cannot call its configured embedding model. The receipt contains no credential, raw response,
-or private knowledge-base content.
+A guided `akno init` flow now asks for and checks the knowledge-base path, maps trusted-agent, standalone, and
+read-only uses to overridable `autonomous`, `review`, and `audit` recommendations, reports only whether the
+credential resolves, and previews the exact qualified OpenAI overlay before asking to write it. `--check`, or
+the optional guided preflight, sends one invented embedding input and the existing three-candidate invented
+ranking probe through the same provider, reporting the roles separately. This catches the otherwise confusing
+case where a project can call Luna but cannot call its configured embedding model. The receipt contains no
+credential, raw response, or private knowledge-base content.
 
-`--dry-run` prints a path-only diff and the safe preset overlay. Without it, a missing config is created
-atomically. An existing config is never changed without `--force`; unrelated settings and unknown top-level
-keys are retained, while provider/model blocks are replaced as one preset-owned unit. The planner fingerprints
-the input, so an editor save between preview and rename aborts instead of losing the edit. Requested preflight
-failure also aborts. The command writes no knowledge-base file and does not index, install a service, or create
-a schedule. Interactive questions, a first recall, and optional service installation remain future slices.
+`--dry-run` prints a path-only diff and the safe preset overlay. Guided creation defaults to yes; a guided update
+defaults to no and needs confirmation after the diff. The fully specified non-interactive form preserves the
+existing `--force` boundary. Unrelated settings and unknown top-level keys are retained, while provider/model
+blocks are replaced as one preset-owned unit. The planner fingerprints the input, so an editor save between
+preview and rename aborts instead of losing the edit. Requested preflight failure also aborts, and incomplete
+non-interactive or JSON invocations fail rather than waiting for input. The command writes no knowledge-base
+file and does not index, install a service, or create a schedule. It prints explicit commands for the first
+index and recall, an audit dream, diagnostics, and optional service installation. Alternative preset selection
+and running those follow-up actions inside setup remain future slices.
 
 A minimum hosted setup uses the qualified single-endpoint OpenAI preset: one endpoint and credential,
 `text-embedding-3-small` for semantic candidate generation, and `gpt-5.6-luna` for generative work and prompted

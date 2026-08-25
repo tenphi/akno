@@ -51,7 +51,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     adopt <document_id>  Organize one orphan document through its trust policy.
 
   ${style.bold('Admin')}
-    init                 Configure/check a guided setup preset. Never guesses or overwrites silently.
+    init                 Guided setup. Never guesses a path or overwrites silently.
     dream                Seven maintenance phases: infer, curate, adopt, inspect, repair.
     plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.
@@ -70,8 +70,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     --connect            Require a running service; do not fall back in-process.
     -h, --help           Help for any command.
 
-  ${style.grey('Point Akno at your notes in config/local.jsonc — copy config/local.example.jsonc.')}
-  ${style.grey('Start with: akno index && akno doctor')}
+  ${style.grey('Start with: akno init')}
   ${style.grey('How each command works, with examples: HOW-IT-WORKS.md')}`;
 
 type Command = (argv: string[]) => Promise<number>;

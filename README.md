@@ -127,7 +127,18 @@ So a config file is always safe to read, diff and paste into an issue. `akno con
 configuration with secrets redacted, and tells you which files it came from — the fastest way to check that
 your `local.jsonc` is actually being read.
 
-The OpenAI minimum is a benchmark-qualified guided preset. Preview its exact one-endpoint/two-model overlay and
+The OpenAI minimum is a benchmark-qualified guided preset. In a terminal, start the guided path with:
+
+```bash
+akno init
+```
+
+It asks for the knowledge-base folder, how Akno will be used, and the maintenance profile. A trusted-agent use
+recommends `autonomous`, standalone use recommends `review`, and read-only evaluation recommends `audit`; each
+recommendation can be overridden. Setup reports only whether `AKNO_OPENAI_API_KEY` resolves, never its value,
+and offers an optional content-safe model preflight before showing the exact write and asking for confirmation.
+
+For automation, provide the preset and path explicitly. Preview its exact one-endpoint/two-model overlay and
 path-only config diff first; `--check` sends only invented fixtures to verify both embedding access and Luna's
 ranking transport/schema:
 
@@ -136,14 +147,17 @@ akno init --preset openai-luna --akno-path /path/to/markdown \
   --maintenance autonomous --dry-run --check
 ```
 
-Omit `--dry-run` to create a new config. If one exists, Akno prints the same value-free diff and requires an
-explicit `--force`; unrelated settings and unknown top-level keys survive, while the preset-owned provider and
-model blocks are replaced together so stale native-reranker fields cannot contaminate the OpenAI setup. JSONC
-comments outside those owned values are retained. A
+Omit `--dry-run` to create a new config. Guided setup shows the same value-free diff and asks before creating or
+updating it; an existing config defaults to no. Non-interactive replacement requires explicit `--force`.
+Unrelated settings and unknown top-level keys survive, while the preset-owned provider and model blocks are
+replaced together so stale native-reranker fields cannot contaminate the OpenAI setup. JSONC comments outside
+those owned values are retained. A
 checkout writes its gitignored `config/local.jsonc`; an installed copy writes `<state_dir>/config.json`, and
 `AKNO_CONFIG` selects an explicit target. Writes are fsynced and atomically renamed, with a concurrent-edit
-check. Requested preflight failure writes nothing. Setup never indexes, installs a service, creates a schedule,
-or changes the knowledge base.
+check. Requested preflight failure writes nothing. A non-interactive or `--json` invocation with missing required
+arguments fails instead of waiting for input. Setup never indexes, installs a service, creates a schedule, or
+changes the knowledge base; it prints the explicit index, first-recall, audit-dream, diagnostics, and optional
+service-install commands when the config is ready.
 
 Rules can also travel with the notes: if `<akno_path>/akno.jsonc` exists, its `folders` block wins over both
 config files, so structure rules are versioned alongside the knowledge base they describe. That file is read as

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { openAiLunaPreset, type OpenAiLunaPreflightReport } from '@tenphi/akno-core';
 import { initCommand, openAiInitPreview, readableKnowledgeBasePath } from './init-cmd.ts';
+import type { InitPromptSession } from './init-prompts.ts';
 
 const temporary: string[] = [];
 
@@ -37,6 +38,7 @@ describe('OpenAI init', () => {
 
   it('rejects a missing knowledge-base folder without throwing', () => {
     expect(readableKnowledgeBasePath('/invented/missing-knowledge-base')).toBe(false);
+    expect(readableKnowledgeBasePath('.')).toBe(true);
   });
 
   it('reports an invalid knowledge-base folder as a usage error', async () => {
@@ -135,6 +137,70 @@ describe('OpenAI init', () => {
     expect(result).toBe(1);
     expect(fs.existsSync(target)).toBe(false);
   });
+
+  it('guides a trusted-agent setup and confirms before writing', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    fs.mkdirSync(knowledgeBase);
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.stubEnv('AKNO_OPENAI_API_KEY', 'sk-invented-fixture-key');
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const prompt = scriptedPrompt([knowledgeBase, '', '', 'n', '']);
+
+    const result = await initCommand([], { prompt });
+
+    expect(result).toBe(0);
+    expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
+      akno_path: knowledgeBase,
+      maintenance: { profile: 'autonomous' },
+    });
+    expect(prompt.questions).toEqual([
+      'Knowledge-base folder: ',
+      'Usage [1]: ',
+      'Maintenance profile [autonomous]: ',
+      'Run the content-safe model preflight now? [Y/n]: ',
+      'Write this configuration? [Y/n]: ',
+    ]);
+    expect(prompt.messages).toContain(
+      'AKNO_OPENAI_API_KEY is available. Its value will not be printed or stored.',
+    );
+    expect(JSON.stringify({ questions: prompt.questions, messages: prompt.messages })).not.toContain(
+      'sk-invented-fixture-key',
+    );
+  });
+
+  it('leaves an existing config unchanged when an interactive update is declined', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    fs.mkdirSync(knowledgeBase);
+    const original = `${JSON.stringify({ akno_path: knowledgeBase, invented_extension: true }, null, 2)}\n`;
+    fs.writeFileSync(target, original, 'utf8');
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.stubEnv('AKNO_OPENAI_API_KEY', '');
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const prompt = scriptedPrompt([knowledgeBase, '2', '', '', '']);
+
+    const result = await initCommand([], { prompt });
+
+    expect(result).toBe(0);
+    expect(fs.readFileSync(target, 'utf8')).toBe(original);
+    expect(prompt.questions.at(-1)).toBe('Apply this configuration update? [y/N]: ');
+  });
+
+  it('does not prompt or hang when required arguments are missing outside a terminal', async () => {
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    const result = await initCommand([], { interactive: false });
+
+    expect(result).toBe(2);
+    expect(stderr).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'guided setup requires a terminal; provide --preset openai-luna and --akno-path',
+      ),
+    );
+  });
 });
 
 function failedPreflight(): OpenAiLunaPreflightReport {
@@ -167,4 +233,21 @@ function inventedDirectory(): string {
   const target = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-init-command-'));
   temporary.push(target);
   return target;
+}
+
+function scriptedPrompt(answers: string[]): InitPromptSession & { questions: string[]; messages: string[] } {
+  return {
+    questions: [],
+    messages: [],
+    async ask(question) {
+      this.questions.push(question);
+      const answer = answers.shift();
+      if (answer === undefined) throw new Error(`missing invented prompt answer for: ${question}`);
+      return answer;
+    },
+    say(message) {
+      this.messages.push(message);
+    },
+    close() {},
+  };
 }
