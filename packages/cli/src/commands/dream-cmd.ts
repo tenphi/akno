@@ -701,6 +701,12 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       ['held', report.managedItems.outcomes.held],
       ['suppressed', report.managedItems.outcomes.suppressed],
       ['planned pages', report.managedItems.plannedPages],
+      ['placement calls', report.managedItems.placement.classifierCalls],
+      ['placement cache hits', report.managedItems.placement.cacheHits],
+      ['placement kept', report.managedItems.placement.kept],
+      ['placement moved', report.managedItems.placement.moved],
+      ['placement uncertain', report.managedItems.placement.uncertain],
+      ['placement unavailable', report.managedItems.placement.unavailable],
     ]);
     const actionable = report.managedItems.details.filter((finding) => finding.outcome !== 'valid');
     if (privateDetails) {

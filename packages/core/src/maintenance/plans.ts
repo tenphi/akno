@@ -44,7 +44,7 @@ import {
   type MaintenanceBudgetReceipt,
   type MaintenanceBudgetTracker,
 } from './budget.ts';
-import { managedItemRepairIssue, type ManagedItemDraft } from './managed-items.ts';
+import { managedItemRepairIssue, type ManagedItemDraft, type ManagedItemMove } from './managed-items.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
@@ -126,6 +126,11 @@ export interface MaintenanceEvidence {
   documentHash?: string;
   documentMetadataHash?: string;
   documentGroup?: string;
+  /** Structured move identity keeps semantic placement deterministic during preflight and verify. */
+  managedItemId?: string;
+  managedMarkerLine?: number;
+  managedFromHeading?: string | null;
+  managedToHeading?: string;
 }
 
 export interface MaintenanceCheck {
@@ -946,19 +951,45 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         after: draft.after,
       },
     ],
-    evidence: draft.repairs.map((repair): MaintenanceEvidence => ({
-      type: 'page',
-      source: draft.slug,
-      fingerprint: draft.inputHash,
-      relationship: 'ownership',
-      details: [`${repair.code} at line ${repair.line}`],
-    })),
+    evidence: draft.repairs.map((repair): MaintenanceEvidence => {
+      const placement = draft.placements.find((candidate) => candidate.markerLine === repair.line);
+      return {
+        type: 'page',
+        source: draft.slug,
+        fingerprint: draft.inputHash,
+        relationship: 'ownership',
+        details: [
+          placement
+            ? `${repair.code} at line ${repair.line}: move complete owned block to ## ${placement.toHeading}`
+            : `${repair.code} at line ${repair.line}`,
+        ],
+        managedItemId: placement?.itemId,
+        managedMarkerLine: placement?.markerLine,
+        managedFromHeading: placement?.fromHeading,
+        managedToHeading: placement?.toHeading,
+      };
+    }),
     checks: [
       { name: 'page currently allows remember integration', status: 'passed' },
       { name: 'only strict Akno-owned item boundaries change', status: 'passed' },
       { name: 'deterministic output is sealed byte for byte', status: 'passed' },
     ],
   };
+}
+
+function managedItemMoves(evidence: readonly MaintenanceEvidence[]): ManagedItemMove[] {
+  return evidence.flatMap((entry) =>
+    entry.managedItemId && typeof entry.managedMarkerLine === 'number' && entry.managedToHeading !== undefined
+      ? [
+          {
+            itemId: entry.managedItemId,
+            markerLine: entry.managedMarkerLine,
+            fromHeading: entry.managedFromHeading ?? null,
+            toHeading: entry.managedToHeading,
+          },
+        ]
+      : [],
+  );
 }
 
 export function listMaintenancePlans(
@@ -2131,7 +2162,7 @@ async function verifyApplied(
     if (
       item.kind === 'managed_item' &&
       operation.type === 'replace' &&
-      managedItemRepairIssue(operation.before, operation.after)
+      managedItemRepairIssue(operation.before, operation.after, managedItemMoves(item.evidence))
     ) {
       return `${operation.relPath} no longer passes deterministic managed-item repair checks.`;
     }
@@ -2850,7 +2881,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     const operation = operations[0];
     const issue =
       operation?.type === 'replace'
-        ? managedItemRepairIssue(operation.before, operation.after)
+        ? managedItemRepairIssue(operation.before, operation.after, managedItemMoves(item.evidence))
         : 'a managed-item repair has no page replacement';
     if (issue) return { status: 'blocked', detail: issue };
   }

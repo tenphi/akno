@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 25;
+export const SCHEMA_VERSION = 26;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -30,6 +30,7 @@ export const MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX = 15;
 export const MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX = 16;
 export const SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX = 17;
 export const SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX = 18;
+export const MANAGED_ITEM_PLACEMENT_VERDICTS_MIGRATION_INDEX = 19;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -749,6 +750,23 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX semantic_merge_embeddings_page
     ON semantic_merge_embeddings(page_id, created_at);
+  `,
+  // Managed-item placement is a semantic qualification over exact current page bytes. The
+  // verdict cache stores only item ids, outcomes, and opaque destination-heading fingerprints;
+  // page text, headings, and model rationale remain absent from derived state.
+  `
+  CREATE TABLE managed_item_placement_verdicts (
+    fingerprint         TEXT PRIMARY KEY,
+    page_id             TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_hash         TEXT NOT NULL,
+    classifier_endpoint TEXT NOT NULL,
+    prompt_version      TEXT NOT NULL,
+    signature_version   TEXT NOT NULL,
+    verdicts            TEXT NOT NULL,
+    created_at          TEXT NOT NULL
+  );
+  CREATE INDEX managed_item_placement_verdicts_page
+    ON managed_item_placement_verdicts(page_id, created_at);
   `,
 ];
 

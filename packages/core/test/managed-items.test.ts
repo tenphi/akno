@@ -4,7 +4,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
-import { inspectManagedItems, managedItemRepairIssue } from '../src/maintenance/managed-items.ts';
+import {
+  applyManagedItemMoves,
+  inspectManagedItems,
+  managedItemRepairIssue,
+} from '../src/maintenance/managed-items.ts';
 
 describe('managed item inspection', () => {
   it('repairs only empty, legacy, and byte-identical duplicate owned fragments', () => {
@@ -74,6 +78,48 @@ Ada Marlow renewed a Vulpine Mutual policy.
     expect(result.findings.filter((finding) => finding.code === 'valid')).toHaveLength(0);
     expect(result.after).toBe(before);
   });
+
+  it('moves the complete owned block without rewriting surrounding bytes', () => {
+    const before = `# Ada Marlow
+
+## Preferences
+
+Authored preference context stays here.
+
+## Equipment
+
+<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+Ada Marlow prefers the Zephyr QX-100.
+
+Authored equipment context stays here.
+`;
+    const move = {
+      itemId: 'itm_move',
+      markerLine: 8,
+      fromHeading: 'Equipment',
+      toHeading: 'Preferences',
+    };
+
+    const result = applyManagedItemMoves(before, [move]);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.content).toContain(
+      `## Preferences
+
+Authored preference context stays here.
+
+<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+Ada Marlow prefers the Zephyr QX-100.`,
+    );
+    expect(result.content).toContain('## Equipment\n\n\n\nAuthored equipment context stays here.');
+    expect(managedItemRepairIssue(before, result.content, [move])).toBeNull();
+    expect(
+      managedItemRepairIssue(before, result.content.replace('Authored equipment', 'Changed equipment'), [
+        move,
+      ]),
+    ).toMatch(/broader/);
+  });
 });
 
 describe('managed items in the dream cycle', () => {
@@ -83,10 +129,21 @@ describe('managed items in the dream cycle', () => {
   let server: http.Server;
   let baseUrl: string;
   let curatorCalls = 0;
+  let placementCalls = 0;
+  let placementDecider: (items: { id: string; current_heading: string | null }[]) => unknown;
 
   beforeEach(async () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-kb-'));
     stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-state-'));
+    curatorCalls = 0;
+    placementCalls = 0;
+    placementDecider = (items) => ({
+      decisions: items.map((item) =>
+        item.current_heading
+          ? { id: item.id, outcome: 'keep', heading: null }
+          : { id: item.id, outcome: 'uncertain', heading: null },
+      ),
+    });
     server = http.createServer((request, response) => {
       const chunks: Buffer[] = [];
       request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -97,7 +154,9 @@ describe('managed items in the dream cycle', () => {
         const system = body.messages?.[0]?.content ?? '';
         const user = body.messages?.at(-1)?.content ?? '';
         const deriving = system.startsWith('You extract structure from a personal knowledge base page');
+        const placing = system.startsWith('You audit the placement of Akno-managed facts');
         if (system.startsWith('You are the independent curator')) curatorCalls += 1;
+        if (placing) placementCalls += 1;
         const preferredLine = /^([0-9]+): Ada Marlow prefers the Zephyr QX-100\.$/m.exec(user)?.[1];
         const firstWarrantyLine = /^([0-9]+): The Zephyr QX-100 warranty lasts 1111 days\.$/m.exec(user)?.[1];
         const secondWarrantyLine = /^([0-9]+): The Zephyr QX-100 warranty lasts 2222 days\.$/m.exec(
@@ -128,16 +187,21 @@ describe('managed items in the dream cycle', () => {
                   value: '2222 days',
                 }
               : null;
-        const answer = deriving
-          ? {
-              summary: 'Invented preference record.',
-              keywords: ['invented preference'],
-              facts: fact ? [fact] : [],
-            }
-          : {
-              outcome: 'approve',
-              reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
-            };
+        const placementInput = placing
+          ? (JSON.parse(user) as { items: { id: string; current_heading: string | null }[] })
+          : null;
+        const answer = placing
+          ? placementDecider(placementInput?.items ?? [])
+          : deriving
+            ? {
+                summary: 'Invented preference record.',
+                keywords: ['invented preference'],
+                facts: fact ? [fact] : [],
+              }
+            : {
+                outcome: 'approve',
+                reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
+              };
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
           JSON.stringify({
@@ -346,5 +410,154 @@ The Zephyr QX-100 warranty lasts 2222 days.
       outcomes: { held: 1, valid: 0 },
     });
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(managed);
+  });
+
+  it('qualifies, applies, and then caches an exact same-page placement correction', async () => {
+    const before = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Preferences
+
+Authored preference context stays here.
+
+## Equipment
+
+<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+Ada Marlow prefers the Zephyr QX-100.
+
+Authored equipment context stays here.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    await mem.index({ reindexUnchanged: true });
+    placementDecider = (items) => ({
+      decisions: items.map((item) =>
+        item.current_heading === 'Equipment'
+          ? { id: item.id, outcome: 'move', heading: 'Preferences' }
+          : { id: item.id, outcome: 'keep', heading: null },
+      ),
+    });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const after = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
+
+    expect(report.managedItems).toMatchObject({
+      findings: { misplaced_item: 1, valid: 0 },
+      outcomes: { planned: 1, held: 0, valid: 0 },
+      placement: { pagesConsidered: 1, classifierCalls: 1, moved: 1 },
+    });
+    expect(report.maintenancePlan?.items).toEqual([
+      expect.objectContaining({ kind: 'managed_item', status: 'applied' }),
+    ]);
+    expect(after).toContain(
+      `## Preferences
+
+Authored preference context stays here.
+
+<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+Ada Marlow prefers the Zephyr QX-100.`,
+    );
+    expect(after).toContain('## Equipment\n\n\n\nAuthored equipment context stays here.');
+    expect(curatorCalls).toBe(1);
+    expect(placementCalls).toBe(1);
+
+    const keep = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(keep.managedItems).toMatchObject({
+      findings: { valid: 1 },
+      placement: { classifierCalls: 1, kept: 1 },
+    });
+    const cached = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(cached.managedItems).toMatchObject({
+      findings: { valid: 1 },
+      placement: { classifierCalls: 0, cacheHits: 1, kept: 1 },
+    });
+    expect(placementCalls).toBe(2);
+  });
+
+  it('holds and caches an uncertain semantic placement without changing the page', async () => {
+    const before = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Preferences
+
+<!-- akno:item itm_uncertain source=fixture%3Aone origin=user -->
+Ada Marlow prefers the Zephyr QX-100.
+
+## Equipment
+
+Authored equipment context stays here.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    await mem.index({ reindexUnchanged: true });
+    placementDecider = (items) => ({
+      decisions: items.map((item) => ({ id: item.id, outcome: 'uncertain', heading: null })),
+    });
+
+    const first = await mem.dream({ phase: 'curate', dryRun: true });
+    const second = await mem.dream({ phase: 'curate', dryRun: true });
+
+    expect(first.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { placement_uncertain: 1, valid: 0 },
+      outcomes: { planned: 0, held: 1, valid: 0 },
+      placement: { classifierCalls: 1, uncertain: 1 },
+    });
+    expect(second.managedItems.placement).toMatchObject({ classifierCalls: 0, cacheHits: 1 });
+    expect(placementCalls).toBe(1);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+  });
+
+  it('rejects an invented destination and does not cache the invalid classifier response', async () => {
+    const before = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Preferences
+
+<!-- akno:item itm_guard source=fixture%3Aone origin=user -->
+Ada Marlow prefers the Zephyr QX-100.
+
+## Equipment
+
+Authored equipment context stays here.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    await mem.index({ reindexUnchanged: true });
+    placementDecider = (items) => ({
+      decisions: items.map((item) => ({
+        id: item.id,
+        outcome: 'move',
+        heading: 'Invented destination',
+      })),
+    });
+
+    const first = await mem.dream({ phase: 'curate', dryRun: true });
+    const second = await mem.dream({ phase: 'curate', dryRun: true });
+
+    expect(first.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { placement_unavailable: 1, valid: 0 },
+      outcomes: { held: 1 },
+      placement: { classifierCalls: 1, cacheHits: 0, unavailable: 1 },
+    });
+    expect(second.managedItems.placement).toMatchObject({ classifierCalls: 1, cacheHits: 0 });
+    expect(placementCalls).toBe(2);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
   });
 });
