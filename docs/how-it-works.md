@@ -126,7 +126,9 @@ extracts durable claims from raw material, ranks relevant pages, checks an indep
 and either performs a bounded write or returns a proposal. A plain knowledge page is searchable but read-only;
 only explicit page or folder `remember: integrate` metadata admits injection. If the strongest match is
 read-only, a weaker writable result cannot win merely because Akno may edit it. A new explicitly managed page or
-a held destination decision is safer. Each new managed sentence may also retain one validated exact input quote
+a typed `no_writable_destination` hold is safer. Per-claim destination classes distinguish existing admitted
+pages, new managed pages, and the absence of an authorized home without requiring a host to parse prose. Each
+new managed sentence may also retain one validated exact input quote
 in private state, with only a hash of the full input. This lets the dream cycle verify or narrowly correct the
 generated sentence later without granting authority over the containing page. Ingestion similarly separates
 extraction, naming, routing, file movement, page creation, and indexing.

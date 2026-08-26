@@ -29,7 +29,7 @@ export const RememberInput = z.object({
 export type RememberInput = z.infer<typeof RememberInput>;
 
 export const RememberOutput = ResultEnvelope.extend({
-  outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'noop']),
+  outcome: z.enum(['ok', 'requires_approval', 'requires_folder', 'no_writable_destination', 'noop']),
   change_id: z.string().optional(),
   wrote: z.array(WriteTarget).optional(),
   facts: z.object({ retired: z.number().int(), added: z.number().int() }).optional(),
@@ -48,6 +48,10 @@ export const RememberOutput = ResultEnvelope.extend({
         kept: z.boolean(),
         slug: z.string().nullable(),
         score: z.number(),
+        /** The authorization class selected before conflict checking and placement. */
+        destination: z
+          .enum(['existing_admitted_page', 'new_managed_page', 'no_writable_destination'])
+          .optional(),
         /** True only when this candidate's write actually reached disk. */
         written: z.boolean(),
       }),

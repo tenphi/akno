@@ -178,7 +178,9 @@ export const OPS = {
     description:
       'Hand over a transcript or notes and let memory decide what is worth keeping and where it goes. Use ' +
       'this instead of write when you do not want to choose slugs or phrasing yourself. Pass `mission` to say ' +
-      'what to pay attention to in this particular text; the standing rules about what lasts still apply.',
+      'what to pay attention to in this particular text; the standing rules about what lasts still apply. ' +
+      '`no_writable_destination` means relevant memory was found but no authorized page or managed-page ' +
+      'location could receive one or more retained claims; inspect their typed approval reasons.',
   }),
   forget: op({
     name: 'forget',

@@ -51,7 +51,7 @@ let server: StubServer;
  * none of its five attributes, against 1.0 for the subject alone — the test-scale version of
  * 0.27 vs 0.97 through `bge-reranker-v2-m3`.
  */
-const TOPIC_TERMS = ['leoninum', 'pool', 'sauna', 'gym', 'wellness', 'towel', 'meal', 'concert'];
+const TOPIC_TERMS = ['vulpine', 'pool', 'sauna', 'gym', 'wellness', 'towel', 'meal', 'concert'];
 
 function topicEmbedding(text: string): number[] {
   const lower = text.toLowerCase();
@@ -258,7 +258,9 @@ describe('fact-injection admission', () => {
 
       const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
       expect(result.wrote).toBeUndefined();
-      expect(result.outcome).toBe('requires_approval');
+      expect(result.outcome).toBe('no_writable_destination');
+      expect(result.considered?.[0]?.destination).toBe('no_writable_destination');
+      expect(result.approvals?.[0]?.reason_code).toBe('no_writable_destination');
       expect(fs.existsSync(path.join(root, 'home/zephyr-warranty.md'))).toBe(false);
     } finally {
       await mem.close();
@@ -292,6 +294,7 @@ describe('fact-injection admission', () => {
       await mem.index({});
       const result = await mem.remember({ text: 'The lease warranty lasts five years.' });
       expect(result.wrote?.[0]).toMatchObject({ slug: 'home/lease', action: 'appended' });
+      expect(result.considered?.[0]?.destination).toBe('existing_admitted_page');
     } finally {
       await mem.close();
     }
@@ -395,6 +398,7 @@ describe('what remember reports as written', () => {
       const result = await mem.remember({ text: 'The bicycle is stored beside the blue cabinet.' });
       expect(result.wrote?.[0]?.slug).toBe('home/bicycle-storage');
       expect(result.considered?.[0]?.written).toBe(true);
+      expect(result.considered?.[0]?.destination).toBe('new_managed_page');
     } finally {
       await mem.close();
     }
@@ -415,7 +419,8 @@ describe('what remember reports as written', () => {
       expect(result.wrote).toBeUndefined();
       expect(result.considered?.[0]?.written).toBe(false);
       expect(result.considered?.[0]?.slug).toBeNull();
-      expect(result.outcome).toBe('requires_approval');
+      expect(result.considered?.[0]?.destination).toBe('no_writable_destination');
+      expect(result.outcome).toBe('no_writable_destination');
     } finally {
       await mem.close();
     }
@@ -452,25 +457,24 @@ describe('the title on a page remember creates', () => {
   });
 
   it('names the page after its slug when the subject is one fact on a broader page', async () => {
-    // `travel/2027/japan-trip`, live: a claim about the Shin-Osaka–Hakata Shinkansen was routed
-    // to the trip page — correctly — and created it titled "Osaka Fukuoka train". Every recall
-    // then reported a three-week trip under the name of the fact that happened to open it.
+    // Regression shape: one narrow equipment fact opens a broader expedition page. Naming the
+    // page after that first fact would make every later recall misdescribe the broader subject.
     server.respondWith([
       {
-        text: 'The direct Shinkansen from Shin-Osaka to Hakata takes about 2h30.',
-        subject: 'Osaka Fukuoka train',
-        page: 'home/japan-trip',
+        text: 'The Zephyr QX-100 is scheduled for calibration at dawn.',
+        subject: 'Zephyr calibration',
+        page: 'home/blackwater-expedition',
         kind: 'fact',
       },
     ]);
     const mem = await openMem();
     try {
-      await mem.remember({ text: 'The direct Shinkansen from Shin-Osaka to Hakata takes about 2h30.' });
-      const content = created('home/japan-trip');
-      expect(content).toContain('title: "Japan Trip"');
-      expect(content).not.toContain('Osaka Fukuoka train');
+      await mem.remember({ text: 'The Zephyr QX-100 is scheduled for calibration at dawn.' });
+      const content = created('home/blackwater-expedition');
+      expect(content).toContain('title: "Blackwater Expedition"');
+      expect(content).not.toContain('Zephyr calibration');
       // The claim itself still lands on the page — only the name of the page changed.
-      expect(content).toContain('Shin-Osaka');
+      expect(content).toContain('Zephyr QX-100');
     } finally {
       await mem.close();
     }
@@ -481,8 +485,7 @@ describe('the title on a page remember creates', () => {
  * A claim carries a subject and an attribute, and only the subject says who owns it. Scoring
  * both together asks the cross-encoder "does this passage answer this", which the owning page
  * fails whenever the attribute is the new part — the normal case for something worth
- * remembering. Observed live: a hotel's pool went to a new page while the trip page naming that
- * hotel three times sat at 0.27.
+ * remembering. The fixture keeps the ownership term separate from the new amenity attributes.
  */
 describe('routing a claim whose attribute its page does not yet state', () => {
   const embedded = {
@@ -497,8 +500,8 @@ describe('routing a claim whose attribute its page does not yet state', () => {
   beforeEach(() => {
     fs.mkdirSync(path.join(root, 'trips'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'trips/bonn.md'),
-      '---\ntitle: Bonn\n---\n\n# Bonn\n\n- Staying at the Leoninum, check-in 15:00.\n',
+      path.join(root, 'trips/blackwater-bay.md'),
+      '---\ntitle: Blackwater Bay\n---\n\n# Blackwater Bay\n\n- Staying at Vulpine Lodge, check-in 15:00.\n',
       'utf8',
     );
   });
@@ -506,9 +509,9 @@ describe('routing a claim whose attribute its page does not yet state', () => {
   it('falls back to the subject alone and routes to the page that owns it', async () => {
     server.respondWith([
       {
-        text: 'The Leoninum has a pool, a sauna, a gym, a wellness area and towel service.',
-        subject: 'Leoninum',
-        page: 'trips/leoninum',
+        text: 'Vulpine Lodge has a pool, a sauna, a gym, a wellness area and towel service.',
+        subject: 'Vulpine Lodge',
+        page: 'trips/vulpine-lodge',
         kind: 'fact',
       },
     ]);
@@ -516,10 +519,10 @@ describe('routing a claim whose attribute its page does not yet state', () => {
     try {
       await mem.index({});
       const result = await mem.remember({
-        text: 'The Leoninum has a pool, a sauna, a gym, a wellness area and towel service.',
+        text: 'Vulpine Lodge has a pool, a sauna, a gym, a wellness area and towel service.',
       });
-      expect(result.wrote?.[0]?.slug).toBe('trips/bonn');
-      expect(fs.existsSync(path.join(root, 'trips/leoninum.md'))).toBe(false);
+      expect(result.wrote?.[0]?.slug).toBe('trips/blackwater-bay');
+      expect(fs.existsSync(path.join(root, 'trips/vulpine-lodge.md'))).toBe(false);
     } finally {
       await mem.close();
     }
@@ -528,7 +531,7 @@ describe('routing a claim whose attribute its page does not yet state', () => {
   it('keeps the destination the claim itself chose when the claim routes', async () => {
     server.respondWith([
       {
-        text: 'The Leoninum pool is open until 22:00.',
+        text: 'The Vulpine Lodge pool is open until 22:00.',
         subject: 'opening hours',
         page: 'trips/anything',
         kind: 'fact',
@@ -537,9 +540,9 @@ describe('routing a claim whose attribute its page does not yet state', () => {
     const mem = await openMem(embedded);
     try {
       await mem.index({});
-      const result = await mem.remember({ text: 'The Leoninum pool is open until 22:00.' });
-      // The claim pass found `trips/bonn` on its own; the subject pass never had to run.
-      expect(result.wrote?.[0]?.slug).toBe('trips/bonn');
+      const result = await mem.remember({ text: 'The Vulpine Lodge pool is open until 22:00.' });
+      // The claim pass found `trips/blackwater-bay` on its own; the subject pass never had to run.
+      expect(result.wrote?.[0]?.slug).toBe('trips/blackwater-bay');
     } finally {
       await mem.close();
     }
@@ -551,8 +554,8 @@ describe('routing a claim whose attribute its page does not yet state', () => {
  * append to a home somebody else already had: routing refuses, and the claim lands on whatever
  * slug the retain model wrote before any candidate was scored.
  *
- * Observed 2026-08-16: a meal-box order appended to `household/concerts-2026`, which the reranker
- * scores 0.026 against it. Routing had refused correctly; the guess simply outranked the refusal.
+ * The invented regression points a meal-order claim at an unrelated lease page. Routing refuses
+ * correctly; the test ensures the model's guessed slug cannot outrank that refusal.
  */
 describe('a routing refusal against a page that already exists', () => {
   it('asks instead of appending to it', async () => {
@@ -572,6 +575,7 @@ describe('a routing refusal against a page that already exists', () => {
       });
       expect(result.wrote).toBeUndefined();
       expect(result.outcome).toBe('requires_approval');
+      expect(result.approvals?.[0]?.reason_code).toBe('routing_uncertain');
       expect(result.approvals?.[0]?.reason).toContain('home/lease');
       // The response must not report a claim as kept on a page it was refused.
       expect(result.considered?.[0]?.kept).toBe(false);
@@ -610,11 +614,7 @@ describe('a routing refusal against a page that already exists', () => {
  * right home. Routing used to threshold the leader alone, so a leader below the bar sent the
  * whole claim to the retain model's guessed slug with every other candidate unread.
  *
- * Observed 2026-08-16: a meal-box order landed on `household/concerts-2026` (reranker 0.026)
- * while `household/subscriptions`, already holding that supplier's cancellation, scored 0.755
- * and was never looked at.
- *
- * Here `rank` does what one strong passage did there — it puts the weak page in front without
+ * Here `rank` puts the weak invented page in front without
  * touching either page's relevance.
  */
 describe('routing when the best-ranked page is not the best-judged one', () => {
@@ -719,17 +719,107 @@ describe('routing when the strongest semantic match is read-only', () => {
         text: 'The meal box order was confirmed for Thursday and Friday.',
       });
       expect(result.wrote?.[0]).toMatchObject({ slug: 'household/meal-orders', action: 'created' });
+      expect(result.considered?.[0]?.destination).toBe('new_managed_page');
       expect(fs.readFileSync(path.join(root, 'household/general.md'), 'utf8')).toBe(before);
       expect(fs.readFileSync(path.join(root, 'household/meal-orders.md'), 'utf8')).toContain('akno:item');
     } finally {
       await mem.close();
     }
   });
+
+  it('reports the authorization failure without making dry-run proposals', async () => {
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    const referencePath = path.join(root, 'household/reference.md');
+    fs.writeFileSync(
+      referencePath,
+      [
+        '---',
+        'title: Meal reference',
+        'akno:',
+        '  management:',
+        '    remember: deny',
+        '---',
+        '',
+        '# Meal reference',
+        '',
+        'Meal meal meal.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    const before = fs.readFileSync(referencePath, 'utf8');
+    server.respondWith([
+      {
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        subject: 'meal orders',
+        page: 'household/reference',
+        kind: 'fact',
+      },
+    ]);
+
+    const mem = await openMem(embedded);
+    try {
+      await mem.index({});
+      const preview = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        dry_run: true,
+      });
+      expect(preview).toMatchObject({
+        outcome: 'no_writable_destination',
+        considered: [{ destination: 'no_writable_destination', kept: false, written: false }],
+      });
+      expect(preview.approvals).toBeUndefined();
+      expect(mem.proposals()).toEqual([]);
+
+      const result = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+      });
+      expect(result.outcome).toBe('no_writable_destination');
+      expect(result.approvals?.[0]?.reason_code).toBe('no_writable_destination');
+      expect(mem.proposals()).toHaveLength(1);
+      expect(fs.readFileSync(referencePath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+it('reports a held destination even when another retained claim was written', async () => {
+  server.respondWith([
+    {
+      text: 'The Zephyr QX-100 warranty lasts five years.',
+      subject: 'Zephyr warranty',
+      page: 'home/zephyr-warranty',
+      kind: 'fact',
+    },
+    {
+      text: 'Ada Marlow prefers brass instruments.',
+      subject: 'Ada Marlow preference',
+      kind: 'fact',
+    },
+  ]);
+  const mem = await openMem();
+  try {
+    const result = await mem.remember({
+      text: 'The warranty and preference were confirmed.',
+    });
+    expect(result.outcome).toBe('no_writable_destination');
+    expect(result.wrote).toEqual([
+      expect.objectContaining({ slug: 'home/zephyr-warranty', action: 'created' }),
+    ]);
+    expect(result.considered).toEqual([
+      expect.objectContaining({ destination: 'new_managed_page', written: true }),
+      expect.objectContaining({ destination: 'no_writable_destination', written: false }),
+    ]);
+    expect(result.approvals?.[0]?.reason_code).toBe('no_writable_destination');
+  } finally {
+    await mem.close();
+  }
 });
 
 /**
- * `users/` is a host’s hot memory: per-person standing instructions injected every turn, and never
- * a destination for a remembered claim. `users/google-account.md` appeared there because no rule
+ * `references/` is manually maintained source material and never a destination for a remembered claim.
+ * `references/vulpine-account.md` appeared there because no rule
  * declared the folder — an undeclared folder is eligible, and the directory existed, which was
  * the only question creation asked.
  *
@@ -740,23 +830,26 @@ describe('routing when the strongest semantic match is read-only', () => {
  */
 describe('a folder that refuses remembered claims', () => {
   it('refuses to create a page there, not just to append to one', async () => {
-    fs.mkdirSync(path.join(root, 'users'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'references'), { recursive: true });
     server.respondWith([
       {
         text: 'The account was warned for two years of inactivity.',
-        subject: 'Google account inactivity',
-        page: 'users/google-account',
+        subject: 'Vulpine Mutual account inactivity',
+        page: 'references/vulpine-account',
         kind: 'fact',
       },
     ]);
-    const mem = await openMem({ folders: { 'users/**': { role: 'knowledge', remember: 'deny' } } });
+    const mem = await openMem({
+      folders: { 'references/**': { role: 'knowledge', remember: 'deny' } },
+    });
     try {
       const result = await mem.remember({
         text: 'The account was warned for two years of inactivity.',
       });
       expect(result.wrote).toBeUndefined();
-      expect(result.outcome).toBe('requires_approval');
-      expect(fs.existsSync(path.join(root, 'users/google-account.md'))).toBe(false);
+      expect(result.outcome).toBe('no_writable_destination');
+      expect(result.approvals?.[0]?.reason_code).toBe('no_writable_destination');
+      expect(fs.existsSync(path.join(root, 'references/vulpine-account.md'))).toBe(false);
     } finally {
       await mem.close();
     }
@@ -774,7 +867,7 @@ describe('a caller-supplied mission', () => {
     server.forget();
     try {
       await mem.remember({
-        text: 'Forwarded from Brannoch: the membership number is 88-4120.',
+        text: 'Forwarded from Bo Winters: the membership number is 88-4120.',
         mission: 'Attribute forwarded content to its original author, not the forwarder.',
       });
       const system = server.lastSystem();
@@ -851,7 +944,8 @@ describe('answering a held proposal', () => {
     const mem = await openMem();
     try {
       const result = await mem.remember({ text: 'The bicycle key lives with the concierge.' });
-      expect(result.outcome).toBe('requires_approval');
+      expect(result.outcome).toBe('no_writable_destination');
+      expect(result.approvals?.[0]?.reason_code).toBe('no_writable_destination');
       const proposal = result.approvals![0]!.proposal_id;
 
       await expect(mem.approve(proposal)).rejects.toThrow(/no destination — approve it with a page/);

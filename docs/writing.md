@@ -59,6 +59,13 @@ for retained memory carry that declaration themselves. When the strongest semant
 does not silently use a weaker writable page. It creates a dedicated managed page in an admitted folder when
 the retain result supplies one, or holds the claim for a destination decision.
 
+The response makes that boundary machine-readable. Each `considered` claim reports `destination` as
+`existing_admitted_page`, `new_managed_page`, or `no_writable_destination`. The top-level
+`no_writable_destination` outcome means at least one retained claim had no authorized home; its approval carries
+the same stable `reason_code`, so an agent can ask for a destination without parsing explanatory prose. Ordinary
+semantic ambiguity remains `requires_approval`, while an undeclared target folder remains `requires_folder`.
+`--dry-run` computes these same destination and outcome classes without writing a page or creating a proposal.
+
 It does not create pages in unexplained or read-only folders. `adopt` and immediate index reconciliation make
 accepted memory visible without another manual step.
 

@@ -107,23 +107,54 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   // back as a claim that had been dropped.
   const considered = routed.map((entry) => {
     const fallback = entry.candidate.page;
+    const fallbackExists = fallback !== undefined && pageExists(ctx, fallback);
     const fallbackCanCreate =
-      fallback !== undefined && !pageExists(ctx, fallback) && admittedFolder(catalog, fallback) !== null;
+      fallback !== undefined && !fallbackExists && admittedFolder(catalog, fallback) !== null;
     const kept = entry.slug !== null || fallbackCanCreate;
     return {
       claim: entry.candidate.text,
       kept,
       slug: kept ? (entry.slug ?? fallback ?? null) : null,
       score: Math.round(entry.score * 1000) / 1000,
+      destination: entry.slug
+        ? ('existing_admitted_page' as const)
+        : fallbackCanCreate
+          ? ('new_managed_page' as const)
+          : ('no_writable_destination' as const),
       written: false,
     };
   });
 
   if (input.dry_run) {
+    const folders = requiredFolders(ctx, catalog, routed);
+    const needsApproval = routed.some((entry, index) => {
+      if (considered[index]!.kept || folders.some((folder) => folder.folder === suggestedFolder(entry))) {
+        return false;
+      }
+      const refused =
+        entry.candidate.page && pageExists(ctx, entry.candidate.page) ? entry.candidate.page : undefined;
+      return unroutedReasonCode(entry.nearest, refused, entry.blocked) === 'routing_uncertain';
+    });
+    const noWritableDestination = routed.some((entry, index) => {
+      if (considered[index]!.kept || folders.some((folder) => folder.folder === suggestedFolder(entry))) {
+        return false;
+      }
+      const refused =
+        entry.candidate.page && pageExists(ctx, entry.candidate.page) ? entry.candidate.page : undefined;
+      return unroutedReasonCode(entry.nearest, refused, entry.blocked) === 'no_writable_destination';
+    });
     return {
       status: 'ok',
-      outcome: 'ok',
+      outcome:
+        folders.length > 0
+          ? 'requires_folder'
+          : noWritableDestination
+            ? 'no_writable_destination'
+            : needsApproval
+              ? 'requires_approval'
+              : 'ok',
       considered,
+      ...(folders.length > 0 ? { requires_folder: folders } : {}),
       note: 'dry run — nothing was written',
     };
   }
@@ -153,9 +184,9 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     // retain model wrote before any of those candidates were scored — and if that slug happened
     // to name a real page, the claim was appended to it with nothing having judged the pairing.
     //
-    // Observed 2026-08-16: a meal-box order appended to `household/concerts-2026`, a page the
-    // reranker scores 0.026 against it, under a heading invented for the occasion. Nothing was
-    // broken — routing refused correctly, the fallback simply outranked the refusal.
+    // Regression shape: a Vulpine Mutual renewal targeted an unrelated existing page that the
+    // reranker scored far below threshold. Routing refused correctly, but the fallback used to
+    // outrank that refusal and append under a newly invented heading.
     //
     // A guess that names *no* page still creates one: that is the case the fallback exists for,
     // and a new page is inspectable and cheap to move. A guess that lands on somebody else's
@@ -163,6 +194,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     if (entry.slug === null && pageExists(ctx, target)) {
       considered[index]!.kept = false;
       considered[index]!.slug = null;
+      considered[index]!.destination = 'no_writable_destination';
       approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, target, entry.blocked));
       continue;
     }
@@ -189,6 +221,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       for (const entry of group.entries) {
         considered[entry.index]!.kept = false;
         considered[entry.index]!.slug = null;
+        considered[entry.index]!.destination = 'no_writable_destination';
         approvals.push(proposeUnrouted(ctx, entry.candidate, [], slug, entry.blocked));
       }
       continue;
@@ -237,6 +270,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
           approvals.push({
             proposal_id: recordConflictProposal(ctx, slug, entry.candidate, conflict.existing),
             reason: `'${slug}' already claims something different: ${conflict.existing}. Ask which is current.`,
+            reason_code: 'conflict',
             nearest: [slug],
           });
           continue;
@@ -321,14 +355,23 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   }
 
   // Deduplicated: three findings bound for the same new folder are one thing to do, not three.
-  const folders = foldersNeeded.filter(
-    (required, index) => foldersNeeded.findIndex((other) => other.folder === required.folder) === index,
-  );
+  const folders = deduplicateRequiredFolders(foldersNeeded);
 
   // `requires_folder` outranks `requires_approval` in the outcome, because they ask different
   // people. A folder is the caller's to declare, now, without leaving the turn; an approval
   // waits on the user. Reporting the first as the second is how a caller learns to stop.
-  const outcome = folders.length > 0 ? 'requires_folder' : approvals.length > 0 ? 'requires_approval' : null;
+  const noWritableDestination = approvals.some(
+    (approval) => approval.reason_code === 'no_writable_destination',
+  );
+  const routingApproval = approvals.some((approval) => approval.reason_code !== 'no_writable_destination');
+  const outcome =
+    folders.length > 0
+      ? 'requires_folder'
+      : noWritableDestination
+        ? 'no_writable_destination'
+        : approvals.length > 0
+          ? 'requires_approval'
+          : null;
 
   const held = [
     folders.length > 0
@@ -336,7 +379,8 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
         `${folders.length === 1 ? 'has' : 'have'} not been declared — call \`folder\` with a ` +
         'description of what belongs there, then repeat this'
       : null,
-    approvals.length > 0 ? 'some claims need the user to say where they go' : null,
+    noWritableDestination ? 'some claims have no authorized writable destination' : null,
+    routingApproval ? 'some claims need the user to say where they go or resolve a conflict' : null,
   ].filter(Boolean);
 
   if (wrote.length === 0) {
@@ -400,20 +444,19 @@ function persistManagedSources(ctx: AknoContext, sources: readonly ManagedSource
  * what the page is.
  *
  * `write` derives one from the slug when none is given, and a slug-derived title reads like a
- * filename ("Tvr Complaint 2026 08"). The subject is a phrase a person wrote, so it wins wherever
+ * filename ("Vulpine Claim 2026 08"). The subject is a phrase a person wrote, so it wins wherever
  * the two are about the same thing.
  *
  * They are not always about the same thing, and that is this function's whole problem. The slug
- * comes from routing, which scored ranked candidates; the subject came off one claim. A claim
- * about the Shin-Osaka–Hakata Shinkansen addressed to `travel/2027/japan-trip` created that page
- * — the right page — titled "Osaka Fukuoka train", and for two days every recall reported a
- * three-week trip under the name of the single fact that happened to open it. A claim is
+ * comes from routing, which scored ranked candidates; the subject came off one claim. A narrow
+ * equipment claim can correctly open `expeditions/blackwater-bay-survey` while still being too
+ * specific to name that broader page. A claim is
  * superseded in a week; the title it installed outlives it by months.
  *
  * **One shared content word is enough to keep the subject.** The question is not whether the two
- * agree closely, only whether they are about the same thing at all: `people/jane-doe` and "Jane
- * Doe" share both words, `tvr-complaint-2026-08` and "TVR complaint" share two, `japan-trip` and
- * "Osaka Fukuoka train" share none. Falling back costs a plainer title, which is a cost worth
+ * agree closely, only whether they are about the same thing at all: `people/ada-marlow` and "Ada
+ * Marlow" share both words, `vulpine-claim-2026-08` and "Vulpine claim" share two, while a broad
+ * expedition slug and one equipment calibration share none. Falling back costs a plainer title, which is worth
  * paying — a slug-derived title is dull but it is never about the wrong thing.
  */
 function titleFor(candidate: RetainCandidate, slug: string): string {
@@ -440,6 +483,8 @@ interface RouteDecision {
   /** The strongest qualifying semantic match when its page is read-only. */
   blocked: string | null;
 }
+
+type RoutedCandidate = RouteDecision & { candidate: RetainCandidate };
 
 /**
  * An internal `recall` finds where a claim belongs. **Best score at or above
@@ -478,10 +523,9 @@ interface RouteDecision {
  * The claim scores first, because the claim is what makes routing *specific*: when two pages
  * could own a subject, only the attribute text says which. But a cross-encoder judges "does
  * this passage answer this query", and a claim carries an attribute the owning page has no
- * reason to already state. Measured here: "Collegium Leoninum. В отеле … бассейн … сауна и
- * фитнес-зал" scored the trip page that names the hotel three times at **0.27**, because the
- * page's accommodation paragraph answers *where they are staying*, not *whether it has a pool*.
- * The subject alone scored the same page **0.97**. Same index, same options, same threshold.
+ * reason to already state. The invented regression fixture makes an amenity-heavy claim score
+ * poorly against the owning trip page, while the venue subject alone scores that page strongly.
+ * Same index, same options, same threshold.
  *
  * So the subject is asked only when the claim found nobody — the ownership question after the
  * answers-this question came back empty. It costs a second recall exactly when the alternative
@@ -544,9 +588,8 @@ async function scoreDestinations(
     });
 
   // Suggestions are drawn from the same set, not from every card. Offering a source page as
-  // somewhere a claim "could go instead" proposes a destination this very function would refuse —
-  // observed live: a rent figure was offered four dispute pages, all of them evidence, and the
-  // agent read the list as the intended home and told the user it would be filed there.
+  // somewhere a claim "could go instead" proposes a destination this very function would refuse.
+  // The regression uses evidence-only pages that look topically close but cannot own the claim.
   const nearest = candidates
     .filter((card) => card.writable)
     .slice(0, 4)
@@ -560,10 +603,9 @@ async function scoreDestinations(
   // the right home. When the leader fell below the threshold, routing refused and the claim
   // dropped to the retain model's guessed slug, with every remaining candidate unread.
   //
-  // Observed 2026-08-16: a meal-box order was filed onto `household/concerts-2026`, which the
-  // reranker scored 0.026, while `household/subscriptions` — already holding that supplier's
-  // cancellation — scored 0.755 and was never looked at. The measurement was bought and
-  // discarded. Taking the maximum cannot route anything the old code would have refused *and*
+  // The invented regression ranks an unrelated page first while a later subscription page scores
+  // strongly. Reading only the leader discards that measurement. Taking the maximum cannot route
+  // anything the old code would have refused *and*
   // the threshold rejects; it can only stop a low leader from hiding a qualified page behind it.
   const scored = candidates.filter((card) => card.relevance !== undefined);
   if (scored.length === 0) return { slug: null, score: 0, nearest, blocked: null };
@@ -599,6 +641,38 @@ export { isInsideSuggestedFolder as isInsideSuggestedFolderForTesting };
 /** Does a page with this slug already exist, whatever its role? */
 function pageExists(ctx: AknoContext, slug: string): boolean {
   return ctx.store.db.prepare('SELECT 1 FROM pages WHERE slug = ?').get(slug) !== undefined;
+}
+
+function suggestedFolder(entry: RoutedCandidate): string | null {
+  const slug = entry.candidate.page;
+  return slug ? slug.slice(0, slug.lastIndexOf('/')) : null;
+}
+
+function requiredFolders(
+  ctx: AknoContext,
+  catalog: FolderCatalogEntry[],
+  routed: RoutedCandidate[],
+): FolderRequired[] {
+  const required = routed.flatMap((entry): FolderRequired[] => {
+    const slug = entry.slug ?? entry.candidate.page ?? null;
+    if (!slug || entry.slug !== null || pageExists(ctx, slug) || admittedFolder(catalog, slug)) return [];
+    return [
+      {
+        folder: slug.slice(0, slug.lastIndexOf('/')),
+        nearest: catalog
+          .filter((folder) => folder.eligible)
+          .map((folder) => folder.path)
+          .slice(0, 8),
+      },
+    ];
+  });
+  return deduplicateRequiredFolders(required);
+}
+
+function deduplicateRequiredFolders(folders: FolderRequired[]): FolderRequired[] {
+  return folders.filter(
+    (required, index) => folders.findIndex((other) => other.folder === required.folder) === index,
+  );
 }
 
 /** The page does not exist yet, so only an explicit folder rule can admit its creation. */
@@ -660,8 +734,19 @@ function proposeUnrouted(
         : nearest.length > 0
           ? `nothing scored above ${threshold} for "${candidate.subject}" — ask where this goes`
           : `no page could hold "${candidate.subject}" — every near match is source material, so this needs a new page`,
+    reason_code: unroutedReasonCode(nearest, refusedPage, blockedPage),
     nearest,
   };
+}
+
+function unroutedReasonCode(
+  nearest: string[],
+  refusedPage?: string,
+  blockedPage?: string | null,
+): 'routing_uncertain' | 'no_writable_destination' {
+  return blockedPage || (!refusedPage && nearest.length === 0)
+    ? 'no_writable_destination'
+    : 'routing_uncertain';
 }
 
 function recordConflictProposal(

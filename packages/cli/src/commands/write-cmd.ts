@@ -288,10 +288,14 @@ export async function rememberCommand(argv: string[]): Promise<number> {
           ? style.green('wrote')
           : entry.kept
             ? style.yellow('held')
-            : style.yellow('ask ');
+            : entry.destination === 'no_writable_destination'
+              ? style.yellow('held')
+              : style.yellow('ask ');
         const where = entry.slug
           ? `${entry.slug} ${style.grey(`(${entry.score})`)}`
-          : style.grey('no page scored high enough');
+          : entry.destination === 'no_writable_destination'
+            ? style.grey('no authorized writable destination')
+            : style.grey('no page scored high enough');
         line(`  ${mark} ${truncate(entry.claim, 76)}`);
         line(`       ${style.grey('→')} ${where}`);
       }

@@ -89,6 +89,8 @@ export type ConflictReport = z.infer<typeof ConflictReport>;
 export const ApprovalRequest = z.object({
   proposal_id: z.string(),
   reason: z.string(),
+  /** Stable caller-facing reason. Older proposal producers may omit it. */
+  reason_code: z.enum(['routing_uncertain', 'no_writable_destination', 'conflict']).optional(),
   /** Where this could go instead, so the agent has something to offer the user. */
   nearest: z.array(z.string()),
 });
