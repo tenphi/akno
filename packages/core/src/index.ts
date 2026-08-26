@@ -269,6 +269,13 @@ export type {
   DreamSnapshotManifest,
 } from './maintenance/runs.ts';
 export type {
+  DreamRunVerificationCheckStatus,
+  DreamRunVerificationIssue,
+  DreamRunVerificationIssueCode,
+  DreamRunVerificationReceipt,
+  DreamRunVerificationStatus,
+} from './maintenance/run-verification.ts';
+export type {
   DreamModelDegradation,
   DreamModelStage,
   DreamModelStageUsage,

@@ -495,6 +495,13 @@ describe('plan-backed hygiene', () => {
       verification: { status: 'passed' },
     });
     expect(report.curated[0]?.action).toBe('updated');
+    expect(report.verification).toMatchObject({
+      status: 'passed',
+      appliedItems: 1,
+      affectedFiles: 1,
+      checks: { appliedItems: 'passed', affectedPaths: 'passed' },
+      issues: [],
+    });
     expect(server.calls()).toBe(3);
     expect(server.curatorCalls()).toBe(1);
   });
@@ -995,7 +1002,9 @@ describe('plan-backed hygiene', () => {
     );
     expect(fs.readFileSync(paths.canonical, 'utf8')).toContain('Ada Marlow keeps a brass compass.');
     expect(fs.existsSync(paths.duplicate)).toBe(false);
-    expect(server.embeddingCalls()).toBe(1);
+    // The verified write schedules ordinary derived indexing concurrently. Its embedding request
+    // may begin before this assertion; the run receipt below isolates semantic discovery exactly.
+    expect(server.embeddingCalls()).toBeGreaterThanOrEqual(1);
     expect(server.semanticMergeCalls()).toBe(1);
     expect(server.curatorCalls()).toBe(1);
     expect(report.semanticMerge).toEqual({

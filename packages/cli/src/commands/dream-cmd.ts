@@ -199,7 +199,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
 
   if (values.json) {
     json(values['private-details'] ? report : safeDreamReport(report));
-    return 0;
+    return dreamRunExitCode(report.run);
   }
   return printDream(report, values['private-details']);
 }
@@ -449,6 +449,7 @@ function printDreamRunReceipt(run: DreamRunReceipt): void {
     );
   }
   printSemanticMergeMetrics(run.semanticMerge ?? null);
+  printRunVerification(run.verification);
   printAutoEstimate(run.autoEstimate, run.modelUsage);
   line('\n  outcomes');
   kv([
@@ -603,6 +604,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     ['authority', report.run.mode],
     ['snapshot', report.run.snapshot.indexRevision.slice(0, 12)],
   ]);
+  printRunVerification(report.verification);
   for (const phase of report.phases) {
     const label = phase.ran ? style.green('ran') : style.grey('skipped');
     const detail = phase.skipped ? style.grey(`  ${phase.skipped}`) : style.grey(`  ${ms(phase.durationMs)}`);
@@ -929,7 +931,28 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     // that made documents searchable, and the other way round.
     if (id) line(`\n  ${style.grey(`reverse ${what} with`)} ${style.bold(`akno undo ${id}`)}`);
   }
-  return 0;
+  return dreamRunExitCode(report.run);
+}
+
+export function dreamRunExitCode(run: DreamRunReceipt): number {
+  return run.status === 'failed' ? 1 : 0;
+}
+
+function printRunVerification(verification: DreamRunReceipt['verification']): void {
+  if (!verification) return;
+  line('\n  run verification');
+  kv([
+    ['status', verification.status],
+    ['applied items', verification.appliedItems],
+    ['affected files', verification.affectedFiles],
+    ['item receipts', verification.checks.appliedItems],
+    ['affected paths', verification.checks.affectedPaths],
+    ['budget accounting', verification.checks.budget],
+    ['model accounting', verification.checks.modelUsage],
+  ]);
+  for (const issue of verification.issues) {
+    line(`    ${style.grey(`${issue.code}: ${issue.count}`)}`);
+  }
 }
 
 export function dreamRunIsReadOnly(report: Pick<DreamReport, 'run'>): boolean {
@@ -1013,6 +1036,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       guardrails: curationGuardSummary(report),
     },
     semanticMerge: report.semanticMerge,
+    verification: report.verification,
     maintenancePlan: report.maintenancePlan ? safeMaintenancePlan(report.maintenancePlan) : null,
     maintenancePlans: (report.maintenancePlans ?? []).map(safeMaintenancePlan),
     planPrune: report.planPrune,

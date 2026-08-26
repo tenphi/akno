@@ -2213,6 +2213,15 @@ async function verifyApplied(
   return null;
 }
 
+/** Re-run deterministic postconditions without changing item state or attempting rollback. */
+export async function reverifyAppliedMaintenanceItem(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+): Promise<boolean> {
+  const operations = supportedOperations(item);
+  return operations.length > 0 && (await verifyApplied(ctx, item, operations)) === null;
+}
+
 function planSummary(ctx: AknoContext, row: PlanRow): MaintenancePlanSummary {
   const counts = emptyCounts();
   const rows = ctx.store.db

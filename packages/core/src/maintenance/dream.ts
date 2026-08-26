@@ -76,6 +76,7 @@ import {
   type DreamModelStage,
   type DreamModelUsageReceipt,
 } from './model-telemetry.ts';
+import { verifyDreamRun, type DreamRunVerificationReceipt } from './run-verification.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -201,6 +202,8 @@ export interface DreamReport {
   degraded: DreamModelDegradation[];
   /** Aggregate semantic merge discovery work; null when that candidate source did not run. */
   semanticMerge: SemanticMergeDiscoveryMetrics | null;
+  /** Final content-safe postcondition and accounting check for the complete invocation. */
+  verification: DreamRunVerificationReceipt | null;
   /** Initial curator-pass estimate derived from sealed audit items, when configured auto exists. */
   autoEstimate?: DreamRunReceipt['autoEstimate'];
   warnings: string[];
@@ -269,6 +272,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     modelUsage: telemetry.usage(),
     degraded: telemetry.degradation(),
     semanticMerge: null,
+    verification: null,
     autoEstimate: null,
     warnings: [],
     durationMs: 0,
@@ -323,10 +327,16 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       }
     }
 
-    report.durationMs = Math.round(performance.now() - started);
     report.budget = maintenanceBudgetReceipt(budget);
     report.modelUsage = telemetry.usage();
     report.degraded = telemetry.degradation();
+    report.verification = await verifyDreamRun(
+      cycle,
+      report.maintenancePlans.map((plan) => plan.id),
+      budget,
+      report.budget,
+      report.modelUsage,
+    );
     report.autoEstimate =
       report.run.mode === 'audit'
         ? estimateAuditAutoCuratorWork(
@@ -335,6 +345,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
             { sealedPlans: !report.run.dryRun },
           )
         : null;
+    report.durationMs = Math.round(performance.now() - started);
     report.planPrune = pruneMaintenancePlans(cycle, {
       apply: cycle.writable && !(options.dryRun ?? false),
     });

@@ -80,6 +80,10 @@ Cross-phase composition, arbitrary same-page proposal merging, document-attachme
 pinning every planner read to one global database revision remain incomplete. Ambiguous or persistent
 dependencies are deferred to a later cycle rather than guessed through.
 
+Final run verification rechecks all applied items and receipt accounting, but it does not treat an unrelated
+file edited concurrently by a user or sync client as an Akno failure. Whole-vault change attribution and
+strict snapshot isolation remain future concurrency policies.
+
 ## No configurable fail-fast maintenance mode
 
 Autonomous maintenance favors independent progress: one degraded or blocked item does not stop unrelated safe

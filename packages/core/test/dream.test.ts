@@ -2049,8 +2049,23 @@ describe('the cycle', () => {
     expect(first.run.snapshot).toMatchObject({
       schemaVersion: SCHEMA_VERSION,
       requestedPhases: ['housekeeping'],
-      plannerVersion: 'dream-lifecycle-v1',
+      plannerVersion: 'dream-lifecycle-v2',
     });
+    expect(first.verification).toEqual({
+      status: 'passed',
+      checkedAt: expect.any(String),
+      plans: 0,
+      appliedItems: 0,
+      affectedFiles: 0,
+      checks: {
+        appliedItems: 'not_applicable',
+        affectedPaths: 'not_applicable',
+        budget: 'passed',
+        modelUsage: 'passed',
+      },
+      issues: [],
+    });
+    expect(first.run.verification).toEqual(first.verification);
     expect(first.run.snapshot.indexedFiles).toBeGreaterThan(0);
     expect(first.run.snapshot.indexRevision).toMatch(/^[a-f0-9]{64}$/);
     expect(mem.maintenanceStatus().latestRun).toEqual(first.run);

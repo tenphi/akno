@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   curationGuardSummary,
   dreamProgressDescription,
+  dreamRunExitCode,
   dreamRunIsReadOnly,
   dreamStatusJson,
   dreamStatusQuery,
@@ -45,6 +46,15 @@ describe('dream authority output', () => {
     expect(dreamRunIsReadOnly({ run: { ...report.run, mode: 'audit', dryRun: false } })).toBe(true);
     expect(dreamRunIsReadOnly({ run: { ...report.run, mode: 'review', dryRun: false } })).toBe(true);
     expect(dreamRunIsReadOnly(report)).toBe(false);
+  });
+
+  it('fails the command only for a failed run outcome', () => {
+    const run = privateReport().run;
+
+    expect(dreamRunExitCode({ ...run, status: 'failed' })).toBe(1);
+    expect(dreamRunExitCode({ ...run, status: 'partially_completed' })).toBe(0);
+    expect(dreamRunExitCode({ ...run, status: 'awaiting_review' })).toBe(0);
+    expect(dreamRunExitCode(run)).toBe(0);
   });
 });
 
@@ -214,7 +224,7 @@ function privateReport(): DreamReport {
         configurationFingerprint: 'configuration_fingerprint_example',
         indexedFiles: 2,
         requestedPhases: ['curate'],
-        plannerVersion: 'dream-lifecycle-v1',
+        plannerVersion: 'dream-lifecycle-v2',
         modelId: 'zephyr-model',
       },
       phases: [{ phase: 'curate', ran: true, skipped: false, durationMs: 111 }],
@@ -235,6 +245,7 @@ function privateReport(): DreamReport {
       modelUsage,
       degraded: [],
       semanticMerge,
+      verification: fixtureVerification(),
       durationMs: 111,
       maintenancePlanIds: ['pln_example'],
       maintenancePlanId: 'pln_example',
@@ -345,9 +356,27 @@ function privateReport(): DreamReport {
     modelUsage,
     degraded: [],
     semanticMerge,
+    verification: fixtureVerification(),
     warnings: ['people/ada-marlow: private warning'],
     durationMs: 111,
     logPath: '/private/state/dream.jsonl',
+  };
+}
+
+function fixtureVerification(): NonNullable<DreamReport['verification']> {
+  return {
+    status: 'passed',
+    checkedAt: '2030-01-02T03:04:01.000Z',
+    plans: 1,
+    appliedItems: 1,
+    affectedFiles: 1,
+    checks: {
+      appliedItems: 'passed',
+      affectedPaths: 'passed',
+      budget: 'passed',
+      modelUsage: 'passed',
+    },
+    issues: [],
   };
 }
 

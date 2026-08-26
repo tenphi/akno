@@ -12,6 +12,7 @@ import {
   type DreamModelUsageReceipt,
 } from './model-telemetry.ts';
 import type { SemanticMergeDiscoveryMetrics } from './semantic-merge-discovery.ts';
+import type { DreamRunVerificationReceipt } from './run-verification.ts';
 
 export type DreamRunStatus = 'running' | 'completed' | 'partially_completed' | 'awaiting_review' | 'failed';
 
@@ -88,6 +89,8 @@ export interface DreamRunReceipt {
   degraded: DreamModelDegradation[];
   /** Aggregate candidate-discovery counts; null on runs where semantic merge discovery did not run. */
   semanticMerge?: SemanticMergeDiscoveryMetrics | null;
+  /** Final deterministic postconditions and receipt-accounting result; null on old or failed-start runs. */
+  verification: DreamRunVerificationReceipt | null;
   /** Present on completed audit runs; null on non-audit and historical runs. */
   autoEstimate?: DreamAutoEstimate | null;
   durationMs: number | null;
@@ -154,6 +157,7 @@ export function beginDreamRun(
     modelUsage: emptyDreamModelUsage(options.modelId),
     degraded: [],
     semanticMerge: null,
+    verification: null,
     autoEstimate: null,
     durationMs: null,
     maintenancePlanIds: [],
@@ -197,6 +201,7 @@ export function completeDreamRun(
     modelUsage: report.modelUsage,
     degraded: report.degraded,
     semanticMerge: report.semanticMerge,
+    verification: report.verification,
     autoEstimate: report.autoEstimate ?? null,
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
@@ -359,7 +364,7 @@ export function captureMaintenanceSnapshot(
     configurationFingerprint: configurationFingerprint(ctx),
     indexedFiles: rows.length,
     requestedPhases: [...requestedPhases],
-    plannerVersion: 'dream-lifecycle-v1',
+    plannerVersion: 'dream-lifecycle-v2',
     modelId,
   };
 }
@@ -423,6 +428,7 @@ function completedStatus(report: DreamReport): DreamRunStatus {
       : report.maintenancePlan
         ? [report.maintenancePlan]
         : [];
+  if (report.verification?.status === 'failed') return 'failed';
   if (plans.some((plan) => plan.status === 'awaiting_review')) {
     return 'awaiting_review';
   }
@@ -531,6 +537,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
       modelUsage: receipt.modelUsage ?? emptyDreamModelUsage(receipt.snapshot.modelId),
       degraded: Array.isArray(receipt.degraded) ? receipt.degraded : [],
       semanticMerge: receipt.semanticMerge ?? null,
+      verification: receipt.verification ?? null,
       autoEstimate: receipt.autoEstimate ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')

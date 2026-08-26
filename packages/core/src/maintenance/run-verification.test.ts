@@ -1,0 +1,69 @@
+import { describe, expect, it } from 'vitest';
+import { createMaintenanceBudget, maintenanceBudgetReceipt, reserveMaintenanceBudget } from './budget.ts';
+import { budgetReceiptMatchesTracker, modelUsageIsConsistent } from './run-verification.ts';
+
+describe('dream run accounting verification', () => {
+  it('detects a budget receipt that does not match the reservations', () => {
+    const tracker = createMaintenanceBudget({
+      maxItems: 3,
+      maxFilesChanged: 3,
+      maxBytesWritten: 1111,
+      maxHighRiskItems: 1,
+    });
+    reserveMaintenanceBudget(tracker, {
+      risk: 'high',
+      operations: [{ type: 'create', relPath: 'products/zephyr-qx-100.md', after: 'Invented page.' }],
+    });
+    const receipt = maintenanceBudgetReceipt(tracker);
+
+    expect(budgetReceiptMatchesTracker(tracker, receipt)).toBe(true);
+    expect(
+      budgetReceiptMatchesTracker(tracker, {
+        ...receipt,
+        used: { ...receipt.used, bytesWritten: receipt.used.bytesWritten + 1 },
+      }),
+    ).toBe(false);
+  });
+
+  it('requires stage totals to explain every model call and token receipt', () => {
+    const usage = {
+      modelId: 'zephyr-model',
+      calls: 2,
+      successfulCalls: 1,
+      failedCalls: 1,
+      usageReportedCalls: 2,
+      inputTokens: 222,
+      outputTokens: 44,
+      totalTokens: 266,
+      latencyMs: 111,
+      stages: [
+        {
+          stage: 'curate' as const,
+          calls: 1,
+          successfulCalls: 1,
+          failedCalls: 0,
+          usageReportedCalls: 1,
+          inputTokens: 111,
+          outputTokens: 22,
+          totalTokens: 133,
+          latencyMs: 55,
+        },
+        {
+          stage: 'curator' as const,
+          calls: 1,
+          successfulCalls: 0,
+          failedCalls: 1,
+          usageReportedCalls: 1,
+          inputTokens: 111,
+          outputTokens: 22,
+          totalTokens: 133,
+          latencyMs: 56,
+        },
+      ],
+    };
+
+    expect(modelUsageIsConsistent(usage)).toBe(true);
+    expect(modelUsageIsConsistent({ ...usage, calls: 3 })).toBe(false);
+    expect(modelUsageIsConsistent({ ...usage, totalTokens: 267 })).toBe(false);
+  });
+});

@@ -77,6 +77,7 @@ export async function logDreamRun(
     model: ctx.config.maintenance.model?.id ?? ctx.config.models.derive.id,
     modelUsage: report.modelUsage,
     semanticMerge: report.semanticMerge,
+    verification: report.verification,
     autoEstimate: report.autoEstimate ?? null,
     degraded: report.degraded,
     phases: report.phases,

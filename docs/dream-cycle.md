@@ -182,8 +182,26 @@ Every writable transformation follows the same stages:
 5. **Re-index:** reconcile every affected path.
 6. **Verify:** confirm the expected disk and index outcome; roll back a proven failed result.
 7. **Retry dependencies once:** replan only work invalidated by successful earlier items, using remaining budget.
+8. **Verify the run:** recheck every applied item together and seal a content-safe final receipt.
 
 Proposal generation never authorizes itself in the same model turn.
+
+## Final run verification
+
+An item passing once is not the end of an autonomous run. After every apply and bounded dependency retry,
+Akno re-runs the deterministic postconditions for all applied items attached to the run. It checks that each
+has a journal id and passed item receipt, that its sealed final bytes still agree with the structural index,
+and that transformation-specific identity, ownership, and link conditions still hold. It also checks the
+whole-run budget against the live reservation tracker and proves that per-stage model calls and token totals
+sum to the reported aggregate.
+
+The result is stored on the run as counts and typed issue codes only—never paths, page text, prompts, or
+verifier details. A failed final check makes the run `failed`; the CLI exits non-zero and actionable scheduled
+notifications can surface it. Akno does not overwrite a path that changed after item verification. Exact
+per-item evidence and recovery details remain on the maintenance plan.
+
+This check covers work the run claims to have applied. It does not yet freeze every planner read to one global
+database revision or classify unrelated edits made elsewhere in the knowledge base as maintenance failures.
 
 ## Dependencies and concurrent edits
 
@@ -240,10 +258,10 @@ akno dream status --explain-policy people/ada-marlow.md
 ```
 
 General status and JSON receipts contain counts, typed outcomes, ids, policy, budget use, model-call counts,
-latency, provider-reported token coverage, and aggregate semantic-merge work: pages prepared, embedding cache
-hits and inputs, pairs compared, classifier cache hits and calls, and qualified pairs. They omit page bodies,
-prompts, paths, excerpts, semantic candidates, model responses, and provider errors. `plan diff` is the explicit
-private-content inspection surface.
+latency, provider-reported token coverage, final run-verification checks, and aggregate semantic-merge work:
+pages prepared, embedding cache hits and inputs, pairs compared, classifier cache hits and calls, and qualified
+pairs. They omit page bodies, prompts, paths, excerpts, semantic candidates, model responses, and provider
+errors. `plan diff` is the explicit private-content inspection surface.
 
 `plan list --status` accepts one exact status or a comma-separated set, such as
 `awaiting_review,approved`. Superseding keeps the sealed plan and its reason as audit history but removes it
