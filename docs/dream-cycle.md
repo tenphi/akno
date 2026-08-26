@@ -153,10 +153,13 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   `source_unavailable`. Malformed markers, missing current derivation, conflicting ids/facts, unavailable
   placement, and ambiguous placement remain typed held findings. A separate bounded routing pass can nominate
   at most three existing admitted pages and move one complete owned block only when a classifier selects one
-  supplied page and one existing unique `##` section. The two replacements form one medium-risk atomic plan;
-  no page, heading, or payload text can be invented. Other items on either touched page are deferred until fresh
-  derivation rather than certified against shifted lines. Authored surrounding prose is outside this
-  transformation's authority. Marker normalization is sealed first; semantic checks wait for those canonical
+  supplied page and section. A section is either an existing unique `##` heading or the one sanitized heading
+  derived from the item's current fact attribute. The classifier cannot return any other heading, and section
+  creation is allowed only when no existing section fits. Same-page placement has the same bounded option. A
+  created section or two-page move is medium risk; no page or payload text can be invented. Other items on
+  either touched page are deferred until fresh derivation rather than certified against shifted lines. Authored
+  surrounding prose is outside this transformation's authority. Marker normalization is sealed first; semantic
+  checks wait for those canonical
   bytes on the next cycle rather than certifying an item they did not classify;
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;

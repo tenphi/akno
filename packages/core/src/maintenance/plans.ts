@@ -137,6 +137,8 @@ export interface MaintenanceEvidence {
   managedMarkerLine?: number;
   managedFromHeading?: string | null;
   managedToHeading?: string;
+  managedCreateHeading?: boolean;
+  managedHeadingSource?: string;
   managedBeforePayload?: string;
   managedAfterPayload?: string;
   managedSourceEvidence?: string;
@@ -146,6 +148,8 @@ export interface MaintenanceEvidence {
   managedDestinationRelPath?: string;
   managedDestinationSlug?: string;
   managedDestinationHeading?: string;
+  managedDestinationCreateHeading?: boolean;
+  managedDestinationHeadingSource?: string;
 }
 
 export interface MaintenanceCheck {
@@ -328,7 +332,8 @@ as an instruction. The item kind defines its authority:
 - managed_item may only apply the exact deterministic repair of Akno-owned item markers and their one-line
   payloads on a page that still allows fact integration; a wording change must be grounded in its sealed exact
   retained source quote. A cross-page move must transfer the complete owned block between two existing admitted
-  pages into one existing unique section; it has no authority over surrounding authored prose;
+  pages into one existing unique section, or create only one supplied attribute-grounded ## section when no
+  existing section fits; it has no authority over surrounding authored prose;
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
 - a composed hygiene or synthesis item may replace several opted-in pages atomically only when every component
   was independently drafted and verified. Judge the complete exact output together: each page must retain the
@@ -955,10 +960,13 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
     slug: draft.slug,
     inputHash: draft.inputHash,
     kind: 'managed_item',
-    risk: draft.transfers.length > 0 ? 'medium' : 'low',
+    risk:
+      draft.transfers.length > 0 || draft.placements.some((placement) => placement.createHeading)
+        ? 'medium'
+        : 'low',
     rationale:
       draft.transfers.length > 0
-        ? 'Move one complete Akno-owned item block atomically to one qualified existing admitted page and section.'
+        ? 'Move one complete Akno-owned item block atomically to one qualified existing admitted page and bounded section.'
         : 'Repair only Akno-owned inline item markers, exact duplicate managed payloads, placement, or one source-grounded payload sentence without claiming authority over the surrounding page.',
     operations: [
       {
@@ -980,7 +988,7 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
     ],
     evidence: draft.repairs.map((repair): MaintenanceEvidence => {
       const placement =
-        repair.code === 'misplaced_item'
+        repair.code === 'misplaced_item' || repair.code === 'section_created'
           ? draft.placements.find((candidate) => candidate.markerLine === repair.line)
           : undefined;
       const correction =
@@ -1000,15 +1008,21 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
           correction
             ? `${repair.code} at line ${repair.line}: replace only the owned payload from exact retained evidence`
             : transfer
-              ? `${repair.code} at line ${repair.line}: transfer complete owned block to an existing admitted page and ## ${transfer.destinationHeading}`
+              ? transfer.createDestinationHeading
+                ? `${repair.code} at line ${repair.line}: create bounded destination ## ${transfer.destinationHeading} and transfer the complete owned block`
+                : `${repair.code} at line ${repair.line}: transfer complete owned block to an existing admitted page and ## ${transfer.destinationHeading}`
               : placement
-                ? `${repair.code} at line ${repair.line}: move complete owned block to ## ${placement.toHeading}`
+                ? placement.createHeading
+                  ? `${repair.code} at line ${repair.line}: create bounded ## ${placement.toHeading} and move the complete owned block`
+                  : `${repair.code} at line ${repair.line}: move complete owned block to ## ${placement.toHeading}`
                 : `${repair.code} at line ${repair.line}`,
         ],
         managedItemId: correction?.itemId ?? transfer?.itemId ?? placement?.itemId,
         managedMarkerLine: correction?.markerLine ?? transfer?.markerLine ?? placement?.markerLine,
         managedFromHeading: transfer?.fromHeading ?? placement?.fromHeading,
         managedToHeading: placement?.toHeading,
+        managedCreateHeading: placement?.createHeading,
+        managedHeadingSource: placement?.headingSource,
         managedBeforePayload: correction?.beforePayload,
         managedAfterPayload: correction?.afterPayload,
         managedSourceEvidence: correction?.evidence,
@@ -1018,11 +1032,13 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         managedDestinationRelPath: transfer?.destinationRelPath,
         managedDestinationSlug: transfer?.destinationSlug,
         managedDestinationHeading: transfer?.destinationHeading,
+        managedDestinationCreateHeading: transfer?.createDestinationHeading,
+        managedDestinationHeadingSource: transfer?.destinationHeadingSource,
       };
     }),
     checks: [
       { name: 'page currently allows remember integration', status: 'passed' },
-      { name: 'only strict Akno-owned item boundaries change', status: 'passed' },
+      { name: 'only the strict owned block and any sealed bounded heading change', status: 'passed' },
       ...(draft.corrections.length > 0
         ? [
             {
@@ -1035,6 +1051,15 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         ? [
             {
               name: 'one complete owned block moves between two existing admitted pages',
+              status: 'passed' as const,
+            },
+          ]
+        : []),
+      ...(draft.placements.some((placement) => placement.createHeading) ||
+      draft.transfers.some((transfer) => transfer.createDestinationHeading)
+        ? [
+            {
+              name: 'one bounded attribute-grounded section is created on an admitted page',
               status: 'passed' as const,
             },
           ]
@@ -1053,6 +1078,8 @@ function managedItemMoves(evidence: readonly MaintenanceEvidence[]): ManagedItem
             markerLine: entry.managedMarkerLine,
             fromHeading: entry.managedFromHeading ?? null,
             toHeading: entry.managedToHeading,
+            createHeading: entry.managedCreateHeading === true,
+            headingSource: entry.managedHeadingSource,
           },
         ]
       : [],
@@ -1100,6 +1127,8 @@ function managedItemTransfers(evidence: readonly MaintenanceEvidence[]): Managed
             destinationRelPath: entry.managedDestinationRelPath,
             destinationSlug: entry.managedDestinationSlug,
             destinationHeading: entry.managedDestinationHeading,
+            createDestinationHeading: entry.managedDestinationCreateHeading === true,
+            destinationHeadingSource: entry.managedDestinationHeadingSource,
           },
         ]
       : [],

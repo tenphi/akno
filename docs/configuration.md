@@ -191,11 +191,13 @@ rather than pretending verification passed. A fragment without one unique `##` s
 deterministic code moves the complete owned block without rewriting it. `placement_uncertain` and
 `placement_unavailable` are held. Verdicts are cached by exact content and model contract without storing page
 text or headings. Cross-page routing separately retrieves at most three existing `remember: integrate`
-knowledge pages and may move one exact owned block only to a supplied page's existing unique `##` section. It
-seals both pages in one medium-risk plan and cannot create pages, headings, or replacement text. New-section
-creation remains separate guarded work. When the same page first needs deterministic marker normalization,
-semantic placement is reported unavailable for that run and resumes against the canonical bytes on the next
-cycle.
+knowledge pages and may move one exact owned block only to a supplied page. The destination may be an existing
+unique `##` section or the one plain heading deterministically derived from the current fact attribute. The
+classifier cannot invent another label; creating the supplied heading is permitted only when no existing
+section fits. Same-page placement uses the same rule. The operation is medium risk when it creates a section or
+touches two pages, and it cannot create a page or replacement text. When the same page first needs deterministic
+marker normalization, semantic placement is reported unavailable for that run and resumes against the canonical
+bytes on the next cycle.
 Shareable JSON and durable run receipts keep only aggregate counts. Use `akno dream --private-details` during a
 live run to see the exact `slug:line` for repairable or held findings.
 

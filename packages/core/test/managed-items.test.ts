@@ -12,9 +12,17 @@ import {
   managedItemOperationsIssue,
   managedItemRepairIssue,
 } from '../src/maintenance/managed-items.ts';
+import { managedSectionHeading } from '../src/maintenance/managed-item-routing.ts';
 import { sha256 } from '../src/store/ids.ts';
 
 describe('managed item inspection', () => {
+  it('derives only short plain section headings from fact attributes', () => {
+    expect(managedSectionHeading('warranty')).toMatchObject({ heading: 'Warranty' });
+    expect(managedSectionHeading('Notes')).toBeNull();
+    expect(managedSectionHeading('warranty\n## Override')).toBeNull();
+    expect(managedSectionHeading('**warranty**')).toBeNull();
+  });
+
   it('repairs only empty, legacy, and byte-identical duplicate owned fragments', () => {
     const before = `# Ada Marlow
 
@@ -125,6 +133,45 @@ Ada Marlow prefers the Zephyr QX-100.`,
     ).toMatch(/broader/);
   });
 
+  it('creates one bounded section and moves the exact owned block into it', () => {
+    const before = `# Ada Marlow
+
+## Records
+
+<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+
+Authored record context stays here.
+`;
+    const move = {
+      itemId: 'itm_section',
+      markerLine: 5,
+      fromHeading: 'Records',
+      toHeading: 'Warranty',
+      createHeading: true,
+      headingSource: 'warranty',
+    };
+
+    const result = applyManagedItemMoves(before, [move]);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.content).toContain('## Records\n\n\n\nAuthored record context stays here.');
+    expect(result.content).toContain(
+      `## Warranty
+
+<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.`,
+    );
+    expect(managedItemRepairIssue(before, result.content, [move])).toBeNull();
+    expect(
+      managedItemRepairIssue(before, result.content.replace('## Warranty', '## Service'), [move]),
+    ).toMatch(/broader/);
+    expect(managedItemRepairIssue(before, result.content, [{ ...move, headingSource: 'service' }])).toMatch(
+      /broader/,
+    );
+  });
+
   it('moves one complete owned block between two sealed pages', () => {
     const source = `# Ada Marlow
 
@@ -209,14 +256,27 @@ describe('managed items in the dream cycle', () => {
   let placementCalls = 0;
   let routingCalls = 0;
   let sourceCalls = 0;
-  let placementDecider: (items: { id: string; current_heading: string | null }[]) => unknown;
+  let placementDecider: (
+    items: { id: string; current_heading: string | null; creatable_h2_heading: string | null }[],
+  ) => unknown;
   let sourceDecider: (
     items: { id: string; current_sentence: string; retained_source_quote: string }[],
   ) => unknown;
   let routingDecider: (input: {
-    item: { id: string; sentence: string; subject: string; current_heading: string | null };
+    item: {
+      id: string;
+      sentence: string;
+      subject: string;
+      attribute: string;
+      current_heading: string | null;
+    };
     current_page_without_item: { title: string; headings: string[]; markdown_excerpt: string };
-    candidate_pages: { id: string; title: string; headings: string[] }[];
+    candidate_pages: {
+      id: string;
+      title: string;
+      headings: string[];
+      creatable_h2_heading: string | null;
+    }[];
   }) => unknown;
   let routingInputs: Parameters<typeof routingDecider>[0][];
 
@@ -247,14 +307,14 @@ describe('managed items in the dream cycle', () => {
     placementDecider = (items) => ({
       decisions: items.map((item) =>
         item.current_heading
-          ? { id: item.id, outcome: 'keep', heading: null }
-          : { id: item.id, outcome: 'uncertain', heading: null },
+          ? { id: item.id, outcome: 'keep', heading: null, heading_mode: null }
+          : { id: item.id, outcome: 'uncertain', heading: null, heading_mode: null },
       ),
     });
     sourceDecider = (items) => ({
       decisions: items.map((item) => ({ id: item.id, outcome: 'supported', replacement: null })),
     });
-    routingDecider = () => ({ outcome: 'keep', target_id: null, heading: null });
+    routingDecider = () => ({ outcome: 'keep', target_id: null, heading: null, heading_mode: null });
     server = http.createServer((request, response) => {
       const chunks: Buffer[] = [];
       request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -305,7 +365,7 @@ describe('managed items in the dream cycle', () => {
                 }
               : null;
         const placementInput = placing
-          ? (JSON.parse(user) as { items: { id: string; current_heading: string | null }[] })
+          ? (JSON.parse(user) as { items: Parameters<typeof placementDecider>[0] })
           : null;
         const sourceInput = sourcing
           ? (JSON.parse(user) as {
@@ -507,8 +567,8 @@ Ada Marlow prefers the Zephyr QX-100.
     routingDecider = (input) => {
       const target = input.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100');
       return target
-        ? { outcome: 'move', target_id: target.id, heading: 'Warranty' }
-        : { outcome: 'keep', target_id: null, heading: null };
+        ? { outcome: 'move', target_id: target.id, heading: 'Warranty', heading_mode: 'existing' }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
     };
 
     const report = await mem.dream({ phase: 'curate' });
@@ -567,6 +627,95 @@ The Zephyr QX-100 warranty lasts 1111 days.
     expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
   });
 
+  it('creates one bounded section while routing to an existing admitted page', async () => {
+    const source = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Records
+
+<!-- akno:item itm_route_section source=fixture%3Aroute origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`;
+    const destination = `---
+title: Zephyr QX-100
+akno:
+  management:
+    remember: integrate
+---
+
+# Zephyr QX-100
+
+This page holds Zephyr QX-100 equipment and warranty documentation.
+`;
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), source);
+    fs.writeFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), destination);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_route_section',
+      'fixture:route',
+      'user',
+      'The Zephyr QX-100 warranty lasts 1111 days.',
+    );
+    routingDecider = (input) => {
+      const target = input.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100');
+      return target
+        ? {
+            outcome: 'move',
+            target_id: target.id,
+            heading: target.creatable_h2_heading,
+            heading_mode: 'create',
+          }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const preview = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(preview.managedItems.routing).toMatchObject({
+      classifierCalls: 1,
+      cacheHits: 0,
+      moved: 1,
+      sectionsCreated: 1,
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(source);
+    expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
+
+    const report = await mem.dream({ phase: 'curate' });
+    const sourceAfter = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
+    const destinationAfter = fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8');
+
+    expect(report.managedItems).toMatchObject({
+      findings: { misrouted_item: 1, valid: 0 },
+      outcomes: { planned: 1, held: 0, valid: 0 },
+      routing: {
+        classifierCalls: 0,
+        cacheHits: 1,
+        moved: 1,
+        sectionsCreated: 1,
+        unavailable: 0,
+      },
+    });
+    expect(report.maintenancePlan?.items).toEqual([
+      expect.objectContaining({ kind: 'managed_item', risk: 'medium', status: 'applied' }),
+    ]);
+    expect(sourceAfter).not.toContain('itm_route_section');
+    expect(destinationAfter).toContain(
+      `## Warranty
+
+<!-- akno:item itm_route_section source=fixture%3Aroute origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.`,
+    );
+
+    await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(source);
+    expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
+  });
+
   it('rejects and does not cache an invented cross-page destination heading', async () => {
     const source = `---
 title: Ada Marlow
@@ -606,6 +755,7 @@ Authored warranty context stays here.
       outcome: 'move',
       target_id: input.candidate_pages[0]?.id ?? 'candidate_1',
       heading: 'Invented destination',
+      heading_mode: 'create',
     });
 
     const first = await mem.dream({ phase: 'curate', dryRun: true });
@@ -735,8 +885,8 @@ Authored equipment context stays here.
     placementDecider = (items) => ({
       decisions: items.map((item) =>
         item.current_heading === 'Equipment'
-          ? { id: item.id, outcome: 'move', heading: 'Preferences' }
-          : { id: item.id, outcome: 'keep', heading: null },
+          ? { id: item.id, outcome: 'move', heading: 'Preferences', heading_mode: 'existing' }
+          : { id: item.id, outcome: 'keep', heading: null, heading_mode: null },
       ),
     });
 
@@ -776,6 +926,67 @@ Ada Marlow prefers the Zephyr QX-100.`,
     expect(placementCalls).toBe(2);
   });
 
+  it('creates one attribute-grounded section on the current admitted page', async () => {
+    const before = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Records
+
+<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+
+Authored record context stays here.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_section', 'fixture:one', 'user', 'The Zephyr QX-100 warranty lasts 1111 days.');
+    placementDecider = (items) => ({
+      decisions: items.map((item) => ({
+        id: item.id,
+        outcome: 'move',
+        heading: item.creatable_h2_heading,
+        heading_mode: 'create',
+      })),
+    });
+
+    const preview = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(preview.managedItems).toMatchObject({
+      findings: { section_created: 1 },
+      placement: { classifierCalls: 1, cacheHits: 0, sectionsCreated: 1 },
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+
+    const report = await mem.dream({ phase: 'curate' });
+    const after = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
+
+    expect(report.managedItems).toMatchObject({
+      findings: { section_created: 1, valid: 0 },
+      outcomes: { planned: 1, held: 0, valid: 0 },
+      placement: { classifierCalls: 0, cacheHits: 1, moved: 1, sectionsCreated: 1 },
+    });
+    expect(report.maintenancePlan?.items).toEqual([
+      expect.objectContaining({ kind: 'managed_item', risk: 'medium', status: 'applied' }),
+    ]);
+    expect(after).toContain('Authored record context stays here.');
+    expect(after).toContain(
+      `## Warranty
+
+<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.`,
+    );
+    expect(curatorCalls).toBe(1);
+    expect(placementCalls).toBe(1);
+
+    await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+  });
+
   it('holds and caches an uncertain semantic placement without changing the page', async () => {
     const before = `---
 title: Ada Marlow
@@ -799,7 +1010,12 @@ Authored equipment context stays here.
     await mem.index({ reindexUnchanged: true });
     archiveSource('itm_uncertain', 'fixture:one', 'user', 'Ada Marlow prefers the Zephyr QX-100.');
     placementDecider = (items) => ({
-      decisions: items.map((item) => ({ id: item.id, outcome: 'uncertain', heading: null })),
+      decisions: items.map((item) => ({
+        id: item.id,
+        outcome: 'uncertain',
+        heading: null,
+        heading_mode: null,
+      })),
     });
 
     const first = await mem.dream({ phase: 'curate', dryRun: true });
@@ -843,6 +1059,7 @@ Authored equipment context stays here.
         id: item.id,
         outcome: 'move',
         heading: 'Invented destination',
+        heading_mode: 'create',
       })),
     });
 
