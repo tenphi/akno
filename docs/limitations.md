@@ -79,9 +79,9 @@ the complete receipt before applying.
 ## Setup does not abstract every provider detail
 
 `akno init` provides a qualified OpenAI single-endpoint path, a model-free path, and preservation of manually
-configured specialist roles. The OpenAI preset still uses the project's qualified Chat-Completions-compatible
-generative transport. A dedicated OpenAI Responses adapter and persistently learned endpoint-capability
-selection are not implemented.
+configured specialist roles. The OpenAI preset uses the dedicated Responses adapter, while third-party
+OpenAI-compatible providers default to Chat Completions. Persistently learned `api: auto` capability selection
+is not implemented; a specialist setup must choose its generative transport explicitly.
 
 Specialist or non-OpenAI setups therefore still require understanding provider blocks, role assignment,
 structured-output support, dimensions, reasoning controls, and degradation behavior.

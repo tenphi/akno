@@ -26,6 +26,7 @@ describe('recommended OpenAI minimum setup', () => {
 
     expect(Object.keys(preset.providers ?? {})).toEqual(['openai']);
     expect(preset.providers?.openai?.api_key).toEqual({ env: 'AKNO_OPENAI_API_KEY' });
+    expect(preset.providers?.openai?.api).toBe('responses');
     expect(preset.models).toMatchObject({
       embedding: {
         provider: 'openai',
@@ -107,8 +108,7 @@ describe('recommended OpenAI minimum setup', () => {
       request.on('data', (chunk: Buffer) => chunks.push(chunk));
       request.on('end', () => {
         const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
-          input?: string[];
-          messages?: { content: string }[];
+          input?: string[] | { content: string }[];
         };
         response.writeHead(200, { 'content-type': 'application/json' });
         if (request.url?.endsWith('/embeddings')) {
@@ -119,22 +119,29 @@ describe('recommended OpenAI minimum setup', () => {
           );
           return;
         }
-        const user = body.messages?.at(-1)?.content ?? '{}';
+        const user =
+          body.input?.at(-1) && typeof body.input.at(-1) === 'object'
+            ? (body.input.at(-1) as { content: string }).content
+            : '{}';
         const requestBody = JSON.parse(user) as { candidates: { candidate_id: string }[] };
         response.end(
           JSON.stringify({
-            choices: [
+            output: [
               {
-                message: {
-                  content: JSON.stringify({
-                    j: Object.fromEntries(
-                      requestBody.candidates.map((candidate, index) => [
-                        candidate.candidate_id,
-                        [[3, 1, 0][index], index + 1],
-                      ]),
-                    ),
-                  }),
-                },
+                type: 'message',
+                content: [
+                  {
+                    type: 'output_text',
+                    text: JSON.stringify({
+                      j: Object.fromEntries(
+                        requestBody.candidates.map((candidate, index) => [
+                          candidate.candidate_id,
+                          [[3, 1, 0][index], index + 1],
+                        ]),
+                      ),
+                    }),
+                  },
+                ],
               },
             ],
           }),

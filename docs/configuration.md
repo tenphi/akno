@@ -31,6 +31,7 @@ A config names the environment variable containing a credential; it never contai
     "openai": {
       "base_url": "https://api.openai.com/v1",
       "api_key": { "env": "AKNO_OPENAI_API_KEY" },
+      "api": "responses",
     },
   },
 }
@@ -38,6 +39,16 @@ A config names the environment variable containing a credential; it never contai
 
 `akno config`, setup previews, diagnostics, benchmark artifacts, and dream receipts redact or omit resolved
 secret values.
+
+`providers.<name>.api` selects the provider's generative transport. `responses` uses `/responses`,
+`max_output_tokens`, `reasoning.effort`, Responses image parts, and `text.format` structured outputs;
+`chat_completions` retains the existing OpenAI-compatible `/chat/completions` adapter. Providers that omit the
+field default to `chat_completions`, so existing local and gateway configurations do not silently change.
+
+The guided OpenAI preset selects `responses` explicitly and sends `store: false` because Akno calls are
+stateless and may contain private memory. A failed Responses call does not fall through to Chat Completions:
+cross-transport retry could duplicate cost and change schema behavior. Automatic one-time capability resolution
+is not implemented yet; choose the supported transport explicitly for non-preset providers.
 
 ## Knowledge-base rules
 

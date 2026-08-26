@@ -17,13 +17,15 @@
   "providers": {
     "local": {
       "base_url": "http://127.0.0.1:8080/v1",
-      "api_key": null
+      "api_key": null,
+      "api": "chat_completions"
     }
     // A hosted provider, if you want a stronger model for summaries, fact
     // derivation, or the nightly cycle. The key lives in .env under this name.
     // "openai": {
     //   "base_url": "https://api.openai.com/v1",
-    //   "api_key": { "env": "AKNO_OPENAI_API_KEY" }
+    //   "api_key": { "env": "AKNO_OPENAI_API_KEY" },
+    //   "api": "responses"
     // }
   },
 
@@ -75,7 +77,8 @@
   // "providers": {
   //   "openai": {
   //     "base_url": "https://api.openai.com/v1",
-  //     "api_key": { "env": "AKNO_OPENAI_API_KEY" }
+  //     "api_key": { "env": "AKNO_OPENAI_API_KEY" },
+  //     "api": "responses"
   //   }
   // },
   // "models": {

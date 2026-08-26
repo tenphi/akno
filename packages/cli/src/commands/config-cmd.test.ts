@@ -10,6 +10,7 @@ const provider: ResolvedProvider = {
     Authorization: 'Bearer invented-header-secret',
     'X-Fixture-Key': 'invented-gateway-secret',
   },
+  api: 'responses',
   maxRetries: 2,
 };
 

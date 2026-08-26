@@ -311,6 +311,167 @@ describe('provider usage diagnostics', () => {
   });
 });
 
+describe('Responses API transport', () => {
+  interface ServedResponse {
+    status?: number;
+    body?: unknown;
+  }
+
+  async function exchange(
+    response: ServedResponse,
+    run: (client: ModelClient) => Promise<unknown>,
+  ): Promise<{ result: unknown; paths: string[]; bodies: Record<string, unknown>[] }> {
+    const paths: string[] = [];
+    const bodies: Record<string, unknown>[] = [];
+    const instance = http.createServer((request, reply) => {
+      const chunks: Buffer[] = [];
+      request.on('data', (chunk: Buffer) => chunks.push(chunk));
+      request.on('end', () => {
+        paths.push(request.url ?? '');
+        bodies.push(JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>);
+        reply.writeHead(response.status ?? 200, { 'content-type': 'application/json' });
+        reply.end(
+          JSON.stringify(
+            response.body ?? {
+              output: [
+                {
+                  type: 'message',
+                  content: [{ type: 'output_text', text: '{"summary":"Invented summary."}' }],
+                },
+              ],
+              usage: {
+                input_tokens: 111,
+                output_tokens: 22,
+                total_tokens: 133,
+                input_tokens_details: { cached_tokens: 44 },
+                output_tokens_details: { reasoning_tokens: 7 },
+              },
+            },
+          ),
+        );
+      });
+    });
+    await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
+    const { port } = instance.address() as { port: number };
+    try {
+      const client = new ModelClient({
+        role: 'derive',
+        provider: {
+          name: 'invented-responses',
+          baseUrl: `http://127.0.0.1:${port}/v1`,
+          apiKey: null,
+          headers: {},
+          api: 'responses',
+          maxRetries: 0,
+        },
+        id: 'invented-generative-model',
+        enabled: true,
+        requested: true,
+        timeoutMs: 5_000,
+        maxOutputTokens: 500,
+        reasoningEffort: 'none',
+        unavailableReason: null,
+      });
+      return { result: await run(client), paths, bodies };
+    } finally {
+      instance.close();
+      instance.closeAllConnections();
+    }
+  }
+
+  it('maps reasoning, strict structured output, usage, and text onto Responses', async () => {
+    const { result, paths, bodies } = await exchange({}, (client) =>
+      client.chat(
+        [
+          { role: 'system', content: 'Return the invented summary.' },
+          { role: 'user', content: 'Summarize the Zephyr QX-100 record.' },
+        ],
+        { schema: DOCUMENT_SUMMARY_SCHEMA, maxTokens: 200 },
+      ),
+    );
+
+    expect(paths).toEqual(['/v1/responses']);
+    expect(bodies[0]).toMatchObject({
+      model: 'invented-generative-model',
+      input: [
+        { role: 'system', content: 'Return the invented summary.' },
+        { role: 'user', content: 'Summarize the Zephyr QX-100 record.' },
+      ],
+      max_output_tokens: 200,
+      reasoning: { effort: 'none' },
+      store: false,
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'akno_response',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: { summary: { type: 'string' } },
+            required: ['summary'],
+            additionalProperties: false,
+          },
+        },
+      },
+    });
+    expect(result).toMatchObject({
+      ok: true,
+      value: '{"summary":"Invented summary."}',
+      endpointRequests: 1,
+      usage: {
+        inputTokens: 111,
+        outputTokens: 22,
+        totalTokens: 133,
+        cachedInputTokens: 44,
+        reasoningOutputTokens: 7,
+      },
+    });
+  });
+
+  it('uses Responses image-part names and the stateless data URL shape', async () => {
+    const { bodies } = await exchange({}, (client) =>
+      client.chat([{ role: 'user', content: 'Describe the invented product label.' }], {
+        images: [{ data: Buffer.from('invented-image-bytes'), mime: 'image/png' }],
+      }),
+    );
+
+    expect(bodies[0]!.input).toEqual([
+      {
+        role: 'user',
+        content: [
+          { type: 'input_text', text: 'Describe the invented product label.' },
+          {
+            type: 'input_image',
+            image_url: `data:image/png;base64,${Buffer.from('invented-image-bytes').toString('base64')}`,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('does not duplicate a failed Responses call through Chat Completions', async () => {
+    const { result, paths } = await exchange(
+      { status: 400, body: { error: { message: 'Invented Responses rejection.' } } },
+      (client) => client.chat([{ role: 'user', content: 'Invented request.' }]),
+    );
+
+    expect(paths).toEqual(['/v1/responses']);
+    expect(result).toMatchObject({ ok: false, reason: 'request_failed', endpointRequests: 1 });
+  });
+
+  it('fails closed when a successful Responses envelope has no output text', async () => {
+    const { result } = await exchange({ body: { output: [{ type: 'reasoning' }] } }, (client) =>
+      client.chat([{ role: 'user', content: 'Invented request.' }]),
+    );
+
+    expect(result).toMatchObject({
+      ok: false,
+      reason: 'bad_response',
+      error: 'Responses API response had no output text',
+    });
+  });
+});
+
 describe('parseRetryAfter', () => {
   it('reads delta-seconds', () => {
     expect(parseRetryAfter('3')).toBe(3000);

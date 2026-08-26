@@ -31,11 +31,11 @@ install a service, create a schedule, or modify any note.
 
 ### Choose a model strategy
 
-| Strategy          | Use it when                              | Result                                                                                                  |
-| ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| OpenAI minimum    | You want the simplest hosted setup       | One endpoint and credential; `text-embedding-3-small` for embeddings and `gpt-5.6-luna` for other roles |
-| No models         | You want local lexical retrieval only    | Every model caller is explicitly disabled; existing provider definitions remain dormant                 |
-| Specialist/manual | You already have role-specific endpoints | Akno writes the path/profile and preserves provider and model blocks                                    |
+| Strategy          | Use it when                              | Result                                                                                                            |
+| ----------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| OpenAI minimum    | You want the simplest hosted setup       | One Responses endpoint and credential; `text-embedding-3-small` for embeddings and `gpt-5.6-luna` for other roles |
+| No models         | You want local lexical retrieval only    | Every model caller is explicitly disabled; existing provider definitions remain dormant                           |
+| Specialist/manual | You already have role-specific endpoints | Akno writes the path/profile and preserves provider and model blocks                                              |
 
 For the OpenAI option, put the credential in the environment. The config stores only its variable name:
 

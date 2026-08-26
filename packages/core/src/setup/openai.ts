@@ -47,6 +47,7 @@ export function openAiLunaPreset(options: OpenAiLunaPresetOptions): ConfigDoc {
       openai: {
         base_url: 'https://api.openai.com/v1',
         api_key: { env: 'AKNO_OPENAI_API_KEY' },
+        api: 'responses',
       },
     },
     models: {

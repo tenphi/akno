@@ -402,6 +402,7 @@ function roleFingerprint(role: ResolvedModelRole | null): Record<string, unknown
       ? {
           name: role.provider.name,
           baseUrl: role.provider.baseUrl,
+          api: role.provider.api,
           maxRetries: role.provider.maxRetries,
           headerNames: Object.keys(role.provider.headers).sort(),
         }

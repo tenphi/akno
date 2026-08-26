@@ -11,9 +11,14 @@ import { PageRole, RememberManagement } from '@tenphi/akno-protocol';
 export const SecretRef = z.object({ env: z.string().min(1) });
 export type SecretRef = z.infer<typeof SecretRef>;
 
+export const ProviderApi = z.enum(['chat_completions', 'responses']);
+export type ProviderApi = z.infer<typeof ProviderApi>;
+
 export const ProviderDoc = z.object({
   base_url: z.string().url().nullable().optional(),
   api_key: SecretRef.nullable().optional(),
+  /** Generative transport. Embeddings and native reranking retain their dedicated endpoints. */
+  api: ProviderApi.optional(),
   /** Extra headers, for a gateway that wants one. Values may be secret refs. */
   headers: z.record(z.string(), z.union([z.string(), SecretRef])).optional(),
   /**
@@ -383,6 +388,8 @@ export interface ResolvedProvider {
   baseUrl: string;
   apiKey: string | null;
   headers: Record<string, string>;
+  /** Generative transport; never inferred from a failed runtime request. */
+  api: ProviderApi;
   /** Retries after a rate limit or transient server error, within the role's existing deadline. */
   maxRetries: number;
 }

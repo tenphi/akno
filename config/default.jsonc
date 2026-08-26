@@ -77,6 +77,10 @@
     "local": {
       "base_url": null,
       "api_key": null,
+      // Generative transport only; embeddings and native reranking keep their
+      // dedicated endpoints. Third-party OpenAI-compatible servers default to
+      // Chat Completions. The guided OpenAI preset explicitly uses Responses.
+      "api": "chat_completions",
       // Retries after a rate limit (429) or a transient server error (500, 502,
       // 503, 504), with exponential backoff and full jitter. A `Retry-After`
       // header is obeyed when one is sent.
@@ -120,7 +124,7 @@
       "id": null,
       "enabled": false,
       // "endpoint" calls a native cross-encoder at /rerank. "llm" uses the
-      // versioned Akno listwise prompt over the provider's chat endpoint.
+      // versioned Akno listwise prompt over the provider's generative transport.
       "mode": "endpoint",
       // A successful reranker may remove confidently irrelevant candidates.
       // Unjudged candidates outside top_k are omitted rather than used to fill

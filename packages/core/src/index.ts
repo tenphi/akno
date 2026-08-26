@@ -24,6 +24,7 @@ export type {
   MaintenancePolicy,
   MaintenanceProfile,
   MaintenanceTransform,
+  ProviderApi,
   ReasoningEffort,
   ResolvedModelRole,
   ResolvedProvider,

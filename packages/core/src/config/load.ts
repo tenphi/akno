@@ -363,6 +363,7 @@ function resolveProviders(
       baseUrl: doc.base_url.replace(/\/+$/, ''),
       apiKey: resolveSecret(doc.api_key, env),
       headers,
+      api: doc.api ?? 'chat_completions',
       maxRetries: doc.max_retries ?? 2,
     };
   }

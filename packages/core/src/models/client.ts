@@ -77,6 +77,29 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface ChatOptions {
+  json?: boolean;
+  /**
+   * The shape the prompt asks for, as a zod schema, sent so the endpoint can constrain
+   * decoding to it. Implies `json`.
+   *
+   * It does not replace the caller's own validation and is not meant to: a schema can say
+   * `line` is a number, but only `derivePage` knows it must be a line the model was
+   * actually shown. Constrained decoding removes the syntactic failures—the fenced
+   * prose, the trailing commentary, the object that stopped being JSON halfway through.
+   */
+  schema?: z.ZodType;
+  /** Reuse repeated subschemas through local JSON Schema definitions. */
+  reuseSchemaDefinitions?: boolean;
+  maxTokens?: number;
+  temperature?: number;
+  timeoutMs?: number;
+  /** Per-task override; otherwise the resolved role's setting is sent. */
+  reasoningEffort?: ReasoningEffort;
+  /** Attached to the last user message as image parts. */
+  images?: ImagePart[];
+}
+
 /** An image handed to a vision model, with the mime type the endpoint needs. */
 export interface ImagePart {
   data: Buffer;
@@ -200,7 +223,13 @@ export class ModelClient {
     if (!this.#role.provider || !this.#role.id) return null;
     return createHash('sha256')
       .update(
-        [this.#role.role, this.#role.provider.name, this.#role.provider.baseUrl, this.#role.id].join('\0'),
+        [
+          this.#role.role,
+          this.#role.provider.name,
+          this.#role.provider.baseUrl,
+          this.#role.provider.api,
+          this.#role.id,
+        ].join('\0'),
       )
       .digest('hex');
   }
@@ -416,31 +445,7 @@ export class ModelClient {
     };
   }
 
-  async chat(
-    messages: ChatMessage[],
-    options: {
-      json?: boolean;
-      /**
-       * The shape the prompt asks for, as a zod schema, sent so the endpoint can constrain
-       * decoding to it. Implies `json`.
-       *
-       * It does not replace the caller's own validation and is not meant to: a schema can say
-       * `line` is a number, but only `derivePage` knows it must be a line the model was
-       * actually shown. Constrained decoding removes the *syntactic* failures — the fenced
-       * prose, the trailing commentary, the object that stopped being JSON halfway through.
-       */
-      schema?: z.ZodType;
-      /** Reuse repeated subschemas through local JSON Schema definitions. */
-      reuseSchemaDefinitions?: boolean;
-      maxTokens?: number;
-      temperature?: number;
-      timeoutMs?: number;
-      /** Per-task override; otherwise the resolved role's setting is sent. */
-      reasoningEffort?: ReasoningEffort;
-      /** Attached to the last user message as image parts. */
-      images?: ImagePart[];
-    } = {},
-  ): Promise<ModelOutcome<string>> {
+  async chat(messages: ChatMessage[], options: ChatOptions = {}): Promise<ModelOutcome<string>> {
     const chatStarted = performance.now();
     const wantsJson = options.json || options.schema !== undefined;
     // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
@@ -448,6 +453,10 @@ export class ModelClient {
     const jsonSchema = options.schema
       ? toEndpointSchema(options.schema, { reuseDefinitions: options.reuseSchemaDefinitions ?? false })
       : null;
+
+    if (this.#role.provider?.api === 'responses') {
+      return this.responses(messages, options, wantsJson, jsonSchema, chatStarted);
+    }
 
     const build = (tokenParam: TokenParam, schemaMode: SchemaMode): Record<string, unknown> => {
       const body: Record<string, unknown> = {
@@ -545,6 +554,64 @@ export class ModelClient {
     });
   }
 
+  /**
+   * OpenAI's Responses API uses different request keys and nests structured output under
+   * `text.format`. This is an explicit provider choice: a failed call never falls through to
+   * Chat Completions, which could duplicate cost and change validation semantics.
+   */
+  private async responses(
+    messages: ChatMessage[],
+    options: ChatOptions,
+    wantsJson: boolean,
+    jsonSchema: Record<string, unknown> | null,
+    started: number,
+  ): Promise<ModelOutcome<string>> {
+    const body: Record<string, unknown> = {
+      model: this.#role.id,
+      input: options.images?.length ? withResponseImages(messages, options.images) : messages,
+      max_output_tokens: tokenCeiling(options.maxTokens, this.#role.maxOutputTokens),
+      // Akno calls are stateless and routinely contain private memory. Do not create provider-side
+      // conversation state merely because Responses supports it.
+      store: false,
+    };
+    const reasoningEffort = options.reasoningEffort ?? this.#role.reasoningEffort;
+    if (reasoningEffort) body.reasoning = { effort: reasoningEffort };
+    if (options.temperature !== undefined) body.temperature = options.temperature;
+    if (wantsJson) body.text = { format: responsesTextFormat(jsonSchema) };
+
+    const result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs);
+    const endpointRequests = result.endpointRequests ?? 0;
+    if (!result.ok || !result.value) {
+      return this.observeChat({
+        ...result,
+        value: null,
+        latencyMs: performance.now() - started,
+        endpointRequests,
+      });
+    }
+
+    const usage = reportedModelUsage(result.value.usage);
+    const content = responseOutputText(result.value);
+    if (content === null) {
+      return this.observeChat({
+        ok: false,
+        value: null,
+        reason: 'bad_response',
+        error: 'Responses API response had no output text',
+        latencyMs: performance.now() - started,
+        endpointRequests,
+        ...(usage ? { usage } : {}),
+      });
+    }
+    return this.observeChat({
+      ok: true,
+      value: content,
+      latencyMs: performance.now() - started,
+      endpointRequests,
+      ...(usage ? { usage } : {}),
+    });
+  }
+
   private observeChat(outcome: ModelOutcome<string>): ModelOutcome<string> {
     this.emitObservation({
       event: 'call',
@@ -634,21 +701,33 @@ export class ModelClient {
 
 interface ChatCompletionResponse {
   choices: { message?: { content?: string } }[];
-  usage?: {
-    prompt_tokens?: unknown;
-    completion_tokens?: unknown;
-    total_tokens?: unknown;
-    input_tokens?: unknown;
-    output_tokens?: unknown;
-    prompt_tokens_details?: { cached_tokens?: unknown };
-    completion_tokens_details?: { reasoning_tokens?: unknown };
-    input_tokens_details?: { cached_tokens?: unknown };
-    output_tokens_details?: { reasoning_tokens?: unknown };
-  };
+  usage?: ProviderUsage;
+}
+
+interface ResponsesApiResponse {
+  /** Present in some compatible raw responses and as an SDK convenience. */
+  output_text?: unknown;
+  output?: {
+    type?: unknown;
+    content?: { type?: unknown; text?: unknown }[];
+  }[];
+  usage?: ProviderUsage;
+}
+
+interface ProviderUsage {
+  prompt_tokens?: unknown;
+  completion_tokens?: unknown;
+  total_tokens?: unknown;
+  input_tokens?: unknown;
+  output_tokens?: unknown;
+  prompt_tokens_details?: { cached_tokens?: unknown };
+  completion_tokens_details?: { reasoning_tokens?: unknown };
+  input_tokens_details?: { cached_tokens?: unknown };
+  output_tokens_details?: { reasoning_tokens?: unknown };
 }
 
 /** OpenAI-compatible servers use either the Chat Completions or Responses token names. */
-function reportedModelUsage(usage: ChatCompletionResponse['usage']): ModelUsage | null {
+function reportedModelUsage(usage: ProviderUsage | undefined): ModelUsage | null {
   if (!usage) return null;
   const inputTokens = tokenCount(usage.prompt_tokens ?? usage.input_tokens);
   const outputTokens = tokenCount(usage.completion_tokens ?? usage.output_tokens);
@@ -667,6 +746,18 @@ function reportedModelUsage(usage: ChatCompletionResponse['usage']): ModelUsage 
     ...(cachedInputTokens === null ? {} : { cachedInputTokens }),
     ...(reasoningOutputTokens === null ? {} : { reasoningOutputTokens }),
   };
+}
+
+/** Raw HTTP responses do not expose the SDK's computed `output_text` on every server. */
+function responseOutputText(response: ResponsesApiResponse): string | null {
+  if (typeof response.output_text === 'string') return response.output_text;
+  const parts: string[] = [];
+  for (const item of response.output ?? []) {
+    for (const content of item.content ?? []) {
+      if (content.type === 'output_text' && typeof content.text === 'string') parts.push(content.text);
+    }
+  }
+  return parts.length > 0 ? parts.join('') : null;
 }
 
 function tokenCount(value: unknown): number | null {
@@ -863,6 +954,40 @@ function withImages(messages: ChatMessage[], images: ImagePart[]): unknown[] {
     })),
   });
   return out;
+}
+
+/** Responses names input content parts differently from Chat Completions. */
+function withResponseImages(messages: ChatMessage[], images: ImagePart[]): unknown[] {
+  const out: unknown[] = messages.map((message) => ({ ...message }));
+  for (let i = out.length - 1; i >= 0; i--) {
+    const message = out[i] as ChatMessage;
+    if (message.role !== 'user') continue;
+    out[i] = {
+      role: 'user',
+      content: [
+        { type: 'input_text', text: message.content },
+        ...images.map((image) => ({
+          type: 'input_image',
+          image_url: `data:${image.mime};base64,${image.data.toString('base64')}`,
+        })),
+      ],
+    };
+    return out;
+  }
+  out.push({
+    role: 'user',
+    content: images.map((image) => ({
+      type: 'input_image',
+      image_url: `data:${image.mime};base64,${image.data.toString('base64')}`,
+    })),
+  });
+  return out;
+}
+
+/** Responses puts its JSON contract directly under `text.format`. */
+function responsesTextFormat(jsonSchema: Record<string, unknown> | null): Record<string, unknown> {
+  if (!jsonSchema) return { type: 'json_object' };
+  return { type: 'json_schema', name: 'akno_response', strict: true, schema: jsonSchema };
 }
 
 function decodeBase64Floats(input: string): Float32Array {
