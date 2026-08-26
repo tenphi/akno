@@ -1,7 +1,8 @@
 # Getting started
 
-This guide takes Akno from an empty installation to a useful, read-only first result. Nothing in this sequence
-changes the knowledge-base files.
+This guide takes Akno from an empty installation to a useful, read-only first result. New recommended and
+model-free configurations leave knowledge-base files unchanged; updates and specialist configurations may
+retain explicit metadata or rendition write opt-ins.
 
 ## Requirements
 
@@ -19,15 +20,23 @@ npm install -g @tenphi/akno
 akno init
 ```
 
-Guided setup asks four questions:
+Guided setup first asks four configuration questions:
 
 1. Which folder is the knowledge base?
 2. Which model strategy should Akno use?
 3. Is it connected to a trusted agent, operated with human review, or intended to remain read-only?
 4. Which maintenance profile should be written?
 
-It then shows the exact configuration overlay and a path-only diff before asking to write. It does not index,
-install a service, create a schedule, or modify any note.
+It then shows the exact configuration overlay and a path-only diff before asking to write. Once the config is
+safe on disk, it separately offers to build the index, run a first recall, and install the macOS background
+service plus nightly schedule. Every follow-up explains its boundary and defaults to no. Declining one leaves
+an explicit command to run later; a failed follow-up never rolls back the valid config. Non-interactive setup
+always stops after the configuration write. Accepted actions stay pinned to the knowledge-base and state paths
+shown in the preview, including paths written into background-service definitions.
+
+Indexing under the OpenAI preset sends configured page or document inputs to OpenAI to build derived search
+data. Model-free indexing stays local. A first recall is offered only after the index succeeds, and prompts for
+your actual question rather than running an irrelevant example query.
 
 ### Choose a model strategy
 

@@ -313,7 +313,11 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
   const binary = process.argv[1] ?? 'akno';
-  const args = ['serve', ...(values.http ? ['--http', values.http] : [])];
+  // An installer reached through guided setup carries the exact target the user confirmed.
+  // Persist those flags in every agent; otherwise launchd would later resolve whichever
+  // checkout config happens to be visible from its working directory.
+  const targetArgs = serviceTargetArgs(values);
+  const args = ['serve', ...targetArgs, ...(values.http ? ['--http', values.http] : [])];
 
   fs.mkdirSync(agents, { recursive: true });
   fs.mkdirSync(config.logDir, { recursive: true });
@@ -344,7 +348,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
         script: binary,
         // Keep authority unqualified: `dream` resolves the current named profile every night.
         // The marker enables local notification delivery; it does not change dream behaviour.
-        args: ['dream', '--scheduled'],
+        args: ['dream', '--scheduled', ...targetArgs],
         logDir: config.logDir,
         logName: 'dream',
         calendarHour: hour,
@@ -362,7 +366,7 @@ export async function serviceCommand(argv: string[]): Promise<number> {
         label: DREAM_HEALTH_LABEL,
         node: process.execPath,
         script: binary,
-        args: ['dream', 'notify', '--schedule-health'],
+        args: ['dream', 'notify', '--schedule-health', ...targetArgs],
         logDir: config.logDir,
         logName: 'dream-health',
         calendarHour: healthHour,
@@ -380,6 +384,13 @@ export async function serviceCommand(argv: string[]): Promise<number> {
 
   line(style.grey(`logs: ${config.logDir}`));
   return 0;
+}
+
+export function serviceTargetArgs(values: { 'akno-path'?: string; 'state-dir'?: string }): string[] {
+  return [
+    ...(values['akno-path'] ? ['--akno-path', values['akno-path']] : []),
+    ...(values['state-dir'] ? ['--state-dir', values['state-dir']] : []),
+  ];
 }
 
 /** An hour outside 0-23 is a typo, and a nightly job at "25:00" would silently never run. */

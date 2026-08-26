@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { plist } from './serve-cmd.ts';
+import { plist, serviceTargetArgs } from './serve-cmd.ts';
 
 describe('launchd service definitions', () => {
+  it('persists an explicitly selected knowledge base and state directory', () => {
+    expect(
+      serviceTargetArgs({
+        'akno-path': '/invented/knowledge-base',
+        'state-dir': '/invented/state',
+      }),
+    ).toEqual(['--akno-path', '/invented/knowledge-base', '--state-dir', '/invented/state']);
+  });
+
   it('marks the nightly cycle as scheduled without baking in maintenance authority', () => {
     const rendered = plist({
       label: 'dev.akno.dream',

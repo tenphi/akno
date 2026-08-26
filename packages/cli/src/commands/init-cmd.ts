@@ -31,6 +31,8 @@ const INIT_HELP = `akno init [--preset <name> --akno-path <path>] [options]
   Run without preset/path arguments in a terminal for guided setup, or provide both
   for non-interactive use. Choose the recommended single-endpoint OpenAI setup,
   explicitly disable all model roles, or preserve specialist roles for manual setup.
+  After a guided config write, optional index, recall, and macOS service actions are
+  explained and confirmed separately; every one defaults to no.
 
   --preset <name>       openai-luna or no-model.
   --maintenance <mode>  audit, review, or autonomous. Guided setup recommends one
@@ -49,9 +51,17 @@ interface InitValues {
   check: boolean;
 }
 
+export interface InitFollowUpCommands {
+  index(argv: string[]): Promise<number>;
+  recall(argv: string[]): Promise<number>;
+  service(argv: string[]): Promise<number>;
+}
+
 interface InitCommandOptions {
   prompt?: InitPromptSession;
   interactive?: boolean;
+  followUps?: InitFollowUpCommands;
+  platform?: NodeJS.Platform;
 }
 
 export async function initCommand(argv: string[], options: InitCommandOptions = {}): Promise<number> {
@@ -201,8 +211,21 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       const write = await applySetupConfigWrite(writePlan);
       const result = { ...preview, kind: 'setup_result' as const, applied: write.changed };
       if (values.json) json(result);
-      else renderInitResult(result);
-      return 0;
+      else renderInitResult(result, { guidedFollowUps: needsGuidance });
+      if (!needsGuidance) return 0;
+      // This await is load-bearing: returning the promise directly would execute the outer
+      // finally immediately and close the terminal before the first follow-up answer arrives.
+      return await runGuidedFirstRun(
+        prompt!,
+        setup,
+        {
+          aknoPath: resolved.aknoPath,
+          stateDir: resolved.stateDir,
+          indexMayWrite:
+            resolved.writeIds || resolved.derivedInFrontmatter !== 'none' || resolved.ingest.textRendition,
+        },
+        options,
+      );
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
       return 1;
@@ -328,6 +351,7 @@ function renderInitResult(
     kind: 'setup_result';
     applied: boolean;
   },
+  options: { guidedFollowUps?: boolean } = {},
 ): void {
   const copy = setupCopy(result.preset);
   heading(copy.title);
@@ -339,12 +363,125 @@ function renderInitResult(
   line(
     `  configuration write    ${result.applied ? style.green('written atomically') : style.green('already matched')}`,
   );
-  line(`  knowledge-base writes  ${style.green('none')}`);
+  line(`  setup knowledge writes  ${style.green('none')}`);
+  if (options.guidedFollowUps) {
+    line(style.grey('\nConfiguration is ready. Each optional first-run action is confirmed separately.'));
+    return;
+  }
   line(style.grey('\nNext: akno index'));
-  line(style.grey('Then: akno recall "Zephyr warranty"'));
+  line(style.grey('Then: akno recall "your question"'));
   line(style.grey('Check: akno doctor'));
   line(style.grey('Safe maintenance trial: akno dream --mode audit'));
   line(style.grey('Optional background service: akno service install'));
+}
+
+async function runGuidedFirstRun(
+  prompt: InitPromptSession,
+  setup: InitSetupChoice,
+  target: { aknoPath: string; stateDir: string; indexMayWrite: boolean },
+  options: InitCommandOptions,
+): Promise<number> {
+  const followUps = options.followUps ?? defaultInitFollowUps();
+  // Keep every follow-up pinned to the configuration that was just confirmed. In a checkout,
+  // another local overlay may exist; letting it redirect this index would violate the consent.
+  const targetArgs = ['--akno-path', target.aknoPath, '--state-dir', target.stateDir];
+  heading('Optional first run');
+  prompt.say(indexingDisclosure(setup, target.indexMayWrite));
+  const shouldIndex = await confirmInitAction(prompt, 'Build the searchable index now?', false);
+  let indexed = false;
+  let recalled = false;
+  let serviceInstalled = false;
+
+  if (shouldIndex) {
+    const exitCode = await runInitFollowUp('index', () => followUps.index(targetArgs));
+    if (exitCode !== 0) return failedFirstRun('index', 'akno index');
+    indexed = true;
+
+    prompt.say('Recall is read-only. Its query and selected evidence may be sent to configured models.');
+    const shouldRecall = await confirmInitAction(prompt, 'Run a first recall now?', false);
+    if (shouldRecall) {
+      const query = await firstRecallQuery(prompt);
+      const recallExitCode = await runInitFollowUp('recall', () => followUps.recall([query, ...targetArgs]));
+      if (recallExitCode !== 0) return failedFirstRun('recall', 'akno recall "your question"');
+      recalled = true;
+    }
+  } else {
+    prompt.say('First recall was skipped because a fresh setup needs an index to search.');
+  }
+
+  if ((options.platform ?? process.platform) === 'darwin') {
+    prompt.say(
+      'The background service watches for changes and installs nightly maintenance using the selected profile.',
+    );
+    const shouldInstallService = await confirmInitAction(
+      prompt,
+      'Install the background service and nightly schedule now?',
+      false,
+    );
+    if (shouldInstallService) {
+      const exitCode = await runInitFollowUp('service installation', () =>
+        followUps.service(['install', ...targetArgs]),
+      );
+      if (exitCode !== 0) return failedFirstRun('service installation', 'akno service install');
+      serviceInstalled = true;
+    }
+  } else {
+    prompt.say('Background service installation is currently available on macOS only.');
+  }
+
+  heading('Ready');
+  if (!indexed) line(style.grey('Next: akno index'));
+  else if (!recalled) line(style.grey('Try: akno recall "your question"'));
+  line(style.grey('Check: akno doctor'));
+  line(style.grey('Safe maintenance trial: akno dream --mode audit'));
+  if (!serviceInstalled && (options.platform ?? process.platform) === 'darwin') {
+    line(style.grey('Optional background service: akno service install'));
+  }
+  return 0;
+}
+
+function defaultInitFollowUps(): InitFollowUpCommands {
+  return {
+    index: async (argv) => (await import('./index-cmd.ts')).indexCommand(argv),
+    recall: async (argv) => (await import('./recall-cmd.ts')).recallCommand(argv),
+    service: async (argv) => (await import('./serve-cmd.ts')).serviceCommand(argv),
+  };
+}
+
+async function runInitFollowUp(label: string, action: () => Promise<number>): Promise<number> {
+  try {
+    return await action();
+  } catch (error) {
+    fail(`${label} failed: ${error instanceof Error ? error.message : String(error)}`);
+    return 1;
+  }
+}
+
+function failedFirstRun(action: string, retry: string): number {
+  line(style.yellow(`Configuration remains saved, but the optional ${action} did not complete.`));
+  line(style.grey(`Retry: ${retry}`));
+  return 1;
+}
+
+async function firstRecallQuery(prompt: InitPromptSession): Promise<string> {
+  while (true) {
+    const query = (await prompt.ask('Recall query: ')).trim();
+    if (query) return query;
+    prompt.say('A recall query is required.');
+  }
+}
+
+function indexingDisclosure(setup: InitSetupChoice, mayWrite: boolean): string {
+  const writeBoundary = mayWrite
+    ? 'It will also honor configured metadata or rendition write opt-ins.'
+    : 'The resolved configuration does not write to knowledge-base files during indexing.';
+  if (setup === OPENAI_LUNA_PRESET) {
+    return `Indexing reads the knowledge base and sends configured page or document inputs to OpenAI for derived search data. ${writeBoundary}`;
+  }
+  if (setup === MODEL_FREE_PRESET) {
+    return `Indexing reads the knowledge base locally and builds derived search data. ${writeBoundary}`;
+  }
+  return `Indexing reads the knowledge base and invokes any configured models. ${writeBoundary}`;
 }
 
 function setupPreset(

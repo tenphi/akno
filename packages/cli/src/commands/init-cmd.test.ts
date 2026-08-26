@@ -66,14 +66,11 @@ describe('guided init', () => {
     vi.stubEnv('AKNO_CONFIG', target);
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
 
-    const result = await initCommand([
-      '--preset',
-      'openai-luna',
-      '--akno-path',
-      knowledgeBase,
-      '--maintenance',
-      'autonomous',
-    ]);
+    const followUps = inertFollowUps();
+    const result = await initCommand(
+      ['--preset', 'openai-luna', '--akno-path', knowledgeBase, '--maintenance', 'autonomous'],
+      { followUps },
+    );
 
     expect(result).toBe(0);
     expect(fs.statSync(target).mode & 0o777).toBe(0o600);
@@ -85,6 +82,9 @@ describe('guided init', () => {
       },
       maintenance: { profile: 'autonomous' },
     });
+    expect(followUps.index).not.toHaveBeenCalled();
+    expect(followUps.recall).not.toHaveBeenCalled();
+    expect(followUps.service).not.toHaveBeenCalled();
   });
 
   it('requires force for an existing config and preserves unrelated keys', async () => {
@@ -146,9 +146,9 @@ describe('guided init', () => {
     vi.stubEnv('AKNO_CONFIG', target);
     vi.stubEnv('AKNO_OPENAI_API_KEY', 'sk-invented-fixture-key');
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '', '', '', 'n', '']);
+    const prompt = scriptedPrompt([knowledgeBase, '', '', '', 'n', '', 'n', 'n']);
 
-    const result = await initCommand([], { prompt });
+    const result = await initCommand([], { prompt, platform: 'darwin' });
 
     expect(result).toBe(0);
     expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
@@ -162,6 +162,8 @@ describe('guided init', () => {
       'Maintenance profile [autonomous]: ',
       'Run the content-safe model preflight now? [Y/n]: ',
       'Write this configuration? [Y/n]: ',
+      'Build the searchable index now? [y/N]: ',
+      'Install the background service and nightly schedule now? [y/N]: ',
     ]);
     expect(prompt.messages).toContain(
       'AKNO_OPENAI_API_KEY is available. Its value will not be printed or stored.',
@@ -169,6 +171,80 @@ describe('guided init', () => {
     expect(JSON.stringify({ questions: prompt.questions, messages: prompt.messages })).not.toContain(
       'sk-invented-fixture-key',
     );
+  });
+
+  it('runs separately approved index, recall, and service follow-ups in order', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    const stateDir = path.join(root, 'state');
+    fs.mkdirSync(knowledgeBase);
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.stubEnv('AKNO_STATE_DIR', stateDir);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const prompt = scriptedPrompt([
+      knowledgeBase,
+      '2',
+      '',
+      '',
+      '',
+      'y',
+      'y',
+      'What is the Zephyr QX-100 warranty?',
+      'y',
+    ]);
+    const calls: string[] = [];
+    const followUps = {
+      index: vi.fn(async (_argv: string[]) => {
+        calls.push('index');
+        return 0;
+      }),
+      recall: vi.fn(async (_argv: string[]) => {
+        calls.push('recall');
+        return 0;
+      }),
+      service: vi.fn(async (_argv: string[]) => {
+        calls.push('service');
+        return 0;
+      }),
+    };
+
+    const result = await initCommand([], { prompt, followUps, platform: 'darwin' });
+
+    expect(result).toBe(0);
+    expect(calls).toEqual(['index', 'recall', 'service']);
+    const targetArgs = ['--akno-path', knowledgeBase, '--state-dir', stateDir];
+    expect(followUps.index).toHaveBeenCalledWith(targetArgs);
+    expect(followUps.recall).toHaveBeenCalledWith(['What is the Zephyr QX-100 warranty?', ...targetArgs]);
+    expect(followUps.service).toHaveBeenCalledWith(['install', ...targetArgs]);
+    expect(prompt.questions.slice(-4)).toEqual([
+      'Build the searchable index now? [y/N]: ',
+      'Run a first recall now? [y/N]: ',
+      'Recall query: ',
+      'Install the background service and nightly schedule now? [y/N]: ',
+    ]);
+  });
+
+  it('keeps the written config when an approved optional action fails', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    fs.mkdirSync(knowledgeBase);
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const prompt = scriptedPrompt([knowledgeBase, '2', '', '', '', 'y']);
+    const followUps = inertFollowUps();
+    followUps.index.mockResolvedValue(1);
+
+    const result = await initCommand([], { prompt, followUps, platform: 'darwin' });
+
+    expect(result).toBe(1);
+    expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
+      akno_path: knowledgeBase,
+      maintenance: { profile: 'autonomous' },
+    });
+    expect(followUps.recall).not.toHaveBeenCalled();
+    expect(followUps.service).not.toHaveBeenCalled();
   });
 
   it('leaves an existing config unchanged when an interactive update is declined', async () => {
@@ -183,7 +259,7 @@ describe('guided init', () => {
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const prompt = scriptedPrompt([knowledgeBase, '2', '', '', '']);
 
-    const result = await initCommand([], { prompt });
+    const result = await initCommand([], { prompt, platform: 'darwin' });
 
     expect(result).toBe(0);
     expect(fs.readFileSync(target, 'utf8')).toBe(original);
@@ -267,6 +343,7 @@ describe('guided init', () => {
       `${JSON.stringify(
         {
           akno_path: knowledgeBase,
+          write_ids: true,
           providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
           models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
         },
@@ -277,9 +354,9 @@ describe('guided init', () => {
     );
     vi.stubEnv('AKNO_CONFIG', target);
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '3', '2', '', 'y']);
+    const prompt = scriptedPrompt([knowledgeBase, '3', '2', '', 'y', 'n', 'n']);
 
-    const result = await initCommand([], { prompt });
+    const result = await initCommand([], { prompt, platform: 'darwin' });
 
     expect(result).toBe(0);
     expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
@@ -287,6 +364,9 @@ describe('guided init', () => {
       models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
       maintenance: { profile: 'review' },
     });
+    expect(prompt.messages).toContain(
+      'Indexing reads the knowledge base and invokes any configured models. It will also honor configured metadata or rendition write opt-ins.',
+    );
   });
 
   it('rejects an OpenAI model preflight for a model-free setup', async () => {
@@ -350,5 +430,13 @@ function scriptedPrompt(answers: string[]): InitPromptSession & { questions: str
       this.messages.push(message);
     },
     close() {},
+  };
+}
+
+function inertFollowUps() {
+  return {
+    index: vi.fn(async (_argv: string[]) => 0),
+    recall: vi.fn(async (_argv: string[]) => 0),
+    service: vi.fn(async (_argv: string[]) => 0),
   };
 }

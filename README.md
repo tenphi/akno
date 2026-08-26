@@ -51,7 +51,10 @@ export AKNO_OPENAI_API_KEY="..."
 akno init
 ```
 
-Setup writes configuration only. Build the disposable index, inspect diagnostics, and ask the first question:
+The configuration write is isolated from later actions. Guided setup then offers, with a separate confirmation
+for each, to build the disposable index, run a first recall, and install the macOS background service with its
+nightly schedule. Every offer defaults to no; non-interactive setup remains configuration-only. The equivalent
+commands are:
 
 ```bash
 akno index
