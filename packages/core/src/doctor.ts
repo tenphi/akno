@@ -5,6 +5,7 @@ import { looksLikeLedger } from './reserved.ts';
 import { extractionCapabilities } from './ingest/extract.ts';
 import { readOnlyExplanation } from './open.ts';
 import { ModelClient } from './models/client.ts';
+import { generativeModelIds, providerApiReport, type ProviderApiResolution } from './models/provider-api.ts';
 import { probeAnswerModel, type AnswerCapabilityCheck, type AnswerCapabilityProbe } from './ops/answer.ts';
 
 /**
@@ -66,6 +67,8 @@ export interface DoctorReport {
     vectorMs: number | null;
   };
   models: RoleReport[];
+  /** Content-free resolution state for each provider's generative transport. */
+  providerApis: ProviderApiResolution[];
   /** The extraction path. A missing capability must be visible, not surprising. */
   extraction: { swift: boolean; textutil: boolean; note: string | null };
   reserved: { path: string; state: 'ok' | 'missing' | 'occupied'; note?: string }[];
@@ -189,6 +192,10 @@ export async function doctor(
     }
     models.push(report);
   }
+
+  const providerApis = Object.values(ctx.config.providers).map((provider) =>
+    providerApiReport(provider, generativeModelIds(ctx.config, provider)),
+  );
 
   // The cycle's own model, when a knowledge base points the maintenance tiers somewhere else.
   // Probed here or nowhere: without this, a typo in it surfaces at 03:00 in a log nobody reads.
@@ -320,6 +327,7 @@ export async function doctor(
       vectorMs: vectorMs === null ? null : round(vectorMs),
     },
     models,
+    providerApis,
     extraction,
     reserved,
     warnings,

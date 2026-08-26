@@ -152,10 +152,12 @@ Several roles can point to the same OpenAI-compatible endpoint and generation mo
 separate embedding model. Every model-dependent path has a declared degradation behavior, and `doctor` reports
 the consequence of each missing role.
 
-The provider chooses a generative transport explicitly. The OpenAI preset uses the Responses API with stateless
+The provider chooses a generative transport explicitly or asks for `api: auto`. Auto-resolution runs at handle
+or service startup with invented text, caches the endpoint-and-model-bound result, and tries Chat Completions
+only after a definitively absent Responses route. The OpenAI preset uses the Responses API with stateless
 storage disabled; existing compatible providers default to Chat Completions. Both adapters preserve the same
 task-facing `chat` contract, strict schema validation, reasoning setting, usage receipt, retry policy, and typed
-degradation. Akno never retries a failed request through the other transport.
+degradation. Akno never retries a real failed request through the other transport.
 
 Structured model outputs are parsed and validated before use. Retries are bounded by error type and operation
 deadline. Model text never grants itself filesystem authority.

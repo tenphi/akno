@@ -80,11 +80,14 @@ the complete receipt before applying.
 
 `akno init` provides a qualified OpenAI single-endpoint path, a model-free path, and preservation of manually
 configured specialist roles. The OpenAI preset uses the dedicated Responses adapter, while third-party
-OpenAI-compatible providers default to Chat Completions. Persistently learned `api: auto` capability selection
-is not implemented; a specialist setup must choose its generative transport explicitly.
+OpenAI-compatible providers default to Chat Completions and may opt into persistently learned `api: auto`
+selection.
 
-Specialist or non-OpenAI setups therefore still require understanding provider blocks, role assignment,
-structured-output support, dimensions, reasoning controls, and degradation behavior.
+Auto-resolution establishes only which generative route accepts every configured model. It cannot prove that a
+gateway implements strict structured output correctly, that a model honors a requested reasoning effort, or
+that one provider block can safely mix models requiring different transports. Specialist setups therefore still
+require understanding role assignment, structured-output support, dimensions, reasoning controls, and
+degradation behavior; `doctor` and live benchmarks test those higher-level contracts.
 
 ## Inference can still look authoritative
 

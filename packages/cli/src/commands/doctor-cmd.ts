@@ -1,6 +1,6 @@
 import { open, readOnlyExplanation } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
-import { heading, json, kv, line, ms, style } from '../output.ts';
+import { fail, heading, json, kv, line, ms, style } from '../output.ts';
 
 const DOCTOR_HELP = `akno doctor [options]
 
@@ -9,20 +9,32 @@ const DOCTOR_HELP = `akno doctor [options]
   is almost never suffering from its storage engine.
 
   --no-probe          Skip the model round trips. Instant, but no latency numbers.
+  --refresh-api       Re-probe providers configured with api: auto, ignoring their cache.
   --json`;
 
 export async function doctorCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ probe: boolean }>(argv, {
+  const { values } = parse<{ probe: boolean; 'refresh-api': boolean }>(argv, {
     probe: { type: 'boolean', default: true },
+    'refresh-api': { type: 'boolean', default: false },
   });
 
   if (values.help) {
     line(DOCTOR_HELP);
     return 0;
   }
+  if (!values.probe && values['refresh-api']) {
+    fail('--refresh-api cannot be combined with --no-probe');
+    return 2;
+  }
 
-  // Read-only: `doctor` must be safe to run against a live service.
-  const mem = await open({ ...openOptionsFrom(values), writable: false });
+  // Read-only for the knowledge base and SQLite. An api:auto probe may atomically update its
+  // content-free derived cache; it never contends with the knowledge-base write handle.
+  const mem = await open({
+    ...openOptionsFrom(values),
+    writable: false,
+    resolveProviderApis: values.probe,
+    refreshProviderApis: values['refresh-api'],
+  });
   try {
     const report = await mem.doctor({ probeModels: values.probe });
 
@@ -97,6 +109,21 @@ export async function doctorCommand(argv: string[]): Promise<number> {
         // The consequence is the part that is actually useful to a reader.
         line(`    ${style.yellow('without it:')} ${role.withoutIt}`);
       }
+    }
+
+    heading('Generative transports');
+    for (const provider of report.providerApis) {
+      const transport = provider.resolved
+        ? style.green(provider.resolved)
+        : provider.source === 'not_needed'
+          ? style.grey('not needed')
+          : style.red('unresolved');
+      const source =
+        provider.configured === 'auto'
+          ? style.grey(` ${provider.source}; configured auto`)
+          : style.grey(' explicit');
+      line(`  ${style.bold(provider.provider.padEnd(12))} ${transport}${source}`);
+      if (provider.error) line(`    ${style.grey(provider.error)}`);
     }
 
     heading('Extraction');

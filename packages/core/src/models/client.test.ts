@@ -696,6 +696,9 @@ describe('retrying a rate limit', () => {
     expect(redactProviderError('acct_inventedfixture789 user_inventedfixture000')).toBe(
       'acct_<redacted> user_<redacted>',
     );
+    expect(redactProviderError('gateway echoed invented-custom-header', ['invented-custom-header'])).toBe(
+      'gateway echoed <redacted>',
+    );
   });
 
   it('does not retry when a caller-supplied budget has no room for the backoff', async () => {

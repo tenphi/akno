@@ -4,6 +4,7 @@ import { AknoError } from '@tenphi/akno-protocol';
 import { readJsoncFile } from './jsonc.ts';
 import { expandTilde, findRepoRoot, resolveUserPath } from './paths.ts';
 import { compileRules } from '../rules/compile.ts';
+import { applyCachedProviderApiResolutions } from '../models/provider-api.ts';
 import {
   ConfigDoc,
   MAINTENANCE_TRANSFORMS,
@@ -364,6 +365,9 @@ function resolveProviders(
       apiKey: resolveSecret(doc.api_key, env),
       headers,
       api: doc.api ?? 'chat_completions',
+      configuredApi: doc.api ?? 'chat_completions',
+      apiResolution: doc.api === 'auto' ? 'unresolved' : 'explicit',
+      apiResolutionError: null,
       maxRetries: doc.max_retries ?? 2,
     };
   }
@@ -490,7 +494,7 @@ function resolve(
   const gate = (kbRules?.gate as AknoConfig['gate'] | undefined) ?? doc.gate ?? 'top-level';
   if (kbRules) sources.push(kbRulesPath);
 
-  return {
+  const config: AknoConfig = {
     aknoPath,
     stateDir,
     dbPath: path.join(stateDir, 'akno.db'),
@@ -652,4 +656,6 @@ function resolve(
     rules,
     sources,
   };
+  applyCachedProviderApiResolutions(config);
+  return config;
 }

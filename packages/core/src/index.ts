@@ -25,6 +25,7 @@ export type {
   MaintenanceProfile,
   MaintenanceTransform,
   ProviderApi,
+  ProviderTransport,
   ReasoningEffort,
   ResolvedModelRole,
   ResolvedProvider,
@@ -62,6 +63,7 @@ export {
   type SetupMaintenanceMode,
   type SetupRolePreflight,
 } from './setup/openai.ts';
+export type { ProviderApiResolution } from './models/provider-api.ts';
 export {
   MODEL_FREE_PRESET,
   MODEL_FREE_PRESET_STATUS,

@@ -28,7 +28,7 @@ knowledge base, and which model roles may be involved.
 | `plan`                | Inspect, decide, and apply durable maintenance items       | Apply only                 | None after planning                           |
 | `serve`               | Run watcher and operation doors                            | No by itself               | None by itself                                |
 | `service`             | Install, inspect, or remove background jobs                | Outside the knowledge base | None                                          |
-| `doctor`              | Diagnose paths, index, models, and structural warnings     | No                         | Probes configured roles                       |
+| `doctor`              | Diagnose paths, index, models, and structural warnings     | Cache only                 | Probes configured roles                       |
 | `rules [path]`        | Explain effective folder and maintenance policy            | No                         | None                                          |
 | `config`              | Print resolved, redacted configuration                     | No                         | None                                          |
 | `bench`               | Measure latency and invented-corpus quality gates          | Only explicit write test   | Roles selected by target                      |

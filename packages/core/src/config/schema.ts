@@ -11,7 +11,10 @@ import { PageRole, RememberManagement } from '@tenphi/akno-protocol';
 export const SecretRef = z.object({ env: z.string().min(1) });
 export type SecretRef = z.infer<typeof SecretRef>;
 
-export const ProviderApi = z.enum(['chat_completions', 'responses']);
+export const ProviderTransport = z.enum(['chat_completions', 'responses']);
+export type ProviderTransport = z.infer<typeof ProviderTransport>;
+
+export const ProviderApi = z.enum(['auto', 'chat_completions', 'responses']);
 export type ProviderApi = z.infer<typeof ProviderApi>;
 
 export const ProviderDoc = z.object({
@@ -388,8 +391,14 @@ export interface ResolvedProvider {
   baseUrl: string;
   apiKey: string | null;
   headers: Record<string, string>;
-  /** Generative transport; never inferred from a failed runtime request. */
+  /** Resolved generative transport, or `auto` while a content-safe capability probe is still owed. */
   api: ProviderApi;
+  /** The user's setting, retained after `auto` resolves to a concrete transport. */
+  configuredApi: ProviderApi;
+  /** Where the concrete transport came from. */
+  apiResolution: 'explicit' | 'cached' | 'probed' | 'unresolved' | 'deferred' | 'not_needed';
+  /** Content-safe resolution failure or cache warning, when one exists. */
+  apiResolutionError: string | null;
   /** Retries after a rate limit or transient server error, within the role's existing deadline. */
   maxRetries: number;
 }

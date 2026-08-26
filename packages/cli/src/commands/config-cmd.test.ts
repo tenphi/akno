@@ -11,6 +11,9 @@ const provider: ResolvedProvider = {
     'X-Fixture-Key': 'invented-gateway-secret',
   },
   api: 'responses',
+  configuredApi: 'responses',
+  apiResolution: 'explicit',
+  apiResolutionError: null,
   maxRetries: 2,
 };
 

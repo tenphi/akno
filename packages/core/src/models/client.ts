@@ -151,8 +151,14 @@ const UNSUPPORTED_SCHEMA = /response_format|unsupported.*schema|unknown paramete
 const RETRYABLE_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504]);
 
 /** Provider errors are useful diagnostics but may echo credentials or tenant identifiers. */
-export function redactProviderError(value: string): string {
-  return value
+export function redactProviderError(value: string, exactSecrets: readonly string[] = []): string {
+  let redacted = value;
+  for (const secret of [...new Set(exactSecrets.filter((entry) => entry.length > 0))].sort(
+    (left, right) => right.length - left.length,
+  )) {
+    redacted = redacted.replaceAll(secret, '<redacted>');
+  }
+  return redacted
     .replace(/\bBearer\s+[^\s"']+/gi, 'Bearer <redacted>')
     .replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, '<redacted>')
     .replace(/\b(proj|org|user|acct)_[A-Za-z0-9_-]+\b/g, '$1_<redacted>');
@@ -194,10 +200,22 @@ export class ModelClient {
   }
 
   get available(): boolean {
-    return this.#role.enabled && this.#role.provider !== null && this.#role.id !== null;
+    return (
+      this.#role.enabled &&
+      this.#role.provider !== null &&
+      this.#role.id !== null &&
+      !this.generativeTransportUnresolved()
+    );
   }
 
   get unavailableReason(): string | null {
+    if (this.generativeTransportUnresolved()) {
+      const provider = this.#role.provider!;
+      return (
+        provider.apiResolutionError ??
+        `provider "${provider.name}" has unresolved api:auto; run a model probe or choose an explicit api`
+      );
+    }
     return this.#role.unavailableReason;
   }
 
@@ -220,7 +238,7 @@ export class ModelClient {
 
   /** Stable without including credentials; used only to key derived calibration data. */
   get endpointFingerprint(): string | null {
-    if (!this.#role.provider || !this.#role.id) return null;
+    if (!this.available || !this.#role.provider || !this.#role.id) return null;
     return createHash('sha256')
       .update(
         [
@@ -232,6 +250,14 @@ export class ModelClient {
         ].join('\0'),
       )
       .digest('hex');
+  }
+
+  /** Embeddings and native cross-encoder reranking do not use the generative adapter. */
+  private generativeTransportUnresolved(): boolean {
+    if (this.#role.provider?.api !== 'auto') return false;
+    return (
+      this.#role.role !== 'embedding' && !(this.#role.role === 'reranker' && this.rerankerMode === 'endpoint')
+    );
   }
 
   /** True when the user asked for this role, whether or not it resolved. */
@@ -251,7 +277,7 @@ export class ModelClient {
         ok: false,
         value: null,
         reason: 'unavailable',
-        error: this.#role.unavailableReason ?? 'model unavailable',
+        error: this.unavailableReason ?? 'model unavailable',
         latencyMs: 0,
         endpointRequests: 0,
       };
@@ -327,7 +353,10 @@ export class ModelClient {
 
         status = response.status;
         retryAfter = response.headers.get('retry-after');
-        const detail = redactProviderError(await response.text().catch(() => '')).slice(0, 300);
+        const detail = redactProviderError(await response.text().catch(() => ''), [
+          this.#role.provider.apiKey ?? '',
+          ...Object.values(this.#role.provider.headers),
+        ]).slice(0, 300);
         last = {
           ok: false,
           value: null,

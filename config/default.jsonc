@@ -79,7 +79,8 @@
       "api_key": null,
       // Generative transport only; embeddings and native reranking keep their
       // dedicated endpoints. Third-party OpenAI-compatible servers default to
-      // Chat Completions. The guided OpenAI preset explicitly uses Responses.
+      // Chat Completions. Use "auto" to run one invented capability probe and
+      // cache the result; the guided OpenAI preset explicitly uses Responses.
       "api": "chat_completions",
       // Retries after a rate limit (429) or a transient server error (500, 502,
       // 503, 504), with exponential backoff and full jitter. A `Retry-After`

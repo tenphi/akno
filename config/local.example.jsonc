@@ -18,6 +18,8 @@
     "local": {
       "base_url": "http://127.0.0.1:8080/v1",
       "api_key": null,
+      // Use "auto" for an unfamiliar gateway. Akno probes once with invented
+      // text and caches the supported generative transport under state_dir.
       "api": "chat_completions"
     }
     // A hosted provider, if you want a stronger model for summaries, fact

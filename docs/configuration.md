@@ -45,10 +45,21 @@ secret values.
 `chat_completions` retains the existing OpenAI-compatible `/chat/completions` adapter. Providers that omit the
 field default to `chat_completions`, so existing local and gateway configurations do not silently change.
 
+`auto` is for an unfamiliar OpenAI-compatible endpoint. At the first handle or service startup, Akno sends a
+single-word invented probe to Responses for every distinct configured generative model. It tries Chat
+Completions only when Responses returns an absent-route status (`404`, `405`, or `501`); authentication,
+rate-limit, timeout, malformed-response, and server failures leave the transport unresolved instead of being
+misread as capability evidence. The successful selection is stored in
+`<state_dir>/provider-capabilities.json`, keyed by a one-way fingerprint of the endpoint, authentication,
+headers, and complete generative-model set. Changing any of those inputs invalidates the entry automatically. Run
+`akno doctor --refresh-api` after an endpoint upgrades in place; `akno doctor --no-probe` never resolves a cache
+miss or sends a model request. A failed probe stores no provider response: it records only a five-minute
+content-free cooldown so repeated one-shot commands do not each wait on the same outage.
+
 The guided OpenAI preset selects `responses` explicitly and sends `store: false` because Akno calls are
 stateless and may contain private memory. A failed Responses call does not fall through to Chat Completions:
 cross-transport retry could duplicate cost and change schema behavior. Automatic one-time capability resolution
-is not implemented yet; choose the supported transport explicitly for non-preset providers.
+uses only invented probe text. A real Akno request never falls through to the other transport.
 
 ## Knowledge-base rules
 

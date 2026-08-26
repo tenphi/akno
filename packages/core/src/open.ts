@@ -13,6 +13,7 @@ import type { AknoConfig } from './config/schema.ts';
 import { acquireWriteLock, openStore, type WriteLock } from './store/db.ts';
 import { DeferredDerive } from './index/defer.ts';
 import { ModelClient } from './models/client.ts';
+import { resolveAutoProviderApis } from './models/provider-api.ts';
 import { Assembler } from './recall/assemble.ts';
 import { Indexer, type IndexOptions, type IndexReport } from './index/indexer.ts';
 import { Watcher, type WatcherEvents } from './watch/watcher.ts';
@@ -82,6 +83,13 @@ export interface OpenOptions extends LoadOptions {
   /** Start the FSEvents watcher and the periodic sweep. Off for one-shot commands. */
   watch?: boolean;
   watchEvents?: AknoWatchEvents;
+  /**
+   * Resolve uncached `providers.*.api: auto` settings with invented network probes.
+   * Defaults to true; diagnostics use false for their explicit `--no-probe` path.
+   */
+  resolveProviderApis?: boolean;
+  /** Ignore a cached `api: auto` answer and run the invented probes again. */
+  refreshProviderApis?: boolean;
 }
 
 export interface Akno extends AknoOps {
@@ -198,6 +206,9 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
   const config = loadConfig(options);
   fs.mkdirSync(config.stateDir, { recursive: true });
   fs.mkdirSync(config.logDir, { recursive: true });
+  if (options.resolveProviderApis !== false) {
+    await resolveAutoProviderApis(config, { refresh: options.refreshProviderApis });
+  }
 
   // Exactly one process may hold the write handle. A second one opens read-only
   // and says so, rather than racing two watchers over one directory.
