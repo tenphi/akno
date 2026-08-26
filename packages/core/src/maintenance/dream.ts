@@ -513,12 +513,16 @@ async function runPhase(
             : {
                 pages: [],
                 drafts: [],
+                degraded: [],
                 warnings: [
                   `page transformations were skipped because no maintenance model is available: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`,
                 ],
               };
           report.curated = result.pages;
           report.warnings.push(...result.warnings);
+          for (const degradation of result.degraded) {
+            telemetry.degrade('curate', degradation.reason, degradation.failure);
+          }
           // A contradiction item has priority over a general synthesis of the same page. Two
           // sealed items replacing one input would make the second stale by construction.
           const contradictionPaths = new Set(
@@ -596,6 +600,9 @@ async function runPhase(
       report.curated = result.pages;
       report.curateChangeId = result.changeId;
       report.warnings.push(...result.warnings);
+      for (const degradation of result.degraded) {
+        telemetry.degrade('curate', degradation.reason, degradation.failure);
+      }
       applied.push(...result.files.map((file) => asApplied('curate', file)));
       return null;
     }

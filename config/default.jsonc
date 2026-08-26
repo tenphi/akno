@@ -410,6 +410,9 @@
       // Use ["*"] only when every synthesize-opted knowledge folder is eligible.
       "max_merges": 2,
       "merge_folders": [],
+      // "exact" uses aliases and conservative graph subjects. "semantic" additionally
+      // runs the qualified embedding prefilter and strict candidate classifier.
+      "merge_discovery": "exact",
       "max_children_per_page": 2,
       // Split only large canonical pages into substantial subordinate sections.
       "split_after_bytes": 16384,

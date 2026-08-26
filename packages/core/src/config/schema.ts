@@ -326,6 +326,8 @@ const MaintenanceDoc = z.object({
       max_merges: z.number().int().nonnegative().optional(),
       /** Exact folder prefixes eligible for identity-backed merge discovery; empty keeps merge disabled. */
       merge_folders: z.array(z.string().min(1)).optional(),
+      /** Semantic adds the qualified embedding-plus-classifier candidate source; exact is model-free. */
+      merge_discovery: z.enum(['exact', 'semantic']).optional(),
       max_children_per_page: z.number().int().positive().optional(),
       split_after_bytes: z.number().int().positive().optional(),
       split_section_bytes: z.number().int().positive().optional(),
@@ -557,6 +559,7 @@ export interface AknoConfig {
       maxExtracts: number;
       maxMerges: number;
       mergeFolders: string[];
+      mergeDiscovery: 'exact' | 'semantic';
       maxChildrenPerPage: number;
       splitAfterBytes: number;
       splitSectionBytes: number;

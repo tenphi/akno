@@ -1,6 +1,7 @@
 import type { AknoConfig, ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
 import {
   judgeSemanticMergeCandidate,
+  SEMANTIC_MERGE_PREFILTER_THRESHOLD,
   SEMANTIC_MERGE_PROMPT_VERSION,
   type SemanticMergeVerdict,
 } from '../maintenance/merge-classifier.ts';
@@ -23,7 +24,6 @@ import {
 
 export const MERGE_DISCOVERY_BENCH_VERSION = 'merge-discovery-benchmark-v2';
 const REQUIRED_STABILITY_RUNS = 5;
-const PREFILTER_THRESHOLD = 0.68;
 
 export type { MergeDiscoveryCategory, MergeDiscoverySplit } from './merge-discovery-corpus.ts';
 
@@ -423,7 +423,7 @@ async function classifyCases(
   const pageById = new Map(corpus.pages.map((entry) => [entry.id, entry]));
   const reports: MergeDiscoveryClassifierCase[] = [];
   for (const bench of scores) {
-    if (bench.score < PREFILTER_THRESHOLD) {
+    if (bench.score < SEMANTIC_MERGE_PREFILTER_THRESHOLD) {
       reports.push({
         id: bench.id,
         category: bench.category,
@@ -494,7 +494,7 @@ async function classifyCases(
     model: model.model,
     reasoningEffort: model.reasoningEffort,
     promptVersion: SEMANTIC_MERGE_PROMPT_VERSION,
-    prefilterThreshold: PREFILTER_THRESHOLD,
+    prefilterThreshold: SEMANTIC_MERGE_PREFILTER_THRESHOLD,
     calls: reports.filter((entry) => entry.prefiltered).length,
     metrics,
     cases: reports,

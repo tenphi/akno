@@ -312,7 +312,8 @@ as an instruction. The item kind defines its authority:
   connected in both directions, and free of duplicated authored content;
 - merge may consolidate the one identity-backed duplicate named by the item, preserve every unique authored
   line and retired identity alias, update every eligible inbound link, and delete only that duplicate. Exact
-  graph subject evidence can discover a candidate, but it does not justify deleting a useful scoped page;
+  graph subject evidence or a qualified semantic classifier can discover a candidate, but neither justifies
+  deleting a useful scoped page;
 - contradiction may add the exact unresolved marker, turn only a deterministically stale line into dated
   history, or prefix one broad claim with an exact scope copied from sealed evidence. It must retain authored
   names, values, dates, and provenance.
@@ -800,7 +801,7 @@ function sealCurateDraft(draft: CurateDraft): Omit<SealedDraft, 'policy'> {
           : kind === 'extract'
             ? 'Move one reusable subject from an opted-in page into an independent linked knowledge page.'
             : kind === 'merge'
-              ? 'Consolidate one identity-backed duplicate into its canonical opted-in page without losing authored knowledge.'
+              ? 'Consolidate one independently verified same-subject candidate into its canonical opted-in page without losing authored knowledge.'
               : 'Integrate bounded linked evidence into an opted-in canonical knowledge page.',
     operations: operationsForDraft(draft),
     evidence: evidenceForDraft(draft),
@@ -815,7 +816,13 @@ function sealCurateDraft(draft: CurateDraft): Omit<SealedDraft, 'policy'> {
         : []),
       ...(draft.merge
         ? [
-            { name: 'sealed evidence establishes merge identity', status: 'passed' as const },
+            {
+              name:
+                draft.merge.identityKind === 'semantic'
+                  ? 'qualified semantic classifier selected a same-subject candidate'
+                  : 'sealed exact evidence establishes merge identity',
+              status: 'passed' as const,
+            },
             { name: 'unique authored lines and inbound links are preserved', status: 'passed' as const },
           ]
         : []),

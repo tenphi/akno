@@ -170,7 +170,11 @@
       "max_bytes_written": 500000,
       "max_high_risk_items": 3
     },
-    "curate": { "verify": true },
+    "curate": {
+      "verify": true,
+      // Semantic discovery still requires explicit merge_folders and synthesize-opted pages.
+      "merge_discovery": "exact"
+    },
     "conflicts": { "enabled": true, "verify": true, "resolve": true },
     "adopt": { "max_pages": 20 }
   }

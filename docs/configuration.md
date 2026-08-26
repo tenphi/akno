@@ -172,6 +172,28 @@ Policy values are `off`, `audit`, `review`, and `auto`. Supported classes are `o
 `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and `adopt`. Page opt-ins, folder
 restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
 
+Merge discovery remains exact by default. Enable the qualified semantic candidate source only after choosing
+explicit eligible folders:
+
+```jsonc
+{
+  "maintenance": {
+    "curate": {
+      "merge_folders": ["people"],
+      "merge_discovery": "semantic",
+    },
+  },
+}
+```
+
+`exact` uses authored aliases and conservative evidence-graph identity. `semantic` keeps those signals and may
+also compare complete, compact, sibling pages that explicitly allow synthesis. Embedding similarity only
+prefilters a bounded queue; the qualified same-subject classifier still cannot authorize a write. Every
+selected pair must pass the lossless planner, independent verifier, curator or human policy, budgets, stale
+checks, and atomic apply verification. Classifier verdicts are cached by content and model fingerprints, so an
+unchanged rejected pair is not repeatedly sent to the classifier. Model outages appear as typed dream
+degradation and exact discovery continues.
+
 Plan retention has two stages. `payload_days` removes exact private operations and evidence from terminal
 plans while keeping compact decisions, hashes, and verification receipts. `receipt_days` then removes those
 terminal plan rows; it must be at least as large as `payload_days`. Active review, apply, partial, and

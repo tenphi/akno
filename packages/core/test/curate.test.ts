@@ -33,6 +33,10 @@ let server: {
   extractDraft: (value: boolean) => void;
   mergeDraft: (value: boolean) => void;
   lossyMergeDraft: (value: boolean) => void;
+  semanticMergeOutcome: (value: 'same_subject' | 'keep_separate') => void;
+  semanticMergeCalls: () => number;
+  embeddingCalls: () => number;
+  embeddingFailure: (value: boolean) => void;
   invalidExtractionHeading: (value: boolean) => void;
   invalidExtractionTarget: (value: boolean) => void;
   userMessages: () => string[];
@@ -949,6 +953,117 @@ describe('plan-backed hygiene', () => {
     expect(server.curatorCalls()).toBe(1);
   });
 
+  it('routes a qualified semantic candidate through every existing merge guard', async () => {
+    const paths = writeSemanticMergeFixture();
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      semanticMerges: true,
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.curated).toMatchObject([
+      {
+        slug: 'people/ada-marlow',
+        action: 'updated',
+        merges: ['people/ada-marlow-reference'],
+        issues: [],
+      },
+    ]);
+    expect(item).toMatchObject({ kind: 'merge', risk: 'high', status: 'applied' });
+    expect(item.checks).toContainEqual({
+      name: 'qualified semantic classifier selected a same-subject candidate',
+      status: 'passed',
+    });
+    expect(item.evidence).toContainEqual(
+      expect.objectContaining({
+        source: 'people/ada-marlow-reference',
+        relationship: 'identity',
+        details: [expect.stringMatching(/semantic-merge-candidate-v1 classified the complete pages/)],
+      }),
+    );
+    expect(fs.readFileSync(paths.canonical, 'utf8')).toContain('Ada Marlow keeps a brass compass.');
+    expect(fs.existsSync(paths.duplicate)).toBe(false);
+    expect(server.embeddingCalls()).toBe(1);
+    expect(server.semanticMergeCalls()).toBe(1);
+    expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('caches an unchanged semantic rejection without retaining model rationale', async () => {
+    const paths = writeSemanticMergeFixture();
+    server.semanticMergeOutcome('keep_separate');
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      semanticMerges: true,
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
+    expect(server.embeddingCalls()).toBe(2);
+    expect(server.semanticMergeCalls()).toBe(1);
+
+    const db = new Database(mem.config.dbPath);
+    expect(db.prepare('SELECT outcome FROM semantic_merge_verdicts').all()).toEqual([
+      { outcome: 'keep_separate' },
+    ]);
+    const columns = db.pragma('table_info(semantic_merge_verdicts)') as { name: string }[];
+    expect(columns.map((column) => column.name)).not.toContain('reason');
+    db.close();
+
+    fs.appendFileSync(paths.duplicate, '\nA new durable reference field.\n');
+    await mem.index({ structuralOnly: true });
+    await mem.dream({ phase: 'curate' });
+    expect(server.semanticMergeCalls()).toBe(2);
+  });
+
+  it('reports semantic embedding failure as typed dream degradation', async () => {
+    writeSemanticMergeFixture();
+    server.embeddingFailure(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      semanticMerges: true,
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.degraded).toContainEqual({
+      stage: 'curate',
+      reason: 'embedding_failed',
+      failure: 'request_failed',
+      occurrences: 1,
+    });
+  });
+
   it('does not treat one exact graph attribute as merge identity', async () => {
     writeGraphSubjectMergeFixture();
     await mem.close();
@@ -1503,6 +1618,7 @@ async function openMem(
     allowSplits?: boolean;
     allowExtracts?: boolean;
     allowMerges?: boolean;
+    semanticMerges?: boolean;
     folders?: Record<string, { role: 'ignored' }>;
     profile?: MaintenanceProfile;
     policies?: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
@@ -1534,7 +1650,9 @@ async function openMem(
       state_dir: stateDir,
       providers: { stub: { base_url: server.url } },
       models: {
-        embedding: { id: null },
+        embedding: options.semanticMerges
+          ? { provider: 'stub', id: 'stub-embedding', dimensions: 2 }
+          : { id: null },
         reranker: { id: null, enabled: false },
         expansion: { id: null },
         derive: { provider: 'stub', id: 'stub' },
@@ -1550,6 +1668,7 @@ async function openMem(
           ...(options.allowSplits ? { split_after_bytes: 1, split_section_bytes: 1 } : {}),
           ...(options.allowExtracts ? { extract_after_bytes: 1, extract_section_bytes: 1 } : {}),
           ...(options.allowMerges ? { max_merges: 2, merge_folders: ['people'] } : {}),
+          ...(options.semanticMerges ? { merge_discovery: 'semantic' as const } : {}),
         },
       },
       ...(options.folders ? { folders: options.folders } : {}),
@@ -1571,6 +1690,10 @@ async function startStub(): Promise<typeof server> {
   let extractDraft = false;
   let mergeDraft = false;
   let lossyMergeDraft = false;
+  let semanticMergeOutcome: 'same_subject' | 'keep_separate' = 'same_subject';
+  let semanticMergeCalls = 0;
+  let embeddingCalls = 0;
+  let embeddingFailure = false;
   let invalidExtractionHeading = false;
   let invalidExtractionTarget = false;
   const userMessages: string[] = [];
@@ -1580,7 +1703,23 @@ async function startStub(): Promise<typeof server> {
     request.on('end', () => {
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
         messages?: { role: string; content: string }[];
+        input?: string[];
       };
+      if (request.url?.endsWith('/embeddings')) {
+        embeddingCalls++;
+        if (embeddingFailure) {
+          response.writeHead(400, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({ error: { message: 'invented embedding failure' } }));
+          return;
+        }
+        const data = (body.input ?? []).map((text, index) => ({
+          index,
+          embedding: text.includes('Ada Marlow') ? [1, 0] : [0, 1],
+        }));
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ data }));
+        return;
+      }
       const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const user = body.messages?.find((message) => message.role === 'user')?.content ?? '';
       userMessages.push(user);
@@ -1594,68 +1733,76 @@ async function startStub(): Promise<typeof server> {
         calls++;
       }
       if (system.includes('independent curator')) curatorCalls++;
-      const content = system.includes('independent curator')
+      if (system.includes('filter candidate Markdown page pairs')) semanticMergeCalls++;
+      const content = system.includes('filter candidate Markdown page pairs')
         ? JSON.stringify({
-            outcome: 'approve',
-            reason: 'The rewrite is conservative and preserves knowledge.',
+            outcome: semanticMergeOutcome,
+            reason: 'The invented pages either share one durable subject or retain useful separate scope.',
           })
-        : system.includes('verify an automatic Markdown rewrite')
-          ? JSON.stringify({ ok: true, issues: [] })
-          : mergeDraft && system.includes('merge two Markdown pages')
-            ? mergeDraftResponse(user, lossyMergeDraft)
-            : extractDraft && system.includes('synthesize one canonical')
-              ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
-              : splitDraft && system.includes('synthesize one canonical')
-                ? JSON.stringify({
-                    body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
-                    splits: [
-                      {
-                        suffix: 'history',
-                        title: 'Ada Marlow history',
-                        body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
-                      },
-                    ],
-                    extracts: [],
-                    temporal: false,
-                  })
-                : cosmeticDraft && system.includes('synthesize one canonical')
+        : system.includes('independent curator')
+          ? JSON.stringify({
+              outcome: 'approve',
+              reason: 'The rewrite is conservative and preserves knowledge.',
+            })
+          : system.includes('verify an automatic Markdown rewrite')
+            ? JSON.stringify({ ok: true, issues: [] })
+            : mergeDraft && system.includes('merge two Markdown pages')
+              ? mergeDraftResponse(user, lossyMergeDraft)
+              : extractDraft && system.includes('synthesize one canonical')
+                ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
+                : splitDraft && system.includes('synthesize one canonical')
                   ? JSON.stringify({
-                      body: currentBody(user)
-                        .replace(/^\n(?=#)/, '')
-                        .replace('## Details', '## History and details'),
-                      splits: [],
+                      body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
+                      splits: [
+                        {
+                          suffix: 'history',
+                          title: 'Ada Marlow history',
+                          body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+                        },
+                      ],
                       extracts: [],
                       temporal: false,
                     })
-                  : crossPageDraft && system.includes('synthesize one canonical')
-                    ? crossPageDraftResponse(user)
-                    : synthesisDraft && system.includes('synthesize one canonical')
-                      ? JSON.stringify({
-                          body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
-                          splits: [],
-                          extracts: [],
-                          temporal: false,
-                        })
-                      : exactDraft
+                  : cosmeticDraft && system.includes('synthesize one canonical')
+                    ? JSON.stringify({
+                        body: currentBody(user)
+                          .replace(/^\n(?=#)/, '')
+                          .replace('## Details', '## History and details'),
+                        splits: [],
+                        extracts: [],
+                        temporal: false,
+                      })
+                    : crossPageDraft && system.includes('synthesize one canonical')
+                      ? crossPageDraftResponse(user)
+                      : synthesisDraft && system.includes('synthesize one canonical')
                         ? JSON.stringify({
-                            body: currentBody(user),
+                            body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
                             splits: [],
                             extracts: [],
                             temporal: false,
                           })
-                        : echoDraft
+                        : exactDraft
                           ? JSON.stringify({
-                              body: currentBody(user).replace(/^\n(?=#)/, ''),
+                              body: currentBody(user),
                               splits: [],
                               extracts: [],
                               temporal: false,
                             })
-                          : JSON.stringify({
-                              body:
-                                '# Ada Marlow\n\n## Details\n\n' +
-                                (drop ? '' : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                                `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                            });
+                          : echoDraft
+                            ? JSON.stringify({
+                                body: currentBody(user).replace(/^\n(?=#)/, ''),
+                                splits: [],
+                                extracts: [],
+                                temporal: false,
+                              })
+                            : JSON.stringify({
+                                body:
+                                  '# Ada Marlow\n\n## Details\n\n' +
+                                  (drop
+                                    ? ''
+                                    : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                                  `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                              });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -1703,6 +1850,14 @@ async function startStub(): Promise<typeof server> {
     },
     lossyMergeDraft: (value) => {
       lossyMergeDraft = value;
+    },
+    semanticMergeOutcome: (value) => {
+      semanticMergeOutcome = value;
+    },
+    semanticMergeCalls: () => semanticMergeCalls,
+    embeddingCalls: () => embeddingCalls,
+    embeddingFailure: (value) => {
+      embeddingFailure = value;
     },
     invalidExtractionHeading: (value) => {
       invalidExtractionHeading = value;
@@ -1804,6 +1959,41 @@ akno:
 
 Ada Marlow calibrates the Zephyr QX-100 at Blackwater Bay.
 Ada Marlow records a five-year warranty.
+`,
+  );
+  return { canonical, duplicate };
+}
+
+function writeSemanticMergeFixture(): { canonical: string; duplicate: string } {
+  const canonical = path.join(root, 'people/ada-marlow.md');
+  const duplicate = path.join(root, 'people/ada-marlow-reference.md');
+  fs.writeFileSync(
+    canonical,
+    `---
+title: Ada Marlow
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow
+
+Ada Marlow keeps a durable personal reference.
+Ada Marlow maintains the Zephyr QX-100 near Blackwater Bay.
+`,
+  );
+  fs.writeFileSync(
+    duplicate,
+    `---
+title: Ada Marlow reference
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow reference
+
+Ada Marlow keeps a brass compass.
 `,
   );
   return { canonical, duplicate };

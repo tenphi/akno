@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { type ModelClient, type ModelOutcome, parseJsonLoose } from '../models/client.ts';
 
 export const SEMANTIC_MERGE_PROMPT_VERSION = 'semantic-merge-candidate-v1';
+/** Frozen by the independently reviewed held-out gate; similarity never decides by itself. */
+export const SEMANTIC_MERGE_PREFILTER_THRESHOLD = 0.68;
+/** The held-out contract covered complete compact pages, so larger pages fail closed to exact discovery. */
+export const SEMANTIC_MERGE_MAX_PAGE_CHARS = 12_000;
+export const SEMANTIC_MERGE_SIGNATURE_VERSION = 'semantic-merge-signature-v1';
 
 export interface SemanticMergePage {
   slug: string;
@@ -14,7 +19,7 @@ export interface SemanticMergeVerdict {
   reason: string;
 }
 
-export const SEMANTIC_MERGE_SCHEMA = z.object({
+const SEMANTIC_MERGE_SCHEMA = z.object({
   outcome: z.enum(['same_subject', 'keep_separate']),
   reason: z.string(),
 });

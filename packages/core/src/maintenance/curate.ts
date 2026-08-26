@@ -12,6 +12,12 @@ import { mergePathAllowed, pageAllowsMaintenanceTransform } from './path-policy.
 import { writeFileAtomic } from '../write/atomic.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { sha256 } from '../store/ids.ts';
+import { SEMANTIC_MERGE_PROMPT_VERSION } from './merge-classifier.ts';
+import {
+  discoverSemanticMergeCandidates,
+  semanticMergePairKey,
+  type SemanticMergeDiscoveryDegradation,
+} from './semantic-merge-discovery.ts';
 import {
   cleanTemporalProposal,
   inferTemporalMetadata,
@@ -46,6 +52,8 @@ export interface CurateResult {
   files: ChangeFile[];
   changeId: string | null;
   warnings: string[];
+  /** Typed model failures from optional candidate sources; exact discovery still proceeds. */
+  degraded: SemanticMergeDiscoveryDegradation[];
   /** Exact, already-guarded rewrites for a durable maintenance plan. */
   drafts: CurateDraft[];
 }
@@ -65,6 +73,7 @@ export interface CurateDraft {
     sourceBefore: string;
     sourceBodyHash: string;
     identitySignal: string;
+    identityKind: MergeIdentityKind;
     linkUpdates: { slug: string; relPath: string; before: string; after: string }[];
   } | null;
   evidence: {
@@ -166,10 +175,12 @@ interface ExtractionSection {
   endIndex: number;
 }
 
+type MergeIdentityKind = 'exact_alias' | 'graph_subject' | 'semantic';
+
 interface MergeCandidate {
   canonical: PageRow;
   duplicate: PageRow;
-  identityKind: 'exact_alias' | 'graph_subject';
+  identityKind: MergeIdentityKind;
   identitySignal: string;
   /** Exact graph/fact locators that make a non-alias identity signal reproducible and staleable. */
   identityEvidence: {
@@ -269,9 +280,10 @@ export const SYNTHESIZE_SCHEMA = z.object({
   ]),
 });
 
-const MERGE_SYSTEM = `You merge two Markdown pages that sealed identity evidence identifies as the same
-durable subject. The evidence is either an explicit exact alias or multiple exact, current graph-resolved
-attributes on a page whose title contains the canonical entity's complete name. Reply with JSON only:
+const MERGE_SYSTEM = `You merge two Markdown pages that a guarded candidate source identifies as the same
+durable subject. The source is an explicit exact alias, multiple exact current graph-resolved attributes, or a
+qualified semantic prefilter plus a strict same-subject classifier. Candidate discovery is not write authority.
+Reply with JSON only:
 {"body":"complete merged canonical Markdown body"}
 
 The user message supplies a canonical body and a prepared duplicate body. Preserve every non-blank line from
@@ -309,9 +321,9 @@ post-event knowledge.`;
 
 const VERIFY_MERGE_SYSTEM = `${VERIFY_SYSTEM}
 
-For a merge, require the supplied sealed identity signal to establish one durable identity. Exact aliases are
-direct evidence. Exact graph-resolved attributes plus a complete canonical-name title match are candidate
-evidence, not permission to merge a merely related or intentionally scoped page. Reject the merge if the two
+For a merge, require the supplied sealed candidate signal to establish one durable identity. Exact aliases are
+direct evidence. Exact graph-resolved attributes or a qualified semantic classifier are candidate evidence,
+not permission to merge a merely related or intentionally scoped page. Reject the merge if the two
 pages merely concern related subjects, if their separate purposes remain useful, if any unique authored detail or provenance marker is lost, if an
 unrelated page is rewritten, if an inbound link is not redirected, or if deleting the duplicate would orphan
 owned evidence. Exact duplicate lines may be deduplicated.`;
@@ -319,9 +331,9 @@ owned evidence. Exact duplicate lines may be deduplicated.`;
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 12: exact graph-resolved subject attributes can discover a title-qualified near-purpose merge candidate.
+// 13: qualified semantic candidates join exact/graph discovery without gaining write authority.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 12;
+const CURATE_FINGERPRINT_VERSION = 13;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -338,7 +350,14 @@ export async function curatePages(
   const allowedKinds =
     options.allowedKinds ??
     new Set<CurateTransformationKind>(['hygiene', 'synthesis', 'split', 'extract', 'merge']);
-  const result: CurateResult = { pages: [], files: [], changeId: null, warnings: [], drafts: [] };
+  const result: CurateResult = {
+    pages: [],
+    files: [],
+    changeId: null,
+    warnings: [],
+    degraded: [],
+    drafts: [],
+  };
   const rows = ctx.store.db
     .prepare(
       `SELECT id, slug, rel_path, title, role, dream_management, about, frontmatter, aliases, body_hash, bytes,
@@ -381,7 +400,10 @@ export async function curatePages(
   // Merge is available only through durable plans. The legacy `write` switch cannot represent
   // a separately decided deletion, while audit/review/auto all seal the exact multi-file item.
   if (options.includePreviewed && allowedKinds.has('merge') && settings.maxMerges > 0) {
-    const candidates = discoverMergeCandidates(ctx, rows, settings.mergeFolders);
+    const discovery = await discoverMergeCandidates(ctx, rows, settings.mergeFolders);
+    const candidates = discovery.candidates;
+    result.warnings.push(...discovery.warnings);
+    result.degraded.push(...discovery.degraded);
     for (const candidate of candidates) {
       mergeReserved.add(candidate.canonical.id);
       mergeReserved.add(candidate.duplicate.id);
@@ -393,7 +415,7 @@ export async function curatePages(
       const inspection = await inspectMergeCandidate(ctx, candidate);
       if (!inspection) {
         result.warnings.push(
-          `${candidate.canonical.slug}: could not read the exact-alias merge candidate ${candidate.duplicate.slug}`,
+          `${candidate.canonical.slug}: could not read the ${candidate.identityKind} merge candidate ${candidate.duplicate.slug}`,
         );
         continue;
       }
@@ -902,7 +924,17 @@ export async function curatePages(
   return result;
 }
 
-function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: string[]): MergeCandidate[] {
+interface MergeCandidateDiscovery {
+  candidates: MergeCandidate[];
+  degraded: SemanticMergeDiscoveryDegradation[];
+  warnings: string[];
+}
+
+async function discoverMergeCandidates(
+  ctx: AknoContext,
+  rows: PageRow[],
+  folders: string[],
+): Promise<MergeCandidateDiscovery> {
   const eligible = rows.filter(
     (row) =>
       pageAllowsMaintenanceTransform(
@@ -911,7 +943,9 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
         'merge',
       ) && mergePathAllowed(row.slug, folders),
   );
-  if (eligible.length < 2 || folders.length === 0) return [];
+  if (eligible.length < 2 || folders.length === 0) {
+    return { candidates: [], degraded: [], warnings: [] };
+  }
   const identities = new Map<string, PageRow[]>();
   for (const row of eligible) {
     for (const value of [row.slug, row.title]) {
@@ -934,7 +968,7 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
       ];
       if (matches.length !== 1) continue;
       const duplicate = matches[0]!;
-      const pairKey = [canonical.id, duplicate.id].sort().join('|');
+      const pairKey = semanticMergePairKey(canonical.id, duplicate.id);
       const proposed: MergeCandidate = {
         canonical,
         duplicate,
@@ -961,7 +995,7 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
   }
 
   for (const proposed of graphSubjectMergeCandidates(ctx, eligible)) {
-    const pairKey = [proposed.canonical.id, proposed.duplicate.id].sort().join('|');
+    const pairKey = semanticMergePairKey(proposed.canonical.id, proposed.duplicate.id);
     // An authored alias is stronger and already chooses the canonical destination.
     if (!pairs.has(pairKey)) pairs.set(pairKey, proposed);
   }
@@ -979,7 +1013,45 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
     occupied.add(candidate.duplicate.id);
     selected.push(candidate);
   }
-  return selected;
+  if (ctx.config.maintenance.curate.mergeDiscovery !== 'semantic') {
+    return { candidates: selected, degraded: [], warnings: [] };
+  }
+
+  const semantic = await discoverSemanticMergeCandidates(
+    ctx,
+    eligible
+      .filter((row) => !occupied.has(row.id))
+      .map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        relPath: row.rel_path,
+        title: row.title,
+        bodyHash: row.body_hash,
+        bytes: row.bytes,
+      })),
+    {
+      excludedPairKeys: new Set(pairs.keys()),
+      candidateLimit: Math.min(20, Math.max(ctx.config.maintenance.curate.maxMerges * 4, 1)),
+    },
+  );
+  for (const pair of semantic.pairs.sort(
+    (left, right) => right.score - left.score || left.canonical.slug.localeCompare(right.canonical.slug),
+  )) {
+    if (occupied.has(pair.canonical.id) || occupied.has(pair.duplicate.id)) continue;
+    occupied.add(pair.canonical.id);
+    occupied.add(pair.duplicate.id);
+    selected.push({
+      canonical: eligible.find((row) => row.id === pair.canonical.id)!,
+      duplicate: eligible.find((row) => row.id === pair.duplicate.id)!,
+      identityKind: 'semantic',
+      identitySignal:
+        `cosine ${pair.score.toFixed(4)} passed the qualified semantic prefilter and ` +
+        `${SEMANTIC_MERGE_PROMPT_VERSION} classified the complete pages as one durable subject ` +
+        `(${pair.decisionSource === 'cache' ? 'content-addressed cached verdict' : 'fresh verdict'})`,
+      identityEvidence: [],
+    });
+  }
+  return { candidates: selected, degraded: semantic.degraded, warnings: semantic.warnings };
 }
 
 interface GraphSubjectEvidenceRow {
@@ -1278,6 +1350,7 @@ async function prepareMergeDraft(ctx: AknoContext, inspection: MergeInspection):
         sourceBefore: duplicateBefore,
         sourceBodyHash: candidate.duplicate.body_hash,
         identitySignal: candidate.identitySignal,
+        identityKind: candidate.identityKind,
         linkUpdates,
       },
       evidence: [],
@@ -1457,6 +1530,7 @@ function mergeInputHash(
       policy: {
         maxMerges: ctx.config.maintenance.curate.maxMerges,
         mergeFolders: ctx.config.maintenance.curate.mergeFolders,
+        mergeDiscovery: ctx.config.maintenance.curate.mergeDiscovery,
       },
     }),
   );

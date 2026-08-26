@@ -24,22 +24,21 @@ Akno has an evidence graph and bounded multi-hop traversal. It resolves identiti
 slugs, explicit aliases, unique titles and basenames, authored links, `akno.about`, document ownership, and
 optional contextual choice among already-known same-name candidates.
 
-It does not perform open-ended named-entity recognition, infer arbitrary relationships from prose, or decide
-that similar pages represent the same real-world entity. Duplicate merging requires allowed-folder policy plus
-either an exact alias or a narrow graph-backed signal: at least two distinct current attributes resolve exactly
-to a canonical entity with a multi-token name, and the candidate title contains that complete name. The
-independent verifier and curator must still agree that the page has no useful separate scope. This avoids
-dangerous false joins, but loosely written pages without exact subjects or aliases remain outside automatic
-merging.
+It does not perform open-ended named-entity recognition or infer arbitrary relationships from prose. Duplicate
+merging always requires allowed-folder policy. Exact discovery accepts an authored alias or a narrow
+graph-backed signal: at least two distinct current attributes resolve exactly to a canonical entity with a
+multi-token name, and the candidate title contains that complete name.
 
-Broader semantic discovery is qualified but not yet wired into the planner. Its benchmarks confirmed that
-embedding cosine alone is unsafe: repeated templates can score above genuine near-purpose pairs, while
-similarity does not prove shared scope or identity.
+Optional semantic discovery is deliberately narrower than general entity resolution. It compares only
+complete, compact, synthesize-opted sibling pages in an allowed folder. A permissive embedding prefilter plus a
+strict classifier passed the invented development corpus and independently reviewed frozen split; the held-out
+path passed five stable runs with no false positives. That classifier only adds a candidate. The lossless
+planner, independent verifier, and curator must still agree that the page has no useful separate scope before
+any write. Repeated templates, scoped subpages, events, procedures, and uncertain pairs stay separate.
 
-A permissive embedding prefilter plus a strict Luna classifier passed both the invented development corpus and
-the independently reviewed frozen split. The held-out path passed all five runs with stable decisions and no
-false positives. Until the planner integration ships, automatic merging still uses only the exact alias and
-narrow graph-backed signals described above.
+This avoids dangerous false joins, but large pages, cross-folder duplicates, loosely written pages outside the
+qualified classifier contract, and identities that require open-ended reasoning remain outside semantic merge
+discovery.
 
 ## Retrieval is not omniscience
 

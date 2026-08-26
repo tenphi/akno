@@ -640,6 +640,7 @@ function resolve(
         maxExtracts: doc.maintenance?.curate?.max_extracts ?? 3,
         maxMerges: doc.maintenance?.curate?.max_merges ?? 2,
         mergeFolders: doc.maintenance?.curate?.merge_folders ?? [],
+        mergeDiscovery: doc.maintenance?.curate?.merge_discovery ?? 'exact',
         maxChildrenPerPage: doc.maintenance?.curate?.max_children_per_page ?? 2,
         splitAfterBytes: doc.maintenance?.curate?.split_after_bytes ?? 16_384,
         splitSectionBytes: doc.maintenance?.curate?.split_section_bytes ?? 8_192,

@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 23;
+export const SCHEMA_VERSION = 24;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -28,6 +28,7 @@ export const FACT_GRAPH_MIGRATION_INDEX = 13;
 export const CONTEXTUAL_ENTITY_MIGRATION_INDEX = 14;
 export const MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX = 15;
 export const MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX = 16;
+export const SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX = 17;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -707,7 +708,28 @@ export const MIGRATIONS: string[] = [
          CASE WHEN json_valid(maintenance_items.evidence) THEN maintenance_items.evidence ELSE '[]' END
        )
         WHERE json_extract(json_each.value, '$.type') = 'component'
-     ));
+  ));
+  `,
+  // Model decisions are derived cache, not knowledge. Binding them to exact page hashes,
+  // endpoints, and prompt/signature versions prevents a stale rejection or acceptance from
+  // surviving any input or runtime-contract change. No page text or model rationale is stored.
+  `
+  CREATE TABLE semantic_merge_verdicts (
+    fingerprint         TEXT PRIMARY KEY,
+    left_page           TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    right_page          TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    score               REAL NOT NULL,
+    outcome             TEXT NOT NULL,
+    embedding_endpoint  TEXT NOT NULL,
+    classifier_endpoint TEXT NOT NULL,
+    prompt_version      TEXT NOT NULL,
+    signature_version   TEXT NOT NULL,
+    created_at          TEXT NOT NULL,
+    CHECK (outcome IN ('same_subject', 'keep_separate')),
+    CHECK (left_page != right_page)
+  );
+  CREATE INDEX semantic_merge_verdicts_pages
+    ON semantic_merge_verdicts(left_page, right_page, created_at);
   `,
 ];
 

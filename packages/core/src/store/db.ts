@@ -21,6 +21,7 @@ import {
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   SCHEMA_VERSION,
+  SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX,
   STRUCTURAL_GRAPH_MIGRATION_INDEX,
 } from './migrations.ts';
 import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
@@ -195,6 +196,9 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'maintenance_items', 'component_count')) {
         db.exec(MIGRATIONS[MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'semantic_merge_verdicts')) {
+        db.exec(MIGRATIONS[SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
