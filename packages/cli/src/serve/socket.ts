@@ -150,10 +150,27 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
           return akno.plan(idFrom(input, 'plan_id'));
         case 'diff': {
           const item = (input as { item_id?: unknown } | null)?.item_id;
+          const revision = optionalPositiveInteger(input, 'revision');
           return akno.maintenanceDiff(
             idFrom(input, 'plan_id'),
             typeof item === 'string' && item.length > 0 ? item : undefined,
+            revision,
           );
+        }
+        case 'revise': {
+          const relPath = (input as { rel_path?: unknown } | null)?.rel_path;
+          const reason = (input as { reason?: unknown } | null)?.reason;
+          if (relPath !== undefined && (typeof relPath !== 'string' || relPath.length === 0)) {
+            throw new AknoError('invalid', 'rel_path must be a non-empty string');
+          }
+          if (reason !== undefined && typeof reason !== 'string') {
+            throw new AknoError('invalid', 'reason must be a string');
+          }
+          return akno.revisePlan(idFrom(input, 'plan_id'), idFrom(input, 'item_id'), {
+            after: stringFrom(input, 'after'),
+            ...(typeof relPath === 'string' ? { relPath } : {}),
+            ...(typeof reason === 'string' ? { reason } : {}),
+          });
         }
         case 'decide': {
           const outcome = stringFrom(input, 'outcome');
@@ -219,6 +236,15 @@ function booleanFrom(input: unknown, key: string, fallback: boolean): boolean {
   const value = (input as Record<string, unknown> | null)?.[key];
   if (value === undefined) return fallback;
   if (typeof value !== 'boolean') throw new AknoError('invalid', `${key} must be boolean`);
+  return value;
+}
+
+function optionalPositiveInteger(input: unknown, key: string): number | undefined {
+  const value = (input as Record<string, unknown> | null)?.[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    throw new AknoError('invalid', `${key} must be a positive integer`);
+  }
   return value;
 }
 

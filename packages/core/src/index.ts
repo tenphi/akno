@@ -322,6 +322,8 @@ export {
   type MaintenancePlanPruneResult,
   type MaintenancePlanStatus,
   type MaintenancePlanSummary,
+  type MaintenanceRevisionInput,
+  type MaintenanceRevisionSummary,
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
   type MaintenanceVerification,

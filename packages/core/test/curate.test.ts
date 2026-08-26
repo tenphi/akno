@@ -458,6 +458,104 @@ describe('plan-backed hygiene', () => {
     expect(() => mem.supersedePlan(planned.id)).toThrow(/completed/);
   });
 
+  it('seals a human correction as a new reviewable revision and preserves the old diff', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const original = mem.plan(planned.id).items[0]!;
+    const originalAfter = original.operations[0]?.type === 'replace' ? original.operations[0].after : '';
+    const correctedAfter = originalAfter.replace('lives at', 'resides at');
+
+    mem.decidePlan(planned.id, original.id, 'approve', 'The first proposal looked safe.');
+    const revised = await mem.revisePlan(planned.id, original.id, {
+      after: correctedAfter,
+      reason: 'Use the clearer invented wording.',
+    });
+
+    expect(revised).toMatchObject({ status: 'awaiting_review' });
+    expect(revised.items[0]).toMatchObject({
+      revision: 2,
+      status: 'proposed',
+      decision: null,
+      previousRevisions: [
+        expect.objectContaining({
+          revision: 1,
+          status: 'approved',
+          reason: 'Use the clearer invented wording.',
+          decision: expect.objectContaining({ actor: 'human', outcome: 'approve' }),
+        }),
+      ],
+      checks: [
+        expect.objectContaining({ name: 'human revision scope', status: 'passed' }),
+        expect.objectContaining({ name: 'human revision deterministic preflight', status: 'passed' }),
+      ],
+    });
+    expect(mem.maintenanceDiff(planned.id, original.id)).toContain('resides at 111 Example Street');
+    expect(mem.maintenanceDiff(planned.id, original.id, 1)).toContain(`${original.id} r1`);
+    expect(mem.maintenanceDiff(planned.id, original.id, 1)).not.toContain('resides at 111 Example Street');
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+
+    const database = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    const old = database
+      .prepare(
+        `SELECT revision, status, operations, decision_actor, decision_outcome, decision_reason, revision_reason
+           FROM maintenance_item_revisions WHERE item_id = ?`,
+      )
+      .get(original.id);
+    database.close();
+    expect(old).toEqual({
+      revision: 1,
+      status: 'approved',
+      operations: JSON.stringify(original.operations),
+      decision_actor: 'human',
+      decision_outcome: 'approve',
+      decision_reason: 'The first proposal looked safe.',
+      revision_reason: 'Use the clearer invented wording.',
+    });
+
+    await mem.close();
+    mem = await openMem(false);
+    expect(mem.plan(planned.id).items[0]).toMatchObject({ revision: 2, status: 'proposed' });
+    expect(mem.maintenanceDiff(planned.id, original.id, 1)).toContain(`${original.id} r1`);
+
+    mem.decidePlan(planned.id, original.id, 'approve', 'The corrected proposal is safe.');
+    const applied = await mem.applyPlan(planned.id);
+    expect(applied.plan.items[0]).toMatchObject({ revision: 2, status: 'applied' });
+    expect(fs.readFileSync(page, 'utf8')).toContain('resides at 111 Example Street');
+
+    const oldPayload = new Date(Date.now() - 31 * 86_400_000).toISOString();
+    const retentionDatabase = new Database(path.join(stateDir, 'akno.db'));
+    retentionDatabase
+      .prepare('UPDATE maintenance_plans SET updated_at = ? WHERE id = ?')
+      .run(oldPayload, planned.id);
+    retentionDatabase.close();
+    expect(mem.prunePlans().payloads.privateBytes).toBeGreaterThan(0);
+    mem.prunePlans({ apply: true });
+    expect(() => mem.maintenanceDiff(planned.id, original.id, 1)).toThrow(/private payload.*pruned/);
+    const prunedDatabase = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    const prunedRevision = prunedDatabase
+      .prepare('SELECT operations FROM maintenance_item_revisions WHERE item_id = ?')
+      .get(original.id);
+    prunedDatabase.close();
+    expect(prunedRevision).toEqual({ operations: '[]' });
+  });
+
+  it('refuses a revision that widens path scope or fails deterministic preflight', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = mem.plan(planned.id).items[0]!;
+
+    await expect(
+      mem.revisePlan(planned.id, item.id, {
+        relPath: 'people/bo-winters.md',
+        after: '# Bo Winters\n',
+      }),
+    ).rejects.toThrow(/no editable operation/);
+    await expect(mem.revisePlan(planned.id, item.id, { after: '# Changed identity\n' })).rejects.toThrow(
+      /revision refused/,
+    );
+    expect(mem.plan(planned.id).items[0]).toMatchObject({ revision: 1, status: 'proposed' });
+  });
+
   it('refuses an approved item when its source changed after planning', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;

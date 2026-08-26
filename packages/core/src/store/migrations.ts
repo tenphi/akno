@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 28;
+export const SCHEMA_VERSION = 29;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -34,6 +34,7 @@ export const SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX = 18;
 export const MANAGED_ITEM_PLACEMENT_VERDICTS_MIGRATION_INDEX = 19;
 export const MANAGED_ITEM_SOURCES_MIGRATION_INDEX = 20;
 export const MANAGED_ITEM_ROUTING_VERDICTS_MIGRATION_INDEX = 21;
+export const MAINTENANCE_ITEM_REVISIONS_MIGRATION_INDEX = 22;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -821,6 +822,29 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX managed_item_routing_verdicts_source
     ON managed_item_routing_verdicts(source_page, item_id, created_at);
+  `,
+  // Human corrections keep the old exact proposal and its decision immutable. The current
+  // maintenance_items row remains the apply head; every replaced head is sealed here first so
+  // review history survives restarts without making old revisions eligible for application.
+  `
+  CREATE TABLE maintenance_item_revisions (
+    item_id           TEXT NOT NULL REFERENCES maintenance_items(id) ON DELETE CASCADE,
+    revision          INTEGER NOT NULL,
+    status            TEXT NOT NULL,
+    input_hash        TEXT NOT NULL,
+    operations        TEXT NOT NULL,
+    checks            TEXT NOT NULL,
+    decision_actor    TEXT,
+    decision_outcome  TEXT,
+    decision_reason   TEXT,
+    status_code       TEXT,
+    decided_at        TEXT,
+    revised_at        TEXT NOT NULL,
+    revision_reason   TEXT NOT NULL,
+    PRIMARY KEY(item_id, revision)
+  );
+  CREATE INDEX maintenance_item_revisions_item
+    ON maintenance_item_revisions(item_id, revision DESC);
   `,
 ];
 

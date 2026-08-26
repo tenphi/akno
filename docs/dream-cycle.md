@@ -277,6 +277,12 @@ writes nothing and returns to `proposed` with `budget_exhausted`. Unrelated smal
 ```bash
 akno plan list --status awaiting_review
 akno plan diff <plan-id>
+
+# Correct one proposed full-page result without editing the knowledge base.
+akno plan revise <plan-id> --item <item-id> --after ./corrected-page.md \
+  --reason "Preserve the original terminology."
+akno plan diff <plan-id> --item <item-id> --revision 1
+
 akno plan decide <plan-id> --item <item-id> --approve
 akno plan apply <plan-id>
 
@@ -305,6 +311,12 @@ errors. `plan diff` is the explicit private-content inspection surface.
 from the active queue; it neither changes the knowledge base nor deletes a plan. Akno permits it only before
 apply begins. Applying, verification, completed, partial, and failed states remain visible for recovery and
 diagnosis.
+
+`plan revise` takes the complete intended after-state from a file, or from stdin with `--after -`. For an item
+that writes several pages, `--path` selects one already-sealed knowledge-base-relative operation; revision
+cannot add a path, change an operation type, or broaden evidence. Akno reruns apply-time deterministic guards,
+seals the previous proposal and any earlier decision as immutable private history, increments the item revision,
+and requires approval again. No knowledge-base file changes until `plan apply`.
 
 Terminal plans use two-stage retention: exact private operations and evidence are removed after 30 days by
 default, while compact decisions, hashes, and verification receipts remain for 180 days. The command previews

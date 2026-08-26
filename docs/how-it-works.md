@@ -139,12 +139,13 @@ extraction, naming, routing, file movement, page creation, and indexing.
 Maintenance adds another boundary:
 
 ```text
-inspect → seal exact plan → decide → recheck inputs → apply → re-index → verify
+inspect → seal exact plan → revise if needed → decide → recheck inputs → apply → re-index → verify
 ```
 
 Planning and deciding are separate turns. In autonomous mode the curator receives the sealed proposal, not an
 open-ended request to edit files. Current policy, hashes, dependencies, and whole-run budgets can still block an
-accepted item. See [The dream cycle](dream-cycle.md).
+accepted item. A human correction stays inside the original operation and evidence scope, preserves the old
+revision for audit, and must be approved again. See [The dream cycle](dream-cycle.md).
 
 ## Models and degradation
 

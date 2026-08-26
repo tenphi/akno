@@ -47,13 +47,15 @@ import {
   listMaintenancePlans,
   maintenanceStatus,
   pruneMaintenancePlans,
-  renderMaintenanceDiff,
+  renderStoredMaintenanceDiff,
+  reviseMaintenanceItem,
   supersedeMaintenancePlan,
   type ApplyMaintenanceResult,
   type MaintenancePlan,
   type MaintenancePlanStatus,
   type MaintenancePlanSummary,
   type MaintenancePlanPruneResult,
+  type MaintenanceRevisionInput,
   type MaintenanceMode,
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
@@ -117,7 +119,9 @@ export interface Akno extends AknoOps {
   /** One sealed plan, including its exact operations and decisions. */
   plan(planId: string): MaintenancePlan;
   /** A compact unified diff for one item or the whole plan. */
-  maintenanceDiff(planId: string, itemId?: string): string;
+  maintenanceDiff(planId: string, itemId?: string, revision?: number): string;
+  /** Seal a corrected after-state as a new item revision; the previous proposal stays inspectable. */
+  revisePlan(planId: string, itemId: string, input: MaintenanceRevisionInput): Promise<MaintenancePlan>;
   /** Record a human decision without applying it. */
   decidePlan(planId: string, itemId: string, outcome: 'approve' | 'reject', reason?: string): MaintenancePlan;
   /** Apply approved items with stale-input checks, journaling and verification. */
@@ -402,7 +406,17 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     plan: (planId) => getMaintenancePlan(ctx, planId),
 
-    maintenanceDiff: (planId, itemId) => renderMaintenanceDiff(getMaintenancePlan(ctx, planId), itemId),
+    maintenanceDiff: (planId, itemId, revision) => renderStoredMaintenanceDiff(ctx, planId, itemId, revision),
+
+    async revisePlan(planId, itemId, input) {
+      if (!writable) {
+        throw new AknoError(
+          'read_only',
+          `revising a maintenance plan needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return reviseMaintenanceItem(ctx, planId, itemId, input);
+    },
 
     decidePlan(planId, itemId, outcome, reason = '') {
       if (!writable) {

@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import {
   MAINTENANCE_PLAN_STATUSES,
   type ApplyMaintenanceResult,
@@ -20,7 +21,8 @@ import {
 
 const PLAN_HELP = `akno plan [list] [--limit <n>] [--status <status,...>]
 akno plan show <plan_id>
-akno plan diff <plan_id> [--item <item_id>]
+akno plan diff <plan_id> [--item <item_id>] [--revision <n>]
+akno plan revise <plan_id> --item <item_id> --after <file|-> [--path <kb-relative-path>] [--reason <text>]
 akno plan decide <plan_id> --item <item_id> <--approve | --reject> [--reason <text>]
 akno plan apply <plan_id>
 akno plan supersede <plan_id> [--reason <text>]
@@ -32,6 +34,8 @@ akno plan status
   item as one change, re-indexes every affected path, and verifies the resulting index.
 
   --status <s,...>  Filter list by exact plan status.
+  revise seals a corrected full after-state; use --path when an item writes multiple pages.
+  The previous revision remains inspectable with plan diff --item <id> --revision <n>.
   prune previews configured retention by default; --apply performs it.
   --json`;
 
@@ -42,6 +46,9 @@ export async function planCommand(argv: string[]): Promise<number> {
     approve: boolean;
     reject: boolean;
     reason?: string;
+    after?: string;
+    path?: string;
+    revision?: string;
     status?: string;
     apply: boolean;
   }>(argv, {
@@ -50,6 +57,9 @@ export async function planCommand(argv: string[]): Promise<number> {
     approve: { type: 'boolean', default: false },
     reject: { type: 'boolean', default: false },
     reason: { type: 'string' },
+    after: { type: 'string' },
+    path: { type: 'string' },
+    revision: { type: 'string' },
     status: { type: 'string' },
     apply: { type: 'boolean', default: false },
   });
@@ -102,7 +112,7 @@ export async function planCommand(argv: string[]): Promise<number> {
     return 0;
   }
 
-  if (!planId || !['show', 'diff', 'decide', 'apply', 'supersede'].includes(action)) {
+  if (!planId || !['show', 'diff', 'revise', 'decide', 'apply', 'supersede'].includes(action)) {
     line(PLAN_HELP);
     return 1;
   }
@@ -122,16 +132,58 @@ export async function planCommand(argv: string[]): Promise<number> {
   }
 
   if (action === 'diff') {
+    const revision = parseRevision(values.revision);
+    if (revision === null || (revision !== undefined && !values.item)) return 2;
     const diff = await runMaintenance(
       'plan',
-      { action: 'diff', plan_id: planId, ...(values.item ? { item_id: values.item } : {}) },
+      {
+        action: 'diff',
+        plan_id: planId,
+        ...(values.item ? { item_id: values.item } : {}),
+        ...(revision !== undefined ? { revision } : {}),
+      },
       values,
       openOptionsFrom(values),
-      async (mem) => mem.maintenanceDiff(planId, values.item),
+      async (mem) => mem.maintenanceDiff(planId, values.item, revision),
       { writable: false },
     );
-    if (values.json) json({ plan_id: planId, item_id: values.item ?? null, diff });
-    else line(diff);
+    if (values.json) {
+      json({ plan_id: planId, item_id: values.item ?? null, revision: revision ?? null, diff });
+    } else line(diff);
+    return 0;
+  }
+
+  if (action === 'revise') {
+    if (!values.item || !values.after) {
+      line(PLAN_HELP);
+      return 1;
+    }
+    const after = fs.readFileSync(values.after === '-' ? 0 : values.after, 'utf8');
+    const plan = await runMaintenance(
+      'plan',
+      {
+        action: 'revise',
+        plan_id: planId,
+        item_id: values.item,
+        after,
+        ...(values.path ? { rel_path: values.path } : {}),
+        ...(values.reason ? { reason: values.reason } : {}),
+      },
+      values,
+      openOptionsFrom(values),
+      async (mem) =>
+        mem.revisePlan(planId, values.item!, {
+          after,
+          ...(values.path ? { relPath: values.path } : {}),
+          ...(values.reason ? { reason: values.reason } : {}),
+        }),
+    );
+    const item = plan.items.find((candidate) => candidate.id === values.item)!;
+    if (values.json) json(plan);
+    else {
+      line(`${style.green('revised')} ${item.id} to r${item.revision}; approval is required again`);
+      line(`  ${style.grey('inspect with')} ${style.bold(`akno plan diff ${plan.id} --item ${item.id}`)}`);
+    }
     return 0;
   }
 
@@ -303,12 +355,18 @@ function printPlan(plan: MaintenancePlan): void {
   for (const item of plan.items) {
     const components = (item.componentCount ?? 1) > 1 ? `  ${item.componentCount} components` : '';
     line(
-      `\n  ${style.bold(item.id)}  ${itemStatus(item.status)}  ${item.kind}/${item.risk}  ` +
+      `\n  ${style.bold(item.id)} r${item.revision}  ${itemStatus(item.status)}  ${item.kind}/${item.risk}  ` +
         `${style.grey(item.policy)}${components}  ${item.subject}`,
     );
     line(`    ${style.grey(item.rationale)}`);
     if (item.decision) {
       line(`    ${style.grey(`${item.decision.actor}: ${item.decision.outcome} — ${item.decision.reason}`)}`);
+    }
+    for (const revision of item.previousRevisions) {
+      const decision = revision.decision ? `; ${revision.decision.actor}: ${revision.decision.outcome}` : '';
+      line(
+        `    ${style.grey(`r${revision.revision} ${revision.status}${decision} → revised: ${revision.reason}`)}`,
+      );
     }
     if (!item.decision && item.statusReason) line(`    ${style.grey(item.statusReason)}`);
     if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
@@ -334,7 +392,7 @@ function printApplyResult(result: ApplyMaintenanceResult): void {
   heading(`${result.plan.id} — ${result.plan.status}`);
   for (const item of result.plan.items) {
     const components = (item.componentCount ?? 1) > 1 ? `  ${item.componentCount} components` : '';
-    line(`  ${itemStatus(item.status)}  ${item.id}${components}  ${item.subject}`);
+    line(`  ${itemStatus(item.status)}  ${item.id} r${item.revision}${components}  ${item.subject}`);
     if (item.verification) line(`    ${style.grey(item.verification.detail)}`);
     if (!item.decision && item.statusReason) line(`    ${style.grey(item.statusReason)}`);
     if (item.changeId) line(`    ${style.grey('reverse with')} ${style.bold(`akno undo ${item.changeId}`)}`);
@@ -411,4 +469,14 @@ export function parsePlanStatuses(value: string | undefined): MaintenancePlanSta
     return null;
   }
   return statuses as MaintenancePlanStatus[];
+}
+
+export function parseRevision(value: string | undefined): number | undefined | null {
+  if (value === undefined) return undefined;
+  const revision = Number(value);
+  if (!Number.isInteger(revision) || revision < 1) {
+    fail('--revision must be a positive integer');
+    return null;
+  }
+  return revision;
 }

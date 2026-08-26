@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { parsePlanStatuses, printPruneResult } from './plan-cmd.ts';
+import { parsePlanStatuses, parseRevision, printPruneResult } from './plan-cmd.ts';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -40,5 +40,17 @@ describe('plan retention output', () => {
     expect(output).toContain('Plan retention preview');
     expect(output).toContain('1111');
     expect(output).toContain('akno plan prune --apply');
+  });
+});
+
+describe('plan revision selection', () => {
+  it('accepts only a positive integer revision', () => {
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    expect(parseRevision(undefined)).toBeUndefined();
+    expect(parseRevision('2')).toBe(2);
+    expect(parseRevision('0')).toBeNull();
+    expect(parseRevision('1.5')).toBeNull();
+    expect(stderr.mock.calls.flat().join('')).toContain('--revision must be a positive integer');
   });
 });

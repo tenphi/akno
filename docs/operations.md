@@ -152,6 +152,7 @@ Recovery depends on what is wrong:
 | A journalled write was wrong                 | Run `akno undo <change-id>`                            |
 | A page or document was forgotten             | Undo it or recover it from `trash/` within retention   |
 | A maintenance item is unclear                | Inspect `dream status` and `plan diff` before applying |
+| A plan has the right scope but wrong result  | Correct it with `plan revise`; then review it again    |
 | Models changed behavior                      | Run `doctor`, then the relevant benchmark              |
 | Service seems stale after a checkout edit    | Run `pnpm akno redeploy`                               |
 

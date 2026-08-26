@@ -25,7 +25,7 @@ knowledge base, and which model roles may be involved.
 | `inbox`               | Process arrivals in configured routed folders              | Yes                        | Same as ingest                                |
 | `adopt <document-id>` | Give an orphan document a minimal owned page               | Policy-dependent plan      | Maintenance or derive                         |
 | `dream`               | Run the seven maintenance phases                           | Depends on policy          | Maintenance or derive                         |
-| `plan`                | Inspect, decide, apply, retire, or prune maintenance plans | Apply only                 | None after planning                           |
+| `plan`                | Inspect, revise, decide, apply, retire, or prune plans     | Apply only                 | None after planning                           |
 | `serve`               | Run watcher and operation doors                            | No by itself               | None by itself                                |
 | `service`             | Install, inspect, or remove background jobs                | Outside the knowledge base | None                                          |
 | `doctor`              | Diagnose health and preview read-only admission rules      | Cache only                 | Probes configured roles                       |
@@ -79,6 +79,9 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 - Use `forget` for a deliberate retraction and `undo` when reversing a known Akno change.
 - Use `plan` for maintenance decisions. `approve` and `decline` are for held remember/ingest routing proposals,
   not dream-plan items.
+- Use `plan revise` when the proposed destination and transformation are right but the exact result is not.
+  It creates a guarded immutable revision inside the existing path/evidence scope and invalidates approval;
+  it does not edit the knowledge base by itself.
 
 See [Writing and ingestion](writing.md) and [The dream cycle](dream-cycle.md).
 

@@ -70,6 +70,7 @@ describe('schema migration', () => {
     const conflictColumns = store.db.pragma('table_info(conflict_verdicts)') as { name: string }[];
 
     expect(tables.map((row) => row.name)).toEqual([
+      'maintenance_item_revisions',
       'maintenance_items',
       'maintenance_plans',
       'maintenance_runs',

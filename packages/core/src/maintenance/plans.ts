@@ -165,6 +165,23 @@ export interface MaintenanceDecision {
   at: string;
 }
 
+export interface MaintenanceRevisionInput {
+  /** Complete replacement bytes for one existing create/replace operation. */
+  after: string;
+  /** Required only when the item writes more than one non-delete path. */
+  relPath?: string;
+  reason?: string;
+}
+
+export interface MaintenanceRevisionSummary {
+  revision: number;
+  status: MaintenanceItemStatus;
+  decision: MaintenanceDecision | null;
+  statusCode: MaintenanceItemStatusCode | null;
+  revisedAt: string;
+  reason: string;
+}
+
 export interface MaintenanceVerification {
   status: 'passed' | 'pending' | 'failed' | 'rolled_back';
   detail: string;
@@ -206,6 +223,8 @@ export interface MaintenanceItem {
   changeId: string | null;
   verification: MaintenanceVerification | null;
   updatedAt: string;
+  /** Superseded heads, oldest first. Exact bodies remain behind maintenanceDiff(..., revision). */
+  previousRevisions: MaintenanceRevisionSummary[];
   /** One normally; greater than one means one exact atomic item composes several planner drafts. */
   componentCount?: number;
 }
@@ -322,6 +341,19 @@ interface ItemRow {
   verification: string | null;
   component_count: number;
   updated_at: string;
+}
+
+interface RevisionRow {
+  item_id: string;
+  revision: number;
+  status: MaintenanceItemStatus;
+  decision_actor: 'human' | 'curator' | null;
+  decision_outcome: 'approve' | 'reject' | null;
+  decision_reason: string | null;
+  status_code: MaintenanceItemStatusCode | null;
+  decided_at: string | null;
+  revised_at: string;
+  revision_reason: string;
 }
 
 const CURATOR_SYSTEM = `You are the independent curator for an autonomous memory system. The rewrite
@@ -1211,6 +1243,18 @@ export function pruneMaintenancePlans(
           AND plan.updated_at <= ?`,
     )
     .get(payloadBefore) as { plans: number; items: number; private_bytes: number };
+  const revisionPayload = ctx.store.db
+    .prepare(
+      `SELECT coalesce(sum(max(length(CAST(revision.operations AS BLOB)) - 2, 0)), 0) AS private_bytes
+         FROM maintenance_item_revisions revision
+         JOIN maintenance_items item ON item.id = revision.item_id
+         JOIN maintenance_plans plan ON plan.id = item.plan_id
+        WHERE plan.status IN ${terminal}
+          AND ${noRecoveryItems}
+          AND plan.payload_pruned_at IS NULL
+          AND plan.updated_at <= ?`,
+    )
+    .get(payloadBefore) as { private_bytes: number };
   const receipts = ctx.store.db
     .prepare(
       `SELECT count(DISTINCT plan.id) AS plans, count(item.id) AS items
@@ -1229,7 +1273,7 @@ export function pruneMaintenancePlans(
     payloads: {
       plans: payload.plans,
       items: payload.items,
-      privateBytes: payload.private_bytes,
+      privateBytes: payload.private_bytes + revisionPayload.private_bytes,
     },
     receipts,
   };
@@ -1241,6 +1285,21 @@ export function pruneMaintenancePlans(
 
   const prunedAt = now.toISOString();
   ctx.store.transaction(() => {
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_item_revisions
+            SET operations = '[]'
+          WHERE item_id IN (
+            SELECT item.id
+              FROM maintenance_items item
+              JOIN maintenance_plans plan ON plan.id = item.plan_id
+             WHERE plan.status IN ${terminal}
+               AND plan.payload_pruned_at IS NULL
+               AND plan.updated_at <= ?
+               AND ${noRecoveryItems}
+          )`,
+      )
+      .run(payloadBefore);
     ctx.store.db
       .prepare(
         `UPDATE maintenance_items
@@ -1315,7 +1374,23 @@ export function getMaintenancePlan(ctx: AknoContext, planId: string): Maintenanc
   const items = ctx.store.db
     .prepare('SELECT * FROM maintenance_items WHERE plan_id = ? ORDER BY ord, rowid')
     .all(planId) as ItemRow[];
-  return { ...planSummary(ctx, row), items: items.map(itemFromRow) };
+  const revisions = ctx.store.db
+    .prepare(
+      `SELECT revision.* FROM maintenance_item_revisions revision
+       JOIN maintenance_items item ON item.id = revision.item_id
+       WHERE item.plan_id = ? ORDER BY item.ord, revision.revision`,
+    )
+    .all(planId) as RevisionRow[];
+  const history = new Map<string, MaintenanceRevisionSummary[]>();
+  for (const revision of revisions) {
+    const entries = history.get(revision.item_id) ?? [];
+    entries.push(revisionSummary(revision));
+    history.set(revision.item_id, entries);
+  }
+  return {
+    ...planSummary(ctx, row),
+    items: items.map((item) => itemFromRow(item, history.get(item.id) ?? [])),
+  };
 }
 
 /**
@@ -1786,6 +1861,141 @@ export function decideMaintenanceItem(
   return getMaintenancePlan(ctx, planId);
 }
 
+/**
+ * Replace one proposed after-state without widening the item's sealed operation or evidence scope.
+ * The superseded head is copied to immutable history before the new revision becomes reviewable.
+ */
+export async function reviseMaintenanceItem(
+  ctx: AknoContext,
+  planId: string,
+  itemId: string,
+  input: MaintenanceRevisionInput,
+): Promise<MaintenancePlan> {
+  requireWritable(ctx);
+  const plan = getMaintenancePlan(ctx, planId);
+  if (plan.payloadPrunedAt) {
+    throw new AknoError('unavailable', `private payload for ${planId} was already pruned`);
+  }
+  if (['applying', 'completed', 'partially_completed', 'superseded'].includes(plan.status)) {
+    throw new AknoError('invalid', `${planId} is ${plan.status} and cannot be revised`);
+  }
+  const row = itemRow(ctx, planId, itemId);
+  if (!['proposed', 'approved', 'rejected', 'blocked'].includes(row.status)) {
+    throw new AknoError('invalid', `${itemId} cannot be revised while it is ${row.status}`);
+  }
+
+  const operations = parseStoredJson<MaintenanceOperation[]>(row.operations, []);
+  const writable = operations.filter((operation) => operation.type !== 'delete');
+  let target: Exclude<MaintenanceOperation, DeleteOperation> | undefined;
+  if (input.relPath) {
+    target = writable.find((operation) => operation.relPath === input.relPath);
+    if (!target) {
+      throw new AknoError('not_found', `${itemId} has no editable operation for ${input.relPath}`);
+    }
+  } else if (writable.length === 1) {
+    target = writable[0];
+  } else {
+    throw new AknoError('invalid', `${itemId} has ${writable.length} editable paths; choose one with --path`);
+  }
+  if (!target) throw new AknoError('invalid', `${itemId} has no editable operation`);
+  const afterBytes = Buffer.byteLength(input.after, 'utf8');
+  if (afterBytes > ctx.config.maxPageBytes) {
+    throw new AknoError(
+      'invalid',
+      `the revised after-state is ${afterBytes} bytes; max_page_bytes is ${ctx.config.maxPageBytes}`,
+    );
+  }
+  if (target.after === input.after) {
+    throw new AknoError('invalid', `the revised after-state for ${target.relPath} is unchanged`);
+  }
+
+  const revisedOperations = operations.map((operation) =>
+    operation === target ? { ...operation, after: input.after, afterHash: sha256(input.after) } : operation,
+  );
+  const revisedChecks: MaintenanceCheck[] = [
+    {
+      name: 'human revision scope',
+      status: 'passed',
+      detail: `Changed only the sealed after-state for ${target.relPath}.`,
+    },
+    {
+      name: 'human revision deterministic preflight',
+      status: 'passed',
+      detail: 'Current inputs and the revised output passed the apply-time deterministic guards.',
+    },
+  ];
+  const candidate = itemFromRow({
+    ...row,
+    revision: row.revision + 1,
+    status: 'proposed',
+    operations: JSON.stringify(revisedOperations),
+    checks: JSON.stringify(revisedChecks),
+    decision_actor: null,
+    decision_outcome: null,
+    decision_reason: null,
+    status_code: null,
+    decided_at: null,
+    change_id: null,
+    verification: null,
+  });
+  const preflight = await preflightItem(ctx, candidate);
+  if (preflight.status !== 'ready') {
+    throw new AknoError(
+      preflight.status === 'stale' ? 'conflict' : 'invalid',
+      `revision refused: ${preflight.detail}`,
+    );
+  }
+
+  const now = new Date().toISOString();
+  const reason =
+    input.reason?.trim().replace(/\s+/g, ' ').slice(0, 500) || 'Human corrected the proposed result.';
+  ctx.store.transaction(() => {
+    ctx.store.db
+      .prepare(
+        `INSERT INTO maintenance_item_revisions
+          (item_id, revision, status, input_hash, operations, checks, decision_actor, decision_outcome,
+           decision_reason, status_code, decided_at, revised_at, revision_reason)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        row.id,
+        row.revision,
+        row.status,
+        row.input_hash,
+        row.operations,
+        row.checks,
+        row.decision_actor,
+        row.decision_outcome,
+        row.decision_reason,
+        row.status_code,
+        row.decided_at,
+        now,
+        reason,
+      );
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_items
+            SET revision = ?, status = 'proposed', operations = ?, checks = ?,
+                decision_actor = NULL, decision_outcome = NULL, decision_reason = NULL,
+                status_code = NULL, decided_at = NULL, change_id = NULL, verification = NULL,
+                updated_at = ?
+          WHERE id = ? AND plan_id = ? AND revision = ?`,
+      )
+      .run(
+        row.revision + 1,
+        JSON.stringify(revisedOperations),
+        JSON.stringify(revisedChecks),
+        now,
+        itemId,
+        planId,
+        row.revision,
+      );
+    ctx.store.db.prepare('UPDATE maintenance_plans SET updated_at = ? WHERE id = ?').run(now, planId);
+  });
+  refreshDecisionStatus(ctx, planId);
+  return getMaintenancePlan(ctx, planId);
+}
+
 export async function decideMaintenancePlanWithCurator(
   ctx: AknoContext,
   planId: string,
@@ -2185,6 +2395,52 @@ export function renderMaintenanceDiff(plan: MaintenancePlan, itemId?: string): s
     .join('\n');
 }
 
+/** Render the current item or one immutable superseded revision from private plan storage. */
+export function renderStoredMaintenanceDiff(
+  ctx: AknoContext,
+  planId: string,
+  itemId?: string,
+  revision?: number,
+): string {
+  const plan = getMaintenancePlan(ctx, planId);
+  if (plan.payloadPrunedAt) {
+    throw new AknoError(
+      'unavailable',
+      `private payload for ${plan.id} was pruned at ${plan.payloadPrunedAt}; compact audit history remains`,
+    );
+  }
+  if (revision === undefined) return renderMaintenanceDiff(plan, itemId);
+  if (!itemId) throw new AknoError('invalid', '--revision requires --item');
+  if (!Number.isInteger(revision) || revision < 1) {
+    throw new AknoError('invalid', 'revision must be a positive integer');
+  }
+  const item = plan.items.find((candidate) => candidate.id === itemId);
+  if (!item) throw new AknoError('not_found', `plan ${planId} has no item ${itemId}`);
+  if (item.revision === revision) return renderMaintenanceDiff(plan, itemId);
+  const historical = ctx.store.db
+    .prepare('SELECT operations FROM maintenance_item_revisions WHERE item_id = ? AND revision = ?')
+    .get(itemId, revision) as { operations: string } | undefined;
+  if (!historical) {
+    throw new AknoError('not_found', `${itemId} has no revision ${revision}`);
+  }
+  const historicalItem: MaintenanceItem = {
+    ...item,
+    revision,
+    operations: parseStoredJson<MaintenanceOperation[]>(historical.operations, []),
+  };
+  const diff = supportedOperations(historicalItem)
+    .map((operation) =>
+      unifiedDiff(
+        operation.relPath,
+        operationBefore(operation) ?? '',
+        operationAfter(operation) ?? '',
+        operation.type,
+      ),
+    )
+    .join('\n\n');
+  return `# ${item.id} r${revision} · ${item.subject}\n${diff}`;
+}
+
 async function resumeVerification(ctx: AknoContext, item: MaintenanceItem): Promise<void> {
   const operations = supportedOperations(item);
   const states = await Promise.all(operations.map((operation) => operationState(ctx, operation)));
@@ -2486,7 +2742,7 @@ function planSummary(ctx: AknoContext, row: PlanRow): MaintenancePlanSummary {
   };
 }
 
-function itemFromRow(row: ItemRow): MaintenanceItem {
+function itemFromRow(row: ItemRow, previousRevisions: MaintenanceRevisionSummary[] = []): MaintenanceItem {
   const evidence = parseStoredJson<MaintenanceEvidence[]>(row.evidence, []);
   return {
     id: row.id,
@@ -2519,7 +2775,27 @@ function itemFromRow(row: ItemRow): MaintenanceItem {
       ? parseStoredJson<MaintenanceVerification | null>(row.verification, null)
       : null,
     updatedAt: row.updated_at,
+    previousRevisions,
     componentCount: Math.max(1, row.component_count ?? maintenanceCompositionComponents(evidence).length),
+  };
+}
+
+function revisionSummary(row: RevisionRow): MaintenanceRevisionSummary {
+  return {
+    revision: row.revision,
+    status: row.status,
+    decision:
+      row.decision_actor && row.decision_outcome && row.decision_reason !== null && row.decided_at
+        ? {
+            actor: row.decision_actor,
+            outcome: row.decision_outcome,
+            reason: row.decision_reason,
+            at: row.decided_at,
+          }
+        : null,
+    statusCode: row.status_code,
+    revisedAt: row.revised_at,
+    reason: row.revision_reason,
   };
 }
 
