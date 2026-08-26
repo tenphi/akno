@@ -62,6 +62,15 @@ the retain result supplies one, or holds the claim for a destination decision.
 It does not create pages in unexplained or read-only folders. `adopt` and immediate index reconciliation make
 accepted memory visible without another manual step.
 
+For each retained sentence, the model also identifies one bounded exact quote from the input. Akno validates
+the quote before storing it privately alongside the managed-item id and keeps only a hash of the complete
+input. The dream cycle can therefore re-check generated wording even when the page has no `dream: hygiene` or
+`dream: synthesize` permission. A safe correction may change only that one generated payload line and still
+passes the ordinary sealed plan and curator or human decision path. Older items and new items for which no
+valid exact quote was returned remain readable but report `source_unavailable`; Akno will not guess a semantic
+correction for them. Explicitly forgetting the fact or page removes its retained quote; a complete maintenance
+scan also prunes quotes whose managed marker no longer exists.
+
 Use `approve` or `decline` for held routing proposals. These are separate from maintenance-plan decisions,
 which use `akno plan decide`.
 

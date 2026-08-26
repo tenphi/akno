@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 import {
@@ -9,6 +10,7 @@ import {
   inspectManagedItems,
   managedItemRepairIssue,
 } from '../src/maintenance/managed-items.ts';
+import { sha256 } from '../src/store/ids.ts';
 
 describe('managed item inspection', () => {
   it('repairs only empty, legacy, and byte-identical duplicate owned fragments', () => {
@@ -130,19 +132,43 @@ describe('managed items in the dream cycle', () => {
   let baseUrl: string;
   let curatorCalls = 0;
   let placementCalls = 0;
+  let sourceCalls = 0;
   let placementDecider: (items: { id: string; current_heading: string | null }[]) => unknown;
+  let sourceDecider: (
+    items: { id: string; current_sentence: string; retained_source_quote: string }[],
+  ) => unknown;
+
+  function archiveSource(
+    itemId: string,
+    sourceRef: string,
+    origin: 'user' | 'assistant' | 'unknown',
+    evidence: string,
+    input = evidence,
+  ): void {
+    const db = new Database(path.join(stateDir, 'akno.db'));
+    db.prepare(
+      `INSERT INTO managed_item_sources(
+         item_id, source_ref, origin, evidence, evidence_hash, input_hash, created_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).run(itemId, sourceRef, origin, evidence, sha256(evidence), sha256(input), new Date().toISOString());
+    db.close();
+  }
 
   beforeEach(async () => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-kb-'));
     stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-state-'));
     curatorCalls = 0;
     placementCalls = 0;
+    sourceCalls = 0;
     placementDecider = (items) => ({
       decisions: items.map((item) =>
         item.current_heading
           ? { id: item.id, outcome: 'keep', heading: null }
           : { id: item.id, outcome: 'uncertain', heading: null },
       ),
+    });
+    sourceDecider = (items) => ({
+      decisions: items.map((item) => ({ id: item.id, outcome: 'supported', replacement: null })),
     });
     server = http.createServer((request, response) => {
       const chunks: Buffer[] = [];
@@ -155,8 +181,10 @@ describe('managed items in the dream cycle', () => {
         const user = body.messages?.at(-1)?.content ?? '';
         const deriving = system.startsWith('You extract structure from a personal knowledge base page');
         const placing = system.startsWith('You audit the placement of Akno-managed facts');
+        const sourcing = system.startsWith('You verify Akno-generated memory sentences');
         if (system.startsWith('You are the independent curator')) curatorCalls += 1;
         if (placing) placementCalls += 1;
+        if (sourcing) sourceCalls += 1;
         const preferredLine = /^([0-9]+): Ada Marlow prefers the Zephyr QX-100\.$/m.exec(user)?.[1];
         const firstWarrantyLine = /^([0-9]+): The Zephyr QX-100 warranty lasts 1111 days\.$/m.exec(user)?.[1];
         const secondWarrantyLine = /^([0-9]+): The Zephyr QX-100 warranty lasts 2222 days\.$/m.exec(
@@ -190,18 +218,25 @@ describe('managed items in the dream cycle', () => {
         const placementInput = placing
           ? (JSON.parse(user) as { items: { id: string; current_heading: string | null }[] })
           : null;
-        const answer = placing
-          ? placementDecider(placementInput?.items ?? [])
-          : deriving
-            ? {
-                summary: 'Invented preference record.',
-                keywords: ['invented preference'],
-                facts: fact ? [fact] : [],
-              }
-            : {
-                outcome: 'approve',
-                reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
-              };
+        const sourceInput = sourcing
+          ? (JSON.parse(user) as {
+              items: { id: string; current_sentence: string; retained_source_quote: string }[];
+            })
+          : null;
+        const answer = sourcing
+          ? sourceDecider(sourceInput?.items ?? [])
+          : placing
+            ? placementDecider(placementInput?.items ?? [])
+            : deriving
+              ? {
+                  summary: 'Invented preference record.',
+                  keywords: ['invented preference'],
+                  facts: fact ? [fact] : [],
+                }
+              : {
+                  outcome: 'approve',
+                  reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
+                };
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
           JSON.stringify({
@@ -286,6 +321,7 @@ This sentence is not managed by Akno.
       },
     });
     await mem.index({ structuralOnly: true });
+    archiveSource('itm_first', 'fixture:one', 'user', 'Ada Marlow prefers the Zephyr QX-100.');
   });
 
   afterEach(async () => {
@@ -435,6 +471,7 @@ Authored equipment context stays here.
 `;
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
     await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_move', 'fixture:one', 'user', 'Ada Marlow prefers the Zephyr QX-100.');
     placementDecider = (items) => ({
       decisions: items.map((item) =>
         item.current_heading === 'Equipment'
@@ -500,6 +537,7 @@ Authored equipment context stays here.
 `;
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
     await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_uncertain', 'fixture:one', 'user', 'Ada Marlow prefers the Zephyr QX-100.');
     placementDecider = (items) => ({
       decisions: items.map((item) => ({ id: item.id, outcome: 'uncertain', heading: null })),
     });
@@ -539,6 +577,7 @@ Authored equipment context stays here.
 `;
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
     await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_guard', 'fixture:one', 'user', 'Ada Marlow prefers the Zephyr QX-100.');
     placementDecider = (items) => ({
       decisions: items.map((item) => ({
         id: item.id,
@@ -558,6 +597,105 @@ Authored equipment context stays here.
     });
     expect(second.managedItems.placement).toMatchObject({ classifierCalls: 1, cacheHits: 0 });
     expect(placementCalls).toBe(2);
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+  });
+
+  it('corrects only an owned payload grounded in its exact retained source quote', async () => {
+    const before = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Records
+
+Authored context stays here.
+
+<!-- akno:item itm_correct source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`;
+    const evidence = 'The Zephyr QX-100 warranty lasts 2222 days.';
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_correct', 'fixture:one', 'user', evidence);
+    sourceDecider = (items) => ({
+      decisions: items.map((item) =>
+        item.current_sentence.includes('1111')
+          ? {
+              id: item.id,
+              outcome: 'rewrite',
+              replacement: 'The Zephyr QX-100 warranty lasts 2222 days.',
+            }
+          : { id: item.id, outcome: 'supported', replacement: null },
+      ),
+    });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const after = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
+
+    expect(report.managedItems).toMatchObject({
+      findings: { wording_corrected: 1, valid: 0 },
+      outcomes: { planned: 1, held: 0, valid: 0 },
+      source: { classifierCalls: 1, corrected: 1, unavailable: 0 },
+    });
+    expect(report.maintenancePlan?.items).toEqual([
+      expect.objectContaining({ kind: 'managed_item', status: 'applied' }),
+    ]);
+    expect(after).toContain('Authored context stays here.');
+    expect(after).toContain(evidence);
+    expect(after).not.toContain('1111 days');
+    expect(curatorCalls).toBe(1);
+
+    const supported = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(supported.managedItems).toMatchObject({
+      findings: { valid: 1 },
+      source: { classifierCalls: 1, supported: 1 },
+    });
+    const cached = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(cached.managedItems.source).toMatchObject({ classifierCalls: 0, cacheHits: 1, supported: 1 });
+    expect(sourceCalls).toBe(2);
+  });
+
+  it('rejects an ungrounded source rewrite and does not cache it', async () => {
+    const before = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Records
+
+<!-- akno:item itm_reject source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_reject', 'fixture:one', 'user', 'The Zephyr QX-100 warranty lasts 2222 days.');
+    sourceDecider = (items) => ({
+      decisions: items.map((item) => ({
+        id: item.id,
+        outcome: 'rewrite',
+        replacement: 'The Zephyr QX-100 warranty lasts 3333 days.',
+      })),
+    });
+
+    const first = await mem.dream({ phase: 'curate', dryRun: true });
+    const second = await mem.dream({ phase: 'curate', dryRun: true });
+
+    expect(first.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { source_unavailable: 1, valid: 0 },
+      outcomes: { planned: 0, held: 1 },
+      source: { classifierCalls: 1, cacheHits: 0, unavailable: 1 },
+    });
+    expect(second.managedItems.source).toMatchObject({ classifierCalls: 1, cacheHits: 0 });
+    expect(sourceCalls).toBe(2);
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
   });
 });

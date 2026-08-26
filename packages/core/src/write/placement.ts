@@ -122,7 +122,19 @@ function managedBlock(item: ManagedItem): string {
 }
 
 function encodeMarker(value: string): string {
-  return encodeURIComponent(value.replace(/-->/g, '')).slice(0, 300);
+  return encodeURIComponent(managedSourceReference(value));
+}
+
+/** Return the exact source label that survives the bounded marker encoding. */
+export function managedSourceReference(value: string): string {
+  const cleaned = value.replace(/-->/g, '') || 'remember';
+  let bounded = '';
+  for (const character of cleaned) {
+    const candidate = bounded + character;
+    if (encodeURIComponent(candidate).length > 300) break;
+    bounded = candidate;
+  }
+  return bounded || 'remember';
 }
 
 function appendManagedBlock(body: string, heading: string, block: string): string {

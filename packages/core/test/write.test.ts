@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 import { readJsoncFile } from '../src/config/jsonc.ts';
@@ -469,6 +470,42 @@ describe('events', () => {
 
 /** Both operate on Markdown. Neither touches a fact directly. */
 describe('forget', () => {
+  it('removes private replay evidence with an explicitly forgotten managed page', async () => {
+    fs.writeFileSync(
+      path.join(root, 'home/appliances.md'),
+      `# Appliances
+
+<!-- akno:item itm_zephyr source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`,
+    );
+    const mem = await openAs('agent');
+    await mem.index({ structuralOnly: true });
+    const db = new Database(path.join(stateDir, 'akno.db'));
+    db.prepare(
+      `INSERT INTO managed_item_sources(
+         item_id, source_ref, origin, evidence, evidence_hash, input_hash, created_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).run(
+      'itm_zephyr',
+      'fixture:one',
+      'user',
+      'The Zephyr QX-100 warranty lasts 1111 days.',
+      'a'.repeat(64),
+      'b'.repeat(64),
+      new Date().toISOString(),
+    );
+    db.close();
+
+    await mem.forget({ slug: 'home/appliances' });
+
+    const verified = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    const count = verified.prepare('SELECT COUNT(*) AS n FROM managed_item_sources').get() as { n: number };
+    verified.close();
+    expect(count.n).toBe(0);
+    await mem.close();
+  });
+
   it('trashes a page and keeps it recoverable', async () => {
     const mem = await openAs('agent');
     const result = await mem.forget({ slug: 'home/appliances' });

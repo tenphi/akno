@@ -1,5 +1,6 @@
 import { UndoInput, type UndoOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
+import { pruneManagedSourceArchivesFromIndex } from '../maintenance/managed-item-sources.ts';
 
 /**
  * **Remember which change to revert** is normally asked of the model. Here
@@ -23,6 +24,7 @@ export async function undo(ctx: AknoContext, rawInput: unknown): Promise<UndoOut
   // the undo actually touched — reversing one line must not re-derive the whole
   // knowledge base.
   await ctx.indexer.run({ modelPaths: [] });
+  await pruneManagedSourceArchivesFromIndex(ctx);
   // Same reasoning as `write`: the files are back, which is what undo promised. Re-reading them for
   // summaries and facts is work nobody is waiting on, and awaiting it put a cold deriver inside an
   // undo — which then timed out, on an undo that had already succeeded.

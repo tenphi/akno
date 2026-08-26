@@ -106,7 +106,9 @@ deterministic guards, budgets, decisions, stale-input checks, and verification s
 
 Role and write authority are independent. A plain page defaults to searchable `knowledge` and
 `remember: deny`, which is useful for reference material that should participate in answers without accepting
-auto-injected facts. Akno-created memory pages explicitly declare `remember: integrate`.
+auto-injected facts. Akno-created memory pages explicitly declare `remember: integrate`. That same explicit
+admission lets maintenance inspect only Akno's marker-bound fragments: it does not make authored page content
+rewritable and does not require broad `dream` authority.
 
 ## Citations, facts, and confidence
 

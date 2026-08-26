@@ -583,4 +583,50 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds replayable managed sources and their verdict cache to a version-twenty-six database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-source-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 20)) legacy.exec(migration);
+    legacy.pragma('user_version = 26');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const sourceColumns = store.db.pragma('table_info(managed_item_sources)') as { name: string }[];
+    const verdictColumns = store.db.pragma('table_info(managed_item_source_verdicts)') as {
+      name: string;
+    }[];
+
+    expect(sourceColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'item_id',
+        'source_ref',
+        'origin',
+        'evidence',
+        'evidence_hash',
+        'input_hash',
+        'created_at',
+      ]),
+    );
+    expect(verdictColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'fingerprint',
+        'page_id',
+        'source_hash',
+        'classifier_endpoint',
+        'prompt_version',
+        'signature_version',
+        'verdicts',
+        'created_at',
+      ]),
+    );
+    expect(verdictColumns.map((column) => column.name)).not.toEqual(
+      expect.arrayContaining(['slug', 'title', 'content', 'reason', 'rationale']),
+    );
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

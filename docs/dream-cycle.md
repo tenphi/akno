@@ -147,10 +147,13 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   payload/provenance duplicate. It also verifies global id uniqueness, exact marker-to-fact line/hash binding,
   typed conflict participation, and section fit. A qualified classifier may select only `keep`, `move`, or
   `uncertain`; one accepted same-page move must target an existing unique `##` section, and deterministic code
-  moves the complete marker-plus-payload bytes. Malformed markers, missing current derivation, conflicting
-  ids/facts, unavailable placement, and ambiguous placement remain typed held findings; authored surrounding
-  prose is outside this transformation's authority. Marker normalization is sealed first; placement waits for
-  those canonical bytes on the next cycle rather than certifying an item it did not classify;
+  moves the complete marker-plus-payload bytes. For items created with replayable evidence, another qualified
+  pass compares the generated sentence with its exact retained source quote. It may mark it supported, hold it
+  as uncertain, or propose one source-grounded payload-line correction; old or unquoted items are
+  `source_unavailable`. Malformed markers, missing current derivation, conflicting ids/facts, unavailable
+  placement, and ambiguous placement remain typed held findings; authored surrounding prose is outside this
+  transformation's authority. Marker normalization is sealed first; semantic checks wait for those canonical
+  bytes on the next cycle rather than certifying an item they did not classify;
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
 - **synthesis:** evidence-backed rewrite or reorganization;

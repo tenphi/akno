@@ -15,6 +15,7 @@ import {
   MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX,
   MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX,
   MANAGED_ITEM_PLACEMENT_VERDICTS_MIGRATION_INDEX,
+  MANAGED_ITEM_SOURCES_MIGRATION_INDEX,
   MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX,
   MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
@@ -207,6 +208,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'managed_item_placement_verdicts')) {
         db.exec(MIGRATIONS[MANAGED_ITEM_PLACEMENT_VERDICTS_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'managed_item_sources')) {
+        db.exec(MIGRATIONS[MANAGED_ITEM_SOURCES_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

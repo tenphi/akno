@@ -8,7 +8,7 @@ import {
 import type { AknoContext } from '../context.ts';
 import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
-import { newPrefixedId } from '../store/ids.ts';
+import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
 import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
 import { parsePage } from '../kb/page.ts';
@@ -16,7 +16,7 @@ import { contentWords } from '../kb/words.ts';
 import { detectConflict } from '../write/conflict.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
-import { placeManagedItems, type ManagedItem } from '../write/placement.ts';
+import { managedSourceReference, placeManagedItems, type ManagedItem } from '../write/placement.ts';
 import { recall } from './recall.ts';
 import { appendToLedger, titleFromSlug } from './write.ts';
 import fsp from 'node:fs/promises';
@@ -172,8 +172,14 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     groups.set(target, group);
   }
 
-  const pending: { slug: string; relPath: string; content: string; existed: boolean; indexes: number[] }[] =
-    [];
+  const pending: {
+    slug: string;
+    relPath: string;
+    content: string;
+    existed: boolean;
+    indexes: number[];
+    sources: ManagedSourceArchive[];
+  }[] = [];
   for (const [slug, group] of groups) {
     const row = ctx.store.db
       .prepare('SELECT id, rel_path, role, remember_management FROM pages WHERE slug = ?')
@@ -243,7 +249,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     const items: ManagedItem[] = accepted.map(({ candidate }) => ({
       id: newPrefixedId('itm'),
       text: candidate.text,
-      source: input.source ?? 'remember',
+      source: managedSourceReference(input.source ?? 'remember'),
       origin: candidate.origin ?? 'unknown',
     }));
     const placed = await placeManagedItems(current, items, curator);
@@ -255,10 +261,25 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       content: placed.content,
       existed: Boolean(row),
       indexes: accepted.map((entry) => entry.index),
+      sources: accepted.flatMap((entry, itemIndex) =>
+        entry.candidate.evidence
+          ? [
+              {
+                itemId: items[itemIndex]!.id,
+                sourceRef: items[itemIndex]!.source,
+                origin: items[itemIndex]!.origin,
+                evidence: entry.candidate.evidence,
+                evidenceHash: sha256(entry.candidate.evidence),
+                inputHash: sha256(input.text),
+              },
+            ]
+          : [],
+      ),
     });
   }
 
   const files: ChangeFile[] = [];
+  const managedSources: ManagedSourceArchive[] = [];
   for (const page of pending) {
     const result = await writeFileAtomic(ctx.config.aknoPath, page.relPath, page.content);
     files.push(fileEntry(result));
@@ -266,6 +287,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       considered[index]!.written = true;
     });
     wrote.push({ slug: page.slug, action: page.existed ? 'appended' : 'created' });
+    managedSources.push(...page.sources);
   }
 
   for (const event of retained.events) {
@@ -287,6 +309,8 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
           files,
         })
       : null;
+
+  persistManagedSources(ctx, managedSources);
 
   let added = 0;
   if (files.length > 0) {
@@ -337,6 +361,38 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     ...(folders.length > 0 ? { requires_folder: folders } : {}),
     ...(held.length > 0 ? { note: held.join('; ') } : {}),
   };
+}
+
+interface ManagedSourceArchive {
+  itemId: string;
+  sourceRef: string;
+  origin: ManagedItem['origin'];
+  evidence: string;
+  evidenceHash: string;
+  inputHash: string;
+}
+
+function persistManagedSources(ctx: AknoContext, sources: readonly ManagedSourceArchive[]): void {
+  if (sources.length === 0 || ctx.store.readOnly) return;
+  const insert = ctx.store.db.prepare(
+    `INSERT OR IGNORE INTO managed_item_sources(
+       item_id, source_ref, origin, evidence, evidence_hash, input_hash, created_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  );
+  const createdAt = new Date().toISOString();
+  ctx.store.transaction(() => {
+    for (const source of sources) {
+      insert.run(
+        source.itemId,
+        source.sourceRef,
+        source.origin,
+        source.evidence,
+        source.evidenceHash,
+        source.inputHash,
+        createdAt,
+      );
+    }
+  });
 }
 
 /**

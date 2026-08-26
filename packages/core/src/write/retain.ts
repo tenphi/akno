@@ -25,6 +25,7 @@ Reply with JSON only:
       "subject": "2-5 words naming what this is about, used to find the right page",
       "page": "folder/page-name",
       "origin": "user or assistant — whose statement established the claim",
+      "evidence": "one exact verbatim quote from the input that supports the sentence, or null",
       "kind": "fact" }
   ],
   "events": [ { "date": "YYYY-MM-DD", "summary": "what happened, one clause" } ]
@@ -49,6 +50,8 @@ Drop, always:
 Rules:
 - Prose, not triples. "The car insurance premium is now 33 EUR a month" — not "premium=33".
 - Resolve pronouns and relative dates against the text. Never invent a date you were not given.
+- Evidence must be copied byte-for-byte from the input, stay under 1200 characters, and contain
+  enough context to verify every durable value in the candidate. Use null when no exact quote does.
 - An "events" entry is something that happened on a date, not a value that is true.
 - "page" is a slug and nothing else: lowercase, hyphenated, no description, no punctuation beyond
   the single "/" between folder and page. Every other field above takes prose, so its example
@@ -80,6 +83,7 @@ export const RETAIN_SCHEMA = z.object({
       subject: z.string(),
       page: z.string().nullable(),
       origin: z.enum(['user', 'assistant']),
+      evidence: z.string().nullable(),
       kind: z.string(),
     }),
   ),
@@ -96,6 +100,8 @@ export interface RetainCandidate {
    */
   page?: string;
   origin?: 'user' | 'assistant';
+  /** Exact bounded input bytes retained privately so the managed sentence can be re-verified. */
+  evidence?: string;
 }
 
 export interface RetainResult {
@@ -139,6 +145,7 @@ export async function runRetain(
     candidates: cleanCandidates(parsed.candidates, {
       folders: (options.folders ?? []).filter((folder) => folder.creatable).map((folder) => folder.path),
       pages: (options.folders ?? []).flatMap((folder) => folder.admittedPages),
+      sourceText: text,
     }),
     events: cleanEvents(parsed.events),
     error: null,
@@ -203,7 +210,7 @@ function readsAsStatement(text: string): boolean {
 
 export function cleanCandidates(
   value: unknown,
-  options: { folders?: readonly string[]; pages?: readonly string[] } = {},
+  options: { folders?: readonly string[]; pages?: readonly string[]; sourceText?: string } = {},
 ): RetainCandidate[] {
   if (!Array.isArray(value)) return [];
   const out: RetainCandidate[] = [];
@@ -227,6 +234,7 @@ export function cleanCandidates(
     const cleanedPage = typeof record.page === 'string' ? cleanSlug(record.page) : null;
     const page =
       cleanedPage && pageIsAdmitted(cleanedPage, options.folders, options.pages) ? cleanedPage : null;
+    const evidence = exactCandidateEvidence(record.evidence, options.sourceText);
     out.push({
       text,
       subject:
@@ -236,10 +244,18 @@ export function cleanCandidates(
       kind: typeof record.kind === 'string' ? record.kind : 'fact',
       ...(record.origin === 'user' || record.origin === 'assistant' ? { origin: record.origin } : {}),
       ...(page ? { page } : {}),
+      ...(evidence ? { evidence } : {}),
     });
     if (out.length >= 12) break;
   }
   return out;
+}
+
+function exactCandidateEvidence(value: unknown, sourceText: string | undefined): string | null {
+  if (typeof value !== 'string' || sourceText === undefined) return null;
+  const evidence = value.trim();
+  if (evidence.length === 0 || evidence.length > 1200 || evidence.includes('\0')) return null;
+  return sourceText.includes(evidence) ? evidence : null;
 }
 
 /** The immediate parent is the filing decision; every deeper segment would be an invented folder. */

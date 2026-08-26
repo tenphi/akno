@@ -707,6 +707,12 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       ['placement moved', report.managedItems.placement.moved],
       ['placement uncertain', report.managedItems.placement.uncertain],
       ['placement unavailable', report.managedItems.placement.unavailable],
+      ['source calls', report.managedItems.source.classifierCalls],
+      ['source cache hits', report.managedItems.source.cacheHits],
+      ['source supported', report.managedItems.source.supported],
+      ['wording corrected', report.managedItems.source.corrected],
+      ['wording uncertain', report.managedItems.source.uncertain],
+      ['source unavailable', report.managedItems.source.unavailable],
     ]);
     const actionable = report.managedItems.details.filter((finding) => finding.outcome !== 'valid');
     if (privateDetails) {

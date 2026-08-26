@@ -2,8 +2,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { sha256 } from '../src/store/ids.ts';
 
 /**
  * `remember` *is* the retain tier, available per-turn. That tier has a mission and an on/off
@@ -19,6 +21,8 @@ interface StubCandidate {
   subject: string;
   kind: string;
   page?: string;
+  origin?: 'user' | 'assistant';
+  evidence?: string | null;
 }
 
 interface StubServer {
@@ -295,6 +299,88 @@ describe('fact-injection admission', () => {
 });
 
 describe('what remember reports as written', () => {
+  it('archives an exact bounded source quote and only a hash of the full input', async () => {
+    const evidence = 'Ada Marlow selected the Zephyr QX-100.';
+    const input = `During setup, the durable decision was recorded: ${evidence}`;
+    server.respondWith([
+      {
+        text: evidence,
+        subject: 'Zephyr selection',
+        page: 'home/zephyr-selection',
+        kind: 'fact',
+        origin: 'user',
+        evidence,
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: input, source: 'fixture:conversation' });
+      expect(result.wrote?.[0]?.slug).toBe('home/zephyr-selection');
+      const page = fs.readFileSync(path.join(root, 'home/zephyr-selection.md'), 'utf8');
+      const itemId = /<!-- akno:item ([A-Za-z0-9_-]+)/.exec(page)?.[1];
+      expect(itemId).toBeTruthy();
+
+      const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      const source = db
+        .prepare(
+          `SELECT source_ref, origin, evidence, evidence_hash, input_hash
+             FROM managed_item_sources WHERE item_id = ?`,
+        )
+        .get(itemId) as
+        | {
+            source_ref: string;
+            origin: string;
+            evidence: string;
+            evidence_hash: string;
+            input_hash: string;
+          }
+        | undefined;
+      db.close();
+      expect(source).toEqual({
+        source_ref: 'fixture:conversation',
+        origin: 'user',
+        evidence,
+        evidence_hash: sha256(evidence),
+        input_hash: sha256(input),
+      });
+
+      await mem.undo({ change_id: result.change_id! });
+      const afterUndo = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      const remaining = afterUndo.prepare('SELECT COUNT(*) AS n FROM managed_item_sources').get() as {
+        n: number;
+      };
+      afterUndo.close();
+      expect(remaining.n).toBe(0);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('writes a candidate but archives no unverifiable model-supplied quote', async () => {
+    const input = 'Ada Marlow selected the Zephyr QX-100.';
+    server.respondWith([
+      {
+        text: input,
+        subject: 'Zephyr selection',
+        page: 'home/zephyr-selection',
+        kind: 'fact',
+        origin: 'user',
+        evidence: 'This sentence does not occur in the supplied input.',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      const result = await mem.remember({ text: input, source: 'fixture:conversation' });
+      expect(result.wrote?.[0]?.slug).toBe('home/zephyr-selection');
+      const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      const count = db.prepare('SELECT COUNT(*) AS n FROM managed_item_sources').get() as { n: number };
+      db.close();
+      expect(count.n).toBe(0);
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('marks a candidate only after its page was actually changed', async () => {
     server.respondWith([
       {

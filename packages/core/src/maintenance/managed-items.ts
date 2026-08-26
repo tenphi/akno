@@ -8,6 +8,15 @@ import { parseJsonLoose } from '../models/client.ts';
 import { isReserved } from '../reserved.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { sha256 } from '../store/ids.ts';
+import {
+  emptyManagedSourceMetrics,
+  groundedManagedReplacement,
+  managedSourceItemIds,
+  pruneManagedSourceArchives,
+  qualifyManagedSources,
+  type ManagedSourceDecision,
+  type ManagedSourceMetrics,
+} from './managed-item-sources.ts';
 
 export const MANAGED_ITEM_FINDING_CODES = [
   'empty_marker',
@@ -17,6 +26,8 @@ export const MANAGED_ITEM_FINDING_CODES = [
   'misplaced_item',
   'placement_uncertain',
   'placement_unavailable',
+  'wording_corrected',
+  'wording_uncertain',
   'source_unavailable',
   'item_conflict',
   'valid',
@@ -38,6 +49,7 @@ export interface ManagedItemDraft {
   after: string;
   repairs: { code: ManagedItemFindingCode; line: number }[];
   placements: ManagedItemMove[];
+  corrections: ManagedItemCorrection[];
 }
 
 export interface ManagedItemMove {
@@ -45,6 +57,16 @@ export interface ManagedItemMove {
   markerLine: number;
   fromHeading: string | null;
   toHeading: string;
+}
+
+export interface ManagedItemCorrection {
+  itemId: string;
+  markerLine: number;
+  beforePayload: string;
+  afterPayload: string;
+  evidence: string;
+  evidenceHash: string;
+  inputHash: string;
 }
 
 export interface ManagedItemPlacementMetrics {
@@ -65,6 +87,7 @@ export interface ManagedItemReport {
   findings: Record<ManagedItemFindingCode, number>;
   outcomes: { planned: number; held: number; valid: number; suppressed: number };
   placement: ManagedItemPlacementMetrics;
+  source: ManagedSourceMetrics;
   /** Private live-run references; safe JSON and durable run receipts intentionally omit these. */
   details: ManagedItemFindingReference[];
 }
@@ -111,6 +134,8 @@ export interface ManagedItemInspection {
 interface ManagedItemBinding {
   id: string;
   namespace: StrictMarker['namespace'];
+  source: string;
+  origin: StrictMarker['origin'];
   markerLine: number;
   payloadLine: number;
   payload: string;
@@ -263,13 +288,25 @@ export function managedItemRepairIssue(
   before: string,
   after: string,
   placements: readonly ManagedItemMove[] = [],
+  corrections: readonly ManagedItemCorrection[] = [],
 ): string | null {
   const inspection = inspectManagedItems(before);
-  if (inspection.repairs.length === 0 && placements.length === 0) {
+  if (inspection.repairs.length === 0 && placements.length === 0 && corrections.length === 0) {
     return 'the managed-item input contains no deterministic repair';
   }
   const placed = applyManagedItemMoves(inspection.after, placements);
-  if (!placed.ok || placed.content !== after) {
+  if (!placed.ok) return 'the managed-item output is broader than its deterministic owned-fragment repair';
+  for (const correction of corrections) {
+    if (
+      sha256(correction.evidence) !== correction.evidenceHash ||
+      !/^[a-f0-9]{64}$/.test(correction.inputHash) ||
+      groundedManagedReplacement(correction.afterPayload, correction.evidence) !== correction.afterPayload
+    ) {
+      return 'the managed-item correction is not grounded in its sealed source evidence';
+    }
+  }
+  const corrected = applyManagedItemCorrections(placed.content, corrections);
+  if (!corrected.ok || corrected.content !== after) {
     return 'the managed-item output is broader than its deterministic owned-fragment repair';
   }
   return null;
@@ -288,19 +325,26 @@ export async function planManagedItems(
     )
     .all() as ManagedPageRow[];
   const eligible: EligibleManagedPage[] = [];
+  const liveManagedSourceIds = new Set<string>();
+  let sourceScanComplete = true;
 
   for (const row of pages) {
-    if (isReserved(row.slug, ctx.config)) continue;
     const absolute = safeIndexedPath(ctx.config.aknoPath, row.rel_path);
-    if (!absolute) continue;
+    if (!absolute) {
+      sourceScanComplete = false;
+      continue;
+    }
     const before = await fsp.readFile(absolute, 'utf8').catch(() => null);
     if (before === null) {
+      sourceScanComplete = false;
       if (row.role === 'knowledge' && row.remember_management === 'integrate') {
         report.eligiblePages += 1;
         addFinding(report, { code: 'source_unavailable', line: 0, outcome: 'held' }, 'held', row.slug);
       }
       continue;
     }
+    for (const itemId of managedSourceItemIds(before)) liveManagedSourceIds.add(itemId);
+    if (isReserved(row.slug, ctx.config)) continue;
     let page: ReturnType<typeof parsePage>;
     try {
       page = parsePage(row.rel_path, before);
@@ -318,12 +362,14 @@ export async function planManagedItems(
     report.inspectedMarkers += inspection.inspectedMarkers;
     eligible.push({ row, before, page, inspection });
   }
+  if (sourceScanComplete) pruneManagedSourceArchives(ctx, liveManagedSourceIds);
 
   const crossPageCollisions = crossPageItemCollisions(eligible);
   const facts = currentManagedFacts(ctx);
   for (const candidate of eligible) {
     let inspection = withBindingFindings(ctx, candidate, facts, crossPageCollisions, options);
     let placements: ManagedItemMove[] = [];
+    let corrections: ManagedItemCorrection[] = [];
     // First seal deterministic normalization on its own. Besides keeping the move verifier small,
     // this ensures semantic qualification always sees the exact canonical bytes it is judging.
     if (inspection.repairs.length === 0) {
@@ -332,6 +378,11 @@ export async function planManagedItems(
       const applied = applyQualifiedPlacementFindings(inspection, qualified);
       inspection = applied.inspection;
       placements = applied.placements;
+      const sourceQualification = await qualifyManagedItemSourceBindings(ctx, candidate, inspection);
+      addSourceMetrics(report.source, sourceQualification.metrics);
+      const corrected = applyQualifiedSourceFindings(inspection, sourceQualification.decisions);
+      inspection = corrected.inspection;
+      corrections = corrected.corrections;
     } else {
       const deferred = deferPlacementUntilCanonical(inspection);
       inspection = deferred.inspection;
@@ -344,7 +395,13 @@ export async function planManagedItems(
       continue;
     }
 
-    const inputHash = managedInputHash(candidate.before, inspection.after, inspection.repairs, placements);
+    const inputHash = managedInputHash(
+      candidate.before,
+      inspection.after,
+      inspection.repairs,
+      placements,
+      corrections,
+    );
     if (handledManagedInput(ctx, inputHash)) {
       report.suppressedPages += 1;
       for (const finding of inspection.findings) {
@@ -368,6 +425,7 @@ export async function planManagedItems(
       after: inspection.after,
       repairs: inspection.repairs,
       placements,
+      corrections,
     });
   }
   report.plannedPages = drafts.length;
@@ -698,6 +756,116 @@ function unavailablePlacementDecisions(
   return new Map(bindings.map((binding) => [binding.id, { outcome: 'uncertain' as const }]));
 }
 
+async function qualifyManagedItemSourceBindings(
+  ctx: AknoContext,
+  candidate: EligibleManagedPage,
+  inspection: ManagedItemInspection,
+): Promise<{
+  decisions: Map<string, ManagedSourceDecision>;
+  metrics: ManagedSourceMetrics;
+}> {
+  const blockedLines = new Set(
+    inspection.findings
+      .filter((finding) => finding.code === 'item_conflict' || finding.code === 'source_unavailable')
+      .map((finding) => finding.line),
+  );
+  return qualifyManagedSources(
+    ctx,
+    candidate.row.id,
+    inspection.bindings
+      .filter((binding) => !blockedLines.has(binding.markerLine))
+      .map((binding) => ({
+        itemId: binding.id,
+        payload: binding.payload,
+        sourceRef: binding.source,
+        origin: binding.origin,
+      })),
+  );
+}
+
+function applyQualifiedSourceFindings(
+  inspection: ManagedItemInspection,
+  decisions: ReadonlyMap<string, ManagedSourceDecision>,
+): { inspection: ManagedItemInspection; corrections: ManagedItemCorrection[] } {
+  const bindings = new Map(inspection.bindings.map((binding) => [binding.id, binding]));
+  const replacements = new Map<number, ManagedItemFinding>();
+  const additions: ManagedItemFinding[] = [];
+  const corrections: ManagedItemCorrection[] = [];
+  for (const [itemId, decision] of decisions) {
+    const binding = bindings.get(itemId);
+    if (!binding || decision.outcome === 'supported') continue;
+    const code: ManagedItemFindingCode =
+      decision.outcome === 'rewrite'
+        ? 'wording_corrected'
+        : decision.outcome === 'uncertain'
+          ? 'wording_uncertain'
+          : 'source_unavailable';
+    const finding: ManagedItemFinding = {
+      code,
+      line: binding.markerLine,
+      outcome: decision.outcome === 'rewrite' ? 'planned' : 'held',
+    };
+    if (inspection.findings.some((entry) => entry.line === binding.markerLine && entry.code === 'valid')) {
+      replacements.set(binding.markerLine, finding);
+    } else {
+      additions.push(finding);
+    }
+    if (
+      decision.outcome === 'rewrite' &&
+      decision.replacement &&
+      decision.evidence &&
+      decision.evidenceHash &&
+      decision.inputHash
+    ) {
+      corrections.push({
+        itemId,
+        markerLine: binding.markerLine,
+        beforePayload: binding.payload,
+        afterPayload: decision.replacement,
+        evidence: decision.evidence,
+        evidenceHash: decision.evidenceHash,
+        inputHash: decision.inputHash,
+      });
+    }
+  }
+  const findings = [
+    ...inspection.findings.map((finding) =>
+      finding.code === 'valid' && replacements.has(finding.line) ? replacements.get(finding.line)! : finding,
+    ),
+    ...additions,
+  ];
+  const applied = applyManagedItemCorrections(inspection.after, corrections);
+  if (!applied.ok) {
+    const failedLines = new Set(corrections.map((correction) => correction.markerLine));
+    return {
+      inspection: {
+        ...inspection,
+        findings: findings.map((finding) =>
+          failedLines.has(finding.line) && finding.code === 'wording_corrected'
+            ? { ...finding, code: 'wording_uncertain', outcome: 'held' }
+            : finding,
+        ),
+      },
+      corrections: [],
+    };
+  }
+  return {
+    inspection: {
+      ...inspection,
+      after: applied.content,
+      findings,
+      repairs: [
+        ...inspection.repairs,
+        ...corrections.map((correction) => ({
+          code: 'wording_corrected' as const,
+          line: correction.markerLine,
+        })),
+      ],
+    },
+    corrections,
+  };
+}
+
 function cleanPlacementDecisions(
   parsed: unknown,
   bindings: ManagedItemBinding[],
@@ -830,6 +998,8 @@ function managedBinding(
   return {
     id: marker.id,
     namespace: marker.namespace,
+    source: marker.source,
+    origin: marker.origin,
     markerLine: bodyLine + marker.markerIndex,
     payloadLine: bodyLine + marker.payloadIndex!,
     payload: marker.payload!,
@@ -938,6 +1108,30 @@ export function applyManagedItemMoves(
   return { ok: true, content: current };
 }
 
+/** Replace only the one payload line bound to an exact managed id. Marker and surrounding bytes survive. */
+export function applyManagedItemCorrections(
+  content: string,
+  corrections: readonly ManagedItemCorrection[],
+): { ok: true; content: string } | { ok: false; content: string } {
+  let current = content;
+  for (const correction of corrections) {
+    const inspection = inspectManagedItems(current);
+    const matches = inspection.bindings.filter((binding) => binding.id === correction.itemId);
+    if (matches.length !== 1 || matches[0]!.payload !== correction.beforePayload) {
+      return { ok: false, content };
+    }
+    const binding = matches[0]!;
+    const frontmatter = parseFrontmatter(current);
+    const prefix = current.slice(0, frontmatter.bodyOffset);
+    const body = current.slice(frontmatter.bodyOffset);
+    const payload = rawLineSpans(body)[binding.payloadIndex];
+    if (!payload) return { ok: false, content };
+    current =
+      prefix + body.slice(0, payload.start) + correction.afterPayload + body.slice(payload.contentEnd);
+  }
+  return { ok: true, content: current };
+}
+
 interface RawLineSpan {
   start: number;
   contentEnd: number;
@@ -1021,6 +1215,7 @@ function managedInputHash(
   after: string,
   repairs: { code: ManagedItemFindingCode; line: number }[],
   placements: ManagedItemMove[],
+  corrections: ManagedItemCorrection[],
 ): string {
   return sha256(
     JSON.stringify({
@@ -1029,6 +1224,14 @@ function managedInputHash(
       after: sha256(after),
       repairs,
       placements,
+      corrections: corrections.map((correction) => ({
+        itemId: correction.itemId,
+        markerLine: correction.markerLine,
+        beforePayload: sha256(correction.beforePayload),
+        afterPayload: sha256(correction.afterPayload),
+        evidenceHash: correction.evidenceHash,
+        inputHash: correction.inputHash,
+      })),
     }),
   );
 }
@@ -1068,6 +1271,7 @@ function emptyReport(): ManagedItemReport {
     >,
     outcomes: { planned: 0, held: 0, valid: 0, suppressed: 0 },
     placement: emptyPlacementMetrics(),
+    source: emptyManagedSourceMetrics(),
     details: [],
   };
 }
@@ -1089,6 +1293,12 @@ function addPlacementMetrics(
   addition: ManagedItemPlacementMetrics,
 ): void {
   for (const key of Object.keys(target) as (keyof ManagedItemPlacementMetrics)[]) {
+    target[key] += addition[key];
+  }
+}
+
+function addSourceMetrics(target: ManagedSourceMetrics, addition: ManagedSourceMetrics): void {
+  for (const key of Object.keys(target) as (keyof ManagedSourceMetrics)[]) {
     target[key] += addition[key];
   }
 }
