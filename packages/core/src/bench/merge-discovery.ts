@@ -5,19 +5,37 @@ import {
   type SemanticMergeVerdict,
 } from '../maintenance/merge-classifier.ts';
 import { ModelClient } from '../models/client.ts';
-import { sha256 } from '../store/ids.ts';
+import {
+  MERGE_DISCOVERY_CORPUS_VERSION,
+  mergeDiscoveryCorpus,
+  mergeDiscoveryCorpusFingerprint,
+  type MergeDiscoveryBenchCase,
+  type MergeDiscoveryBenchPage,
+  type MergeDiscoveryCategory,
+  type MergeDiscoveryCorpus,
+  type MergeDiscoverySplit,
+} from './merge-discovery-corpus.ts';
+import {
+  MERGE_DISCOVERY_REVIEW_EVIDENCE_VERSION,
+  type MergeDiscoveryReviewEvidence,
+} from './merge-discovery-review.ts';
 
-export const MERGE_DISCOVERY_BENCH_VERSION = 1;
+export const MERGE_DISCOVERY_BENCH_VERSION = 'merge-discovery-benchmark-v2';
+const REQUIRED_STABILITY_RUNS = 5;
+const PREFILTER_THRESHOLD = 0.68;
 
-export type MergeDiscoveryCategory =
-  'duplicate' | 'near_purpose' | 'related_scope' | 'template' | 'entity_collision';
+export type { MergeDiscoveryCategory, MergeDiscoverySplit } from './merge-discovery-corpus.ts';
 
 export interface MergeDiscoveryBenchOptions {
+  split?: MergeDiscoverySplit;
+  runs?: number;
+  review?: MergeDiscoveryReviewEvidence;
   embeddingProvider?: string;
   embeddingModel?: string;
   provider?: string;
   model?: string;
   reasoningEffort?: ReasoningEffort;
+  onProgress?: (progress: { run: number; runs: number }) => void;
 }
 
 export interface MergeDiscoveryCaseScore {
@@ -58,6 +76,7 @@ export interface MergeDiscoveryClassifierCase {
 }
 
 export interface MergeDiscoveryClassifierReport {
+  run: number;
   provider: string;
   model: string;
   reasoningEffort: ReasoningEffort;
@@ -78,154 +97,52 @@ export interface MergeDiscoveryClassifierReport {
   blockers: string[];
 }
 
+export interface MergeDiscoveryStability {
+  requestedRuns: number;
+  completedRuns: number;
+  passingRuns: number;
+  stableCaseRate: number | null;
+  flakyCaseIds: string[];
+}
+
 export interface MergeDiscoveryBenchReport {
-  kind: 'invented_merge_discovery_development';
-  schemaVersion: number;
-  split: 'development';
+  kind: 'invented_merge_discovery_benchmark';
+  schemaVersion: string;
+  createdAt: string;
+  development: boolean;
+  artifactPersisted: boolean;
+  releaseEligible: boolean;
+  split: MergeDiscoverySplit;
   corpus: {
+    version: string;
     fingerprint: string;
     pages: number;
     cases: number;
-    independentlyReviewed: false;
+    frozen: boolean;
+    independentlyReviewed: boolean;
+    reviewReceiptFingerprint: string | null;
   };
   embedding: { provider: string; model: string };
   embeddingLatencyMs: number;
   embeddingOnly: MergeDiscoveryEvaluation;
   classifier: MergeDiscoveryClassifierReport | null;
+  runs: MergeDiscoveryClassifierReport[];
+  stability: MergeDiscoveryStability;
   passed: boolean;
   blockers: string[];
+  releaseBlockers: string[];
   error: 'embedding_unavailable' | 'embedding_failed' | 'classifier_unavailable' | null;
 }
 
-interface BenchPage {
-  id: string;
-  text: string;
-}
-
-interface BenchCase {
-  id: string;
-  category: MergeDiscoveryCategory;
-  expected: MergeDiscoveryCaseScore['expected'];
-  left: string;
-  right: string;
-}
-
-const PAGES: BenchPage[] = [
-  page(
-    'ada-profile',
-    'Ada Marlow',
-    'Durable profile for Ada Marlow. Ada lives at Blackwater Bay and maintains a Zephyr QX-100 field kit.',
-  ),
-  page(
-    'ada-notes',
-    'Notes about Ada Marlow',
-    'Additional durable facts about Ada Marlow. Ada works with Vulpine Mutual and keeps a brass compass.',
-  ),
-  page(
-    'ada-project',
-    'Ada Marlow — Zephyr rollout',
-    'Scoped project log for Ada Marlow: rollout milestones, assigned tasks, open decisions, and completion dates.',
-  ),
-  page(
-    'ada-morrow',
-    'Ada Morrow',
-    'Durable profile for Ada Morrow. Ada lives inland and maintains a Copperfin RX-200 field kit.',
-  ),
-  page(
-    'bo-profile',
-    'Bo Winters',
-    'Durable profile for Bo Winters. Bo lives at Blackwater Bay and maintains a Zephyr QX-100 field kit.',
-  ),
-  page(
-    'zephyr-profile',
-    'Zephyr QX-100',
-    'Canonical product overview for the Zephyr QX-100, including its durable identity, manufacturer, and specifications.',
-  ),
-  page(
-    'zephyr-notes',
-    'Zephyr QX-100 notes',
-    'Additional durable product facts about the Zephyr QX-100, including materials, dimensions, and maintenance characteristics.',
-  ),
-  page(
-    'zephyr-warranty',
-    'Zephyr QX-100 warranty procedure',
-    'Scoped warranty procedure for the Zephyr QX-100: claim steps, required evidence, deadlines, and escalation contacts.',
-  ),
-  page(
-    'zephyr-qx200',
-    'Zephyr QX-200',
-    'Canonical product overview for the Zephyr QX-200, including its durable identity, manufacturer, and specifications.',
-  ),
-  page(
-    'vulpine-profile',
-    'Vulpine Mutual',
-    'Canonical organization profile for Vulpine Mutual, its identity, services, and durable contact information.',
-  ),
-  page(
-    'vulpine-notes',
-    'Notes about Vulpine Mutual',
-    'Additional durable facts about Vulpine Mutual, its service regions, departments, and public contact channels.',
-  ),
-  page(
-    'vulpine-claims',
-    'Vulpine Mutual claims procedure',
-    'Scoped claims workflow for Vulpine Mutual: filing steps, evidence requirements, review stages, and appeals.',
-  ),
-  page(
-    'bay-profile',
-    'Blackwater Bay',
-    'Canonical place profile for Blackwater Bay, including location, enduring characteristics, and access information.',
-  ),
-  page(
-    'bay-notes',
-    'Blackwater Bay field notes',
-    'Additional enduring facts about Blackwater Bay, including terrain, access points, and seasonal conditions.',
-  ),
-  page(
-    'bay-visit',
-    'Blackwater Bay visit plan',
-    'Dated visit plan for Blackwater Bay with train times, assigned seats, lodging, and a temporary itinerary.',
-  ),
-  page(
-    'daily-one',
-    'Daily note 2040-01-01',
-    'Daily template with tasks, meetings, weather, meals, and a short end-of-day reflection.',
-  ),
-  page(
-    'daily-two',
-    'Daily note 2040-01-02',
-    'Daily template with tasks, meetings, weather, meals, and a short end-of-day reflection.',
-  ),
-];
-
-const CASES: BenchCase[] = [
-  benchCase('person-near-purpose', 'near_purpose', 'candidate', 'ada-profile', 'ada-notes'),
-  benchCase('product-near-purpose', 'near_purpose', 'candidate', 'zephyr-profile', 'zephyr-notes'),
-  benchCase('organization-near-purpose', 'duplicate', 'candidate', 'vulpine-profile', 'vulpine-notes'),
-  benchCase('place-near-purpose', 'near_purpose', 'candidate', 'bay-profile', 'bay-notes'),
-  benchCase('person-project-scope', 'related_scope', 'keep_separate', 'ada-profile', 'ada-project'),
-  benchCase('product-warranty-scope', 'related_scope', 'keep_separate', 'zephyr-profile', 'zephyr-warranty'),
-  benchCase(
-    'organization-claims-scope',
-    'related_scope',
-    'keep_separate',
-    'vulpine-profile',
-    'vulpine-claims',
-  ),
-  benchCase('place-visit-scope', 'related_scope', 'keep_separate', 'bay-profile', 'bay-visit'),
-  benchCase('person-template', 'template', 'keep_separate', 'ada-profile', 'bo-profile'),
-  benchCase('daily-template', 'template', 'keep_separate', 'daily-one', 'daily-two'),
-  benchCase('person-name-collision', 'entity_collision', 'keep_separate', 'ada-profile', 'ada-morrow'),
-  benchCase('product-model-collision', 'entity_collision', 'keep_separate', 'zephyr-profile', 'zephyr-qx200'),
-];
-
-const DEVELOPMENT_PREFILTER_THRESHOLD = 0.68;
-
-/** Sends only the tracked invented corpus to the selected embedding endpoint. */
+/** Sends only the tracked invented corpus to the selected embedding and classifier endpoints. */
 export async function runMergeDiscoveryBench(
   config: AknoConfig,
   options: MergeDiscoveryBenchOptions = {},
 ): Promise<MergeDiscoveryBenchReport> {
+  const split = options.split ?? 'development';
+  const corpus = mergeDiscoveryCorpus(split);
+  const review = validateReview(split, mergeDiscoveryCorpusFingerprint(corpus), options.review);
+  const requestedRuns = normalizeRuns(options.runs ?? (split === 'test' ? REQUIRED_STABILITY_RUNS : 1));
   const providerName = options.embeddingProvider ?? config.models.embedding.provider?.name ?? 'openai';
   const modelId = options.embeddingModel ?? config.models.embedding.id ?? 'text-embedding-3-small';
   const provider = config.providers[providerName] ?? null;
@@ -238,55 +155,65 @@ export async function runMergeDiscoveryBench(
     requested: true,
     unavailableReason: provider ? null : `provider "${providerName}" is not configured`,
   };
-  const embedded = await new ModelClient(role).embed(PAGES.map((entry) => entry.text));
+  const embedded = await new ModelClient(role).embed(corpus.pages.map((entry) => entry.text));
   if (!embedded.ok || !embedded.value) {
-    return failedReport(
-      providerName,
-      modelId,
-      embedded.latencyMs,
-      provider ? 'embedding_failed' : 'embedding_unavailable',
-    );
+    return failedReport({
+      corpus,
+      review,
+      requestedRuns,
+      provider: providerName,
+      model: modelId,
+      latencyMs: embedded.latencyMs,
+      error: provider ? 'embedding_failed' : 'embedding_unavailable',
+    });
   }
-  const vectors = new Map(PAGES.map((entry, index) => [entry.id, embedded.value![index]!]));
-  const scores = CASES.map((entry) => ({
+  const vectors = new Map(corpus.pages.map((entry, index) => [entry.id, embedded.value![index]!]));
+  const scores = corpus.cases.map((entry) => ({
     ...entry,
     score: cosine(vectors.get(entry.left)!, vectors.get(entry.right)!),
   }));
   const embeddingOnly = selectThreshold(scores);
   const classifierRole = classifierModel(config, options);
   if (!classifierRole.client.available) {
-    return {
-      kind: 'invented_merge_discovery_development',
-      schemaVersion: MERGE_DISCOVERY_BENCH_VERSION,
-      split: 'development',
-      corpus: corpusSummary(),
+    return finishReport({
+      corpus,
+      review,
+      requestedRuns,
       embedding: { provider: providerName, model: modelId },
       embeddingLatencyMs: embedded.latencyMs,
       embeddingOnly,
-      classifier: null,
-      passed: false,
-      blockers: ['classifier_unavailable'],
+      runs: [],
       error: 'classifier_unavailable',
-    };
+      prerequisiteBlockers: ['classifier_unavailable'],
+    });
   }
-  const classifier = await classifyCases(classifierRole, scores);
-  return {
-    kind: 'invented_merge_discovery_development',
-    schemaVersion: MERGE_DISCOVERY_BENCH_VERSION,
-    split: 'development',
-    corpus: corpusSummary(),
+  const runs: MergeDiscoveryClassifierReport[] = [];
+  for (let run = 1; run <= requestedRuns; run++) {
+    runs.push(await classifyCases(classifierRole, corpus, scores, run));
+    options.onProgress?.({ run, runs: requestedRuns });
+  }
+  return finishReport({
+    corpus,
+    review,
+    requestedRuns,
     embedding: { provider: providerName, model: modelId },
     embeddingLatencyMs: embedded.latencyMs,
     embeddingOnly,
-    classifier,
-    passed: classifier.passed,
-    blockers: classifier.blockers,
+    runs,
     error: null,
-  };
+    prerequisiteBlockers: [],
+  });
+}
+
+/** Marks the exact report that is about to be persisted. */
+export function markMergeDiscoveryBenchPersisted(
+  report: MergeDiscoveryBenchReport,
+): MergeDiscoveryBenchReport {
+  return refreshRelease({ ...report, artifactPersisted: true });
 }
 
 export function evaluateMergeDiscoveryScores(
-  scores: ReadonlyArray<Omit<BenchCase, 'left' | 'right'> & { score: number }>,
+  scores: ReadonlyArray<Omit<MergeDiscoveryBenchCase, 'left' | 'right'> & { score: number }>,
   threshold: number,
 ): MergeDiscoveryEvaluation {
   const cases = scores.map((entry): MergeDiscoveryCaseScore => {
@@ -329,8 +256,87 @@ export function evaluateMergeDiscoveryScores(
   return { threshold, metrics, cases, passed: blockers.length === 0, blockers };
 }
 
+export function evaluateMergeDiscoveryStability(
+  runs: MergeDiscoveryClassifierReport[],
+  cases: readonly MergeDiscoveryBenchCase[],
+  requestedRuns: number,
+): MergeDiscoveryStability {
+  const completedRuns = runs.filter((run) => run.cases.length === cases.length).length;
+  const flakyCaseIds =
+    runs.length < 2
+      ? []
+      : cases.flatMap((benchCase) => {
+          const reports = runs.map((run) => run.cases.find((entry) => entry.id === benchCase.id));
+          if (reports.some((report) => report === undefined)) return [benchCase.id];
+          const decisions = new Set(reports.map((report) => classifierDecision(report!)));
+          return decisions.size === 1 ? [] : [benchCase.id];
+        });
+  return {
+    requestedRuns,
+    completedRuns,
+    passingRuns: runs.filter((run) => run.passed).length,
+    stableCaseRate: runs.length < 2 ? null : ratio(cases.length - flakyCaseIds.length, cases.length),
+    flakyCaseIds,
+  };
+}
+
+function finishReport(options: {
+  corpus: MergeDiscoveryCorpus;
+  review: MergeDiscoveryReviewEvidence | null;
+  requestedRuns: number;
+  embedding: { provider: string; model: string };
+  embeddingLatencyMs: number;
+  embeddingOnly: MergeDiscoveryEvaluation;
+  runs: MergeDiscoveryClassifierReport[];
+  error: MergeDiscoveryBenchReport['error'];
+  prerequisiteBlockers: string[];
+}): MergeDiscoveryBenchReport {
+  const stability = evaluateMergeDiscoveryStability(
+    options.runs,
+    options.corpus.cases,
+    options.requestedRuns,
+  );
+  const blockers = dedupe([...options.prerequisiteBlockers, ...options.runs.flatMap((run) => run.blockers)]);
+  if (stability.completedRuns !== options.requestedRuns) blockers.push('incomplete_runs');
+  if (stability.passingRuns !== options.requestedRuns) blockers.push('run_quality');
+  if (stability.stableCaseRate !== null && stability.stableCaseRate < 1) blockers.push('case_stability');
+  return refreshRelease({
+    kind: 'invented_merge_discovery_benchmark',
+    schemaVersion: MERGE_DISCOVERY_BENCH_VERSION,
+    createdAt: new Date().toISOString(),
+    development: options.corpus.split === 'development',
+    artifactPersisted: false,
+    releaseEligible: false,
+    split: options.corpus.split,
+    corpus: corpusSummary(options.corpus, options.review),
+    embedding: options.embedding,
+    embeddingLatencyMs: options.embeddingLatencyMs,
+    embeddingOnly: options.embeddingOnly,
+    classifier: options.runs[0] ?? null,
+    runs: options.runs,
+    stability,
+    passed: blockers.length === 0,
+    blockers: dedupe(blockers),
+    releaseBlockers: [],
+    error: options.error,
+  });
+}
+
+function refreshRelease(report: MergeDiscoveryBenchReport): MergeDiscoveryBenchReport {
+  const releaseBlockers = [...report.blockers];
+  if (report.split !== 'test') releaseBlockers.push('held_out_split');
+  if (!report.corpus.independentlyReviewed) releaseBlockers.push('independent_review');
+  if (report.stability.requestedRuns < REQUIRED_STABILITY_RUNS) releaseBlockers.push('five_runs');
+  if (!report.artifactPersisted) releaseBlockers.push('persisted_artifact');
+  return {
+    ...report,
+    releaseEligible: releaseBlockers.length === 0,
+    releaseBlockers: dedupe(releaseBlockers),
+  };
+}
+
 function selectThreshold(
-  scores: ReadonlyArray<Omit<BenchCase, 'left' | 'right'> & { score: number }>,
+  scores: ReadonlyArray<Omit<MergeDiscoveryBenchCase, 'left' | 'right'> & { score: number }>,
 ): MergeDiscoveryEvaluation {
   const values = [...new Set(scores.map((entry) => entry.score))].sort((left, right) => left - right);
   const thresholds = [
@@ -349,27 +355,30 @@ function selectThreshold(
   )[0]!;
 }
 
-function failedReport(
-  provider: string,
-  model: string,
-  latencyMs: number,
-  error: NonNullable<MergeDiscoveryBenchReport['error']>,
-): MergeDiscoveryBenchReport {
-  const scores = CASES.map(({ left: _left, right: _right, ...entry }) => ({ ...entry, score: 0 }));
-  const embeddingOnly = evaluateMergeDiscoveryScores(scores, 1.000001);
-  return {
-    kind: 'invented_merge_discovery_development',
-    schemaVersion: MERGE_DISCOVERY_BENCH_VERSION,
-    split: 'development',
-    corpus: corpusSummary(),
-    embedding: { provider, model },
-    embeddingLatencyMs: latencyMs,
-    embeddingOnly,
-    classifier: null,
-    error,
-    passed: false,
-    blockers: [error, ...embeddingOnly.blockers],
-  };
+function failedReport(options: {
+  corpus: MergeDiscoveryCorpus;
+  review: MergeDiscoveryReviewEvidence | null;
+  requestedRuns: number;
+  provider: string;
+  model: string;
+  latencyMs: number;
+  error: NonNullable<MergeDiscoveryBenchReport['error']>;
+}): MergeDiscoveryBenchReport {
+  const scores = options.corpus.cases.map(({ left: _left, right: _right, ...entry }) => ({
+    ...entry,
+    score: 0,
+  }));
+  return finishReport({
+    corpus: options.corpus,
+    review: options.review,
+    requestedRuns: options.requestedRuns,
+    embedding: { provider: options.provider, model: options.model },
+    embeddingLatencyMs: options.latencyMs,
+    embeddingOnly: evaluateMergeDiscoveryScores(scores, 1.000001),
+    runs: [],
+    error: options.error,
+    prerequisiteBlockers: [options.error],
+  });
 }
 
 function classifierModel(
@@ -405,12 +414,14 @@ function classifierModel(
 
 async function classifyCases(
   model: ReturnType<typeof classifierModel>,
-  scores: ReadonlyArray<BenchCase & { score: number }>,
+  corpus: MergeDiscoveryCorpus,
+  scores: ReadonlyArray<MergeDiscoveryBenchCase & { score: number }>,
+  run: number,
 ): Promise<MergeDiscoveryClassifierReport> {
-  const pageById = new Map(PAGES.map((entry) => [entry.id, entry]));
+  const pageById = new Map(corpus.pages.map((entry) => [entry.id, entry]));
   const reports: MergeDiscoveryClassifierCase[] = [];
   for (const bench of scores) {
-    if (bench.score < DEVELOPMENT_PREFILTER_THRESHOLD) {
+    if (bench.score < PREFILTER_THRESHOLD) {
       reports.push({
         id: bench.id,
         category: bench.category,
@@ -476,11 +487,12 @@ async function classifyCases(
   if (metrics.templateRejection < 1) blockers.push('template_rejection');
   if (metrics.entityCollisionRejection < 1) blockers.push('entity_collision_rejection');
   return {
+    run,
     provider: model.provider,
     model: model.model,
     reasoningEffort: model.reasoningEffort,
     promptVersion: SEMANTIC_MERGE_PROMPT_VERSION,
-    prefilterThreshold: DEVELOPMENT_PREFILTER_THRESHOLD,
+    prefilterThreshold: PREFILTER_THRESHOLD,
     calls: reports.filter((entry) => entry.prefiltered).length,
     metrics,
     cases: reports,
@@ -489,7 +501,43 @@ async function classifyCases(
   };
 }
 
-function semanticPage(entry: BenchPage, slug: string): { slug: string; title: string; content: string } {
+function validateReview(
+  split: MergeDiscoverySplit,
+  fingerprint: string,
+  review: MergeDiscoveryReviewEvidence | undefined,
+): MergeDiscoveryReviewEvidence | null {
+  if (split === 'development') return null;
+  if (!review) throw new Error('held-out merge discovery requires an approved review packet');
+  if (
+    review.kind !== 'merge_discovery_review_evidence' ||
+    review.schemaVersion !== MERGE_DISCOVERY_REVIEW_EVIDENCE_VERSION ||
+    review.corpusVersion !== MERGE_DISCOVERY_CORPUS_VERSION ||
+    review.corpusFingerprint !== fingerprint ||
+    review.sourceReviews !== mergeDiscoveryCorpus('test').pages.length ||
+    review.caseReviews !== mergeDiscoveryCorpus('test').cases.length ||
+    !['human', 'model'].includes(review.reviewerKind) ||
+    Number.isNaN(Date.parse(review.reviewedAt)) ||
+    !/^[a-f0-9]{64}$/.test(review.packetFingerprint) ||
+    !/^[a-f0-9]{64}$/.test(review.receiptFingerprint) ||
+    review.independenceConfirmed !== true ||
+    review.checksConfirmed !== true
+  ) {
+    throw new Error('merge discovery review evidence does not match the frozen held-out corpus');
+  }
+  return review;
+}
+
+function normalizeRuns(value: number): number {
+  if (!Number.isInteger(value) || value < 1 || value > 10) {
+    throw new Error('merge discovery runs must be an integer from 1 to 10');
+  }
+  return value;
+}
+
+function semanticPage(
+  entry: MergeDiscoveryBenchPage,
+  slug: string,
+): { slug: string; title: string; content: string } {
   const title = /^# (.+)$/m.exec(entry.text)?.[1] ?? slug;
   return { slug, title, content: entry.text };
 }
@@ -502,29 +550,24 @@ function classifierRejectionRate(
   return ratio(selected.filter((entry) => entry.outcome !== 'same_subject').length, selected.length);
 }
 
-function corpusSummary(): MergeDiscoveryBenchReport['corpus'] {
+function classifierDecision(report: MergeDiscoveryClassifierCase): string {
+  if (!report.valid) return 'invalid';
+  return report.prefiltered ? (report.outcome ?? 'invalid') : 'keep_separate';
+}
+
+function corpusSummary(
+  corpus: MergeDiscoveryCorpus,
+  review: MergeDiscoveryReviewEvidence | null,
+): MergeDiscoveryBenchReport['corpus'] {
   return {
-    fingerprint: sha256(
-      JSON.stringify({ version: MERGE_DISCOVERY_BENCH_VERSION, pages: PAGES, cases: CASES }),
-    ),
-    pages: PAGES.length,
-    cases: CASES.length,
-    independentlyReviewed: false,
+    version: MERGE_DISCOVERY_CORPUS_VERSION,
+    fingerprint: mergeDiscoveryCorpusFingerprint(corpus),
+    pages: corpus.pages.length,
+    cases: corpus.cases.length,
+    frozen: corpus.frozen,
+    independentlyReviewed: review !== null,
+    reviewReceiptFingerprint: review?.receiptFingerprint ?? null,
   };
-}
-
-function page(id: string, title: string, summary: string): BenchPage {
-  return { id, text: `# ${title}\n\n${summary}` };
-}
-
-function benchCase(
-  id: string,
-  category: MergeDiscoveryCategory,
-  expected: MergeDiscoveryCaseScore['expected'],
-  left: string,
-  right: string,
-): BenchCase {
-  return { id, category, expected, left, right };
 }
 
 function rejectionRate(cases: MergeDiscoveryCaseScore[], category: MergeDiscoveryCategory): number {
@@ -534,6 +577,10 @@ function rejectionRate(cases: MergeDiscoveryCaseScore[], category: MergeDiscover
 
 function ratio(numerator: number, denominator: number): number {
   return denominator === 0 ? 1 : numerator / denominator;
+}
+
+function dedupe(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function cosine(left: Float32Array, right: Float32Array): number {

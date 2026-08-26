@@ -120,6 +120,8 @@ export {
 export {
   MERGE_DISCOVERY_BENCH_VERSION,
   evaluateMergeDiscoveryScores,
+  evaluateMergeDiscoveryStability,
+  markMergeDiscoveryBenchPersisted,
   runMergeDiscoveryBench,
   type MergeDiscoveryBenchOptions,
   type MergeDiscoveryBenchReport,
@@ -128,7 +130,22 @@ export {
   type MergeDiscoveryClassifierCase,
   type MergeDiscoveryClassifierReport,
   type MergeDiscoveryEvaluation,
+  type MergeDiscoverySplit,
+  type MergeDiscoveryStability,
 } from './bench/merge-discovery.ts';
+export {
+  MERGE_DISCOVERY_REVIEW_EVIDENCE_VERSION,
+  MERGE_DISCOVERY_REVIEW_PACKET_VERSION,
+  completeMergeDiscoveryReview,
+  createMergeDiscoveryReviewPacket,
+  type MergeDiscoveryReviewCase,
+  type MergeDiscoveryReviewEvidence,
+  type MergeDiscoveryReviewIssue,
+  type MergeDiscoveryReviewMark,
+  type MergeDiscoveryReviewPacket,
+  type MergeDiscoveryReviewerKind,
+  type MergeDiscoveryReviewSource,
+} from './bench/merge-discovery-review.ts';
 export {
   GRAPH_BENCH_SCHEMA_VERSION,
   runGraphBench,

@@ -1,18 +1,25 @@
 {
-  "kind": "invented_merge_discovery_development",
-  "schemaVersion": 1,
+  "kind": "invented_merge_discovery_benchmark",
+  "schemaVersion": "merge-discovery-benchmark-v2",
+  "createdAt": "2026-08-26T10:50:08.971Z",
+  "development": true,
+  "artifactPersisted": true,
+  "releaseEligible": false,
   "split": "development",
   "corpus": {
-    "fingerprint": "3a9dae4c3ca91d00a7dd2bd21d6da9ccdcc3fee7a59df1b46f8902bda0b848c6",
+    "version": "merge-discovery-corpus-v2",
+    "fingerprint": "f06636b45242c2bd9999891f3a763a880ecab06ad38de19827ae21595e90c493",
     "pages": 17,
     "cases": 12,
-    "independentlyReviewed": false
+    "frozen": false,
+    "independentlyReviewed": false,
+    "reviewReceiptFingerprint": null
   },
   "embedding": {
     "provider": "openai",
     "model": "text-embedding-3-small"
   },
-  "embeddingLatencyMs": 434.36929100000003,
+  "embeddingLatencyMs": 895.4210840000001,
   "embeddingOnly": {
     "threshold": 1.000001,
     "metrics": {
@@ -22,14 +29,14 @@
       "relatedScopeRejection": 1,
       "templateRejection": 1,
       "entityCollisionRejection": 1,
-      "scoreMargin": -0.281381107653215
+      "scoreMargin": -0.28203150202184424
     },
     "cases": [
       {
         "id": "person-near-purpose",
         "category": "near_purpose",
         "expected": "candidate",
-        "score": 0.7123524192198389,
+        "score": 0.7117020248512097,
         "selected": false,
         "passed": false
       },
@@ -61,7 +68,7 @@
         "id": "person-project-scope",
         "category": "related_scope",
         "expected": "keep_separate",
-        "score": 0.617685971637191,
+        "score": 0.6169164138952906,
         "selected": false,
         "passed": true
       },
@@ -93,7 +100,7 @@
         "id": "person-template",
         "category": "template",
         "expected": "keep_separate",
-        "score": 0.6090762989326787,
+        "score": 0.6091325723572094,
         "selected": false,
         "passed": true
       },
@@ -106,18 +113,18 @@
         "passed": true
       },
       {
-        "id": "person-name-collision",
+        "id": "person-identity-collision",
         "category": "entity_collision",
         "expected": "keep_separate",
-        "score": 0.8362623332269341,
+        "score": 0.3762139274671427,
         "selected": false,
         "passed": true
       },
       {
-        "id": "product-model-collision",
+        "id": "product-program-collision",
         "category": "entity_collision",
         "expected": "keep_separate",
-        "score": 0.9206510263798289,
+        "score": 0.6364037591806376,
         "selected": false,
         "passed": true
       }
@@ -129,12 +136,13 @@
     ]
   },
   "classifier": {
+    "run": 1,
     "provider": "openai",
     "model": "gpt-5.6-luna",
     "reasoningEffort": "none",
     "promptVersion": "semantic-merge-candidate-v1",
     "prefilterThreshold": 0.68,
-    "calls": 7,
+    "calls": 5,
     "metrics": {
       "validResponseRate": 1,
       "candidateRecall": 1,
@@ -149,12 +157,12 @@
         "id": "person-near-purpose",
         "category": "near_purpose",
         "expected": "candidate",
-        "score": 0.7123524192198389,
+        "score": 0.7117020248512097,
         "prefiltered": true,
         "outcome": "same_subject",
         "valid": true,
         "passed": true,
-        "latencyMs": 1654.56275
+        "latencyMs": 2863.853541
       },
       {
         "id": "product-near-purpose",
@@ -165,7 +173,7 @@
         "outcome": "same_subject",
         "valid": true,
         "passed": true,
-        "latencyMs": 1634.2474580000003
+        "latencyMs": 2533.194167
       },
       {
         "id": "organization-near-purpose",
@@ -176,7 +184,7 @@
         "outcome": "same_subject",
         "valid": true,
         "passed": true,
-        "latencyMs": 1754.856625
+        "latencyMs": 1569.3597500000005
       },
       {
         "id": "place-near-purpose",
@@ -187,13 +195,13 @@
         "outcome": "same_subject",
         "valid": true,
         "passed": true,
-        "latencyMs": 1239.3029999999999
+        "latencyMs": 1637.6057500000006
       },
       {
         "id": "person-project-scope",
         "category": "related_scope",
         "expected": "keep_separate",
-        "score": 0.617685971637191,
+        "score": 0.6169164138952906,
         "prefiltered": false,
         "outcome": null,
         "valid": true,
@@ -237,7 +245,7 @@
         "id": "person-template",
         "category": "template",
         "expected": "keep_separate",
-        "score": 0.6090762989326787,
+        "score": 0.6091325723572094,
         "prefiltered": false,
         "outcome": null,
         "valid": true,
@@ -253,35 +261,203 @@
         "outcome": "keep_separate",
         "valid": true,
         "passed": true,
-        "latencyMs": 1647.425666
+        "latencyMs": 1395.9269999999997
       },
       {
-        "id": "person-name-collision",
+        "id": "person-identity-collision",
         "category": "entity_collision",
         "expected": "keep_separate",
-        "score": 0.8362623332269341,
-        "prefiltered": true,
-        "outcome": "keep_separate",
+        "score": 0.3762139274671427,
+        "prefiltered": false,
+        "outcome": null,
         "valid": true,
         "passed": true,
-        "latencyMs": 1288.7759999999998
+        "latencyMs": 0
       },
       {
-        "id": "product-model-collision",
+        "id": "product-program-collision",
         "category": "entity_collision",
         "expected": "keep_separate",
-        "score": 0.9206510263798289,
-        "prefiltered": true,
-        "outcome": "keep_separate",
+        "score": 0.6364037591806376,
+        "prefiltered": false,
+        "outcome": null,
         "valid": true,
         "passed": true,
-        "latencyMs": 1260.2679169999992
+        "latencyMs": 0
       }
     ],
     "passed": true,
     "blockers": []
   },
+  "runs": [
+    {
+      "run": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "semantic-merge-candidate-v1",
+      "prefilterThreshold": 0.68,
+      "calls": 5,
+      "metrics": {
+        "validResponseRate": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "falsePositiveRate": 0,
+        "relatedScopeRejection": 1,
+        "templateRejection": 1,
+        "entityCollisionRejection": 1
+      },
+      "cases": [
+        {
+          "id": "person-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7117020248512097,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2863.853541
+        },
+        {
+          "id": "product-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.8396679900128258,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2533.194167
+        },
+        {
+          "id": "organization-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.8409851972782711,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1569.3597500000005
+        },
+        {
+          "id": "place-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7922114475963231,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1637.6057500000006
+        },
+        {
+          "id": "person-project-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6169164138952906,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "product-warranty-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6531266240531276,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "organization-claims-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6420409342165369,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "place-visit-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6485689044186842,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "person-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.6091325723572094,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "daily-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.9937335268730539,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1395.9269999999997
+        },
+        {
+          "id": "person-identity-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.3762139274671427,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "product-program-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.6364037591806376,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        }
+      ],
+      "passed": true,
+      "blockers": []
+    }
+  ],
+  "stability": {
+    "requestedRuns": 1,
+    "completedRuns": 1,
+    "passingRuns": 1,
+    "stableCaseRate": null,
+    "flakyCaseIds": []
+  },
   "passed": true,
   "blockers": [],
+  "releaseBlockers": [
+    "held_out_split",
+    "independent_review",
+    "five_runs"
+  ],
   "error": null
 }

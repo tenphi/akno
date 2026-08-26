@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateMergeDiscoveryScores, type MergeDiscoveryCategory } from './merge-discovery.ts';
+import {
+  evaluateMergeDiscoveryScores,
+  evaluateMergeDiscoveryStability,
+  markMergeDiscoveryBenchPersisted,
+  runMergeDiscoveryBench,
+  type MergeDiscoveryBenchReport,
+  type MergeDiscoveryCategory,
+  type MergeDiscoveryClassifierReport,
+} from './merge-discovery.ts';
+import { mergeDiscoveryCorpus } from './merge-discovery-corpus.ts';
 
 type Score = {
   id: string;
@@ -50,6 +59,50 @@ describe('merge discovery benchmark', () => {
     expect(report.blockers).toContain('candidate_precision');
     expect(report.blockers).toContain('score_margin');
   });
+
+  it('reports a classifier decision that changes between repeated runs', () => {
+    const cases = mergeDiscoveryCorpus('test').cases.slice(0, 2);
+    const first = classifierRun(1, ['same_subject', 'same_subject']);
+    const second = classifierRun(2, ['keep_separate', 'same_subject']);
+
+    expect(evaluateMergeDiscoveryStability([first, second], cases, 2)).toEqual({
+      requestedRuns: 2,
+      completedRuns: 2,
+      passingRuns: 1,
+      stableCaseRate: 0.5,
+      flakyCaseIds: [cases[0]!.id],
+    });
+  });
+
+  it('refuses to start the held-out model path without independent review evidence', async () => {
+    await expect(runMergeDiscoveryBench({} as never, { split: 'test', runs: 5 })).rejects.toThrow(
+      'requires an approved review packet',
+    );
+  });
+
+  it('requires persisted reviewed held-out evidence and five runs for release', () => {
+    const report = {
+      split: 'test',
+      blockers: [],
+      corpus: { independentlyReviewed: true },
+      stability: { requestedRuns: 5 },
+      artifactPersisted: false,
+      releaseEligible: false,
+      releaseBlockers: [],
+    } as unknown as MergeDiscoveryBenchReport;
+
+    expect(markMergeDiscoveryBenchPersisted(report)).toMatchObject({
+      artifactPersisted: true,
+      releaseEligible: true,
+      releaseBlockers: [],
+    });
+    expect(
+      markMergeDiscoveryBenchPersisted({
+        ...report,
+        split: 'development',
+      }).releaseBlockers,
+    ).toContain('held_out_split');
+  });
 });
 
 function score(
@@ -59,4 +112,43 @@ function score(
   value: number,
 ): Score {
   return { id, category, expected, score: value };
+}
+
+function classifierRun(
+  run: number,
+  decisions: Array<'same_subject' | 'keep_separate'>,
+): MergeDiscoveryClassifierReport {
+  const cases = mergeDiscoveryCorpus('test').cases.slice(0, 2);
+  const reports = cases.map((benchCase, index) => ({
+    id: benchCase.id,
+    category: benchCase.category,
+    expected: benchCase.expected,
+    score: 0.9,
+    prefiltered: true,
+    outcome: decisions[index]!,
+    valid: true,
+    passed: decisions[index] === 'same_subject',
+    latencyMs: 11,
+  }));
+  return {
+    run,
+    provider: 'invented',
+    model: 'invented',
+    reasoningEffort: 'none',
+    promptVersion: 'invented',
+    prefilterThreshold: 0.68,
+    calls: reports.length,
+    metrics: {
+      validResponseRate: 1,
+      candidateRecall: reports.filter((report) => report.outcome === 'same_subject').length / reports.length,
+      candidatePrecision: 1,
+      falsePositiveRate: 0,
+      relatedScopeRejection: 1,
+      templateRejection: 1,
+      entityCollisionRejection: 1,
+    },
+    cases: reports,
+    passed: reports.every((report) => report.passed),
+    blockers: reports.every((report) => report.passed) ? [] : ['candidate_recall'],
+  };
 }

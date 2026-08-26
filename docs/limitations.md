@@ -33,10 +33,12 @@ dangerous false joins, but loosely written pages without exact subjects or alias
 merging.
 
 Broader semantic discovery remains research-only. Its development benchmark confirmed that embedding cosine
-alone is unsafe: repeated templates and adjacent product identities can score above genuine near-purpose pairs.
-A permissive embedding prefilter plus a strict Luna classifier passed the invented development corpus, but Akno
-will not turn those candidates into executable merges until a frozen, independently reviewed held-out corpus
-also passes repeated stability checks.
+alone is unsafe: repeated templates can score above genuine near-purpose pairs, while similarity does not prove
+shared scope or identity.
+A permissive embedding prefilter plus a strict Luna classifier passed the invented development corpus. A
+disjoint frozen split, model-output-free independent-review handoff, and five-run stability gate now exist, but
+Akno will not turn semantic candidates into executable merges until that review and held-out evaluation pass
+and their exact artifact is preserved.
 
 ## Retrieval is not omniscience
 
