@@ -905,6 +905,98 @@ describe('plan-backed hygiene', () => {
     expect(fs.readFileSync(paths.inbound, 'utf8')).toBe(before.inbound);
   });
 
+  it('discovers an identity-backed merge from exact graph subjects without an authored alias', async () => {
+    const paths = writeGraphSubjectMergeFixture();
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+    seedGraphSubjectFacts(mem.config.dbPath, 'people/ada-marlow-notes');
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(report.curated).toMatchObject([
+      {
+        slug: 'people/ada-marlow',
+        action: 'updated',
+        merges: ['people/ada-marlow-notes'],
+        issues: [],
+      },
+    ]);
+    expect(item).toMatchObject({ kind: 'merge', risk: 'high', status: 'applied' });
+    expect(item.evidence).toContainEqual(
+      expect.objectContaining({
+        source: 'people/ada-marlow-notes',
+        relationship: 'identity',
+        details: [expect.stringMatching(/2 distinct current attributes resolved exactly/)],
+      }),
+    );
+    expect(fs.readFileSync(paths.canonical, 'utf8')).toContain(
+      'Ada Marlow calibrates the Zephyr QX-100 at Blackwater Bay.',
+    );
+    expect(fs.existsSync(paths.duplicate)).toBe(false);
+    expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('does not treat one exact graph attribute as merge identity', async () => {
+    writeGraphSubjectMergeFixture();
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+    seedGraphSubjectFacts(mem.config.dbPath, 'people/ada-marlow-notes', 1);
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated).toEqual([]);
+    expect(server.calls()).toBe(0);
+  });
+
+  it('does not use exact graph attributes when the candidate title omits part of the identity', async () => {
+    writeGraphSubjectMergeFixture('Ada field notes');
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+    await mem.index({ structuralOnly: true });
+    seedGraphSubjectFacts(mem.config.dbPath, 'people/ada-marlow-notes');
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.maintenancePlan).toBeNull();
+    expect(report.curated).toEqual([]);
+    expect(server.calls()).toBe(0);
+  });
+
   it('refuses a merge when an inbound page does not permit synthesis writes', async () => {
     const paths = writeMergeFixture();
     fs.writeFileSync(
@@ -1677,6 +1769,91 @@ See [[people/ada-field-notes#Equipment|Ada’s equipment notes]].
 `,
   );
   return { canonical, duplicate, inbound };
+}
+
+function writeGraphSubjectMergeFixture(duplicateTitle = 'Ada Marlow field notes'): {
+  canonical: string;
+  duplicate: string;
+} {
+  const canonical = path.join(root, 'people/ada-marlow.md');
+  const duplicate = path.join(root, 'people/ada-marlow-notes.md');
+  fs.writeFileSync(
+    canonical,
+    `---
+title: Ada Marlow
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow
+
+Ada Marlow keeps an equipment record.
+`,
+  );
+  fs.writeFileSync(
+    duplicate,
+    `---
+title: ${duplicateTitle}
+akno:
+  management:
+    dream: synthesize
+---
+
+# ${duplicateTitle}
+
+Ada Marlow calibrates the Zephyr QX-100 at Blackwater Bay.
+Ada Marlow records a five-year warranty.
+`,
+  );
+  return { canonical, duplicate };
+}
+
+function seedGraphSubjectFacts(databasePath: string, slug: string, count = 2): void {
+  const db = new Database(databasePath);
+  const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get(slug) as { id: string };
+  const now = new Date().toISOString();
+  const facts = [
+    {
+      id: 'fac_graph_subject_equipment',
+      claim: 'Ada Marlow calibrates the Zephyr QX-100 at Blackwater Bay.',
+      attribute: 'equipment',
+      value: 'Zephyr QX-100',
+      line: 11,
+      hash: 'invented-equipment-line-hash',
+    },
+    {
+      id: 'fac_graph_subject_warranty',
+      claim: 'Ada Marlow records a five-year warranty.',
+      attribute: 'warranty',
+      value: 'five years',
+      line: 12,
+      hash: 'invented-warranty-line-hash',
+    },
+  ];
+  const insert = db.prepare(
+    `INSERT INTO facts(
+       id, page_id, claim, subject, attribute, value, line_start, line_end,
+       source_line_hash, confidence, valid_from, valid_to, first_seen, last_seen, item_id
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, ?, ?, NULL)`,
+  );
+  for (const fact of facts.slice(0, count)) {
+    insert.run(
+      fact.id,
+      page.id,
+      fact.claim,
+      'Ada Marlow',
+      fact.attribute,
+      fact.value,
+      fact.line,
+      fact.line,
+      fact.hash,
+      0.9,
+      now,
+      now,
+    );
+  }
+  db.close();
 }
 
 function writeCompositionFixture(): { ada: string; bo: string } {

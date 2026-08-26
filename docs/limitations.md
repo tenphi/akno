@@ -25,9 +25,12 @@ slugs, explicit aliases, unique titles and basenames, authored links, `akno.abou
 optional contextual choice among already-known same-name candidates.
 
 It does not perform open-ended named-entity recognition, infer arbitrary relationships from prose, or decide
-that similar pages represent the same real-world entity. Duplicate merging requires exact alias evidence and
-allowed-folder policy. This avoids dangerous false joins, but it also means a loosely written knowledge base
-needs explicit links or aliases before the graph becomes rich.
+that similar pages represent the same real-world entity. Duplicate merging requires allowed-folder policy plus
+either an exact alias or a narrow graph-backed signal: at least two distinct current attributes resolve exactly
+to a canonical entity with a multi-token name, and the candidate title contains that complete name. The
+independent verifier and curator must still agree that the page has no useful separate scope. This avoids
+dangerous false joins, but loosely written pages without exact subjects or aliases remain outside automatic
+merging.
 
 ## Retrieval is not omniscience
 

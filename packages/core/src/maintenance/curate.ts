@@ -169,7 +169,14 @@ interface ExtractionSection {
 interface MergeCandidate {
   canonical: PageRow;
   duplicate: PageRow;
+  identityKind: 'exact_alias' | 'graph_subject';
   identitySignal: string;
+  /** Exact graph/fact locators that make a non-alias identity signal reproducible and staleable. */
+  identityEvidence: {
+    factId: string;
+    predicate: string;
+    sourceHash: string;
+  }[];
 }
 
 interface MergeInboundPage {
@@ -262,8 +269,10 @@ export const SYNTHESIZE_SCHEMA = z.object({
   ]),
 });
 
-const MERGE_SYSTEM = `You merge two Markdown pages that an explicit exact alias identifies as the same
-durable subject. Reply with JSON only: {"body":"complete merged canonical Markdown body"}
+const MERGE_SYSTEM = `You merge two Markdown pages that sealed identity evidence identifies as the same
+durable subject. The evidence is either an explicit exact alias or multiple exact, current graph-resolved
+attributes on a page whose title contains the canonical entity's complete name. Reply with JSON only:
+{"body":"complete merged canonical Markdown body"}
 
 The user message supplies a canonical body and a prepared duplicate body. Preserve every non-blank line from
 both inputs verbatim. An exactly identical line repeated by both inputs may appear once, but otherwise do not
@@ -300,17 +309,19 @@ post-event knowledge.`;
 
 const VERIFY_MERGE_SYSTEM = `${VERIFY_SYSTEM}
 
-For a merge, require the exact alias signal to establish one durable identity. Reject the merge if the two
-pages merely concern related subjects, if any unique authored detail or provenance marker is lost, if an
+For a merge, require the supplied sealed identity signal to establish one durable identity. Exact aliases are
+direct evidence. Exact graph-resolved attributes plus a complete canonical-name title match are candidate
+evidence, not permission to merge a merely related or intentionally scoped page. Reject the merge if the two
+pages merely concern related subjects, if their separate purposes remain useful, if any unique authored detail or provenance marker is lost, if an
 unrelated page is rewritten, if an inbound link is not redirected, or if deleting the duplicate would orphan
 owned evidence. Exact duplicate lines may be deduplicated.`;
 
 export const VERIFY_SCHEMA = z.object({ ok: z.boolean(), issues: z.array(z.string()) });
 
 // Changing a prompt or a deterministic rule must invalidate the decisions made by its predecessor.
-// 11: exact-alias, lossless merge candidates and their multi-page link updates are now part of curation.
+// 12: exact graph-resolved subject attributes can discover a title-qualified near-purpose merge candidate.
 // Decisions from the previous transformation surface must be reconsidered once.
-const CURATE_FINGERPRINT_VERSION = 11;
+const CURATE_FINGERPRINT_VERSION = 12;
 
 export async function curatePages(
   ctx: AknoContext,
@@ -927,7 +938,9 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
       const proposed: MergeCandidate = {
         canonical,
         duplicate,
+        identityKind: 'exact_alias',
         identitySignal: `exact alias ${JSON.stringify(alias)} on ${canonical.slug} identifies ${duplicate.slug}`,
+        identityEvidence: [],
       };
       const prior = pairs.get(pairKey);
       if (!prior) {
@@ -947,10 +960,19 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
     }
   }
 
+  for (const proposed of graphSubjectMergeCandidates(ctx, eligible)) {
+    const pairKey = [proposed.canonical.id, proposed.duplicate.id].sort().join('|');
+    // An authored alias is stronger and already chooses the canonical destination.
+    if (!pairs.has(pairKey)) pairs.set(pairKey, proposed);
+  }
+
   const selected: MergeCandidate[] = [];
   const occupied = new Set<string>();
-  for (const candidate of [...pairs.values()].sort((left, right) =>
-    left.canonical.slug.localeCompare(right.canonical.slug),
+  for (const candidate of [...pairs.values()].sort(
+    (left, right) =>
+      Number(left.identityKind !== 'exact_alias') - Number(right.identityKind !== 'exact_alias') ||
+      right.identityEvidence.length - left.identityEvidence.length ||
+      left.canonical.slug.localeCompare(right.canonical.slug),
   )) {
     if (occupied.has(candidate.canonical.id) || occupied.has(candidate.duplicate.id)) continue;
     occupied.add(candidate.canonical.id);
@@ -958,6 +980,107 @@ function discoverMergeCandidates(ctx: AknoContext, rows: PageRow[], folders: str
     selected.push(candidate);
   }
   return selected;
+}
+
+interface GraphSubjectEvidenceRow {
+  page_id: string;
+  fact_id: string;
+  subject_entity: string;
+  predicate: string;
+  source_hash: string;
+  canonical_page: string;
+  label: string;
+}
+
+/**
+ * Broader merge discovery without a similarity threshold: a candidate page must carry at least two distinct,
+ * current fact attributes whose subjects resolve exactly to another eligible page's canonical entity. The
+ * candidate title must also contain that entity's complete title and live beside it. This catches durable
+ * subject pages such as "Ada Marlow field notes" without treating a shared template or embedding score as
+ * identity. The verifier and independent curator still decide whether the separate purpose is worth keeping.
+ */
+function graphSubjectMergeCandidates(ctx: AknoContext, eligible: PageRow[]): MergeCandidate[] {
+  if (eligible.length < 2) return [];
+  const eligibleById = new Map(eligible.map((row) => [row.id, row]));
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT f.page_id, f.id AS fact_id, s.subject_entity, s.predicate, s.source_hash,
+              e.canonical_page, e.label
+         FROM graph_fact_status s
+         JOIN facts f ON f.id = s.fact_id
+         JOIN graph_entities e ON e.id = s.subject_entity
+        WHERE f.valid_to IS NULL
+          AND s.subject_resolution = 'exact'
+          AND s.eligibility = 'eligible'
+          AND s.traversable = 1
+        ORDER BY f.page_id, e.canonical_page, s.predicate, f.id`,
+    )
+    .all() as GraphSubjectEvidenceRow[];
+  const groups = new Map<string, GraphSubjectEvidenceRow[]>();
+  for (const row of rows) {
+    if (row.page_id === row.canonical_page) continue;
+    if (!eligibleById.has(row.page_id) || !eligibleById.has(row.canonical_page)) continue;
+    const key = `${row.canonical_page}\0${row.page_id}`;
+    const found = groups.get(key) ?? [];
+    found.push(row);
+    groups.set(key, found);
+  }
+
+  const candidates: MergeCandidate[] = [];
+  for (const evidence of groups.values()) {
+    const first = evidence[0]!;
+    const canonical = eligibleById.get(first.canonical_page)!;
+    const duplicate = eligibleById.get(first.page_id)!;
+    if (path.posix.dirname(canonical.slug) !== path.posix.dirname(duplicate.slug)) continue;
+    if (!titleContainsCompleteIdentity(duplicate.title, first.label)) continue;
+    const predicates = new Set(evidence.map((entry) => entry.predicate));
+    if (predicates.size < 2) continue;
+    const identityEvidence = evidence
+      .filter(
+        (entry, index, all) =>
+          all.findIndex((candidate) => candidate.predicate === entry.predicate) === index,
+      )
+      .slice(0, 4)
+      .map((entry) => ({
+        factId: entry.fact_id,
+        predicate: entry.predicate,
+        sourceHash: entry.source_hash,
+      }));
+    candidates.push({
+      canonical,
+      duplicate,
+      identityKind: 'graph_subject',
+      identitySignal:
+        `${JSON.stringify(first.label)} is the exact canonical entity for ${canonical.slug}; ` +
+        `${duplicate.slug} names that complete identity and has ${predicates.size} distinct current ` +
+        `attributes resolved exactly to it (${[...predicates]
+          .slice(0, 4)
+          .map((predicate) => JSON.stringify(predicate))
+          .join(', ')})`,
+      identityEvidence,
+    });
+  }
+  return candidates.sort(
+    (left, right) =>
+      right.identityEvidence.length - left.identityEvidence.length ||
+      left.canonical.slug.localeCompare(right.canonical.slug) ||
+      left.duplicate.slug.localeCompare(right.duplicate.slug),
+  );
+}
+
+function titleContainsCompleteIdentity(title: string, identity: string): boolean {
+  const titleTokens = new Set(identityTokens(title));
+  const identityWords = identityTokens(identity);
+  return identityWords.length >= 2 && identityWords.every((token) => titleTokens.has(token));
+}
+
+function identityTokens(value: string): string[] {
+  return (
+    value
+      .normalize('NFKC')
+      .toLocaleLowerCase('und')
+      .match(/[\p{L}\p{N}]+/gu) ?? []
+  );
 }
 
 function exactIdentityKey(value: string): string {
@@ -1320,6 +1443,8 @@ function mergeInputHash(
       canonical: { slug: candidate.canonical.slug, hash: sha256(canonicalBefore) },
       duplicate: { slug: candidate.duplicate.slug, hash: sha256(duplicateBefore) },
       identitySignal: candidate.identitySignal,
+      identityKind: candidate.identityKind,
+      identityEvidence: candidate.identityEvidence,
       inbound: inbound.map((page) => ({
         slug: page.slug,
         hash: sha256(page.content),

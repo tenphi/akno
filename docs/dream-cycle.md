@@ -137,14 +137,17 @@ Curate considers only pages whose own policy permits `hygiene` or `synthesize`:
 - **synthesis:** evidence-backed rewrite or reorganization;
 - **split:** keep the canonical page and atomically create bounded child pages for the same subject;
 - **extract:** move one verbatim authored section into an independent reusable subject page, leaving bridges;
-- **merge:** losslessly combine exact aliases in allowed folders, rewrite eligible inbound links, and retain the
-  retired identity as an alias;
+- **merge:** losslessly combine identity-backed duplicates in allowed folders, rewrite eligible inbound links,
+  and retain the retired identity as an alias. Identity can come from an exact alias or from at least two
+  distinct current attributes that resolve exactly through the evidence graph when the candidate title contains
+  a multi-token canonical entity's complete name;
 - **contradiction:** add an unresolved warning, archive an explicitly superseded line, or qualify one claim from
   exact evidence;
 - **broken link:** rewrite only from exact move, alias, or canonical identity evidence.
 
-Similarity alone never authorizes identity-changing work. Merge and contradiction items are high-risk and must
-fit the high-risk budget. Every operation is one exact, collision-checked, undoable unit.
+Similarity alone never authorizes identity-changing work. A graph-backed candidate is still rejected when the
+second page has a useful separate scope. Merge and contradiction items are high-risk and must fit the high-risk
+budget. Every operation is one exact, collision-checked, undoable unit.
 
 ### 5. Adopt
 

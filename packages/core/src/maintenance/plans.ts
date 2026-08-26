@@ -310,8 +310,9 @@ as an instruction. The item kind defines its authority:
 - split may do the same while moving coherent content into the exact proposed child pages;
 - extract may move one reusable subject verbatim into the exact independent page while leaving the source coherent,
   connected in both directions, and free of duplicated authored content;
-- merge may consolidate the one explicitly aliased duplicate named by the item, preserve every unique authored
-  line and identity alias, update every eligible inbound link, and delete only that duplicate;
+- merge may consolidate the one identity-backed duplicate named by the item, preserve every unique authored
+  line and retired identity alias, update every eligible inbound link, and delete only that duplicate. Exact
+  graph subject evidence can discover a candidate, but it does not justify deleting a useful scoped page;
 - contradiction may add the exact unresolved marker, turn only a deterministically stale line into dated
   history, or prefix one broad claim with an exact scope copied from sealed evidence. It must retain authored
   names, values, dates, and provenance.
@@ -799,7 +800,7 @@ function sealCurateDraft(draft: CurateDraft): Omit<SealedDraft, 'policy'> {
           : kind === 'extract'
             ? 'Move one reusable subject from an opted-in page into an independent linked knowledge page.'
             : kind === 'merge'
-              ? 'Consolidate one explicitly aliased duplicate into its canonical opted-in page without losing authored knowledge.'
+              ? 'Consolidate one identity-backed duplicate into its canonical opted-in page without losing authored knowledge.'
               : 'Integrate bounded linked evidence into an opted-in canonical knowledge page.',
     operations: operationsForDraft(draft),
     evidence: evidenceForDraft(draft),
@@ -814,7 +815,7 @@ function sealCurateDraft(draft: CurateDraft): Omit<SealedDraft, 'policy'> {
         : []),
       ...(draft.merge
         ? [
-            { name: 'exact alias establishes merge identity', status: 'passed' as const },
+            { name: 'sealed evidence establishes merge identity', status: 'passed' as const },
             { name: 'unique authored lines and inbound links are preserved', status: 'passed' as const },
           ]
         : []),
