@@ -14,7 +14,13 @@ import {
   PROTOCOL_VERSION,
   type Hello,
 } from '@tenphi/akno-protocol';
-import type { Akno, MaintenanceMode, MaintenanceStatusQuery } from '@tenphi/akno-core';
+import {
+  MAINTENANCE_PLAN_STATUSES,
+  type Akno,
+  type MaintenanceMode,
+  type MaintenancePlanStatus,
+  type MaintenanceStatusQuery,
+} from '@tenphi/akno-core';
 
 export interface SocketServer {
   readonly path: string;
@@ -139,7 +145,7 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
       const action = stringFrom(input, 'action');
       switch (action) {
         case 'list':
-          return akno.plans(limitFrom(input));
+          return akno.plans(limitFrom(input), planStatusesFrom(input));
         case 'show':
           return akno.plan(idFrom(input, 'plan_id'));
         case 'diff': {
@@ -164,6 +170,13 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
         }
         case 'apply':
           return akno.applyPlan(idFrom(input, 'plan_id'));
+        case 'supersede': {
+          const reason = (input as { reason?: unknown } | null)?.reason;
+          return akno.supersedePlan(
+            idFrom(input, 'plan_id'),
+            typeof reason === 'string' ? reason : undefined,
+          );
+        }
         case 'status':
           return akno.maintenanceStatus(statusQueryFrom(input));
         case 'policy': {
@@ -203,6 +216,22 @@ function stringFrom(input: unknown, key: string): string {
 function limitFrom(input: unknown): number {
   const value = (input as { limit?: unknown } | null)?.limit;
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 20;
+}
+
+function planStatusesFrom(input: unknown): MaintenancePlanStatus[] {
+  const value = (input as { status?: unknown } | null)?.status;
+  if (value === undefined) return [];
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value.some(
+      (status) =>
+        typeof status !== 'string' || !(MAINTENANCE_PLAN_STATUSES as readonly string[]).includes(status),
+    )
+  ) {
+    throw new AknoError('invalid', `plan status must contain: ${MAINTENANCE_PLAN_STATUSES.join(', ')}`);
+  }
+  return [...new Set(value)] as MaintenancePlanStatus[];
 }
 
 function statusQueryFrom(input: unknown): MaintenanceStatusQuery {

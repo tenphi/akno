@@ -1,31 +1,35 @@
-import type {
-  ApplyMaintenanceResult,
-  MaintenanceItemStatus,
-  MaintenancePlan,
-  MaintenancePlanSummary,
-  MaintenanceStatus,
-  MaintenanceStatusQuery,
+import {
+  MAINTENANCE_PLAN_STATUSES,
+  type ApplyMaintenanceResult,
+  type MaintenanceItemStatus,
+  type MaintenancePlan,
+  type MaintenancePlanStatus,
+  type MaintenancePlanSummary,
+  type MaintenanceStatus,
+  type MaintenanceStatusQuery,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance } from '../ops-handle.ts';
-import { heading, json, kv, line, style } from '../output.ts';
+import { fail, heading, json, kv, line, style } from '../output.ts';
 import {
   dreamAutoEstimateSummary,
   dreamModelDegradationSummary,
   dreamModelUsageSummary,
 } from './dream-model-status.ts';
 
-const PLAN_HELP = `akno plan [list] [--limit <n>]
+const PLAN_HELP = `akno plan [list] [--limit <n>] [--status <status,...>]
 akno plan show <plan_id>
 akno plan diff <plan_id> [--item <item_id>]
 akno plan decide <plan_id> --item <item_id> <--approve | --reject> [--reason <text>]
 akno plan apply <plan_id>
+akno plan supersede <plan_id> [--reason <text>]
 akno plan status
 
   Inspect and control durable maintenance plans. Planning never changes knowledge-base
   files. Applying checks every source and create target before writing, journals each
   item as one change, re-indexes every affected path, and verifies the resulting index.
 
+  --status <s,...>  Filter list by exact plan status.
   --json`;
 
 export async function planCommand(argv: string[]): Promise<number> {
@@ -35,12 +39,14 @@ export async function planCommand(argv: string[]): Promise<number> {
     approve: boolean;
     reject: boolean;
     reason?: string;
+    status?: string;
   }>(argv, {
     limit: { type: 'string' },
     item: { type: 'string' },
     approve: { type: 'boolean', default: false },
     reject: { type: 'boolean', default: false },
     reason: { type: 'string' },
+    status: { type: 'string' },
   });
   const action = positionals[0] ?? 'list';
   const planId = positionals[1];
@@ -52,12 +58,14 @@ export async function planCommand(argv: string[]): Promise<number> {
 
   if (action === 'list') {
     const limit = positiveLimit(values.limit);
+    const statuses = parsePlanStatuses(values.status);
+    if (statuses === null) return 2;
     const plans = await runMaintenance(
       'plan',
-      { action: 'list', limit },
+      { action: 'list', limit, ...(statuses.length > 0 ? { status: statuses } : {}) },
       values,
       openOptionsFrom(values),
-      async (mem) => mem.plans(limit),
+      async (mem) => mem.plans(limit, statuses),
       { writable: false },
     );
     if (values.json) json(plans);
@@ -72,7 +80,7 @@ export async function planCommand(argv: string[]): Promise<number> {
     return 0;
   }
 
-  if (!planId || !['show', 'diff', 'decide', 'apply'].includes(action)) {
+  if (!planId || !['show', 'diff', 'decide', 'apply', 'supersede'].includes(action)) {
     line(PLAN_HELP);
     return 1;
   }
@@ -128,6 +136,26 @@ export async function planCommand(argv: string[]): Promise<number> {
     else {
       line(`${style.green(outcome === 'approve' ? 'approved' : 'rejected')} ${values.item}`);
       printPlanSummary(plan);
+    }
+    return 0;
+  }
+
+  if (action === 'supersede') {
+    const plan = await runMaintenance(
+      'plan',
+      {
+        action: 'supersede',
+        plan_id: planId,
+        ...(values.reason ? { reason: values.reason } : {}),
+      },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.supersedePlan(planId, values.reason),
+    );
+    if (values.json) json(plan);
+    else {
+      line(`${style.yellow('superseded')} ${plan.id}`);
+      if (plan.error) line(`  ${style.grey(plan.error)}`);
     }
     return 0;
   }
@@ -245,6 +273,7 @@ function printPlan(plan: MaintenancePlan): void {
     ['phase', plan.phase],
     ['created', plan.createdAt],
     ['summary', plan.summary],
+    ...(plan.error ? ([['detail', plan.error]] as [string, string][]) : []),
   ]);
   for (const item of plan.items) {
     const components = (item.componentCount ?? 1) > 1 ? `  ${item.componentCount} components` : '';
@@ -319,4 +348,24 @@ function nonzeroCounts(counts: Record<MaintenanceItemStatus, number>): string {
 function positiveLimit(value: string | undefined): number {
   const parsed = value ? Number(value) : 20;
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 20;
+}
+
+export function parsePlanStatuses(value: string | undefined): MaintenancePlanStatus[] | null {
+  if (value === undefined) return [];
+  const statuses = [
+    ...new Set(
+      value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean),
+    ),
+  ];
+  if (
+    statuses.length === 0 ||
+    statuses.some((status) => !(MAINTENANCE_PLAN_STATUSES as readonly string[]).includes(status))
+  ) {
+    fail(`--status must contain: ${MAINTENANCE_PLAN_STATUSES.join(', ')}`);
+    return null;
+  }
+  return statuses as MaintenancePlanStatus[];
 }

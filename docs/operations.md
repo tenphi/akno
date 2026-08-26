@@ -59,11 +59,21 @@ akno dream status
 akno dream status --last 10
 akno dream status --run <run-id>
 akno dream status --pending
+akno plan list --status awaiting_review
 ```
 
 Status includes the next expected schedule, recent durable runs, policy, typed model degradation, decisions,
 verification, and budget use. The normal surface is content-safe: inspect exact private changes only with
 `akno plan diff <plan-id>`.
+
+If a newer run makes queued work obsolete, retire the old plan without touching the knowledge base:
+
+```bash
+akno plan supersede <plan-id> --reason "Replaced by a newer review."
+```
+
+Only work that has not begun applying can be superseded. Interrupted apply and verification states stay in
+the queue so recovery cannot be hidden as cleanup.
 
 Local notifications are off by default:
 

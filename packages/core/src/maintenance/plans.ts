@@ -48,16 +48,19 @@ import {
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
 
-export type MaintenancePlanStatus =
-  | 'ready'
-  | 'awaiting_review'
-  | 'deciding'
-  | 'approved'
-  | 'applying'
-  | 'completed'
-  | 'partially_completed'
-  | 'failed'
-  | 'superseded';
+export const MAINTENANCE_PLAN_STATUSES = [
+  'ready',
+  'awaiting_review',
+  'deciding',
+  'approved',
+  'applying',
+  'completed',
+  'partially_completed',
+  'failed',
+  'superseded',
+] as const;
+
+export type MaintenancePlanStatus = (typeof MAINTENANCE_PLAN_STATUSES)[number];
 
 export type MaintenanceItemStatus =
   | 'proposed'
@@ -892,11 +895,28 @@ function sealBrokenLinkDraft(draft: BrokenLinkDraft): Omit<SealedDraft, 'policy'
   };
 }
 
-export function listMaintenancePlans(ctx: AknoContext, limit = 20): MaintenancePlanSummary[] {
+export function listMaintenancePlans(
+  ctx: AknoContext,
+  limit = 20,
+  statuses: readonly MaintenancePlanStatus[] = [],
+): MaintenancePlanSummary[] {
   if (!maintenanceTablesAvailable(ctx)) return [];
+  const boundedLimit = Math.max(1, Math.min(100, limit));
+  const selected = [...new Set(statuses)];
+  if (selected.length > 0) {
+    const placeholders = selected.map(() => '?').join(', ');
+    const rows = ctx.store.db
+      .prepare(
+        `SELECT * FROM maintenance_plans
+          WHERE status IN (${placeholders})
+          ORDER BY rowid DESC LIMIT ?`,
+      )
+      .all(...selected, boundedLimit) as PlanRow[];
+    return rows.map((row) => planSummary(ctx, row));
+  }
   const rows = ctx.store.db
     .prepare('SELECT * FROM maintenance_plans ORDER BY rowid DESC LIMIT ?')
-    .all(Math.max(1, Math.min(100, limit))) as PlanRow[];
+    .all(boundedLimit) as PlanRow[];
   return rows.map((row) => planSummary(ctx, row));
 }
 
@@ -1360,6 +1380,10 @@ export function decideMaintenanceItem(
   reason: string,
 ): MaintenancePlan {
   requireWritable(ctx);
+  const plan = getMaintenancePlan(ctx, planId);
+  if (plan.status === 'superseded') {
+    throw new AknoError('invalid', `${planId} is superseded and cannot be decided`);
+  }
   const item = itemRow(ctx, planId, itemId);
   if (!['proposed', 'approved', 'rejected', 'blocked'].includes(item.status)) {
     throw new AknoError('invalid', `${itemId} cannot be decided while it is ${item.status}`);
@@ -1524,6 +1548,9 @@ export async function applyMaintenancePlan(
   requireWritable(ctx);
   const budget = sharedBudget ?? createMaintenanceBudget(ctx.config.maintenance.limits);
   let plan = getMaintenancePlan(ctx, planId);
+  if (!['ready', 'awaiting_review', 'approved', 'applying', 'partially_completed'].includes(plan.status)) {
+    throw new AknoError('invalid', `${planId} is ${plan.status} and cannot be applied`);
+  }
   const selected = (item: MaintenanceItem): boolean =>
     !options.onlyItemIds || options.onlyItemIds.has(item.id);
   if (
@@ -3076,6 +3103,46 @@ export function supersedeDependencyMaintenancePlan(ctx: AknoContext, planId: str
     throw new AknoError('invalid', `${planId} is not a failed dependency-deferred plan`);
   }
   setPlanStatus(ctx, planId, 'superseded');
+  return getMaintenancePlan(ctx, planId);
+}
+
+/**
+ * Retire operator-controlled work without changing the knowledge base. A plan that has started
+ * writing or verification is recovery state, not queue clutter, and cannot be hidden this way.
+ */
+export function supersedeMaintenancePlan(
+  ctx: AknoContext,
+  planId: string,
+  reason = 'No longer needed.',
+): MaintenancePlan {
+  requireWritable(ctx);
+  const plan = getMaintenancePlan(ctx, planId);
+  if (plan.status === 'superseded') return plan;
+  if (!['ready', 'awaiting_review', 'approved'].includes(plan.status)) {
+    throw new AknoError(
+      'invalid',
+      `${planId} is ${plan.status}; only ready, awaiting_review, or approved plans can be superseded`,
+    );
+  }
+  if (
+    plan.items.some((item) =>
+      ['applying', 'applied', 'verification_pending', 'verification_failed'].includes(item.status),
+    )
+  ) {
+    throw new AknoError(
+      'invalid',
+      `${planId} has entered apply or verification recovery and cannot be superseded`,
+    );
+  }
+
+  const compactReason = reason.trim().replace(/\s+/g, ' ').slice(0, 500) || 'No longer needed.';
+  ctx.store.db
+    .prepare(
+      `UPDATE maintenance_plans
+          SET status = 'superseded', error = ?, updated_at = ?
+        WHERE id = ?`,
+    )
+    .run(`Superseded by user: ${compactReason}`, new Date().toISOString(), planId);
   return getMaintenancePlan(ctx, planId);
 }
 

@@ -139,6 +139,14 @@ describe('the socket door', () => {
 
       const plans = (await client.command('plan', { action: 'list' })) as unknown[];
       expect(plans).toEqual([]);
+      const selectedPlans = (await client.command('plan', {
+        action: 'list',
+        status: ['awaiting_review', 'superseded'],
+      })) as unknown[];
+      expect(selectedPlans).toEqual([]);
+      await expect(
+        client.command('plan', { action: 'list', status: ['invented_status'] }),
+      ).rejects.toMatchObject({ code: 'invalid' });
       const status = (await client.command('plan', { action: 'status' })) as { active: number };
       expect(status.active).toBe(0);
       const policy = (await client.command('plan', {

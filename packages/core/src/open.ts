@@ -47,8 +47,10 @@ import {
   listMaintenancePlans,
   maintenanceStatus,
   renderMaintenanceDiff,
+  supersedeMaintenancePlan,
   type ApplyMaintenanceResult,
   type MaintenancePlan,
+  type MaintenancePlanStatus,
   type MaintenancePlanSummary,
   type MaintenanceMode,
   type MaintenanceStatus,
@@ -109,7 +111,7 @@ export interface Akno extends AknoOps {
   /** Gated proposals waiting on the user. */
   proposals(): ProposalRow[];
   /** Durable maintenance plans, newest first. */
-  plans(limit?: number): MaintenancePlanSummary[];
+  plans(limit?: number, statuses?: readonly MaintenancePlanStatus[]): MaintenancePlanSummary[];
   /** One sealed plan, including its exact operations and decisions. */
   plan(planId: string): MaintenancePlan;
   /** A compact unified diff for one item or the whole plan. */
@@ -118,6 +120,8 @@ export interface Akno extends AknoOps {
   decidePlan(planId: string, itemId: string, outcome: 'approve' | 'reject', reason?: string): MaintenancePlan;
   /** Apply approved items with stale-input checks, journaling and verification. */
   applyPlan(planId: string): Promise<ApplyMaintenanceResult>;
+  /** Retire a not-yet-applied plan while preserving its sealed audit history. */
+  supersedePlan(planId: string, reason?: string): MaintenancePlan;
   /** A small operational view of the maintenance queue. */
   maintenanceStatus(query?: MaintenanceStatusQuery): MaintenanceStatus;
   /**
@@ -390,7 +394,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     proposals: () => ctx.gate.pending(),
 
-    plans: (limit) => listMaintenancePlans(ctx, limit),
+    plans: (limit, statuses) => listMaintenancePlans(ctx, limit, statuses),
 
     plan: (planId) => getMaintenancePlan(ctx, planId),
 
@@ -414,6 +418,16 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
         );
       }
       return applyMaintenancePlan(ctx, planId);
+    },
+
+    supersedePlan(planId, reason) {
+      if (!writable) {
+        throw new AknoError(
+          'read_only',
+          `superseding a maintenance plan needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return supersedeMaintenancePlan(ctx, planId, reason);
     },
 
     maintenanceStatus: (query) => maintenanceStatus(ctx, query),

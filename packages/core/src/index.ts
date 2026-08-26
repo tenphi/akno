@@ -257,6 +257,7 @@ export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 export {
   CURATOR_SCHEMA,
+  MAINTENANCE_PLAN_STATUSES,
   type ApplyMaintenanceResult,
   type CreateOperation,
   type DeleteOperation,

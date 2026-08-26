@@ -316,6 +316,41 @@ describe('plan-backed hygiene', () => {
     ]);
   });
 
+  it('filters the plan queue and safely supersedes unapplied work', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+
+    expect(mem.plans(20, ['awaiting_review'])).toEqual([
+      expect.objectContaining({ id: planned.id, status: 'awaiting_review' }),
+    ]);
+    expect(mem.plans(20, ['ready'])).toEqual([]);
+
+    mem.decidePlan(planned.id, planned.items[0]!.id, 'approve', 'The exact hygiene diff is safe.');
+    const superseded = mem.supersedePlan(planned.id, '  A newer invented review\nreplaced this plan.  ');
+
+    expect(superseded).toMatchObject({
+      id: planned.id,
+      status: 'superseded',
+      error: 'Superseded by user: A newer invented review replaced this plan.',
+    });
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(mem.plans(20, ['awaiting_review', 'approved'])).toEqual([]);
+    expect(mem.plans(20, ['superseded'])).toEqual([
+      expect.objectContaining({ id: planned.id, status: 'superseded' }),
+    ]);
+    expect(mem.maintenanceStatus({ pending: true })).toMatchObject({
+      active: 0,
+      awaitingHuman: 0,
+      pendingPlans: [],
+    });
+    expect(mem.supersedePlan(planned.id, 'A later reason is ignored.').error).toBe(superseded.error);
+    expect(() =>
+      mem.decidePlan(planned.id, planned.items[0]!.id, 'reject', 'This must stay retired.'),
+    ).toThrow(/superseded/);
+    await expect(mem.applyPlan(planned.id)).rejects.toThrow(/superseded/);
+  });
+
   it('keeps human review separate from apply and leaves an undoable change', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const before = fs.readFileSync(page, 'utf8');
@@ -334,6 +369,7 @@ describe('plan-backed hygiene', () => {
     const changeId = applied.plan.items[0]!.changeId!;
     await mem.undo({ change_id: changeId });
     expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(() => mem.supersedePlan(planned.id)).toThrow(/completed/);
   });
 
   it('refuses an approved item when its source changed after planning', async () => {

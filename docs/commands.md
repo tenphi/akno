@@ -3,36 +3,36 @@
 This table answers three questions: which command matches the user's intent, whether it can change their
 knowledge base, and which model roles may be involved.
 
-| Command               | Purpose                                                    | Knowledge-base write?      | Model roles                                   |
-| --------------------- | ---------------------------------------------------------- | -------------------------- | --------------------------------------------- |
-| `init`                | Configure, then offer explicit first-run actions           | Approved index opt-ins     | Preflight or approved index/recall roles      |
-| `index`               | Reconcile derived state with files                         | No by default              | Embedding, derive                             |
-| `recall <query>`      | Find and rank cited page/document evidence                 | No                         | Expansion, embedding, reranker                |
-| `answer <question>`   | Return a direct grounded answer and citations              | No                         | Expansion, embedding, answer; reranker opt-in |
-| `read <slug>`         | Read one exact page or document                            | No                         | None                                          |
-| `list`                | Browse folders, pages, or a tree                           | No                         | None                                          |
-| `graph [seed]`        | Inspect bounded exact evidence paths and locators          | No                         | None                                          |
-| `timeline`            | Retrieve authored events and typed document dates          | No                         | None                                          |
-| `context <query>`     | Assemble broad context or precision-first automatic recall | No                         | Embedding; reranker at an ambiguous boundary  |
-| `write`               | Create, append, patch, or replace a page                   | Yes                        | Vision for textless attachments only          |
-| `remember <text>`     | Extract durable knowledge and route it                     | Yes or held proposal       | Maintenance or derive, plus recall roles      |
-| `folder <path>`       | Declare a folder and its default policy                    | Yes, `akno.jsonc`          | None                                          |
-| `approve` / `decline` | Resolve a held routing proposal                            | Approval may write         | Depends on the held action                    |
-| `forget`              | Retract a fact or trash a page/document                    | Yes                        | None                                          |
-| `undo <change-id>`    | Restore exact bytes from a journalled change               | Yes                        | None                                          |
-| `move <from> <to>`    | Move a page and its owned documents                        | Yes                        | None                                          |
-| `ingest <path\|url>`  | Extract, name, route, store, and index                     | Yes                        | Derive; vision when needed                    |
-| `inbox`               | Process arrivals in configured routed folders              | Yes                        | Same as ingest                                |
-| `adopt <document-id>` | Give an orphan document a minimal owned page               | Policy-dependent plan      | Maintenance or derive                         |
-| `dream`               | Run the seven maintenance phases                           | Depends on policy          | Maintenance or derive                         |
-| `plan`                | Inspect, decide, and apply durable maintenance items       | Apply only                 | None after planning                           |
-| `serve`               | Run watcher and operation doors                            | No by itself               | None by itself                                |
-| `service`             | Install, inspect, or remove background jobs                | Outside the knowledge base | None                                          |
-| `doctor`              | Diagnose paths, index, models, and structural warnings     | Cache only                 | Probes configured roles                       |
-| `rules [path]`        | Explain effective folder and maintenance policy            | No                         | None                                          |
-| `config`              | Print resolved, redacted configuration                     | No                         | None                                          |
-| `bench`               | Measure latency and invented-corpus quality gates          | Only explicit write test   | Roles selected by target                      |
-| `redeploy`            | Build, restart, and wait for the local service             | No                         | None                                          |
+| Command               | Purpose                                                     | Knowledge-base write?      | Model roles                                   |
+| --------------------- | ----------------------------------------------------------- | -------------------------- | --------------------------------------------- |
+| `init`                | Configure, then offer explicit first-run actions            | Approved index opt-ins     | Preflight or approved index/recall roles      |
+| `index`               | Reconcile derived state with files                          | No by default              | Embedding, derive                             |
+| `recall <query>`      | Find and rank cited page/document evidence                  | No                         | Expansion, embedding, reranker                |
+| `answer <question>`   | Return a direct grounded answer and citations               | No                         | Expansion, embedding, answer; reranker opt-in |
+| `read <slug>`         | Read one exact page or document                             | No                         | None                                          |
+| `list`                | Browse folders, pages, or a tree                            | No                         | None                                          |
+| `graph [seed]`        | Inspect bounded exact evidence paths and locators           | No                         | None                                          |
+| `timeline`            | Retrieve authored events and typed document dates           | No                         | None                                          |
+| `context <query>`     | Assemble broad context or precision-first automatic recall  | No                         | Embedding; reranker at an ambiguous boundary  |
+| `write`               | Create, append, patch, or replace a page                    | Yes                        | Vision for textless attachments only          |
+| `remember <text>`     | Extract durable knowledge and route it                      | Yes or held proposal       | Maintenance or derive, plus recall roles      |
+| `folder <path>`       | Declare a folder and its default policy                     | Yes, `akno.jsonc`          | None                                          |
+| `approve` / `decline` | Resolve a held routing proposal                             | Approval may write         | Depends on the held action                    |
+| `forget`              | Retract a fact or trash a page/document                     | Yes                        | None                                          |
+| `undo <change-id>`    | Restore exact bytes from a journalled change                | Yes                        | None                                          |
+| `move <from> <to>`    | Move a page and its owned documents                         | Yes                        | None                                          |
+| `ingest <path\|url>`  | Extract, name, route, store, and index                      | Yes                        | Derive; vision when needed                    |
+| `inbox`               | Process arrivals in configured routed folders               | Yes                        | Same as ingest                                |
+| `adopt <document-id>` | Give an orphan document a minimal owned page                | Policy-dependent plan      | Maintenance or derive                         |
+| `dream`               | Run the seven maintenance phases                            | Depends on policy          | Maintenance or derive                         |
+| `plan`                | Filter, inspect, decide, apply, or retire maintenance plans | Apply only                 | None after planning                           |
+| `serve`               | Run watcher and operation doors                             | No by itself               | None by itself                                |
+| `service`             | Install, inspect, or remove background jobs                 | Outside the knowledge base | None                                          |
+| `doctor`              | Diagnose paths, index, models, and structural warnings      | Cache only                 | Probes configured roles                       |
+| `rules [path]`        | Explain effective folder and maintenance policy             | No                         | None                                          |
+| `config`              | Print resolved, redacted configuration                      | No                         | None                                          |
+| `bench`               | Measure latency and invented-corpus quality gates           | Only explicit write test   | Roles selected by target                      |
+| `redeploy`            | Build, restart, and wait for the local service              | No                         | None                                          |
 
 Add `--help` to any command for its current flags and examples:
 

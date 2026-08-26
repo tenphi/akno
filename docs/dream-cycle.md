@@ -214,9 +214,13 @@ writes nothing and returns to `proposed` with `budget_exhausted`. Unrelated smal
 ## Reviewing plans
 
 ```bash
+akno plan list --status awaiting_review
 akno plan diff <plan-id>
 akno plan decide <plan-id> --item <item-id> --approve
 akno plan apply <plan-id>
+
+# Retire queued work that a newer plan or a human decision made obsolete.
+akno plan supersede <plan-id> --reason "Replaced by a newer review."
 
 akno dream status
 akno dream status --last 10
@@ -228,6 +232,12 @@ akno dream status --explain-policy people/ada-marlow.md
 General status and JSON receipts contain counts, typed outcomes, ids, policy, budget use, model-call counts,
 latency, and provider-reported token coverage. They omit page bodies, prompts, paths, excerpts, model responses,
 and provider errors. `plan diff` is the explicit private-content inspection surface.
+
+`plan list --status` accepts one exact status or a comma-separated set, such as
+`awaiting_review,approved`. Superseding keeps the sealed plan and its reason as audit history but removes it
+from the active queue; it neither changes the knowledge base nor deletes a plan. Akno permits it only before
+apply begins. Applying, verification, completed, partial, and failed states remain visible for recovery and
+diagnosis.
 
 Use `akno rules <path>` or `dream status --explain-policy <path>` to understand why a page is ineligible,
 audit-only, waiting for a person, eligible for curator apply, or blocked.
