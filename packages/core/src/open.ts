@@ -17,7 +17,7 @@ import { resolveAutoProviderApis } from './models/provider-api.ts';
 import { Assembler } from './recall/assemble.ts';
 import { Indexer, type IndexOptions, type IndexReport } from './index/indexer.ts';
 import { Watcher, type WatcherEvents } from './watch/watcher.ts';
-import { doctor, type DoctorReport } from './doctor.ts';
+import { doctor, type DoctorOptions, type DoctorReport } from './doctor.ts';
 import { effectiveRule, matchRules } from './rules/compile.ts';
 import { looksLikeLedger } from './reserved.ts';
 import type { AknoContext } from './context.ts';
@@ -103,7 +103,7 @@ export interface Akno extends AknoOps {
   readonly lockHeldBy: number | null;
   /** Reconcile the index against the knowledge base. */
   index(options?: IndexOptions): Promise<IndexReport>;
-  doctor(options?: { probeModels?: boolean }): Promise<DoctorReport>;
+  doctor(options?: DoctorOptions): Promise<DoctorReport>;
   /** Explain which rule governs a path, and why. */
   rules(slug: string): { effective: Record<string, unknown>; candidates: { glob: string; source: string }[] };
   /** Explain the layered scheduled-maintenance authority for one page path. */

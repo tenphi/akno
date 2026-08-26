@@ -49,7 +49,13 @@ export {
   type MaintenancePathTransformPolicy,
   type PageMaintenanceTransform,
 } from './maintenance/path-policy.ts';
-export { doctor, type DoctorReport, type RoleReport } from './doctor.ts';
+export {
+  doctor,
+  type AdmissionPreview,
+  type DoctorOptions,
+  type DoctorReport,
+  type RoleReport,
+} from './doctor.ts';
 export {
   OPENAI_LUNA_EMBEDDING_DIMENSIONS,
   OPENAI_LUNA_EMBEDDING_MODEL,

@@ -82,6 +82,16 @@ An existing config is never silently replaced. Guided updates default to leaving
 a path-only diff for every accepted change, and default to not applying it. Non-interactive updates require
 `--force` and do not classify folders or configure a fallback implicitly.
 
+Before reviewing an existing installation interactively, inspect its authority-preserving proposal:
+
+```bash
+akno doctor --no-probe --admission-preview
+```
+
+It lists only top-level folder globs and counts—never page slugs or content—and proposes `remember: deny` so
+implicit read-only behavior becomes explicit without promoting any page. Root-level pages remain a separate
+count. Use `akno init` when you are ready to classify folders deliberately.
+
 ## Build the first index
 
 ```bash

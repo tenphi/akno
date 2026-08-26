@@ -1,4 +1,4 @@
-import { open, readOnlyExplanation } from '@tenphi/akno-core';
+import { open, readOnlyExplanation, type AdmissionPreview } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { fail, heading, json, kv, line, ms, style } from '../output.ts';
 
@@ -10,12 +10,15 @@ const DOCTOR_HELP = `akno doctor [options]
 
   --no-probe          Skip the model round trips. Instant, but no latency numbers.
   --refresh-api       Re-probe providers configured with api: auto, ignoring their cache.
+  --admission-preview Show exact default-deny folder rules for implicit read-only pages.
+                      Reads folder names, never page slugs or content, and writes nothing.
   --json`;
 
 export async function doctorCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ probe: boolean; 'refresh-api': boolean }>(argv, {
+  const { values } = parse<{ probe: boolean; 'refresh-api': boolean; 'admission-preview': boolean }>(argv, {
     probe: { type: 'boolean', default: true },
     'refresh-api': { type: 'boolean', default: false },
+    'admission-preview': { type: 'boolean', default: false },
   });
 
   if (values.help) {
@@ -36,7 +39,10 @@ export async function doctorCommand(argv: string[]): Promise<number> {
     refreshProviderApis: values['refresh-api'],
   });
   try {
-    const report = await mem.doctor({ probeModels: values.probe });
+    const report = await mem.doctor({
+      probeModels: values.probe,
+      admissionPreview: values['admission-preview'],
+    });
 
     if (values.json) {
       json(report);
@@ -88,6 +94,10 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       ['links', `${report.counts.links} (${report.counts.brokenLinks} broken)`],
       ['ignored rules', report.counts.ignoredRules],
     ]);
+
+    if (report.factInjection.admissionPreview) {
+      renderAdmissionPreview(report.factInjection.admissionPreview);
+    }
 
     // Reported apart because they are unrelated; conflating them hides which is slow.
     heading('Latency — index only, no model in the path');
@@ -177,6 +187,34 @@ export async function doctorCommand(argv: string[]): Promise<number> {
   } finally {
     await mem.close();
   }
+}
+
+function renderAdmissionPreview(preview: AdmissionPreview): void {
+  heading('Admission preview — no changes');
+  if (preview.implicitPages === 0) {
+    line(`  ${style.green('every knowledge page has an explicit remember decision')}`);
+    return;
+  }
+
+  line(
+    style.grey(
+      '  These patches preserve current default-deny behavior. They do not make any page writable or change its role.',
+    ),
+  );
+  for (const proposal of preview.proposedRules) {
+    line(
+      `  + ${JSON.stringify(proposal.glob)}: { "remember": "deny" } ` +
+        style.grey(`(${proposal.pages} implicit page${proposal.pages === 1 ? '' : 's'})`),
+    );
+  }
+  if (preview.rootPages > 0) {
+    line(
+      style.grey(
+        `  ${preview.rootPages} root-level page${preview.rootPages === 1 ? '' : 's'} need page metadata; no broad ** rule was proposed.`,
+      ),
+    );
+  }
+  line(style.grey('  Review or change folder classifications interactively with: akno init'));
 }
 
 function formatRoles(byRole: Record<string, number>): string {

@@ -35,6 +35,25 @@ export interface RoleReport {
   checks?: AnswerCapabilityProbe;
 }
 
+export interface AdmissionPreview {
+  /** The proposal preserves today's default-deny behavior; it does not grant writes. */
+  effect: 'preserve_read_only';
+  implicitPages: number;
+  /** Root pages cannot receive a folder-scoped rule without inventing a broad `**` policy. */
+  rootPages: number;
+  proposedRules: {
+    glob: string;
+    pages: number;
+    patch: { remember: 'deny' };
+  }[];
+}
+
+export interface DoctorOptions {
+  probeModels?: boolean;
+  /** Include folder names in an explicitly requested, content-free admission upgrade preview. */
+  admissionPreview?: boolean;
+}
+
 export interface DoctorReport {
   aknoPath: string;
   stateDir: string;
@@ -69,6 +88,8 @@ export interface DoctorReport {
     readOnlyPages: number;
     /** Read-only because neither page nor folder made a decision; useful during upgrades. */
     implicitReadOnlyPages: number;
+    /** Opt-in structural preview; omitted by default so routine diagnostics retain no folder names. */
+    admissionPreview?: AdmissionPreview;
     /** Explicit catch-all availability; null means no fallback is configured. */
     fallback: RememberFallbackResolution | null;
   };
@@ -87,10 +108,7 @@ export interface DoctorReport {
   warnings: string[];
 }
 
-export async function doctor(
-  ctx: AknoContext,
-  options: { probeModels?: boolean } = {},
-): Promise<DoctorReport> {
+export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Promise<DoctorReport> {
   const db = ctx.store.db;
   const warnings: string[] = [];
 
@@ -134,6 +152,8 @@ export async function doctor(
   }
 
   const factInjection = { admittedPages: 0, readOnlyPages: 0, implicitReadOnlyPages: 0 };
+  const implicitFolders = new Map<string, number>();
+  let implicitRootPages = 0;
   for (const row of db.prepare('SELECT slug, role, frontmatter FROM pages').all() as {
     slug: string;
     role: string;
@@ -153,9 +173,25 @@ export async function doctor(
         !isReserved(row.slug, ctx.config)
       ) {
         factInjection.implicitReadOnlyPages++;
+        const separator = row.slug.indexOf('/');
+        if (separator === -1) implicitRootPages++;
+        else {
+          const folder = row.slug.slice(0, separator);
+          implicitFolders.set(folder, (implicitFolders.get(folder) ?? 0) + 1);
+        }
       }
     }
   }
+  const admissionPreview: AdmissionPreview | undefined = options.admissionPreview
+    ? {
+        effect: 'preserve_read_only',
+        implicitPages: factInjection.implicitReadOnlyPages,
+        rootPages: implicitRootPages,
+        proposedRules: [...implicitFolders.entries()]
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([folder, pages]) => ({ glob: `${folder}/**`, pages, patch: { remember: 'deny' } })),
+      }
+    : undefined;
   const rememberFallback = await resolveRememberFallback(ctx);
   if (rememberFallback?.status === 'unavailable') {
     warnings.push(
@@ -363,7 +399,11 @@ export async function doctor(
     vectorBackend: ctx.store.vectors.kind,
     counts,
     byRole,
-    factInjection: { ...factInjection, fallback: rememberFallback },
+    factInjection: {
+      ...factInjection,
+      ...(admissionPreview ? { admissionPreview } : {}),
+      fallback: rememberFallback,
+    },
     index: {
       openMs: round(openMs),
       lexicalMs: round(lexicalMs),

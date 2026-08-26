@@ -102,6 +102,7 @@ Run these before changing configuration or deleting state:
 ```bash
 akno doctor
 akno doctor --no-probe
+akno doctor --no-probe --admission-preview
 akno doctor --refresh-api
 akno config
 akno rules
@@ -114,6 +115,8 @@ akno service status
 - knowledge-base and state locations;
 - whether this process can acquire the writer;
 - page, chunk, fact, event, document, and broken-link counts;
+- admitted, explicit read-only, and implicit read-only fact-injection counts; the opt-in admission preview adds
+  top-level folder globs and authority-preserving `remember: deny` patches without page identities or content;
 - storage-only lookup latency;
 - model-role availability, schema probes, latency, and the cost of each missing role;
 - extraction support; and

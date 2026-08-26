@@ -267,6 +267,43 @@ describe('fact-injection admission', () => {
     }
   });
 
+  it('previews exact default-deny folder patches without exposing page identities', async () => {
+    fs.mkdirSync(path.join(root, 'archive/nested'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'sources'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'overview.md'), '# Overview\n\nInvented root note.\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'archive/alpha.md'), '# Alpha\n\nInvented archive note.\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'archive/nested/beta.md'), '# Beta\n\nAnother invented note.\n', 'utf8');
+    fs.writeFileSync(path.join(root, 'sources/letter.md'), '# Letter\n\nQuoted source material.\n', 'utf8');
+    const mem = await openMem({
+      folders: {
+        '**': { role: 'knowledge' },
+        'sources/**': { role: 'source' },
+      },
+    });
+    try {
+      await mem.index({ structuralOnly: true });
+      expect((await mem.doctor({ probeModels: false })).factInjection.admissionPreview).toBeUndefined();
+
+      const preview = (await mem.doctor({ probeModels: false, admissionPreview: true })).factInjection
+        .admissionPreview;
+      expect(preview).toEqual({
+        effect: 'preserve_read_only',
+        implicitPages: 4,
+        rootPages: 1,
+        proposedRules: [
+          { glob: 'archive/**', pages: 2, patch: { remember: 'deny' } },
+          { glob: 'home/**', pages: 1, patch: { remember: 'deny' } },
+        ],
+      });
+      const serialized = JSON.stringify(preview);
+      expect(serialized).not.toContain('archive/alpha');
+      expect(serialized).not.toContain('home/lease');
+      expect(serialized).not.toContain('Invented archive note');
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('routes to an explicitly admitted page inside an otherwise read-only folder', async () => {
     fs.writeFileSync(
       path.join(root, 'home/lease.md'),

@@ -92,7 +92,16 @@ akno rules sources/example.md
 This explains the winning rule, its source, and page-specific maintenance authority without emitting page
 content. With no page declaration or matching `remember` rule, a page remains searchable knowledge but is
 read-only for fact injection. `akno doctor` reports admitted, read-only, and implicit read-only page counts so
-an upgrade can be reviewed without adding a catch-all write rule.
+an upgrade can be reviewed without adding a catch-all write rule. For the structural details, run:
+
+```bash
+akno doctor --no-probe --admission-preview
+```
+
+The opt-in preview groups implicit pages by top-level folder and prints exact `{ "remember": "deny" }` patches.
+Those patches merely make the current default-deny behavior explicit: they do not infer a role or grant write
+authority. Root-level pages are counted separately because proposing a global `**` rule would be broader than
+the evidence. Routine `doctor` output omits folder names, and neither form writes configuration.
 
 ## Model roles
 
