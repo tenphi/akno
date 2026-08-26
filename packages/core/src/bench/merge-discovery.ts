@@ -9,6 +9,7 @@ import {
   MERGE_DISCOVERY_CORPUS_VERSION,
   mergeDiscoveryCorpus,
   mergeDiscoveryCorpusFingerprint,
+  validateMergeDiscoveryCorpora,
   type MergeDiscoveryBenchCase,
   type MergeDiscoveryBenchPage,
   type MergeDiscoveryCategory,
@@ -139,6 +140,7 @@ export async function runMergeDiscoveryBench(
   config: AknoConfig,
   options: MergeDiscoveryBenchOptions = {},
 ): Promise<MergeDiscoveryBenchReport> {
+  validateMergeDiscoveryCorpora();
   const split = options.split ?? 'development';
   const corpus = mergeDiscoveryCorpus(split);
   const review = validateReview(split, mergeDiscoveryCorpusFingerprint(corpus), options.review);

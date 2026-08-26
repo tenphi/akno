@@ -32,13 +32,14 @@ independent verifier and curator must still agree that the page has no useful se
 dangerous false joins, but loosely written pages without exact subjects or aliases remain outside automatic
 merging.
 
-Broader semantic discovery remains research-only. Its development benchmark confirmed that embedding cosine
-alone is unsafe: repeated templates can score above genuine near-purpose pairs, while similarity does not prove
-shared scope or identity.
-A permissive embedding prefilter plus a strict Luna classifier passed the invented development corpus. A
-disjoint frozen split, model-output-free independent-review handoff, and five-run stability gate now exist, but
-Akno will not turn semantic candidates into executable merges until that review and held-out evaluation pass
-and their exact artifact is preserved.
+Broader semantic discovery is qualified but not yet wired into the planner. Its benchmarks confirmed that
+embedding cosine alone is unsafe: repeated templates can score above genuine near-purpose pairs, while
+similarity does not prove shared scope or identity.
+
+A permissive embedding prefilter plus a strict Luna classifier passed both the invented development corpus and
+the independently reviewed frozen split. The held-out path passed all five runs with stable decisions and no
+false positives. Until the planner integration ships, automatic merging still uses only the exact alias and
+narrow graph-backed signals described above.
 
 ## Retrieval is not omniscience
 

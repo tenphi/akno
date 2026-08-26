@@ -3,6 +3,7 @@ import {
   MERGE_DISCOVERY_CORPUS_VERSION,
   mergeDiscoveryCorpus,
   mergeDiscoveryCorpusFingerprint,
+  validateMergeDiscoveryCorpora,
   type MergeDiscoveryCategory,
 } from './merge-discovery-corpus.ts';
 
@@ -85,6 +86,7 @@ export interface MergeDiscoveryReviewEvidence {
 
 /** Exports the frozen corpus without prompts, scores, model decisions, or benchmark outputs. */
 export function createMergeDiscoveryReviewPacket(now = new Date()): MergeDiscoveryReviewPacket {
+  validateMergeDiscoveryCorpora();
   const corpus = mergeDiscoveryCorpus('test');
   const pageById = new Map(corpus.pages.map((page) => [page.id, page]));
   const packet: MergeDiscoveryReviewPacket = {

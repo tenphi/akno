@@ -53,5 +53,11 @@ Release eligibility additionally requires all five runs to pass, every case deci
 exact result to be persisted. The artifact contains only ids, scores, decisions, metrics, model receipts, and a
 content-free review receipt; it does not copy the review packet's page text.
 
-The recorded development evidence under `results/` shows why the classifier is necessary. Semantic discovery
-remains research-only until a reviewed held-out artifact satisfies every release gate.
+The independently reviewed v1 held-out run is preserved at
+[`results/test-openai-luna-v1-2026-08-26.json`](results/test-openai-luna-v1-2026-08-26.json). Embedding-only
+selection retained 60% of the intended candidates and still had a negative positive/negative margin. The
+two-stage path made seven classifier calls per repetition and passed all five repetitions with 100% candidate
+recall, 100% precision, zero false positives, complete hard-negative rejection, and 100% decision stability.
+
+That artifact satisfies every semantic-discovery release gate. It qualifies the candidate source for guarded
+planner integration; it does not claim that the current planner already consumes semantic candidates.

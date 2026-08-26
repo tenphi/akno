@@ -1,6 +1,8 @@
 import { sha256 } from '../store/ids.ts';
 
 export const MERGE_DISCOVERY_CORPUS_VERSION = 'merge-discovery-corpus-v2';
+export const MERGE_DISCOVERY_HELD_OUT_FINGERPRINT =
+  'b74b04e476fc2c1f718704305a2803c0c2c2b66c3ed04a628892bffd75f561ba';
 
 export type MergeDiscoveryCategory =
   'duplicate' | 'near_purpose' | 'related_scope' | 'template' | 'entity_collision';
@@ -313,6 +315,34 @@ export function mergeDiscoveryCorpusFingerprint(corpus: MergeDiscoveryCorpus): s
       cases: corpus.cases,
     }),
   );
+}
+
+/** Prevents an already-consumed held-out boundary from being redefined accidentally. */
+export function validateMergeDiscoveryCorpora(): void {
+  const development = mergeDiscoveryCorpus('development');
+  const test = mergeDiscoveryCorpus('test');
+  if (!test.frozen) throw new Error('merge discovery held-out corpus must remain frozen');
+  if (mergeDiscoveryCorpusFingerprint(test) !== MERGE_DISCOVERY_HELD_OUT_FINGERPRINT) {
+    throw new Error('merge discovery held-out corpus changed without a new frozen version');
+  }
+  const developmentPageIds = new Set(development.pages.map((source) => source.id));
+  const developmentCaseIds = new Set(development.cases.map((caseEntry) => caseEntry.id));
+  if (
+    new Set(test.pages.map((source) => source.id)).size !== test.pages.length ||
+    new Set(test.cases.map((caseEntry) => caseEntry.id)).size !== test.cases.length
+  ) {
+    throw new Error('merge discovery held-out corpus contains duplicate ids');
+  }
+  if (
+    test.pages.some((source) => developmentPageIds.has(source.id)) ||
+    test.cases.some((caseEntry) => developmentCaseIds.has(caseEntry.id))
+  ) {
+    throw new Error('merge discovery development and held-out ids must remain disjoint');
+  }
+  const testPageIds = new Set(test.pages.map((source) => source.id));
+  if (test.cases.some((caseEntry) => !testPageIds.has(caseEntry.left) || !testPageIds.has(caseEntry.right))) {
+    throw new Error('merge discovery held-out case references an unknown page');
+  }
 }
 
 function page(id: string, title: string, summary: string): MergeDiscoveryBenchPage {

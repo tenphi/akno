@@ -1,0 +1,1072 @@
+{
+  "kind": "invented_merge_discovery_benchmark",
+  "schemaVersion": "merge-discovery-benchmark-v2",
+  "createdAt": "2026-08-26T11:05:09.025Z",
+  "development": false,
+  "artifactPersisted": true,
+  "releaseEligible": true,
+  "split": "test",
+  "corpus": {
+    "version": "merge-discovery-corpus-v2",
+    "fingerprint": "b74b04e476fc2c1f718704305a2803c0c2c2b66c3ed04a628892bffd75f561ba",
+    "pages": 18,
+    "cases": 12,
+    "frozen": true,
+    "independentlyReviewed": true,
+    "reviewReceiptFingerprint": "1af3013d7984db7cfb7bb456b02d857947cd9ab1009216874756274fefbbcea6"
+  },
+  "embedding": {
+    "provider": "openai",
+    "model": "text-embedding-3-small"
+  },
+  "embeddingLatencyMs": 1850.375416,
+  "embeddingOnly": {
+    "threshold": 0.7793280867898356,
+    "metrics": {
+      "candidateRecall": 0.6,
+      "candidatePrecision": 1,
+      "falsePositiveRate": 0,
+      "relatedScopeRejection": 1,
+      "templateRejection": 1,
+      "entityCollisionRejection": 1,
+      "scoreMargin": -0.08155859461046278
+    },
+    "cases": [
+      {
+        "id": "test-person-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.6825940525528423,
+        "selected": false,
+        "passed": false
+      },
+      {
+        "id": "test-second-person-near-purpose",
+        "category": "duplicate",
+        "expected": "candidate",
+        "score": 0.6959014624922313,
+        "selected": false,
+        "passed": false
+      },
+      {
+        "id": "test-product-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7986588688609341,
+        "selected": true,
+        "passed": true
+      },
+      {
+        "id": "test-organization-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7945035264163661,
+        "selected": true,
+        "passed": true
+      },
+      {
+        "id": "test-place-near-purpose",
+        "category": "duplicate",
+        "expected": "candidate",
+        "score": 0.8080085473578438,
+        "selected": true,
+        "passed": true
+      },
+      {
+        "id": "test-person-renewal-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.5560029547975154,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "test-person-visit-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6969580689831203,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "test-product-procedure-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6433741511600912,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "test-organization-workflow-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.5629147355937429,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "test-place-event-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6092622498179247,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "test-person-template",
+        "category": "template",
+        "expected": "keep_separate",
+        "score": 0.7641526471633051,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "test-product-program-collision",
+        "category": "entity_collision",
+        "expected": "keep_separate",
+        "score": 0.624458433754803,
+        "selected": false,
+        "passed": true
+      }
+    ],
+    "passed": false,
+    "blockers": ["candidate_recall", "score_margin"]
+  },
+  "classifier": {
+    "run": 1,
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "none",
+    "promptVersion": "semantic-merge-candidate-v1",
+    "prefilterThreshold": 0.68,
+    "calls": 7,
+    "metrics": {
+      "validResponseRate": 1,
+      "candidateRecall": 1,
+      "candidatePrecision": 1,
+      "falsePositiveRate": 0,
+      "relatedScopeRejection": 1,
+      "templateRejection": 1,
+      "entityCollisionRejection": 1
+    },
+    "cases": [
+      {
+        "id": "test-person-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.6825940525528423,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 2397.2955
+      },
+      {
+        "id": "test-second-person-near-purpose",
+        "category": "duplicate",
+        "expected": "candidate",
+        "score": 0.6959014624922313,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1447.001292
+      },
+      {
+        "id": "test-product-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7986588688609341,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1546.1429159999998
+      },
+      {
+        "id": "test-organization-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7945035264163661,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1390.6187919999993
+      },
+      {
+        "id": "test-place-near-purpose",
+        "category": "duplicate",
+        "expected": "candidate",
+        "score": 0.8080085473578438,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1433.0714580000003
+      },
+      {
+        "id": "test-person-renewal-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.5560029547975154,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "test-person-visit-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6969580689831203,
+        "prefiltered": true,
+        "outcome": "keep_separate",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1422.271667000001
+      },
+      {
+        "id": "test-product-procedure-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6433741511600912,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "test-organization-workflow-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.5629147355937429,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "test-place-event-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6092622498179247,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "test-person-template",
+        "category": "template",
+        "expected": "keep_separate",
+        "score": 0.7641526471633051,
+        "prefiltered": true,
+        "outcome": "keep_separate",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1406.047125000001
+      },
+      {
+        "id": "test-product-program-collision",
+        "category": "entity_collision",
+        "expected": "keep_separate",
+        "score": 0.624458433754803,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      }
+    ],
+    "passed": true,
+    "blockers": []
+  },
+  "runs": [
+    {
+      "run": 1,
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "semantic-merge-candidate-v1",
+      "prefilterThreshold": 0.68,
+      "calls": 7,
+      "metrics": {
+        "validResponseRate": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "falsePositiveRate": 0,
+        "relatedScopeRejection": 1,
+        "templateRejection": 1,
+        "entityCollisionRejection": 1
+      },
+      "cases": [
+        {
+          "id": "test-person-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.6825940525528423,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2397.2955
+        },
+        {
+          "id": "test-second-person-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.6959014624922313,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1447.001292
+        },
+        {
+          "id": "test-product-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7986588688609341,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1546.1429159999998
+        },
+        {
+          "id": "test-organization-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7945035264163661,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1390.6187919999993
+        },
+        {
+          "id": "test-place-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.8080085473578438,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1433.0714580000003
+        },
+        {
+          "id": "test-person-renewal-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5560029547975154,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-visit-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6969580689831203,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1422.271667000001
+        },
+        {
+          "id": "test-product-procedure-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6433741511600912,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-organization-workflow-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5629147355937429,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-place-event-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6092622498179247,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.7641526471633051,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1406.047125000001
+        },
+        {
+          "id": "test-product-program-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.624458433754803,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        }
+      ],
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "run": 2,
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "semantic-merge-candidate-v1",
+      "prefilterThreshold": 0.68,
+      "calls": 7,
+      "metrics": {
+        "validResponseRate": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "falsePositiveRate": 0,
+        "relatedScopeRejection": 1,
+        "templateRejection": 1,
+        "entityCollisionRejection": 1
+      },
+      "cases": [
+        {
+          "id": "test-person-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.6825940525528423,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2640.066584
+        },
+        {
+          "id": "test-second-person-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.6959014624922313,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1540.1280830000014
+        },
+        {
+          "id": "test-product-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7986588688609341,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1807.250041000003
+        },
+        {
+          "id": "test-organization-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7945035264163661,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2639.951958999998
+        },
+        {
+          "id": "test-place-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.8080085473578438,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2500.047375000002
+        },
+        {
+          "id": "test-person-renewal-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5560029547975154,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-visit-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6969580689831203,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1045.049082999998
+        },
+        {
+          "id": "test-product-procedure-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6433741511600912,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-organization-workflow-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5629147355937429,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-place-event-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6092622498179247,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.7641526471633051,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1569.3626659999973
+        },
+        {
+          "id": "test-product-program-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.624458433754803,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        }
+      ],
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "run": 3,
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "semantic-merge-candidate-v1",
+      "prefilterThreshold": 0.68,
+      "calls": 7,
+      "metrics": {
+        "validResponseRate": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "falsePositiveRate": 0,
+        "relatedScopeRejection": 1,
+        "templateRejection": 1,
+        "entityCollisionRejection": 1
+      },
+      "cases": [
+        {
+          "id": "test-person-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.6825940525528423,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1211.151084000001
+        },
+        {
+          "id": "test-second-person-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.6959014624922313,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1779.9301659999983
+        },
+        {
+          "id": "test-product-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7986588688609341,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1488.6728750000002
+        },
+        {
+          "id": "test-organization-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7945035264163661,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1618.6273749999964
+        },
+        {
+          "id": "test-place-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.8080085473578438,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1386.7099170000001
+        },
+        {
+          "id": "test-person-renewal-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5560029547975154,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-visit-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6969580689831203,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1196.317541999997
+        },
+        {
+          "id": "test-product-procedure-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6433741511600912,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-organization-workflow-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5629147355937429,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-place-event-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6092622498179247,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.7641526471633051,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1306.2117079999953
+        },
+        {
+          "id": "test-product-program-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.624458433754803,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        }
+      ],
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "run": 4,
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "semantic-merge-candidate-v1",
+      "prefilterThreshold": 0.68,
+      "calls": 7,
+      "metrics": {
+        "validResponseRate": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "falsePositiveRate": 0,
+        "relatedScopeRejection": 1,
+        "templateRejection": 1,
+        "entityCollisionRejection": 1
+      },
+      "cases": [
+        {
+          "id": "test-person-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.6825940525528423,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1415.0994590000046
+        },
+        {
+          "id": "test-second-person-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.6959014624922313,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1489.6248330000017
+        },
+        {
+          "id": "test-product-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7986588688609341,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1423.9464169999992
+        },
+        {
+          "id": "test-organization-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7945035264163661,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2172.7868329999983
+        },
+        {
+          "id": "test-place-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.8080085473578438,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1611.6881249999933
+        },
+        {
+          "id": "test-person-renewal-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5560029547975154,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-visit-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6969580689831203,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1142.5984580000004
+        },
+        {
+          "id": "test-product-procedure-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6433741511600912,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-organization-workflow-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5629147355937429,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-place-event-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6092622498179247,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.7641526471633051,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1308.4392920000028
+        },
+        {
+          "id": "test-product-program-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.624458433754803,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        }
+      ],
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "run": 5,
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "none",
+      "promptVersion": "semantic-merge-candidate-v1",
+      "prefilterThreshold": 0.68,
+      "calls": 7,
+      "metrics": {
+        "validResponseRate": 1,
+        "candidateRecall": 1,
+        "candidatePrecision": 1,
+        "falsePositiveRate": 0,
+        "relatedScopeRejection": 1,
+        "templateRejection": 1,
+        "entityCollisionRejection": 1
+      },
+      "cases": [
+        {
+          "id": "test-person-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.6825940525528423,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1991.6384159999943
+        },
+        {
+          "id": "test-second-person-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.6959014624922313,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1829.3066249999974
+        },
+        {
+          "id": "test-product-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7986588688609341,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1491.5857079999987
+        },
+        {
+          "id": "test-organization-near-purpose",
+          "category": "near_purpose",
+          "expected": "candidate",
+          "score": 0.7945035264163661,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 2224.816500000001
+        },
+        {
+          "id": "test-place-near-purpose",
+          "category": "duplicate",
+          "expected": "candidate",
+          "score": 0.8080085473578438,
+          "prefiltered": true,
+          "outcome": "same_subject",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1293.8659159999952
+        },
+        {
+          "id": "test-person-renewal-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5560029547975154,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-visit-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6969580689831203,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1448.1767919999984
+        },
+        {
+          "id": "test-product-procedure-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6433741511600912,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-organization-workflow-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.5629147355937429,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-place-event-scope",
+          "category": "related_scope",
+          "expected": "keep_separate",
+          "score": 0.6092622498179247,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        },
+        {
+          "id": "test-person-template",
+          "category": "template",
+          "expected": "keep_separate",
+          "score": 0.7641526471633051,
+          "prefiltered": true,
+          "outcome": "keep_separate",
+          "valid": true,
+          "passed": true,
+          "latencyMs": 1425.5828330000004
+        },
+        {
+          "id": "test-product-program-collision",
+          "category": "entity_collision",
+          "expected": "keep_separate",
+          "score": 0.624458433754803,
+          "prefiltered": false,
+          "outcome": null,
+          "valid": true,
+          "passed": true,
+          "latencyMs": 0
+        }
+      ],
+      "passed": true,
+      "blockers": []
+    }
+  ],
+  "stability": {
+    "requestedRuns": 5,
+    "completedRuns": 5,
+    "passingRuns": 5,
+    "stableCaseRate": 1,
+    "flakyCaseIds": []
+  },
+  "passed": true,
+  "blockers": [],
+  "releaseBlockers": [],
+  "error": null
+}

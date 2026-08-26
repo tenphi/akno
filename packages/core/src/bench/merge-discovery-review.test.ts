@@ -4,7 +4,12 @@ import {
   createMergeDiscoveryReviewPacket,
   type MergeDiscoveryReviewPacket,
 } from './merge-discovery-review.ts';
-import { mergeDiscoveryCorpus, mergeDiscoveryCorpusFingerprint } from './merge-discovery-corpus.ts';
+import {
+  MERGE_DISCOVERY_HELD_OUT_FINGERPRINT,
+  mergeDiscoveryCorpus,
+  mergeDiscoveryCorpusFingerprint,
+  validateMergeDiscoveryCorpora,
+} from './merge-discovery-corpus.ts';
 
 describe('merge discovery held-out review', () => {
   it('keeps development and frozen held-out sources and cases disjoint', () => {
@@ -28,6 +33,8 @@ describe('merge discovery held-out review', () => {
       ),
     ).toBe(true);
     expect(mergeDiscoveryCorpusFingerprint(development)).not.toBe(mergeDiscoveryCorpusFingerprint(test));
+    expect(mergeDiscoveryCorpusFingerprint(test)).toBe(MERGE_DISCOVERY_HELD_OUT_FINGERPRINT);
+    expect(validateMergeDiscoveryCorpora).not.toThrow();
   });
 
   it('exports a time-independent, model-output-free packet', () => {
