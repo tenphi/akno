@@ -294,6 +294,10 @@ function privateReport(): DreamReport {
         valid: 1,
       },
       outcomes: { planned: 1, held: 0, valid: 1, suppressed: 0 },
+      details: [
+        { slug: 'people/ada-marlow', line: 11, code: 'empty_marker', outcome: 'planned' },
+        { slug: 'people/ada-marlow', line: 14, code: 'valid', outcome: 'valid' },
+      ],
     },
     rejected: [
       { pattern: 'Ada Marlow has a private pattern.', reason: 'Private evidence was insufficient.' },

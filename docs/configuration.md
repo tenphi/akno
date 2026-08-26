@@ -182,6 +182,15 @@ authority. Its first deterministic repair set removes empty markers, canonicaliz
 `engram:item` markers, and removes byte-identical payload/provenance duplicates. Malformed or conflicting
 markers are counted as held findings and leave the page unchanged.
 
+Canonical fragments are also checked against the current derived fact row: item id, page identity, payload
+line, and exact source-line hash must agree. Reusing an id on two pages or participating in a typed fact
+conflict that excludes the claim from inference yields `item_conflict`; disabled, stale, or missing fact derivation yields `source_unavailable`
+rather than pretending verification passed. A fragment without one unique `##` section—or under the explicit
+`## Unsorted` fallback—yields `misplaced_item`. These findings do not grant permission to paraphrase or move
+the fragment; semantic placement and source-backed wording correction remain separate guarded work.
+Shareable JSON and durable run receipts keep only aggregate counts. Use `akno dream --private-details` during a
+live run to see the exact `slug:line` for repairable or held findings.
+
 Merge discovery remains exact by default. Enable the qualified semantic candidate source only after choosing
 explicit eligible folders:
 

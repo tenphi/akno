@@ -144,8 +144,10 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 `remember: integrate` knowledge pages, even when the page has no `dream` value:
 
 - **managed item:** delete an empty marker, normalize one unambiguous legacy marker, or remove an exact
-  payload/provenance duplicate. Malformed markers and conflicting reuse of an item id remain held findings;
-  authored surrounding prose is outside this transformation's authority;
+  payload/provenance duplicate. It also verifies global id uniqueness, exact marker-to-fact line/hash binding,
+  typed conflict participation, and a unique `##` placement boundary. Malformed markers, missing current
+  derivation, conflicting ids/facts, and structurally misplaced fragments remain typed held findings; authored
+  surrounding prose is outside this transformation's authority;
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
 - **synthesis:** evidence-backed rewrite or reorganization;

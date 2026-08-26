@@ -255,7 +255,11 @@ export {
   type ObservationWritten,
   type PhaseReport,
 } from './maintenance/dream.ts';
-export type { ManagedItemFindingCode, ManagedItemReport } from './maintenance/managed-items.ts';
+export type {
+  ManagedItemFindingCode,
+  ManagedItemFindingReference,
+  ManagedItemReport,
+} from './maintenance/managed-items.ts';
 export type {
   MaintenanceBudgetDimension,
   MaintenanceBudgetReceipt,

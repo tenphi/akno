@@ -297,6 +297,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
         valid: 0,
       },
       outcomes: { planned: 0, held: 0, valid: 0, suppressed: 0 },
+      details: [],
     },
     rejected: [],
     adopted: [],
@@ -680,7 +681,9 @@ async function runPhase(
       const managedItemResult =
         policies.managed_item === 'off'
           ? { drafts: [], report: report.managedItems }
-          : await planManagedItems(ctx);
+          : await planManagedItems(ctx, {
+              conflictClaims: ineligibleConflictClaims(report.conflicts),
+            });
       report.managedItems = managedItemResult.report;
       if (managedItemResult.report.outcomes.held > 0) {
         report.warnings.push(

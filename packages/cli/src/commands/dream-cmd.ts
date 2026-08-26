@@ -693,6 +693,30 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     }
   }
 
+  if (report.managedItems.inspectedMarkers > 0) {
+    heading(`${report.managedItems.inspectedMarkers} managed fragment(s) inspected`);
+    kv([
+      ['valid', report.managedItems.outcomes.valid],
+      ['repairable', report.managedItems.outcomes.planned],
+      ['held', report.managedItems.outcomes.held],
+      ['suppressed', report.managedItems.outcomes.suppressed],
+      ['planned pages', report.managedItems.plannedPages],
+    ]);
+    const actionable = report.managedItems.details.filter((finding) => finding.outcome !== 'valid');
+    if (privateDetails) {
+      for (const finding of actionable.slice(0, 100)) {
+        line(
+          `  ${finding.slug}:${finding.line || '?'}  ${style.grey(`${finding.code} · ${finding.outcome}`)}`,
+        );
+      }
+      if (actionable.length > 100) {
+        line(`  ${style.grey(`${actionable.length - 100} more private finding(s) omitted`)}`);
+      }
+    } else if (actionable.length > 0) {
+      line(`  ${style.grey('private page locations omitted; rerun with --private-details')}`);
+    }
+  }
+
   for (const plan of (report.maintenancePlans ?? []).length > 0
     ? report.maintenancePlans
     : report.maintenancePlan
@@ -1055,7 +1079,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       ...curationCounts(report),
       guardrails: curationGuardSummary(report),
     },
-    managedItems: report.managedItems,
+    managedItems: safeManagedItemReport(report.managedItems),
     semanticMerge: report.semanticMerge,
     verification: report.verification,
     conflictRefresh: report.conflictRefresh,
@@ -1097,6 +1121,11 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     },
     privateLogWritten: report.logPath !== undefined,
   };
+}
+
+function safeManagedItemReport(report: DreamReport['managedItems']): Record<string, unknown> {
+  const { details: _details, ...safe } = report;
+  return safe;
 }
 
 function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Record<string, unknown> {

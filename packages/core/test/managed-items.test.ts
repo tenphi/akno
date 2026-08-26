@@ -49,6 +49,31 @@ Authored context stays intact.
       /broader/,
     );
   });
+
+  it('holds fragments whose section boundary is missing, ambiguous, or explicitly unsorted', () => {
+    const before = `# Ada Marlow
+
+<!-- akno:item itm_one source=fixture%3Aone origin=user -->
+Ada Marlow owns a Zephyr QX-100.
+
+## Unsorted
+
+<!-- akno:item itm_two source=fixture%3Atwo origin=assistant -->
+Ada Marlow prefers Blackwater Bay.
+
+## Records
+
+## Records
+
+<!-- akno:item itm_three source=fixture%3Athree origin=user -->
+Ada Marlow renewed a Vulpine Mutual policy.
+`;
+    const result = inspectManagedItems(before);
+
+    expect(result.findings.filter((finding) => finding.code === 'misplaced_item')).toHaveLength(3);
+    expect(result.findings.filter((finding) => finding.code === 'valid')).toHaveLength(0);
+    expect(result.after).toBe(before);
+  });
 });
 
 describe('managed items in the dream cycle', () => {
@@ -67,19 +92,59 @@ describe('managed items in the dream cycle', () => {
       request.on('data', (chunk: Buffer) => chunks.push(chunk));
       request.on('end', () => {
         const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
-          messages?: { content: string }[];
+          messages?: { role: string; content: string }[];
         };
-        if (body.messages?.[0]?.content.startsWith('You are the independent curator')) curatorCalls += 1;
+        const system = body.messages?.[0]?.content ?? '';
+        const user = body.messages?.at(-1)?.content ?? '';
+        const deriving = system.startsWith('You extract structure from a personal knowledge base page');
+        if (system.startsWith('You are the independent curator')) curatorCalls += 1;
+        const preferredLine = /^([0-9]+): Ada Marlow prefers the Zephyr QX-100\.$/m.exec(user)?.[1];
+        const firstWarrantyLine = /^([0-9]+): The Zephyr QX-100 warranty lasts 1111 days\.$/m.exec(user)?.[1];
+        const secondWarrantyLine = /^([0-9]+): The Zephyr QX-100 warranty lasts 2222 days\.$/m.exec(
+          user,
+        )?.[1];
+        const fact = preferredLine
+          ? {
+              line: Number(preferredLine),
+              claim: 'Ada Marlow prefers the Zephyr QX-100.',
+              subject: 'Ada Marlow',
+              attribute: 'preferred device',
+              value: 'Zephyr QX-100',
+            }
+          : firstWarrantyLine
+            ? {
+                line: Number(firstWarrantyLine),
+                claim: 'The Zephyr QX-100 warranty lasts 1111 days.',
+                subject: 'Zephyr QX-100',
+                attribute: 'warranty',
+                value: '1111 days',
+              }
+            : secondWarrantyLine
+              ? {
+                  line: Number(secondWarrantyLine),
+                  claim: 'The Zephyr QX-100 warranty lasts 2222 days.',
+                  subject: 'Zephyr QX-100',
+                  attribute: 'warranty',
+                  value: '2222 days',
+                }
+              : null;
+        const answer = deriving
+          ? {
+              summary: 'Invented preference record.',
+              keywords: ['invented preference'],
+              facts: fact ? [fact] : [],
+            }
+          : {
+              outcome: 'approve',
+              reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
+            };
         response.writeHead(200, { 'content-type': 'application/json' });
         response.end(
           JSON.stringify({
             choices: [
               {
                 message: {
-                  content: JSON.stringify({
-                    outcome: 'approve',
-                    reason: 'The exact owned-fragment repair preserves surrounding authored bytes.',
-                  }),
+                  content: JSON.stringify(answer),
                 },
               },
             ],
@@ -103,6 +168,8 @@ akno:
 ---
 
 # Ada Marlow
+
+## Preferences
 
 <!-- engram:item itm_first source=fixture%3Aone origin=user -->
 Ada Marlow prefers the Zephyr QX-100.
@@ -149,7 +216,7 @@ This sentence is not managed by Akno.
           },
           observe: { enabled: false },
           reflect: { enabled: false },
-          conflicts: { enabled: false, resolve: false },
+          conflicts: { enabled: true, verify: false, resolve: false },
           repair: { enabled: false, links: false },
         },
       },
@@ -188,5 +255,96 @@ This sentence is not managed by Akno.
     expect(after.match(/Ada Marlow prefers the Zephyr QX-100\./g)).toHaveLength(1);
     expect(after).not.toContain('itm_empty');
     expect(after).toContain('## Authored notes\n\nThis sentence is not managed by Akno.');
+
+    const verified = await mem.dream({ phase: 'curate', dryRun: true });
+    expect(verified.managedItems).toMatchObject({
+      findings: { source_unavailable: 0, item_conflict: 0, valid: 1 },
+      outcomes: { held: 0, valid: 1 },
+    });
+  });
+
+  it('holds globally duplicated managed ids without changing either page', async () => {
+    const first = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Records
+
+<!-- akno:item itm_same source=fixture%3Aone origin=user -->
+Ada Marlow owns a Zephyr QX-100.
+`;
+    const second = `---
+title: Bo Winters
+akno:
+  management:
+    remember: integrate
+---
+
+# Bo Winters
+
+## Records
+
+<!-- akno:item itm_same source=fixture%3Atwo origin=user -->
+Bo Winters owns a Zephyr QX-100.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), first);
+    fs.writeFileSync(path.join(root, 'people/bo-winters.md'), second);
+    await mem.index({ structuralOnly: true });
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    expect(report.managedItems).toMatchObject({
+      inspectedMarkers: 2,
+      plannedPages: 0,
+      findings: { item_conflict: 2, valid: 0 },
+      outcomes: { planned: 0, held: 2, valid: 0 },
+    });
+    expect(report.maintenancePlan).toBeNull();
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(first);
+    expect(fs.readFileSync(path.join(root, 'people/bo-winters.md'), 'utf8')).toBe(second);
+  });
+
+  it('routes a managed fact in the typed conflict set to an item hold', async () => {
+    const managed = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Preferences
+
+<!-- akno:item itm_fact source=fixture%3Aone origin=user -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`;
+    const conflicting = `---
+title: Bo Winters
+---
+
+# Bo Winters
+
+The Zephyr QX-100 warranty lasts 2222 days.
+`;
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), managed);
+    fs.writeFileSync(path.join(root, 'people/bo-winters.md'), conflicting);
+    await mem.index({ reindexUnchanged: true });
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    expect(report.conflicts).toEqual([
+      expect.objectContaining({ verdict: 'unverified', subject: 'zephyr qx-100' }),
+    ]);
+    expect(report.managedItems).toMatchObject({
+      findings: { item_conflict: 1, valid: 0 },
+      outcomes: { held: 1, valid: 0 },
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(managed);
   });
 });
