@@ -58,6 +58,13 @@ export async function doctorCommand(argv: string[]): Promise<number> {
     heading('Index');
     kv([
       ['pages', `${report.counts.pages}${formatRoles(report.byRole)}`],
+      [
+        'fact injection',
+        `${report.factInjection.admittedPages} admitted, ${report.factInjection.readOnlyPages} read-only` +
+          (report.factInjection.implicitReadOnlyPages > 0
+            ? ` (${report.factInjection.implicitReadOnlyPages} without an explicit page or folder decision)`
+            : ''),
+      ],
       ['chunks', `${report.counts.chunks} (${report.counts.chunksEmbedded} embedded)`],
       ['facts', `${report.counts.facts} live, ${report.counts.factsSuperseded} superseded`],
       ['events', report.counts.events],

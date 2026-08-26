@@ -1738,7 +1738,10 @@ async function openMem(
     allowExtracts?: boolean;
     allowMerges?: boolean;
     semanticMerges?: boolean;
-    folders?: Record<string, { role: 'ignored' }>;
+    folders?: Record<
+      string,
+      { role: 'knowledge' | 'source' | 'inference' | 'ignored'; remember?: 'integrate' | 'deny' }
+    >;
     profile?: MaintenanceProfile;
     policies?: Partial<Record<MaintenanceTransform, MaintenancePolicy>>;
     limits?: {
@@ -1790,7 +1793,14 @@ async function openMem(
           ...(options.semanticMerges ? { merge_discovery: 'semantic' as const } : {}),
         },
       },
-      ...(options.folders ? { folders: options.folders } : {}),
+      ...((options.allowExtracts || options.folders) && {
+        folders: {
+          ...(options.allowExtracts
+            ? { 'topics/**': { role: 'knowledge' as const, remember: 'integrate' as const } }
+            : {}),
+          ...(options.folders ?? {}),
+        },
+      }),
     },
   });
 }

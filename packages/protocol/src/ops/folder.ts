@@ -27,7 +27,9 @@ export const FolderInput = z.object({
   /** `knowledge` for canonical claims, `source` for quoted evidence, `inference` for
    * model conclusions, and `ignored` for material outside memory. */
   role: PageRole.optional(),
-  /** Whether `remember` may place canonical claims in pages in this folder. */
+  /** Whether `remember` may place canonical claims in pages in this folder. When omitted,
+   * a declared knowledge folder integrates and every non-knowledge role denies. The resolved
+   * value is persisted in the rule rather than inherited from a global default. */
   remember: RememberManagement.optional(),
   /** Canonical entities pages in this folder are about. */
   about: z.array(z.string()).optional(),

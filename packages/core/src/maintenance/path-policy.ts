@@ -130,11 +130,7 @@ export function explainMaintenancePath(
     : rule.role
       ? 'folder_rule'
       : inferredRoleSource(normalized.slug, ctx.config);
-  const remember =
-    declarations.remember ??
-    rule.remember ??
-    row?.remember_management ??
-    (role === 'knowledge' ? 'integrate' : 'deny');
+  const remember = declarations.remember ?? rule.remember ?? 'deny';
   const rememberSource = declarations.remember ? 'frontmatter' : rule.remember ? 'folder_rule' : 'default';
   const dream = row?.dream_management ?? 'none';
   const state = row
@@ -478,7 +474,7 @@ function inferredRoleSource(slug: string, config: AknoConfig): MaintenancePolicy
   return slug === observations || slug.startsWith(`${observations}/`) ? 'provenance' : 'default';
 }
 
-function pageDeclarations(frontmatter: string): {
+export function pageDeclarations(frontmatter: string): {
   role?: PageRole;
   remember?: RememberManagement;
   dream?: DreamManagement;

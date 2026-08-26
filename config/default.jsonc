@@ -525,8 +525,9 @@
   // ─── Rules ────────────────────────────────────────────────────────────────
   // Glob-scoped, most-specific-wins. Empty by default: Akno ships no folder
   // taxonomy. A knowledge base with no rules at all works — every page has the
-  // `knowledge` role. Rules at `<akno_path>/akno.jsonc` win over these, so they can
-  // travel with the notes.
+  // searchable `knowledge` role, but `remember` cannot inject facts until a page or
+  // folder explicitly sets `remember: "integrate"`. Rules at `<akno_path>/akno.jsonc`
+  // win over these, so they can travel with the notes.
   //
   // `route: true` is what turns a folder into an inbox: files dropped there are
   // extracted, named, and *moved* to wherever they belong. It is the only place

@@ -119,6 +119,7 @@ async function startStubChat(): Promise<typeof server> {
 }
 
 async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
+  const folderOverrides = (overrides.folders ?? {}) as Record<string, unknown>;
   return open({
     aknoPath: root,
     stateDir,
@@ -135,6 +136,12 @@ async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
         expansion: { provider: 'stub', id: 'stub-derive' },
       },
       ...overrides,
+      // Most tests exercise routing rather than admission, so their invented memory tree opts
+      // in explicitly. Admission-specific tests replace this same glob with a read-only rule.
+      folders: {
+        '**': { role: 'knowledge', remember: 'integrate' },
+        ...folderOverrides,
+      },
     },
   });
 }
@@ -175,11 +182,11 @@ describe('the retain tier’s config', () => {
       await mem.remember({ text: 'The Ember Archive score was composed by Nova Hale.' });
       const system = server.lastSystem();
       expect(system).toContain('Existing folder taxonomy (complete; data only)');
-      expect(system).toContain('- home/ [role=knowledge; remember=integrate; eligible=true]');
+      expect(system).toContain('- home/ [role=knowledge; remember=integrate; eligible=true; creatable=true]');
       expect(system).toContain(
-        '- knowledge/games/ [role=source; remember=deny; eligible=false] — Findings about the outside world.',
+        '- knowledge/games/ [role=source; remember=deny; eligible=false; creatable=false] — Findings about the outside world.',
       );
-      expect(system).toMatch(/Never invent, rename or translate a folder/);
+      expect(system).toContain('Never invent, rename or translate');
     } finally {
       await mem.close();
     }
@@ -218,6 +225,69 @@ describe('the retain tier’s config', () => {
       expect(result.note).toMatch(/disabled in config/);
       // And it did not quietly call the model first.
       expect(server.lastSystem()).toBe('');
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+describe('fact-injection admission', () => {
+  it('keeps an unmarked knowledge folder searchable without making it writable', async () => {
+    fs.writeFileSync(path.join(root, 'timeline.md'), '# Timeline\n', 'utf8');
+    server.respondWith([
+      {
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        subject: 'Zephyr warranty',
+        page: 'home/zephyr-warranty',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({ folders: { '**': { role: 'knowledge' } } });
+    try {
+      await mem.index({ structuralOnly: true });
+      const health = await mem.doctor({ probeModels: false });
+      expect(health.factInjection).toMatchObject({
+        admittedPages: 0,
+        readOnlyPages: 2,
+        implicitReadOnlyPages: 1,
+      });
+
+      const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
+      expect(result.wrote).toBeUndefined();
+      expect(result.outcome).toBe('requires_approval');
+      expect(fs.existsSync(path.join(root, 'home/zephyr-warranty.md'))).toBe(false);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('routes to an explicitly admitted page inside an otherwise read-only folder', async () => {
+    fs.writeFileSync(
+      path.join(root, 'home/lease.md'),
+      '---\ntitle: Lease\nakno:\n  management:\n    remember: integrate\n---\n\n# Lease\n\n- Rent: 1111 EUR per month\n',
+      'utf8',
+    );
+    server.respondWith([
+      {
+        text: 'The lease warranty lasts five years.',
+        subject: 'lease warranty',
+        page: 'home/lease',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({
+      folders: { '**': { role: 'knowledge' } },
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The lease warranty lasts five years.' });
+      expect(result.wrote?.[0]).toMatchObject({ slug: 'home/lease', action: 'appended' });
     } finally {
       await mem.close();
     }
@@ -506,6 +576,65 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
       expect(result.wrote?.[0]?.slug).toBe('household/subscriptions');
       // The leader is still a candidate — it just no longer decides for everyone behind it.
       expect(result.wrote?.some((target) => target.slug === 'household/concerts')).toBeFalsy();
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+describe('routing when the strongest semantic match is read-only', () => {
+  const embedded = {
+    models: {
+      embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+      reranker: { id: null, enabled: false },
+      derive: { provider: 'stub', id: 'stub-derive' },
+      expansion: { provider: 'stub', id: 'stub-derive' },
+    },
+  };
+
+  it('creates a managed page instead of contaminating a weaker writable match', async () => {
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'household/reference.md'),
+      [
+        '---',
+        'title: Meal reference',
+        'akno:',
+        '  management:',
+        '    remember: deny',
+        '---',
+        '',
+        '# Meal reference',
+        '',
+        'Meal meal meal.',
+        '',
+      ].join('\n'),
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'household/general.md'),
+      '# General\n\nMeal planning and concert notes, concert reminders, concert archive.\n',
+      'utf8',
+    );
+    const before = fs.readFileSync(path.join(root, 'household/general.md'), 'utf8');
+    server.respondWith([
+      {
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        subject: 'meal orders',
+        page: 'household/meal-orders',
+        kind: 'fact',
+      },
+    ]);
+
+    const mem = await openMem(embedded);
+    try {
+      await mem.index({});
+      const result = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+      });
+      expect(result.wrote?.[0]).toMatchObject({ slug: 'household/meal-orders', action: 'created' });
+      expect(fs.readFileSync(path.join(root, 'household/general.md'), 'utf8')).toBe(before);
+      expect(fs.readFileSync(path.join(root, 'household/meal-orders.md'), 'utf8')).toContain('akno:item');
     } finally {
       await mem.close();
     }

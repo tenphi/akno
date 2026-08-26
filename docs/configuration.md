@@ -69,6 +69,7 @@ Folder policy can travel with the notes in `<akno_path>/akno.jsonc`:
 {
   // The most specific matching glob wins.
   "folders": {
+    "memory/**": { "role": "knowledge", "remember": "integrate" },
     "sources/**": { "role": "source", "remember": "deny", "ingest": "document" },
     "templates/**": { "role": "ignored", "remember": "deny" },
     "inbox/**": { "ingest": "auto", "route": true },
@@ -89,7 +90,9 @@ akno rules sources/example.md
 ```
 
 This explains the winning rule, its source, and page-specific maintenance authority without emitting page
-content.
+content. With no page declaration or matching `remember` rule, a page remains searchable knowledge but is
+read-only for fact injection. `akno doctor` reports admitted, read-only, and implicit read-only page counts so
+an upgrade can be reviewed without adding a catch-all write rule.
 
 ## Model roles
 

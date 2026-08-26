@@ -2492,7 +2492,7 @@ function destinationRuleIssues(slug: string, rules: AknoContext['config']['rules
   const issues: string[] = [];
   const rule = effectiveRule(slug, rules);
   const role = rule.role ?? 'knowledge';
-  const remember = rule.remember ?? (role === 'knowledge' ? 'integrate' : 'deny');
+  const remember = rule.remember ?? 'deny';
   if (role !== 'knowledge' || remember !== 'integrate') {
     issues.push(`extraction destination is not opted-in integrated knowledge: ${slug}`);
   }

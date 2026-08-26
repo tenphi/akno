@@ -312,6 +312,7 @@ describe('declaring a folder', () => {
     });
     expect(declared.outcome).toBe('ok');
     expect(declared.glob).toBe('medical/**');
+    expect(declared.rule).toMatchObject({ role: 'knowledge', remember: 'integrate' });
 
     const written = await mem.write({ slug: 'medical/allergy-test', content: 'Tested clear.' });
     expect(written.outcome).toBe('ok');
@@ -333,6 +334,7 @@ describe('declaring a folder', () => {
       path.join(root, 'akno.jsonc'),
     )!;
     expect(rules.folders['research/**']!.description).toBe('Findings about the world.');
+    expect(rules.folders['research/**']).toMatchObject({ role: 'source', remember: 'deny' });
     await mem.close();
   });
 

@@ -10,6 +10,10 @@ export interface FolderCatalogEntry {
   path: string;
   role: PageRole;
   remember: RememberManagement;
+  /** A new Akno-managed page may be created here. */
+  creatable: boolean;
+  /** Explicitly admitted existing pages when the folder itself is read-only. */
+  admittedPages: string[];
   eligible: boolean;
   description?: string;
 }
@@ -76,8 +80,12 @@ export function physicalFolderExists(config: AknoConfig, folder: string): boolea
  */
 export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEntry[] {
   const paths = new Set(physicalFolders(config, { depth: Number.MAX_SAFE_INTEGER }));
-  const rows = store.db.prepare("SELECT slug FROM pages WHERE role != 'ignored' ORDER BY slug").all() as {
+  const rows = store.db
+    .prepare("SELECT slug, role, frontmatter FROM pages WHERE role != 'ignored' ORDER BY slug")
+    .all() as {
     slug: string;
+    role: PageRole;
+    frontmatter: string;
   }[];
 
   for (const { slug } of rows) {
@@ -101,13 +109,49 @@ export function folderCatalog(config: AknoConfig, store: Store): FolderCatalogEn
     .map((folderPath) => {
       const rule = effectiveRule(`${folderPath}/x`, config.rules);
       const role = rule.role ?? 'knowledge';
-      const remember = rule.remember ?? (role === 'knowledge' ? 'integrate' : 'deny');
+      // A physical folder is taxonomy, not permission to inject facts into every page in it.
+      // `akno folder` writes an explicit value; handwritten rules that omit it stay read-only.
+      const remember = rule.remember ?? 'deny';
+      const creatable = role === 'knowledge' && remember === 'integrate';
+      const admittedPages = creatable
+        ? []
+        : rows
+            .filter(
+              (row) =>
+                row.role === 'knowledge' &&
+                parentFolder(row.slug) === folderPath &&
+                declaresRememberIntegration(row.frontmatter),
+            )
+            .map((row) => row.slug);
       return {
         path: folderPath,
         role,
         remember,
-        eligible: role !== 'ignored' && remember === 'integrate',
+        creatable,
+        admittedPages,
+        eligible: creatable || admittedPages.length > 0,
         ...(rule.description ? { description: rule.description } : {}),
       };
     });
+}
+
+function parentFolder(slug: string): string {
+  return slug.slice(0, slug.lastIndexOf('/'));
+}
+
+function declaresRememberIntegration(frontmatter: string): boolean {
+  try {
+    const parsed = JSON.parse(frontmatter) as Record<string, unknown>;
+    const akno = record(parsed.akno);
+    const management = record(akno.management);
+    return management.remember === 'integrate';
+  } catch {
+    return false;
+  }
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }

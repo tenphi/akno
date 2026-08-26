@@ -78,7 +78,10 @@ akno folder conversations \
 ```
 
 An agent writing into an undeclared gated folder receives `requires_folder` and nearby alternatives. A folder
-declaration needs a useful description, not a separate approval ceremony.
+declaration needs a useful description, not a separate approval ceremony. `akno folder` persists both the role
+and the resolved remember decision: a declared knowledge-memory folder integrates by default, while a declared
+non-knowledge folder denies. Handwritten rules that omit `remember` do not inherit that convenience; they stay
+read-only until the decision is explicit.
 
 Page frontmatter can be stricter or more specific than the folder:
 
@@ -100,6 +103,10 @@ akno:
 
 An opt-in permits planning; it does not order a rewrite. The maintenance profile, transformation policy,
 deterministic guards, budgets, decisions, stale-input checks, and verification still apply.
+
+Role and write authority are independent. A plain page defaults to searchable `knowledge` and
+`remember: deny`, which is useful for reference material that should participate in answers without accepting
+auto-injected facts. Akno-created memory pages explicitly declare `remember: integrate`.
 
 ## Citations, facts, and confidence
 

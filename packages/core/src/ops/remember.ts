@@ -10,7 +10,7 @@ import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
-import { folderCatalog, physicalFolderExists } from '../kb/folders.ts';
+import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
 import { parsePage } from '../kb/page.ts';
 import { contentWords } from '../kb/words.ts';
 import { detectConflict } from '../write/conflict.ts';
@@ -105,13 +105,19 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   // `kept` covers a claim bound for a page that does not exist yet, not just one that routed.
   // It used to mean "routed", and once creating became possible that made every new page read
   // back as a claim that had been dropped.
-  const considered = routed.map((entry) => ({
-    claim: entry.candidate.text,
-    kept: entry.slug !== null || entry.candidate.page !== undefined,
-    slug: entry.slug ?? entry.candidate.page ?? null,
-    score: Math.round(entry.score * 1000) / 1000,
-    written: false,
-  }));
+  const considered = routed.map((entry) => {
+    const fallback = entry.candidate.page;
+    const fallbackCanCreate =
+      fallback !== undefined && !pageExists(ctx, fallback) && admittedFolder(catalog, fallback) !== null;
+    const kept = entry.slug !== null || fallbackCanCreate;
+    return {
+      claim: entry.candidate.text,
+      kept,
+      slug: kept ? (entry.slug ?? fallback ?? null) : null,
+      score: Math.round(entry.score * 1000) / 1000,
+      written: false,
+    };
+  });
 
   if (input.dry_run) {
     return {
@@ -128,12 +134,15 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   const wrote: WriteTarget[] = [];
   const approvals: ApprovalRequest[] = [];
   const foldersNeeded: FolderRequired[] = [];
-  const groups = new Map<string, { entries: { index: number; candidate: RetainCandidate }[] }>();
+  const groups = new Map<
+    string,
+    { entries: { index: number; candidate: RetainCandidate; blocked: string | null }[] }
+  >();
 
   for (const [index, entry] of routed.entries()) {
     const target = entry.slug ?? entry.candidate.page ?? null;
     if (target === null) {
-      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest));
+      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, undefined, entry.blocked));
       continue;
     }
 
@@ -154,12 +163,12 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     if (entry.slug === null && pageExists(ctx, target)) {
       considered[index]!.kept = false;
       considered[index]!.slug = null;
-      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, target));
+      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, target, entry.blocked));
       continue;
     }
 
     const group = groups.get(target) ?? { entries: [] };
-    group.entries.push({ index, candidate: entry.candidate });
+    group.entries.push({ index, candidate: entry.candidate, blocked: entry.blocked });
     groups.set(target, group);
   }
 
@@ -171,7 +180,11 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       .get(slug) as { id: string; rel_path: string; role: string; remember_management: string } | undefined;
 
     if (row && (row.role !== 'knowledge' || row.remember_management !== 'integrate')) {
-      for (const entry of group.entries) approvals.push(proposeUnrouted(ctx, entry.candidate, []));
+      for (const entry of group.entries) {
+        considered[entry.index]!.kept = false;
+        considered[entry.index]!.slug = null;
+        approvals.push(proposeUnrouted(ctx, entry.candidate, [], slug, entry.blocked));
+      }
       continue;
     }
 
@@ -179,13 +192,15 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     //
     // The check above reads `role` and `remember_management` off the page row, so a folder
     // declared `remember: "deny"` protected only the pages already in it — creation consulted
-    // nothing but whether the parent directory existed. `users/` is the case that bites: those
-    // are per-person hot-memory pages, standing instructions injected every turn, and the
-    // folder exists, so a claim the retain model addressed to `users/google-account` was
-    // created there without anything having a chance to refuse. Declining to create is the
-    // same answer the folder already gives to writing.
+    // nothing but whether the parent directory existed. A physical reference folder could
+    // therefore receive a new managed page even though no rule admitted injection there.
+    // Declining to create is the same answer the folder already gives to writing.
     const parent = slug.slice(0, slug.lastIndexOf('/'));
-    if (!row && !physicalFolderExists(ctx.config, parent)) {
+    if (!row && admittedFolder(catalog, slug) === null) {
+      for (const entry of group.entries) {
+        considered[entry.index]!.kept = false;
+        considered[entry.index]!.slug = null;
+      }
       foldersNeeded.push({
         folder: parent,
         nearest: catalog
@@ -362,6 +377,14 @@ function newManagedPage(title: string): string {
 
 // ─── Routing ────────────────────────────────────────────────────────────────
 
+interface RouteDecision {
+  slug: string | null;
+  score: number;
+  nearest: string[];
+  /** The strongest qualifying semantic match when its page is read-only. */
+  blocked: string | null;
+}
+
 /**
  * An internal `recall` finds where a claim belongs. **Best score at or above
  * `route_threshold` wins and the claim is appended there; below that a page is created** at
@@ -409,17 +432,14 @@ function newManagedPage(title: string): string {
  * was creating a page, never on the path that already routed, and it can only rescue a miss:
  * a claim that routed keeps the destination its own text chose.
  */
-async function route(
-  ctx: AknoContext,
-  candidate: RetainCandidate,
-): Promise<{ slug: string | null; score: number; nearest: string[] }> {
+async function route(ctx: AknoContext, candidate: RetainCandidate): Promise<RouteDecision> {
   const byClaim = await scoreDestinations(ctx, `${candidate.subject}. ${candidate.text}`, candidate);
-  if (byClaim.slug !== null) return byClaim;
+  if (byClaim.slug !== null || byClaim.blocked !== null) return byClaim;
 
   const subject = candidate.subject.trim();
   if (subject.length === 0) return byClaim;
   const bySubject = await scoreDestinations(ctx, subject, candidate);
-  if (bySubject.slug !== null) return bySubject;
+  if (bySubject.slug !== null || bySubject.blocked !== null) return bySubject;
 
   // Neither routed. Report whichever came closer, and prefer the claim pass's suggestions:
   // they were drawn against the text the user actually said.
@@ -431,7 +451,7 @@ async function scoreDestinations(
   ctx: AknoContext,
   query: string,
   candidate: RetainCandidate,
-): Promise<{ slug: string | null; score: number; nearest: string[] }> {
+): Promise<RouteDecision> {
   const result = await recall(ctx, {
     query,
     mode: 'lookup',
@@ -453,18 +473,28 @@ async function scoreDestinations(
   // ongoing complaint came to be appended below the event list of the page recording it, in
   // prose the event parser cannot see. The destination that scores highest is not always a
   // destination.
-  const candidates = result.cards.filter(
-    (card) =>
-      card.role === 'knowledge' &&
-      !isReserved(card.slug, ctx.config) &&
-      isInsideSuggestedFolder(card.slug, candidate.page),
-  );
+  const candidates = result.cards
+    .filter(
+      (card) =>
+        card.role === 'knowledge' &&
+        !isReserved(card.slug, ctx.config) &&
+        isInsideSuggestedFolder(card.slug, candidate.page),
+    )
+    .map((card) => {
+      const policy = ctx.store.db
+        .prepare('SELECT remember_management FROM pages WHERE slug = ?')
+        .get(card.slug) as { remember_management: string } | undefined;
+      return { ...card, writable: policy?.remember_management === 'integrate' };
+    });
 
   // Suggestions are drawn from the same set, not from every card. Offering a source page as
   // somewhere a claim "could go instead" proposes a destination this very function would refuse —
   // observed live: a rent figure was offered four dispute pages, all of them evidence, and the
   // agent read the list as the intended home and told the user it would be filed there.
-  const nearest = candidates.slice(0, 4).map((card) => card.slug);
+  const nearest = candidates
+    .filter((card) => card.writable)
+    .slice(0, 4)
+    .map((card) => card.slug);
 
   // **The best-judged candidate, not the best-ranked one.**
   //
@@ -480,13 +510,19 @@ async function scoreDestinations(
   // discarded. Taking the maximum cannot route anything the old code would have refused *and*
   // the threshold rejects; it can only stop a low leader from hiding a qualified page behind it.
   const scored = candidates.filter((card) => card.relevance !== undefined);
-  if (scored.length === 0) return { slug: null, score: 0, nearest };
+  if (scored.length === 0) return { slug: null, score: 0, nearest, blocked: null };
 
-  const writable = scored.reduce((best, card) => (card.relevance! > best.relevance! ? card : best));
-  const relevance = writable.relevance!;
-  return relevance >= ctx.config.routeThreshold
-    ? { slug: writable.slug, score: relevance, nearest }
-    : { slug: null, score: relevance, nearest };
+  const best = scored.reduce((winner, card) => (card.relevance! > winner.relevance! ? card : winner));
+  const relevance = best.relevance!;
+  if (relevance < ctx.config.routeThreshold) {
+    return { slug: null, score: relevance, nearest, blocked: null };
+  }
+  if (!best.writable) {
+    // A read-only page winning semantically is evidence that a weaker writable match is the
+    // wrong home. Preserve that decision and let the new-page or typed hold path handle it.
+    return { slug: null, score: relevance, nearest, blocked: best.slug };
+  }
+  return { slug: best.slug, score: relevance, nearest, blocked: null };
 }
 
 /**
@@ -509,6 +545,20 @@ function pageExists(ctx: AknoContext, slug: string): boolean {
   return ctx.store.db.prepare('SELECT 1 FROM pages WHERE slug = ?').get(slug) !== undefined;
 }
 
+/** The page does not exist yet, so only an explicit folder rule can admit its creation. */
+function admittedFolder(catalog: FolderCatalogEntry[], slug: string): FolderCatalogEntry | null {
+  const parent = slug.slice(0, slug.lastIndexOf('/'));
+  return (
+    catalog.find(
+      (folder) =>
+        folder.path === parent &&
+        folder.role === 'knowledge' &&
+        folder.remember === 'integrate' &&
+        folder.creatable,
+    ) ?? null
+  );
+}
+
 /**
  * `refusedPage` names an existing page the retain model suggested and routing declined to use.
  * It gets its own wording: the other two say a page has to be *found* or *made*, and neither
@@ -519,14 +569,17 @@ function proposeUnrouted(
   candidate: RetainCandidate,
   nearest: string[],
   refusedPage?: string,
+  blockedPage?: string | null,
 ): ApprovalRequest {
   const id = newPrefixedId('prop');
   const threshold = ctx.config.routeThreshold;
-  const stored = refusedPage
-    ? `nothing scored above ${threshold} for "${candidate.subject}"; the suggested page "${refusedPage}" exists but was not judged a home for it`
-    : nearest.length > 0
-      ? `no page scored above ${threshold} for "${candidate.subject}"`
-      : `no page exists that could hold "${candidate.subject}" — every near match is source material`;
+  const stored = blockedPage
+    ? `the strongest match for "${candidate.subject}" is read-only: "${blockedPage}"`
+    : refusedPage
+      ? `nothing scored above ${threshold} for "${candidate.subject}"; the suggested page "${refusedPage}" exists but was not judged a home for it`
+      : nearest.length > 0
+        ? `no page scored above ${threshold} for "${candidate.subject}"`
+        : `no page exists that could hold "${candidate.subject}" — every near match is source material`;
 
   ctx.store.db
     .prepare(
@@ -544,11 +597,13 @@ function proposeUnrouted(
 
   return {
     proposal_id: id,
-    reason: refusedPage
-      ? `"${refusedPage}" already exists and nothing judged it a home for "${candidate.subject}" — ask where this goes rather than appending to it`
-      : nearest.length > 0
-        ? `nothing scored above ${threshold} for "${candidate.subject}" — ask where this goes`
-        : `no page could hold "${candidate.subject}" — every near match is source material, so this needs a new page`,
+    reason: blockedPage
+      ? `"${blockedPage}" is the best match for "${candidate.subject}" but is read-only — create or name a managed destination rather than using a weaker page`
+      : refusedPage
+        ? `"${refusedPage}" already exists and nothing judged it a home for "${candidate.subject}" — ask where this goes rather than appending to it`
+        : nearest.length > 0
+          ? `nothing scored above ${threshold} for "${candidate.subject}" — ask where this goes`
+          : `no page could hold "${candidate.subject}" — every near match is source material, so this needs a new page`,
     nearest,
   };
 }

@@ -12,7 +12,7 @@ const FOLDER_HELP = `akno folder <path> --description <text> [options]
 
   --description <text>  What belongs here. Required.
   --role <r>            knowledge | source | inference | ignored. Default knowledge.
-  --remember <m>        integrate | deny. Defaults from the role.
+  --remember <m>        integrate | deny. Knowledge defaults to integrate; other roles deny.
   --type <t>            Default page type for this folder.
   --ingest <mode>       page | document | file | auto | ignore.
   --rank <n>            0..2, multiplied into the recall score.

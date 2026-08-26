@@ -170,6 +170,26 @@ describe('resolveRole', () => {
 });
 
 describe('page management metadata', () => {
+  it('keeps an unmarked knowledge page searchable but read-only for fact injection', () => {
+    const page = parsePage('reference/zephyr-qx-100.md', '# Zephyr QX-100\n');
+    expect(resolvePagePolicy(page, null, 'observations')).toMatchObject({
+      role: 'knowledge',
+      remember: 'deny',
+      dream: 'none',
+    });
+  });
+
+  it('admits fact injection through an explicit folder rule', () => {
+    const page = parsePage('memory/ada-marlow.md', '# Ada Marlow\n');
+    expect(
+      resolvePagePolicy(
+        page,
+        { glob: 'memory/**', role: 'knowledge', remember: 'integrate' },
+        'observations',
+      ),
+    ).toMatchObject({ role: 'knowledge', remember: 'integrate' });
+  });
+
   it('keeps role and automatic authority independent and removes self metadata', () => {
     const page = parsePage(
       'people/ada-marlow.md',

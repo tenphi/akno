@@ -65,10 +65,14 @@ export async function folder(ctx: AknoContext, rawInput: unknown): Promise<Folde
     };
   }
 
+  const role = input.role ?? 'knowledge';
+  const remember = input.remember ?? (role === 'knowledge' ? 'integrate' : 'deny');
   const rule = FolderRuleDoc.parse({
     description: input.description,
-    ...(input.role ? { role: input.role } : {}),
-    ...(input.remember ? { remember: input.remember } : {}),
+    // A declaration made through this operation is an explicit admission decision. Persist it
+    // so a later default change cannot silently turn a memory folder writable or read-only.
+    role,
+    remember,
     ...(input.about ? { about: input.about } : {}),
     ...(input.type ? { type: input.type } : {}),
     ...(input.ingest ? { ingest: input.ingest } : {}),

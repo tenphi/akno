@@ -330,8 +330,9 @@ export function resolvePagePolicy(
   const role = resolveRole(page, rule, observationsPath).role;
   return {
     role,
-    remember:
-      page.declaredManagement.remember ?? rule?.remember ?? (role === 'knowledge' ? 'integrate' : 'deny'),
+    // Searchability is not write consent. A plain Markdown page remains useful knowledge,
+    // but `remember` may change it only when the page or its folder says so explicitly.
+    remember: page.declaredManagement.remember ?? rule?.remember ?? 'deny',
     // Whole-page automatic authority must be visible on the page itself. Folder rules cannot
     // make an existing page rewritable merely because it was moved under another path.
     dream: page.declaredManagement.dream ?? 'none',

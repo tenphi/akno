@@ -30,7 +30,9 @@ export async function rulesCommand(argv: string[]): Promise<number> {
         `${rules.length} rule${rules.length === 1 ? '' : 's'}  ${style.grey(`gate=${mem.config.gate}`)}`,
       );
       if (rules.length === 0) {
-        line(style.grey('  none — Akno ships no folder taxonomy. Every page is `knowledge`.'));
+        line(
+          style.grey('  none — every page defaults to searchable `knowledge`, with fact injection denied.'),
+        );
         return 0;
       }
       const width = Math.max(...rules.map((r) => r.glob.length));
@@ -58,7 +60,7 @@ export async function rulesCommand(argv: string[]): Promise<number> {
     heading(slug);
     const entries = Object.entries(result.effective);
     if (entries.length === 0) {
-      line(style.grey('  no rule matches — defaults apply: role=knowledge, remember=integrate, dream=none'));
+      line(style.grey('  no rule matches — defaults apply: role=knowledge, remember=deny, dream=none'));
     } else {
       kv(entries.map(([key, value]) => [key, String(value)]));
     }

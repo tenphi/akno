@@ -55,10 +55,12 @@ Rules:
   doubles as instructions — for this one that is a filename, and a model that copies the wording
   through writes a page named after it. Observed: a whole trip route filed under
   "ada-marlow/projects-taxonomy-branch-and-fallback-page-lowercase-and-hyphenated".
-- Always supply "page" when one of the supplied folders marked eligible=true fits. Its parent must
-  be one exact eligible folder from the taxonomy. Never invent, rename or translate a folder. If
-  none fits, set "page" to null. A finding established by the assistant is canonical knowledge with
-  assistant provenance; it still belongs in the subject's taxonomy branch, not a personal page.
+- Always supply "page" when one of the supplied folders marked eligible=true fits. When the folder
+  is creatable, its parent must be that exact folder. When it is read-only and lists admitted_pages,
+  use only one exact listed page; never invent another page there. Never invent, rename or translate
+  a folder. If none fits, set "page" to null. A finding established by the assistant is canonical
+  knowledge with assistant provenance; it still belongs in the subject's taxonomy branch, not a
+  personal page.
 - Fewer, better. An empty candidates list is the correct answer for a conversation
   that decided nothing, and is much better than a vague one.`;
 
@@ -135,7 +137,8 @@ export async function runRetain(
 
   return {
     candidates: cleanCandidates(parsed.candidates, {
-      folders: (options.folders ?? []).filter((folder) => folder.eligible).map((folder) => folder.path),
+      folders: (options.folders ?? []).filter((folder) => folder.creatable).map((folder) => folder.path),
+      pages: (options.folders ?? []).flatMap((folder) => folder.admittedPages),
     }),
     events: cleanEvents(parsed.events),
     error: null,
@@ -147,7 +150,9 @@ function formatFolderCatalog(folders: FolderCatalogEntry[]): string {
   return folders
     .map(
       (folder) =>
-        `- ${folder.path}/ [role=${folder.role}; remember=${folder.remember}; eligible=${folder.eligible}]${folder.description ? ` — ${folder.description}` : ''}`,
+        `- ${folder.path}/ [role=${folder.role}; remember=${folder.remember}; eligible=${folder.eligible}; creatable=${folder.creatable}` +
+        `${folder.admittedPages.length > 0 ? `; admitted_pages=${folder.admittedPages.join(',')}` : ''}]` +
+        `${folder.description ? ` — ${folder.description}` : ''}`,
     )
     .join('\n');
 }
@@ -198,7 +203,7 @@ function readsAsStatement(text: string): boolean {
 
 export function cleanCandidates(
   value: unknown,
-  options: { folders?: readonly string[] } = {},
+  options: { folders?: readonly string[]; pages?: readonly string[] } = {},
 ): RetainCandidate[] {
   if (!Array.isArray(value)) return [];
   const out: RetainCandidate[] = [];
@@ -220,7 +225,8 @@ export function cleanCandidates(
     seen.add(key);
 
     const cleanedPage = typeof record.page === 'string' ? cleanSlug(record.page) : null;
-    const page = cleanedPage && pageUsesKnownFolder(cleanedPage, options.folders) ? cleanedPage : null;
+    const page =
+      cleanedPage && pageIsAdmitted(cleanedPage, options.folders, options.pages) ? cleanedPage : null;
     out.push({
       text,
       subject:
@@ -237,10 +243,15 @@ export function cleanCandidates(
 }
 
 /** The immediate parent is the filing decision; every deeper segment would be an invented folder. */
-function pageUsesKnownFolder(page: string, folders: readonly string[] | undefined): boolean {
-  if (folders === undefined) return true;
+function pageIsAdmitted(
+  page: string,
+  folders: readonly string[] | undefined,
+  pages: readonly string[] | undefined,
+): boolean {
+  if (folders === undefined && pages === undefined) return true;
+  if (pages?.includes(page)) return true;
   const parent = page.slice(0, page.lastIndexOf('/'));
-  return folders.includes(parent);
+  return folders?.includes(parent) ?? false;
 }
 
 /**

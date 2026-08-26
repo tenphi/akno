@@ -122,9 +122,12 @@ All mutations go through the process that owns the write handle. They are journa
 index reconciliation, and return a change id for `undo`.
 
 An exact `write` is validated against folder rules and the current page. `remember` has more work to do: it
-extracts durable claims from raw material, chooses a permitted route, and either performs a bounded write or
-returns a proposal. Ingestion similarly separates extraction, naming, routing, file movement, page creation,
-and indexing.
+extracts durable claims from raw material, ranks relevant pages, checks an independent fact-injection admission,
+and either performs a bounded write or returns a proposal. A plain knowledge page is searchable but read-only;
+only explicit page or folder `remember: integrate` metadata admits injection. If the strongest match is
+read-only, a weaker writable result cannot win merely because Akno may edit it. A new explicitly managed page or
+a held destination decision is safer. Ingestion similarly separates extraction, naming, routing, file movement,
+page creation, and indexing.
 
 Maintenance adds another boundary:
 

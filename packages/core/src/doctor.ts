@@ -1,12 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { AknoContext } from './context.ts';
-import { looksLikeLedger } from './reserved.ts';
+import { isReserved, looksLikeLedger } from './reserved.ts';
 import { extractionCapabilities } from './ingest/extract.ts';
 import { readOnlyExplanation } from './open.ts';
 import { ModelClient } from './models/client.ts';
 import { generativeModelIds, providerApiReport, type ProviderApiResolution } from './models/provider-api.ts';
 import { probeAnswerModel, type AnswerCapabilityCheck, type AnswerCapabilityProbe } from './ops/answer.ts';
+import { effectiveRule } from './rules/compile.ts';
+import { pageDeclarations } from './maintenance/path-policy.ts';
 
 /**
  * What's present, what's degraded, and **what that costs.** The last
@@ -60,6 +62,13 @@ export interface DoctorReport {
     ignoredRules: number;
   };
   byRole: Record<string, number>;
+  /** Searchability and automatic fact-injection permission are independent. */
+  factInjection: {
+    admittedPages: number;
+    readOnlyPages: number;
+    /** Read-only because neither page nor folder made a decision; useful during upgrades. */
+    implicitReadOnlyPages: number;
+  };
   index: {
     /** Time to open the handle and run one point lookup. Not a model number. */
     openMs: number;
@@ -119,6 +128,30 @@ export async function doctor(
     c: number;
   }[]) {
     byRole[row.role] = row.c;
+  }
+
+  const factInjection = { admittedPages: 0, readOnlyPages: 0, implicitReadOnlyPages: 0 };
+  for (const row of db.prepare('SELECT slug, role, frontmatter FROM pages').all() as {
+    slug: string;
+    role: string;
+    frontmatter: string;
+  }[]) {
+    const declarations = pageDeclarations(row.frontmatter);
+    const rule = effectiveRule(row.slug, ctx.config.rules);
+    const role = declarations.role ?? rule.role ?? row.role;
+    if (role !== 'knowledge') continue;
+    const remember = declarations.remember ?? rule.remember ?? 'deny';
+    if (remember === 'integrate') factInjection.admittedPages++;
+    else {
+      factInjection.readOnlyPages++;
+      if (
+        declarations.remember === undefined &&
+        rule.remember === undefined &&
+        !isReserved(row.slug, ctx.config)
+      ) {
+        factInjection.implicitReadOnlyPages++;
+      }
+    }
   }
 
   // ── Index latency, isolated from any model ───────────────────────────────
@@ -321,6 +354,7 @@ export async function doctor(
     vectorBackend: ctx.store.vectors.kind,
     counts,
     byRole,
+    factInjection,
     index: {
       openMs: round(openMs),
       lexicalMs: round(lexicalMs),

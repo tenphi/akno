@@ -46,15 +46,21 @@ akno remember "..." --dry-run
 ```
 
 `remember` is for conversation excerpts, rough notes, or other raw material. It uses the current folder
-taxonomy and eligible pages to decide whether the input should:
+taxonomy and explicitly admitted pages to decide whether the input should:
 
 - update an existing canonical page;
 - create a page in an existing or declared eligible folder;
 - append a loose dated event; or
 - remain a proposal because routing or confidence is insufficient.
 
-It cannot write into `remember: deny` material and does not create unexplained folders. `adopt` and immediate
-index reconciliation make accepted memory visible without another manual step.
+Searchability is not write permission: an unmarked Markdown page defaults to `knowledge` for recall and to
+`remember: deny` for injection. A page or folder must explicitly set `remember: integrate`; pages Akno creates
+for retained memory carry that declaration themselves. When the strongest semantic match is read-only, Akno
+does not silently use a weaker writable page. It creates a dedicated managed page in an admitted folder when
+the retain result supplies one, or holds the claim for a destination decision.
+
+It does not create pages in unexplained or read-only folders. `adopt` and immediate index reconciliation make
+accepted memory visible without another manual step.
 
 Use `approve` or `decline` for held routing proposals. These are separate from maintenance-plan decisions,
 which use `akno plan decide`.
