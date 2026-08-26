@@ -153,6 +153,11 @@ The fallback is deliberately last in the routing order: an admitted semantic mat
 new managed page proposed by retention, then the configured fallback. Without any authorized destination,
 `remember` returns a typed hold.
 
+Interactive `akno init` can configure this boundary without examining page content. It classifies visible
+top-level directories as managed memory, read-only knowledge, or source/reference material and can add a
+dedicated fallback namespace. New setup writes an explicit decision for every directory it presents. An existing
+installation keeps its current folder and fallback policy unless the user opts into reviewing it.
+
 ## Maintenance authority
 
 One profile defines the scheduled default:

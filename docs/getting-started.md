@@ -20,12 +20,24 @@ npm install -g @tenphi/akno
 akno init
 ```
 
-Guided setup first asks four configuration questions:
+Guided setup first asks about configuration and write boundaries:
 
 1. Which folder is the knowledge base?
 2. Which model strategy should Akno use?
 3. Is it connected to a trusted agent, operated with human review, or intended to remain read-only?
 4. Which maintenance profile should be written?
+5. Which visible top-level folders are managed memory and which are source/reference material?
+6. Should unroutable durable claims have one exact managed fallback page?
+
+Folder discovery reads directory names only. A selected managed folder becomes `knowledge + remember:
+integrate`; a selected source/reference folder becomes `source + remember: deny`. Every other discovered folder
+is written explicitly as searchable read-only knowledge, so its files remain intact but still participate in
+recall. Hidden folders and Akno's operational directories are not offered. Existing configurations default to
+keeping their current folder and fallback policy untouched.
+
+For an autonomous trusted-agent setup, the fallback offer defaults to `memory/inbox`. Accepting it adds an
+explicit `memory/**` managed rule when needed, but does not create the folder or page. Normal routing and an
+admitted model-suggested page still take priority; see [Remember fallback](configuration.md#remember-fallback).
 
 It then shows the exact configuration overlay and a path-only diff before asking to write. Once the config is
 safe on disk, it separately offers to build the index, run a first recall, and install the macOS background
@@ -66,8 +78,9 @@ akno init --preset no-model --akno-path /path/to/markdown \
   --maintenance audit
 ```
 
-An existing config is never silently replaced. Guided updates show a diff and default to no; non-interactive
-updates require `--force`.
+An existing config is never silently replaced. Guided updates default to leaving folder policy unchanged, show
+a path-only diff for every accepted change, and default to not applying it. Non-interactive updates require
+`--force` and do not classify folders or configure a fallback implicitly.
 
 ## Build the first index
 

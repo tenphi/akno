@@ -5,7 +5,7 @@ knowledge base, and which model roles may be involved.
 
 | Command               | Purpose                                                    | Knowledge-base write?      | Model roles                                   |
 | --------------------- | ---------------------------------------------------------- | -------------------------- | --------------------------------------------- |
-| `init`                | Configure, then offer explicit first-run actions           | Approved index opt-ins     | Preflight or approved index/recall roles      |
+| `init`                | Configure models, folder admission, and first-run actions  | Approved index opt-ins     | Preflight or approved index/recall roles      |
 | `index`               | Reconcile derived state with files                         | No by default              | Embedding, derive                             |
 | `recall <query>`      | Find and rank cited page/document evidence                 | No                         | Expansion, embedding, reranker                |
 | `answer <question>`   | Return a direct grounded answer and citations              | No                         | Expansion, embedding, answer; reranker opt-in |

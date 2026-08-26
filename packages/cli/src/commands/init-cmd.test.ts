@@ -146,20 +146,23 @@ describe('guided init', () => {
     vi.stubEnv('AKNO_CONFIG', target);
     vi.stubEnv('AKNO_OPENAI_API_KEY', 'sk-invented-fixture-key');
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '', '', '', 'n', '', 'n', 'n']);
+    const prompt = scriptedPrompt([knowledgeBase, '', '', '', '', '', 'n', '', 'n', 'n']);
 
     const result = await initCommand([], { prompt, platform: 'darwin' });
 
     expect(result).toBe(0);
     expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
       akno_path: knowledgeBase,
-      maintenance: { profile: 'autonomous' },
+      folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
+      maintenance: { profile: 'autonomous', retain: { fallback_page: 'memory/inbox' } },
     });
     expect(prompt.questions).toEqual([
       'Knowledge-base folder: ',
       'Model setup [1]: ',
       'Usage [1]: ',
       'Maintenance profile [autonomous]: ',
+      'Configure a managed fallback page? [Y/n]: ',
+      'Fallback page [memory/inbox]: ',
       'Run the content-safe model preflight now? [Y/n]: ',
       'Write this configuration? [Y/n]: ',
       'Build the searchable index now? [y/N]: ',
@@ -170,6 +173,43 @@ describe('guided init', () => {
     );
     expect(JSON.stringify({ questions: prompt.questions, messages: prompt.messages })).not.toContain(
       'sk-invented-fixture-key',
+    );
+  });
+
+  it('classifies discovered folders and leaves knowledge-base bytes unchanged', async () => {
+    const root = inventedDirectory();
+    const knowledgeBase = path.join(root, 'knowledge-base');
+    const target = path.join(root, 'config.json');
+    for (const folder of ['manual', 'memory', 'references', '.obsidian', 'inbox']) {
+      fs.mkdirSync(path.join(knowledgeBase, folder), { recursive: true });
+    }
+    const manualPage = path.join(knowledgeBase, 'manual/page.md');
+    const managedPage = path.join(knowledgeBase, 'memory/page.md');
+    const sourcePage = path.join(knowledgeBase, 'references/page.md');
+    fs.writeFileSync(manualPage, '# Handwritten note\n', 'utf8');
+    fs.writeFileSync(managedPage, '# Managed note\n', 'utf8');
+    fs.writeFileSync(sourcePage, '# Source note\n', 'utf8');
+    vi.stubEnv('AKNO_CONFIG', target);
+    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+    const prompt = scriptedPrompt([knowledgeBase, '2', '1', '', '2', '3', '', '', '', 'n', 'n']);
+
+    const result = await initCommand([], { prompt, platform: 'darwin' });
+
+    expect(result).toBe(0);
+    expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
+      folders: {
+        'manual/**': { role: 'knowledge', remember: 'deny' },
+        'memory/**': { role: 'knowledge', remember: 'integrate' },
+        'references/**': { role: 'source', remember: 'deny' },
+      },
+      maintenance: { retain: { fallback_page: 'memory/inbox' } },
+    });
+    expect(fs.readFileSync(manualPage, 'utf8')).toBe('# Handwritten note\n');
+    expect(fs.readFileSync(managedPage, 'utf8')).toBe('# Managed note\n');
+    expect(fs.readFileSync(sourcePage, 'utf8')).toBe('# Source note\n');
+    expect(fs.existsSync(path.join(knowledgeBase, 'memory/inbox.md'))).toBe(false);
+    expect(prompt.messages).toContain(
+      'Unselected folders become searchable read-only knowledge; their files stay intact.',
     );
   });
 
@@ -187,6 +227,7 @@ describe('guided init', () => {
       '2',
       '',
       '',
+      'n',
       '',
       'y',
       'y',
@@ -232,7 +273,7 @@ describe('guided init', () => {
     fs.mkdirSync(knowledgeBase);
     vi.stubEnv('AKNO_CONFIG', target);
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '2', '', '', '', 'y']);
+    const prompt = scriptedPrompt([knowledgeBase, '2', '', '', 'n', '', 'y']);
     const followUps = inertFollowUps();
     followUps.index.mockResolvedValue(1);
 
@@ -257,7 +298,7 @@ describe('guided init', () => {
     vi.stubEnv('AKNO_CONFIG', target);
     vi.stubEnv('AKNO_OPENAI_API_KEY', '');
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '2', '', '', '']);
+    const prompt = scriptedPrompt([knowledgeBase, '2', '', '', '', '']);
 
     const result = await initCommand([], { prompt, platform: 'darwin' });
 
@@ -346,6 +387,8 @@ describe('guided init', () => {
           write_ids: true,
           providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
           models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
+          folders: { 'manual/**': { role: 'knowledge', remember: 'deny' } },
+          maintenance: { retain: { fallback_page: 'manual/inbox' } },
         },
         null,
         2,
@@ -354,7 +397,7 @@ describe('guided init', () => {
     );
     vi.stubEnv('AKNO_CONFIG', target);
     vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const prompt = scriptedPrompt([knowledgeBase, '3', '2', '', 'y', 'n', 'n']);
+    const prompt = scriptedPrompt([knowledgeBase, '3', '2', '', '', 'y', 'n', 'n']);
 
     const result = await initCommand([], { prompt, platform: 'darwin' });
 
@@ -362,7 +405,8 @@ describe('guided init', () => {
     expect(JSON.parse(fs.readFileSync(target, 'utf8'))).toMatchObject({
       providers: { invented: { base_url: 'http://127.0.0.1:41111/v1' } },
       models: { derive: { provider: 'invented', id: 'invented-generative-model' } },
-      maintenance: { profile: 'review' },
+      folders: { 'manual/**': { role: 'knowledge', remember: 'deny' } },
+      maintenance: { profile: 'review', retain: { fallback_page: 'manual/inbox' } },
     });
     expect(prompt.messages).toContain(
       'Indexing reads the knowledge base and invokes any configured models. It will also honor configured metadata or rendition write opt-ins.',

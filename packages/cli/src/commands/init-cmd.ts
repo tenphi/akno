@@ -22,6 +22,7 @@ import {
   collectInteractiveInitAnswers,
   confirmInitAction,
   terminalInitPrompt,
+  type InteractiveFolderSetup,
   type InitPromptSession,
   type InitSetupChoice,
 } from './init-prompts.ts';
@@ -31,6 +32,9 @@ const INIT_HELP = `akno init [--preset <name> --akno-path <path>] [options]
   Run without preset/path arguments in a terminal for guided setup, or provide both
   for non-interactive use. Choose the recommended single-endpoint OpenAI setup,
   explicitly disable all model roles, or preserve specialist roles for manual setup.
+  Guided setup classifies visible top-level folders as managed memory, read-only
+  knowledge, or source/reference material, and can configure an exact guarded
+  fallback page. Existing folder policy is left unchanged unless you opt in.
   After a guided config write, optional index, recall, and macOS service actions are
   explained and confirmed separately; every one defaults to no.
 
@@ -84,6 +88,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
   const needsGuidance = !values.preset || !values['akno-path'];
   let prompt = options.prompt;
   let ownsPrompt = false;
+  const configTarget = setupConfigTarget({ stateDir: values['state-dir'] });
   try {
     if (needsGuidance) {
       if (values.json) {
@@ -108,16 +113,19 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       return 2;
     }
     let aknoPath = values['akno-path'];
+    let folderSetup: InteractiveFolderSetup | undefined;
     if (needsGuidance) {
       const answers = await collectInteractiveInitAnswers(prompt!, {
         aknoPath,
         setup,
         maintenance: values.maintenance ? maintenance : undefined,
+        configExists: fs.existsSync(configTarget),
         readablePath: readableKnowledgeBasePath,
       });
       aknoPath = answers.aknoPath;
       setup = answers.setup;
       maintenance = answers.maintenance;
+      folderSetup = answers.folderSetup;
     }
     if (!aknoPath) {
       fail('--akno-path is required; setup never guesses which folder contains your knowledge base');
@@ -132,7 +140,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       return 2;
     }
 
-    const preset = setupPreset(setup, aknoPath, maintenance);
+    const preset = setupPreset(setup, aknoPath, maintenance, folderSetup);
     const { loadConfig } = await import('@tenphi/akno-core');
     let resolved: ReturnType<typeof loadConfig>;
     let writePlan: SetupConfigWritePlan;
@@ -142,11 +150,7 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
         fail(`knowledge-base folder is not readable: ${presetConfig.aknoPath}`);
         return 2;
       }
-      writePlan = planSetupConfigWrite(
-        setupConfigTarget({ stateDir: values['state-dir'] }),
-        preset,
-        setupWriteOptions(setup),
-      );
+      writePlan = planSetupConfigWrite(configTarget, preset, setupWriteOptions(setup));
       resolved = loadConfig({ isolated: true, overrides: writePlan.document });
     } catch (error) {
       fail(error instanceof Error ? error.message : String(error));
@@ -174,7 +178,15 @@ export async function initCommand(argv: string[], options: InitCommandOptions = 
       }
     }
     const preflight = check ? await preflightOpenAiLuna(resolved) : null;
-    const preview = setupInitPreview(setup, resolved.aknoPath, maintenance, preset, preflight, writePlan);
+    const preview = setupInitPreview(
+      setup,
+      resolved.aknoPath,
+      maintenance,
+      preset,
+      preflight,
+      writePlan,
+      folderSetup,
+    );
 
     if (values['dry-run']) {
       if (values.json) json(preview);
@@ -252,6 +264,7 @@ function setupInitPreview(
   config: ReturnType<typeof openAiLunaPreset>,
   preflight: OpenAiLunaPreflightReport | null,
   writePlan: SetupConfigWritePlan | null = null,
+  folderSetup?: InteractiveFolderSetup,
 ) {
   return {
     kind: 'setup_preview' as const,
@@ -272,6 +285,13 @@ function setupInitPreview(
     },
     maintenance,
     maintenanceAuthority: maintenanceAuthorityCopy(setup, maintenance),
+    folderPolicy: folderSetup
+      ? {
+          status: 'configured' as const,
+          ...folderSetup.counts,
+          fallbackPage: folderSetup.fallbackPage,
+        }
+      : { status: 'unchanged' as const },
     endpointCount: setup === OPENAI_LUNA_PRESET ? 1 : setup === MODEL_FREE_PRESET ? 0 : null,
     modelCount: setup === OPENAI_LUNA_PRESET ? 2 : setup === MODEL_FREE_PRESET ? 0 : null,
     credential:
@@ -303,6 +323,20 @@ function renderInitPreview(
   line(`  knowledge base         ${preview.knowledgeBase.path}`);
   line(`  maintenance            ${preview.maintenance}`);
   line(`  maintenance authority  ${preview.maintenanceAuthority}`);
+  line(
+    `  folder admission       ${
+      preview.folderPolicy.status === 'configured'
+        ? `${preview.folderPolicy.managed} managed, ${preview.folderPolicy.readOnly} read-only, ${preview.folderPolicy.source} source`
+        : 'unchanged'
+    }`,
+  );
+  line(
+    `  remember fallback      ${
+      preview.folderPolicy.status === 'configured'
+        ? (preview.folderPolicy.fallbackPage ?? 'off')
+        : 'unchanged'
+    }`,
+  );
   if (preview.write) {
     line(`  configuration          ${preview.write.path}`);
     line(
@@ -359,6 +393,18 @@ function renderInitResult(
   line(`  knowledge base         ${result.knowledgeBase.path}`);
   line(`  maintenance            ${result.maintenance}`);
   line(`  maintenance authority  ${result.maintenanceAuthority}`);
+  line(
+    `  folder admission       ${
+      result.folderPolicy.status === 'configured'
+        ? `${result.folderPolicy.managed} managed, ${result.folderPolicy.readOnly} read-only, ${result.folderPolicy.source} source`
+        : 'unchanged'
+    }`,
+  );
+  line(
+    `  remember fallback      ${
+      result.folderPolicy.status === 'configured' ? (result.folderPolicy.fallbackPage ?? 'off') : 'unchanged'
+    }`,
+  );
   line(`  configuration          ${result.write?.path ?? '-'}`);
   line(
     `  configuration write    ${result.applied ? style.green('written atomically') : style.green('already matched')}`,
@@ -488,10 +534,23 @@ function setupPreset(
   setup: InitSetupChoice,
   aknoPath: string,
   maintenance: SetupMaintenanceMode,
+  folderSetup?: InteractiveFolderSetup,
 ): ReturnType<typeof openAiLunaPreset> {
-  if (setup === OPENAI_LUNA_PRESET) return openAiLunaPreset({ aknoPath, maintenance });
-  if (setup === MODEL_FREE_PRESET) return modelFreePreset({ aknoPath, maintenance });
-  return { akno_path: aknoPath, maintenance: { profile: maintenance } };
+  const base =
+    setup === OPENAI_LUNA_PRESET
+      ? openAiLunaPreset({ aknoPath, maintenance })
+      : setup === MODEL_FREE_PRESET
+        ? modelFreePreset({ aknoPath, maintenance })
+        : { akno_path: aknoPath, maintenance: { profile: maintenance } };
+  if (!folderSetup) return base;
+  return {
+    ...base,
+    folders: folderSetup.rules,
+    maintenance: {
+      ...base.maintenance,
+      retain: { fallback_page: folderSetup.fallbackPage },
+    },
+  };
 }
 
 function setupWriteOptions(setup: InitSetupChoice): { replacePaths: string[] } {
