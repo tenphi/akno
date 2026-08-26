@@ -188,6 +188,7 @@ receipts, service socket, and logs. These have different recovery properties:
 - the index is disposable and rebuilt with `akno index`;
 - journal and trash preserve undo history and should not be deleted casually;
 - sealed maintenance plans remain reviewable across restarts;
+- terminal plans shed exact private payloads before their compact audit receipts expire;
 - interrupted runs are reconciled from durable item state rather than assumed successful.
 
 The knowledge base itself should be backed up normally. Akno's journal is an operational reversal mechanism,

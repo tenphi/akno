@@ -266,6 +266,13 @@ const MaintenanceLimitsDoc = z.object({
   max_high_risk_items: z.number().int().nonnegative().optional(),
 });
 
+const MaintenancePlanRetentionDoc = z.object({
+  /** Exact private operations and evidence are removed from terminal plans after this many days. */
+  payload_days: z.number().int().nonnegative().optional(),
+  /** Compact terminal plan and item receipts are removed after this many days. */
+  receipt_days: z.number().int().nonnegative().optional(),
+});
+
 const MAINTENANCE_NOTIFICATION_MODES = ['off', 'actionable', 'all'] as const;
 export type MaintenanceNotificationMode = (typeof MAINTENANCE_NOTIFICATION_MODES)[number];
 
@@ -276,6 +283,8 @@ const MaintenanceDoc = z.object({
   policies: MaintenancePoliciesDoc.optional(),
   /** Cumulative apply ceilings shared by every plan-backed phase in one dream invocation. */
   limits: MaintenanceLimitsDoc.optional(),
+  /** Two-stage retention for private plan payloads and their compact audit receipts. */
+  plan_retention: MaintenancePlanRetentionDoc.optional(),
   /**
    * The model the cycle uses, when it should not be the one indexing uses.
    *
@@ -524,6 +533,8 @@ export interface AknoConfig {
     policies: Record<MaintenanceTransform, MaintenancePolicy>;
     /** Cumulative apply ceilings for one maintenance invocation. */
     limits: MaintenanceLimits;
+    /** Exact private payloads expire before compact terminal receipts. */
+    planRetention: { payloadDays: number; receiptDays: number };
     /** Null when the cycle uses the `derive` role, which is the default. */
     model: ResolvedModelRole | null;
     /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */

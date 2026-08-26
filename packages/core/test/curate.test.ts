@@ -351,6 +351,87 @@ describe('plan-backed hygiene', () => {
     await expect(mem.applyPlan(planned.id)).rejects.toThrow(/superseded/);
   });
 
+  it('prunes terminal plan payloads before their compact receipts and never touches active work', async () => {
+    const page = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(page, 'utf8');
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const databasePath = path.join(stateDir, 'akno.db');
+    const oldReceipt = new Date(Date.now() - 181 * 86_400_000).toISOString();
+    const oldPayload = new Date(Date.now() - 31 * 86_400_000).toISOString();
+
+    let db = new Database(databasePath);
+    db.prepare('UPDATE maintenance_plans SET updated_at = ? WHERE id = ?').run(oldReceipt, planned.id);
+    db.close();
+    expect(mem.prunePlans()).toMatchObject({
+      applied: false,
+      payloads: { plans: 0, items: 0, privateBytes: 0 },
+      receipts: { plans: 0, items: 0 },
+    });
+
+    mem.supersedePlan(planned.id, 'A newer invented review replaced this plan.');
+    db = new Database(databasePath);
+    db.prepare('UPDATE maintenance_plans SET updated_at = ? WHERE id = ?').run(oldPayload, planned.id);
+    db.close();
+
+    const preview = mem.prunePlans();
+    expect(preview).toMatchObject({
+      applied: false,
+      retention: { payloadDays: 30, receiptDays: 180 },
+      payloads: { plans: 1, items: 1 },
+      receipts: { plans: 0, items: 0 },
+    });
+    expect(preview.payloads.privateBytes).toBeGreaterThan(0);
+
+    const pruned = mem.prunePlans({ apply: true });
+    expect(pruned).toMatchObject({ applied: true, payloads: { plans: 1, items: 1 } });
+    expect(mem.plan(planned.id)).toMatchObject({
+      status: 'superseded',
+      payloadPrunedAt: expect.any(String),
+      items: [expect.objectContaining({ operations: [], evidence: [] })],
+    });
+    expect(() => mem.maintenanceDiff(planned.id)).toThrow(/private payload.*pruned/);
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+    expect(mem.prunePlans()).toMatchObject({
+      payloads: { plans: 0, items: 0, privateBytes: 0 },
+      receipts: { plans: 0, items: 0 },
+    });
+
+    db = new Database(databasePath);
+    db.prepare('UPDATE maintenance_plans SET updated_at = ? WHERE id = ?').run(oldReceipt, planned.id);
+    db.close();
+    expect(mem.prunePlans()).toMatchObject({ receipts: { plans: 1, items: 1 } });
+    expect(mem.prunePlans({ apply: true })).toMatchObject({
+      applied: true,
+      receipts: { plans: 1, items: 1 },
+    });
+    expect(() => mem.plan(planned.id)).toThrow(/no maintenance plan/);
+    expect(fs.readFileSync(page, 'utf8')).toBe(before);
+  });
+
+  it('retains failed plans that still carry verification recovery state', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const oldReceipt = new Date(Date.now() - 181 * 86_400_000).toISOString();
+    const db = new Database(path.join(stateDir, 'akno.db'));
+    db.prepare("UPDATE maintenance_plans SET status = 'failed', updated_at = ? WHERE id = ?").run(
+      oldReceipt,
+      planned.id,
+    );
+    db.prepare(
+      "UPDATE maintenance_items SET status = 'verification_failed', updated_at = ? WHERE plan_id = ?",
+    ).run(oldReceipt, planned.id);
+    db.close();
+
+    expect(mem.prunePlans({ apply: true })).toMatchObject({
+      payloads: { plans: 0, items: 0, privateBytes: 0 },
+      receipts: { plans: 0, items: 0 },
+    });
+    expect(mem.plan(planned.id)).toMatchObject({
+      status: 'failed',
+      payloadPrunedAt: null,
+      items: [expect.objectContaining({ status: 'verification_failed' })],
+    });
+  });
+
   it('keeps human review separate from apply and leaves an undoable change', async () => {
     const page = path.join(root, 'people/ada-marlow.md');
     const before = fs.readFileSync(page, 'utf8');
@@ -412,6 +493,29 @@ describe('plan-backed hygiene', () => {
     expect(report.curated[0]?.action).toBe('updated');
     expect(server.calls()).toBe(3);
     expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('enforces configured plan retention at the end of a writable dream run', async () => {
+    await mem.close();
+    mem = await openMem(true, undefined, {
+      profile: 'autonomous',
+      planRetention: { payload_days: 0, receipt_days: 180 },
+    });
+
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    const planId = report.maintenancePlan!.id;
+
+    expect(report.planPrune).toMatchObject({
+      applied: true,
+      payloads: { plans: 1, items: 1 },
+      receipts: { plans: 0, items: 0 },
+    });
+    expect(report.maintenancePlan?.payloadPrunedAt).toEqual(expect.any(String));
+    expect(mem.plan(planId)).toMatchObject({
+      status: 'completed',
+      payloadPrunedAt: expect.any(String),
+      items: [expect.objectContaining({ operations: [], evidence: [] })],
+    });
   });
 
   it('lowers every autonomous class to audit for an audit invocation', async () => {
@@ -1316,6 +1420,7 @@ async function openMem(
       max_bytes_written?: number;
       max_high_risk_items?: number;
     };
+    planRetention?: { payload_days?: number; receipt_days?: number };
   } = {},
 ): Promise<Akno> {
   const profile =
@@ -1346,6 +1451,7 @@ async function openMem(
         profile,
         ...(options.policies ? { policies: options.policies } : {}),
         ...(options.limits ? { limits: options.limits } : {}),
+        ...(options.planRetention ? { plan_retention: options.planRetention } : {}),
         log_changes: true,
         curate: {
           verify: true,

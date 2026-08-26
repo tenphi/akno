@@ -3,6 +3,7 @@ import {
   type ApplyMaintenanceResult,
   type MaintenanceItemStatus,
   type MaintenancePlan,
+  type MaintenancePlanPruneResult,
   type MaintenancePlanStatus,
   type MaintenancePlanSummary,
   type MaintenanceStatus,
@@ -23,6 +24,7 @@ akno plan diff <plan_id> [--item <item_id>]
 akno plan decide <plan_id> --item <item_id> <--approve | --reject> [--reason <text>]
 akno plan apply <plan_id>
 akno plan supersede <plan_id> [--reason <text>]
+akno plan prune [--apply]
 akno plan status
 
   Inspect and control durable maintenance plans. Planning never changes knowledge-base
@@ -30,6 +32,7 @@ akno plan status
   item as one change, re-indexes every affected path, and verifies the resulting index.
 
   --status <s,...>  Filter list by exact plan status.
+  prune previews configured retention by default; --apply performs it.
   --json`;
 
 export async function planCommand(argv: string[]): Promise<number> {
@@ -40,6 +43,7 @@ export async function planCommand(argv: string[]): Promise<number> {
     reject: boolean;
     reason?: string;
     status?: string;
+    apply: boolean;
   }>(argv, {
     limit: { type: 'string' },
     item: { type: 'string' },
@@ -47,6 +51,7 @@ export async function planCommand(argv: string[]): Promise<number> {
     reject: { type: 'boolean', default: false },
     reason: { type: 'string' },
     status: { type: 'string' },
+    apply: { type: 'boolean', default: false },
   });
   const action = positionals[0] ?? 'list';
   const planId = positionals[1];
@@ -77,6 +82,23 @@ export async function planCommand(argv: string[]): Promise<number> {
     const status = await loadMaintenanceStatus(values);
     if (values.json) json(status);
     else printMaintenanceStatus(status);
+    return 0;
+  }
+
+  if (action === 'prune') {
+    if (planId) {
+      line(PLAN_HELP);
+      return 1;
+    }
+    const result = await runMaintenance(
+      'plan',
+      { action: 'prune', apply: values.apply },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.prunePlans({ apply: values.apply }),
+    );
+    if (values.json) json(result);
+    else printPruneResult(result);
     return 0;
   }
 
@@ -273,6 +295,9 @@ function printPlan(plan: MaintenancePlan): void {
     ['phase', plan.phase],
     ['created', plan.createdAt],
     ['summary', plan.summary],
+    ...(plan.payloadPrunedAt
+      ? ([['private payload', `pruned at ${plan.payloadPrunedAt}`]] as [string, string][])
+      : []),
     ...(plan.error ? ([['detail', plan.error]] as [string, string][]) : []),
   ]);
   for (const item of plan.items) {
@@ -323,6 +348,24 @@ function printApplyResult(result: ApplyMaintenanceResult): void {
         `${result.budget.deferredItems} deferred`,
     ),
   );
+}
+
+export function printPruneResult(result: MaintenancePlanPruneResult): void {
+  heading(result.applied ? 'Plan retention applied' : 'Plan retention preview');
+  kv([
+    ['private payload window', `${result.retention.payloadDays} days`],
+    ['compact receipt window', `${result.retention.receiptDays} days`],
+    ['payload plans', result.payloads.plans],
+    ['payload items', result.payloads.items],
+    ['private bytes', result.payloads.privateBytes],
+    ['receipts', result.receipts.plans],
+    ['receipt items', result.receipts.items],
+  ]);
+  if (!result.applied && (result.payloads.plans > 0 || result.receipts.plans > 0)) {
+    line(
+      `\n  ${style.grey('apply this exact retention boundary with')} ${style.bold('akno plan prune --apply')}`,
+    );
+  }
 }
 
 function itemStatus(status: string): string {

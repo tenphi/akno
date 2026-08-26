@@ -459,6 +459,14 @@ function resolve(
   const maintenanceProfile = doc.maintenance?.profile ?? 'audit';
   const namedMode = namedMaintenanceMode(maintenanceProfile);
   const configuredPolicies = doc.maintenance?.policies ?? {};
+  const planPayloadDays = doc.maintenance?.plan_retention?.payload_days ?? 30;
+  const planReceiptDays = doc.maintenance?.plan_retention?.receipt_days ?? 180;
+  if (planReceiptDays < planPayloadDays) {
+    throw new AknoError(
+      'invalid',
+      'maintenance.plan_retention.receipt_days must be greater than or equal to payload_days',
+    );
+  }
   const answerDoc =
     doc.models?.answer?.id == null && doc.models?.answer?.enabled !== false
       ? {
@@ -595,6 +603,7 @@ function resolve(
         maxBytesWritten: doc.maintenance?.limits?.max_bytes_written ?? 500_000,
         maxHighRiskItems: doc.maintenance?.limits?.max_high_risk_items ?? 3,
       },
+      planRetention: { payloadDays: planPayloadDays, receiptDays: planReceiptDays },
       // Resolved through the same path as any role, so a typo in the provider name fails the
       // same way and `doctor` can probe it like the rest.
       model: doc.maintenance?.model

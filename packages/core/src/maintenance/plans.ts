@@ -198,6 +198,8 @@ export interface MaintenancePlanSummary {
   fingerprint: string;
   summary: string;
   error: string | null;
+  /** Exact operations and evidence are no longer retained; compact audit fields remain. */
+  payloadPrunedAt: string | null;
   counts: Record<MaintenanceItemStatus, number>;
 }
 
@@ -236,6 +238,14 @@ export interface ApplyMaintenanceResult {
   budget: MaintenanceBudgetReceipt;
 }
 
+export interface MaintenancePlanPruneResult {
+  applied: boolean;
+  retention: { payloadDays: number; receiptDays: number };
+  cutoffs: { payloadBefore: string; receiptBefore: string };
+  payloads: { plans: number; items: number; privateBytes: number };
+  receipts: { plans: number; items: number };
+}
+
 export interface MaintenanceDependencyConflict {
   planId: string;
   itemId: string;
@@ -259,6 +269,7 @@ interface PlanRow {
   fingerprint: string;
   summary: string;
   error: string | null;
+  payload_pruned_at: string | null;
 }
 
 interface ItemRow {
@@ -283,6 +294,7 @@ interface ItemRow {
   decided_at: string | null;
   change_id: string | null;
   verification: string | null;
+  component_count: number;
   updated_at: string;
 }
 
@@ -584,9 +596,9 @@ function persistMaintenancePlan(
 
     const insert = ctx.store.db.prepare(
       `INSERT INTO maintenance_items
-        (id, plan_id, ord, revision, kind, policy, risk, status, subject, rationale, input_hash,
+        (id, plan_id, ord, revision, kind, policy, risk, status, subject, rationale, input_hash, component_count,
          operations, evidence, checks, decision_reason, decided_at, updated_at)
-       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
     sealed.forEach((draft, order) => {
       const initialStatus = draft.initialStatus ?? 'proposed';
@@ -601,6 +613,7 @@ function persistMaintenancePlan(
         draft.slug,
         draft.rationale,
         draft.inputHash,
+        sealedDraftComponentCount(draft),
         JSON.stringify(draft.operations),
         JSON.stringify(draft.evidence),
         JSON.stringify(draft.checks),
@@ -932,6 +945,137 @@ export function listPendingMaintenancePlans(ctx: AknoContext, limit = 100): Main
     )
     .all(Math.min(100, requested)) as PlanRow[];
   return rows.map((row) => planSummary(ctx, row));
+}
+
+/**
+ * Enforce two-stage retention only for terminal plans. The first stage removes exact private
+ * operations and evidence while leaving compact decisions and verification receipts; the second
+ * removes that compact plan history. Journal rows are independent and are never touched here.
+ */
+export function pruneMaintenancePlans(
+  ctx: AknoContext,
+  options: { apply?: boolean; now?: Date } = {},
+): MaintenancePlanPruneResult {
+  if (options.apply) requireWritable(ctx);
+  if (!maintenanceTablesAvailable(ctx)) return emptyMaintenancePlanPruneResult(ctx, options);
+  const now = options.now ?? new Date();
+  const retention = ctx.config.maintenance.planRetention;
+  const payloadBefore = retentionCutoff(now, retention.payloadDays);
+  const receiptBefore = retentionCutoff(now, retention.receiptDays);
+  const terminal = "('completed', 'failed', 'superseded')";
+  const noRecoveryItems = `NOT EXISTS (
+    SELECT 1 FROM maintenance_items recovery
+     WHERE recovery.plan_id = plan.id
+       AND recovery.status IN ('applying', 'verification_pending', 'verification_failed')
+  )`;
+  const payload = ctx.store.db
+    .prepare(
+      `SELECT count(DISTINCT plan.id) AS plans,
+              count(item.id) AS items,
+              coalesce(sum(
+                max(length(CAST(item.operations AS BLOB)) - 2, 0) +
+                max(length(CAST(item.evidence AS BLOB)) - 2, 0)
+              ), 0) AS private_bytes
+         FROM maintenance_plans plan
+         LEFT JOIN maintenance_items item ON item.plan_id = plan.id
+        WHERE plan.status IN ${terminal}
+          AND ${noRecoveryItems}
+          AND plan.payload_pruned_at IS NULL
+          AND plan.updated_at <= ?`,
+    )
+    .get(payloadBefore) as { plans: number; items: number; private_bytes: number };
+  const receipts = ctx.store.db
+    .prepare(
+      `SELECT count(DISTINCT plan.id) AS plans, count(item.id) AS items
+         FROM maintenance_plans plan
+         LEFT JOIN maintenance_items item ON item.plan_id = plan.id
+        WHERE plan.status IN ${terminal}
+          AND ${noRecoveryItems}
+          AND plan.updated_at <= ?`,
+    )
+    .get(receiptBefore) as { plans: number; items: number };
+
+  const result: MaintenancePlanPruneResult = {
+    applied: options.apply === true,
+    retention,
+    cutoffs: { payloadBefore, receiptBefore },
+    payloads: {
+      plans: payload.plans,
+      items: payload.items,
+      privateBytes: payload.private_bytes,
+    },
+    receipts,
+  };
+  if (!options.apply) return result;
+  if (payload.plans === 0 && receipts.plans === 0) {
+    ctx.store.db.pragma('wal_checkpoint(TRUNCATE)');
+    return result;
+  }
+
+  const prunedAt = now.toISOString();
+  ctx.store.transaction(() => {
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_items
+            SET operations = '[]', evidence = '[]'
+          WHERE plan_id IN (
+            SELECT id FROM maintenance_plans
+             WHERE status IN ${terminal}
+               AND payload_pruned_at IS NULL
+               AND updated_at <= ?
+               AND NOT EXISTS (
+                 SELECT 1 FROM maintenance_items recovery
+                  WHERE recovery.plan_id = maintenance_plans.id
+                    AND recovery.status IN ('applying', 'verification_pending', 'verification_failed')
+               )
+          )`,
+      )
+      .run(payloadBefore);
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_plans AS plan
+            SET payload_pruned_at = ?
+          WHERE status IN ${terminal}
+            AND ${noRecoveryItems}
+            AND payload_pruned_at IS NULL
+            AND updated_at <= ?`,
+      )
+      .run(prunedAt, payloadBefore);
+    ctx.store.db
+      .prepare(
+        `DELETE FROM maintenance_plans AS plan
+          WHERE status IN ${terminal}
+            AND ${noRecoveryItems}
+            AND updated_at <= ?`,
+      )
+      .run(receiptBefore);
+  });
+  // The rewritten page containing an old payload may also exist in WAL. Truncating after the
+  // secure-delete transaction makes the configured privacy boundary true for the files on disk.
+  ctx.store.db.pragma('wal_checkpoint(TRUNCATE)');
+  return result;
+}
+
+function emptyMaintenancePlanPruneResult(
+  ctx: AknoContext,
+  options: { apply?: boolean; now?: Date },
+): MaintenancePlanPruneResult {
+  const now = options.now ?? new Date();
+  const retention = ctx.config.maintenance.planRetention;
+  return {
+    applied: options.apply === true,
+    retention,
+    cutoffs: {
+      payloadBefore: retentionCutoff(now, retention.payloadDays),
+      receiptBefore: retentionCutoff(now, retention.receiptDays),
+    },
+    payloads: { plans: 0, items: 0, privateBytes: 0 },
+    receipts: { plans: 0, items: 0 },
+  };
+}
+
+function retentionCutoff(now: Date, days: number): string {
+  return new Date(now.getTime() - days * 86_400_000).toISOString();
 }
 
 export function getMaintenancePlan(ctx: AknoContext, planId: string): MaintenancePlan {
@@ -1788,6 +1932,12 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
 }
 
 export function renderMaintenanceDiff(plan: MaintenancePlan, itemId?: string): string {
+  if (plan.payloadPrunedAt) {
+    throw new AknoError(
+      'unavailable',
+      `private payload for ${plan.id} was pruned at ${plan.payloadPrunedAt}; compact audit history remains`,
+    );
+  }
   const items = itemId ? plan.items.filter((item) => item.id === itemId) : plan.items;
   if (itemId && items.length === 0) {
     throw new AknoError('not_found', `plan ${plan.id} has no item ${itemId}`);
@@ -2071,6 +2221,7 @@ function planSummary(ctx: AknoContext, row: PlanRow): MaintenancePlanSummary {
     fingerprint: row.fingerprint,
     summary: row.summary,
     error: row.error,
+    payloadPrunedAt: row.payload_pruned_at ?? null,
     counts,
   };
 }
@@ -2108,7 +2259,7 @@ function itemFromRow(row: ItemRow): MaintenanceItem {
       ? parseStoredJson<MaintenanceVerification | null>(row.verification, null)
       : null,
     updatedAt: row.updated_at,
-    componentCount: Math.max(1, maintenanceCompositionComponents(evidence).length),
+    componentCount: Math.max(1, row.component_count ?? maintenanceCompositionComponents(evidence).length),
   };
 }
 

@@ -46,12 +46,14 @@ import {
   getMaintenancePlan,
   listMaintenancePlans,
   maintenanceStatus,
+  pruneMaintenancePlans,
   renderMaintenanceDiff,
   supersedeMaintenancePlan,
   type ApplyMaintenanceResult,
   type MaintenancePlan,
   type MaintenancePlanStatus,
   type MaintenancePlanSummary,
+  type MaintenancePlanPruneResult,
   type MaintenanceMode,
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
@@ -122,6 +124,8 @@ export interface Akno extends AknoOps {
   applyPlan(planId: string): Promise<ApplyMaintenanceResult>;
   /** Retire a not-yet-applied plan while preserving its sealed audit history. */
   supersedePlan(planId: string, reason?: string): MaintenancePlan;
+  /** Preview or apply configured two-stage retention to terminal maintenance plans. */
+  prunePlans(options?: { apply?: boolean }): MaintenancePlanPruneResult;
   /** A small operational view of the maintenance queue. */
   maintenanceStatus(query?: MaintenanceStatusQuery): MaintenanceStatus;
   /**
@@ -428,6 +432,16 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
         );
       }
       return supersedeMaintenancePlan(ctx, planId, reason);
+    },
+
+    prunePlans(retentionOptions = {}) {
+      if (retentionOptions.apply && !writable) {
+        throw new AknoError(
+          'read_only',
+          `pruning maintenance plans needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return pruneMaintenancePlans(ctx, retentionOptions);
     },
 
     maintenanceStatus: (query) => maintenanceStatus(ctx, query),

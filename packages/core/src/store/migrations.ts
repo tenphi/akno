@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 22;
+export const SCHEMA_VERSION = 23;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -26,6 +26,8 @@ export const STRUCTURAL_GRAPH_MIGRATION_INDEX = 11;
 export const ENTITY_GRAPH_MIGRATION_INDEX = 12;
 export const FACT_GRAPH_MIGRATION_INDEX = 13;
 export const CONTEXTUAL_ENTITY_MIGRATION_INDEX = 14;
+export const MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX = 15;
+export const MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX = 16;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -688,6 +690,24 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX graph_resolution_verdicts_model
     ON graph_resolution_verdicts(model_id, prompt_version, created_at);
+  `,
+  // ── 23. Two-stage maintenance-plan retention ─────────────────────────────
+  // Terminal exact payloads can be stripped while compact decisions and receipts remain
+  // inspectable. The timestamp makes an empty operation list unambiguous to every caller.
+  `
+  ALTER TABLE maintenance_plans ADD COLUMN payload_pruned_at TEXT;
+  `,
+  // Component identity lives in private evidence, but its count is part of the compact receipt
+  // that survives payload pruning. Backfill it before any old evidence can expire.
+  `
+  ALTER TABLE maintenance_items ADD COLUMN component_count INTEGER NOT NULL DEFAULT 1;
+  UPDATE maintenance_items
+     SET component_count = max(1, (
+       SELECT count(*) FROM json_each(
+         CASE WHEN json_valid(maintenance_items.evidence) THEN maintenance_items.evidence ELSE '[]' END
+       )
+        WHERE json_extract(json_each.value, '$.type') = 'component'
+     ));
   `,
 ];
 

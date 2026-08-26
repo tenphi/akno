@@ -452,4 +452,37 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds an explicit private-payload retention marker to a version-twenty-two database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-plan-retention-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 15)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO maintenance_plans
+          (id, created_at, updated_at, mode, phase, status, fingerprint, summary)
+         VALUES('pln_vulpine', '2031-04-05T12:00:00Z', '2031-04-05T12:00:00Z',
+                'review', 'curate', 'completed', 'fingerprint-vulpine', 'invented plan')`,
+      )
+      .run();
+    legacy.pragma('user_version = 22');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(maintenance_plans)') as { name: string }[];
+    const itemColumns = store.db.pragma('table_info(maintenance_items)') as { name: string }[];
+    const plan = store.db
+      .prepare('SELECT status, payload_pruned_at FROM maintenance_plans WHERE id = ?')
+      .get('pln_vulpine');
+
+    expect(columns.map((column) => column.name)).toContain('payload_pruned_at');
+    expect(itemColumns.map((column) => column.name)).toContain('component_count');
+    expect(plan).toEqual({ status: 'completed', payload_pruned_at: null });
+    expect(store.db.pragma('secure_delete', { simple: true })).toBe(1);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

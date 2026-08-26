@@ -270,6 +270,7 @@ export {
   type MaintenanceMode,
   type MaintenanceOperation,
   type MaintenancePlan,
+  type MaintenancePlanPruneResult,
   type MaintenancePlanStatus,
   type MaintenancePlanSummary,
   type MaintenanceStatus,

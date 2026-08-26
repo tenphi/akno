@@ -222,6 +222,10 @@ akno plan apply <plan-id>
 # Retire queued work that a newer plan or a human decision made obsolete.
 akno plan supersede <plan-id> --reason "Replaced by a newer review."
 
+# Preview configured terminal-plan retention; mutation remains explicit here.
+akno plan prune
+akno plan prune --apply
+
 akno dream status
 akno dream status --last 10
 akno dream status --run <run-id>
@@ -238,6 +242,12 @@ and provider errors. `plan diff` is the explicit private-content inspection surf
 from the active queue; it neither changes the knowledge base nor deletes a plan. Akno permits it only before
 apply begins. Applying, verification, completed, partial, and failed states remain visible for recovery and
 diagnosis.
+
+Terminal plans use two-stage retention: exact private operations and evidence are removed after 30 days by
+default, while compact decisions, hashes, and verification receipts remain for 180 days. The command previews
+eligible plan, item, and exact private-byte counts before `--apply`. Full writable dream runs enforce the same
+configured boundary automatically. Active decisions and apply/verification recovery are never candidates, and
+plan pruning never changes the knowledge base or shortens change-journal undo retention.
 
 Use `akno rules <path>` or `dream status --explain-policy <path>` to understand why a page is ineligible,
 audit-only, waiting for a person, eligible for curator apply, or blocked.

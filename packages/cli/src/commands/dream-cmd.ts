@@ -702,6 +702,15 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     }
   }
 
+  if (report.planPrune && (report.planPrune.payloads.plans > 0 || report.planPrune.receipts.plans > 0)) {
+    heading('Plan retention');
+    kv([
+      ['private payloads pruned', report.planPrune.payloads.plans],
+      ['private bytes removed', report.planPrune.payloads.privateBytes],
+      ['compact receipts removed', report.planPrune.receipts.plans],
+    ]);
+  }
+
   printAutoEstimate(report.autoEstimate, report.modelUsage);
 
   if (report.rejected.length > 0) {
@@ -981,6 +990,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     },
     maintenancePlan: report.maintenancePlan ? safeMaintenancePlan(report.maintenancePlan) : null,
     maintenancePlans: (report.maintenancePlans ?? []).map(safeMaintenancePlan),
+    planPrune: report.planPrune,
     rejectedByGuard: report.rejected.length,
     adopted: {
       total: report.adopted.length,
@@ -1026,6 +1036,7 @@ function safeMaintenancePlan(plan: DreamReport['maintenancePlans'][number]): Rec
     mode: plan.mode,
     phase: plan.phase,
     status: plan.status,
+    payloadPrunedAt: plan.payloadPrunedAt,
     fingerprint: plan.fingerprint,
     counts: plan.counts,
     items: plan.items.map((item) => ({

@@ -325,6 +325,13 @@
       "max_bytes_written": 500000,
       "max_high_risk_items": 3
     },
+    // Terminal plans keep exact private operations and evidence for short-term review,
+    // then retain only compact decisions, hashes, and verification receipts. Active,
+    // review, apply, and recovery states never expire through this policy.
+    "plan_retention": {
+      "payload_days": 30,
+      "receipt_days": 180
+    },
     // The model the cycle uses, when it should not be the one indexing uses.
     // Not a role of its own — the same capability as `derive`, pointed somewhere
     // else for the one caller that runs unattended.

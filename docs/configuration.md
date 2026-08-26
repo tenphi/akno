@@ -160,6 +160,10 @@ Transformation policies can lower individual classes:
       "max_bytes_written": 500000,
       "max_high_risk_items": 3,
     },
+    "plan_retention": {
+      "payload_days": 30,
+      "receipt_days": 180,
+    },
   },
 }
 ```
@@ -167,6 +171,13 @@ Transformation policies can lower individual classes:
 Policy values are `off`, `audit`, `review`, and `auto`. Supported classes are `observe`, `reflect`, `hygiene`,
 `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and `adopt`. Page opt-ins, folder
 restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
+
+Plan retention has two stages. `payload_days` removes exact private operations and evidence from terminal
+plans while keeping compact decisions, hashes, and verification receipts. `receipt_days` then removes those
+terminal plan rows; it must be at least as large as `payload_days`. Active review, apply, partial, and
+verification states never expire through this policy. A zero-day value means immediate expiry at the end of a
+writable dream run. Preview the current boundary with `akno plan prune`; apply it manually with
+`akno plan prune --apply`. Full writable dream runs enforce the configured boundary automatically.
 
 Read [The dream cycle](dream-cycle.md) before raising authority.
 

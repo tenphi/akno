@@ -60,6 +60,7 @@ akno dream status --last 10
 akno dream status --run <run-id>
 akno dream status --pending
 akno plan list --status awaiting_review
+akno plan prune
 ```
 
 Status includes the next expected schedule, recent durable runs, policy, typed model degradation, decisions,
@@ -74,6 +75,12 @@ akno plan supersede <plan-id> --reason "Replaced by a newer review."
 
 Only work that has not begun applying can be superseded. Interrupted apply and verification states stay in
 the queue so recovery cannot be hidden as cleanup.
+
+`akno plan prune` is a content-safe preview of the configured two-stage retention boundary, including exact
+private bytes eligible for removal. Add `--apply` for an immediate manual pass. Every writable dream run also
+enforces the same policy: terminal exact operations/evidence expire before compact audit receipts, while active
+or recovery-relevant plans are retained without an age limit. This state cleanup never touches Markdown or the
+separate change journal.
 
 Local notifications are off by default:
 

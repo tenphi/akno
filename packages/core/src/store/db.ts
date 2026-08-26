@@ -13,7 +13,9 @@ import {
   FACT_GRAPH_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
   MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX,
+  MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX,
   MAINTENANCE_ITEM_STATUS_CODE_MIGRATION_INDEX,
+  MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
@@ -78,6 +80,9 @@ export function openStore(options: StoreOptions): Store {
   if (!options.readOnly) {
     db.pragma('journal_mode = WAL');
     db.pragma('synchronous = NORMAL');
+    // Retention of private plan bodies must remove their bytes from freed SQLite cells, not
+    // merely make them unreachable through SELECT while they remain recoverable in the file.
+    db.pragma('secure_delete = ON');
   }
   db.pragma('foreign_keys = ON');
   db.pragma('busy_timeout = 5000');
@@ -184,6 +189,12 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'graph_resolution_verdicts')) {
         db.exec(MIGRATIONS[CONTEXTUAL_ENTITY_MIGRATION_INDEX]!);
+      }
+      if (!columnExists(db, 'maintenance_plans', 'payload_pruned_at')) {
+        db.exec(MIGRATIONS[MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX]!);
+      }
+      if (!columnExists(db, 'maintenance_items', 'component_count')) {
+        db.exec(MIGRATIONS[MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

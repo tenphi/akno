@@ -37,10 +37,12 @@ import {
   findActiveMaintenancePlan,
   getMaintenancePlan,
   maintenanceItemApplySchedule,
+  pruneMaintenancePlans,
   supersedeDependencyMaintenancePlan,
   type MaintenanceItem,
   type MaintenanceMode,
   type MaintenancePlan,
+  type MaintenancePlanPruneResult,
   type MaintenancePlanSummary,
   type ObservationPlanDraft,
 } from './plans.ts';
@@ -185,6 +187,8 @@ export interface DreamReport {
   maintenancePlan: DreamMaintenancePlan | null;
   /** Every phase-specific plan touched by this run. */
   maintenancePlans: DreamMaintenancePlan[];
+  /** Content-safe receipt for configured terminal-plan retention. */
+  planPrune: MaintenancePlanPruneResult | null;
   /** Cumulative apply limits and usage shared by plan-backed phases in this invocation. */
   budget: MaintenanceBudgetReceipt;
   /** Exact logical calls and provider-reported tokens for synchronous maintenance model work. */
@@ -254,6 +258,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     curateChangeId: null,
     maintenancePlan: null,
     maintenancePlans: [],
+    planPrune: null,
     budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
     modelUsage: telemetry.usage(),
     degraded: telemetry.degradation(),
@@ -323,6 +328,20 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
             { sealedPlans: !report.run.dryRun },
           )
         : null;
+    report.planPrune = pruneMaintenancePlans(cycle, {
+      apply: cycle.writable && !(options.dryRun ?? false),
+    });
+    if (report.planPrune.applied && report.planPrune.payloads.plans > 0) {
+      for (const planned of [...report.maintenancePlans]) {
+        try {
+          recordMaintenancePlan(report, getMaintenancePlan(cycle, planned.id));
+        } catch (error) {
+          if (AknoError.from(error).code !== 'not_found') throw error;
+          // A zero-day compact receipt window deliberately removes even this run's terminal
+          // plan. The run receipt still records its id and the pruning receipt explains why.
+        }
+      }
+    }
 
     if (ctx.config.maintenance.logChanges) {
       const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });

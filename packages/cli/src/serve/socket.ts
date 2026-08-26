@@ -177,6 +177,8 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
             typeof reason === 'string' ? reason : undefined,
           );
         }
+        case 'prune':
+          return akno.prunePlans({ apply: booleanFrom(input, 'apply', false) });
         case 'status':
           return akno.maintenanceStatus(statusQueryFrom(input));
         case 'policy': {
@@ -210,6 +212,13 @@ function stringFrom(input: unknown, key: string): string {
   if (typeof value !== 'string' || value.length === 0) {
     throw new AknoError('invalid', `${key} is required`);
   }
+  return value;
+}
+
+function booleanFrom(input: unknown, key: string, fallback: boolean): boolean {
+  const value = (input as Record<string, unknown> | null)?.[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== 'boolean') throw new AknoError('invalid', `${key} must be boolean`);
   return value;
 }
 
