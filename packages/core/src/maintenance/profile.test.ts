@@ -127,6 +127,7 @@ describe('maintenance profiles', () => {
         observe: 'off',
         reflect: 'off',
         hygiene: 'off',
+        managed_item: 'off',
         synthesis: 'off',
         split: 'off',
         extract: 'off',

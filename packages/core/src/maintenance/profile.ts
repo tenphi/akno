@@ -37,6 +37,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
   const reflect = policyPhaseAuthority(config.maintenance.reflect.enabled, [policies.reflect]);
   const curate = policyPhaseAuthority(true, [
     policies.hygiene,
+    policies.managed_item,
     policies.synthesis,
     policies.split,
     policies.extract,

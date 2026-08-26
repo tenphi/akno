@@ -21,6 +21,7 @@ import { assertMaintenanceModeAllowed, effectiveTransformPolicy, profileMode } f
 
 export const PAGE_MAINTENANCE_TRANSFORMS = [
   'hygiene',
+  'managed_item',
   'synthesis',
   'split',
   'extract',
@@ -219,10 +220,11 @@ export function explainMaintenancePath(
 /** The page-owned structural boundary used by both planners and the explanation above. */
 export function pageAllowsMaintenanceTransform(
   config: AknoConfig,
-  page: { slug: string; role: string; dreamManagement: string },
+  page: { slug: string; role: string; dreamManagement: string; rememberManagement?: string },
   kind: PageMaintenanceTransform,
 ): boolean {
   if (isReserved(page.slug, config) || page.role !== 'knowledge') return false;
+  if (kind === 'managed_item') return page.rememberManagement === 'integrate';
   if (kind === 'broken_link') {
     return page.dreamManagement === 'hygiene' || page.dreamManagement === 'synthesize';
   }
@@ -277,17 +279,21 @@ function explainPageTransform(
     }
     const required = requiredDreamMode(kind);
     const dreamAllowed =
-      kind === 'broken_link'
-        ? page.dream === 'hygiene' || page.dream === 'synthesize'
-        : page.dream === required;
+      kind === 'managed_item'
+        ? page.remember === 'integrate'
+        : kind === 'broken_link'
+          ? page.dream === 'hygiene' || page.dream === 'synthesize'
+          : page.dream === required;
     if (!dreamAllowed) {
       blockers.push(
         reason(
           'page',
-          'dream_opt_in',
-          kind === 'broken_link'
-            ? 'the page must declare dream: hygiene or dream: synthesize'
-            : `the page must declare dream: ${required}`,
+          kind === 'managed_item' ? 'remember_opt_in' : 'dream_opt_in',
+          kind === 'managed_item'
+            ? 'the page or its folder must declare remember: integrate; page-wide dream authority is not required'
+            : kind === 'broken_link'
+              ? 'the page must declare dream: hygiene or dream: synthesize'
+              : `the page must declare dream: ${required}`,
         ),
       );
     }

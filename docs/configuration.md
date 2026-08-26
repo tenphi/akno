@@ -153,6 +153,7 @@ Transformation policies can lower individual classes:
     "profile": "autonomous",
     "policies": {
       "hygiene": "auto",
+      "managed_item": "auto",
       "broken_link": "auto",
       "merge": "review",
       "contradiction": "off",
@@ -172,8 +173,14 @@ Transformation policies can lower individual classes:
 ```
 
 Policy values are `off`, `audit`, `review`, and `auto`. Supported classes are `observe`, `reflect`, `hygiene`,
-`synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and `adopt`. Page opt-ins, folder
-restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
+`managed_item`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and `adopt`. Page
+opt-ins, folder restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
+
+`managed_item` is intentionally different from whole-page curation. It inspects only fragments introduced by
+a strict `akno:item` marker on `remember: integrate` knowledge pages; those pages do not also need `dream`
+authority. Its first deterministic repair set removes empty markers, canonicalizes unambiguous legacy
+`engram:item` markers, and removes byte-identical payload/provenance duplicates. Malformed or conflicting
+markers are counted as held findings and leave the page unchanged.
 
 Merge discovery remains exact by default. Enable the qualified semantic candidate source only after choosing
 explicit eligible folders:

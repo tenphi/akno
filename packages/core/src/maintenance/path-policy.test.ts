@@ -24,7 +24,11 @@ beforeEach(async () => {
     synthesizePage('Zephyr QX-100', 'Invented reference material.'),
     'utf8',
   );
-  fs.writeFileSync(path.join(root, 'home/lease.md'), '# Lease\n\nRent is 1111 EUR.\n', 'utf8');
+  fs.writeFileSync(
+    path.join(root, 'home/lease.md'),
+    '---\ntitle: Lease\nakno:\n  management:\n    remember: integrate\n---\n\n# Lease\n\nRent is 1111 EUR.\n',
+    'utf8',
+  );
   fs.writeFileSync(
     path.join(root, 'timeline.md'),
     synthesizePage('Timeline', '- **2030-01-02** | Invented event.\n'),
@@ -87,6 +91,9 @@ describe('path-specific maintenance policy', () => {
     expect(hygiene.blockers).toContainEqual(
       expect.objectContaining({ code: 'dream_opt_in', message: 'the page must declare dream: hygiene' }),
     );
+    expect(transform(policy, 'managed_item').blockers).toContainEqual(
+      expect.objectContaining({ code: 'remember_opt_in' }),
+    );
     expect(merge).toMatchObject({ outcome: 'curator_then_apply', canInspect: true });
   });
 
@@ -98,7 +105,15 @@ describe('path-specific maintenance policy', () => {
     );
 
     const ownerManaged = mem.maintenancePolicy('home/lease');
-    expect(ownerManaged.page).toMatchObject({ dream: 'none', dreamSource: 'default' });
+    expect(ownerManaged.page).toMatchObject({
+      remember: 'integrate',
+      dream: 'none',
+      dreamSource: 'default',
+    });
+    expect(transform(ownerManaged, 'managed_item')).toMatchObject({
+      canInspect: true,
+      outcome: 'curator_then_apply',
+    });
     expect(transform(ownerManaged, 'broken_link').blockers).toContainEqual(
       expect.objectContaining({ code: 'dream_opt_in' }),
     );

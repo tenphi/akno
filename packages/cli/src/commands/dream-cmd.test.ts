@@ -28,6 +28,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('"componentCount":2');
     expect(safe).toContain('"graphCandidates":1');
     expect(safe).toContain('"embeddingCacheHits":2');
+    expect(safe).toContain('"managedItems":{"eligiblePages":1');
   });
 
   it('collapses raw source contexts into one guardrail category per page', () => {
@@ -277,6 +278,23 @@ function privateReport(): DreamReport {
         ],
       },
     ],
+    managedItems: {
+      eligiblePages: 1,
+      inspectedMarkers: 2,
+      plannedPages: 1,
+      suppressedPages: 0,
+      findings: {
+        empty_marker: 1,
+        malformed_marker: 0,
+        legacy_marker: 0,
+        duplicate_item: 0,
+        misplaced_item: 0,
+        source_unavailable: 0,
+        item_conflict: 0,
+        valid: 1,
+      },
+      outcomes: { planned: 1, held: 0, valid: 1, suppressed: 0 },
+    },
     rejected: [
       { pattern: 'Ada Marlow has a private pattern.', reason: 'Private evidence was insufficient.' },
     ],

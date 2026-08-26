@@ -36,6 +36,7 @@ Individual transformation policies can be stricter than the profile:
     "profile": "autonomous",
     "policies": {
       "hygiene": "auto",
+      "managed_item": "auto",
       "broken_link": "auto",
       "merge": "review",
       "contradiction": "off",
@@ -47,9 +48,10 @@ Individual transformation policies can be stricter than the profile:
 Policy values are `off`, `audit`, `review`, and `auto`. An omitted class inherits the profile. The effective
 policy is sealed on each plan item, so one plan can apply a link repair while holding a merge for review.
 
-Profile and policy are not the only gates. Page `dream` opt-in, page role, folder rules, protected paths,
-transformation-specific evidence, merge allowlists, model availability, and whole-run budgets can only reduce
-authority.
+Profile and policy are not the only gates. Whole-page transformations require a page `dream` opt-in;
+`managed_item` instead requires `remember: integrate` and owns only its marked fragment. Page role, folder
+rules, protected paths, transformation-specific evidence, merge allowlists, model availability, and whole-run
+budgets can only reduce authority.
 
 ## Defaults and opt-ins
 
@@ -91,15 +93,15 @@ decisions finish before accepted items apply.
 
 ## Phase summary
 
-| Phase          | Purpose                                                  | Output                                                                   | Default write behavior            |
-| -------------- | -------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------- |
-| `conflicts`    | Classify disagreeing cross-page facts before inference   | Typed verdicts and eligibility                                           | Report only                       |
-| `observe`      | Infer evidence-backed patterns across authored knowledge | Append/create plans for inference pages                                  | Disabled until opted in           |
-| `reflect`      | Derive principles from several current observations      | Append plans for principles                                              | Disabled until opted in           |
-| `curate`       | Maintain explicitly opted-in pages                       | Hygiene, synthesis, split, extract, merge, contradiction, and link plans | Audit plans under default profile |
-| `adopt`        | Give readable orphan documents a durable page            | Low-risk filing plans                                                    | Audit plans under default profile |
-| `repair`       | Preserve the legacy broken-link report surface           | Read-only exact proposals/refusals                                       | Disabled/report only              |
-| `housekeeping` | Report remaining structural work                         | Counts and actionable diagnostics                                        | Report only                       |
+| Phase          | Purpose                                                  | Output                                                                                 | Default write behavior            |
+| -------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------- |
+| `conflicts`    | Classify disagreeing cross-page facts before inference   | Typed verdicts and eligibility                                                         | Report only                       |
+| `observe`      | Infer evidence-backed patterns across authored knowledge | Append/create plans for inference pages                                                | Disabled until opted in           |
+| `reflect`      | Derive principles from several current observations      | Append plans for principles                                                            | Disabled until opted in           |
+| `curate`       | Maintain opted-in pages and Akno-owned fragments         | Managed-item, hygiene, synthesis, split, extract, merge, contradiction, and link plans | Audit plans under default profile |
+| `adopt`        | Give readable orphan documents a durable page            | Low-risk filing plans                                                                  | Audit plans under default profile |
+| `repair`       | Preserve the legacy broken-link report surface           | Read-only exact proposals/refusals                                                     | Disabled/report only              |
+| `housekeeping` | Report remaining structural work                         | Counts and actionable diagnostics                                                      | Report only                       |
 
 ### 1. Conflicts
 
@@ -137,7 +139,13 @@ default because small corpora make “patterns of patterns” especially fragile
 
 ### 4. Curate
 
-Curate considers only pages whose own policy permits `hygiene` or `synthesize`:
+Curate has two authority boundaries. Whole-page transformations consider only pages whose own policy permits
+`hygiene` or `synthesize`. Managed-item maintenance separately inspects strict Akno-owned fragments on
+`remember: integrate` knowledge pages, even when the page has no `dream` value:
+
+- **managed item:** delete an empty marker, normalize one unambiguous legacy marker, or remove an exact
+  payload/provenance duplicate. Malformed markers and conflicting reuse of an item id remain held findings;
+  authored surrounding prose is outside this transformation's authority;
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
 - **synthesis:** evidence-backed rewrite or reorganization;

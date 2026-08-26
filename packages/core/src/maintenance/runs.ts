@@ -44,6 +44,8 @@ export interface DreamSnapshotManifest {
 export interface DreamRunCounts {
   observations: number;
   curated: number;
+  /** Aggregate owned-fragment outcomes; absent only on receipts written before this counter shipped. */
+  managedItems?: { planned: number; held: number; valid: number; suppressed: number };
   rejectedByGuard: number;
   adopted: number;
   conflicts: number;
@@ -462,6 +464,7 @@ function reportCounts(report: DreamReport): DreamRunCounts {
   return {
     observations: report.observations.length,
     curated: report.curated.length,
+    managedItems: { ...report.managedItems.outcomes },
     rejectedByGuard: report.rejected.length,
     adopted: report.adopted.length,
     conflicts: report.conflicts.length,
@@ -474,6 +477,7 @@ function emptyCounts(): DreamRunCounts {
   return {
     observations: 0,
     curated: 0,
+    managedItems: { planned: 0, held: 0, valid: 0, suppressed: 0 },
     rejectedByGuard: 0,
     adopted: 0,
     conflicts: 0,

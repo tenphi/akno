@@ -78,6 +78,7 @@ import {
 } from './model-telemetry.ts';
 import { verifyDreamRun, type DreamRunVerificationReceipt } from './run-verification.ts';
 import { Indexer } from '../index/indexer.ts';
+import { planManagedItems, type ManagedItemReport } from './managed-items.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -126,6 +127,7 @@ export const DREAM_PHASES: DreamPhase[] = [
 
 const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'observe' | 'reflect' | 'adopt'>[] = [
   'hygiene',
+  'managed_item',
   'synthesis',
   'split',
   'extract',
@@ -174,6 +176,8 @@ export interface DreamReport {
   phases: PhaseReport[];
   observations: ObservationWritten[];
   curated: CuratedPage[];
+  /** Aggregate inspection and repair outcomes for Akno-owned inline fragments. */
+  managedItems: ManagedItemReport;
   /** Candidates a guardrail refused, with the guard that refused them. */
   rejected: { pattern: string; reason: string }[];
   /** Documents given a page of their own, and any that were left alone. */
@@ -277,6 +281,23 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     phases: [],
     observations: [],
     curated: [],
+    managedItems: {
+      eligiblePages: 0,
+      inspectedMarkers: 0,
+      plannedPages: 0,
+      suppressedPages: 0,
+      findings: {
+        empty_marker: 0,
+        malformed_marker: 0,
+        legacy_marker: 0,
+        duplicate_item: 0,
+        misplaced_item: 0,
+        source_unavailable: 0,
+        item_conflict: 0,
+        valid: 0,
+      },
+      outcomes: { planned: 0, held: 0, valid: 0, suppressed: 0 },
+    },
     rejected: [],
     adopted: [],
     conflicts: [],
@@ -656,6 +677,16 @@ async function runPhase(
     case 'curate': {
       const policyMatrix = !options.dryRun;
       const policies = curationPolicies(ctx, options);
+      const managedItemResult =
+        policies.managed_item === 'off'
+          ? { drafts: [], report: report.managedItems }
+          : await planManagedItems(ctx);
+      report.managedItems = managedItemResult.report;
+      if (managedItemResult.report.outcomes.held > 0) {
+        report.warnings.push(
+          `${managedItemResult.report.outcomes.held} managed-item finding${managedItemResult.report.outcomes.held === 1 ? '' : 's'} require${managedItemResult.report.outcomes.held === 1 ? 's' : ''} inspection; surrounding page bytes were not changed`,
+        );
+      }
       const allowedKinds = new Set<CurateTransformationKind>(
         (['hygiene', 'synthesis', 'split', 'extract', 'merge'] as const).filter(
           (kind) => policies[kind] !== 'off',
@@ -716,6 +747,15 @@ async function runPhase(
               ? await planContradictions(ctx, report.conflicts)
               : { drafts: [], warnings: [] };
           report.warnings.push(...contradictionResult.warnings);
+          const managedPaths = new Set(managedItemResult.drafts.map((draft) => draft.relPath));
+          const contradictionDrafts = contradictionResult.drafts.filter((draft) =>
+            draft.operations.every((operation) => !managedPaths.has(operation.relPath)),
+          );
+          if (contradictionDrafts.length !== contradictionResult.drafts.length) {
+            report.warnings.push(
+              `${contradictionResult.drafts.length - contradictionDrafts.length} contradiction repair${contradictionResult.drafts.length - contradictionDrafts.length === 1 ? '' : 's'} deferred behind an owned managed-item repair`,
+            );
+          }
           const linkResult =
             ctx.config.maintenance.repair.links && (!policyMatrix || policies.broken_link !== 'off')
               ? await planBrokenLinks(ctx, ctx.config.maintenance.repair.maxChanges)
@@ -749,12 +789,10 @@ async function runPhase(
           // A contradiction item has priority over a general synthesis of the same page. Two
           // sealed items replacing one input would make the second stale by construction.
           const contradictionPaths = new Set(
-            contradictionResult.drafts.flatMap((draft) =>
-              draft.operations.map((operation) => operation.relPath),
-            ),
+            contradictionDrafts.flatMap((draft) => draft.operations.map((operation) => operation.relPath)),
           );
           const linkDrafts: BrokenLinkDraft[] = [];
-          const linkMutations = new Set(contradictionPaths);
+          const linkMutations = new Set([...managedPaths, ...contradictionPaths]);
           const linkSeals = new Set<string>();
           for (const draft of linkResult.drafts) {
             const mutations = draft.operations.map((operation) => operation.relPath);
@@ -776,7 +814,11 @@ async function runPhase(
               });
             }
           }
-          const protectedPaths = new Set([...contradictionPaths, ...linkDrafts.flatMap(linkDraftPaths)]);
+          const protectedPaths = new Set([
+            ...managedPaths,
+            ...contradictionPaths,
+            ...linkDrafts.flatMap(linkDraftPaths),
+          ]);
           const curationDrafts = result.drafts.filter(
             (draft) => !operationsTouchedByCurateDraft(draft).some((relPath) => protectedPaths.has(relPath)),
           );
@@ -796,8 +838,9 @@ async function runPhase(
             ctx,
             mode,
             curationDrafts,
-            contradictionResult.drafts,
+            contradictionDrafts,
             linkDrafts,
+            managedItemResult.drafts,
             policies,
           );
         }
@@ -941,6 +984,7 @@ function isGeneralCurationItem(item: MaintenanceItem): boolean {
     item.kind !== 'observe' &&
     item.kind !== 'reflect' &&
     item.kind !== 'contradiction' &&
+    item.kind !== 'managed_item' &&
     item.kind !== 'broken_link' &&
     item.kind !== 'adopt'
   );

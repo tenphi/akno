@@ -42,7 +42,7 @@ akno dream notify --schedule-health
                    observations/ with their evidence, and never restates a fact.
     reflect        Plan-backed decision principles built on observation-page evidence.
                    Off by default until the observation tier has enough repeated history.
-    curate         Hygiene or full synthesis, only for pages that explicitly authorize it.
+    curate         Managed-fragment repair plus page-authorized hygiene or synthesis.
                    Runs a draft pass, a verification pass and deterministic guards.
     adopt          A page for a document that has none, written beside the file — so its
                    text can be returned at all. Honours \`ingest: "file"\`.
@@ -456,6 +456,9 @@ function printDreamRunReceipt(run: DreamRunReceipt): void {
   kv([
     ['observations', run.counts.observations],
     ['curated', run.counts.curated],
+    ['managed repairs', run.counts.managedItems?.planned ?? 0],
+    ['managed holds', run.counts.managedItems?.held ?? 0],
+    ['managed suppressed', run.counts.managedItems?.suppressed ?? 0],
     ['guard rejections', run.counts.rejectedByGuard],
     ['adopted', run.counts.adopted],
     ['conflicts', run.counts.conflicts],
@@ -1052,6 +1055,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       ...curationCounts(report),
       guardrails: curationGuardSummary(report),
     },
+    managedItems: report.managedItems,
     semanticMerge: report.semanticMerge,
     verification: report.verification,
     conflictRefresh: report.conflictRefresh,
