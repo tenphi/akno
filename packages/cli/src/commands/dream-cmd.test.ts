@@ -26,6 +26,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('run_example');
     expect(safe).toContain('"componentCount":2');
     expect(safe).toContain('"graphCandidates":1');
+    expect(safe).toContain('"embeddingCacheHits":2');
   });
 
   it('collapses raw source contexts into one guardrail category per page', () => {
@@ -146,6 +147,20 @@ describe('dream wait progress', () => {
 });
 
 function privateReport(): DreamReport {
+  const semanticMerge: DreamReport['semanticMerge'] = {
+    pagesConsidered: 2,
+    pagesPrepared: 2,
+    pagesSkipped: 0,
+    embeddingCacheHits: 2,
+    embeddingInputs: 0,
+    embeddingCalls: 0,
+    pairsCompared: 1,
+    prefilteredPairs: 1,
+    classifierCandidates: 1,
+    classifierCacheHits: 1,
+    classifierCalls: 0,
+    qualifiedPairs: 0,
+  };
   const modelUsage: DreamReport['modelUsage'] = {
     modelId: 'zephyr-model',
     calls: 2,
@@ -219,6 +234,7 @@ function privateReport(): DreamReport {
       },
       modelUsage,
       degraded: [],
+      semanticMerge,
       durationMs: 111,
       maintenancePlanIds: ['pln_example'],
       maintenancePlanId: 'pln_example',
@@ -328,6 +344,7 @@ function privateReport(): DreamReport {
     },
     modelUsage,
     degraded: [],
+    semanticMerge,
     warnings: ['people/ada-marlow: private warning'],
     durationMs: 111,
     logPath: '/private/state/dream.jsonl',

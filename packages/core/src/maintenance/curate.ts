@@ -17,6 +17,7 @@ import {
   discoverSemanticMergeCandidates,
   semanticMergePairKey,
   type SemanticMergeDiscoveryDegradation,
+  type SemanticMergeDiscoveryMetrics,
 } from './semantic-merge-discovery.ts';
 import {
   cleanTemporalProposal,
@@ -54,6 +55,8 @@ export interface CurateResult {
   warnings: string[];
   /** Typed model failures from optional candidate sources; exact discovery still proceeds. */
   degraded: SemanticMergeDiscoveryDegradation[];
+  /** Aggregate semantic candidate work; null when semantic discovery did not run. */
+  semanticMerge: SemanticMergeDiscoveryMetrics | null;
   /** Exact, already-guarded rewrites for a durable maintenance plan. */
   drafts: CurateDraft[];
 }
@@ -356,6 +359,7 @@ export async function curatePages(
     changeId: null,
     warnings: [],
     degraded: [],
+    semanticMerge: null,
     drafts: [],
   };
   const rows = ctx.store.db
@@ -404,6 +408,7 @@ export async function curatePages(
     const candidates = discovery.candidates;
     result.warnings.push(...discovery.warnings);
     result.degraded.push(...discovery.degraded);
+    result.semanticMerge = discovery.semanticMerge;
     for (const candidate of candidates) {
       mergeReserved.add(candidate.canonical.id);
       mergeReserved.add(candidate.duplicate.id);
@@ -928,6 +933,7 @@ interface MergeCandidateDiscovery {
   candidates: MergeCandidate[];
   degraded: SemanticMergeDiscoveryDegradation[];
   warnings: string[];
+  semanticMerge: SemanticMergeDiscoveryMetrics | null;
 }
 
 async function discoverMergeCandidates(
@@ -944,7 +950,7 @@ async function discoverMergeCandidates(
       ) && mergePathAllowed(row.slug, folders),
   );
   if (eligible.length < 2 || folders.length === 0) {
-    return { candidates: [], degraded: [], warnings: [] };
+    return { candidates: [], degraded: [], warnings: [], semanticMerge: null };
   }
   const identities = new Map<string, PageRow[]>();
   for (const row of eligible) {
@@ -1014,7 +1020,7 @@ async function discoverMergeCandidates(
     selected.push(candidate);
   }
   if (ctx.config.maintenance.curate.mergeDiscovery !== 'semantic') {
-    return { candidates: selected, degraded: [], warnings: [] };
+    return { candidates: selected, degraded: [], warnings: [], semanticMerge: null };
   }
 
   const semantic = await discoverSemanticMergeCandidates(
@@ -1051,7 +1057,12 @@ async function discoverMergeCandidates(
       identityEvidence: [],
     });
   }
-  return { candidates: selected, degraded: semantic.degraded, warnings: semantic.warnings };
+  return {
+    candidates: selected,
+    degraded: semantic.degraded,
+    warnings: semantic.warnings,
+    semanticMerge: semantic.metrics,
+  };
 }
 
 interface GraphSubjectEvidenceRow {

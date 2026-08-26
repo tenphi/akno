@@ -11,6 +11,7 @@ import {
   type DreamModelDegradation,
   type DreamModelUsageReceipt,
 } from './model-telemetry.ts';
+import type { SemanticMergeDiscoveryMetrics } from './semantic-merge-discovery.ts';
 
 export type DreamRunStatus = 'running' | 'completed' | 'partially_completed' | 'awaiting_review' | 'failed';
 
@@ -85,6 +86,8 @@ export interface DreamRunReceipt {
   modelUsage: DreamModelUsageReceipt;
   /** Typed capability failures grouped by phase or curator stage. */
   degraded: DreamModelDegradation[];
+  /** Aggregate candidate-discovery counts; null on runs where semantic merge discovery did not run. */
+  semanticMerge?: SemanticMergeDiscoveryMetrics | null;
   /** Present on completed audit runs; null on non-audit and historical runs. */
   autoEstimate?: DreamAutoEstimate | null;
   durationMs: number | null;
@@ -150,6 +153,7 @@ export function beginDreamRun(
     budget: emptyBudget(ctx),
     modelUsage: emptyDreamModelUsage(options.modelId),
     degraded: [],
+    semanticMerge: null,
     autoEstimate: null,
     durationMs: null,
     maintenancePlanIds: [],
@@ -192,6 +196,7 @@ export function completeDreamRun(
     budget: report.budget,
     modelUsage: report.modelUsage,
     degraded: report.degraded,
+    semanticMerge: report.semanticMerge,
     autoEstimate: report.autoEstimate ?? null,
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
@@ -216,7 +221,7 @@ export function failDreamRun(
   durationMs: number,
   phases: PhaseReport[],
   budget: MaintenanceBudgetReceipt = started.budget ?? emptyBudget(ctx),
-  operability: Pick<DreamRunReceipt, 'modelUsage' | 'degraded'> = started,
+  operability: Pick<DreamRunReceipt, 'modelUsage' | 'degraded' | 'semanticMerge'> = started,
 ): DreamRunReceipt {
   const receipt: DreamRunReceipt = {
     ...started,
@@ -226,6 +231,7 @@ export function failDreamRun(
     budget,
     modelUsage: operability.modelUsage,
     degraded: operability.degraded,
+    semanticMerge: operability.semanticMerge ?? null,
     durationMs,
     errorCode: error instanceof AknoError ? error.code : 'internal',
   };
@@ -524,6 +530,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
       budget: receipt.budget ?? null,
       modelUsage: receipt.modelUsage ?? emptyDreamModelUsage(receipt.snapshot.modelId),
       degraded: Array.isArray(receipt.degraded) ? receipt.degraded : [],
+      semanticMerge: receipt.semanticMerge ?? null,
       autoEstimate: receipt.autoEstimate ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')

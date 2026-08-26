@@ -998,6 +998,24 @@ describe('plan-backed hygiene', () => {
     expect(server.embeddingCalls()).toBe(1);
     expect(server.semanticMergeCalls()).toBe(1);
     expect(server.curatorCalls()).toBe(1);
+    expect(report.semanticMerge).toEqual({
+      pagesConsidered: 2,
+      pagesPrepared: 2,
+      pagesSkipped: 0,
+      embeddingCacheHits: 0,
+      embeddingInputs: 2,
+      embeddingCalls: 1,
+      pairsCompared: 1,
+      prefilteredPairs: 1,
+      classifierCandidates: 1,
+      classifierCacheHits: 0,
+      classifierCalls: 1,
+      qualifiedPairs: 1,
+    });
+    expect(report.run.semanticMerge).toEqual(report.semanticMerge);
+    expect(mem.maintenanceStatus({ runId: report.run.id }).runs[0]?.semanticMerge).toEqual(
+      report.semanticMerge,
+    );
   });
 
   it('caches an unchanged semantic rejection without retaining model rationale', async () => {
@@ -1017,10 +1035,20 @@ describe('plan-backed hygiene', () => {
     });
     await mem.index({ structuralOnly: true });
 
-    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
-    expect((await mem.dream({ phase: 'curate' })).maintenancePlan).toBeNull();
-    expect(server.embeddingCalls()).toBe(2);
+    const first = await mem.dream({ phase: 'curate' });
+    const second = await mem.dream({ phase: 'curate' });
+    expect(first.maintenancePlan).toBeNull();
+    expect(second.maintenancePlan).toBeNull();
+    expect(server.embeddingCalls()).toBe(1);
     expect(server.semanticMergeCalls()).toBe(1);
+    expect(second.semanticMerge).toMatchObject({
+      embeddingCacheHits: 2,
+      embeddingInputs: 0,
+      embeddingCalls: 0,
+      classifierCacheHits: 1,
+      classifierCalls: 0,
+      qualifiedPairs: 0,
+    });
 
     const db = new Database(mem.config.dbPath);
     expect(db.prepare('SELECT outcome FROM semantic_merge_verdicts').all()).toEqual([
@@ -1028,12 +1056,52 @@ describe('plan-backed hygiene', () => {
     ]);
     const columns = db.pragma('table_info(semantic_merge_verdicts)') as { name: string }[];
     expect(columns.map((column) => column.name)).not.toContain('reason');
+    const embeddingColumns = db.pragma('table_info(semantic_merge_embeddings)') as { name: string }[];
+    expect(embeddingColumns.map((column) => column.name)).not.toEqual(
+      expect.arrayContaining(['slug', 'title', 'content', 'reason', 'rationale']),
+    );
+    expect(db.prepare('SELECT count(*) AS count FROM semantic_merge_embeddings').get()).toEqual({ count: 2 });
     db.close();
 
     fs.appendFileSync(paths.duplicate, '\nA new durable reference field.\n');
     await mem.index({ structuralOnly: true });
-    await mem.dream({ phase: 'curate' });
+    const changed = await mem.dream({ phase: 'curate' });
+    expect(changed.semanticMerge).toMatchObject({
+      embeddingCacheHits: 1,
+      embeddingInputs: 1,
+      embeddingCalls: 1,
+      classifierCacheHits: 0,
+      classifierCalls: 1,
+    });
+    expect(server.embeddingCalls()).toBe(2);
     expect(server.semanticMergeCalls()).toBe(2);
+
+    fs.writeFileSync(
+      paths.duplicate,
+      fs
+        .readFileSync(paths.duplicate, 'utf8')
+        .replace('title: Ada Marlow reference', 'title: Ada Marlow personal reference'),
+    );
+    await mem.index({ structuralOnly: true });
+    const renamed = await mem.dream({ phase: 'curate' });
+    expect(renamed.semanticMerge).toMatchObject({
+      embeddingCacheHits: 2,
+      embeddingInputs: 0,
+      embeddingCalls: 0,
+      classifierCacheHits: 0,
+      classifierCalls: 1,
+    });
+    expect(server.embeddingCalls()).toBe(2);
+    expect(server.semanticMergeCalls()).toBe(3);
+
+    const retained = new Database(mem.config.dbPath);
+    expect(retained.prepare('SELECT count(*) AS count FROM semantic_merge_embeddings').get()).toEqual({
+      count: 2,
+    });
+    expect(retained.prepare('SELECT count(*) AS count FROM semantic_merge_verdicts').get()).toEqual({
+      count: 1,
+    });
+    retained.close();
   });
 
   it('reports semantic embedding failure as typed dream degradation', async () => {
@@ -1062,6 +1130,7 @@ describe('plan-backed hygiene', () => {
       failure: 'request_failed',
       occurrences: 1,
     });
+    expect(report.semanticMerge).toMatchObject({ embeddingInputs: 2, embeddingCalls: 1 });
   });
 
   it('does not treat one exact graph attribute as merge identity', async () => {

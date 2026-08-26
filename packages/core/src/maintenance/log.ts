@@ -76,6 +76,7 @@ export async function logDreamRun(
     // depending on whether the strong model was reachable at all.
     model: ctx.config.maintenance.model?.id ?? ctx.config.models.derive.id,
     modelUsage: report.modelUsage,
+    semanticMerge: report.semanticMerge,
     autoEstimate: report.autoEstimate ?? null,
     degraded: report.degraded,
     phases: report.phases,

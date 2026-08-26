@@ -194,6 +194,12 @@ checks, and atomic apply verification. Classifier verdicts are cached by content
 unchanged rejected pair is not repeatedly sent to the classifier. Model outages appear as typed dream
 degradation and exact discovery continues.
 
+Complete-page semantic signatures are cached separately from retrieval chunks. An unchanged eligible page is
+therefore not sent to the embedding model again on every nightly cycle. The cache key includes the exact
+semantic input, page identity, embedding endpoint, and signature version; changing any of them re-embeds only
+the affected page. Stale signatures and pair verdicts are replaced instead of accumulating. The derived cache
+stores hashes and vectors, but no page text, slug, title, or classifier rationale.
+
 Plan retention has two stages. `payload_days` removes exact private operations and evidence from terminal
 plans while keeping compact decisions, hashes, and verification receipts. `receipt_days` then removes those
 terminal plan rows; it must be at least as large as `payload_days`. Active review, apply, partial, and

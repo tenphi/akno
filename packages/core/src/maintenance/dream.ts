@@ -23,6 +23,10 @@ import { planOrphanAdoptions, type AdoptedDocument } from './adopt.ts';
 import { addedLines, logDreamRun, type AppliedChange } from './log.ts';
 import { curatePages, type CurateDraft, type CuratedPage, type CurateTransformationKind } from './curate.ts';
 import {
+  addSemanticMergeDiscoveryMetrics,
+  type SemanticMergeDiscoveryMetrics,
+} from './semantic-merge-discovery.ts';
+import {
   applyMaintenancePlan,
   blockMaintenanceDependencies,
   createAdoptionPlan,
@@ -195,6 +199,8 @@ export interface DreamReport {
   modelUsage: DreamModelUsageReceipt;
   /** Typed model capability failures; no prompts, responses, paths, or excerpts. */
   degraded: DreamModelDegradation[];
+  /** Aggregate semantic merge discovery work; null when that candidate source did not run. */
+  semanticMerge: SemanticMergeDiscoveryMetrics | null;
   /** Initial curator-pass estimate derived from sealed audit items, when configured auto exists. */
   autoEstimate?: DreamRunReceipt['autoEstimate'];
   warnings: string[];
@@ -262,6 +268,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
     modelUsage: telemetry.usage(),
     degraded: telemetry.degradation(),
+    semanticMerge: null,
     autoEstimate: null,
     warnings: [],
     durationMs: 0,
@@ -514,12 +521,14 @@ async function runPhase(
                 pages: [],
                 drafts: [],
                 degraded: [],
+                semanticMerge: null,
                 warnings: [
                   `page transformations were skipped because no maintenance model is available: ${ctx.models.derive.unavailableReason ?? 'unavailable'}`,
                 ],
               };
           report.curated = result.pages;
           report.warnings.push(...result.warnings);
+          report.semanticMerge = addSemanticMergeDiscoveryMetrics(report.semanticMerge, result.semanticMerge);
           for (const degradation of result.degraded) {
             telemetry.degrade('curate', degradation.reason, degradation.failure);
           }
@@ -600,6 +609,7 @@ async function runPhase(
       report.curated = result.pages;
       report.curateChangeId = result.changeId;
       report.warnings.push(...result.warnings);
+      report.semanticMerge = addSemanticMergeDiscoveryMetrics(report.semanticMerge, result.semanticMerge);
       for (const degradation of result.degraded) {
         telemetry.degrade('curate', degradation.reason, degradation.failure);
       }

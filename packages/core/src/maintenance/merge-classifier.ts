@@ -6,7 +6,8 @@ export const SEMANTIC_MERGE_PROMPT_VERSION = 'semantic-merge-candidate-v1';
 export const SEMANTIC_MERGE_PREFILTER_THRESHOLD = 0.68;
 /** The held-out contract covered complete compact pages, so larger pages fail closed to exact discovery. */
 export const SEMANTIC_MERGE_MAX_PAGE_CHARS = 12_000;
-export const SEMANTIC_MERGE_SIGNATURE_VERSION = 'semantic-merge-signature-v1';
+export const SEMANTIC_MERGE_SIGNATURE_VERSION = 'semantic-merge-signature-v2';
+export const SEMANTIC_MERGE_EMBEDDING_VERSION = 'semantic-merge-embedding-v1';
 
 export interface SemanticMergePage {
   slug: string;

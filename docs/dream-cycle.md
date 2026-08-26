@@ -240,8 +240,10 @@ akno dream status --explain-policy people/ada-marlow.md
 ```
 
 General status and JSON receipts contain counts, typed outcomes, ids, policy, budget use, model-call counts,
-latency, and provider-reported token coverage. They omit page bodies, prompts, paths, excerpts, model responses,
-and provider errors. `plan diff` is the explicit private-content inspection surface.
+latency, provider-reported token coverage, and aggregate semantic-merge work: pages prepared, embedding cache
+hits and inputs, pairs compared, classifier cache hits and calls, and qualified pairs. They omit page bodies,
+prompts, paths, excerpts, semantic candidates, model responses, and provider errors. `plan diff` is the explicit
+private-content inspection surface.
 
 `plan list --status` accepts one exact status or a comma-separated set, such as
 `awaiting_review,approved`. Superseding keeps the sealed plan and its reason as audit history but removes it

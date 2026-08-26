@@ -11,7 +11,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 24;
+export const SCHEMA_VERSION = 25;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -29,6 +29,7 @@ export const CONTEXTUAL_ENTITY_MIGRATION_INDEX = 14;
 export const MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX = 15;
 export const MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX = 16;
 export const SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX = 17;
+export const SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX = 18;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -730,6 +731,24 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX semantic_merge_verdicts_pages
     ON semantic_merge_verdicts(left_page, right_page, created_at);
+  `,
+  // Complete-page embeddings are derived cache, not knowledge. The source hash binds the
+  // vector to the exact classifier input without retaining its text, and the endpoint/signature
+  // fields invalidate it when the model or input contract changes.
+  `
+  CREATE TABLE semantic_merge_embeddings (
+    fingerprint        TEXT PRIMARY KEY,
+    page_id            TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_hash        TEXT NOT NULL,
+    embedding_endpoint TEXT NOT NULL,
+    signature_version  TEXT NOT NULL,
+    dimensions         INTEGER NOT NULL,
+    embedding          BLOB NOT NULL,
+    created_at         TEXT NOT NULL,
+    CHECK (dimensions > 0)
+  );
+  CREATE INDEX semantic_merge_embeddings_page
+    ON semantic_merge_embeddings(page_id, created_at);
   `,
 ];
 

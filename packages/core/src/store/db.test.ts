@@ -486,7 +486,7 @@ describe('schema migration', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  it('adds the content-safe semantic merge cache to a version-twenty-three database', () => {
+  it('adds the content-safe semantic merge verdict cache to a version-twenty-three database', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-semantic-merge-migration-'));
     const dbPath = path.join(dir, 'akno.db');
     const legacy = new Database(dbPath);
@@ -512,6 +512,38 @@ describe('schema migration', () => {
       ]),
     );
     expect(columns.map((column) => column.name)).not.toContain('reason');
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds the complete-page semantic signature cache to a version-twenty-four database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-semantic-signature-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 18)) legacy.exec(migration);
+    legacy.pragma('user_version = 24');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(semantic_merge_embeddings)') as { name: string }[];
+
+    expect(columns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'fingerprint',
+        'page_id',
+        'source_hash',
+        'embedding_endpoint',
+        'signature_version',
+        'dimensions',
+        'embedding',
+        'created_at',
+      ]),
+    );
+    expect(columns.map((column) => column.name)).not.toEqual(
+      expect.arrayContaining(['slug', 'title', 'content', 'reason', 'rationale']),
+    );
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

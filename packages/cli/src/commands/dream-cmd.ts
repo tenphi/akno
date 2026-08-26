@@ -448,6 +448,7 @@ function printDreamRunReceipt(run: DreamRunReceipt): void {
       `    ${stage.stage.padEnd(13)} ${dreamModelUsageSummary({ ...stage, modelId: run.modelUsage.modelId, stages: [] })}`,
     );
   }
+  printSemanticMergeMetrics(run.semanticMerge ?? null);
   printAutoEstimate(run.autoEstimate, run.modelUsage);
   line('\n  outcomes');
   kv([
@@ -497,6 +498,28 @@ function printDreamRunHistory(runs: DreamRunReceipt[]): void {
       `  ${style.bold(run.id)}  ${run.status.padEnd(19)} ${run.mode.padEnd(6)} ${run.startedAt}  ${duration}  ${model}`,
     );
   }
+}
+
+function printSemanticMergeMetrics(metrics: DreamReport['semanticMerge']): void {
+  if (!metrics) return;
+  line('\n  semantic merge discovery');
+  kv([
+    [
+      'pages',
+      `${metrics.pagesPrepared}/${metrics.pagesConsidered} prepared` +
+        (metrics.pagesSkipped > 0 ? ` · ${metrics.pagesSkipped} skipped` : ''),
+    ],
+    [
+      'embeddings',
+      `${metrics.embeddingCacheHits} cached · ${metrics.embeddingInputs} model input(s) in ${metrics.embeddingCalls} call(s)`,
+    ],
+    ['pairs', `${metrics.prefilteredPairs}/${metrics.pairsCompared} passed prefilter`],
+    [
+      'classifier',
+      `${metrics.classifierCacheHits} cached · ${metrics.classifierCalls} call(s) / ${metrics.classifierCandidates} candidate(s)`,
+    ],
+    ['qualified', metrics.qualifiedPairs],
+  ]);
 }
 
 function printAutoEstimate(
@@ -585,6 +608,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     const detail = phase.skipped ? style.grey(`  ${phase.skipped}`) : style.grey(`  ${ms(phase.durationMs)}`);
     line(`  ${phase.phase.padEnd(13)} ${label}${detail}`);
   }
+  printSemanticMergeMetrics(report.semanticMerge);
 
   if (report.observations.length > 0) {
     const changed = report.observations.filter(
@@ -988,6 +1012,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
       ...curationCounts(report),
       guardrails: curationGuardSummary(report),
     },
+    semanticMerge: report.semanticMerge,
     maintenancePlan: report.maintenancePlan ? safeMaintenancePlan(report.maintenancePlan) : null,
     maintenancePlans: (report.maintenancePlans ?? []).map(safeMaintenancePlan),
     planPrune: report.planPrune,

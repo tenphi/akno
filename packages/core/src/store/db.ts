@@ -21,6 +21,7 @@ import {
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   SCHEMA_VERSION,
+  SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
   SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX,
   STRUCTURAL_GRAPH_MIGRATION_INDEX,
 } from './migrations.ts';
@@ -199,6 +200,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'semantic_merge_verdicts')) {
         db.exec(MIGRATIONS[SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'semantic_merge_embeddings')) {
+        db.exec(MIGRATIONS[SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
