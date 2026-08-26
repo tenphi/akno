@@ -3,7 +3,7 @@ import type { AknoContext } from '../context.ts';
 import type { MaintenanceProfile, ResolvedModelRole } from '../config/schema.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { SCHEMA_VERSION } from '../store/migrations.ts';
-import type { DreamPhase, DreamReport, PhaseReport } from './dream.ts';
+import type { DreamConflictRefreshReceipt, DreamPhase, DreamReport, PhaseReport } from './dream.ts';
 import type { MaintenanceMode } from './plans.ts';
 import type { MaintenanceBudgetReceipt } from './budget.ts';
 import {
@@ -91,6 +91,8 @@ export interface DreamRunReceipt {
   semanticMerge?: SemanticMergeDiscoveryMetrics | null;
   /** Final deterministic postconditions and receipt-accounting result; null on old or failed-start runs. */
   verification: DreamRunVerificationReceipt | null;
+  /** Post-write changed-fact derivation and conflict eligibility proof; null on historical runs. */
+  conflictRefresh?: DreamConflictRefreshReceipt | null;
   /** Present on completed audit runs; null on non-audit and historical runs. */
   autoEstimate?: DreamAutoEstimate | null;
   durationMs: number | null;
@@ -158,6 +160,7 @@ export function beginDreamRun(
     degraded: [],
     semanticMerge: null,
     verification: null,
+    conflictRefresh: null,
     autoEstimate: null,
     durationMs: null,
     maintenancePlanIds: [],
@@ -202,6 +205,7 @@ export function completeDreamRun(
     degraded: report.degraded,
     semanticMerge: report.semanticMerge,
     verification: report.verification,
+    conflictRefresh: report.conflictRefresh,
     autoEstimate: report.autoEstimate ?? null,
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
@@ -450,6 +454,7 @@ function completedStatus(report: DreamReport): DreamRunStatus {
     return onlyRetryableDeferrals ? 'partially_completed' : 'failed';
   }
   if (plans.some((plan) => plan.status === 'partially_completed')) return 'partially_completed';
+  if (report.conflictRefresh?.status === 'degraded') return 'partially_completed';
   return 'completed';
 }
 
@@ -538,6 +543,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
       degraded: Array.isArray(receipt.degraded) ? receipt.degraded : [],
       semanticMerge: receipt.semanticMerge ?? null,
       verification: receipt.verification ?? null,
+      conflictRefresh: receipt.conflictRefresh ?? null,
       autoEstimate: receipt.autoEstimate ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
         ? receipt.maintenancePlanIds.filter((id): id is string => typeof id === 'string')

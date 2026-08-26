@@ -403,7 +403,14 @@ export class Assembler {
 
   private factsFor(pageId: string): FactRow[] {
     return this.#store.db
-      .prepare(`SELECT ${LINE_FACT_COLUMNS} FROM facts WHERE page_id = ?`)
+      .prepare(
+        `SELECT ${LINE_FACT_COLUMNS} FROM facts WHERE page_id = ?
+          AND EXISTS (
+            SELECT 1 FROM pages current_page
+             WHERE current_page.id = facts.page_id
+               AND current_page.derived_hash = current_page.body_hash
+          )`,
+      )
       .all(pageId) as FactRow[];
   }
 

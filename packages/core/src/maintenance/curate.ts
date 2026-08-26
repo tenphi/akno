@@ -1703,9 +1703,11 @@ function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
     'facts' | 'relationship'
   > & { outbound: number; backlink: number })[];
   const facts = ctx.store.db.prepare(
-    `SELECT claim, subject, attribute, value, item_id FROM facts
-      WHERE page_id = ? AND valid_to IS NULL
-      ORDER BY line_start, id LIMIT 50`,
+    `SELECT f.claim, f.subject, f.attribute, f.value, f.item_id FROM facts f
+      JOIN pages current_page ON current_page.id = f.page_id
+      WHERE f.page_id = ? AND f.valid_to IS NULL
+        AND current_page.derived_hash = current_page.body_hash
+      ORDER BY f.line_start, f.id LIMIT 50`,
   );
   const events = ctx.store.db.prepare(
     `SELECT date, summary FROM events
@@ -1778,9 +1780,11 @@ function conflictsFor(ctx: AknoContext, pageId: string): ConflictEvidence[] {
       `SELECT f.subject, f.attribute, f.claim, f.value, p.slug FROM facts f
         JOIN pages p ON p.id = f.page_id
         WHERE f.valid_to IS NULL AND f.subject IS NOT NULL AND f.attribute IS NOT NULL
+          AND p.derived_hash = p.body_hash
           AND EXISTS (
-            SELECT 1 FROM facts other
+            SELECT 1 FROM facts other JOIN pages other_page ON other_page.id = other.page_id
              WHERE other.valid_to IS NULL AND other.page_id != f.page_id
+               AND other_page.derived_hash = other_page.body_hash
                AND lower(other.subject) = lower(f.subject)
                AND lower(other.attribute) = lower(f.attribute)
                AND other.value != f.value

@@ -450,6 +450,7 @@ function printDreamRunReceipt(run: DreamRunReceipt): void {
   }
   printSemanticMergeMetrics(run.semanticMerge ?? null);
   printRunVerification(run.verification);
+  printConflictRefresh(run.conflictRefresh ?? null);
   printAutoEstimate(run.autoEstimate, run.modelUsage);
   line('\n  outcomes');
   kv([
@@ -605,6 +606,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     ['snapshot', report.run.snapshot.indexRevision.slice(0, 12)],
   ]);
   printRunVerification(report.verification);
+  printConflictRefresh(report.conflictRefresh);
   for (const phase of report.phases) {
     const label = phase.ran ? style.green('ran') : style.grey('skipped');
     const detail = phase.skipped ? style.grey(`  ${phase.skipped}`) : style.grey(`  ${ms(phase.durationMs)}`);
@@ -955,6 +957,21 @@ function printRunVerification(verification: DreamRunReceipt['verification']): vo
   }
 }
 
+function printConflictRefresh(refresh: DreamReport['conflictRefresh']): void {
+  if (!refresh) return;
+  line('\n  changed-claim refresh');
+  kv([
+    ['status', refresh.status],
+    ['cause', refresh.cause],
+    ['changed files', refresh.changedFiles],
+    ['knowledge pages', refresh.knowledgePages],
+    ['current pages', refresh.currentPages],
+    ['stale pages', refresh.stalePages],
+    ['conflicts', refresh.candidates],
+    ['unverified', refresh.unverified],
+  ]);
+}
+
 export function dreamRunIsReadOnly(report: Pick<DreamReport, 'run'>): boolean {
   return report.run.dryRun || report.run.mode === 'audit' || report.run.mode === 'review';
 }
@@ -1037,6 +1054,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     },
     semanticMerge: report.semanticMerge,
     verification: report.verification,
+    conflictRefresh: report.conflictRefresh,
     maintenancePlan: report.maintenancePlan ? safeMaintenancePlan(report.maintenancePlan) : null,
     maintenancePlans: (report.maintenancePlans ?? []).map(safeMaintenancePlan),
     planPrune: report.planPrune,

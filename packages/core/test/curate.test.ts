@@ -37,6 +37,7 @@ let server: {
   semanticMergeCalls: () => number;
   embeddingCalls: () => number;
   embeddingFailure: (value: boolean) => void;
+  invalidDerivation: (value: boolean) => void;
   invalidExtractionHeading: (value: boolean) => void;
   invalidExtractionTarget: (value: boolean) => void;
   userMessages: () => string[];
@@ -502,8 +503,48 @@ describe('plan-backed hygiene', () => {
       checks: { appliedItems: 'passed', affectedPaths: 'passed' },
       issues: [],
     });
+    expect(report.conflictRefresh).toMatchObject({
+      status: 'passed',
+      changedFiles: 1,
+      knowledgePages: 1,
+      currentPages: 1,
+      stalePages: 0,
+    });
+    expect(report.run.status).toBe('completed');
     expect(server.calls()).toBe(3);
     expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('keeps applied bytes but degrades the run when changed facts cannot be refreshed', async () => {
+    server.invalidDerivation(true);
+
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+
+    expect(report.maintenancePlan?.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(report.verification?.status).toBe('passed');
+    expect(report.conflictRefresh).toMatchObject({
+      status: 'degraded',
+      changedFiles: 1,
+      knowledgePages: 1,
+      currentPages: 0,
+      stalePages: 1,
+    });
+    expect(report.run.status).toBe('partially_completed');
+    expect(report.degraded).toContainEqual(
+      expect.objectContaining({ stage: 'conflicts', reason: 'derive_failed' }),
+    );
+    const db = new Database(mem.config.dbPath, { readonly: true });
+    expect(
+      db
+        .prepare(
+          "SELECT derived_hash IS NULL OR derived_hash != body_hash AS stale FROM pages WHERE slug = 'people/ada-marlow'",
+        )
+        .get(),
+    ).toEqual({ stale: 1 });
+    db.close();
   });
 
   it('enforces configured plan retention at the end of a writable dream run', async () => {
@@ -1772,6 +1813,7 @@ async function startStub(): Promise<typeof server> {
   let semanticMergeCalls = 0;
   let embeddingCalls = 0;
   let embeddingFailure = false;
+  let invalidDerivation = false;
   let invalidExtractionHeading = false;
   let invalidExtractionTarget = false;
   const userMessages: string[] = [];
@@ -1800,6 +1842,11 @@ async function startStub(): Promise<typeof server> {
       }
       const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const user = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      if (invalidDerivation && user.startsWith('Page: ')) {
+        response.writeHead(400, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { message: 'invented derivation failure' } }));
+        return;
+      }
       userMessages.push(user);
       if (
         system.includes('Markdown page hygienist') ||
@@ -1812,75 +1859,77 @@ async function startStub(): Promise<typeof server> {
       }
       if (system.includes('independent curator')) curatorCalls++;
       if (system.includes('filter candidate Markdown page pairs')) semanticMergeCalls++;
-      const content = system.includes('filter candidate Markdown page pairs')
-        ? JSON.stringify({
-            outcome: semanticMergeOutcome,
-            reason: 'The invented pages either share one durable subject or retain useful separate scope.',
-          })
-        : system.includes('independent curator')
+      const content = user.startsWith('Page: ')
+        ? JSON.stringify({ summary: 'An invented profile summary.', keywords: [], facts: [] })
+        : system.includes('filter candidate Markdown page pairs')
           ? JSON.stringify({
-              outcome: 'approve',
-              reason: 'The rewrite is conservative and preserves knowledge.',
+              outcome: semanticMergeOutcome,
+              reason: 'The invented pages either share one durable subject or retain useful separate scope.',
             })
-          : system.includes('verify an automatic Markdown rewrite')
-            ? JSON.stringify({ ok: true, issues: [] })
-            : mergeDraft && system.includes('merge two Markdown pages')
-              ? mergeDraftResponse(user, lossyMergeDraft)
-              : extractDraft && system.includes('synthesize one canonical')
-                ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
-                : splitDraft && system.includes('synthesize one canonical')
-                  ? JSON.stringify({
-                      body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
-                      splits: [
-                        {
-                          suffix: 'history',
-                          title: 'Ada Marlow history',
-                          body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
-                        },
-                      ],
-                      extracts: [],
-                      temporal: false,
-                    })
-                  : cosmeticDraft && system.includes('synthesize one canonical')
+          : system.includes('independent curator')
+            ? JSON.stringify({
+                outcome: 'approve',
+                reason: 'The rewrite is conservative and preserves knowledge.',
+              })
+            : system.includes('verify an automatic Markdown rewrite')
+              ? JSON.stringify({ ok: true, issues: [] })
+              : mergeDraft && system.includes('merge two Markdown pages')
+                ? mergeDraftResponse(user, lossyMergeDraft)
+                : extractDraft && system.includes('synthesize one canonical')
+                  ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
+                  : splitDraft && system.includes('synthesize one canonical')
                     ? JSON.stringify({
-                        body: currentBody(user)
-                          .replace(/^\n(?=#)/, '')
-                          .replace('## Details', '## History and details'),
-                        splits: [],
+                        body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
+                        splits: [
+                          {
+                            suffix: 'history',
+                            title: 'Ada Marlow history',
+                            body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+                          },
+                        ],
                         extracts: [],
                         temporal: false,
                       })
-                    : crossPageDraft && system.includes('synthesize one canonical')
-                      ? crossPageDraftResponse(user)
-                      : synthesisDraft && system.includes('synthesize one canonical')
-                        ? JSON.stringify({
-                            body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
-                            splits: [],
-                            extracts: [],
-                            temporal: false,
-                          })
-                        : exactDraft
+                    : cosmeticDraft && system.includes('synthesize one canonical')
+                      ? JSON.stringify({
+                          body: currentBody(user)
+                            .replace(/^\n(?=#)/, '')
+                            .replace('## Details', '## History and details'),
+                          splits: [],
+                          extracts: [],
+                          temporal: false,
+                        })
+                      : crossPageDraft && system.includes('synthesize one canonical')
+                        ? crossPageDraftResponse(user)
+                        : synthesisDraft && system.includes('synthesize one canonical')
                           ? JSON.stringify({
-                              body: currentBody(user),
+                              body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
                               splits: [],
                               extracts: [],
                               temporal: false,
                             })
-                          : echoDraft
+                          : exactDraft
                             ? JSON.stringify({
-                                body: currentBody(user).replace(/^\n(?=#)/, ''),
+                                body: currentBody(user),
                                 splits: [],
                                 extracts: [],
                                 temporal: false,
                               })
-                            : JSON.stringify({
-                                body:
-                                  '# Ada Marlow\n\n## Details\n\n' +
-                                  (drop
-                                    ? ''
-                                    : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
-                                  `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
-                              });
+                            : echoDraft
+                              ? JSON.stringify({
+                                  body: currentBody(user).replace(/^\n(?=#)/, ''),
+                                  splits: [],
+                                  extracts: [],
+                                  temporal: false,
+                                })
+                              : JSON.stringify({
+                                  body:
+                                    '# Ada Marlow\n\n## Details\n\n' +
+                                    (drop
+                                      ? ''
+                                      : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                                    `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
+                                });
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({ choices: [{ message: { content } }] }));
     });
@@ -1936,6 +1985,9 @@ async function startStub(): Promise<typeof server> {
     embeddingCalls: () => embeddingCalls,
     embeddingFailure: (value) => {
       embeddingFailure = value;
+    },
+    invalidDerivation: (value) => {
+      invalidDerivation = value;
     },
     invalidExtractionHeading: (value) => {
       invalidExtractionHeading = value;
@@ -2080,6 +2132,7 @@ Ada Marlow keeps a brass compass.
 function seedGraphSubjectFacts(databasePath: string, slug: string, count = 2): void {
   const db = new Database(databasePath);
   const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get(slug) as { id: string };
+  db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
   const now = new Date().toISOString();
   const facts = [
     {

@@ -114,6 +114,12 @@ classifies a candidate as:
 Unverified, unresolved, and pending qualification claims are excluded from inference and current graph edges.
 Conflict status itself does not authorize a write; contradiction changes are high-risk curate items.
 
+Conflict eligibility is also a post-write condition. A successful knowledge-page edit is re-derived before the
+run finishes, then conflict candidates and graph eligibility are rebuilt from the new claims. Until that full
+derivation succeeds, the page's retained pre-write facts are marked stale by its body/derivation hash mismatch
+and are excluded from conflict analysis, inference, curation evidence, line-level recall metadata, and
+fact-backed graph edges.
+
 ### 2. Observe
 
 Observe looks for patterns supported by at least two distinct authored knowledge pages. It writes only derived
@@ -182,7 +188,9 @@ Every writable transformation follows the same stages:
 5. **Re-index:** reconcile every affected path.
 6. **Verify:** confirm the expected disk and index outcome; roll back a proven failed result.
 7. **Retry dependencies once:** replan only work invalidated by successful earlier items, using remaining budget.
-8. **Verify the run:** recheck every applied item together and seal a content-safe final receipt.
+8. **Refresh changed claims:** derive the final page bytes, reclassify changed conflict fingerprints, and rebuild
+   graph eligibility.
+9. **Verify the run:** recheck every applied item together and seal a content-safe final receipt.
 
 Proposal generation never authorizes itself in the same model turn.
 
@@ -194,6 +202,12 @@ has a journal id and passed item receipt, that its sealed final bytes still agre
 and that transformation-specific identity, ownership, and link conditions still hold. It also checks the
 whole-run budget against the live reservation tracker and proves that per-stage model calls and token totals
 sum to the reported aggregate.
+
+The run also stores a content-safe changed-claim receipt: changed-file and knowledge-page counts, current versus
+stale derivations, final conflict candidates, and unverified candidates. No paths or claims are retained. A
+model or derivation failure does not roll back an already verified authored edit; the old facts remain
+non-current, the graph excludes them, and the run becomes `partially_completed` so the next index pass can
+retry rather than certifying stale evidence.
 
 The result is stored on the run as counts and typed issue codes only—never paths, page text, prompts, or
 verifier details. A failed final check makes the run `failed`; the CLI exits non-zero and actionable scheduled

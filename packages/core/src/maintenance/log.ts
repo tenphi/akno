@@ -78,6 +78,7 @@ export async function logDreamRun(
     modelUsage: report.modelUsage,
     semanticMerge: report.semanticMerge,
     verification: report.verification,
+    conflictRefresh: report.conflictRefresh,
     autoEstimate: report.autoEstimate ?? null,
     degraded: report.degraded,
     phases: report.phases,

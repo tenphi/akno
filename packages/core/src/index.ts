@@ -248,6 +248,7 @@ export {
   parsePhase,
   type DreamOptions,
   type DreamMaintenancePlan,
+  type DreamConflictRefreshReceipt,
   type DreamPhase,
   type DreamReport,
   type CuratedPage,

@@ -686,6 +686,7 @@ function insertFact(
   },
 ): void {
   const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get(input.slug) as { id: string };
+  db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
   db.prepare(
     `INSERT INTO facts(
        id, page_id, claim, subject, attribute, value, line_start, line_end,

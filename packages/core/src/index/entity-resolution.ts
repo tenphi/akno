@@ -308,9 +308,11 @@ function buildContextualEntityCase(
       ? null
       : (store.db
           .prepare(
-            `SELECT subject, attribute, value FROM facts
-            WHERE page_id = ? AND line_start = ?
-            ORDER BY id LIMIT 1`,
+            `SELECT f.subject, f.attribute, f.value FROM facts f
+            JOIN pages p ON p.id = f.page_id
+            WHERE f.page_id = ? AND f.line_start = ? AND f.valid_to IS NULL
+              AND p.derived_hash = p.body_hash
+            ORDER BY f.id LIMIT 1`,
           )
           .get(input.sourcePage, input.sourceLine) as
           { subject: string | null; attribute: string | null; value: string | null } | undefined);

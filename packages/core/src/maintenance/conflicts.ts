@@ -92,6 +92,9 @@ export function findCrossPageConflictsInStore(store: Store, maxPairs: number): C
          FROM facts f JOIN pages p ON p.id = f.page_id
         WHERE f.valid_to IS NULL
           AND p.role = 'knowledge'
+          -- A structural write keeps old facts for retryability but moves body_hash ahead.
+          -- Those facts describe the previous bytes and cannot classify the current page.
+          AND p.derived_hash = p.body_hash
           AND f.subject IS NOT NULL
           AND f.attribute IS NOT NULL
           AND f.value IS NOT NULL

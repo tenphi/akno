@@ -4,9 +4,14 @@ import type { Store } from './store/db.ts';
 import type { ModelClient } from './models/client.ts';
 import type { Assembler } from './recall/assemble.ts';
 import type { Indexer } from './index/indexer.ts';
-import type { DeferredDerive } from './index/defer.ts';
 import type { Journal } from './write/journal.ts';
 import type { Gate } from './write/gate.ts';
+
+/** The write path can queue model-backed indexing without depending on its concrete worker. */
+export interface DeriveScheduler {
+  schedule(relPaths: string[]): void;
+  flush(): Promise<void>;
+}
 
 /** Everything an op needs, assembled once per process by `open()`. */
 export interface AknoContext {
@@ -33,7 +38,7 @@ export interface AknoContext {
    * that is already correct. Awaiting that put a cold local deriver — a minute to load — inside
    * every `remember`, past the timeout of the tool calling it.
    */
-  derive: DeferredDerive;
+  derive: DeriveScheduler;
   journal: Journal;
   gate: Gate;
   /**

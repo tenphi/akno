@@ -143,6 +143,7 @@ describe('graph operation', () => {
     const page = store.db.prepare("SELECT id FROM pages WHERE slug = 'people/ada-marlow'").get() as {
       id: string;
     };
+    store.db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
     const claim = 'Ada Marlow previously worked with Vulpine Mutual.';
     store.db
       .prepare(

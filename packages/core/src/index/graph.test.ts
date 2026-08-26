@@ -445,6 +445,48 @@ The invented warranty now lasts seven years.
     store.close();
   });
 
+  it('excludes pre-write facts while a changed page is waiting for derivation', async () => {
+    const root = contextualEntityFixtureCorpus();
+    const stateDir = temporaryDirectory('akno-stale-fact-state-');
+    const memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+    await memory.close();
+
+    const store = openStore({ dbPath: path.join(stateDir, 'akno.db'), embeddingDimensions: 1024 });
+    insertFact(store.db, {
+      id: 'fac_zephyr_one_duration',
+      slug: 'products/zephyr-one',
+      line: 8,
+      claim: 'The Zephyr One warranty lasts 1111 days.',
+      subject: 'Zephyr warranty',
+      attribute: 'duration',
+      value: '1111 days',
+    });
+    insertFact(store.db, {
+      id: 'fac_zephyr_two_duration',
+      slug: 'products/zephyr-two',
+      line: 8,
+      claim: 'The Zephyr Two warranty lasts 2222 days.',
+      subject: 'Zephyr warranty',
+      attribute: 'duration',
+      value: '2222 days',
+    });
+
+    expect(findCrossPageConflictsInStore(store, 10)).toHaveLength(1);
+    expect(rebuildEvidenceGraph(store).facts).toBe(2);
+
+    store.db
+      .prepare("UPDATE pages SET body_hash = ? WHERE slug = 'products/zephyr-one'")
+      .run(sha256('invented changed page bytes'));
+
+    expect(findCrossPageConflictsInStore(store, 10)).toEqual([]);
+    expect(rebuildEvidenceGraph(store).facts).toBe(1);
+    expect(
+      store.db.prepare("SELECT 1 FROM graph_fact_status WHERE fact_id = 'fac_zephyr_one_duration'").get(),
+    ).toBeUndefined();
+    store.close();
+  });
+
   it('projects only exact, current, conflict-eligible facts into traversable relationships', async () => {
     const root = factFixtureCorpus();
     const stateDir = temporaryDirectory('akno-fact-graph-state-');
@@ -976,6 +1018,7 @@ function insertFact(
   },
 ): void {
   const page = db.prepare('SELECT id FROM pages WHERE slug = ?').get(input.slug) as { id: string };
+  db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
   db.prepare(
     `INSERT INTO facts(
        id, page_id, claim, subject, attribute, value, line_start, line_end,

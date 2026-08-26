@@ -1680,6 +1680,28 @@ As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
       current: 'products/zephyr-current',
       reason: 'One claim contains an explicit as-of date.',
     });
+    server.onCurator(() => {
+      // The post-apply derivation reads the rewritten sentence. A changed fingerprint must be
+      // classified again rather than inheriting the pre-write verdict by page identity.
+      server.facts({
+        'products/zephyr-old': [
+          {
+            claim: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.',
+            subject: 'Zephyr QX-100 warranty',
+            attribute: 'duration',
+            value: '1111 days',
+          },
+        ],
+        'products/zephyr-current': [
+          {
+            claim: 'As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.',
+            subject: 'Zephyr QX-100 warranty',
+            attribute: 'duration',
+            value: '2222 days',
+          },
+        ],
+      });
+    });
     mem = await openMem({
       maintenance: {
         profile: 'autonomous',
@@ -1710,6 +1732,14 @@ As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.
     expect(fs.readFileSync(currentPage, 'utf8')).toContain(
       'As of 2002-02-02, the Zephyr QX-100 warranty is 2222 days.',
     );
+    expect(report.conflictRefresh).toMatchObject({
+      status: 'passed',
+      changedFiles: 2,
+      knowledgePages: 2,
+      currentPages: 2,
+      stalePages: 0,
+    });
+    expect(server.conflictCalls()).toBe(2);
 
     const after = fs.readFileSync(oldPage, 'utf8');
     const repeated = await mem.dream({ phase: 'curate' });

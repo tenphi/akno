@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import type { AknoContext } from '../context.ts';
+import type { AknoContext, DeriveScheduler } from '../context.ts';
 import type { MaintenancePolicy, MaintenanceTransform } from '../config/schema.ts';
 import { AknoError } from '@tenphi/akno-protocol';
 import type { ChangeFile } from '../write/journal.ts';
@@ -77,6 +77,7 @@ import {
   type DreamModelUsageReceipt,
 } from './model-telemetry.ts';
 import { verifyDreamRun, type DreamRunVerificationReceipt } from './run-verification.ts';
+import { Indexer } from '../index/indexer.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -204,12 +205,27 @@ export interface DreamReport {
   semanticMerge: SemanticMergeDiscoveryMetrics | null;
   /** Final content-safe postcondition and accounting check for the complete invocation. */
   verification: DreamRunVerificationReceipt | null;
+  /** Proof that facts changed by this run no longer use pre-write conflict eligibility. */
+  conflictRefresh: DreamConflictRefreshReceipt | null;
   /** Initial curator-pass estimate derived from sealed audit items, when configured auto exists. */
   autoEstimate?: DreamRunReceipt['autoEstimate'];
   warnings: string[];
   durationMs: number;
   /** Where the run was written down, when `maintenance.log_changes` is on. */
   logPath?: string;
+}
+
+export interface DreamConflictRefreshReceipt {
+  status: 'not_needed' | 'passed' | 'degraded';
+  cause: 'no_claim_changes' | 'conflicts_disabled' | 'facts_disabled' | null;
+  /** Changed paths queued by successful maintenance items; paths themselves are never retained. */
+  changedFiles: number;
+  knowledgePages: number;
+  currentPages: number;
+  stalePages: number;
+  candidates: number;
+  unverified: number;
+  checkedAt: string;
 }
 
 export interface DreamOptions {
@@ -236,12 +252,17 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     : ctx.models.derive;
   const telemetry = new DreamModelTelemetry(baseCycleModel.modelId);
   let modelStage: DreamModelStage = options.phase ?? 'conflicts';
+  const pendingDerivation = new QueuedDeriveScheduler();
   const cycle: AknoContext = {
     ...ctx,
     models: {
       ...ctx.models,
       derive: baseCycleModel.withOutcomeObserver((observation) => telemetry.observe(modelStage, observation)),
     },
+    // A maintenance write still indexes structure before it is verified. Hold its expensive
+    // follow-up until every planned write has landed, so changed facts can be re-derived and
+    // reclassified once, synchronously, before this run certifies its outcome.
+    derive: pendingDerivation,
   };
   const wanted = options.phase ? [options.phase] : DREAM_PHASES;
   const startedRun = beginDreamRun(ctx, {
@@ -273,6 +294,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     degraded: telemetry.degradation(),
     semanticMerge: null,
     verification: null,
+    conflictRefresh: null,
     autoEstimate: null,
     warnings: [],
     durationMs: 0,
@@ -324,7 +346,24 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
         await retryDependencyDeferredPhases(cycle, options, report, applied, budget, telemetry, (stage) => {
           modelStage = stage;
         });
+        modelStage = 'conflicts';
+        report.conflictRefresh = await refreshChangedClaimEligibility(
+          cycle,
+          pendingDerivation,
+          report,
+          telemetry,
+        );
       }
+    }
+
+    if (!deferAutomaticApply) {
+      modelStage = 'conflicts';
+      report.conflictRefresh = await refreshChangedClaimEligibility(
+        cycle,
+        pendingDerivation,
+        report,
+        telemetry,
+      );
     }
 
     report.budget = maintenanceBudgetReceipt(budget);
@@ -366,8 +405,14 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       if (logPath) report.logPath = logPath;
     }
     report.run = completeDreamRun(ctx, startedRun, report);
+    // Any non-knowledge work, conflicts-disabled work, or failed derivation resumes through the
+    // ordinary post-response worker only after the run has sealed its observed final state.
+    ctx.derive.schedule(pendingDerivation.take());
     return report;
   } catch (error) {
+    // A valid write must not lose its ordinary background indexing merely because a later
+    // planner or final verifier failed before the changed-claim barrier could consume it.
+    ctx.derive.schedule(pendingDerivation.take());
     report.durationMs = Math.round(performance.now() - started);
     report.budget = maintenanceBudgetReceipt(budget);
     report.modelUsage = telemetry.usage();
@@ -383,6 +428,164 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     );
     throw error;
   }
+}
+
+/** Collect paths without starting the ordinary post-response worker. */
+class QueuedDeriveScheduler implements DeriveScheduler {
+  readonly #paths = new Set<string>();
+
+  schedule(relPaths: string[]): void {
+    for (const relPath of relPaths) this.#paths.add(relPath);
+  }
+
+  async flush(): Promise<void> {
+    // Deliberately idle: `dream` owns the barrier and drains the queue explicitly.
+  }
+
+  take(): string[] {
+    const paths = [...this.#paths];
+    this.#paths.clear();
+    return paths;
+  }
+}
+
+/**
+ * Re-derive facts changed by successful maintenance writes and rebuild conflict eligibility.
+ *
+ * Structural indexing deliberately leaves a changed page's previous `derived_hash` in place.
+ * That mismatch is the durable stale marker: until a complete fact derivation succeeds, readers
+ * must exclude the page's old facts rather than treating pre-write claims as current evidence.
+ */
+async function refreshChangedClaimEligibility(
+  ctx: AknoContext,
+  pending: QueuedDeriveScheduler,
+  report: DreamReport,
+  telemetry: DreamModelTelemetry,
+): Promise<DreamConflictRefreshReceipt> {
+  const paths = pending.take();
+  const checkedAt = new Date().toISOString();
+  if (paths.length === 0) {
+    return emptyConflictRefresh('no_claim_changes', checkedAt);
+  }
+
+  const pages = livePagesForPaths(ctx, paths);
+  const knowledge = pages.filter((page) => page.role === 'knowledge');
+  if (knowledge.length === 0) {
+    pending.schedule(paths);
+    return {
+      ...emptyConflictRefresh('no_claim_changes', checkedAt),
+      changedFiles: paths.length,
+    };
+  }
+
+  if (!ctx.config.maintenance.conflicts.enabled) {
+    pending.schedule(paths);
+    return {
+      ...emptyConflictRefresh('conflicts_disabled', checkedAt),
+      changedFiles: paths.length,
+      knowledgePages: knowledge.length,
+    };
+  }
+
+  if (!ctx.config.index.facts) {
+    // The structural pass has already rebuilt the graph. With fact mining disabled there is no
+    // changed claim set to derive; summaries may still finish through the ordinary worker.
+    await inspectConflicts(ctx, report, telemetry);
+    pending.schedule(paths);
+    return {
+      status: 'passed',
+      cause: 'facts_disabled',
+      changedFiles: paths.length,
+      knowledgePages: knowledge.length,
+      currentPages: 0,
+      stalePages: 0,
+      candidates: report.conflicts.length,
+      unverified: report.conflicts.filter((conflict) => conflict.verdict === 'unverified').length,
+      checkedAt,
+    };
+  }
+
+  if (!ctx.models.derive.available) {
+    telemetry.degrade('conflicts', ctx.models.derive.degradedReason({}), 'unavailable');
+  } else {
+    try {
+      const indexer = new Indexer(ctx.config, ctx.store, {
+        embedding: ctx.models.embedding,
+        derive: ctx.models.derive,
+      });
+      await indexer.run({ only: paths, modelPaths: paths, reindexUnchanged: true });
+    } catch (error) {
+      // Preserve the ordinary retry path for infrastructure failures. Semantic model failures
+      // return an index report instead and are represented by the stale hash below.
+      pending.schedule(paths);
+      throw error;
+    }
+  }
+
+  const refreshed = livePagesForPaths(ctx, paths).filter((page) => page.role === 'knowledge');
+  const current = refreshed.filter((page) => page.derived_hash === page.body_hash);
+  const stale = refreshed.length - current.length;
+  if (stale > 0 && ctx.models.derive.available) {
+    telemetry.degrade('conflicts', 'derive_failed');
+  }
+  if (stale > 0) {
+    pending.schedule(
+      ctx.models.derive.available
+        ? refreshed.filter((page) => page.derived_hash !== page.body_hash).map((page) => page.rel_path)
+        : paths,
+    );
+  }
+
+  // This replaces the pre-write report as well as rebuilding the graph. New claim fingerprints
+  // naturally miss old cached verdicts, while unchanged fingerprints may safely reuse them.
+  await inspectConflicts(ctx, report, telemetry);
+  const unverified = report.conflicts.filter((conflict) => conflict.verdict === 'unverified').length;
+  return {
+    status: stale > 0 || (ctx.config.maintenance.conflicts.verify && unverified > 0) ? 'degraded' : 'passed',
+    cause: null,
+    changedFiles: paths.length,
+    knowledgePages: refreshed.length,
+    currentPages: current.length,
+    stalePages: stale,
+    candidates: report.conflicts.length,
+    unverified,
+    checkedAt,
+  };
+}
+
+function emptyConflictRefresh(
+  cause: Exclude<DreamConflictRefreshReceipt['cause'], null>,
+  checkedAt: string,
+): DreamConflictRefreshReceipt {
+  return {
+    status: 'not_needed',
+    cause,
+    changedFiles: 0,
+    knowledgePages: 0,
+    currentPages: 0,
+    stalePages: 0,
+    candidates: 0,
+    unverified: 0,
+    checkedAt,
+  };
+}
+
+function livePagesForPaths(
+  ctx: AknoContext,
+  paths: string[],
+): { rel_path: string; role: string; body_hash: string; derived_hash: string | null }[] {
+  if (paths.length === 0) return [];
+  return ctx.store.db
+    .prepare(
+      `SELECT rel_path, role, body_hash, derived_hash FROM pages
+        WHERE rel_path IN (${paths.map(() => '?').join(',')})`,
+    )
+    .all(...paths) as {
+    rel_path: string;
+    role: string;
+    body_hash: string;
+    derived_hash: string | null;
+  }[];
 }
 
 function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
@@ -1268,6 +1471,7 @@ function subjectGroups(
           AND f.confidence >= 0.5
           -- Only canonical claims. A source page is evidence someone else wrote.
           AND p.role = 'knowledge'
+          AND p.derived_hash = p.body_hash
           -- Never self-feeding. An observation is not evidence for another observation.
           AND p.slug != ?
           AND p.slug NOT LIKE ?
@@ -1380,7 +1584,8 @@ function liveFactClaims(ctx: AknoContext, conflicts: CrossPageConflict[] = []): 
   const rows = ctx.store.db
     .prepare(
       `SELECT f.claim, f.line_start, p.slug
-       FROM facts f JOIN pages p ON p.id = f.page_id WHERE f.valid_to IS NULL`,
+       FROM facts f JOIN pages p ON p.id = f.page_id
+       WHERE f.valid_to IS NULL AND p.derived_hash = p.body_hash`,
     )
     .all() as {
     claim: string;

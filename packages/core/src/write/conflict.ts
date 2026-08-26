@@ -146,7 +146,11 @@ export function detectConflict(options: ConflictOptions): ConflictReport | null 
   const shaky = new Set(
     (
       options.store.db
-        .prepare('SELECT line_start FROM facts WHERE page_id = ? AND valid_to IS NULL AND confidence < 0.5')
+        .prepare(
+          `SELECT f.line_start FROM facts f JOIN pages p ON p.id = f.page_id
+            WHERE f.page_id = ? AND f.valid_to IS NULL AND f.confidence < 0.5
+              AND p.derived_hash = p.body_hash`,
+        )
         .all(options.pageId) as { line_start: number }[]
     ).map((row) => row.line_start),
   );

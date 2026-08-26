@@ -226,7 +226,8 @@ function graphIsPartial(ctx: AknoContext): boolean {
          (SELECT count(*) FROM graph_nodes WHERE kind = 'document') AS graph_documents,
          (SELECT count(*) FROM events) AS events,
          (SELECT count(*) FROM graph_nodes WHERE kind = 'event') AS graph_events,
-         (SELECT count(*) FROM facts f JOIN pages p ON p.id = f.page_id WHERE p.role = 'knowledge') AS facts,
+         (SELECT count(*) FROM facts f JOIN pages p ON p.id = f.page_id
+            WHERE p.role = 'knowledge' AND p.derived_hash = p.body_hash) AS facts,
          (SELECT count(*) FROM graph_nodes WHERE kind = 'fact') AS graph_facts,
          (SELECT count(*) FROM pages WHERE role = 'knowledge') AS knowledge_pages,
          (SELECT count(*) FROM graph_entities) AS entities,

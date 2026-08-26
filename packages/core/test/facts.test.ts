@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
 
@@ -196,10 +197,15 @@ describe('fact lifecycle', () => {
     await mem.index({});
 
     const afterFailure = await mem.read({ slug: 'lease' });
-    // Still there. Stale by one pass at worst, which is the whole point: a stale fact can be
-    // re-derived, a deleted one cannot.
-    expect(afterFailure.page!.lines.find((entry) => entry.text.includes('1111'))?.confidence).toBeDefined();
+    // Still stored for retry, but no longer attached to a current line or exposed as current
+    // history. A stale fact can be recovered; it must not describe bytes it predates.
+    expect(afterFailure.page!.lines.find((entry) => entry.text.includes('1111'))?.confidence).toBeUndefined();
     expect(afterFailure.page!.superseded).toBeUndefined();
+    const db = new Database(mem.config.dbPath, { readonly: true });
+    expect(db.prepare("SELECT count(*) AS count FROM facts WHERE claim LIKE '%1111%'").get()).toEqual({
+      count: 1,
+    });
+    db.close();
     // The summary is the half that *was* recovered, so it is kept.
     expect(afterFailure.page!.summary).toBe('Recovered on its own.');
 
