@@ -19,6 +19,7 @@ import {
   runAutoRecallBench,
   runEntityResolutionBench,
   runGraphBench,
+  runMergeDiscoveryBench,
   runBench,
   runLlmRankingProbe,
   runMixedRetrievalBench,
@@ -33,6 +34,7 @@ import {
   type AutoRecallBenchReport,
   type EntityResolutionBenchReport,
   type GraphBenchReport,
+  type MergeDiscoveryBenchReport,
   type MixedRetrievalBenchReport,
   type RankingBenchReport,
   type RankingBenchSplit,
@@ -69,6 +71,9 @@ const BENCH_HELP = `akno bench [options]
                       contextual entity resolution. Never opens the knowledge base.
   graph               Run the frozen, model-free held-out graph release gate.
                       Never opens the knowledge base or configured models.
+  merge               Measure embedding-only and embedding-plus-classifier
+                      near-purpose discovery against related scopes, templates,
+                      and similar entities. Development only.
   answer              Run the invented answer corpus through production retrieval,
                       generation, and support verification. Development is default;
                       use --split test --runs 5 for the frozen held-out gate.
@@ -109,10 +114,10 @@ const BENCH_HELP = `akno bench [options]
     --input <path>    Completed corpus review packet for review attachment or
                       any ranking run that reads the held-out split.
     --output <path>   Atomically persist the content-safe result artifact.
-    --provider <name> Configured provider. Ranking defaults to openai; answer
-                      and auto-recall-answer use the answer role; auto-recall
-                      uses reranker.
-    --model <id>      Generative model. Ranking defaults to gpt-5.6-luna;
+    --provider <name> Configured provider. Ranking defaults to openai; merge uses
+                      the maintenance role; answer and auto-recall-answer use the
+                      answer role; auto-recall uses reranker.
+    --model <id>      Generative model. Ranking and merge default to gpt-5.6-luna;
                       answer and auto-recall-answer use the answer role;
                       auto-recall uses reranker.
     --embedding-provider <name>
@@ -121,8 +126,8 @@ const BENCH_HELP = `akno bench [options]
                       Embedding model for end-to-end ranking or answer recall.
     --embedding-dimensions <n>
                       Stored vector dimensions for that embedding model.
-    --reasoning <v>   none, low, medium, high, xhigh, or max. Ranking defaults
-                      to none; answer inherits its configured role.
+    --reasoning <v>   none, low, medium, high, xhigh, or max. Ranking and merge
+                      default to none; answer inherits its configured role.
   --write             Also measure the restart sweep, which needs the write
                       handle. Skipped otherwise rather than measured wrongly.
   --json`;
@@ -437,6 +442,53 @@ export async function benchCommand(argv: string[]): Promise<number> {
     if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
     if (values.json) json(report);
     else renderGraphBench(report, artifactPath);
+    return report.passed ? 0 : 1;
+  }
+
+  if (positionals[0] === 'merge') {
+    if (positionals.length > 1) {
+      fail(`unknown merge bench argument: ${positionals[1]}`);
+      return 2;
+    }
+    if (
+      values['retrieval-only'] ||
+      values.write ||
+      values.probe ||
+      values.matrix ||
+      values.variant ||
+      values['skip-native'] ||
+      values.track ||
+      values['matrix-artifact'] ||
+      values['embedding-dimensions'] ||
+      values.split ||
+      values.system ||
+      values.candidates ||
+      values['excerpt-chars'] ||
+      values.concurrency ||
+      values.runs ||
+      values.iterations
+    ) {
+      fail('merge bench accepts only embedding and classifier model choices, output, and json options');
+      return 2;
+    }
+    const reasoning = values.reasoning ? parseReasoningEffort(values.reasoning) : undefined;
+    if (values.reasoning && !reasoning) {
+      fail(`invalid reasoning effort: ${values.reasoning}`);
+      return 2;
+    }
+    const { loadConfig } = await import('@tenphi/akno-core');
+    const config = loadConfig(openOptionsFrom(values));
+    const report = await runMergeDiscoveryBench(config, {
+      ...(values['embedding-provider'] ? { embeddingProvider: values['embedding-provider'] } : {}),
+      ...(values['embedding-model'] ? { embeddingModel: values['embedding-model'] } : {}),
+      ...(values.provider ? { provider: values.provider } : {}),
+      ...(values.model ? { model: values.model } : {}),
+      ...(reasoning ? { reasoningEffort: reasoning } : {}),
+    });
+    let artifactPath: string | null = null;
+    if (values.output) artifactPath = await writeJsonArtifact(values.output, report);
+    if (values.json) json(report);
+    else renderMergeDiscoveryBench(report, artifactPath);
     return report.passed ? 0 : 1;
   }
 
@@ -1420,6 +1472,58 @@ function renderGraphBench(report: GraphBenchReport, artifactPath: string | null)
   if (!report.corpus.independentlyReviewed) {
     line(style.grey('The corpus is held out from user data but still awaits independent corpus review.'));
   }
+}
+
+function renderMergeDiscoveryBench(report: MergeDiscoveryBenchReport, artifactPath: string | null): void {
+  heading(
+    `Semantic merge discovery — ${report.corpus.pages} invented pages, ${report.corpus.cases} declared pairs`,
+  );
+  line(`  embedding                     ${report.embedding.provider}/${report.embedding.model}`);
+  line(`  embedding-only threshold      ${report.embeddingOnly.threshold.toFixed(4)}`);
+  line(`  embedding-only recall         ${percent(report.embeddingOnly.metrics.candidateRecall)}`);
+  line(`  embedding-only precision      ${percent(report.embeddingOnly.metrics.candidatePrecision)}`);
+  line(`  embedding-only margin         ${report.embeddingOnly.metrics.scoreMargin.toFixed(4)}`);
+  line(`  embedding latency             ${Math.round(report.embeddingLatencyMs)}ms`);
+  for (const bench of report.embeddingOnly.cases) {
+    const verdict = bench.passed ? style.green('pass') : style.red('FAIL');
+    line(
+      `  ${bench.id.padEnd(32)} ${verdict}  ${bench.score.toFixed(4)}  ` +
+        style.grey(`${bench.expected}; ${bench.selected ? 'selected' : 'separate'}`),
+    );
+  }
+  if (report.classifier) {
+    line(`\n  classifier                    ${report.classifier.provider}/${report.classifier.model}`);
+    line(`  classifier reasoning          ${report.classifier.reasoningEffort}`);
+    line(`  prefilter threshold           ${report.classifier.prefilterThreshold.toFixed(4)}`);
+    line(`  classifier calls              ${report.classifier.calls}`);
+    line(`  final candidate recall        ${percent(report.classifier.metrics.candidateRecall)}`);
+    line(`  final candidate precision     ${percent(report.classifier.metrics.candidatePrecision)}`);
+    line(`  final false positives         ${percent(report.classifier.metrics.falsePositiveRate)}`);
+    line(`  related-scope rejection       ${percent(report.classifier.metrics.relatedScopeRejection)}`);
+    line(`  template rejection            ${percent(report.classifier.metrics.templateRejection)}`);
+    line(`  entity-collision rejection    ${percent(report.classifier.metrics.entityCollisionRejection)}`);
+    for (const bench of report.classifier.cases) {
+      const verdict = bench.passed ? style.green('pass') : style.red('FAIL');
+      line(
+        `  ${bench.id.padEnd(32)} ${verdict}  ` +
+          style.grey(
+            `${bench.prefiltered ? (bench.outcome ?? 'invalid') : 'prefiltered'}; ${Math.round(bench.latencyMs)}ms`,
+          ),
+      );
+    }
+  }
+  if (artifactPath) line(`  artifact                      ${artifactPath}`);
+  if (report.blockers.length > 0) line(`  blockers                      ${report.blockers.join(', ')}`);
+  line(
+    `\n${report.passed ? style.green('two-stage semantic discovery qualified') : style.red('two-stage semantic discovery not qualified')}`,
+  );
+  line(
+    style.grey(
+      report.passed
+        ? 'Development evidence only; semantic discovery remains research-only until a frozen reviewed held-out gate passes.'
+        : 'Keep semantic similarity research-only; the two-stage candidate filter has not met its precision gate.',
+    ),
+  );
 }
 
 function renderRankingMatrix(report: RankingMatrixReport, artifactPath: string | null): void {

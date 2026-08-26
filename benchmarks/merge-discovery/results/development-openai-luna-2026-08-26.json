@@ -1,0 +1,287 @@
+{
+  "kind": "invented_merge_discovery_development",
+  "schemaVersion": 1,
+  "split": "development",
+  "corpus": {
+    "fingerprint": "3a9dae4c3ca91d00a7dd2bd21d6da9ccdcc3fee7a59df1b46f8902bda0b848c6",
+    "pages": 17,
+    "cases": 12,
+    "independentlyReviewed": false
+  },
+  "embedding": {
+    "provider": "openai",
+    "model": "text-embedding-3-small"
+  },
+  "embeddingLatencyMs": 434.36929100000003,
+  "embeddingOnly": {
+    "threshold": 1.000001,
+    "metrics": {
+      "candidateRecall": 0,
+      "candidatePrecision": 1,
+      "falsePositiveRate": 0,
+      "relatedScopeRejection": 1,
+      "templateRejection": 1,
+      "entityCollisionRejection": 1,
+      "scoreMargin": -0.281381107653215
+    },
+    "cases": [
+      {
+        "id": "person-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7123524192198389,
+        "selected": false,
+        "passed": false
+      },
+      {
+        "id": "product-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.8396679900128258,
+        "selected": false,
+        "passed": false
+      },
+      {
+        "id": "organization-near-purpose",
+        "category": "duplicate",
+        "expected": "candidate",
+        "score": 0.8409851972782711,
+        "selected": false,
+        "passed": false
+      },
+      {
+        "id": "place-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7922114475963231,
+        "selected": false,
+        "passed": false
+      },
+      {
+        "id": "person-project-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.617685971637191,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "product-warranty-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6531266240531276,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "organization-claims-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6420409342165369,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "place-visit-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6485689044186842,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "person-template",
+        "category": "template",
+        "expected": "keep_separate",
+        "score": 0.6090762989326787,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "daily-template",
+        "category": "template",
+        "expected": "keep_separate",
+        "score": 0.9937335268730539,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "person-name-collision",
+        "category": "entity_collision",
+        "expected": "keep_separate",
+        "score": 0.8362623332269341,
+        "selected": false,
+        "passed": true
+      },
+      {
+        "id": "product-model-collision",
+        "category": "entity_collision",
+        "expected": "keep_separate",
+        "score": 0.9206510263798289,
+        "selected": false,
+        "passed": true
+      }
+    ],
+    "passed": false,
+    "blockers": [
+      "candidate_recall",
+      "score_margin"
+    ]
+  },
+  "classifier": {
+    "provider": "openai",
+    "model": "gpt-5.6-luna",
+    "reasoningEffort": "none",
+    "promptVersion": "semantic-merge-candidate-v1",
+    "prefilterThreshold": 0.68,
+    "calls": 7,
+    "metrics": {
+      "validResponseRate": 1,
+      "candidateRecall": 1,
+      "candidatePrecision": 1,
+      "falsePositiveRate": 0,
+      "relatedScopeRejection": 1,
+      "templateRejection": 1,
+      "entityCollisionRejection": 1
+    },
+    "cases": [
+      {
+        "id": "person-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7123524192198389,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1654.56275
+      },
+      {
+        "id": "product-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.8396679900128258,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1634.2474580000003
+      },
+      {
+        "id": "organization-near-purpose",
+        "category": "duplicate",
+        "expected": "candidate",
+        "score": 0.8409851972782711,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1754.856625
+      },
+      {
+        "id": "place-near-purpose",
+        "category": "near_purpose",
+        "expected": "candidate",
+        "score": 0.7922114475963231,
+        "prefiltered": true,
+        "outcome": "same_subject",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1239.3029999999999
+      },
+      {
+        "id": "person-project-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.617685971637191,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "product-warranty-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6531266240531276,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "organization-claims-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6420409342165369,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "place-visit-scope",
+        "category": "related_scope",
+        "expected": "keep_separate",
+        "score": 0.6485689044186842,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "person-template",
+        "category": "template",
+        "expected": "keep_separate",
+        "score": 0.6090762989326787,
+        "prefiltered": false,
+        "outcome": null,
+        "valid": true,
+        "passed": true,
+        "latencyMs": 0
+      },
+      {
+        "id": "daily-template",
+        "category": "template",
+        "expected": "keep_separate",
+        "score": 0.9937335268730539,
+        "prefiltered": true,
+        "outcome": "keep_separate",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1647.425666
+      },
+      {
+        "id": "person-name-collision",
+        "category": "entity_collision",
+        "expected": "keep_separate",
+        "score": 0.8362623332269341,
+        "prefiltered": true,
+        "outcome": "keep_separate",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1288.7759999999998
+      },
+      {
+        "id": "product-model-collision",
+        "category": "entity_collision",
+        "expected": "keep_separate",
+        "score": 0.9206510263798289,
+        "prefiltered": true,
+        "outcome": "keep_separate",
+        "valid": true,
+        "passed": true,
+        "latencyMs": 1260.2679169999992
+      }
+    ],
+    "passed": true,
+    "blockers": []
+  },
+  "passed": true,
+  "blockers": [],
+  "error": null
+}

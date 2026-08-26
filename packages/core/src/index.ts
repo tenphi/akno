@@ -118,6 +118,18 @@ export {
   type EntityResolutionBenchReport,
 } from './bench/entity-resolution.ts';
 export {
+  MERGE_DISCOVERY_BENCH_VERSION,
+  evaluateMergeDiscoveryScores,
+  runMergeDiscoveryBench,
+  type MergeDiscoveryBenchOptions,
+  type MergeDiscoveryBenchReport,
+  type MergeDiscoveryCaseScore,
+  type MergeDiscoveryCategory,
+  type MergeDiscoveryClassifierCase,
+  type MergeDiscoveryClassifierReport,
+  type MergeDiscoveryEvaluation,
+} from './bench/merge-discovery.ts';
+export {
   GRAPH_BENCH_SCHEMA_VERSION,
   runGraphBench,
   type GraphBenchCaseReport,

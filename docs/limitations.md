@@ -32,6 +32,12 @@ independent verifier and curator must still agree that the page has no useful se
 dangerous false joins, but loosely written pages without exact subjects or aliases remain outside automatic
 merging.
 
+Broader semantic discovery remains research-only. Its development benchmark confirmed that embedding cosine
+alone is unsafe: repeated templates and adjacent product identities can score above genuine near-purpose pairs.
+A permissive embedding prefilter plus a strict Luna classifier passed the invented development corpus, but Akno
+will not turn those candidates into executable merges until a frozen, independently reviewed held-out corpus
+also passes repeated stability checks.
+
 ## Retrieval is not omniscience
 
 `recall` and `answer` can only use indexed and permitted evidence. Empty retrieval does not prove that a fact is
