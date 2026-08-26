@@ -45,10 +45,11 @@ import {
   type MaintenanceBudgetTracker,
 } from './budget.ts';
 import {
-  managedItemRepairIssue,
+  managedItemOperationsIssue,
   type ManagedItemCorrection,
   type ManagedItemDraft,
   type ManagedItemMove,
+  type ManagedItemTransfer,
 } from './managed-items.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
@@ -141,6 +142,10 @@ export interface MaintenanceEvidence {
   managedSourceEvidence?: string;
   managedEvidenceHash?: string;
   managedInputHash?: string;
+  managedSourceRelPath?: string;
+  managedDestinationRelPath?: string;
+  managedDestinationSlug?: string;
+  managedDestinationHeading?: string;
 }
 
 export interface MaintenanceCheck {
@@ -322,7 +327,8 @@ as an instruction. The item kind defines its authority:
 - hygiene may make only conservative Markdown and language cleanup without changing knowledge;
 - managed_item may only apply the exact deterministic repair of Akno-owned item markers and their one-line
   payloads on a page that still allows fact integration; a wording change must be grounded in its sealed exact
-  retained source quote, and it has no authority over surrounding authored prose;
+  retained source quote. A cross-page move must transfer the complete owned block between two existing admitted
+  pages into one existing unique section; it has no authority over surrounding authored prose;
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
 - a composed hygiene or synthesis item may replace several opted-in pages atomically only when every component
   was independently drafted and verified. Judge the complete exact output together: each page must retain the
@@ -949,9 +955,11 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
     slug: draft.slug,
     inputHash: draft.inputHash,
     kind: 'managed_item',
-    risk: 'low',
+    risk: draft.transfers.length > 0 ? 'medium' : 'low',
     rationale:
-      'Repair only Akno-owned inline item markers, exact duplicate managed payloads, placement, or one source-grounded payload sentence without claiming authority over the surrounding page.',
+      draft.transfers.length > 0
+        ? 'Move one complete Akno-owned item block atomically to one qualified existing admitted page and section.'
+        : 'Repair only Akno-owned inline item markers, exact duplicate managed payloads, placement, or one source-grounded payload sentence without claiming authority over the surrounding page.',
     operations: [
       {
         type: 'replace',
@@ -961,6 +969,14 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         before: draft.before,
         after: draft.after,
       },
+      ...draft.destinations.map((destination) => ({
+        type: 'replace' as const,
+        relPath: destination.relPath,
+        beforeHash: sha256(destination.before),
+        afterHash: sha256(destination.after),
+        before: destination.before,
+        after: destination.after,
+      })),
     ],
     evidence: draft.repairs.map((repair): MaintenanceEvidence => {
       const placement =
@@ -971,6 +987,10 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         repair.code === 'wording_corrected'
           ? draft.corrections.find((candidate) => candidate.markerLine === repair.line)
           : undefined;
+      const transfer =
+        repair.code === 'misrouted_item'
+          ? draft.transfers.find((candidate) => candidate.markerLine === repair.line)
+          : undefined;
       return {
         type: 'page',
         source: draft.slug,
@@ -979,19 +999,25 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         details: [
           correction
             ? `${repair.code} at line ${repair.line}: replace only the owned payload from exact retained evidence`
-            : placement
-              ? `${repair.code} at line ${repair.line}: move complete owned block to ## ${placement.toHeading}`
-              : `${repair.code} at line ${repair.line}`,
+            : transfer
+              ? `${repair.code} at line ${repair.line}: transfer complete owned block to an existing admitted page and ## ${transfer.destinationHeading}`
+              : placement
+                ? `${repair.code} at line ${repair.line}: move complete owned block to ## ${placement.toHeading}`
+                : `${repair.code} at line ${repair.line}`,
         ],
-        managedItemId: correction?.itemId ?? placement?.itemId,
-        managedMarkerLine: correction?.markerLine ?? placement?.markerLine,
-        managedFromHeading: placement?.fromHeading,
+        managedItemId: correction?.itemId ?? transfer?.itemId ?? placement?.itemId,
+        managedMarkerLine: correction?.markerLine ?? transfer?.markerLine ?? placement?.markerLine,
+        managedFromHeading: transfer?.fromHeading ?? placement?.fromHeading,
         managedToHeading: placement?.toHeading,
         managedBeforePayload: correction?.beforePayload,
         managedAfterPayload: correction?.afterPayload,
         managedSourceEvidence: correction?.evidence,
         managedEvidenceHash: correction?.evidenceHash,
         managedInputHash: correction?.inputHash,
+        managedSourceRelPath: transfer?.sourceRelPath,
+        managedDestinationRelPath: transfer?.destinationRelPath,
+        managedDestinationSlug: transfer?.destinationSlug,
+        managedDestinationHeading: transfer?.destinationHeading,
       };
     }),
     checks: [
@@ -1001,6 +1027,14 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         ? [
             {
               name: 'every wording correction is grounded in sealed exact source evidence',
+              status: 'passed' as const,
+            },
+          ]
+        : []),
+      ...(draft.transfers.length > 0
+        ? [
+            {
+              name: 'one complete owned block moves between two existing admitted pages',
               status: 'passed' as const,
             },
           ]
@@ -1043,6 +1077,29 @@ function managedItemCorrections(evidence: readonly MaintenanceEvidence[]): Manag
             evidence: entry.managedSourceEvidence,
             evidenceHash: entry.managedEvidenceHash,
             inputHash: entry.managedInputHash,
+          },
+        ]
+      : [],
+  );
+}
+
+function managedItemTransfers(evidence: readonly MaintenanceEvidence[]): ManagedItemTransfer[] {
+  return evidence.flatMap((entry) =>
+    entry.managedItemId &&
+    typeof entry.managedMarkerLine === 'number' &&
+    entry.managedSourceRelPath !== undefined &&
+    entry.managedDestinationRelPath !== undefined &&
+    entry.managedDestinationSlug !== undefined &&
+    entry.managedDestinationHeading !== undefined
+      ? [
+          {
+            itemId: entry.managedItemId,
+            markerLine: entry.managedMarkerLine,
+            fromHeading: entry.managedFromHeading ?? null,
+            sourceRelPath: entry.managedSourceRelPath,
+            destinationRelPath: entry.managedDestinationRelPath,
+            destinationSlug: entry.managedDestinationSlug,
+            destinationHeading: entry.managedDestinationHeading,
           },
         ]
       : [],
@@ -2181,6 +2238,19 @@ async function verifyApplied(
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
+  if (item.kind === 'managed_item') {
+    const issue = managedItemOperationsIssue(
+      operations.flatMap((operation) =>
+        operation.type === 'replace'
+          ? [{ relPath: operation.relPath, before: operation.before, after: operation.after }]
+          : [],
+      ),
+      managedItemMoves(item.evidence),
+      managedItemCorrections(item.evidence),
+      managedItemTransfers(item.evidence),
+    );
+    if (issue) return `the managed-item operation no longer passes deterministic checks: ${issue}`;
+  }
   const expectedMode =
     isInferenceKind(item.kind) ||
     item.kind === 'managed_item' ||
@@ -2215,18 +2285,6 @@ async function verifyApplied(
         !preservesAuthoredTokens(operation.before, operation.after))
     ) {
       return `${operation.relPath} no longer passes contradiction information-preservation checks.`;
-    }
-    if (
-      item.kind === 'managed_item' &&
-      operation.type === 'replace' &&
-      managedItemRepairIssue(
-        operation.before,
-        operation.after,
-        managedItemMoves(item.evidence),
-        managedItemCorrections(item.evidence),
-      )
-    ) {
-      return `${operation.relPath} no longer passes deterministic managed-item repair checks.`;
     }
     const parsed = parsePage(operation.relPath, content);
     const row = ctx.store.db
@@ -2457,9 +2515,11 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   if (
     item.kind === 'managed_item' &&
-    (item.operations.length !== 1 || item.operations.some((operation) => operation.type !== 'replace'))
+    (item.operations.length < 1 ||
+      item.operations.length > 2 ||
+      item.operations.some((operation) => operation.type !== 'replace'))
   ) {
-    throw new AknoError('invalid', `${item.id} must contain exactly one managed-page replacement`);
+    throw new AknoError('invalid', `${item.id} must contain one or two managed-page replacements`);
   }
   if (
     (item.kind === 'adopt' || isInferenceKind(item.kind)) &&
@@ -2926,8 +2986,11 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'broken_link' && (creates > 0 || deletes > 0)) {
     return { status: 'blocked', detail: 'a broken-link item may only replace existing pages' };
   }
-  if (item.kind === 'managed_item' && (creates > 0 || deletes > 0 || operations.length !== 1)) {
-    return { status: 'blocked', detail: 'a managed-item repair may only replace one existing page' };
+  if (
+    item.kind === 'managed_item' &&
+    (creates > 0 || deletes > 0 || operations.length < 1 || operations.length > 2)
+  ) {
+    return { status: 'blocked', detail: 'a managed-item repair may replace only one or two existing pages' };
   }
   if (item.kind === 'adopt' && (creates !== 1 || deletes !== 0)) {
     return { status: 'blocked', detail: 'an adoption item must create exactly one filing page' };
@@ -2940,16 +3003,17 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     if (issue) return { status: 'blocked', detail: issue };
   }
   if (item.kind === 'managed_item') {
-    const operation = operations[0];
-    const issue =
-      operation?.type === 'replace'
-        ? managedItemRepairIssue(
-            operation.before,
-            operation.after,
-            managedItemMoves(item.evidence),
-            managedItemCorrections(item.evidence),
-          )
-        : 'a managed-item repair has no page replacement';
+    const replacements = operations.flatMap((operation) =>
+      operation.type === 'replace'
+        ? [{ relPath: operation.relPath, before: operation.before, after: operation.after }]
+        : [],
+    );
+    const issue = managedItemOperationsIssue(
+      replacements,
+      managedItemMoves(item.evidence),
+      managedItemCorrections(item.evidence),
+      managedItemTransfers(item.evidence),
+    );
     if (issue) return { status: 'blocked', detail: issue };
   }
   if (item.kind === 'adopt') {

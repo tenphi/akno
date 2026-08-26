@@ -629,4 +629,42 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds the content-safe managed routing cache to a version-twenty-seven database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-routing-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 21)) legacy.exec(migration);
+    legacy.pragma('user_version = 27');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(managed_item_routing_verdicts)') as {
+      name: string;
+    }[];
+
+    expect(columns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'fingerprint',
+        'source_page',
+        'item_id',
+        'candidate_hash',
+        'classifier_endpoint',
+        'retrieval_signature',
+        'prompt_version',
+        'signature_version',
+        'outcome',
+        'target_page',
+        'target_heading_key',
+        'created_at',
+      ]),
+    );
+    expect(columns.map((column) => column.name)).not.toEqual(
+      expect.arrayContaining(['slug', 'title', 'content', 'heading', 'reason', 'rationale']),
+    );
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

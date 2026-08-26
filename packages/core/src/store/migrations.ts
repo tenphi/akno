@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 27;
+export const SCHEMA_VERSION = 28;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -33,6 +33,7 @@ export const SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX = 17;
 export const SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX = 18;
 export const MANAGED_ITEM_PLACEMENT_VERDICTS_MIGRATION_INDEX = 19;
 export const MANAGED_ITEM_SOURCES_MIGRATION_INDEX = 20;
+export const MANAGED_ITEM_ROUTING_VERDICTS_MIGRATION_INDEX = 21;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -797,6 +798,29 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX managed_item_source_verdicts_page
     ON managed_item_source_verdicts(page_id, created_at);
+  `,
+  // Cross-page routing caches only identities, outcomes, and a destination-heading fingerprint.
+  // Exact candidate page bytes remain in the knowledge base and exact moves remain in private plans.
+  `
+  CREATE TABLE managed_item_routing_verdicts (
+    fingerprint          TEXT PRIMARY KEY,
+    source_page          TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    item_id              TEXT NOT NULL,
+    candidate_hash       TEXT NOT NULL,
+    classifier_endpoint  TEXT NOT NULL,
+    retrieval_signature  TEXT NOT NULL,
+    prompt_version       TEXT NOT NULL,
+    signature_version    TEXT NOT NULL,
+    outcome              TEXT NOT NULL,
+    target_page          TEXT REFERENCES pages(id) ON DELETE CASCADE,
+    target_heading_key   TEXT,
+    created_at           TEXT NOT NULL,
+    CHECK (outcome IN ('keep', 'move', 'uncertain')),
+    CHECK ((outcome = 'move' AND target_page IS NOT NULL AND target_heading_key IS NOT NULL)
+        OR (outcome != 'move' AND target_page IS NULL AND target_heading_key IS NULL))
+  );
+  CREATE INDEX managed_item_routing_verdicts_source
+    ON managed_item_routing_verdicts(source_page, item_id, created_at);
   `,
 ];
 

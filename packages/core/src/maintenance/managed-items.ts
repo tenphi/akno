@@ -17,6 +17,12 @@ import {
   type ManagedSourceDecision,
   type ManagedSourceMetrics,
 } from './managed-item-sources.ts';
+import {
+  emptyManagedRoutingMetrics,
+  qualifyManagedItemRouting,
+  type ManagedRoutingMetrics,
+  type ManagedRoutingPage,
+} from './managed-item-routing.ts';
 
 export const MANAGED_ITEM_FINDING_CODES = [
   'empty_marker',
@@ -26,6 +32,10 @@ export const MANAGED_ITEM_FINDING_CODES = [
   'misplaced_item',
   'placement_uncertain',
   'placement_unavailable',
+  'misrouted_item',
+  'routing_deferred',
+  'routing_uncertain',
+  'routing_unavailable',
   'wording_corrected',
   'wording_uncertain',
   'source_unavailable',
@@ -50,6 +60,15 @@ export interface ManagedItemDraft {
   repairs: { code: ManagedItemFindingCode; line: number }[];
   placements: ManagedItemMove[];
   corrections: ManagedItemCorrection[];
+  destinations: ManagedItemDestination[];
+  transfers: ManagedItemTransfer[];
+}
+
+export interface ManagedItemDestination {
+  slug: string;
+  relPath: string;
+  before: string;
+  after: string;
 }
 
 export interface ManagedItemMove {
@@ -67,6 +86,16 @@ export interface ManagedItemCorrection {
   evidence: string;
   evidenceHash: string;
   inputHash: string;
+}
+
+export interface ManagedItemTransfer {
+  itemId: string;
+  markerLine: number;
+  fromHeading: string | null;
+  sourceRelPath: string;
+  destinationRelPath: string;
+  destinationSlug: string;
+  destinationHeading: string;
 }
 
 export interface ManagedItemPlacementMetrics {
@@ -87,6 +116,7 @@ export interface ManagedItemReport {
   findings: Record<ManagedItemFindingCode, number>;
   outcomes: { planned: number; held: number; valid: number; suppressed: number };
   placement: ManagedItemPlacementMetrics;
+  routing: ManagedRoutingMetrics;
   source: ManagedSourceMetrics;
   /** Private live-run references; safe JSON and durable run receipts intentionally omit these. */
   details: ManagedItemFindingReference[];
@@ -312,6 +342,43 @@ export function managedItemRepairIssue(
   return null;
 }
 
+export function managedItemOperationsIssue(
+  replacements: readonly { relPath: string; before: string; after: string }[],
+  placements: readonly ManagedItemMove[] = [],
+  corrections: readonly ManagedItemCorrection[] = [],
+  transfers: readonly ManagedItemTransfer[] = [],
+): string | null {
+  if (transfers.length === 0) {
+    if (replacements.length !== 1) return 'a local managed-item repair must replace exactly one page';
+    return managedItemRepairIssue(replacements[0]!.before, replacements[0]!.after, placements, corrections);
+  }
+  if (
+    transfers.length !== 1 ||
+    replacements.length !== 2 ||
+    placements.length > 0 ||
+    corrections.length > 0
+  ) {
+    return 'a cross-page managed-item move must be one isolated two-page transfer';
+  }
+  const transfer = transfers[0]!;
+  const source = replacements.find((replacement) => replacement.relPath === transfer.sourceRelPath);
+  const destination = replacements.find((replacement) => replacement.relPath === transfer.destinationRelPath);
+  if (!source || !destination || source === destination) {
+    return 'a cross-page managed-item move does not identify two distinct sealed pages';
+  }
+  if (
+    inspectManagedItems(source.before).repairs.length > 0 ||
+    inspectManagedItems(destination.before).repairs.length > 0
+  ) {
+    return 'a cross-page managed-item move cannot compose with another marker repair';
+  }
+  const applied = applyManagedItemTransfer(source.before, destination.before, transfer);
+  if (!applied.ok || applied.source !== source.after || applied.destination !== destination.after) {
+    return 'the managed-item output is broader than its exact cross-page transfer';
+  }
+  return null;
+}
+
 export async function planManagedItems(
   ctx: AknoContext,
   options: ManagedItemPlanOptions = {},
@@ -366,8 +433,172 @@ export async function planManagedItems(
 
   const crossPageCollisions = crossPageItemCollisions(eligible);
   const facts = currentManagedFacts(ctx);
-  for (const candidate of eligible) {
-    let inspection = withBindingFindings(ctx, candidate, facts, crossPageCollisions, options);
+  const prepared = eligible.map((candidate) => ({
+    candidate,
+    inspection: withBindingFindings(ctx, candidate, facts, crossPageCollisions, options),
+  }));
+  const routingPages = new Map(
+    prepared
+      .filter((entry) => entry.inspection.repairs.length === 0)
+      .map(({ candidate }) => [candidate.page.slug, managedRoutingPage(candidate)]),
+  );
+  const occupiedPaths = new Set<string>();
+  const suppressedRoutingSources = new Set<string>();
+  const routingFindings = new Map<string, Map<number, ManagedItemFinding>>();
+
+  for (const { candidate, inspection } of prepared) {
+    if (inspection.repairs.length > 0 || occupiedPaths.has(candidate.row.rel_path)) continue;
+    const blockedLines = new Set(
+      inspection.findings
+        .filter((finding) => finding.code === 'item_conflict' || finding.code === 'source_unavailable')
+        .map((finding) => finding.line),
+    );
+    for (const binding of inspection.bindings) {
+      if (binding.namespace !== 'akno' || blockedLines.has(binding.markerLine)) continue;
+      const fact = facts.get(binding.id);
+      const removed = removeManagedBlock(candidate.before, binding);
+      if (!fact || !removed) continue;
+      const qualified = await qualifyManagedItemRouting(
+        ctx,
+        managedRoutingPage(candidate),
+        removed.content,
+        {
+          id: binding.id,
+          payload: binding.payload,
+          subject: fact.subject,
+          currentHeading: binding.currentHeading,
+        },
+        routingPages,
+      );
+      addRoutingMetrics(report.routing, qualified.metrics);
+      if (qualified.decision.outcome === 'keep') continue;
+      if (qualified.decision.outcome === 'uncertain' || qualified.decision.outcome === 'unavailable') {
+        setRoutingFinding(
+          routingFindings,
+          candidate.row.rel_path,
+          binding.markerLine,
+          qualified.decision.outcome === 'uncertain' ? 'routing_uncertain' : 'routing_unavailable',
+          'held',
+        );
+        continue;
+      }
+
+      const destination = prepared.find(
+        (entry) => entry.candidate.row.id === qualified.decision.targetPageId,
+      );
+      if (
+        !destination ||
+        destination.inspection.repairs.length > 0 ||
+        occupiedPaths.has(destination.candidate.row.rel_path)
+      ) {
+        report.routing.moved -= 1;
+        report.routing.unavailable += 1;
+        setRoutingFinding(
+          routingFindings,
+          candidate.row.rel_path,
+          binding.markerLine,
+          'routing_unavailable',
+          'held',
+        );
+        continue;
+      }
+      const transfer: ManagedItemTransfer = {
+        itemId: binding.id,
+        markerLine: binding.markerLine,
+        fromHeading: binding.currentHeading,
+        sourceRelPath: candidate.row.rel_path,
+        destinationRelPath: destination.candidate.row.rel_path,
+        destinationSlug: destination.candidate.page.slug,
+        destinationHeading: qualified.decision.targetHeading!,
+      };
+      const applied = applyManagedItemTransfer(candidate.before, destination.candidate.before, transfer);
+      if (!applied.ok) {
+        report.routing.moved -= 1;
+        report.routing.unavailable += 1;
+        setRoutingFinding(
+          routingFindings,
+          candidate.row.rel_path,
+          binding.markerLine,
+          'routing_unavailable',
+          'held',
+        );
+        continue;
+      }
+      const inputHash = managedTransferInputHash(
+        candidate.before,
+        applied.source,
+        destination.candidate.before,
+        applied.destination,
+        transfer,
+      );
+      const finding: ManagedItemFinding = {
+        code: 'misrouted_item',
+        line: binding.markerLine,
+        outcome: 'planned',
+      };
+      setRoutingFinding(
+        routingFindings,
+        candidate.row.rel_path,
+        binding.markerLine,
+        'misrouted_item',
+        finding.outcome,
+      );
+      occupiedPaths.add(candidate.row.rel_path);
+      occupiedPaths.add(destination.candidate.row.rel_path);
+      report.routing.deferred += deferOtherRoutingBindings(
+        routingFindings,
+        candidate.row.rel_path,
+        inspection,
+        binding.id,
+      );
+      report.routing.deferred += deferOtherRoutingBindings(
+        routingFindings,
+        destination.candidate.row.rel_path,
+        destination.inspection,
+      );
+      if (!handledManagedInput(ctx, inputHash)) {
+        drafts.push({
+          slug: candidate.page.slug,
+          relPath: candidate.row.rel_path,
+          inputHash,
+          before: candidate.before,
+          after: applied.source,
+          repairs: [{ code: finding.code, line: finding.line }],
+          placements: [],
+          corrections: [],
+          destinations: [
+            {
+              slug: destination.candidate.page.slug,
+              relPath: destination.candidate.row.rel_path,
+              before: destination.candidate.before,
+              after: applied.destination,
+            },
+          ],
+          transfers: [transfer],
+        });
+      } else {
+        report.suppressedPages += 1;
+        suppressedRoutingSources.add(candidate.row.rel_path);
+      }
+      break;
+    }
+  }
+
+  for (const { candidate, inspection: baseInspection } of prepared) {
+    let inspection = applyRoutingFindings(baseInspection, routingFindings.get(candidate.row.rel_path));
+    if (occupiedPaths.has(candidate.row.rel_path)) {
+      for (const finding of inspection.findings) {
+        addFinding(
+          report,
+          finding,
+          suppressedRoutingSources.has(candidate.row.rel_path) && finding.code === 'misrouted_item'
+            ? 'suppressed'
+            : finding.outcome,
+          candidate.page.slug,
+        );
+      }
+      continue;
+    }
     let placements: ManagedItemMove[] = [];
     let corrections: ManagedItemCorrection[] = [];
     // First seal deterministic normalization on its own. Besides keeping the move verifier small,
@@ -426,6 +657,8 @@ export async function planManagedItems(
       repairs: inspection.repairs,
       placements,
       corrections,
+      destinations: [],
+      transfers: [],
     });
   }
   report.plannedPages = drafts.length;
@@ -467,12 +700,84 @@ interface ManagedFactRow {
   page_id: string;
   line_start: number;
   source_line_hash: string;
+  subject: string;
+}
+
+function managedRoutingPage(candidate: EligibleManagedPage): ManagedRoutingPage {
+  return {
+    id: candidate.row.id,
+    slug: candidate.page.slug,
+    title: candidate.page.title,
+    bodyHash: candidate.page.bodyHash,
+    body: candidate.page.body,
+    headings: uniqueManagedHeadings(candidate.before),
+  };
+}
+
+function setRoutingFinding(
+  findings: Map<string, Map<number, ManagedItemFinding>>,
+  relPath: string,
+  line: number,
+  code: Extract<
+    ManagedItemFindingCode,
+    'misrouted_item' | 'routing_deferred' | 'routing_uncertain' | 'routing_unavailable'
+  >,
+  outcome: ManagedItemFinding['outcome'],
+): void {
+  const page = findings.get(relPath) ?? new Map<number, ManagedItemFinding>();
+  page.set(line, { code, line, outcome });
+  findings.set(relPath, page);
+}
+
+function deferOtherRoutingBindings(
+  findings: Map<string, Map<number, ManagedItemFinding>>,
+  relPath: string,
+  inspection: ManagedItemInspection,
+  exceptItemId?: string,
+): number {
+  let deferred = 0;
+  const eligibleLines = new Set(
+    inspection.findings
+      .filter((finding) => finding.code === 'valid' || finding.code === 'misplaced_item')
+      .map((finding) => finding.line),
+  );
+  for (const binding of inspection.bindings) {
+    if (
+      binding.id === exceptItemId ||
+      !eligibleLines.has(binding.markerLine) ||
+      findings.get(relPath)?.has(binding.markerLine)
+    ) {
+      continue;
+    }
+    setRoutingFinding(findings, relPath, binding.markerLine, 'routing_deferred', 'held');
+    deferred += 1;
+  }
+  return deferred;
+}
+
+function applyRoutingFindings(
+  inspection: ManagedItemInspection,
+  routed: ReadonlyMap<number, ManagedItemFinding> | undefined,
+): ManagedItemInspection {
+  if (!routed || routed.size === 0) return inspection;
+  const findings = inspection.findings.map((finding) => {
+    const replacement = routed.get(finding.line);
+    return replacement && (finding.code === 'valid' || finding.code === 'misplaced_item')
+      ? replacement
+      : finding;
+  });
+  for (const [line, finding] of routed) {
+    if (!findings.some((candidate) => candidate.line === line && candidate.code === finding.code)) {
+      findings.push(finding);
+    }
+  }
+  return { ...inspection, findings };
 }
 
 function currentManagedFacts(ctx: AknoContext): Map<string, ManagedFactRow> {
   const rows = ctx.store.db
     .prepare(
-      `SELECT item_id, page_id, line_start, source_line_hash
+      `SELECT item_id, page_id, line_start, source_line_hash, subject
          FROM facts WHERE item_id IS NOT NULL AND valid_to IS NULL`,
     )
     .all() as ManagedFactRow[];
@@ -552,7 +857,16 @@ async function qualifyManagedItemPlacement(
   const metrics = emptyPlacementMetrics();
   const blockedIds = new Set(
     inspection.findings
-      .filter((finding) => finding.code === 'item_conflict' || finding.code === 'source_unavailable')
+      .filter((finding) =>
+        [
+          'item_conflict',
+          'source_unavailable',
+          'routing_uncertain',
+          'routing_unavailable',
+          'misrouted_item',
+          'routing_deferred',
+        ].includes(finding.code),
+      )
       .flatMap((finding) =>
         inspection.bindings
           .filter((binding) => binding.markerLine === finding.line)
@@ -766,7 +1080,16 @@ async function qualifyManagedItemSourceBindings(
 }> {
   const blockedLines = new Set(
     inspection.findings
-      .filter((finding) => finding.code === 'item_conflict' || finding.code === 'source_unavailable')
+      .filter((finding) =>
+        [
+          'item_conflict',
+          'source_unavailable',
+          'routing_uncertain',
+          'routing_unavailable',
+          'misrouted_item',
+          'routing_deferred',
+        ].includes(finding.code),
+      )
       .map((finding) => finding.line),
   );
   return qualifyManagedSources(
@@ -1108,6 +1431,29 @@ export function applyManagedItemMoves(
   return { ok: true, content: current };
 }
 
+/** Move one complete owned block between two existing pages without rewriting either payload or page. */
+export function applyManagedItemTransfer(
+  sourceContent: string,
+  destinationContent: string,
+  transfer: ManagedItemTransfer,
+): { ok: true; source: string; destination: string } | { ok: false; source: string; destination: string } {
+  const sourceInspection = inspectManagedItems(sourceContent);
+  const matches = sourceInspection.bindings.filter((binding) => binding.id === transfer.itemId);
+  if (matches.length !== 1 || matches[0]!.currentHeading !== transfer.fromHeading) {
+    return { ok: false, source: sourceContent, destination: destinationContent };
+  }
+  if (inspectManagedItems(destinationContent).bindings.some((binding) => binding.id === transfer.itemId)) {
+    return { ok: false, source: sourceContent, destination: destinationContent };
+  }
+  const removed = removeManagedBlock(sourceContent, matches[0]!);
+  if (!removed) return { ok: false, source: sourceContent, destination: destinationContent };
+  const destination = insertManagedBlock(destinationContent, removed.block, transfer.destinationHeading);
+  if (destination === null) {
+    return { ok: false, source: sourceContent, destination: destinationContent };
+  }
+  return { ok: true, source: removed.content, destination };
+}
+
 /** Replace only the one payload line bound to an exact managed id. Marker and surrounding bytes survive. */
 export function applyManagedItemCorrections(
   content: string,
@@ -1178,6 +1524,57 @@ function moveManagedBlock(
   return prefix + before + beforeGap + block + afterGap + after;
 }
 
+function removeManagedBlock(
+  content: string,
+  binding: ManagedItemBinding,
+): { content: string; block: string } | null {
+  const frontmatter = parseFrontmatter(content);
+  const prefix = content.slice(0, frontmatter.bodyOffset);
+  const body = content.slice(frontmatter.bodyOffset);
+  const spans = rawLineSpans(body);
+  const marker = spans[binding.markerIndex];
+  const payload = spans[binding.payloadIndex];
+  if (!marker || !payload || payload.contentEnd < marker.start) return null;
+  return {
+    content: prefix + body.slice(0, marker.start) + body.slice(payload.contentEnd),
+    block: body.slice(marker.start, payload.contentEnd),
+  };
+}
+
+function insertManagedBlock(content: string, block: string, targetHeading: string): string | null {
+  const frontmatter = parseFrontmatter(content);
+  const prefix = content.slice(0, frontmatter.bodyOffset);
+  const body = content.slice(frontmatter.bodyOffset);
+  const spans = rawLineSpans(body);
+  const targetKey = normalizedHeading(targetHeading);
+  const targets = spans
+    .map((span, index) => ({
+      index,
+      heading: /^\s{0,3}##(?:\s+(.+?)\s*|\s*)$/.exec(span.text)?.[1]?.trim(),
+    }))
+    .filter((entry) => entry.heading && normalizedHeading(entry.heading) === targetKey);
+  if (targets.length !== 1) return null;
+
+  let insertionOffset = body.length;
+  for (let index = targets[0]!.index + 1; index < spans.length; index++) {
+    if (/^\s{0,3}#{1,2}(?:\s+|$)/.test(spans[index]!.text)) {
+      insertionOffset = spans[index]!.start;
+      break;
+    }
+  }
+  const before = body.slice(0, insertionOffset);
+  const after = body.slice(insertionOffset);
+  const eol = body.includes('\r\n') ? '\r\n' : '\n';
+  return (
+    prefix +
+    before +
+    lineGapBefore(before, eol) +
+    block +
+    lineGapAfter(after, eol, body.endsWith(eol)) +
+    after
+  );
+}
+
 function rawLineSpans(value: string): RawLineSpan[] {
   const spans: RawLineSpan[] = [];
   let start = 0;
@@ -1236,6 +1633,25 @@ function managedInputHash(
   );
 }
 
+function managedTransferInputHash(
+  sourceBefore: string,
+  sourceAfter: string,
+  destinationBefore: string,
+  destinationAfter: string,
+  transfer: ManagedItemTransfer,
+): string {
+  return sha256(
+    JSON.stringify({
+      kind: 'managed_item_transfer',
+      sourceBefore: sha256(sourceBefore),
+      sourceAfter: sha256(sourceAfter),
+      destinationBefore: sha256(destinationBefore),
+      destinationAfter: sha256(destinationAfter),
+      transfer,
+    }),
+  );
+}
+
 function handledManagedInput(ctx: AknoContext, inputHash: string): boolean {
   try {
     return Boolean(
@@ -1271,6 +1687,7 @@ function emptyReport(): ManagedItemReport {
     >,
     outcomes: { planned: 0, held: 0, valid: 0, suppressed: 0 },
     placement: emptyPlacementMetrics(),
+    routing: emptyManagedRoutingMetrics(),
     source: emptyManagedSourceMetrics(),
     details: [],
   };
@@ -1293,6 +1710,12 @@ function addPlacementMetrics(
   addition: ManagedItemPlacementMetrics,
 ): void {
   for (const key of Object.keys(target) as (keyof ManagedItemPlacementMetrics)[]) {
+    target[key] += addition[key];
+  }
+}
+
+function addRoutingMetrics(target: ManagedRoutingMetrics, addition: ManagedRoutingMetrics): void {
+  for (const key of Object.keys(target) as (keyof ManagedRoutingMetrics)[]) {
     target[key] += addition[key];
   }
 }

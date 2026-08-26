@@ -151,7 +151,11 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   pass compares the generated sentence with its exact retained source quote. It may mark it supported, hold it
   as uncertain, or propose one source-grounded payload-line correction; old or unquoted items are
   `source_unavailable`. Malformed markers, missing current derivation, conflicting ids/facts, unavailable
-  placement, and ambiguous placement remain typed held findings; authored surrounding prose is outside this
+  placement, and ambiguous placement remain typed held findings. A separate bounded routing pass can nominate
+  at most three existing admitted pages and move one complete owned block only when a classifier selects one
+  supplied page and one existing unique `##` section. The two replacements form one medium-risk atomic plan;
+  no page, heading, or payload text can be invented. Other items on either touched page are deferred until fresh
+  derivation rather than certified against shifted lines. Authored surrounding prose is outside this
   transformation's authority. Marker normalization is sealed first; semantic checks wait for those canonical
   bytes on the next cycle rather than certifying an item they did not classify;
 

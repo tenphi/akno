@@ -186,13 +186,16 @@ Canonical fragments are also checked against the current derived fact row: item 
 line, and exact source-line hash must agree. Reusing an id on two pages or participating in a typed fact
 conflict that excludes the claim from inference yields `item_conflict`; disabled, stale, or missing fact derivation yields `source_unavailable`
 rather than pretending verification passed. A fragment without one unique `##` section—or under the explicit
-`## Unsorted` fallback—starts as `misplaced_item`. Qualified semantic placement may now choose only `keep`,
+`## Unsorted` fallback—starts as `misplaced_item`. Qualified semantic placement may choose only `keep`,
 `move`, or `uncertain`; an accepted move must name one existing unique `##` section in the same page, and
 deterministic code moves the complete owned block without rewriting it. `placement_uncertain` and
 `placement_unavailable` are held. Verdicts are cached by exact content and model contract without storing page
-text or headings. Cross-page routing, new section creation, and source-backed wording correction remain
-separate guarded work. When the same page first needs deterministic marker normalization, semantic placement is
-reported unavailable for that run and resumes against the canonical bytes on the next cycle.
+text or headings. Cross-page routing separately retrieves at most three existing `remember: integrate`
+knowledge pages and may move one exact owned block only to a supplied page's existing unique `##` section. It
+seals both pages in one medium-risk plan and cannot create pages, headings, or replacement text. New-section
+creation remains separate guarded work. When the same page first needs deterministic marker normalization,
+semantic placement is reported unavailable for that run and resumes against the canonical bytes on the next
+cycle.
 Shareable JSON and durable run receipts keep only aggregate counts. Use `akno dream --private-details` during a
 live run to see the exact `slug:line` for repairable or held findings.
 

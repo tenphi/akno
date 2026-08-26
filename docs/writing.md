@@ -71,6 +71,13 @@ valid exact quote was returned remain readable but report `source_unavailable`; 
 correction for them. Explicitly forgetting the fact or page removes its retained quote; a complete maintenance
 scan also prunes quotes whose managed marker no longer exists.
 
+The dream cycle can also correct where an injected fact lives. It uses ordinary retrieval to nominate a small
+set of existing writable knowledge pages, then asks a separate classifier whether the current page is clearly
+wrong. A move is accepted only to one supplied page and one existing unique `##` section. Akno moves the exact
+marker and sentence together, seals both page diffs as one medium-risk maintenance item, and writes or undoes
+them atomically. It never creates a page or heading during this operation; ambiguity becomes a held routing
+finding.
+
 Use `approve` or `decline` for held routing proposals. These are separate from maintenance-plan decisions,
 which use `akno plan decide`.
 
