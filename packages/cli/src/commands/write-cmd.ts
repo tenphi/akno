@@ -280,6 +280,17 @@ export async function rememberCommand(argv: string[]): Promise<number> {
     const outcome = result.outcome === 'ok' ? '' : ` ${style.grey(result.outcome)}`;
     line(`${statusLabel(result.status)}${outcome}`);
     if (result.note) line(style.grey(`  ${result.note}`));
+    if (result.fallback) {
+      line(
+        style.grey(
+          `  fallback ${result.fallback.slug}: ${
+            result.fallback.status === 'used'
+              ? 'selected'
+              : `unavailable (${result.fallback.reason?.replaceAll('_', ' ') ?? 'unknown reason'})`
+          }`,
+        ),
+      );
+    }
 
     if (result.considered?.length) {
       heading('Considered');
@@ -292,7 +303,9 @@ export async function rememberCommand(argv: string[]): Promise<number> {
               ? style.yellow('held')
               : style.yellow('ask ');
         const where = entry.slug
-          ? `${entry.slug} ${style.grey(`(${entry.score})`)}`
+          ? `${entry.slug} ${style.grey(`(${entry.score})`)}${
+              entry.destination === 'configured_fallback' ? style.grey(' · configured fallback') : ''
+            }`
           : entry.destination === 'no_writable_destination'
             ? style.grey('no authorized writable destination')
             : style.grey('no page scored high enough');

@@ -362,7 +362,11 @@
 
     "retain": {
       "enabled": true,
-      "mission": null
+      "mission": null,
+      // Optional exact page slug for durable claims that have no ordinary admitted destination.
+      // The page itself must allow remember integration, or its parent folder must explicitly
+      // allow creation. Reserved pages such as the event timeline are never valid fallbacks.
+      "fallback_page": null
     },
     // Combine repeated facts into stable patterns. Writes pages under
     // `observations/` with `derived: true` and the evidence it used, appending

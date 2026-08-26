@@ -57,10 +57,15 @@ Searchability is not write permission: an unmarked Markdown page defaults to `kn
 `remember: deny` for injection. A page or folder must explicitly set `remember: integrate`; pages Akno creates
 for retained memory carry that declaration themselves. When the strongest semantic match is read-only, Akno
 does not silently use a weaker writable page. It creates a dedicated managed page in an admitted folder when
-the retain result supplies one, or holds the claim for a destination decision.
+the retain result supplies one, uses `maintenance.retain.fallback_page` when that exact destination is configured
+and admitted, or holds the claim for a destination decision. The fallback is tried only after ordinary routing
+and managed-page creation; its config value never grants write authority. A missing fallback page may be created
+only under an exact parent-folder rule that permits it, while an existing unindexed file is never overwritten.
 
 The response makes that boundary machine-readable. Each `considered` claim reports `destination` as
-`existing_admitted_page`, `new_managed_page`, or `no_writable_destination`. The top-level
+`existing_admitted_page`, `new_managed_page`, `configured_fallback`, or `no_writable_destination`. When the
+configured page was needed, top-level `fallback` reports whether it was `used` or `unavailable` with a stable
+reason. The top-level
 `no_writable_destination` outcome means at least one retained claim had no authorized home; its approval carries
 the same stable `reason_code`, so an agent can ask for a destination without parsing explanatory prose. Ordinary
 semantic ambiguity remains `requires_approval`, while an undeclared target folder remains `requires_folder`.

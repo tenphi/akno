@@ -180,7 +180,9 @@ export const OPS = {
       'this instead of write when you do not want to choose slugs or phrasing yourself. Pass `mission` to say ' +
       'what to pay attention to in this particular text; the standing rules about what lasts still apply. ' +
       '`no_writable_destination` means relevant memory was found but no authorized page or managed-page ' +
-      'location could receive one or more retained claims; inspect their typed approval reasons.',
+      'location could receive one or more retained claims; inspect their typed approval reasons. A configured ' +
+      'fallback page is used only after ordinary routing and page creation fail, and never grants itself write ' +
+      'permission.',
   }),
   forget: op({
     name: 'forget',

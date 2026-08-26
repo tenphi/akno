@@ -17,6 +17,7 @@ import { detectConflict } from '../write/conflict.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { managedSourceReference, placeManagedItems, type ManagedItem } from '../write/placement.ts';
+import { resolveRememberFallback, type RememberFallbackResolution } from '../write/remember-fallback.ts';
 import { recall } from './recall.ts';
 import { appendToLedger, titleFromSlug } from './write.ts';
 import fsp from 'node:fs/promises';
@@ -101,32 +102,47 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       ...(await route(ctx, candidate)),
     })),
   );
+  const configuredFallback = await resolveRememberFallback(ctx, catalog);
+  let fallbackNeeded = false;
+  let fallbackUsed = false;
 
   // `kept` covers a claim bound for a page that does not exist yet, not just one that routed.
   // It used to mean "routed", and once creating became possible that made every new page read
   // back as a claim that had been dropped.
   const considered = routed.map((entry) => {
-    const fallback = entry.candidate.page;
-    const fallbackExists = fallback !== undefined && pageExists(ctx, fallback);
-    const fallbackCanCreate =
-      fallback !== undefined && !fallbackExists && admittedFolder(catalog, fallback) !== null;
-    const kept = entry.slug !== null || fallbackCanCreate;
+    const candidateFallback = entry.candidate.page;
+    const candidateFallbackExists = candidateFallback !== undefined && pageExists(ctx, candidateFallback);
+    const candidateFallbackCanCreate =
+      candidateFallback !== undefined &&
+      !candidateFallbackExists &&
+      admittedFolder(catalog, candidateFallback) !== null;
+    const ordinarySlug = entry.slug ?? (candidateFallbackCanCreate ? candidateFallback : null);
+    const canUseConfiguredFallback =
+      ordinarySlug === null && configuredFallback !== null && configuredFallback.status !== 'unavailable';
+    if (ordinarySlug === null) fallbackNeeded = true;
+    if (canUseConfiguredFallback) fallbackUsed = true;
+    const slug = ordinarySlug ?? (canUseConfiguredFallback ? configuredFallback.slug : null);
     return {
       claim: entry.candidate.text,
-      kept,
-      slug: kept ? (entry.slug ?? fallback ?? null) : null,
+      kept: slug !== null,
+      slug,
       score: Math.round(entry.score * 1000) / 1000,
       destination: entry.slug
         ? ('existing_admitted_page' as const)
-        : fallbackCanCreate
+        : candidateFallbackCanCreate
           ? ('new_managed_page' as const)
-          : ('no_writable_destination' as const),
+          : canUseConfiguredFallback
+            ? ('configured_fallback' as const)
+            : ('no_writable_destination' as const),
       written: false,
     };
   });
 
   if (input.dry_run) {
-    const folders = requiredFolders(ctx, catalog, routed);
+    const folders =
+      configuredFallback && configuredFallback.status !== 'unavailable'
+        ? []
+        : requiredFolders(ctx, catalog, routed);
     const needsApproval = routed.some((entry, index) => {
       if (considered[index]!.kept || folders.some((folder) => folder.folder === suggestedFolder(entry))) {
         return false;
@@ -155,6 +171,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
               : 'ok',
       considered,
       ...(folders.length > 0 ? { requires_folder: folders } : {}),
+      ...fallbackResult(fallbackNeeded, fallbackUsed, configuredFallback),
       note: 'dry run — nothing was written',
     };
   }
@@ -167,13 +184,18 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   const foldersNeeded: FolderRequired[] = [];
   const groups = new Map<
     string,
-    { entries: { index: number; candidate: RetainCandidate; blocked: string | null }[] }
+    {
+      entries: { index: number; candidate: RetainCandidate; blocked: string | null }[];
+      configuredFallback: boolean;
+    }
   >();
 
   for (const [index, entry] of routed.entries()) {
-    const target = entry.slug ?? entry.candidate.page ?? null;
+    const target = considered[index]!.slug;
     if (target === null) {
-      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, undefined, entry.blocked));
+      const refusedPage =
+        entry.candidate.page && pageExists(ctx, entry.candidate.page) ? entry.candidate.page : undefined;
+      approvals.push(proposeUnrouted(ctx, entry.candidate, entry.nearest, refusedPage, entry.blocked));
       continue;
     }
 
@@ -191,7 +213,11 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     // A guess that names *no* page still creates one: that is the case the fallback exists for,
     // and a new page is inspectable and cheap to move. A guess that lands on somebody else's
     // page becomes a question instead.
-    if (entry.slug === null && pageExists(ctx, target)) {
+    if (
+      considered[index]!.destination !== 'configured_fallback' &&
+      entry.slug === null &&
+      pageExists(ctx, target)
+    ) {
       considered[index]!.kept = false;
       considered[index]!.slug = null;
       considered[index]!.destination = 'no_writable_destination';
@@ -199,8 +225,9 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       continue;
     }
 
-    const group = groups.get(target) ?? { entries: [] };
+    const group = groups.get(target) ?? { entries: [], configuredFallback: false };
     group.entries.push({ index, candidate: entry.candidate, blocked: entry.blocked });
+    if (considered[index]!.destination === 'configured_fallback') group.configuredFallback = true;
     groups.set(target, group);
   }
 
@@ -253,7 +280,9 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     const relPath = row?.rel_path ?? `${slug}.md`;
     const current = row
       ? await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8')
-      : newManagedPage(titleFor(group.entries[0]!.candidate, slug));
+      : newManagedPage(
+          group.configuredFallback ? titleFromSlug(slug) : titleFor(group.entries[0]!.candidate, slug),
+        );
     const accepted: { index: number; candidate: RetainCandidate }[] = [];
     for (const entry of group.entries) {
       if (row) {
@@ -390,6 +419,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       considered,
       ...(approvals.length > 0 ? { approvals } : {}),
       ...(folders.length > 0 ? { requires_folder: folders } : {}),
+      ...fallbackResult(fallbackNeeded, fallbackUsed, configuredFallback),
       note: held.length > 0 ? `nothing was written: ${held.join('; ')}` : 'nothing was written',
     };
   }
@@ -403,7 +433,25 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     considered,
     ...(approvals.length > 0 ? { approvals } : {}),
     ...(folders.length > 0 ? { requires_folder: folders } : {}),
+    ...fallbackResult(fallbackNeeded, fallbackUsed, configuredFallback),
     ...(held.length > 0 ? { note: held.join('; ') } : {}),
+  };
+}
+
+function fallbackResult(
+  needed: boolean,
+  used: boolean,
+  resolution: RememberFallbackResolution | null,
+): Pick<RememberOutput, 'fallback'> {
+  if (!needed || !resolution) return {};
+  if (resolution.status === 'unavailable') {
+    return {
+      fallback: { slug: resolution.slug, status: 'unavailable', reason: resolution.reason },
+    };
+  }
+  if (!used) return {};
+  return {
+    fallback: { slug: resolution.slug, status: 'used' },
   };
 }
 

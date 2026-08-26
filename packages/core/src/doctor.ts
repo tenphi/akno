@@ -9,6 +9,7 @@ import { generativeModelIds, providerApiReport, type ProviderApiResolution } fro
 import { probeAnswerModel, type AnswerCapabilityCheck, type AnswerCapabilityProbe } from './ops/answer.ts';
 import { effectiveRule } from './rules/compile.ts';
 import { pageDeclarations } from './maintenance/path-policy.ts';
+import { resolveRememberFallback, type RememberFallbackResolution } from './write/remember-fallback.ts';
 
 /**
  * What's present, what's degraded, and **what that costs.** The last
@@ -68,6 +69,8 @@ export interface DoctorReport {
     readOnlyPages: number;
     /** Read-only because neither page nor folder made a decision; useful during upgrades. */
     implicitReadOnlyPages: number;
+    /** Explicit catch-all availability; null means no fallback is configured. */
+    fallback: RememberFallbackResolution | null;
   };
   index: {
     /** Time to open the handle and run one point lookup. Not a model number. */
@@ -152,6 +155,12 @@ export async function doctor(
         factInjection.implicitReadOnlyPages++;
       }
     }
+  }
+  const rememberFallback = await resolveRememberFallback(ctx);
+  if (rememberFallback?.status === 'unavailable') {
+    warnings.push(
+      `the configured remember fallback is unavailable: ${rememberFallback.reason.replaceAll('_', ' ')}`,
+    );
   }
 
   // ── Index latency, isolated from any model ───────────────────────────────
@@ -354,7 +363,7 @@ export async function doctor(
     vectorBackend: ctx.store.vectors.kind,
     counts,
     byRole,
-    factInjection,
+    factInjection: { ...factInjection, fallback: rememberFallback },
     index: {
       openMs: round(openMs),
       lexicalMs: round(lexicalMs),

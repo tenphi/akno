@@ -72,6 +72,9 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 - Use `remember` when Akno must decide what is durable and where it belongs.
 - Treat `no_writable_destination` as an authorization hold, not an empty memory result: inspect the typed
   approval reason and name or admit a destination. `requires_folder` instead asks the caller to declare taxonomy.
+- `maintenance.retain.fallback_page` can provide one exact last-resort destination. It is used only after
+  ordinary routing and managed-page creation fail, and only when page or folder policy independently admits it.
+  `akno doctor` reports whether the configured fallback is ready.
 - Use `ingest` for a file, folder, or URL; use `inbox` for configured drop folders.
 - Use `forget` for a deliberate retraction and `undo` when reversing a known Akno change.
 - Use `plan` for maintenance decisions. `approve` and `decline` are for held remember/ingest routing proposals,

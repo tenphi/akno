@@ -784,6 +784,253 @@ describe('routing when the strongest semantic match is read-only', () => {
   });
 });
 
+describe('configured remember fallback', () => {
+  const configured = {
+    maintenance: { retain: { fallback_page: 'memory/inbox' } },
+  };
+
+  it('uses an admitted fallback after a read-only semantic match, including in dry-run', async () => {
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+    const referencePath = path.join(root, 'household/reference.md');
+    const generalPath = path.join(root, 'household/general.md');
+    const fallbackPath = path.join(root, 'memory/inbox.md');
+    fs.writeFileSync(
+      referencePath,
+      '---\ntitle: Meal reference\nakno:\n  management:\n    remember: deny\n---\n\n# Meal reference\n\nMeal meal meal.\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      generalPath,
+      '# General\n\nMeal planning and concert notes, concert reminders, concert archive.\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      fallbackPath,
+      '---\ntitle: Inbox\nakno:\n  management:\n    remember: integrate\n---\n\n# Inbox\n',
+      'utf8',
+    );
+    const referenceBefore = fs.readFileSync(referencePath, 'utf8');
+    const generalBefore = fs.readFileSync(generalPath, 'utf8');
+    const fallbackBefore = fs.readFileSync(fallbackPath, 'utf8');
+    server.respondWith([
+      {
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        subject: 'meal orders',
+        page: 'household/reference',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({
+      ...configured,
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      expect((await mem.doctor({ probeModels: false })).factInjection.fallback).toEqual({
+        slug: 'memory/inbox',
+        status: 'existing_page',
+      });
+      const preview = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+        dry_run: true,
+      });
+      expect(preview).toMatchObject({
+        outcome: 'ok',
+        fallback: { slug: 'memory/inbox', status: 'used' },
+        considered: [{ destination: 'configured_fallback', slug: 'memory/inbox', written: false }],
+      });
+      expect(preview.approvals).toBeUndefined();
+      expect(mem.proposals()).toEqual([]);
+      expect(fs.readFileSync(fallbackPath, 'utf8')).toBe(fallbackBefore);
+
+      const result = await mem.remember({
+        text: 'The meal box order was confirmed for Thursday and Friday.',
+      });
+      expect(result).toMatchObject({
+        outcome: 'ok',
+        fallback: { slug: 'memory/inbox', status: 'used' },
+        wrote: [{ slug: 'memory/inbox', action: 'appended' }],
+        considered: [{ destination: 'configured_fallback', written: true }],
+      });
+      expect(fs.readFileSync(referencePath, 'utf8')).toBe(referenceBefore);
+      expect(fs.readFileSync(generalPath, 'utf8')).toBe(generalBefore);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('creates the configured page only inside an explicitly admitted folder', async () => {
+    server.respondWith([
+      {
+        text: 'Ada Marlow prefers brass instruments.',
+        subject: 'Ada Marlow preference',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({
+      ...configured,
+      folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
+    });
+    try {
+      expect((await mem.doctor({ probeModels: false })).factInjection.fallback).toEqual({
+        slug: 'memory/inbox',
+        status: 'new_page',
+      });
+      const result = await mem.remember({ text: 'Ada Marlow prefers brass instruments.' });
+      expect(result).toMatchObject({
+        outcome: 'ok',
+        fallback: { slug: 'memory/inbox', status: 'used' },
+        wrote: [{ slug: 'memory/inbox', action: 'created' }],
+        considered: [{ destination: 'configured_fallback', written: true }],
+      });
+      const page = fs.readFileSync(path.join(root, 'memory/inbox.md'), 'utf8');
+      expect(page).toContain('title: "Inbox"');
+      expect(page).not.toContain('title: "Ada Marlow preference"');
+      expect(page).toContain('remember: integrate');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('prefers an ordinary new managed page over the configured fallback', async () => {
+    fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+    const fallbackPath = path.join(root, 'memory/inbox.md');
+    fs.writeFileSync(
+      fallbackPath,
+      '---\ntitle: Inbox\nakno:\n  management:\n    remember: integrate\n---\n\n# Inbox\n',
+      'utf8',
+    );
+    const before = fs.readFileSync(fallbackPath, 'utf8');
+    server.respondWith([
+      {
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        subject: 'Zephyr warranty',
+        page: 'home/zephyr-warranty',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem(configured);
+    try {
+      await mem.index({ structuralOnly: true });
+      const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
+      expect(result.considered?.[0]?.destination).toBe('new_managed_page');
+      expect(result.wrote?.[0]?.slug).toBe('home/zephyr-warranty');
+      expect(result.fallback).toBeUndefined();
+      expect(fs.readFileSync(fallbackPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('reports an existing read-only fallback as unavailable', async () => {
+    fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+    const fallbackPath = path.join(root, 'memory/inbox.md');
+    fs.writeFileSync(
+      fallbackPath,
+      '---\ntitle: Inbox\nakno:\n  management:\n    remember: deny\n---\n\n# Inbox\n',
+      'utf8',
+    );
+    const before = fs.readFileSync(fallbackPath, 'utf8');
+    server.respondWith([
+      {
+        text: 'Ada Marlow prefers brass instruments.',
+        subject: 'Ada Marlow preference',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem(configured);
+    try {
+      await mem.index({ structuralOnly: true });
+      const result = await mem.remember({ text: 'Ada Marlow prefers brass instruments.' });
+      expect(result).toMatchObject({
+        outcome: 'no_writable_destination',
+        fallback: {
+          slug: 'memory/inbox',
+          status: 'unavailable',
+          reason: 'existing_page_not_admitted',
+        },
+        considered: [{ destination: 'no_writable_destination', written: false }],
+      });
+      expect(result.approvals?.[0]?.reason_code).toBe('no_writable_destination');
+      const health = await mem.doctor({ probeModels: false });
+      expect(health.factInjection.fallback).toEqual({
+        slug: 'memory/inbox',
+        status: 'unavailable',
+        reason: 'existing_page_not_admitted',
+      });
+      expect(health.warnings).toContain(
+        'the configured remember fallback is unavailable: existing page not admitted',
+      );
+      expect(fs.readFileSync(fallbackPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('never overwrites fallback bytes that exist outside the current index', async () => {
+    fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+    const fallbackPath = path.join(root, 'memory/inbox.md');
+    const before = '# Handwritten inbox\n\nDo not replace this page.\n';
+    fs.writeFileSync(fallbackPath, before, 'utf8');
+    server.respondWith([
+      {
+        text: 'Ada Marlow prefers brass instruments.',
+        subject: 'Ada Marlow preference',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({
+      ...configured,
+      folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
+    });
+    try {
+      const result = await mem.remember({ text: 'Ada Marlow prefers brass instruments.' });
+      expect(result.fallback).toEqual({
+        slug: 'memory/inbox',
+        status: 'unavailable',
+        reason: 'unindexed_page_exists',
+      });
+      expect(result.outcome).toBe('no_writable_destination');
+      expect(fs.readFileSync(fallbackPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('rejects a reserved fallback without writing the event ledger', async () => {
+    server.respondWith([
+      {
+        text: 'Ada Marlow prefers brass instruments.',
+        subject: 'Ada Marlow preference',
+        kind: 'fact',
+      },
+    ]);
+    const mem = await openMem({ maintenance: { retain: { fallback_page: 'timeline' } } });
+    try {
+      const result = await mem.remember({ text: 'Ada Marlow prefers brass instruments.' });
+      expect(result).toMatchObject({
+        outcome: 'no_writable_destination',
+        fallback: { slug: 'timeline', status: 'unavailable', reason: 'reserved_path' },
+      });
+      expect(fs.existsSync(path.join(root, 'timeline.md'))).toBe(false);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('rejects an unsafe configured fallback slug during config loading', async () => {
+    await expect(openMem({ maintenance: { retain: { fallback_page: '../outside' } } })).rejects.toThrow(
+      /safe page slug/,
+    );
+  });
+});
+
 it('reports a held destination even when another retained claim was written', async () => {
   server.respondWith([
     {

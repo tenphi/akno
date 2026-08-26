@@ -221,6 +221,23 @@ const TierDoc = z.object({
   mission: z.string().nullable().optional(),
 });
 
+const ManagedFallbackSlug = z
+  .string()
+  .min(1)
+  .max(512)
+  .refine(
+    (value) =>
+      value === value.trim() &&
+      !value.startsWith('/') &&
+      !value.startsWith('~') &&
+      !/^[a-zA-Z]:/.test(value) &&
+      !/\.(?:md|markdown)$/i.test(value) &&
+      !value.includes('\\') &&
+      !value.includes('\0') &&
+      value.split('/').every((segment) => segment.length > 0 && !segment.startsWith('.')),
+    'expected a safe page slug without an extension',
+  );
+
 export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous'] as const;
 export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
 export const MAINTENANCE_TRANSFORMS = [
@@ -311,7 +328,10 @@ const MaintenanceDoc = z.object({
    * decision to make, which is why it is not the default.
    */
   log_changes: z.boolean().optional(),
-  retain: TierDoc.optional(),
+  retain: TierDoc.extend({
+    /** Explicit catch-all page for durable claims with no ordinary writable destination. */
+    fallback_page: ManagedFallbackSlug.nullable().optional(),
+  }).optional(),
   observe: TierDoc.extend({
     /** Distinct source pages an observation needs. The floor is two. */
     min_evidence: z.number().int().min(2).optional(),
@@ -545,7 +565,7 @@ export interface AknoConfig {
     logChanges: boolean;
     /** Local notification policy for scheduled maintenance; never includes knowledge-base content. */
     notifications: MaintenanceNotificationMode;
-    retain: { enabled: boolean; mission: string | null };
+    retain: { enabled: boolean; mission: string | null; fallbackPage: string | null };
     observe: {
       enabled: boolean;
       mission: string | null;

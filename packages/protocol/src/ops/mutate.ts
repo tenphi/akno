@@ -40,6 +40,16 @@ export const RememberOutput = ResultEnvelope.extend({
    * each with `folder` and call `remember` again; no user is waiting on this.
    */
   requires_folder: z.array(FolderRequired).optional(),
+  /** Present only when a configured fallback was needed by at least one retained claim. */
+  fallback: z
+    .object({
+      slug: z.string(),
+      status: z.enum(['used', 'unavailable']),
+      reason: z
+        .enum(['reserved_path', 'existing_page_not_admitted', 'unindexed_page_exists', 'folder_not_admitted'])
+        .optional(),
+    })
+    .optional(),
   /** What the retain mission decided was worth keeping, and what it dropped. */
   considered: z
     .array(
@@ -50,7 +60,12 @@ export const RememberOutput = ResultEnvelope.extend({
         score: z.number(),
         /** The authorization class selected before conflict checking and placement. */
         destination: z
-          .enum(['existing_admitted_page', 'new_managed_page', 'no_writable_destination'])
+          .enum([
+            'existing_admitted_page',
+            'new_managed_page',
+            'configured_fallback',
+            'no_writable_destination',
+          ])
           .optional(),
         /** True only when this candidate's write actually reached disk. */
         written: z.boolean(),

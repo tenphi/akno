@@ -614,6 +614,7 @@ function resolve(
       retain: {
         enabled: doc.maintenance?.retain?.enabled ?? true,
         mission: doc.maintenance?.retain?.mission ?? null,
+        fallbackPage: doc.maintenance?.retain?.fallback_page ?? null,
       },
       observe: {
         // Off by default, from measurement rather than caution. On a real 223-page knowledge

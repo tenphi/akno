@@ -65,6 +65,17 @@ export async function doctorCommand(argv: string[]): Promise<number> {
             ? ` (${report.factInjection.implicitReadOnlyPages} without an explicit page or folder decision)`
             : ''),
       ],
+      [
+        'remember fallback',
+        report.factInjection.fallback
+          ? `${report.factInjection.fallback.slug} (${report.factInjection.fallback.status.replaceAll('_', ' ')}` +
+            `${
+              report.factInjection.fallback.status === 'unavailable'
+                ? `: ${report.factInjection.fallback.reason.replaceAll('_', ' ')}`
+                : ''
+            })`
+          : 'off',
+      ],
       ['chunks', `${report.counts.chunks} (${report.counts.chunksEmbedded} embedded)`],
       ['facts', `${report.counts.facts} live, ${report.counts.factsSuperseded} superseded`],
       ['events', report.counts.events],

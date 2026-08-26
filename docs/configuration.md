@@ -127,6 +127,32 @@ Native rerankers do not share a score scale. `score_offset: "auto"` calibrates a
 invented anchor suite and caches it in derived state. If the model cannot separate the anchors, qualification is
 disabled and recall keeps candidates rather than guessing a cutoff.
 
+## Remember fallback
+
+An optional exact page can catch durable claims when ordinary semantic routing and managed-page creation both
+fail:
+
+```jsonc
+{
+  "maintenance": {
+    "retain": {
+      "fallback_page": "memory/inbox",
+    },
+  },
+}
+```
+
+The default is `null`, so no fallback is used. This setting names a destination; it does not authorize one. An
+existing page must itself resolve to `role: knowledge` and `remember: integrate`. A missing page can be created
+only when its exact parent folder explicitly permits knowledge-page creation and remember integration. Reserved
+paths, read-only pages, and existing Markdown files that are absent from the index are rejected rather than
+overwritten. `akno doctor` reports the configured page as `existing page`, `new page`, or `unavailable` without
+showing page content.
+
+The fallback is deliberately last in the routing order: an admitted semantic match wins first, then an admitted
+new managed page proposed by retention, then the configured fallback. Without any authorized destination,
+`remember` returns a typed hold.
+
 ## Maintenance authority
 
 One profile defines the scheduled default:
