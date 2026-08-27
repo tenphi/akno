@@ -195,6 +195,7 @@ Transformation policies can lower individual classes:
       "hygiene": "auto",
       "managed_item": "auto",
       "broken_link": "auto",
+      "rule_drift": "auto",
       "merge": "review",
       "contradiction": "off",
     },
@@ -214,7 +215,7 @@ Transformation policies can lower individual classes:
 ```
 
 Policy values are `off`, `audit`, `review`, and `auto`. Supported classes are `observe`, `reflect`, `hygiene`,
-`managed_item`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and `adopt`. Page
+`managed_item`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, `rule_drift`, and `adopt`. Page
 opt-ins, folder restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
 
 `max_revision_attempts` is the number of correction calls permitted after an automatic curator returns
@@ -228,6 +229,11 @@ a strict `akno:item` marker on `remember: integrate` knowledge pages; those page
 authority. Its first deterministic repair set removes empty markers, canonicalizes unambiguous legacy
 `engram:item` markers, and removes byte-identical payload/provenance duplicates. Malformed or conflicting
 markers are counted as held findings and leave the page unchanged.
+
+`rule_drift` is also independent from page-wide dream opt-in. It can replace an existing top-level scalar
+`type` on a knowledge page only when a matching folder rule explicitly declares the exact expected `type`.
+It never writes source/reference pages and never guesses a path for `slug_pattern` or `max_depth` findings.
+`maintenance.curate.max_rule_drifts` bounds proposals per cycle; the default is `20`.
 
 Canonical fragments are also checked against the current derived fact row: item id, page identity, payload
 line, and exact source-line hash must agree. Reusing an id on two pages or participating in a typed fact

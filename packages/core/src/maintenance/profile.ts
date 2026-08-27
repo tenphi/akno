@@ -45,6 +45,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
     policies.merge,
     config.maintenance.conflicts.resolve ? policies.contradiction : 'off',
     config.maintenance.repair.links ? policies.broken_link : 'off',
+    policies.rule_drift,
   ]);
   const adopt = policyPhaseAuthority(true, [policies.adopt]);
   const automaticKnowledgeBaseWrites = MAINTENANCE_TRANSFORMS.some(

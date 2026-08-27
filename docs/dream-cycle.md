@@ -38,6 +38,7 @@ Individual transformation policies can be stricter than the profile:
       "hygiene": "auto",
       "managed_item": "auto",
       "broken_link": "auto",
+      "rule_drift": "auto",
       "merge": "review",
       "contradiction": "off",
     },
@@ -93,15 +94,15 @@ decisions finish before accepted items apply.
 
 ## Phase summary
 
-| Phase          | Purpose                                                  | Output                                                                                 | Default write behavior            |
-| -------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------- |
-| `conflicts`    | Classify disagreeing cross-page facts before inference   | Typed verdicts and eligibility                                                         | Report only                       |
-| `observe`      | Infer evidence-backed patterns across authored knowledge | Append/create plans for inference pages                                                | Disabled until opted in           |
-| `reflect`      | Derive principles from several current observations      | Append plans for principles                                                            | Disabled until opted in           |
-| `curate`       | Maintain opted-in pages and Akno-owned fragments         | Managed-item, hygiene, synthesis, split, extract, merge, contradiction, and link plans | Audit plans under default profile |
-| `adopt`        | Give readable orphan documents a durable page            | Low-risk filing plans                                                                  | Audit plans under default profile |
-| `repair`       | Preserve the legacy broken-link report surface           | Read-only exact proposals/refusals                                                     | Disabled/report only              |
-| `housekeeping` | Report remaining structural work                         | Counts and actionable diagnostics                                                      | Report only                       |
+| Phase          | Purpose                                                  | Output                                                                                                       | Default write behavior            |
+| -------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| `conflicts`    | Classify disagreeing cross-page facts before inference   | Typed verdicts and eligibility                                                                               | Report only                       |
+| `observe`      | Infer evidence-backed patterns across authored knowledge | Append/create plans for inference pages                                                                      | Disabled until opted in           |
+| `reflect`      | Derive principles from several current observations      | Append plans for principles                                                                                  | Disabled until opted in           |
+| `curate`       | Maintain opted-in pages and Akno-owned fragments         | Managed-item, hygiene, synthesis, split, extract, merge, contradiction, link, and qualified type-drift plans | Audit plans under default profile |
+| `adopt`        | Give readable orphan documents a durable page            | Low-risk filing plans                                                                                        | Audit plans under default profile |
+| `repair`       | Preserve the legacy broken-link report surface           | Read-only exact proposals/refusals                                                                           | Disabled/report only              |
+| `housekeeping` | Report remaining structural work                         | Counts and actionable diagnostics                                                                            | Report only                       |
 
 ### 1. Conflicts
 
@@ -200,16 +201,18 @@ Housekeeping reports the remaining state after writes: orphan documents, broken 
 identity collisions, ambiguous authored subjects, traversal hubs, and other structural diagnostics. It is
 read-only and grants no authority to merge or rewrite.
 
-Broken links and orphan documents can already have exact work waiting in a nonterminal curate or adoption
-plan. Housekeeping marks those entries with the plan id, item id, policy, item status, and typed deferral code,
-and reports how many current findings are plan-backed. This prevents a review item or budget-deferred automatic
-item from looking like newly discovered duplicate work. The diagnostic remains in the total until the operation
-is applied and the index confirms that the broken link or orphan state is gone.
+Broken links, orphan documents, and qualified type drift can already have exact work waiting in a nonterminal
+curate or adoption plan. Housekeeping marks those entries with the plan id, item id, policy, item status, and
+typed deferral code, and reports how many current findings are plan-backed. This prevents a review item or
+budget-deferred automatic item from looking like newly discovered duplicate work. The diagnostic remains in
+the total until the operation is applied and the index confirms that the broken link, orphan state, or metadata
+drift is gone.
 
-Rule drift and graph review candidates remain unplanned findings. A type mismatch does not establish whether
-the page or folder rule is wrong, and a slug pattern or depth violation does not establish one canonical new
-path. Graph ambiguity likewise cannot grant identity-edit authority. Those cases require a later qualified
-planner or an explicit human/configuration decision.
+An explicit scalar `type` on a knowledge page can be corrected when it conflicts with an explicit matching
+folder `type` rule. The rule supplies the one exact value and therefore the authority; Akno changes only that
+existing scalar, preserves every adjacent YAML byte, seals the rule with the page input, and rechecks both
+before apply. Source/reference pages never qualify. Slug-pattern and depth violations remain unplanned because
+they do not establish one canonical new path. Graph ambiguity likewise cannot grant identity-edit authority.
 
 ## The plan lifecycle
 

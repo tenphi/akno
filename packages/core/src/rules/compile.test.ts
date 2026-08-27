@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileRules, effectiveRule, matchRules, matchesGlob } from './compile.ts';
+import { compileRules, declaringRule, effectiveRule, matchRules, matchesGlob } from './compile.ts';
 
 describe('globToRegExp', () => {
   it('matches a folder and its descendants under **', () => {
@@ -54,6 +54,8 @@ describe('compileRules', () => {
     expect(effective.role).toBe('knowledge');
     expect(effective.type).toBe('tax');
     expect(effective.rank).toBe(1);
+    expect(declaringRule('documents/tax/2026', rules, 'rank')?.glob).toBe('**');
+    expect(declaringRule('documents/tax/2026', rules, 'type')?.glob).toBe('documents/tax/**');
   });
 
   it('lets a knowledge-base layer replace a machine-config rule for the same glob', () => {

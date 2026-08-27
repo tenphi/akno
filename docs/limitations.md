@@ -63,10 +63,11 @@ automatic write authority.
 ## The review queue is not universal
 
 Hygiene, synthesis, split, extraction, merge, contradiction changes, broken-link changes, adoption, observation,
-and reflection use durable plans. Housekeeping identifies broken links and orphan documents that are already
-covered by exact nonterminal plans, but it does not manufacture another item for them. Rule drift, graph review
-candidates, report-only conflict findings, and the legacy repair surface do not all become actionable queue
-items. A human can replace one sealed after-state with `plan revise`, but there is no snooze decision. An
+and reflection use durable plans. Housekeeping identifies broken links, orphan documents, and qualified scalar
+type drift that are already covered by exact nonterminal plans, but it does not manufacture another item for
+them. Slug-pattern/depth drift, graph review candidates, report-only conflict findings, and the legacy repair
+surface do not all become actionable queue items. A human can replace one sealed after-state with `plan revise`,
+but there is no snooze decision. An
 automatic curator can request a bounded correction inside the sealed path/evidence scope, but it cannot expand
 the plan or turn a report-only diagnostic into an operation.
 

@@ -794,6 +794,7 @@ describe('plan-backed hygiene', () => {
         merge: 'off',
         contradiction: 'off',
         broken_link: 'auto',
+        rule_drift: 'off',
       },
     });
     await mem.index({ structuralOnly: true });
@@ -831,6 +832,7 @@ describe('plan-backed hygiene', () => {
         merge: 'off',
         contradiction: 'off',
         broken_link: 'off',
+        rule_drift: 'off',
         adopt: 'off',
       },
     });

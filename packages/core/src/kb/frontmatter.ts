@@ -1,8 +1,9 @@
-import YAML from 'yaml';
+import YAML, { isMap, isPair, isScalar } from 'yaml';
 
 /**
- * Akno *reads* several frontmatter keys and *writes* exactly one (`id`).
- * Every other key is preserved byte for byte and ignored.
+ * Akno reads several frontmatter keys. Ordinary writes add only `id`; a qualified maintenance
+ * plan may replace one existing top-level scalar through `replaceTopLevelString`. Every other
+ * key is preserved byte for byte and ignored.
  *
  * That guarantee is why this module never round-trips through the YAML
  * serializer on a write. A parse-and-re-emit reflows quotes, reorders nothing
@@ -86,6 +87,32 @@ export function readTags(data: Record<string, unknown>): string[] {
 export function readString(data: Record<string, unknown>, key: string): string | null {
   const value = data[key];
   return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+/**
+ * Replace one existing top-level YAML string without serializing any neighboring frontmatter.
+ * The parser supplies the exact scalar byte range, so quoted `#` characters, comments, ordering,
+ * line endings, and unknown keys survive untouched. Missing, duplicate, malformed, nested, or
+ * non-string keys are refused rather than guessed.
+ */
+export function replaceTopLevelString(content: string, key: string, value: string): string | null {
+  const fm = parseFrontmatter(content);
+  if (!fm.present || typeof fm.data[key] !== 'string') return null;
+
+  const document = YAML.parseDocument(fm.raw, { keepSourceTokens: true });
+  if (document.errors.length > 0 || !isMap(document.contents)) return null;
+  const matches = document.contents.items.filter(
+    (item) => isPair(item) && isScalar(item.key) && item.key.value === key,
+  );
+  if (matches.length !== 1) return null;
+  const scalar = matches[0]!.value;
+  if (!isScalar(scalar) || typeof scalar.value !== 'string' || !scalar.range) return null;
+  if (scalar.value === value) return content;
+
+  const [start, end] = scalar.range;
+  if (start < 0 || end < start || end > fm.raw.length) return null;
+  const rawStart = content.indexOf('\n') + 1;
+  return content.slice(0, rawStart + start) + JSON.stringify(value) + content.slice(rawStart + end);
 }
 
 /**

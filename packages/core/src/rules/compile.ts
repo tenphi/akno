@@ -107,3 +107,12 @@ export function effectiveRule(slug: string, rules: FolderRule[]): Partial<Folder
   }
   return out as Partial<FolderRule>;
 }
+
+/** Most-specific matching rule that actually declares one field of the effective policy. */
+export function declaringRule(
+  slug: string,
+  rules: FolderRule[],
+  field: keyof FolderRuleDoc,
+): FolderRule | null {
+  return rules.find((rule) => matchesGlob(slug, rule.glob) && rule[field] !== undefined) ?? null;
+}

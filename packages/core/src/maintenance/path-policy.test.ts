@@ -44,7 +44,10 @@ beforeEach(async () => {
       state_dir: stateDir,
       providers: { stub: { base_url: 'http://127.0.0.1:1111/v1' } },
       models: { derive: { provider: 'stub', id: 'zephyr-model' } },
-      folders: { 'reference/**': { role: 'source' } },
+      folders: {
+        'people/**': { type: 'person' },
+        'reference/**': { role: 'source', type: 'manual' },
+      },
       maintenance: {
         profile: 'autonomous',
         curate: { merge_folders: ['people'] },
@@ -95,12 +98,20 @@ describe('path-specific maintenance policy', () => {
       expect.objectContaining({ code: 'remember_opt_in' }),
     );
     expect(merge).toMatchObject({ outcome: 'curator_then_apply', canInspect: true });
+    expect(transform(policy, 'rule_drift')).toMatchObject({
+      outcome: 'curator_then_apply',
+      canInspect: true,
+      decision: 'curator',
+    });
   });
 
   it('shows folder-role, missing-opt-in, reserved-path, and lower-run blockers', () => {
     const source = mem.maintenancePolicy('reference/zephyr-qx-100');
     expect(source.page).toMatchObject({ role: 'source', roleSource: 'folder_rule' });
     expect(transform(source, 'synthesis').blockers).toContainEqual(
+      expect.objectContaining({ code: 'role_not_knowledge' }),
+    );
+    expect(transform(source, 'rule_drift').blockers).toContainEqual(
       expect.objectContaining({ code: 'role_not_knowledge' }),
     );
 
@@ -185,6 +196,7 @@ describe('path-specific maintenance policy', () => {
         state_dir: stateDir,
         providers: { stub: { base_url: 'http://127.0.0.1:1111/v1' } },
         models: { derive: { provider: 'stub', id: 'zephyr-model', enabled: false } },
+        folders: { 'people/**': { type: 'person' } },
         maintenance: {
           profile: 'autonomous',
           curate: { merge_folders: ['people'] },
@@ -203,6 +215,11 @@ describe('path-specific maintenance policy', () => {
       applyBlockers: [expect.objectContaining({ code: 'curator_model_unavailable' })],
     });
     expect(transform(unavailable, 'contradiction')).toMatchObject({
+      canInspect: true,
+      outcome: 'apply_blocked',
+      applyBlockers: [expect.objectContaining({ code: 'curator_model_unavailable' })],
+    });
+    expect(transform(unavailable, 'rule_drift')).toMatchObject({
       canInspect: true,
       outcome: 'apply_blocked',
       applyBlockers: [expect.objectContaining({ code: 'curator_model_unavailable' })],

@@ -27,7 +27,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('run_example');
     expect(safe).toContain('"componentCount":2');
     expect(safe).toContain('"graphCandidates":1');
-    expect(safe).toContain('"planBacked":{"brokenLinks":0,"orphanedDocuments":0}');
+    expect(safe).toContain('"planBacked":{"brokenLinks":0,"orphanedDocuments":0,"drift":0}');
     expect(safe).toContain('"embeddingCacheHits":2');
     expect(safe).toContain('"managedItems":{"eligiblePages":1');
   });
@@ -370,7 +370,7 @@ function privateReport(): DreamReport {
         },
       ],
       counts: { brokenLinks: 0, orphanedDocuments: 0, drift: 0, graphCandidates: 1 },
-      planBacked: { brokenLinks: 0, orphanedDocuments: 0 },
+      planBacked: { brokenLinks: 0, orphanedDocuments: 0, drift: 0 },
     },
     changeId: null,
     adoptChangeId: null,
@@ -508,12 +508,14 @@ function fixtureAuthority(): MaintenanceStatus['authority'] {
       observe: 'auto',
       reflect: 'auto',
       hygiene: 'auto',
+      managed_item: 'auto',
       synthesis: 'auto',
       split: 'auto',
       extract: 'auto',
       merge: 'auto',
       contradiction: 'auto',
       broken_link: 'auto',
+      rule_drift: 'auto',
       adopt: 'auto',
     },
     limits: { maxItems: 30, maxFilesChanged: 40, maxBytesWritten: 500000, maxHighRiskItems: 3 },

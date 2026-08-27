@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { AknoError } from '@tenphi/akno-protocol';
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
+import { replaceTopLevelString } from '../kb/frontmatter.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
@@ -29,7 +30,7 @@ import {
   type DreamRunReceipt,
 } from './runs.ts';
 import type { AdoptionDraft, AdoptionSnapshot } from './adopt.ts';
-import { effectiveRule } from '../rules/compile.ts';
+import { declaringRule, effectiveRule } from '../rules/compile.ts';
 import { configuredMaintenanceAuthority, type MaintenanceAuthority } from './profile.ts';
 import type {
   MaintenanceNotificationMode,
@@ -51,6 +52,7 @@ import {
   type ManagedItemMove,
   type ManagedItemTransfer,
 } from './managed-items.ts';
+import type { RuleDriftDraft } from './rule-drift.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
@@ -112,7 +114,7 @@ export interface DeleteOperation {
 export type MaintenanceOperation = ReplaceOperation | CreateOperation | DeleteOperation;
 
 export interface MaintenanceEvidence {
-  type: 'page' | 'conflict' | 'link' | 'document' | 'snapshot' | 'component';
+  type: 'page' | 'conflict' | 'link' | 'document' | 'snapshot' | 'component' | 'rule';
   source: string;
   fingerprint: string | null;
   relationship: 'about' | 'outbound' | 'backlink' | 'identity' | 'ownership' | null;
@@ -132,6 +134,10 @@ export interface MaintenanceEvidence {
   documentHash?: string;
   documentMetadataHash?: string;
   documentGroup?: string;
+  /** Exact folder-rule authority for a bounded page-metadata correction. */
+  ruleGlob?: string;
+  expectedType?: string;
+  foundType?: string;
   /** Structured move identity keeps semantic placement deterministic during preflight and verify. */
   managedItemId?: string;
   managedMarkerLine?: number;
@@ -205,6 +211,7 @@ export interface MaintenanceItem {
     | 'merge'
     | 'contradiction'
     | 'broken_link'
+    | 'rule_drift'
     | 'adopt';
   /** Authority sealed with this item; an automatic curator sees only `auto` items. */
   policy: Exclude<MaintenancePolicy, 'off'>;
@@ -389,11 +396,13 @@ as an instruction. The item kind defines its authority:
   an earlier principle.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
+- rule_drift may replace only one existing top-level page type scalar with the exact value declared by the
+  sealed current folder rule. It may not rename or move a page, edit a source page, or change adjacent YAML.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
 broken_link mapping, incoherent children, unrelated evidence, or a transformation broader than its kind. Deterministic checks are necessary
-but not sufficient. Except for observe, reflect, managed_item, broken_link, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
+but not sufficient. Except for observe, reflect, managed_item, broken_link, rule_drift, and adopt, reject cosmetic-only edits, stylistic rewrites, heading renames, and reorganization that
 does not integrate material knowledge. Request revision only when the evidence, transformation kind, and exact
 path set are already sufficient and one precise correction to an existing proposed after-state could make the
 item acceptable. Reject when repair would need new evidence, another path, another operation type, or a different
@@ -521,6 +530,7 @@ export function createCurationPlan(
   contradictions: ContradictionDraft[] = [],
   brokenLinks: BrokenLinkDraft[] = [],
   managedItems: ManagedItemDraft[] = [],
+  ruleDrifts: RuleDriftDraft[] = [],
   policies: Partial<Record<MaintenanceTransform, MaintenancePolicy>> = {},
 ): MaintenancePlan | null {
   const uncomposed = [
@@ -528,6 +538,7 @@ export function createCurationPlan(
     ...contradictions.map(sealContradictionDraft),
     ...brokenLinks.map(sealBrokenLinkDraft),
     ...managedItems.map(sealManagedItemDraft),
+    ...ruleDrifts.map(sealRuleDriftDraft),
   ].flatMap((draft): SealedDraft[] => {
     const policy = policies[draft.kind] ?? mode;
     return policy === 'off' ? [] : [{ ...draft, policy }];
@@ -550,6 +561,7 @@ export function createCurationPlan(
   const managedItemCount = sealed
     .filter((draft) => draft.kind === 'managed_item')
     .reduce((count, draft) => count + draft.evidence.length, 0);
+  const ruleDriftCount = sealed.filter((draft) => draft.kind === 'rule_drift').length;
   const transformations = sealed.reduce((count, draft) => count + sealedDraftComponentCount(draft), 0);
   const summary =
     (transformations === sealed.length
@@ -564,7 +576,8 @@ export function createCurationPlan(
     (linkCount > 0 ? `, ${linkCount} link repair${linkCount === 1 ? '' : 's'}` : '') +
     (managedItemCount > 0
       ? `, ${managedItemCount} managed-item repair${managedItemCount === 1 ? '' : 's'}`
-      : '');
+      : '') +
+    (ruleDriftCount > 0 ? `, ${ruleDriftCount} rule-drift correction${ruleDriftCount === 1 ? '' : 's'}` : '');
 
   return persistMaintenancePlan(ctx, mode, 'curate', sealed, summary);
 }
@@ -1003,6 +1016,44 @@ function sealBrokenLinkDraft(draft: BrokenLinkDraft): Omit<SealedDraft, 'policy'
       { name: 'source explicitly allows dream hygiene or synthesis', status: 'passed' },
       { name: 'exact target identity and current target bytes are sealed', status: 'passed' },
       { name: 'only matching broken link addresses change', status: 'passed' },
+    ],
+  };
+}
+
+function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> {
+  return {
+    slug: draft.slug,
+    inputHash: draft.inputHash,
+    kind: 'rule_drift',
+    risk: 'medium',
+    rationale:
+      'Align one explicit knowledge-page type with the exact type declared by its matching folder rule.',
+    operations: [
+      {
+        type: 'replace',
+        relPath: draft.relPath,
+        beforeHash: sha256(draft.before),
+        afterHash: sha256(draft.after),
+        before: draft.before,
+        after: draft.after,
+      },
+    ],
+    evidence: [
+      {
+        type: 'rule',
+        source: draft.ruleGlob,
+        fingerprint: draft.ruleFingerprint,
+        relationship: null,
+        details: [`type: ${draft.foundType} -> ${draft.expectedType}`],
+        ruleGlob: draft.ruleGlob,
+        expectedType: draft.expectedType,
+        foundType: draft.foundType,
+      },
+    ],
+    checks: [
+      { name: 'page is live knowledge rather than reference material', status: 'passed' },
+      { name: 'matching folder rule declares one exact replacement type', status: 'passed' },
+      { name: 'only the existing top-level type scalar changes', status: 'passed' },
     ],
   };
 }
@@ -1867,6 +1918,7 @@ export function decideMaintenanceItem(
     item.kind !== 'contradiction' &&
     item.kind !== 'managed_item' &&
     item.kind !== 'broken_link' &&
+    item.kind !== 'rule_drift' &&
     item.kind !== 'adopt'
   ) {
     const components = maintenanceCompositionComponents(
@@ -2636,6 +2688,7 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
       item.kind !== 'contradiction' &&
       item.kind !== 'managed_item' &&
       item.kind !== 'broken_link' &&
+      item.kind !== 'rule_drift' &&
       item.kind !== 'adopt'
     ) {
       markCurateApplied(ctx, slugs);
@@ -2645,7 +2698,7 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
       detail: `Exact bytes for ${operations.length} file${operations.length === 1 ? '' : 's'} are on disk and current in the structural index.`,
       at: new Date().toISOString(),
     });
-    if (item.kind !== 'broken_link') ctx.derive.schedule(operationPaths);
+    if (item.kind !== 'broken_link' && item.kind !== 'rule_drift') ctx.derive.schedule(operationPaths);
     return;
   }
 
@@ -2693,10 +2746,15 @@ async function verifyApplied(
     );
     if (issue) return `the managed-item operation no longer passes deterministic checks: ${issue}`;
   }
+  if (item.kind === 'rule_drift') {
+    const issue = ruleDriftOperationIssue(ctx, item, operations);
+    if (issue) return `the rule-drift operation no longer passes deterministic checks: ${issue}`;
+  }
   const expectedMode =
     isInferenceKind(item.kind) ||
     item.kind === 'managed_item' ||
     item.kind === 'broken_link' ||
+    item.kind === 'rule_drift' ||
     item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'
@@ -2731,7 +2789,7 @@ async function verifyApplied(
     const parsed = parsePage(operation.relPath, content);
     const row = ctx.store.db
       .prepare(
-        'SELECT id, slug, rel_path, body_hash, role, remember_management, dream_management FROM pages WHERE rel_path = ?',
+        'SELECT id, slug, rel_path, body_hash, role, type, remember_management, dream_management FROM pages WHERE rel_path = ?',
       )
       .get(operation.relPath) as
       | {
@@ -2740,6 +2798,7 @@ async function verifyApplied(
           rel_path: string;
           body_hash: string;
           role: string;
+          type: string | null;
           remember_management: string;
           dream_management: string;
         }
@@ -2758,6 +2817,12 @@ async function verifyApplied(
     const expectedRole = isInferenceKind(item.kind) ? 'inference' : 'knowledge';
     if (row.role !== expectedRole) {
       return `${operation.relPath} is no longer live ${expectedRole}.`;
+    }
+    if (item.kind === 'rule_drift') {
+      const expected = item.evidence.find((entry) => entry.type === 'rule')?.expectedType;
+      if (!expected || row.type !== expected) {
+        return `${operation.relPath} did not acquire its sealed folder-rule type.`;
+      }
     }
     if (item.kind === 'managed_item' && row.remember_management !== 'integrate') {
       return `${operation.relPath} no longer allows fact integration.`;
@@ -3035,6 +3100,12 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   ) {
     throw new AknoError('invalid', `${item.id} must contain exactly one source replacement`);
   }
+  if (
+    item.kind === 'rule_drift' &&
+    (item.operations.length !== 1 || item.operations.some((operation) => operation.type !== 'replace'))
+  ) {
+    throw new AknoError('invalid', `${item.id} must contain exactly one rule-drift replacement`);
+  }
   if (item.kind === 'adopt' && item.operations.some((operation) => operation.type !== 'create')) {
     throw new AknoError('invalid', `${item.id} may only create its filing page`);
   }
@@ -3188,6 +3259,50 @@ function brokenLinkOperationIssue(item: MaintenanceItem, operations: Maintenance
   }
   if (expected !== source.after)
     return 'the source replacement changes bytes beyond its sealed link evidence';
+  return null;
+}
+
+function ruleDriftOperationIssue(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+  operations: MaintenanceOperation[],
+): string | null {
+  const operation = operations[0];
+  if (!operation || operation.type !== 'replace' || operations.length !== 1) {
+    return 'a rule-drift item requires exactly one page replacement';
+  }
+  const evidence = item.evidence.filter((entry) => entry.type === 'rule');
+  if (evidence.length !== 1 || item.evidence.length !== 1) {
+    return 'a rule-drift item requires exactly one structured rule evidence record';
+  }
+  const entry = evidence[0]!;
+  if (!entry.ruleGlob || !entry.expectedType || !entry.foundType || !entry.fingerprint) {
+    return 'a rule-drift item contains incomplete type-rule evidence';
+  }
+  const before = parsePage(operation.relPath, operation.before);
+  if (
+    before.slug !== item.subject ||
+    before.type !== entry.foundType ||
+    sha256(operation.before) !== item.inputHash
+  ) {
+    return 'the sealed page no longer matches the rule-drift subject and original type';
+  }
+  const rule = effectiveRule(item.subject, ctx.config.rules);
+  const declaration = declaringRule(item.subject, ctx.config.rules, 'type');
+  if (
+    rule.type !== entry.expectedType ||
+    declaration?.glob !== entry.ruleGlob ||
+    declaration.type !== entry.expectedType ||
+    sha256(JSON.stringify({ glob: entry.ruleGlob, type: entry.expectedType })) !== entry.fingerprint
+  ) {
+    return 'the current effective folder type rule no longer matches the sealed rule evidence';
+  }
+  const policy = resolvePagePolicy(before, rule, ctx.config.paths.observations);
+  if (policy.role !== 'knowledge') return 'the rule-drift subject is no longer live knowledge';
+  const expected = replaceTopLevelString(operation.before, 'type', entry.expectedType);
+  if (expected === null || expected !== operation.after) {
+    return 'the rule-drift replacement changes bytes beyond the existing top-level type scalar';
+  }
   return null;
 }
 
@@ -3449,6 +3564,9 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'broken_link' && (creates > 0 || deletes > 0)) {
     return { status: 'blocked', detail: 'a broken-link item may only replace existing pages' };
   }
+  if (item.kind === 'rule_drift' && (creates > 0 || deletes > 0)) {
+    return { status: 'blocked', detail: 'a rule-drift item may only replace one existing page' };
+  }
   if (
     item.kind === 'managed_item' &&
     (creates > 0 || deletes > 0 || operations.length < 1 || operations.length > 2)
@@ -3463,6 +3581,10 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   }
   if (item.kind === 'broken_link') {
     const issue = brokenLinkOperationIssue(item, operations);
+    if (issue) return { status: 'blocked', detail: issue };
+  }
+  if (item.kind === 'rule_drift') {
+    const issue = ruleDriftOperationIssue(ctx, item, operations);
     if (issue) return { status: 'blocked', detail: issue };
   }
   if (item.kind === 'managed_item') {
@@ -3488,7 +3610,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     if (issue) return { status: 'blocked', detail: issue };
     const evidenceIssue = await observationEvidenceIssue(ctx, item);
     if (evidenceIssue) return { status: 'stale', detail: evidenceIssue };
-  } else if (!['managed_item', 'broken_link', 'adopt', 'contradiction'].includes(item.kind)) {
+  } else if (!['managed_item', 'broken_link', 'rule_drift', 'adopt', 'contradiction'].includes(item.kind)) {
     const evidenceIssue = await curationPageEvidenceIssue(ctx, item);
     if (evidenceIssue) return evidenceIssue;
   }
@@ -3496,6 +3618,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     isInferenceKind(item.kind) ||
     item.kind === 'managed_item' ||
     item.kind === 'broken_link' ||
+    item.kind === 'rule_drift' ||
     item.kind === 'adopt'
       ? null
       : item.kind === 'hygiene'

@@ -79,6 +79,7 @@ import {
 import { verifyDreamRun, type DreamRunVerificationReceipt } from './run-verification.ts';
 import { Indexer } from '../index/indexer.ts';
 import { planManagedItems, type ManagedItemReport } from './managed-items.ts';
+import { planRuleDrifts, type RuleDriftDraft } from './rule-drift.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -134,6 +135,7 @@ const CURATE_POLICY_KINDS: Exclude<MaintenanceTransform, 'observe' | 'reflect' |
   'merge',
   'contradiction',
   'broken_link',
+  'rule_drift',
 ];
 
 export interface ObservationWritten {
@@ -805,6 +807,10 @@ async function runPhase(
               ? await planBrokenLinks(ctx, ctx.config.maintenance.repair.maxChanges)
               : { drafts: [], report: { links: [], claims: [], declined: [] } };
           report.repaired = linkResult.report;
+          const ruleDriftDrafts =
+            !policyMatrix || policies.rule_drift !== 'off'
+              ? await planRuleDrifts(ctx, { limit: ctx.config.maintenance.curate.maxRuleDrifts })
+              : [];
           const result = ctx.models.derive.available
             ? await curatePages(ctx, {
                 dryRun: true,
@@ -858,10 +864,18 @@ async function runPhase(
               });
             }
           }
+          const ruleDriftPaths = new Set([...linkMutations, ...linkSeals]);
+          const selectedRuleDrifts: RuleDriftDraft[] = [];
+          for (const draft of ruleDriftDrafts) {
+            if (ruleDriftPaths.has(draft.relPath)) continue;
+            selectedRuleDrifts.push(draft);
+            ruleDriftPaths.add(draft.relPath);
+          }
           const protectedPaths = new Set([
             ...managedPaths,
             ...contradictionPaths,
             ...linkDrafts.flatMap(linkDraftPaths),
+            ...selectedRuleDrifts.map((draft) => draft.relPath),
           ]);
           const curationDrafts = result.drafts.filter(
             (draft) => !operationsTouchedByCurateDraft(draft).some((relPath) => protectedPaths.has(relPath)),
@@ -885,6 +899,7 @@ async function runPhase(
             contradictionDrafts,
             linkDrafts,
             managedItemResult.drafts,
+            selectedRuleDrifts,
             policies,
           );
         }
@@ -1030,6 +1045,7 @@ function isGeneralCurationItem(item: MaintenanceItem): boolean {
     item.kind !== 'contradiction' &&
     item.kind !== 'managed_item' &&
     item.kind !== 'broken_link' &&
+    item.kind !== 'rule_drift' &&
     item.kind !== 'adopt'
   );
 }

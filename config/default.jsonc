@@ -413,6 +413,8 @@
       // Merge is higher risk and therefore needs an explicit folder allowlist.
       // Use ["*"] only when every synthesize-opted knowledge folder is eligible.
       "max_merges": 2,
+      // Only explicit scalar page types with one exact folder-rule value qualify.
+      "max_rule_drifts": 20,
       "merge_folders": [],
       // "exact" uses aliases and conservative graph subjects. "semantic" additionally
       // runs the qualified embedding prefilter and strict candidate classifier.

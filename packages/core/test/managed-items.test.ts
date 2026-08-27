@@ -464,6 +464,7 @@ This sentence is not managed by Akno.
             merge: 'off',
             contradiction: 'off',
             broken_link: 'off',
+            rule_drift: 'off',
             adopt: 'off',
           },
           observe: { enabled: false },

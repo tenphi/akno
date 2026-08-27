@@ -232,6 +232,7 @@ async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
     merge: 'off',
     contradiction: 'off',
     broken_link: 'off',
+    rule_drift: 'off',
     adopt: 'auto',
   } as const;
   const maintenance = requestedMaintenance?.profile
@@ -580,6 +581,7 @@ describe('the full-run planning barrier', () => {
           merge: 'off',
           contradiction: 'off',
           broken_link: 'off',
+          rule_drift: 'off',
           adopt: 'off',
         },
         observe: { enabled: true },
@@ -864,6 +866,7 @@ describe('repair', () => {
           merge: mode,
           contradiction: mode,
           broken_link: mode,
+          rule_drift: 'off',
           adopt: 'auto',
         },
         ...(limits ? { limits } : {}),
@@ -2041,6 +2044,131 @@ describe('housekeeping', () => {
     const drift = report.housekeeping!.drift.find((entry) => entry.slug === 'home/laundry');
     expect(drift?.expected).toBe('type: appliance');
     expect(drift?.found).toBe('type: chore');
+    expect(drift?.field).toBe('type');
+    expect(drift?.plan).toBeNull();
+  });
+
+  it('seals exact type drift in audit mode and marks housekeeping coverage', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: { 'home/**': { type: 'appliance' } },
+      maintenance: {
+        profile: 'audit',
+        policies: { rule_drift: 'audit' },
+        observe: { enabled: false },
+        conflicts: { enabled: false },
+      },
+    });
+    const before =
+      '---\ntitle: Laundry\ntype: chore # preserve\nunknown: [one, two]\n---\n\n# Laundry\n\nServiced in June.\n';
+    fs.writeFileSync(path.join(root, 'home/laundry.md'), before, 'utf8');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items.find((entry) => entry.kind === 'rule_drift')!;
+    expect(item).toMatchObject({ policy: 'audit', risk: 'medium', status: 'proposed' });
+    expect(item.operations).toMatchObject([
+      {
+        type: 'replace',
+        relPath: 'home/laundry.md',
+        after: before.replace('type: chore', 'type: "appliance"'),
+      },
+    ]);
+    expect(item.evidence).toEqual([
+      expect.objectContaining({
+        type: 'rule',
+        source: 'home/**',
+        ruleGlob: 'home/**',
+        expectedType: 'appliance',
+        foundType: 'chore',
+      }),
+    ]);
+    expect(fs.readFileSync(path.join(root, 'home/laundry.md'), 'utf8')).toBe(before);
+    await expect(
+      mem.revisePlan(report.maintenancePlan!.id, item.id, {
+        after: `${item.operations[0]!.type === 'replace' ? item.operations[0]!.after : ''}\nExtra text.\n`,
+      }),
+    ).rejects.toThrow(/beyond the existing top-level type scalar/);
+
+    const housekeepingReport = await mem.dream({ phase: 'housekeeping' });
+    const drift = housekeepingReport.housekeeping!.drift.find((entry) => entry.slug === 'home/laundry');
+    expect(drift?.plan).toMatchObject({
+      planId: report.maintenancePlan!.id,
+      itemId: item.id,
+      kind: 'rule_drift',
+      policy: 'audit',
+      status: 'proposed',
+    });
+    expect(housekeepingReport.housekeeping!.planBacked.drift).toBe(1);
+  });
+
+  it('autonomously applies and verifies one exact type correction without page-wide dream authority', async () => {
+    await mem.close();
+    mem = await openMem({
+      folders: { 'home/**': { type: 'appliance' } },
+      maintenance: {
+        profile: 'autonomous',
+        policies: {
+          observe: 'off',
+          reflect: 'off',
+          hygiene: 'off',
+          managed_item: 'off',
+          synthesis: 'off',
+          split: 'off',
+          extract: 'off',
+          merge: 'off',
+          contradiction: 'off',
+          broken_link: 'off',
+          rule_drift: 'auto',
+          adopt: 'off',
+        },
+        observe: { enabled: false },
+        conflicts: { enabled: false },
+      },
+    });
+    const before = '---\ntitle: Laundry\ntype: chore\n---\n\n# Laundry\n\nServiced in June.\n';
+    fs.writeFileSync(path.join(root, 'home/laundry.md'), before, 'utf8');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = report.maintenancePlan!.items.find((entry) => entry.kind === 'rule_drift')!;
+    expect(item).toMatchObject({
+      policy: 'auto',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    expect(server.requestKinds()).toContain('curator');
+    expect(fs.readFileSync(path.join(root, 'home/laundry.md'), 'utf8')).toBe(
+      before.replace('type: chore', 'type: "appliance"'),
+    );
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(path.join(root, 'home/laundry.md'), 'utf8')).toBe(before);
+  });
+
+  it('never plans type correction for reference material', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: { 'manuals/**': { role: 'source', type: 'manual' } },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'manuals'), { recursive: true });
+    const before = '---\ntitle: Zephyr QX-100\ntype: note\n---\n\n# Manual\n';
+    fs.writeFileSync(path.join(root, 'manuals/zephyr-qx-100.md'), before, 'utf8');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
+      expect.objectContaining({ kind: 'rule_drift' }),
+    );
+    expect(fs.readFileSync(path.join(root, 'manuals/zephyr-qx-100.md'), 'utf8')).toBe(before);
+    const housekeepingReport = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      housekeepingReport.housekeeping!.drift.find((entry) => entry.slug === 'manuals/zephyr-qx-100')?.plan,
+    ).toBeNull();
   });
 
   it('includes graph findings as read-only housekeeping candidates', async () => {

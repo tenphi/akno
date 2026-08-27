@@ -1,7 +1,7 @@
 import type { AknoContext } from '../context.ts';
 import type { MaintenancePolicy } from '../config/schema.ts';
 import { configuredTransformPolicy } from './profile.ts';
-import { effectiveRule, matchesGlob } from '../rules/compile.ts';
+import { declaringRule, effectiveRule, matchesGlob } from '../rules/compile.ts';
 import { discoverGraphMaintenanceCandidates, type GraphMaintenanceCandidate } from './graph-candidates.ts';
 import { getMaintenancePlan, type MaintenanceItemStatus, type MaintenanceItemStatusCode } from './plans.ts';
 
@@ -9,11 +9,9 @@ import { getMaintenancePlan, type MaintenanceItemStatus, type MaintenanceItemSta
  * The cycle reports broken links, orphaned documents, and pages that have drifted from their
  * folder's rules.
  *
- * All three are reports, never repairs. A broken link is often a page someone means to write;
- * an orphaned document may be a file they keep deliberately; a page that breaks its folder's
- * naming convention is still their page. This tier has no mandate to change any of them, and
- * a maintenance process that tidies a knowledge base behind its owner's back is how trust in
- * the whole layer goes.
+ * This function reports; it never grants repair authority. Exact planners may attach their
+ * nonterminal items, but an unplanned broken link is often a page someone means to write, an
+ * orphaned document may be deliberate, and a naming violation does not identify a destination.
  */
 
 export interface BrokenLink {
@@ -35,7 +33,7 @@ export interface OrphanedDocument {
 export interface HousekeepingPlanRef {
   planId: string;
   itemId: string;
-  kind: 'broken_link' | 'adopt';
+  kind: 'broken_link' | 'rule_drift' | 'adopt';
   policy: Exclude<MaintenancePolicy, 'off'>;
   status: MaintenanceItemStatus;
   statusCode: MaintenanceItemStatusCode | null;
@@ -43,10 +41,13 @@ export interface HousekeepingPlanRef {
 
 export interface RuleDrift {
   slug: string;
+  field: 'type' | 'slug_pattern' | 'max_depth';
   rule: string;
   /** What the rule expects, and what the page does instead. */
   expected: string;
   found: string;
+  /** An exact nonterminal correction exists only for qualified type drift. */
+  plan: HousekeepingPlanRef | null;
 }
 
 export interface Housekeeping {
@@ -58,7 +59,7 @@ export interface Housekeeping {
   /** Totals, because the lists are capped for a readable report. */
   counts: { brokenLinks: number; orphanedDocuments: number; drift: number; graphCandidates: number };
   /** Current findings for which Akno has already sealed an exact nonterminal operation. */
-  planBacked: { brokenLinks: number; orphanedDocuments: number };
+  planBacked: { brokenLinks: number; orphanedDocuments: number; drift: number };
 }
 
 const LIST_CAP = 20;
@@ -94,7 +95,10 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
 
   const orphanTotal = count(ctx, 'SELECT count(*) AS c FROM documents WHERE page_id IS NULL');
 
-  const drift = findDrift(ctx);
+  const drift = findDrift(ctx).map((entry) => ({
+    ...entry,
+    plan: coverage.drift.get(ruleDriftKey(entry.slug, entry.expected, entry.found)) ?? null,
+  }));
   const graphCandidates = discoverGraphMaintenanceCandidates(ctx.store);
   const adoptEnabled = configuredTransformPolicy(ctx.config, 'adopt') !== 'off';
 
@@ -130,21 +134,25 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
     planBacked: {
       brokenLinks: countPlanBackedBrokenLinks(ctx, coverage.brokenLinks),
       orphanedDocuments: countPlanBackedOrphans(ctx, coverage.orphanedDocuments),
+      drift: drift.filter((entry) => entry.plan !== null).length,
     },
   };
 }
 
 /**
  * The exact plan is the authority here, not resemblance between a diagnostic and an operation.
- * Link evidence seals both endpoints; adoption evidence seals the document path and bytes. Newest
- * plans win when an older audit plan and a later review plan describe the same still-current work.
+ * Link evidence seals both endpoints; adoption evidence seals the document path and bytes; rule
+ * evidence seals the exact type declaration. Newest plans win when an older audit plan and a later
+ * review plan describe the same still-current work.
  */
 function pendingPlanCoverage(ctx: AknoContext): {
   brokenLinks: Map<string, HousekeepingPlanRef>;
   orphanedDocuments: Map<string, HousekeepingPlanRef>;
+  drift: Map<string, HousekeepingPlanRef>;
 } {
   const brokenLinks = new Map<string, HousekeepingPlanRef>();
   const orphanedDocuments = new Map<string, HousekeepingPlanRef>();
+  const drift = new Map<string, HousekeepingPlanRef>();
 
   const plans = ctx.store.db
     .prepare(
@@ -156,7 +164,7 @@ function pendingPlanCoverage(ctx: AknoContext): {
   for (const summary of plans) {
     const plan = getMaintenancePlan(ctx, summary.id);
     for (const item of plan.items) {
-      if (item.kind !== 'broken_link' && item.kind !== 'adopt') continue;
+      if (item.kind !== 'broken_link' && item.kind !== 'rule_drift' && item.kind !== 'adopt') continue;
       if (!PLAN_BACKED_ITEM_STATUSES.has(item.status)) continue;
       const ref: HousekeepingPlanRef = {
         planId: plan.id,
@@ -172,18 +180,28 @@ function pendingPlanCoverage(ctx: AknoContext): {
           const key = brokenLinkKey(evidence.source, evidence.brokenTarget);
           if (!brokenLinks.has(key)) brokenLinks.set(key, ref);
         }
-      } else {
+      } else if (item.kind === 'adopt') {
         for (const evidence of item.evidence) {
           if (evidence.type !== 'document' || !evidence.documentRelPath) continue;
           if (!orphanedDocuments.has(evidence.documentRelPath)) {
             orphanedDocuments.set(evidence.documentRelPath, ref);
           }
         }
+      } else {
+        for (const evidence of item.evidence) {
+          if (evidence.type !== 'rule' || !evidence.expectedType || !evidence.foundType) continue;
+          const key = ruleDriftKey(
+            item.subject,
+            `type: ${evidence.expectedType}`,
+            `type: ${evidence.foundType}`,
+          );
+          if (!drift.has(key)) drift.set(key, ref);
+        }
       }
     }
   }
 
-  return { brokenLinks, orphanedDocuments };
+  return { brokenLinks, orphanedDocuments, drift };
 }
 
 function countPlanBackedBrokenLinks(ctx: AknoContext, coverage: Map<string, HousekeepingPlanRef>): number {
@@ -215,6 +233,10 @@ function brokenLinkKey(from: string, to: string): string {
   return `${from}\0${to}`;
 }
 
+function ruleDriftKey(slug: string, expected: string, found: string): string {
+  return `${slug}\0${expected}\0${found}`;
+}
+
 /**
  * Pages whose folder rule says one thing and the page does another.
  *
@@ -230,38 +252,41 @@ function findDrift(ctx: AknoContext): RuleDrift[] {
 
   const out: RuleDrift[] = [];
   for (const page of pages) {
-    // `effectiveRule` merges the *values* of every matching rule and deliberately drops
-    // `glob`, so the glob has to be found separately. Rules arrive most-specific-first, which
-    // is the one a reader should be pointed at.
+    // `effectiveRule` merges values across matching rules. Each diagnostic points to the most
+    // specific matching rule that declared that particular field, not merely the first match.
     const rule = effectiveRule(page.slug, ctx.config.rules);
-    const glob = ctx.config.rules.find((candidate) => matchesGlob(page.slug, candidate.glob))?.glob;
-    if (glob === undefined) continue;
-
-    if (rule.type && page.type && page.type !== rule.type) {
+    const typeRule = declaringRule(page.slug, ctx.config.rules, 'type');
+    if (rule.type && typeRule && page.type && page.type !== rule.type) {
       out.push({
         slug: page.slug,
-        rule: glob,
+        field: 'type',
+        rule: typeRule.glob,
         expected: `type: ${rule.type}`,
         found: `type: ${page.type}`,
+        plan: null,
       });
     }
 
-    if (rule.slug_pattern) {
+    const slugRule = declaringRule(page.slug, ctx.config.rules, 'slug_pattern');
+    if (rule.slug_pattern && slugRule) {
       const basename = page.slug.slice(page.slug.lastIndexOf('/') + 1);
       if (!safeMatch(rule.slug_pattern, basename)) {
         out.push({
           slug: page.slug,
-          rule: glob,
+          field: 'slug_pattern',
+          rule: slugRule.glob,
           expected: `slug matching ${rule.slug_pattern}`,
           found: basename,
+          plan: null,
         });
       }
     }
 
-    if (rule.max_depth !== undefined) {
+    const depthRule = declaringRule(page.slug, ctx.config.rules, 'max_depth');
+    if (rule.max_depth !== undefined && depthRule) {
       // Depth below the folder the rule names, not from the root: `documents/**` with
       // `max_depth: 2` is a statement about how deep `documents/` may nest.
-      const ruleDepth = glob
+      const ruleDepth = depthRule.glob
         .replace(/\/\*\*?$/, '')
         .split('/')
         .filter(Boolean).length;
@@ -269,9 +294,11 @@ function findDrift(ctx: AknoContext): RuleDrift[] {
       if (depth > rule.max_depth) {
         out.push({
           slug: page.slug,
-          rule: glob,
+          field: 'max_depth',
+          rule: depthRule.glob,
           expected: `at most ${rule.max_depth} level(s) deep`,
           found: `${depth} levels deep`,
+          plan: null,
         });
       }
     }

@@ -931,7 +931,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
         'orphaned documents',
         housekeepingCount(house.counts.orphanedDocuments, house.planBacked.orphanedDocuments),
       ],
-      ['pages off their rules', house.counts.drift],
+      ['pages off their rules', housekeepingCount(house.counts.drift, house.planBacked.drift)],
       ['graph review candidates', house.counts.graphCandidates],
     ]);
     if (privateDetails) {
@@ -944,6 +944,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
         line(
           `  ${style.yellow('·')} ${entry.slug}  ${style.grey(`${entry.rule} expects ${entry.expected}, found ${entry.found}`)}`,
         );
+        if (entry.plan) line(`    ${style.grey(housekeepingPlanLabel(entry.plan))}`);
       }
       if (house.brokenLinks.length > 0) {
         for (const link of house.brokenLinks.slice(0, 5)) {

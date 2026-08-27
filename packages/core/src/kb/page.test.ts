@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeLinkTarget, parsePage, resolvePagePolicy, resolveRole } from './page.ts';
-import { parseFrontmatter, withId } from './frontmatter.ts';
+import { parseFrontmatter, replaceTopLevelString, withId } from './frontmatter.ts';
 
 describe('parseFrontmatter', () => {
   it('parses a block and reports where the body starts', () => {
@@ -33,6 +33,23 @@ describe('parseFrontmatter', () => {
     const fm = parseFrontmatter('# Just a heading\n');
     expect(fm.present).toBe(false);
     expect(fm.bodyLine).toBe(1);
+  });
+});
+
+describe('replaceTopLevelString', () => {
+  it('replaces only the exact scalar while preserving comments and unknown YAML', () => {
+    const before =
+      '---\r\ntitle: Zephyr QX-100\r\ntype: "old # class" # keep this\r\nunknown: [one, two]\r\n---\r\n\r\n# Manual\r\n';
+
+    expect(replaceTopLevelString(before, 'type', 'reference guide')).toBe(
+      '---\r\ntitle: Zephyr QX-100\r\ntype: "reference guide" # keep this\r\nunknown: [one, two]\r\n---\r\n\r\n# Manual\r\n',
+    );
+  });
+
+  it('refuses absent, nested, and non-string values', () => {
+    expect(replaceTopLevelString('---\ntitle: Ada Marlow\n---\n\n# Ada\n', 'type', 'person')).toBeNull();
+    expect(replaceTopLevelString('---\nmeta:\n  type: note\n---\n\n# Note\n', 'type', 'person')).toBeNull();
+    expect(replaceTopLevelString('---\ntype: [note]\n---\n\n# Note\n', 'type', 'person')).toBeNull();
   });
 });
 

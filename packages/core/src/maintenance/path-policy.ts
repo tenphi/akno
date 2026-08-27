@@ -28,6 +28,7 @@ export const PAGE_MAINTENANCE_TRANSFORMS = [
   'merge',
   'contradiction',
   'broken_link',
+  'rule_drift',
 ] as const satisfies readonly MaintenanceTransform[];
 
 export type PageMaintenanceTransform = (typeof PAGE_MAINTENANCE_TRANSFORMS)[number];
@@ -228,6 +229,9 @@ export function pageAllowsMaintenanceTransform(
   if (kind === 'broken_link') {
     return page.dreamManagement === 'hygiene' || page.dreamManagement === 'synthesize';
   }
+  if (kind === 'rule_drift') {
+    return effectiveRule(page.slug, config.rules).type !== undefined;
+  }
   return page.dreamManagement === requiredDreamMode(kind);
 }
 
@@ -283,17 +287,25 @@ function explainPageTransform(
         ? page.remember === 'integrate'
         : kind === 'broken_link'
           ? page.dream === 'hygiene' || page.dream === 'synthesize'
-          : page.dream === required;
+          : kind === 'rule_drift'
+            ? effectiveRule(slug, config.rules).type !== undefined
+            : page.dream === required;
     if (!dreamAllowed) {
       blockers.push(
         reason(
           'page',
-          kind === 'managed_item' ? 'remember_opt_in' : 'dream_opt_in',
+          kind === 'managed_item'
+            ? 'remember_opt_in'
+            : kind === 'rule_drift'
+              ? 'folder_type_rule'
+              : 'dream_opt_in',
           kind === 'managed_item'
             ? 'the page or its folder must declare remember: integrate; page-wide dream authority is not required'
             : kind === 'broken_link'
               ? 'the page must declare dream: hygiene or dream: synthesize'
-              : `the page must declare dream: ${required}`,
+              : kind === 'rule_drift'
+                ? 'a matching folder rule must explicitly declare type before page metadata can be corrected'
+                : `the page must declare dream: ${required}`,
         ),
       );
     }
