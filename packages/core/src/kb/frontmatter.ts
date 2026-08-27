@@ -1,4 +1,4 @@
-import YAML, { isMap, isPair, isScalar } from 'yaml';
+import YAML, { isMap, isPair, isScalar, isSeq } from 'yaml';
 
 /**
  * Akno reads several frontmatter keys. Ordinary writes add only `id`; a qualified maintenance
@@ -113,6 +113,60 @@ export function replaceTopLevelString(content: string, key: string, value: strin
   if (start < 0 || end < start || end > fm.raw.length) return null;
   const rawStart = content.indexOf('\n') + 1;
   return content.slice(0, rawStart + start) + JSON.stringify(value) + content.slice(rawStart + end);
+}
+
+/**
+ * Replace every exact string in one existing nested YAML sequence while preserving all other bytes.
+ * Used for identity references such as `akno.about`; malformed paths, aliases, non-string members,
+ * and absent values are refused rather than round-tripped through a serializer.
+ */
+export function replaceNestedStringArrayValue(
+  content: string,
+  keys: string[],
+  from: string,
+  to: string,
+): string | null {
+  if (keys.length === 0) return null;
+  const fm = parseFrontmatter(content);
+  if (!fm.present) return null;
+  const document = YAML.parseDocument(fm.raw, { keepSourceTokens: true });
+  if (document.errors.length > 0 || !isMap(document.contents)) return null;
+
+  let current = document.contents;
+  for (const [index, key] of keys.entries()) {
+    const matches = current.items.filter(
+      (item) => isPair(item) && isScalar(item.key) && item.key.value === key,
+    );
+    if (matches.length !== 1) return null;
+    const value = matches[0]!.value;
+    if (index === keys.length - 1) {
+      if (!isSeq(value)) return null;
+      const scalars = value.items;
+      if (scalars.some((item) => !isScalar(item) || typeof item.value !== 'string' || !item.range)) {
+        return null;
+      }
+      const ranges = scalars
+        .filter(
+          (item) =>
+            isScalar(item) &&
+            typeof item.value === 'string' &&
+            item.value.toLowerCase() === from.toLowerCase(),
+        )
+        .map((item) => item.range!)
+        .sort((left, right) => right[0] - left[0]);
+      if (ranges.length === 0) return null;
+      const rawStart = content.indexOf('\n') + 1;
+      let result = content;
+      for (const [start, end] of ranges) {
+        if (start < 0 || end < start || end > fm.raw.length) return null;
+        result = result.slice(0, rawStart + start) + JSON.stringify(to) + result.slice(rawStart + end);
+      }
+      return result;
+    }
+    if (!isMap(value)) return null;
+    current = value;
+  }
+  return null;
 }
 
 /**

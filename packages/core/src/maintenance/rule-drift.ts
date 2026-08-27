@@ -1,7 +1,7 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoContext } from '../context.ts';
-import { replaceTopLevelString } from '../kb/frontmatter.ts';
+import { replaceNestedStringArrayValue, replaceTopLevelString } from '../kb/frontmatter.ts';
 import { normalizeLinkTarget, parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { isReserved } from '../reserved.ts';
 import { declaringRule, effectiveRule } from '../rules/compile.ts';
@@ -35,7 +35,14 @@ export interface DepthRuleDriftDraft extends RuleDriftBase {
   destinationSlug: string;
   destinationRelPath: string;
   documents: RuleDriftDocumentMove[];
-  inbound: { slug: string; relPath: string; before: string; after: string }[];
+  inbound: {
+    slug: string;
+    relPath: string;
+    before: string;
+    after: string;
+    rewriteAbout: boolean;
+    rewriteLinks: boolean;
+  }[];
 }
 
 export interface RuleDriftDocumentMove {
@@ -99,7 +106,9 @@ export type RuleRepairAssessment =
         | 'document_destination_occupied'
         | 'document_destination_conflict'
         | 'document_relationship_unsafe'
-        | 'incoming_about'
+        | 'reference_about'
+        | 'about_unreadable'
+        | 'about_unrewritable'
         | 'reference_backlink'
         | 'backlink_unreadable'
         | 'backlink_unrewritable';
@@ -333,21 +342,60 @@ async function prepareDepthRepair(
   );
   if ('assessment' in preparedDocuments) return preparedDocuments;
   const aboutRows = ctx.store.db
-    .prepare('SELECT id, about FROM pages WHERE id != ?')
+    .prepare('SELECT id, slug, rel_path, role, about FROM pages WHERE id != ? ORDER BY slug')
     .all(candidate.pageId) as {
     id: string;
+    slug: string;
+    rel_path: string;
+    role: string;
     about: string;
   }[];
+  const incomingAboutRows = aboutRows.filter((row) =>
+    jsonStrings(row.about).some((slug) => slug.toLowerCase() === candidate.slug.toLowerCase()),
+  );
+  if (incomingAboutRows.some((row) => row.role !== 'knowledge' || isReserved(row.slug, ctx.config))) {
+    return outcome(
+      'held',
+      'reference_about',
+      'an incoming about relationship belongs to protected or reference material',
+    );
+  }
   if (
-    aboutRows.some((row) =>
-      jsonStrings(row.about).some((slug) => slug.toLowerCase() === candidate.slug.toLowerCase()),
+    incomingAboutRows.some((row) =>
+      jsonStrings(row.about).some((slug) => slug.toLowerCase() === destinationSlug.toLowerCase()),
     )
   ) {
     return outcome(
       'held',
-      'incoming_about',
-      'an incoming about relationship would retain the retired identity',
+      'about_unrewritable',
+      'an incoming about page already names the destination and cannot be rewritten without duplication',
     );
+  }
+
+  const inboundByPath = new Map<string, DepthRuleDriftDraft['inbound'][number]>();
+  for (const row of incomingAboutRows) {
+    const content = await fsp
+      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
+      .catch(() => null);
+    if (content === null) {
+      return outcome('held', 'about_unreadable', 'an incoming-about knowledge page is unreadable');
+    }
+    const after = replaceNestedStringArrayValue(content, ['akno', 'about'], candidate.slug, destinationSlug);
+    if (after === null || after === content) {
+      return outcome(
+        'held',
+        'about_unrewritable',
+        'an indexed incoming about relationship is not one exact writable frontmatter sequence value',
+      );
+    }
+    inboundByPath.set(row.rel_path, {
+      slug: row.slug,
+      relPath: row.rel_path,
+      before: content,
+      after,
+      rewriteAbout: true,
+      rewriteLinks: false,
+    });
   }
 
   const inboundRows = ctx.store.db
@@ -365,20 +413,29 @@ async function prepareDepthRepair(
       'an inbound link belongs to protected or reference material',
     );
   }
-  const inbound: DepthRuleDriftDraft['inbound'] = [];
   for (const row of inboundRows) {
-    const content = await fsp
-      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
-      .catch(() => null);
+    const existing = inboundByPath.get(row.rel_path);
+    const content =
+      existing?.before ??
+      (await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null));
     if (content === null) {
       return outcome('held', 'backlink_unreadable', 'an indexed inbound-link page is unreadable');
     }
-    const after = rewritePageLinks(content, row.slug, candidate.slug, destinationSlug);
-    if (after === content) {
+    const beforeRewrite = existing?.after ?? content;
+    const after = rewritePageLinks(beforeRewrite, row.slug, candidate.slug, destinationSlug);
+    if (after === beforeRewrite) {
       return outcome('held', 'backlink_unrewritable', 'an indexed inbound link cannot be rewritten exactly');
     }
-    inbound.push({ slug: row.slug, relPath: row.rel_path, before: content, after });
+    inboundByPath.set(row.rel_path, {
+      slug: row.slug,
+      relPath: row.rel_path,
+      before: content,
+      after,
+      rewriteAbout: existing?.rewriteAbout ?? false,
+      rewriteLinks: true,
+    });
   }
+  const inbound = [...inboundByPath.values()].sort((left, right) => left.slug.localeCompare(right.slug));
 
   const inputHash = sha256(
     JSON.stringify([
@@ -391,7 +448,7 @@ async function prepareDepthRepair(
     assessment: {
       status: 'ready',
       code: 'exact_relocation',
-      reason: 'one exact byte-preserving relocation and complete backlink update are available',
+      reason: 'one exact byte-preserving relocation and complete inbound-reference update are available',
     },
     draft: {
       kind: 'rule_drift',

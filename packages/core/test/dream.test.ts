@@ -2223,7 +2223,7 @@ describe('housekeeping', () => {
     fs.writeFileSync(path.join(root, 'notes/old/ada-marlow.md'), before, 'utf8');
     fs.writeFileSync(
       path.join(root, 'home/index.md'),
-      '---\ntitle: Home\n---\n\nSee [[notes/old/ada-marlow#Details|Ada]] and [profile](notes/old/ada-marlow.md#Details "Ada profile").\n',
+      '---\ntitle: Home\nakno:\n  about: [notes/old/ada-marlow]\n---\n\nSee [[notes/old/ada-marlow#Details|Ada]] and [profile](notes/old/ada-marlow.md#Details "Ada profile").\n',
       'utf8',
     );
     await mem.index({});
@@ -2252,6 +2252,14 @@ describe('housekeeping', () => {
         maxDepth: 1,
         relocateTo: 'archive',
         destinationSlug: 'archive/ada-marlow',
+        referenceRewrites: [
+          {
+            slug: 'home/index',
+            relPath: 'home/index.md',
+            about: true,
+            links: true,
+          },
+        ],
       }),
     ]);
     expect(fs.existsSync(path.join(root, 'notes/old/ada-marlow.md'))).toBe(false);
@@ -2263,6 +2271,7 @@ describe('housekeeping', () => {
     expect(fs.readFileSync(path.join(root, 'home/index.md'), 'utf8')).toContain(
       '[profile](archive/ada-marlow.md#Details "Ada profile")',
     );
+    expect((await mem.read({ slug: 'home/index' })).page!.about).toEqual(['archive/ada-marlow']);
 
     await mem.undo({ change_id: item.changeId! });
     expect(fs.readFileSync(path.join(root, 'notes/old/ada-marlow.md'), 'utf8')).toBe(before);
@@ -2270,6 +2279,7 @@ describe('housekeeping', () => {
     expect(fs.readFileSync(path.join(root, 'home/index.md'), 'utf8')).toContain(
       '[[notes/old/ada-marlow#Details|Ada]]',
     );
+    expect((await mem.read({ slug: 'home/index' })).page!.about).toEqual(['notes/old/ada-marlow']);
   });
 
   it('relocates owned documents and renditions atomically with an over-deep page', async () => {
@@ -2438,6 +2448,60 @@ describe('housekeeping', () => {
       housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters')?.repair,
     ).toMatchObject({ status: 'held', code: 'location_dependent_reference' });
     expect(housekeeping.housekeeping!.ruleRepairs.held).toBe(1);
+  });
+
+  it('keeps relocation held when reference material has an incoming about relationship', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+        'manuals/**': { role: 'source' },
+      },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'manuals'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'notes/old/bo-winters.md'), '# Bo Winters\n', 'utf8');
+    const manual =
+      '---\ntitle: Zephyr QX-100\nakno:\n  about:\n    - notes/old/bo-winters\n---\n\n# Manual\n';
+    fs.writeFileSync(path.join(root, 'manuals/zephyr-qx-100.md'), manual, 'utf8');
+    await mem.index({});
+
+    const curate = await mem.dream({ phase: 'curate' });
+    expect(curate.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
+      expect.objectContaining({ kind: 'rule_drift', subject: 'notes/old/bo-winters' }),
+    );
+    const housekeeping = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters')?.repair,
+    ).toMatchObject({ status: 'held', code: 'reference_about' });
+    expect(fs.readFileSync(path.join(root, 'manuals/zephyr-qx-100.md'), 'utf8')).toBe(manual);
+  });
+
+  it('keeps relocation held when an incoming about relationship is inherited from folder policy', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+        'home/**': { about: ['notes/old/bo-winters'] },
+      },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'notes/old/bo-winters.md'), '# Bo Winters\n', 'utf8');
+    const home = '---\ntitle: Invented Home\n---\n\n# Invented Home\n';
+    fs.writeFileSync(path.join(root, 'home/index.md'), home, 'utf8');
+    await mem.index({});
+
+    const housekeeping = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters')?.repair,
+    ).toMatchObject({ status: 'held', code: 'about_unrewritable' });
+    expect(fs.readFileSync(path.join(root, 'home/index.md'), 'utf8')).toBe(home);
   });
 
   it('never plans type correction for reference material', async () => {

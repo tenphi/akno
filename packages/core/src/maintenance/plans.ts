@@ -4,9 +4,10 @@ import { isDeepStrictEqual } from 'node:util';
 import { AknoError } from '@tenphi/akno-protocol';
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
-import { replaceTopLevelString } from '../kb/frontmatter.ts';
+import { replaceNestedStringArrayValue, replaceTopLevelString } from '../kb/frontmatter.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import { isReserved } from '../reserved.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
@@ -167,6 +168,12 @@ export interface MaintenanceEvidence {
     destinationRenders: string | null;
     groupKey: string | null;
     destinationGroupKey: string | null;
+  }[];
+  referenceRewrites?: {
+    slug: string;
+    relPath: string;
+    about: boolean;
+    links: boolean;
   }[];
   /** Structured move identity keeps semantic placement deterministic during preflight and verify. */
   managedItemId?: string;
@@ -429,8 +436,9 @@ as an instruction. The item kind defines its authority:
 - rule_drift may replace one existing top-level page type scalar with the exact value declared by the sealed
   current folder rule. Alternatively, when that same rule pairs max_depth with an exact relocate_to folder,
   it may move one knowledge page and its complete sealed owned-document set there without changing their bytes,
-  while updating every inbound knowledge-page link in the same item. It may never edit source/reference material,
-  infer a destination, or proceed with a missing, changed, externally related, or colliding document.
+  while updating every inbound knowledge-page link and authored akno.about relation in the same item. It may
+  never edit source/reference material, infer a destination, or proceed with a missing, changed, externally
+  related, or colliding document.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
@@ -1116,6 +1124,12 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
           sourceRelPath: draft.relPath,
           sourceHash: sha256(draft.before),
           documentMoves: draft.documents.map((document) => ({ ...document })),
+          referenceRewrites: draft.inbound.map((reference) => ({
+            slug: reference.slug,
+            relPath: reference.relPath,
+            about: reference.rewriteAbout,
+            links: reference.rewriteLinks,
+          })),
         },
       ],
       checks: [
@@ -1126,7 +1140,10 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
           status: 'passed',
         },
         { name: 'page has no location-dependent outbound links', status: 'passed' },
-        { name: 'every inbound knowledge-page link is rewritten in the same item', status: 'passed' },
+        {
+          name: 'every inbound knowledge-page link and about relation is rewritten in the same item',
+          status: 'passed',
+        },
         { name: 'destination satisfies its current folder rules and does not exist', status: 'passed' },
       ],
     };
@@ -3539,7 +3556,8 @@ function depthRuleDriftOperationIssue(
     !entry.sourcePageId ||
     !entry.sourceRelPath ||
     !entry.sourceHash ||
-    !entry.documentMoves
+    !entry.documentMoves ||
+    !entry.referenceRewrites
   ) {
     return 'a depth rule-drift item contains incomplete relocation evidence';
   }
@@ -3667,23 +3685,81 @@ function depthRuleDriftOperationIssue(
       return `an owned document no longer matches its sealed ${state} identity and relationships`;
     }
   }
-  const aboutRows = ctx.store.db.prepare('SELECT id, about FROM pages WHERE id != ?').all(page.id) as {
-    id: string;
-    about: string;
-  }[];
-  if (
-    aboutRows.some((row) =>
-      storedJsonStrings(row.about).some((slug) => slug.toLowerCase() === liveSlug.toLowerCase()),
-    )
-  ) {
-    return `the ${state === 'before' ? 'source' : 'destination'} acquired an incoming about relationship`;
+  if (replacementOperations.length !== entry.referenceRewrites.length) {
+    return 'the relocation operation set no longer matches its sealed reference rewrites';
+  }
+  const plannedReferences = new Map(
+    entry.referenceRewrites.map((reference) => [reference.relPath, reference]),
+  );
+  if (plannedReferences.size !== entry.referenceRewrites.length) {
+    return 'the relocation contains duplicate sealed reference rewrites';
+  }
+  for (const operation of replacementOperations) {
+    const reference = plannedReferences.get(operation.relPath);
+    if (
+      !reference ||
+      (!reference.about && !reference.links) ||
+      parsePage(operation.relPath, operation.before).slug !== reference.slug
+    ) {
+      return 'a relocation replacement no longer has its sealed reference identity';
+    }
+    let expected = operation.before;
+    if (reference.about) {
+      const rewritten = replaceNestedStringArrayValue(
+        expected,
+        ['akno', 'about'],
+        item.subject,
+        entry.destinationSlug,
+      );
+      if (rewritten === null || rewritten === expected) {
+        return `${operation.relPath} no longer contains its sealed incoming about relationship`;
+      }
+      expected = rewritten;
+    }
+    if (reference.links) {
+      const rewritten = rewritePageLinks(expected, reference.slug, item.subject, entry.destinationSlug);
+      if (rewritten === expected) {
+        return `${operation.relPath} no longer contains its sealed inbound page link`;
+      }
+      expected = rewritten;
+    }
+    if (expected !== operation.after) {
+      return `${operation.relPath} changes bytes beyond its sealed reference rewrites`;
+    }
   }
 
-  const planned = new Map(
-    replacementOperations.map((operation) => [
-      parsePage(operation.relPath, operation.before).slug,
-      operation,
-    ]),
+  const aboutRows = ctx.store.db
+    .prepare('SELECT id, slug, role, about FROM pages WHERE id != ?')
+    .all(page.id) as {
+    id: string;
+    slug: string;
+    role: string;
+    about: string;
+  }[];
+  const currentAbout = aboutRows.filter((row) =>
+    storedJsonStrings(row.about).some((slug) => slug.toLowerCase() === liveSlug.toLowerCase()),
+  );
+  const plannedAbout = new Set(
+    entry.referenceRewrites
+      .filter((reference) => reference.about)
+      .map((reference) => reference.slug.toLowerCase()),
+  );
+  if (
+    currentAbout.length !== plannedAbout.size ||
+    currentAbout.some(
+      (row) =>
+        !plannedAbout.has(row.slug.toLowerCase()) ||
+        row.role !== 'knowledge' ||
+        isReserved(row.slug, ctx.config),
+    )
+  ) {
+    return `the ${state === 'before' ? 'source' : 'destination'} incoming-about set changed or contains reference material`;
+  }
+
+  const plannedLinks = new Set(
+    entry.referenceRewrites
+      .filter((reference) => reference.links)
+      .map((reference) => reference.slug.toLowerCase()),
   );
   const inbound = ctx.store.db
     .prepare(
@@ -3694,16 +3770,13 @@ function depthRuleDriftOperationIssue(
     slug: string;
     role: string;
   }[];
-  if (inbound.length !== planned.size || inbound.some((candidate) => candidate.role !== 'knowledge')) {
+  if (
+    inbound.length !== plannedLinks.size ||
+    inbound.some(
+      (candidate) => !plannedLinks.has(candidate.slug.toLowerCase()) || candidate.role !== 'knowledge',
+    )
+  ) {
     return `the ${state === 'before' ? 'source' : 'destination'} inbound-link set changed or contains reference material`;
-  }
-  for (const candidate of inbound) {
-    const operation = planned.get(candidate.slug);
-    if (!operation || operation.type !== 'replace') return 'the relocation does not cover every inbound link';
-    const expected = rewritePageLinks(operation.before, candidate.slug, item.subject, entry.destinationSlug);
-    if (expected === operation.before || expected !== operation.after) {
-      return `${operation.relPath} changes bytes beyond its sealed inbound-link rewrite`;
-    }
   }
   const inputHash = sha256(
     JSON.stringify([

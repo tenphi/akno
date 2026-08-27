@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeLinkTarget, parsePage, resolvePagePolicy, resolveRole } from './page.ts';
-import { parseFrontmatter, replaceTopLevelString, withId } from './frontmatter.ts';
+import {
+  parseFrontmatter,
+  replaceNestedStringArrayValue,
+  replaceTopLevelString,
+  withId,
+} from './frontmatter.ts';
 
 describe('parseFrontmatter', () => {
   it('parses a block and reports where the body starts', () => {
@@ -50,6 +55,40 @@ describe('replaceTopLevelString', () => {
     expect(replaceTopLevelString('---\ntitle: Ada Marlow\n---\n\n# Ada\n', 'type', 'person')).toBeNull();
     expect(replaceTopLevelString('---\nmeta:\n  type: note\n---\n\n# Note\n', 'type', 'person')).toBeNull();
     expect(replaceTopLevelString('---\ntype: [note]\n---\n\n# Note\n', 'type', 'person')).toBeNull();
+  });
+});
+
+describe('replaceNestedStringArrayValue', () => {
+  it('rewrites block and flow sequence values without reformatting neighboring YAML', () => {
+    const block =
+      '---\ntitle: Ada Marlow\nakno:\n  about:\n    - notes/old/ada-marlow # exact relation\n    - "topics/invented"\n---\n\n# Ada\n';
+    expect(
+      replaceNestedStringArrayValue(block, ['akno', 'about'], 'notes/old/ada-marlow', 'archive/ada-marlow'),
+    ).toBe(block.replace('notes/old/ada-marlow # exact relation', '"archive/ada-marlow" # exact relation'));
+
+    const flow = '---\nakno:\n  about: [notes/old/ada-marlow, topics/invented]\n---\n\n# Ada\n';
+    expect(
+      replaceNestedStringArrayValue(flow, ['akno', 'about'], 'notes/old/ada-marlow', 'archive/ada-marlow'),
+    ).toBe(flow.replace('notes/old/ada-marlow', '"archive/ada-marlow"'));
+  });
+
+  it('refuses absent, scalar, or malformed nested values', () => {
+    expect(
+      replaceNestedStringArrayValue(
+        '---\nakno:\n  about: notes/old/ada-marlow\n---\n',
+        ['akno', 'about'],
+        'notes/old/ada-marlow',
+        'archive/ada-marlow',
+      ),
+    ).toBeNull();
+    expect(
+      replaceNestedStringArrayValue(
+        '---\nakno:\n  aliases: [Ada]\n---\n',
+        ['akno', 'about'],
+        'notes/old/ada-marlow',
+        'archive/ada-marlow',
+      ),
+    ).toBeNull();
   });
 });
 
