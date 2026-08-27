@@ -13,7 +13,8 @@ citable, reversible, and independent of a chat provider.
 > evidence-graph retrieval, grounded answering, and autonomous maintenance are implemented at Akno's current
 > single-writer service boundary. Automatic changes use sealed plans, separate decisions, verification, and
 > durable safety pauses. Defaults remain conservative: model-dependent inference is opt-in and scheduled
-> maintenance starts in audit mode. The release gate now exercises the actual installed tarballs through
+> maintenance starts in audit mode. User guidance now follows human edits, agent writes, and dream outcomes
+> through one end-to-end memory lifecycle. The release gate exercises the actual installed tarballs through
 > first-run configuration, indexing, and recall, while schedule health keeps ephemeral dry-run diagnostics
 > separate from real full cycles. Remaining work is narrower release hardening and explicitly deferred
 > capabilities, not an unfinished core workflow.
@@ -96,7 +97,8 @@ Four ideas explain most of Akno:
 4. **Autonomy is policy.** `audit`, `review`, and `autonomous` select who decides a sealed maintenance proposal;
    they do not bypass page opt-ins, folder rules, limits, or verification.
 
-See [How Akno works](docs/how-it-works.md) for the complete data flow.
+See [The memory lifecycle](docs/memory-lifecycle.md) for the everyday human/agent workflow and
+[How Akno works](docs/how-it-works.md) for the implementation data flow.
 
 ## Main commands
 
@@ -137,19 +139,20 @@ Read [The dream cycle](docs/dream-cycle.md) before enabling scheduled writes.
 
 ## Documentation
 
-| Guide                                      | Use it for                                                            |
-| ------------------------------------------ | --------------------------------------------------------------------- |
-| [Getting started](docs/getting-started.md) | Installation, guided setup, the demo, and a safe adoption path        |
-| [Core concepts](docs/concepts.md)          | Pages, documents, roles, rules, evidence, identity, and result states |
-| [Configuration](docs/configuration.md)     | Config layers, secrets, models, profiles, and knowledge-base rules    |
-| [Reading memory](docs/reading.md)          | Recall, grounded answers, graph, timeline, and automatic context      |
-| [Writing and ingestion](docs/writing.md)   | Exact writes, remember, documents, inbox, undo, and adoption          |
-| [The dream cycle](docs/dream-cycle.md)     | Phases, plans, policies, budgets, decisions, and verification         |
-| [How Akno works](docs/how-it-works.md)     | Architecture, indexing, retrieval, writes, and service boundaries     |
-| [Operations](docs/operations.md)           | Service installation, diagnostics, recovery, privacy, and platform    |
-| [Benchmarks](docs/benchmarks.md)           | Quality gates, latency evidence, and the qualified OpenAI preset      |
-| [Limitations](docs/limitations.md)         | Current capability boundaries and intentionally unsupported cases     |
-| [Command reference](docs/commands.md)      | Complete command-purpose/write/model map                              |
+| Guide                                        | Use it for                                                            |
+| -------------------------------------------- | --------------------------------------------------------------------- |
+| [Getting started](docs/getting-started.md)   | Installation, guided setup, the demo, and a safe adoption path        |
+| [Memory lifecycle](docs/memory-lifecycle.md) | Human edits, agent writes, dream outcomes, and concurrent changes     |
+| [Core concepts](docs/concepts.md)            | Pages, documents, roles, rules, evidence, identity, and result states |
+| [Configuration](docs/configuration.md)       | Config layers, secrets, models, profiles, and knowledge-base rules    |
+| [Reading memory](docs/reading.md)            | Recall, grounded answers, graph, timeline, and automatic context      |
+| [Writing and ingestion](docs/writing.md)     | Exact writes, remember, documents, inbox, undo, and adoption          |
+| [The dream cycle](docs/dream-cycle.md)       | Phases, plans, policies, budgets, decisions, and verification         |
+| [How Akno works](docs/how-it-works.md)       | Architecture, indexing, retrieval, writes, and service boundaries     |
+| [Operations](docs/operations.md)             | Service installation, diagnostics, recovery, privacy, and platform    |
+| [Benchmarks](docs/benchmarks.md)             | Quality gates, latency evidence, and the qualified OpenAI preset      |
+| [Limitations](docs/limitations.md)           | Current capability boundaries and intentionally unsupported cases     |
+| [Command reference](docs/commands.md)        | Complete command-purpose/write/model map                              |
 
 The [`docs/` index](docs/README.md) groups these by common user journeys.
 

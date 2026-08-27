@@ -1,5 +1,8 @@
 # How Akno works
 
+This is the implementation-oriented explanation. For the same behavior organized around human actions, agent
+actions, and common dream-cycle outcomes, start with [The memory lifecycle](memory-lifecycle.md).
+
 Akno turns a folder of Markdown pages and documents into a memory interface without replacing the folder as
 the source of truth.
 

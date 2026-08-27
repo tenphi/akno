@@ -3,6 +3,9 @@
 `akno dream` is an ordered maintenance workflow. It is not one model prompt with permission to rewrite the
 knowledge base.
 
+If you first want to understand what happens after a human edit or an agent `remember`, read
+[The memory lifecycle](memory-lifecycle.md). This guide focuses on maintenance phases and controls.
+
 The cycle inspects first, seals exact proposals, separates proposal from decision, applies only authorized and
 still-valid items, re-indexes them, and verifies the result.
 
