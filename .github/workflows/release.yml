@@ -14,6 +14,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.nvmrc'
+      - '.github/workflows/ci.yml'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 
