@@ -335,6 +335,7 @@ export {
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
   type MaintenanceVerification,
+  type MoveOperation,
   type ReplaceOperation,
 } from './maintenance/plans.ts';
 

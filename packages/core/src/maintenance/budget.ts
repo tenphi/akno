@@ -27,7 +27,12 @@ export interface MaintenanceBudgetTracker {
 
 export interface MaintenanceBudgetItem {
   risk: 'low' | 'medium' | 'high';
-  operations: { type: 'replace' | 'create' | 'delete'; relPath: string; after?: string }[];
+  operations: {
+    type: 'replace' | 'create' | 'delete' | 'move';
+    relPath: string;
+    toRelPath?: string;
+    after?: string;
+  }[];
   /** Logical independently drafted transformations in one atomic item. Defaults to one. */
   items?: number;
 }
@@ -64,11 +69,20 @@ export function reserveMaintenanceBudget(
   tracker: MaintenanceBudgetTracker,
   item: MaintenanceBudgetItem,
 ): MaintenanceBudgetDecision {
-  const paths = new Set(item.operations.map((operation) => operation.relPath));
+  const paths = new Set(
+    item.operations.flatMap((operation) =>
+      operation.type === 'move' && operation.toRelPath
+        ? [operation.relPath, operation.toRelPath]
+        : [operation.relPath],
+    ),
+  );
   const additionalFiles = [...paths].filter((relPath) => !tracker.files.has(relPath));
   const bytesWritten = item.operations.reduce(
     (bytes, operation) =>
-      bytes + (operation.type === 'delete' ? 0 : Buffer.byteLength(operation.after ?? '')),
+      bytes +
+      (operation.type === 'delete' || operation.type === 'move'
+        ? 0
+        : Buffer.byteLength(operation.after ?? '')),
     0,
   );
   const items = Math.max(1, Math.floor(item.items ?? 1));

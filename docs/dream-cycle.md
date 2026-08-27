@@ -175,9 +175,10 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 - **contradiction:** add an unresolved warning, archive an explicitly superseded line, or qualify one claim from
   exact evidence;
 - **broken link:** rewrite only from exact move, alias, or canonical identity evidence.
-- **rule drift:** correct one exact scalar `type`, or relocate one over-deep attachment-free page when the same
-  folder rule names `relocate_to`; the relocation preserves page bytes and identity and atomically rewrites all
-  inbound knowledge-page links.
+- **rule drift:** correct one exact scalar `type`, or relocate one over-deep page when the same folder rule names
+  `relocate_to`; the relocation preserves the page and document bytes and identities, moves the complete owned
+  document/rendition set, and atomically rewrites all inbound knowledge-page links. Missing, changed, externally
+  related, or destination-colliding documents hold the item rather than producing a partial move.
 
 Similarity alone never authorizes identity-changing work. A graph- or semantic-backed candidate is still
 rejected when the second page has a useful separate scope. Semantic verdicts are cached by content, endpoint,

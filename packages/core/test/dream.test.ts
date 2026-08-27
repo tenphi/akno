@@ -2272,6 +2272,119 @@ describe('housekeeping', () => {
     );
   });
 
+  it('relocates owned documents and renditions atomically with an over-deep page', async () => {
+    await mem.close();
+    mem = await openMem({
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+      },
+      maintenance: {
+        profile: 'autonomous',
+        policies: {
+          observe: 'off',
+          reflect: 'off',
+          hygiene: 'off',
+          managed_item: 'off',
+          synthesis: 'off',
+          split: 'off',
+          extract: 'off',
+          merge: 'off',
+          contradiction: 'off',
+          broken_link: 'off',
+          rule_drift: 'auto',
+          adopt: 'off',
+        },
+        observe: { enabled: false },
+        conflicts: { enabled: false },
+      },
+    });
+    const hash = '3f8c1a2b';
+    const sourcePage = 'notes/old/ada-marlow.md';
+    const sourcePdf = `notes/old/ada-marlow-${hash}.pdf`;
+    const sourceText = `${sourcePdf}.txt`;
+    const destinationPdf = `archive/ada-marlow-${hash}.pdf`;
+    const destinationText = `${destinationPdf}.txt`;
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    fs.writeFileSync(path.join(root, sourcePage), `# Ada Marlow\n\n![[ada-marlow-${hash}.pdf]]\n`, 'utf8');
+    const pdfBytes = Buffer.from('%PDF-1.4 invented fixture');
+    fs.writeFileSync(path.join(root, sourcePdf), pdfBytes);
+    fs.writeFileSync(
+      path.join(root, sourceText),
+      `# Extracted text of ada-marlow-${hash}.pdf\n# 1 page.\n# Written by Akno.\n\nInvented warranty evidence.\n`,
+      'utf8',
+    );
+    await mem.index({});
+    const before = (await mem.read({ slug: 'notes/old/ada-marlow' })).page!;
+    const documentIds = new Map(before.documents!.map((document) => [document.rel_path, document.id]));
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = report.maintenancePlan!.items.find((entry) => entry.kind === 'rule_drift')!;
+    expect(item).toMatchObject({ status: 'applied', verification: { status: 'passed' } });
+    const stored = mem.plan(report.maintenancePlan!.id).items.find((entry) => entry.id === item.id)!;
+    expect(stored.operations.map((operation) => [operation.type, operation.relPath])).toEqual([
+      ['create', 'archive/ada-marlow.md'],
+      ['move', sourcePdf],
+      ['move', sourceText],
+      ['delete', sourcePage],
+    ]);
+    expect(stored.operations.filter((operation) => operation.type === 'move')).toEqual([
+      expect.objectContaining({ toRelPath: destinationPdf }),
+      expect.objectContaining({ toRelPath: destinationText, rendersAfter: destinationPdf }),
+    ]);
+    expect(fs.readFileSync(path.join(root, destinationPdf))).toEqual(pdfBytes);
+    expect(fs.existsSync(path.join(root, sourcePdf))).toBe(false);
+    const after = (await mem.read({ slug: 'archive/ada-marlow' })).page!;
+    expect(after.documents?.map((document) => [document.rel_path, document.id]).sort()).toEqual(
+      [
+        [destinationPdf, documentIds.get(sourcePdf)],
+        [destinationText, documentIds.get(sourceText)],
+      ].sort(),
+    );
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(path.join(root, sourcePdf))).toEqual(pdfBytes);
+    expect(fs.existsSync(path.join(root, destinationPdf))).toBe(false);
+    const restored = (await mem.read({ slug: 'notes/old/ada-marlow' })).page!;
+    expect(restored.documents?.map((document) => [document.rel_path, document.id]).sort()).toEqual(
+      [
+        [sourcePdf, documentIds.get(sourcePdf)],
+        [sourceText, documentIds.get(sourceText)],
+      ].sort(),
+    );
+  });
+
+  it('holds attachment-aware relocation when an owned document changed after indexing', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+      },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'notes/old/bo-winters.md'),
+      '# Bo Winters\n\n![[bo-winters-3f8c1a2b.txt]]\n',
+      'utf8',
+    );
+    const documentPath = path.join(root, 'notes/old/bo-winters-3f8c1a2b.txt');
+    fs.writeFileSync(documentPath, 'Invented warranty evidence.\n', 'utf8');
+    await mem.index({});
+    fs.writeFileSync(documentPath, 'Changed invented warranty evidence.\n', 'utf8');
+
+    const curate = await mem.dream({ phase: 'curate' });
+    expect(curate.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
+      expect.objectContaining({ kind: 'rule_drift', subject: 'notes/old/bo-winters' }),
+    );
+    const housekeeping = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters')?.repair,
+    ).toMatchObject({ status: 'held', code: 'document_changed' });
+  });
+
   it('keeps max-depth drift report-only when no exact relocation folder is declared', async () => {
     await mem.close();
     mem = await openMem({

@@ -34,7 +34,19 @@ export interface DepthRuleDriftDraft extends RuleDriftBase {
   relocateTo: string;
   destinationSlug: string;
   destinationRelPath: string;
+  documents: RuleDriftDocumentMove[];
   inbound: { slug: string; relPath: string; before: string; after: string }[];
+}
+
+export interface RuleDriftDocumentMove {
+  id: string;
+  relPath: string;
+  destinationRelPath: string;
+  hash: string;
+  renders: string | null;
+  destinationRenders: string | null;
+  groupKey: string | null;
+  destinationGroupKey: string | null;
 }
 
 export type RuleDriftDraft = TypeRuleDriftDraft | DepthRuleDriftDraft;
@@ -81,7 +93,12 @@ export type RuleRepairAssessment =
         | 'destination_rule_conflict'
         | 'location_dependent_reference'
         | 'self_link'
-        | 'owned_documents'
+        | 'document_unavailable'
+        | 'document_unreadable'
+        | 'document_changed'
+        | 'document_destination_occupied'
+        | 'document_destination_conflict'
+        | 'document_relationship_unsafe'
         | 'incoming_about'
         | 'reference_backlink'
         | 'backlink_unreadable'
@@ -98,7 +115,12 @@ export interface RuleRepairPreparation {
 export function ruleDriftPaths(draft: RuleDriftDraft): string[] {
   return draft.correction === 'type'
     ? [draft.relPath]
-    : [draft.destinationRelPath, ...draft.inbound.map((entry) => entry.relPath), draft.relPath];
+    : [
+        draft.destinationRelPath,
+        ...draft.documents.flatMap((document) => [document.relPath, document.destinationRelPath]),
+        ...draft.inbound.map((entry) => entry.relPath),
+        draft.relPath,
+      ];
 }
 
 /**
@@ -302,12 +324,14 @@ async function prepareDepthRepair(
   if (parsed.links.some((link) => link.toSlug === candidate.slug)) {
     return outcome('held', 'self_link', 'a self-link would still name the retired path');
   }
-  const documents = ctx.store.db
-    .prepare('SELECT count(*) AS n FROM documents WHERE page_id = ?')
-    .get(candidate.pageId) as { n: number };
-  if (documents.n > 0) {
-    return outcome('held', 'owned_documents', 'owned documents need a separate attachment-aware move');
-  }
+  const preparedDocuments = await prepareDocumentMoves(
+    ctx,
+    candidate.pageId,
+    relocateTo,
+    candidate.relPath,
+    destinationRelPath,
+  );
+  if ('assessment' in preparedDocuments) return preparedDocuments;
   const aboutRows = ctx.store.db
     .prepare('SELECT id, about FROM pages WHERE id != ?')
     .all(candidate.pageId) as {
@@ -359,6 +383,7 @@ async function prepareDepthRepair(
   const inputHash = sha256(
     JSON.stringify([
       [candidate.relPath, sha256(before)],
+      ...preparedDocuments.documents.map((document) => [document.relPath, document.hash]),
       ...inbound.map((entry) => [entry.relPath, sha256(entry.before)]),
     ]),
   );
@@ -381,6 +406,7 @@ async function prepareDepthRepair(
       relocateTo,
       destinationSlug,
       destinationRelPath,
+      documents: preparedDocuments.documents,
       inbound,
       ruleGlob: declaration.glob,
       ruleFingerprint: sha256(
@@ -392,6 +418,135 @@ async function prepareDepthRepair(
       ),
     },
   };
+}
+
+async function prepareDocumentMoves(
+  ctx: AknoContext,
+  pageId: string,
+  relocateTo: string,
+  sourcePageRelPath: string,
+  destinationPageRelPath: string,
+): Promise<{ documents: RuleDriftDocumentMove[] } | RuleRepairPreparation> {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT id, rel_path, sha256, renders, group_key, availability
+         FROM documents WHERE page_id = ? ORDER BY rel_path`,
+    )
+    .all(pageId) as {
+    id: string;
+    rel_path: string;
+    sha256: string;
+    renders: string | null;
+    group_key: string | null;
+    availability: 'available' | 'missing';
+  }[];
+  if (rows.length === 0) return { documents: [] };
+
+  if (rows.some((row) => row.availability !== 'available')) {
+    return outcome(
+      'held',
+      'document_unavailable',
+      'an owned document is missing, so its complete attachment set cannot be relocated',
+    );
+  }
+
+  const destinations = new Map<string, string>();
+  const occupied = new Set([sourcePageRelPath, destinationPageRelPath]);
+  for (const row of rows) {
+    const normalized = row.rel_path.replaceAll('\\', '/');
+    const destinationRelPath = `${relocateTo}/${path.posix.basename(normalized)}`;
+    if (
+      !safeRelativePath(normalized) ||
+      !safeRelativePath(destinationRelPath) ||
+      normalized === destinationRelPath
+    ) {
+      return outcome(
+        'held',
+        'document_relationship_unsafe',
+        'an owned document does not have one safe distinct relocation path',
+      );
+    }
+    if (occupied.has(destinationRelPath)) {
+      return outcome(
+        'held',
+        'document_destination_conflict',
+        'two relocated files would occupy the same destination path',
+      );
+    }
+    occupied.add(destinationRelPath);
+    destinations.set(normalized, destinationRelPath);
+  }
+
+  const documents: RuleDriftDocumentMove[] = [];
+  for (const row of rows) {
+    const relPath = row.rel_path.replaceAll('\\', '/');
+    const destinationRelPath = destinations.get(relPath)!;
+    const indexedDestination = ctx.store.db
+      .prepare('SELECT id FROM documents WHERE rel_path = ? AND id != ?')
+      .get(destinationRelPath, row.id);
+    if (indexedDestination) {
+      return outcome(
+        'held',
+        'document_destination_occupied',
+        'an indexed document already occupies an owned document destination',
+      );
+    }
+    const destinationExists = await fsp
+      .lstat(path.join(ctx.config.aknoPath, destinationRelPath))
+      .then(() => true)
+      .catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'ENOENT') return false;
+        return true;
+      });
+    if (destinationExists) {
+      return outcome(
+        'held',
+        'document_destination_occupied',
+        'an owned document destination is already occupied',
+      );
+    }
+    const bytes = await fsp.readFile(path.join(ctx.config.aknoPath, relPath)).catch(() => null);
+    if (bytes === null) {
+      return outcome('held', 'document_unreadable', 'an owned document cannot be read from disk');
+    }
+    if (sha256(bytes) !== row.sha256) {
+      return outcome(
+        'held',
+        'document_changed',
+        'an owned document no longer matches its indexed content hash',
+      );
+    }
+    const renders = row.renders?.replaceAll('\\', '/') ?? null;
+    const groupKey = row.group_key?.replaceAll('\\', '/') ?? null;
+    const destinationRenders = renders ? (destinations.get(renders) ?? null) : null;
+    const destinationGroupKey = groupKey ? (destinations.get(groupKey) ?? null) : null;
+    if ((renders && !destinationRenders) || (groupKey && !destinationGroupKey)) {
+      return outcome(
+        'held',
+        'document_relationship_unsafe',
+        'an owned rendition or multipart document points outside the sealed attachment set',
+      );
+    }
+    documents.push({
+      id: row.id,
+      relPath,
+      destinationRelPath,
+      hash: row.sha256,
+      renders,
+      destinationRenders,
+      groupKey,
+      destinationGroupKey,
+    });
+  }
+  return { documents };
+}
+
+function safeRelativePath(relPath: string): boolean {
+  return (
+    relPath.length > 0 &&
+    !path.posix.isAbsolute(relPath) &&
+    !relPath.split('/').some((part) => !part || part === '.' || part === '..')
+  );
 }
 
 function outcome(

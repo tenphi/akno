@@ -125,6 +125,7 @@ export class Journal {
 
     const restored: string[] = [];
     const removed: string[] = [];
+    const reversedMoves: { from: string; to: string }[] = [];
     for (const file of files) {
       if (file.moved_to) {
         // The change was a rename, so its reversal is the rename back. Nothing was created
@@ -132,11 +133,14 @@ export class Journal {
         const from = path.join(this.#aknoPath, file.moved_to);
         const target = path.join(this.#aknoPath, file.rel_path);
         await fsp.mkdir(path.dirname(target), { recursive: true });
+        let reversed = true;
         await fsp.rename(from, target).catch(async (err: NodeJS.ErrnoException) => {
           // Already gone is not a reason to abandon the rest of the reversal — the file was
           // moved again, or removed, since. Everything else still goes back.
           if (err.code !== 'ENOENT') throw err;
+          reversed = false;
         });
+        if (reversed) reversedMoves.push({ from: file.moved_to, to: file.rel_path });
         restored.push(file.rel_path);
         continue;
       }
@@ -154,6 +158,25 @@ export class Journal {
       // being reported wrongly.
       if (!file.snapshot && file.before === null) removed.push(file.rel_path);
       else restored.push(file.rel_path);
+    }
+
+    // A document row carries retained extraction and provenance that a structural re-index cannot
+    // always reproduce without another model call. Follow successful attachment renames back before
+    // the scanner runs, just as the forward move follows them, rather than deleting and recreating
+    // the row from its content-derived id.
+    if (reversedMoves.length > 0) {
+      this.#store.transaction(() => {
+        const moveDocument = this.#store.db.prepare(
+          'UPDATE OR IGNORE documents SET rel_path = ? WHERE rel_path = ?',
+        );
+        const moveRenders = this.#store.db.prepare('UPDATE documents SET renders = ? WHERE renders = ?');
+        const moveGroup = this.#store.db.prepare('UPDATE documents SET group_key = ? WHERE group_key = ?');
+        for (const move of reversedMoves) moveDocument.run(move.to, move.from);
+        for (const move of reversedMoves) {
+          moveRenders.run(move.to, move.from);
+          moveGroup.run(move.to, move.from);
+        }
+      });
     }
 
     this.#store.db

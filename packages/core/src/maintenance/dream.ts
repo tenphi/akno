@@ -1805,6 +1805,7 @@ function inferenceWasRejected(
 
 function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
   const operation = item.operations[0]!;
+  if (operation.type === 'move') throw new Error('an inference item cannot move a document');
   const after = operation.type === 'delete' ? operation.before : operation.after;
   const lastLine = after.trimEnd().split('\n').at(-1) ?? '';
   const pattern = /^- \d{4}-\d{2}-\d{2} — (.+?)(?:\s+\[\[[^\]]+\]\])+$/.exec(lastLine)?.[1] ?? '';

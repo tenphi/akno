@@ -80,9 +80,10 @@ A full dream cycle separates all planning from decisions and applies safe items 
 replan work invalidated by successful earlier items once. It does not repeatedly loop until every possible
 transformation settles.
 
-Cross-phase composition, arbitrary same-page proposal merging, document-attachment dependency inference, and
-pinning every planner read to one global database revision remain incomplete. Ambiguous or persistent
-dependencies are deferred to a later cycle rather than guessed through.
+Cross-phase composition, arbitrary same-page proposal merging, cross-item document-attachment dependency
+inference, and pinning every planner read to one global database revision remain incomplete. A depth-relocation
+item does seal and move its own complete attachment set; dependencies between separate items remain bounded.
+Ambiguous or persistent dependencies are deferred to a later cycle rather than guessed through.
 
 Final run verification rechecks all applied items and receipt accounting, but it does not treat an unrelated
 file edited concurrently by a user or sync client as an Akno failure. Whole-vault change attribution and

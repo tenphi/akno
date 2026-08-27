@@ -235,17 +235,20 @@ markers are counted as held findings and leave the page unchanged.
 `type` on a knowledge page only when a matching folder rule explicitly declares the exact expected `type`.
 For an over-deep page, `max_depth` diagnoses the problem but does not authorize a guessed move. Pair it with
 `relocate_to` in the same rule to name the exact destination folder; Akno preserves the basename and page bytes,
-updates every inbound knowledge-page link in the same high-risk item, verifies that the page id survived, and
-makes the complete change undoable. It declines relocation when the target exists, destination rules reject it,
-the page owns documents, it has path-relative outbound Markdown links or a self-link, or a source/reference page
-or `about` relationship points to it. `slug_pattern` drift remains report-only because a pattern does not name
-one exact filename. Source/reference pages are never rule-drift write targets.
+updates every inbound knowledge-page link in the same high-risk item, and moves the page's complete owned
+document and rendition set with byte and identity checks. The page, document relations, and full change remain
+undoable. It declines relocation when the target exists, destination rules reject it, an owned document is
+missing, changed, externally related, or would collide, the page has path-relative outbound Markdown links or a
+self-link, or a source/reference page or `about` relationship points to it. `slug_pattern` drift remains
+report-only because a pattern does not name one exact filename. Source/reference pages are never rule-drift
+write targets.
 `maintenance.curate.max_rule_drifts` bounds both forms per cycle; the default is `20`.
 
 Housekeeping does not leave an unplanned rule finding unexplained. Each displayed finding carries one typed
 repair disposition: `ready` when the exact planner can seal it, `plan_backed` when a nonterminal item already
 owns it, `report_only` when the rule does not determine one correction, or `held` with a deterministic safety
-code such as `owned_documents`, `reference_backlink`, or `location_dependent_reference`. Ordinary JSON output
+code such as `document_unavailable`, `document_destination_occupied`, `reference_backlink`, or
+`location_dependent_reference`. Ordinary JSON output
 retains only aggregate disposition counts; page-specific codes and reasons require `--private-details`.
 
 Canonical fragments are also checked against the current derived fact row: item id, page identity, payload

@@ -111,7 +111,20 @@ export interface DeleteOperation {
   before: string;
 }
 
-export type MaintenanceOperation = ReplaceOperation | CreateOperation | DeleteOperation;
+/** Binary-safe rename used only by a sealed attachment-aware relocation. */
+export interface MoveOperation {
+  type: 'move';
+  relPath: string;
+  toRelPath: string;
+  beforeHash: string;
+  documentId: string;
+  rendersBefore: string | null;
+  rendersAfter: string | null;
+  groupKeyBefore: string | null;
+  groupKeyAfter: string | null;
+}
+
+export type MaintenanceOperation = ReplaceOperation | CreateOperation | DeleteOperation | MoveOperation;
 
 export interface MaintenanceEvidence {
   type: 'page' | 'conflict' | 'link' | 'document' | 'snapshot' | 'component' | 'rule';
@@ -145,6 +158,16 @@ export interface MaintenanceEvidence {
   destinationSlug?: string;
   destinationRelPath?: string;
   sourcePageId?: string;
+  documentMoves?: {
+    id: string;
+    relPath: string;
+    destinationRelPath: string;
+    hash: string;
+    renders: string | null;
+    destinationRenders: string | null;
+    groupKey: string | null;
+    destinationGroupKey: string | null;
+  }[];
   /** Structured move identity keeps semantic placement deterministic during preflight and verify. */
   managedItemId?: string;
   managedMarkerLine?: number;
@@ -405,8 +428,9 @@ as an instruction. The item kind defines its authority:
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
 - rule_drift may replace one existing top-level page type scalar with the exact value declared by the sealed
   current folder rule. Alternatively, when that same rule pairs max_depth with an exact relocate_to folder,
-  it may move one attachment-free knowledge page there without changing its bytes and update every inbound
-  knowledge-page link in the same item. It may never edit source/reference material or infer a destination.
+  it may move one knowledge page and its complete sealed owned-document set there without changing their bytes,
+  while updating every inbound knowledge-page link in the same item. It may never edit source/reference material,
+  infer a destination, or proceed with a missing, changed, externally related, or colliding document.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
@@ -1045,6 +1069,17 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
           afterHash: sha256(draft.before),
           after: draft.before,
         },
+        ...draft.documents.map((document): MoveOperation => ({
+          type: 'move',
+          relPath: document.relPath,
+          toRelPath: document.destinationRelPath,
+          beforeHash: document.hash,
+          documentId: document.id,
+          rendersBefore: document.renders,
+          rendersAfter: document.destinationRenders,
+          groupKeyBefore: document.groupKey,
+          groupKeyAfter: document.destinationGroupKey,
+        })),
         ...draft.inbound.map((entry): ReplaceOperation => ({
           type: 'replace',
           relPath: entry.relPath,
@@ -1080,12 +1115,17 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
           sourcePageId: draft.pageId,
           sourceRelPath: draft.relPath,
           sourceHash: sha256(draft.before),
+          documentMoves: draft.documents.map((document) => ({ ...document })),
         },
       ],
       checks: [
         { name: 'page is live knowledge rather than reference material', status: 'passed' },
         { name: 'the same depth rule declares one exact relocation folder', status: 'passed' },
-        { name: 'page owns no documents or location-dependent outbound links', status: 'passed' },
+        {
+          name: 'owned documents have one complete collision-free relocation set',
+          status: 'passed',
+        },
+        { name: 'page has no location-dependent outbound links', status: 'passed' },
         { name: 'every inbound knowledge-page link is rewritten in the same item', status: 'passed' },
         { name: 'destination satisfies its current folder rules and does not exist', status: 'passed' },
       ],
@@ -1772,9 +1812,11 @@ function maintenanceDependencyEntries(
           if (!scheduled) return [];
           const writes = new Set(
             item.operations.flatMap((operation) =>
-              operation.type !== 'replace' || operation.beforeHash !== operation.afterHash
-                ? [operation.relPath]
-                : [],
+              operation.type === 'move'
+                ? [operation.relPath, operation.toRelPath]
+                : operation.type !== 'replace' || operation.beforeHash !== operation.afterHash
+                  ? [operation.relPath]
+                  : [],
             ),
           );
           const reads = new Set(
@@ -1819,6 +1861,7 @@ function maintenanceDependencyEntries(
 }
 
 function plannedPage(operation: MaintenanceOperation): ReturnType<typeof parsePage> | null {
+  if (operation.type === 'move') return null;
   try {
     return parsePage(operation.relPath, operation.type === 'delete' ? operation.before : operation.after);
   } catch {
@@ -2015,8 +2058,11 @@ export async function reviseMaintenanceItem(
   input: MaintenanceRevisionInput,
 ): Promise<MaintenancePlan> {
   const { operations } = revisableMaintenanceHead(ctx, planId, itemId);
-  const writable = operations.filter((operation) => operation.type !== 'delete');
-  let target: Exclude<MaintenanceOperation, DeleteOperation> | undefined;
+  const writable = operations.filter(
+    (operation): operation is ReplaceOperation | CreateOperation =>
+      operation.type === 'replace' || operation.type === 'create',
+  );
+  let target: ReplaceOperation | CreateOperation | undefined;
   if (input.relPath) {
     target = writable.find((operation) => operation.relPath === input.relPath);
     if (!target) {
@@ -2080,7 +2126,9 @@ async function sealMaintenanceRevision(
       throw new AknoError('invalid', `revision repeated ${replacement.relPath}`);
     }
     const operation = operations.find(
-      (candidate) => candidate.relPath === replacement.relPath && candidate.type !== 'delete',
+      (candidate) =>
+        candidate.relPath === replacement.relPath &&
+        (candidate.type === 'replace' || candidate.type === 'create'),
     );
     if (!operation) {
       throw new AknoError('invalid', `revision widened scope to ${replacement.relPath}`);
@@ -2099,7 +2147,7 @@ async function sealMaintenanceRevision(
   let changed = 0;
   const revisedOperations = operations.map((operation) => {
     const after = replacementMap.get(operation.relPath);
-    if (after === undefined || operation.type === 'delete') return operation;
+    if (after === undefined || operation.type === 'delete' || operation.type === 'move') return operation;
     if (after === operation.after) return operation;
     changed += 1;
     return { ...operation, after, afterHash: sha256(after) };
@@ -2464,6 +2512,11 @@ export async function applyMaintenancePlan(
       for (const operation of item.operations) {
         if (operation.type === 'delete') {
           await fsp.rm(await safeOperationPath(ctx, operation.relPath));
+        } else if (operation.type === 'move') {
+          const source = await safeOperationPath(ctx, operation.relPath);
+          const destination = await safeOperationPath(ctx, operation.toRelPath);
+          await fsp.mkdir(path.dirname(destination), { recursive: true });
+          await fsp.rename(source, destination);
         } else {
           await writeFileAtomic(ctx.config.aknoPath, operation.relPath, operation.after);
         }
@@ -2510,7 +2563,7 @@ export async function applyMaintenancePlan(
     setItemChange(ctx, item.id, changeId);
 
     try {
-      await indexMaintenanceItem(ctx, item);
+      await indexMaintenanceItem(ctx, item, 'after');
     } catch (err) {
       updateItemStatus(ctx, item.id, 'verification_pending', {
         status: 'pending',
@@ -2549,7 +2602,7 @@ async function recoverInterruptedApply(ctx: AknoContext, item: MaintenanceItem):
     const applied = operations.filter((_, index) => states[index] === 'after');
     try {
       for (const operation of applied.reverse()) {
-        await restoreFile(ctx.config.aknoPath, operation.relPath, operationBefore(operation));
+        await restoreOperation(ctx, operation);
       }
     } catch (err) {
       updateItemStatus(ctx, item.id, 'verification_failed', {
@@ -2662,14 +2715,7 @@ export function renderMaintenanceDiff(plan: MaintenancePlan, itemId?: string): s
   }
   return items
     .map((item) => {
-      const diffs = supportedOperations(item).map((operation) =>
-        unifiedDiff(
-          operation.relPath,
-          operationBefore(operation) ?? '',
-          operationAfter(operation) ?? '',
-          operation.type,
-        ),
-      );
+      const diffs = supportedOperations(item).map(renderOperationDiff);
       return `# ${item.id} · ${item.subject}\n${diffs.join('\n\n')}`;
     })
     .join('\n');
@@ -2708,16 +2754,7 @@ export function renderStoredMaintenanceDiff(
     revision,
     operations: parseStoredJson<MaintenanceOperation[]>(historical.operations, []),
   };
-  const diff = supportedOperations(historicalItem)
-    .map((operation) =>
-      unifiedDiff(
-        operation.relPath,
-        operationBefore(operation) ?? '',
-        operationAfter(operation) ?? '',
-        operation.type,
-      ),
-    )
-    .join('\n\n');
+  const diff = supportedOperations(historicalItem).map(renderOperationDiff).join('\n\n');
   return `# ${item.id} r${revision} · ${item.subject}\n${diff}`;
 }
 
@@ -2734,7 +2771,7 @@ async function resumeVerification(ctx: AknoContext, item: MaintenanceItem): Prom
     return;
   }
   try {
-    await indexMaintenanceItem(ctx, item);
+    await indexMaintenanceItem(ctx, item, 'after');
   } catch (err) {
     updateItemStatus(ctx, item.id, 'verification_pending', {
       status: 'pending',
@@ -2749,10 +2786,15 @@ async function resumeVerification(ctx: AknoContext, item: MaintenanceItem): Prom
 async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Promise<void> {
   const operations = supportedOperations(item);
   const verification = await verifyApplied(ctx, item, operations);
-  const operationPaths = operations.map((operation) => operation.relPath);
+  const operationPaths = operations.flatMap((operation) =>
+    operation.type === 'move' ? [operation.relPath, operation.toRelPath] : [operation.relPath],
+  );
   if (verification === null) {
     const slugs = operations
-      .filter((operation) => operation.type !== 'delete')
+      .filter(
+        (operation): operation is ReplaceOperation | CreateOperation =>
+          operation.type === 'replace' || operation.type === 'create',
+      )
       .map((operation) => parsePage(operation.relPath, operation.after).slug);
     if (
       !isInferenceKind(item.kind) &&
@@ -2776,7 +2818,7 @@ async function finishVerification(ctx: AknoContext, item: MaintenanceItem): Prom
   if (item.changeId) {
     try {
       await ctx.journal.undo(item.changeId);
-      await indexMaintenanceItem(ctx, item);
+      await indexMaintenanceItem(ctx, item, 'before');
       updateItemStatus(ctx, item.id, 'verification_failed', {
         status: 'rolled_back',
         detail: `${verification} The journaled write was rolled back.`,
@@ -2838,6 +2880,29 @@ async function verifyApplied(
   let canonicalPageId: string | null = null;
   let retired: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
+    if (operation.type === 'move') {
+      const source = await fsp.readFile(path.join(ctx.config.aknoPath, operation.relPath)).catch(() => null);
+      const destination = await fsp
+        .readFile(path.join(ctx.config.aknoPath, operation.toRelPath))
+        .catch(() => null);
+      if (source !== null) return `${operation.relPath} still exists after its sealed move.`;
+      if (destination === null || sha256(destination) !== operation.beforeHash) {
+        return `${operation.toRelPath} does not contain the sealed moved document bytes.`;
+      }
+      const document = ctx.store.db
+        .prepare('SELECT rel_path, renders, group_key FROM documents WHERE id = ?')
+        .get(operation.documentId) as
+        { rel_path: string; renders: string | null; group_key: string | null } | undefined;
+      if (
+        !document ||
+        document.rel_path !== operation.toRelPath ||
+        document.renders !== operation.rendersAfter ||
+        document.group_key !== operation.groupKeyAfter
+      ) {
+        return `${operation.toRelPath} did not preserve its sealed document identity and relationships.`;
+      }
+      continue;
+    }
     const content = await fsp
       .readFile(path.join(ctx.config.aknoPath, operation.relPath), 'utf8')
       .catch(() => null);
@@ -3158,8 +3223,11 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   const paths = new Set<string>();
   for (const [index, operation] of item.operations.entries()) {
-    if (!['replace', 'create', 'delete'].includes(operation.type)) {
+    if (!['replace', 'create', 'delete', 'move'].includes(operation.type)) {
       throw new AknoError('invalid', `${item.id} contains an unsupported maintenance operation`);
+    }
+    if (operation.type === 'move' && !depthRuleDrift) {
+      throw new AknoError('invalid', `${item.id} may move files only in a depth-relocation item`);
     }
     if (
       item.kind !== 'merge' &&
@@ -3182,6 +3250,12 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
       throw new AknoError('invalid', `${item.id} contains the same path more than once`);
     }
     paths.add(operation.relPath);
+    if (operation.type === 'move') {
+      if (paths.has(operation.toRelPath)) {
+        throw new AknoError('invalid', `${item.id} contains an overlapping move destination`);
+      }
+      paths.add(operation.toRelPath);
+    }
   }
   if (item.kind === 'merge' && item.operations.at(-1)?.type !== 'delete') {
     throw new AknoError('invalid', `${item.id} must retire its duplicate as the final operation`);
@@ -3207,7 +3281,9 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
     (item.operations.length < 2 ||
       item.operations[0]?.type !== 'create' ||
       item.operations.at(-1)?.type !== 'delete' ||
-      item.operations.slice(1, -1).some((operation) => operation.type !== 'replace'))
+      item.operations
+        .slice(1, -1)
+        .some((operation) => operation.type !== 'replace' && operation.type !== 'move'))
   ) {
     throw new AknoError('invalid', `${item.id} contains an invalid depth-relocation operation set`);
   }
@@ -3301,20 +3377,29 @@ function evidenceForDraft(draft: CurateDraft): MaintenanceEvidence[] {
 function operationFingerprint(operation: MaintenanceOperation): {
   type: MaintenanceOperation['type'];
   relPath: string;
+  toRelPath: string | null;
   beforeHash: string | null;
   afterHash: string | null;
 } {
   return {
     type: operation.type,
     relPath: operation.relPath,
+    toRelPath: operation.type === 'move' ? operation.toRelPath : null,
     beforeHash: operation.type === 'create' ? null : operation.beforeHash,
-    afterHash: operation.type === 'delete' ? null : operation.afterHash,
+    afterHash:
+      operation.type === 'delete'
+        ? null
+        : operation.type === 'move'
+          ? operation.beforeHash
+          : operation.afterHash,
   };
 }
 
 function maintenanceIndexPaths(item: MaintenanceItem): string[] {
   const paths = [
-    ...item.operations.map((operation) => operation.relPath),
+    ...item.operations.flatMap((operation) =>
+      operation.type === 'move' ? [operation.relPath, operation.toRelPath] : [operation.relPath],
+    ),
     ...(item.kind === 'adopt'
       ? item.evidence.flatMap((entry) =>
           entry.type === 'document' && entry.documentRelPath ? [entry.documentRelPath] : [],
@@ -3324,9 +3409,14 @@ function maintenanceIndexPaths(item: MaintenanceItem): string[] {
   return paths.filter((relPath, index) => paths.indexOf(relPath) === index);
 }
 
-async function indexMaintenanceItem(ctx: AknoContext, item: MaintenanceItem): Promise<void> {
+async function indexMaintenanceItem(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+  documentState: 'before' | 'after' = 'after',
+): Promise<void> {
   const paths = maintenanceIndexPaths(item);
   await Promise.all(paths.map((relPath) => safeOperationPath(ctx, relPath)));
+  alignMovedDocumentRows(ctx, item.operations, documentState);
   await ctx.indexer.run({
     only: paths,
     modelPaths: [],
@@ -3424,16 +3514,20 @@ function depthRuleDriftOperationIssue(
 ): string | null {
   const create = operations[0];
   const remove = operations.at(-1);
-  const replacements = operations.slice(1, -1);
+  const middle = operations.slice(1, -1);
+  const replacements = middle.filter(
+    (operation): operation is ReplaceOperation => operation.type === 'replace',
+  );
+  const moves = middle.filter((operation): operation is MoveOperation => operation.type === 'move');
   if (
     operations.length < 2 ||
     create?.type !== 'create' ||
     remove?.type !== 'delete' ||
-    replacements.some((operation) => operation.type !== 'replace')
+    middle.some((operation) => operation.type !== 'replace' && operation.type !== 'move')
   ) {
-    return 'a depth rule-drift item must create its destination, rewrite inbound pages, then retire its source';
+    return 'a depth rule-drift item must create its destination, move sealed documents, rewrite inbound pages, then retire its source';
   }
-  const replacementOperations = replacements as ReplaceOperation[];
+  const replacementOperations = replacements;
   if (
     !entry.ruleGlob ||
     !entry.fingerprint ||
@@ -3444,7 +3538,8 @@ function depthRuleDriftOperationIssue(
     !entry.destinationRelPath ||
     !entry.sourcePageId ||
     !entry.sourceRelPath ||
-    !entry.sourceHash
+    !entry.sourceHash ||
+    !entry.documentMoves
   ) {
     return 'a depth rule-drift item contains incomplete relocation evidence';
   }
@@ -3530,10 +3625,48 @@ function depthRuleDriftOperationIssue(
   if (!page || page.id !== entry.sourcePageId || page.role !== 'knowledge') {
     return 'the source no longer has its sealed live knowledge identity';
   }
-  const documents = ctx.store.db
-    .prepare('SELECT count(*) AS n FROM documents WHERE page_id = ?')
-    .get(page.id) as { n: number };
-  if (documents.n > 0) return 'the source acquired owned documents after relocation was planned';
+  if (moves.length !== entry.documentMoves.length) {
+    return 'the relocation operation set no longer matches its sealed owned documents';
+  }
+  const plannedDocuments = new Map(entry.documentMoves.map((document) => [document.id, document]));
+  const liveDocuments = ctx.store.db
+    .prepare(
+      `SELECT id, rel_path, sha256, renders, group_key, availability
+         FROM documents WHERE page_id = ? ORDER BY rel_path`,
+    )
+    .all(page.id) as {
+    id: string;
+    rel_path: string;
+    sha256: string;
+    renders: string | null;
+    group_key: string | null;
+    availability: 'available' | 'missing';
+  }[];
+  if (liveDocuments.length !== moves.length) {
+    return `the ${state === 'before' ? 'source' : 'destination'} owned-document set changed`;
+  }
+  for (const move of moves) {
+    const sealed = plannedDocuments.get(move.documentId);
+    const live = liveDocuments.find((document) => document.id === move.documentId);
+    if (
+      !sealed ||
+      sealed.relPath !== move.relPath ||
+      sealed.destinationRelPath !== move.toRelPath ||
+      sealed.hash !== move.beforeHash ||
+      sealed.renders !== move.rendersBefore ||
+      sealed.destinationRenders !== move.rendersAfter ||
+      sealed.groupKey !== move.groupKeyBefore ||
+      sealed.destinationGroupKey !== move.groupKeyAfter ||
+      !live ||
+      live.availability !== 'available' ||
+      live.sha256 !== move.beforeHash ||
+      live.rel_path !== (state === 'before' ? move.relPath : move.toRelPath) ||
+      live.renders !== (state === 'before' ? move.rendersBefore : move.rendersAfter) ||
+      live.group_key !== (state === 'before' ? move.groupKeyBefore : move.groupKeyAfter)
+    ) {
+      return `an owned document no longer matches its sealed ${state} identity and relationships`;
+    }
+  }
   const aboutRows = ctx.store.db.prepare('SELECT id, about FROM pages WHERE id != ?').all(page.id) as {
     id: string;
     about: string;
@@ -3575,6 +3708,7 @@ function depthRuleDriftOperationIssue(
   const inputHash = sha256(
     JSON.stringify([
       [remove.relPath, sha256(remove.before)],
+      ...moves.map((operation) => [operation.relPath, operation.beforeHash]),
       ...replacementOperations.map((operation) => [operation.relPath, sha256(operation.before)]),
     ]),
   );
@@ -3588,7 +3722,11 @@ function observationOperationIssue(
   operations: MaintenanceOperation[],
 ): string | null {
   const operation = operations[0];
-  if (!operation || operation.type === 'delete' || operations.length !== 1) {
+  if (
+    !operation ||
+    (operation.type !== 'create' && operation.type !== 'replace') ||
+    operations.length !== 1
+  ) {
     return 'an inference item requires exactly one page creation or append';
   }
   const observationRoot = ctx.config.paths.observations.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
@@ -3915,6 +4053,34 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   let canonical: ReturnType<typeof parsePage> | null = null;
   let mergeSource: ReturnType<typeof parsePage> | null = null;
   for (const [index, operation] of operations.entries()) {
+    if (operation.type === 'move') {
+      let sourcePath: string;
+      let destinationPath: string;
+      try {
+        sourcePath = await safeOperationPath(ctx, operation.relPath);
+        destinationPath = await safeOperationPath(ctx, operation.toRelPath);
+      } catch (err) {
+        return { status: 'blocked', detail: errorMessage(err) };
+      }
+      const source = await fsp.readFile(sourcePath).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'ENOENT') return null;
+        throw err;
+      });
+      const destination = await fsp.readFile(destinationPath).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'ENOENT') return null;
+        throw err;
+      });
+      if (source === null || sha256(source) !== operation.beforeHash) {
+        return { status: 'stale', detail: `${operation.relPath} no longer matches its sealed input.` };
+      }
+      if (destination !== null) {
+        return {
+          status: 'stale',
+          detail: `${operation.toRelPath} now exists, so the planned move is stale.`,
+        };
+      }
+      continue;
+    }
     let absPath: string;
     try {
       absPath = await safeOperationPath(ctx, operation.relPath);
@@ -4225,18 +4391,89 @@ async function safeOperationPath(ctx: AknoContext, relPath: string): Promise<str
   return absPath;
 }
 
+/** Keep derived document identity in place while the scanner observes the renamed files. */
+function alignMovedDocumentRows(
+  ctx: AknoContext,
+  operations: MaintenanceOperation[],
+  state: 'before' | 'after',
+): void {
+  const moves = operations.filter((operation): operation is MoveOperation => operation.type === 'move');
+  if (moves.length === 0) return;
+  ctx.store.transaction(() => {
+    const find = ctx.store.db.prepare(
+      'SELECT rel_path, sha256, renders, group_key, availability FROM documents WHERE id = ?',
+    );
+    const update = ctx.store.db.prepare(
+      'UPDATE documents SET rel_path = ?, renders = ?, group_key = ? WHERE id = ?',
+    );
+    const removeFile = ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?');
+    for (const move of moves) {
+      const row = find.get(move.documentId) as
+        | {
+            rel_path: string;
+            sha256: string;
+            renders: string | null;
+            group_key: string | null;
+            availability: 'available' | 'missing';
+          }
+        | undefined;
+      const expectedPath = state === 'after' ? move.toRelPath : move.relPath;
+      const previousPath = state === 'after' ? move.relPath : move.toRelPath;
+      const expectedRenders = state === 'after' ? move.rendersAfter : move.rendersBefore;
+      const expectedGroup = state === 'after' ? move.groupKeyAfter : move.groupKeyBefore;
+      if (
+        !row ||
+        row.availability !== 'available' ||
+        row.sha256 !== move.beforeHash ||
+        (row.rel_path !== previousPath && row.rel_path !== expectedPath)
+      ) {
+        throw new AknoError(
+          'invalid',
+          `moved document ${move.documentId} no longer has its sealed derived identity`,
+        );
+      }
+      if (
+        row.rel_path !== expectedPath ||
+        row.renders !== expectedRenders ||
+        row.group_key !== expectedGroup
+      ) {
+        update.run(expectedPath, expectedRenders, expectedGroup, move.documentId);
+      }
+      removeFile.run(previousPath);
+    }
+  });
+}
+
 function operationBefore(operation: MaintenanceOperation): string | null {
-  return operation.type === 'create' ? null : operation.before;
+  return operation.type === 'create' || operation.type === 'move' ? null : operation.before;
 }
 
 function operationAfter(operation: MaintenanceOperation): string | null {
-  return operation.type === 'delete' ? null : operation.after;
+  return operation.type === 'delete' || operation.type === 'move' ? null : operation.after;
 }
 
 async function operationState(
   ctx: AknoContext,
   operation: MaintenanceOperation,
 ): Promise<'before' | 'after' | 'other'> {
+  if (operation.type === 'move') {
+    const sourcePath = await safeOperationPath(ctx, operation.relPath);
+    const destinationPath = await safeOperationPath(ctx, operation.toRelPath);
+    const [source, destination] = await Promise.all([
+      fsp.readFile(sourcePath).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'ENOENT') return null;
+        throw err;
+      }),
+      fsp.readFile(destinationPath).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'ENOENT') return null;
+        throw err;
+      }),
+    ]);
+    if (source !== null && sha256(source) === operation.beforeHash && destination === null) return 'before';
+    if (source === null && destination !== null && sha256(destination) === operation.beforeHash)
+      return 'after';
+    return 'other';
+  }
   const absPath = await safeOperationPath(ctx, operation.relPath);
   const current = await fsp.readFile(absPath, 'utf8').catch((err: NodeJS.ErrnoException) => {
     if (err.code === 'ENOENT') return null;
@@ -4251,6 +4488,15 @@ async function operationState(
 }
 
 function operationEntry(operation: MaintenanceOperation): ChangeFile {
+  if (operation.type === 'move') {
+    return {
+      relPath: operation.relPath,
+      action: 'moved',
+      before: null,
+      after: null,
+      movedTo: operation.toRelPath,
+    };
+  }
   return {
     relPath: operation.relPath,
     action: operation.type === 'create' ? 'created' : operation.type === 'delete' ? 'deleted' : 'modified',
@@ -4265,12 +4511,23 @@ async function restoreOperations(
 ): Promise<string | null> {
   try {
     for (const operation of [...operations].reverse()) {
-      await restoreFile(ctx.config.aknoPath, operation.relPath, operationBefore(operation));
+      await restoreOperation(ctx, operation);
     }
     return null;
   } catch (err) {
     return errorMessage(err);
   }
+}
+
+async function restoreOperation(ctx: AknoContext, operation: MaintenanceOperation): Promise<void> {
+  if (operation.type !== 'move') {
+    await restoreFile(ctx.config.aknoPath, operation.relPath, operationBefore(operation));
+    return;
+  }
+  const source = await safeOperationPath(ctx, operation.relPath);
+  const destination = await safeOperationPath(ctx, operation.toRelPath);
+  await fsp.mkdir(path.dirname(source), { recursive: true });
+  await fsp.rename(destination, source);
 }
 
 function findMatchingJournalChange(ctx: AknoContext, operations: MaintenanceOperation[]): string | null {
@@ -4280,7 +4537,7 @@ function findMatchingJournalChange(ctx: AknoContext, operations: MaintenanceOper
     )
     .all() as { id: string }[];
   const filesFor = ctx.store.db.prepare(
-    'SELECT rel_path, action, before, after FROM change_files WHERE change_id = ? ORDER BY ord',
+    'SELECT rel_path, action, before, after, moved_to FROM change_files WHERE change_id = ? ORDER BY ord',
   );
   const expected = operations.map(operationEntry);
   for (const candidate of candidates) {
@@ -4289,6 +4546,7 @@ function findMatchingJournalChange(ctx: AknoContext, operations: MaintenanceOper
       action: string;
       before: string | null;
       after: string | null;
+      moved_to: string | null;
     }[];
     if (files.length !== expected.length) continue;
     if (
@@ -4297,7 +4555,8 @@ function findMatchingJournalChange(ctx: AknoContext, operations: MaintenanceOper
           file.rel_path === expected[index]!.relPath &&
           file.action === expected[index]!.action &&
           file.before === expected[index]!.before &&
-          file.after === expected[index]!.after,
+          file.after === expected[index]!.after &&
+          file.moved_to === (expected[index]!.movedTo ?? null),
       )
     ) {
       return candidate.id;
@@ -4571,7 +4830,7 @@ function unifiedDiff(
   relPath: string,
   before: string,
   after: string,
-  operation: MaintenanceOperation['type'],
+  operation: Exclude<MaintenanceOperation['type'], 'move'>,
 ): string {
   if (operation === 'create') {
     const newLines = after.replaceAll('\r\n', '\n').split('\n');
@@ -4619,6 +4878,22 @@ function unifiedDiff(
   for (let i = prefix; i < newLines.length - suffix; i++) lines.push(`+${newLines[i] ?? ''}`);
   for (let i = oldLines.length - suffix; i < oldEnd; i++) lines.push(` ${oldLines[i] ?? ''}`);
   return lines.join('\n');
+}
+
+function renderOperationDiff(operation: MaintenanceOperation): string {
+  if (operation.type === 'move') {
+    return [
+      'similarity index 100%',
+      `rename from ${operation.relPath}`,
+      `rename to ${operation.toRelPath}`,
+    ].join('\n');
+  }
+  return unifiedDiff(
+    operation.relPath,
+    operationBefore(operation) ?? '',
+    operationAfter(operation) ?? '',
+    operation.type,
+  );
 }
 
 function errorMessage(err: unknown): string {

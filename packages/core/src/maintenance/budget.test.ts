@@ -75,4 +75,32 @@ describe('whole-run maintenance budgets', () => {
       deferredItems: 1,
     });
   });
+
+  it('counts both rename paths without charging binary bytes as rewritten content', () => {
+    const budget = createMaintenanceBudget({
+      maxItems: 1,
+      maxFilesChanged: 2,
+      maxBytesWritten: 0,
+      maxHighRiskItems: 1,
+    });
+
+    expect(
+      reserveMaintenanceBudget(budget, {
+        risk: 'high',
+        operations: [
+          {
+            type: 'move',
+            relPath: 'notes/ada-marlow-3f8c1a2b.pdf',
+            toRelPath: 'archive/ada-marlow-3f8c1a2b.pdf',
+          },
+        ],
+      }),
+    ).toEqual({ allowed: true });
+    expect(maintenanceBudgetReceipt(budget).used).toEqual({
+      items: 1,
+      filesChanged: 2,
+      bytesWritten: 0,
+      highRiskItems: 1,
+    });
+  });
 });
