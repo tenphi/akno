@@ -14,6 +14,7 @@ import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
 import {
   extractionDestinationIssues,
   extractionIncomingHeadingIssues,
+  inverseSplitMergeIssue,
   markCurateApplied,
   markCurateRejected,
   type CurateDraft,
@@ -84,7 +85,11 @@ export type MaintenanceItemStatus =
   | 'verification_failed';
 
 export type MaintenanceItemStatusCode =
-  'budget_exhausted' | 'dependency_conflict' | 'dependency_unmet' | 'snapshot_drift';
+  | 'budget_exhausted'
+  | 'dependency_conflict'
+  | 'dependency_unmet'
+  | 'inverse_transformation'
+  | 'snapshot_drift';
 
 export interface ReplaceOperation {
   type: 'replace';
@@ -1651,8 +1656,12 @@ export async function deferStaleMaintenanceItems(ctx: AknoContext, planIds: stri
       (candidate) => candidate.status === 'proposed' && candidate.policy === 'auto',
     )) {
       const preflight = await preflightItem(ctx, item);
-      if (preflight.status !== 'stale') continue;
-      deferSnapshotDriftItem(ctx, planId, item.id, preflight.detail);
+      if (preflight.status === 'ready') continue;
+      if (preflight.status === 'stale') {
+        deferSnapshotDriftItem(ctx, planId, item.id, preflight.detail);
+      } else {
+        blockItem(ctx, planId, item.id, preflight.detail, preflight.statusCode ?? null);
+      }
       deferred += 1;
       touchedPlans.add(planId);
     }
@@ -2522,7 +2531,7 @@ export async function applyMaintenancePlan(
       continue;
     }
     if (preflight.status === 'blocked') {
-      blockItem(ctx, planId, item.id, preflight.detail);
+      blockItem(ctx, planId, item.id, preflight.detail, preflight.statusCode ?? null);
       continue;
     }
     const reservation = reserveMaintenanceBudget(budget, {
@@ -3505,7 +3514,13 @@ function alignRelocatedPageIdentity(
   ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(previousPath);
 }
 
-type PreflightResult = { status: 'ready' } | { status: 'stale' | 'blocked'; detail: string };
+type PreflightResult =
+  | { status: 'ready' }
+  | {
+      status: 'stale' | 'blocked';
+      detail: string;
+      statusCode?: MaintenanceItemStatusCode;
+    };
 
 function brokenLinkOperationIssue(item: MaintenanceItem, operations: MaintenanceOperation[]): string | null {
   const source = operations[0];
@@ -4125,6 +4140,20 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
       status: 'blocked',
       detail: 'a merge item must delete exactly one duplicate and create no pages',
     };
+  }
+  if (item.kind === 'merge') {
+    const canonical = operations[0];
+    const duplicate = operations.at(-1);
+    if (canonical?.type === 'replace' && duplicate?.type === 'delete') {
+      const inverseIssue = inverseSplitMergeIssue(
+        ctx,
+        { relPath: canonical.relPath, content: canonical.before },
+        { relPath: duplicate.relPath, content: duplicate.before },
+      );
+      if (inverseIssue) {
+        return { status: 'blocked', detail: inverseIssue, statusCode: 'inverse_transformation' };
+      }
+    }
   }
   if (item.kind !== 'merge' && !depthRuleDrift && deletes > 0) {
     return { status: 'blocked', detail: `${item.kind} items cannot delete pages` };

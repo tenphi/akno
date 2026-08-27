@@ -1052,8 +1052,7 @@ async function discoverMergeCandidates(
       identityKind: 'semantic',
       identitySignal:
         `cosine ${pair.score.toFixed(4)} passed the qualified semantic prefilter and ` +
-        `${SEMANTIC_MERGE_PROMPT_VERSION} classified the complete pages as one durable subject ` +
-        `(${pair.decisionSource === 'cache' ? 'content-addressed cached verdict' : 'fresh verdict'})`,
+        `${SEMANTIC_MERGE_PROMPT_VERSION} classified the complete pages as one durable subject`,
       identityEvidence: [],
     });
   }
@@ -1223,6 +1222,12 @@ async function inspectMergeCandidate(
   const inbound = await mergeInboundPages(ctx, candidate.duplicate);
   const inputHash = mergeInputHash(ctx, candidate, canonicalBefore, duplicateBefore, inbound, conflicts);
   const issues = mergeEligibilityIssues(ctx, candidate, canonical, duplicate, inbound, conflicts);
+  const inverseIssue = inverseSplitMergeIssue(
+    ctx,
+    { relPath: candidate.canonical.rel_path, content: canonicalBefore },
+    { relPath: candidate.duplicate.rel_path, content: duplicateBefore },
+  );
+  if (inverseIssue) issues.push(inverseIssue);
   if (Buffer.byteLength(canonical.body) + Buffer.byteLength(duplicate.body) > 80_000) {
     issues.push('merge inputs exceed the 80000-byte lossless planning limit');
   }
@@ -1524,6 +1529,7 @@ function mergeInputHash(
     JSON.stringify({
       version: CURATE_FINGERPRINT_VERSION,
       kind: 'merge',
+      inverseSplitGuard: 1,
       canonical: { slug: candidate.canonical.slug, hash: sha256(canonicalBefore) },
       duplicate: { slug: candidate.duplicate.slug, hash: sha256(duplicateBefore) },
       identitySignal: candidate.identitySignal,
@@ -1545,6 +1551,44 @@ function mergeInputHash(
       },
     }),
   );
+}
+
+/**
+ * A merge must not immediately collapse sibling pages produced by one still-current split.
+ * The change journal outlives private plan payloads, and exact after-bytes release this guard as
+ * soon as either page acquires an independently edited purpose.
+ */
+export function inverseSplitMergeIssue(
+  ctx: AknoContext,
+  left: { relPath: string; content: string },
+  right: { relPath: string; content: string },
+): string | null {
+  const change = ctx.store.db
+    .prepare(
+      `SELECT change.id
+         FROM changes change
+         JOIN change_files left_file ON left_file.change_id = change.id
+         JOIN change_files right_file ON right_file.change_id = change.id
+        WHERE change.status = 'applied'
+          AND change.op = 'maintenance'
+          AND change.summary LIKE 'maintenance split:%'
+          AND left_file.rel_path = ?
+          AND left_file.action = 'created'
+          AND left_file.after = ?
+          AND right_file.rel_path = ?
+          AND right_file.action = 'created'
+          AND right_file.after = ?
+          AND EXISTS (
+            SELECT 1 FROM change_files canonical
+             WHERE canonical.change_id = change.id AND canonical.action = 'modified'
+          )
+        ORDER BY change.rowid DESC
+        LIMIT 1`,
+    )
+    .get(left.relPath, left.content, right.relPath, right.content) as { id: string } | undefined;
+  return change
+    ? `merge would reverse applied split ${change.id} while both sibling outputs are unchanged; undo that split or let the pages evolve before reconsidering their identity`
+    : null;
 }
 
 function withoutDuplicateTitle(body: string, title: string): string {

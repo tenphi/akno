@@ -32,6 +32,7 @@ let server: {
   crossPageDraft: (value: boolean) => void;
   cosmeticDraft: (value: boolean) => void;
   splitDraft: (value: boolean) => void;
+  splitSiblingDraft: (value: boolean) => void;
   extractDraft: (value: boolean) => void;
   mergeDraft: (value: boolean) => void;
   lossyMergeDraft: (value: boolean) => void;
@@ -948,6 +949,83 @@ describe('plan-backed hygiene', () => {
     expect(fs.existsSync(child)).toBe(false);
   });
 
+  it('does not merge unchanged sibling pages created by the same split', async () => {
+    const canonical = path.join(root, 'people/ada-marlow.md');
+    fs.writeFileSync(
+      canonical,
+      `---
+title: Ada Marlow
+akno:
+  management:
+    dream: synthesize
+---
+
+# Ada Marlow
+
+## Details
+
+<!-- akno:item itm_ada source=conversation origin=user -->
+Ada Marlow lives at 111 Example Street.
+
+<!-- akno:item itm_compass source=conversation origin=user -->
+Ada Marlow keeps a brass compass at Blackwater Bay.
+`,
+    );
+    server.splitDraft(true);
+    server.splitSiblingDraft(true);
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'auto', { allowSplits: true, allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const first = await mem.dream({ phase: 'curate' });
+    const split = mem.plan(first.maintenancePlan!.id).items[0]!;
+    expect(split).toMatchObject({ kind: 'split', status: 'applied' });
+    expect(split.operations.filter((operation) => operation.type === 'create')).toHaveLength(2);
+    const callsAfterSplit = server.calls();
+    await mem.close();
+    mem = await openMem(false, 'auto', {
+      allowMerges: true,
+      semanticMerges: true,
+      mergeFolders: ['people/ada-marlow'],
+      policies: {
+        hygiene: 'off',
+        synthesis: 'off',
+        split: 'off',
+        extract: 'off',
+        merge: 'auto',
+      },
+    });
+
+    const second = await mem.dream({ phase: 'curate' });
+
+    expect(second.maintenancePlan).toBeNull();
+    expect(second.curated).toMatchObject([
+      {
+        action: 'rejected',
+        merges: [expect.stringMatching(/^people\/ada-marlow\/(?:archive|history)$/)],
+      },
+    ]);
+    expect(second.curated[0]?.issues.join(' ')).toMatch(
+      /would reverse applied split chg_.*both sibling outputs are unchanged/,
+    );
+    expect(server.calls()).toBe(callsAfterSplit);
+    expect(server.semanticMergeCalls()).toBe(1);
+
+    expect((await mem.dream({ phase: 'curate' })).curated).toEqual([]);
+    expect(server.calls()).toBe(callsAfterSplit);
+
+    const evolvedSlug = second.curated[0]!.slug;
+    fs.appendFileSync(
+      path.join(root, `${evolvedSlug}.md`),
+      '\nAda Marlow adds an independently authored brass compass record.\n',
+    );
+    await mem.index({ structuralOnly: true });
+    const reconsidered = await mem.dream({ phase: 'curate' });
+    expect(reconsidered.maintenancePlan?.items[0]).toMatchObject({ kind: 'merge', status: 'applied' });
+    expect(server.calls()).toBeGreaterThan(callsAfterSplit);
+  });
+
   it('atomically extracts a reusable subject into an independent page and converges', async () => {
     const canonical = path.join(root, 'people/ada-marlow.md');
     fs.writeFileSync(canonical, extractionSource());
@@ -1141,6 +1219,45 @@ describe('plan-backed hygiene', () => {
     expect(fs.readFileSync(paths.canonical, 'utf8')).toBe(before.canonical);
     expect(fs.readFileSync(paths.duplicate, 'utf8')).toBe(before.duplicate);
     expect(fs.readFileSync(paths.inbound, 'utf8')).toBe(before.inbound);
+  });
+
+  it('blocks an already-sealed merge when current split provenance appears before apply', async () => {
+    const paths = writeMergeFixture();
+    const canonicalBefore = fs.readFileSync(paths.canonical, 'utf8');
+    const duplicateBefore = fs.readFileSync(paths.duplicate, 'utf8');
+    server.mergeDraft(true);
+    await mem.close();
+    mem = await openMem(false, 'review', { allowMerges: true });
+    await mem.index({ structuralOnly: true });
+
+    const planned = (await mem.dream({ phase: 'curate' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    const db = new Database(mem.config.dbPath);
+    db.prepare(
+      `INSERT INTO changes(id, at, actor, op, summary, status)
+       VALUES (?, ?, 'agent', 'maintenance', 'maintenance split: people/ada-records', 'applied')`,
+    ).run('chg_prior_split', new Date().toISOString());
+    const insertFile = db.prepare(
+      `INSERT INTO change_files(change_id, ord, rel_path, action, before, after, snapshot, moved_to)
+       VALUES ('chg_prior_split', ?, ?, ?, ?, ?, NULL, NULL)`,
+    );
+    insertFile.run(0, 'people/ada-records.md', 'modified', '# Before\n', '# After\n');
+    insertFile.run(1, 'people/ada-marlow.md', 'created', null, canonicalBefore);
+    insertFile.run(2, 'people/ada-field-notes.md', 'created', null, duplicateBefore);
+    db.close();
+    mem.decidePlan(planned.id, item.id, 'approve', 'Apply only if this is not an immediate inverse.');
+
+    const result = await mem.applyPlan(planned.id);
+
+    expect(result.files).toEqual([]);
+    expect(result.plan.items[0]).toMatchObject({
+      kind: 'merge',
+      status: 'blocked',
+      statusCode: 'inverse_transformation',
+    });
+    expect(result.plan.items[0]?.statusReason).toMatch(/would reverse applied split chg_prior_split/);
+    expect(fs.readFileSync(paths.canonical, 'utf8')).toBe(canonicalBefore);
+    expect(fs.readFileSync(paths.duplicate, 'utf8')).toBe(duplicateBefore);
   });
 
   it('discovers an identity-backed merge from exact graph subjects without an authored alias', async () => {
@@ -1924,6 +2041,7 @@ async function openMem(
     allowExtracts?: boolean;
     allowMerges?: boolean;
     semanticMerges?: boolean;
+    mergeFolders?: string[];
     folders?: Record<
       string,
       { role: 'knowledge' | 'source' | 'inference' | 'ignored'; remember?: 'integrate' | 'deny' }
@@ -1979,7 +2097,9 @@ async function openMem(
           verify: true,
           ...(options.allowSplits ? { split_after_bytes: 1, split_section_bytes: 1 } : {}),
           ...(options.allowExtracts ? { extract_after_bytes: 1, extract_section_bytes: 1 } : {}),
-          ...(options.allowMerges ? { max_merges: 2, merge_folders: ['people'] } : {}),
+          ...(options.allowMerges
+            ? { max_merges: 2, merge_folders: options.mergeFolders ?? ['people'] }
+            : {}),
           ...(options.semanticMerges ? { merge_discovery: 'semantic' as const } : {}),
         },
       },
@@ -2008,6 +2128,7 @@ async function startStub(): Promise<typeof server> {
   let crossPageDraft = false;
   let cosmeticDraft = false;
   let splitDraft = false;
+  let splitSiblingDraft = false;
   let extractDraft = false;
   let mergeDraft = false;
   let lossyMergeDraft = false;
@@ -2093,18 +2214,7 @@ async function startStub(): Promise<typeof server> {
                 : extractDraft && system.includes('synthesize one canonical')
                   ? extractionDraftResponse(invalidExtractionHeading, invalidExtractionTarget)
                   : splitDraft && system.includes('synthesize one canonical')
-                    ? JSON.stringify({
-                        body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
-                        splits: [
-                          {
-                            suffix: 'history',
-                            title: 'Ada Marlow history',
-                            body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
-                          },
-                        ],
-                        extracts: [],
-                        temporal: false,
-                      })
+                    ? splitDraftResponse(splitSiblingDraft)
                     : cosmeticDraft && system.includes('synthesize one canonical')
                       ? JSON.stringify({
                           body: currentBody(user)
@@ -2187,6 +2297,9 @@ async function startStub(): Promise<typeof server> {
     },
     splitDraft: (value) => {
       splitDraft = value;
+    },
+    splitSiblingDraft: (value) => {
+      splitSiblingDraft = value;
     },
     extractDraft: (value) => {
       extractDraft = value;
@@ -2487,6 +2600,40 @@ function extractionDraftResponse(invalidHeading: boolean, invalidTarget: boolean
         bridge,
       },
     ],
+    temporal: false,
+  });
+}
+
+function splitDraftResponse(siblings: boolean): string {
+  if (!siblings) {
+    return JSON.stringify({
+      body: '# Ada Marlow\n\n## Overview\n\nAda’s history is maintained in [[people/ada-marlow/history]].\n',
+      splits: [
+        {
+          suffix: 'history',
+          title: 'Ada Marlow history',
+          body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+        },
+      ],
+      extracts: [],
+      temporal: false,
+    });
+  }
+  return JSON.stringify({
+    body: '# Ada Marlow\n\n## Overview\n\nSee [[people/ada-marlow/history]] and [[people/ada-marlow/archive]].\n',
+    splits: [
+      {
+        suffix: 'history',
+        title: 'Ada Marlow records',
+        body: '# Ada Marlow records\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+      },
+      {
+        suffix: 'archive',
+        title: 'Ada Marlow records',
+        body: '# Ada Marlow records\n\n<!-- akno:item itm_compass source=conversation origin=user -->\nAda Marlow keeps a brass compass at Blackwater Bay.\n',
+      },
+    ],
+    extracts: [],
     temporal: false,
   });
 }

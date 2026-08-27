@@ -171,7 +171,10 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   and retain the retired identity as an alias. Exact discovery uses an explicit alias or at least two distinct
   current attributes that resolve exactly through the evidence graph when the candidate title contains a
   multi-token canonical entity's complete name. Optional semantic discovery adds a bounded embedding prefilter
-  and a strict same-subject classifier for compact sibling pages;
+  and a strict same-subject classifier for compact sibling pages. A merge is suppressed when the durable change
+  journal shows that both candidates are unchanged sibling outputs of the same applied split. Explicitly undo
+  the split to reverse it; once either page evolves independently, ordinary merge qualification may reconsider
+  the pair;
 - **contradiction:** add an unresolved warning, archive an explicitly superseded line, or qualify one claim from
   exact evidence;
 - **broken link:** rewrite only from exact move, alias, or canonical identity evidence.
