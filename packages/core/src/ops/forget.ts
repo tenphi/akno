@@ -82,7 +82,7 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
   // The indexer re-derives, and the fact is gone because its source is gone. It
   // records the file itself, so nothing may pre-record the hash — that would make
   // the stat fast path skip the very page whose facts have to be re-derived.
-  await ctx.indexer.run({ only: [fact.rel_path], modelPaths: [] });
+  await ctx.indexer.runForeground({ only: [fact.rel_path], modelPaths: [] });
   // The sentence is gone from the file, which is what was asked. Re-deriving what the page says now
   // is the deriver's business, not the caller's.
   ctx.derive.schedule([fact.rel_path]);
@@ -113,7 +113,7 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
     content = await fsp.readFile(path.join(ctx.config.aknoPath, page.rel_path), 'utf8');
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
-    await ctx.indexer.run({ modelPaths: [] });
+    await ctx.indexer.runForeground({ modelPaths: [] });
     throw new AknoError(
       'not_found',
       `${slug} is in the index but its file is gone — the index has now been reconciled`,
@@ -161,7 +161,7 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
   //
   // Full walk to notice the files are gone; no model work, since nothing new exists
   // to summarize or mine.
-  await ctx.indexer.run({ modelPaths: [] });
+  await ctx.indexer.runForeground({ modelPaths: [] });
 
   return {
     status: 'ok',
@@ -224,7 +224,7 @@ async function forgetDocument(ctx: AknoContext, documentId: string): Promise<For
 
   // The document rows were removed explicitly above; this full walk reconciles structural
   // relationships around the files without giving the model-backed backlog any work.
-  await ctx.indexer.run({ modelPaths: [] });
+  await ctx.indexer.runForeground({ modelPaths: [] });
 
   return {
     status: 'ok',

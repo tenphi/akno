@@ -89,9 +89,12 @@ Final run verification hashes the complete indexable tree and treats an unrelate
 edited concurrently by a user or sync client as a content-safe `unattributed_file_change`. It preserves those
 bytes and fails only the run's certification. It does not provide an operating-system filesystem snapshot or
 prevent editors from changing files during planning. A writable full cycle does pin the indexer's file revision
-across its initial planner wave and drains queued reconciliation before decisions. Selected single-phase runs
-remain immediate, and a read-only dry run in another process cannot pause the writable service's indexer;
-affected sealed inputs therefore still rely on repeated preflight in those paths.
+across its initial planner wave and drains queued background reconciliation before decisions. A foreground Akno
+memory mutation preempts that barrier and makes the dream abort before decisions rather than delaying the user
+or agent call. Selected single-phase runs remain immediate, and a read-only dry run in another process cannot
+pause the writable service's indexer; affected sealed inputs therefore still rely on repeated preflight in those
+paths. Stronger cross-process or operating-system snapshot isolation is future work, not a requirement for the
+primary single-service path.
 
 ## No configurable fail-fast maintenance mode
 

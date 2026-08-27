@@ -378,7 +378,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   let added = 0;
   if (files.length > 0) {
     const paths = [...new Set(files.map((file) => file.relPath))];
-    const report = await ctx.indexer.run({ only: paths, modelPaths: [] });
+    const report = await ctx.indexer.runForeground({ only: paths, modelPaths: [] });
     ctx.derive.schedule(paths);
     added = report.factsDerived;
   }

@@ -382,11 +382,26 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     if (!plannerBarrier) return;
     const barrier = plannerBarrier;
     let revisionMatches = false;
+    let invalidated = false;
     try {
       revisionMatches = dreamRunIndexRevisionMatches(ctx, startedRun);
     } finally {
       plannerBarrier = null;
-      await barrier.release();
+      invalidated = (await barrier.release()).invalidated;
+    }
+    if (invalidated) {
+      // A foreground mutation has already won and structurally indexed. Recheck the exact
+      // sealed inputs so affected proposals become typed stale work; unrelated proposals may be
+      // reused by a fresh run, but this mixed-revision invocation never reaches a curator.
+      await deferStaleMaintenanceItems(
+        cycle,
+        report.maintenancePlans.map((plan) => plan.id),
+      );
+      throw new AknoError(
+        'conflict',
+        'a foreground memory write changed the indexed revision during dream planning; nothing was applied',
+        { retryable: true },
+      );
     }
     if (!revisionMatches) {
       throw new AknoError('internal', 'the indexed revision changed inside the dream planner barrier');
@@ -431,6 +446,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
         ...(skipped ? { skipped } : {}),
         durationMs: Math.round(performance.now() - phaseStarted),
       });
+      if (plannerBarrier?.invalidated) await releasePlannerBarrier();
       if (deferAutomaticApply && phaseIndex === lastWritablePlanner) {
         await releasePlannerBarrier();
         await decideAndApplyPlannedPhases(cycle, report, applied, budget, telemetry);

@@ -142,7 +142,7 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
 
   // The page kept its id and its body, so nothing needs re-deriving — only the
   // structural walk to notice the paths moved.
-  await ctx.indexer.run({ modelPaths: [] });
+  await ctx.indexer.runForeground({ modelPaths: [] });
 
   return {
     status: 'ok',

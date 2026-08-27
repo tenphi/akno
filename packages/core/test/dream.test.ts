@@ -41,7 +41,7 @@ interface StubServer {
   lastObserveInput: () => string;
   requestKinds: () => ('observe' | 'reflect' | 'curator')[];
   onCurator: (hook: () => void) => void;
-  onReflect: (hook: () => void) => void;
+  onReflect: (hook: () => void | Promise<void>) => void;
 }
 
 /**
@@ -64,12 +64,12 @@ async function startStubChat(): Promise<StubServer> {
   let lastObserve = '';
   const requestKinds: ('observe' | 'reflect' | 'curator')[] = [];
   let curatorHook: (() => void) | null = null;
-  let reflectHook: (() => void) | null = null;
+  let reflectHook: (() => void | Promise<void>) | null = null;
 
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
-    request.on('end', () => {
+    request.on('end', async () => {
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
         messages?: { role: string; content: string }[];
       };
@@ -82,7 +82,7 @@ async function startStubChat(): Promise<StubServer> {
       if (observeRequest) {
         const kind = user.startsWith('Subject: decision principles') ? 'reflect' : 'observe';
         requestKinds.push(kind);
-        if (kind === 'reflect') reflectHook?.();
+        if (kind === 'reflect') await reflectHook?.();
         lastObserve = user;
       } else if (system.startsWith('You are the independent curator for an autonomous memory system')) {
         requestKinds.push('curator');
@@ -882,6 +882,36 @@ describe('the full-run planning barrier', () => {
     expect(fs.readFileSync(path.join(root, 'notes/manual.md'), 'utf8')).toContain(
       'invented external annotation',
     );
+  });
+
+  it('lets a foreground write preempt planning and aborts before curator or apply', async () => {
+    await withInferencePolicies();
+    server.reply(OBSERVED);
+    server.reflection({ observations: [] });
+    let foregroundFinished = false;
+    let foregroundOutcome: string | null = null;
+    server.onReflect(async () => {
+      const result = await mem.write({
+        slug: 'home/foreground-note',
+        content: '# Foreground note\n\nAn invented note arrived while maintenance was planning.',
+      });
+      foregroundOutcome = result.outcome;
+      foregroundFinished = true;
+    });
+
+    await expect(mem.dream()).rejects.toMatchObject({
+      code: 'conflict',
+      message: expect.stringContaining('foreground memory write'),
+      details: { retryable: true },
+    });
+
+    expect(foregroundFinished).toBe(true);
+    expect(foregroundOutcome).toBe('ok');
+    expect(server.requestKinds()).toEqual(['observe', 'reflect']);
+    expect(
+      (await mem.read({ slug: 'home/foreground-note' })).page?.lines.map((line) => line.text).join('\n'),
+    ).toContain('invented note arrived');
+    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
 
   it('attributes sealed writes while reporting an unrelated concurrent edit without replacing it', async () => {

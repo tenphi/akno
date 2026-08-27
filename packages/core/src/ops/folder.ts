@@ -116,6 +116,9 @@ export async function folder(ctx: AknoContext, rawInput: unknown): Promise<Folde
     summary: `declared ${folderPath}`,
     files: [fileEntry(written)],
   });
+  // A folder declaration changes live write authority but is excluded from page indexing. It
+  // still invalidates a dream planner snapshot acquired under the previous rule set.
+  ctx.indexer.invalidateRevisionBarrier();
 
   return {
     status: 'ok',

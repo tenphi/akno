@@ -303,7 +303,7 @@ export async function ingestFile(
     files,
   });
 
-  await ctx.indexer.run({ only: files.map((entry) => entry.relPath) });
+  await ctx.indexer.runForeground({ only: files.map((entry) => entry.relPath) });
 
   const documentId = recordDocument({
     ctx,

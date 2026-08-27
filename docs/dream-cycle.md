@@ -291,6 +291,12 @@ revision still matches the run manifest, releases the barrier, and drains those 
 call or apply. This keeps observe, reflect, curate, and adopt on one pre-decision index without holding a SQLite
 transaction open across model calls.
 
+Foreground memory mutations have priority. `write`, `remember`, `forget`, `move`, `undo`, `ingest`, and `folder` keep
+their ordinary immediate structural-index guarantee: reaching the indexer unlocks and invalidates an active
+planner barrier instead of waiting for the remaining model calls. The foreground operation completes normally;
+the dream stops at its next phase boundary with a retryable `conflict`, sends no curator request, and applies no
+plan item. A later cycle may reuse unaffected exact plans and replans any affected sealed input.
+
 Before curator calls, Akno blocks automatic items that write the same path or invalidate another item's sealed
 input. Exact create-before-link relationships can order otherwise independent items. Cycles, duplicate planned
 identities, and incompatible delete/reference combinations are deferred rather than guessed through.
@@ -305,8 +311,8 @@ dependencies wait for the next cycle; the workflow does not loop until the model
 Filesystem editors are not locked out by the index barrier. A changed sealed input is still deferred by
 preflight, and an unrelated change is still preserved and reported by whole-tree verification. A selected
 single phase keeps its immediate plan/decision behavior; a read-only dry run opened in another process cannot
-pause the writable service's indexer. Model derivation scheduled only after a blocked foreground write resumes
-is ordinary post-response work; it is not part of the already-closed planner queue.
+pause the writable service's indexer. Model derivation scheduled after a foreground operation returns remains
+ordinary post-response work; it is not part of the invalidated planner revision.
 
 ## Whole-run budgets
 

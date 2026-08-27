@@ -203,7 +203,7 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
   // every write, and the tool calling it gave up at sixty seconds while the write itself had
   // already landed.
   const paths = files.map((file) => file.relPath);
-  const report = await ctx.indexer.run({ only: paths, modelPaths: [] });
+  const report = await ctx.indexer.runForeground({ only: paths, modelPaths: [] });
   ctx.derive.schedule(paths);
 
   // After indexing: the `documents` rows exist now, so the extraction can be recorded
@@ -357,7 +357,7 @@ async function writeEventOnly(
     files: [ledger.file],
   });
 
-  await ctx.indexer.run({ only: [ledger.file.relPath], modelPaths: [] });
+  await ctx.indexer.runForeground({ only: [ledger.file.relPath], modelPaths: [] });
   // The ledger's events are parsed structurally, above — this is for the summary and any claims in
   // the prose around them, which nobody is waiting on.
   ctx.derive.schedule([ledger.file.relPath]);

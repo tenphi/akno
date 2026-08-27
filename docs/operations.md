@@ -51,8 +51,10 @@ the launchd definition changed.
 
 During the initial planner wave, the service holds one index revision. Watcher and explicit index passes that
 reach the shared indexer are queued, not discarded, then drained before curator decisions and apply. Filesystem
-edits themselves remain available and are handled by stale-input and whole-tree verification after the barrier;
-post-response model derivation scheduled after a foreground write resumes may finish later.
+edits themselves remain available and are handled by stale-input and whole-tree verification after the barrier.
+A foreground memory mutation instead takes priority: its structural index completes immediately, invalidates
+the planner revision, and makes the dream stop before curator decisions or writes. Post-response model
+derivation may finish later without delaying the foreground result.
 
 `service uninstall` removes Akno's launchd files and prints the corresponding `launchctl bootout` commands. It
 does not remove the knowledge base or state directory.

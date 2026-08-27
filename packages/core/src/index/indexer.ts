@@ -155,6 +155,16 @@ export class Indexer {
     return this.#revision.run(() => this.runPass(options));
   }
 
+  /** Finish a caller-visible memory mutation even when a background dream owns a planner revision. */
+  async runForeground(options: IndexOptions = {}): Promise<IndexReport> {
+    return this.#revision.runForeground(() => this.runPass(options));
+  }
+
+  /** Notify a planner barrier about a foreground policy mutation that has no index pass. */
+  invalidateRevisionBarrier(): boolean {
+    return this.#revision.invalidateForForeground();
+  }
+
   /** Hold one indexed revision while a full dream run constructs its complete planner wave. */
   acquireRevisionBarrier(): Promise<IndexRevisionBarrier> {
     return this.#revision.acquire();
