@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { redeployPlan } from './redeploy-cmd.ts';
+import {
+  launchdServiceIsRunning,
+  redeployPlan,
+  redeployWaitPolicy,
+  socketWasReplaced,
+} from './redeploy-cmd.ts';
 
 /**
  * `redeploy` shells out twice and its interesting part is neither call — it is the decision about
@@ -41,5 +46,30 @@ describe('what a redeploy decides to do', () => {
     for (const over of [{ restart: false }, { darwin: false }, { serviceInstalled: false }]) {
       expect(plan(over).build).toBe(true);
     }
+  });
+});
+
+describe('redeploy readiness', () => {
+  it('keeps the normal thirty-second fast path but allows a bounded live-handoff wait', () => {
+    expect(redeployWaitPolicy()).toEqual({ fastMs: 30_000, maximumMs: 180_000 });
+  });
+
+  it('treats an explicit timeout as a hard deadline', () => {
+    expect(redeployWaitPolicy('7.5')).toEqual({ fastMs: 7_500, maximumMs: 7_500 });
+    expect(() => redeployWaitPolicy('not-a-duration')).toThrow(/positive number/);
+  });
+
+  it('extends only for a launchd job with a live replacement pid', () => {
+    expect(launchdServiceIsRunning(`gui/501/dev.akno = {\n\tstate = running\n\tpid = 4242\n}`)).toBe(true);
+    expect(launchdServiceIsRunning(`gui/501/dev.akno = {\n\tstate = waiting\n}`)).toBe(false);
+    expect(launchdServiceIsRunning(`gui/501/dev.akno = {\n\tstate = running\n}`)).toBe(false);
+  });
+
+  it('does not mistake the pre-restart socket for replacement readiness', () => {
+    const previous = { device: 11, inode: 22, changedAtMs: 33 };
+    expect(socketWasReplaced(previous, previous)).toBe(false);
+    expect(socketWasReplaced(previous, { ...previous, inode: 44 })).toBe(true);
+    expect(socketWasReplaced(null, previous)).toBe(true);
+    expect(socketWasReplaced(previous, null)).toBe(false);
   });
 });

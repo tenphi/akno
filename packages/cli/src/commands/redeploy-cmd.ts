@@ -1,6 +1,8 @@
 import fs from 'node:fs';
+import net from 'node:net';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { AknoError } from '@tenphi/akno-protocol';
 
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style } from '../output.ts';
@@ -28,8 +30,9 @@ import { heading, json, kv, line, style } from '../output.ts';
  *
  * Then it **waits for the socket**. `launchctl kickstart` returns as soon as launchd has spawned the
  * process, not when the process is listening — so the obvious next command fails with "no Akno
- * service at …", which reads like a broken deploy rather than an impatient one. Observed exactly
- * that, with a three-second sleep in front of it.
+ * service at …", which reads like a broken deploy rather than an impatient one. A normal start gets
+ * a 30-second fast path. If launchd says the replacement is still running, redeploy keeps waiting up
+ * to a bounded three minutes instead of reporting a false failure during a slow live handoff.
  *
  *   akno redeploy
  *   akno redeploy --no-build     # restart only
@@ -50,10 +53,53 @@ const REDEPLOY_HELP = `akno redeploy [options]
 
   --no-build          Restart only.
   --no-restart        Build only. For a checkout with no service installed.
-  --timeout <s>       How long to wait for the socket. Default 30.
+  --timeout <s>       Hard socket deadline. By default wait 30s, then up to 180s
+                      while the launchd replacement is still running.
   --json`;
 
 const LABEL = 'dev.akno';
+const DEFAULT_FAST_SOCKET_WAIT_MS = 30_000;
+const DEFAULT_MAX_SOCKET_WAIT_MS = 180_000;
+
+export interface RedeployWaitPolicy {
+  fastMs: number;
+  maximumMs: number;
+}
+
+/** An explicit timeout is a hard operator choice; the default has a fast and slow handoff tier. */
+export function redeployWaitPolicy(timeoutSeconds?: string): RedeployWaitPolicy {
+  if (timeoutSeconds !== undefined) {
+    const seconds = Number(timeoutSeconds);
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+      throw new AknoError('invalid', '--timeout must be a positive number of seconds');
+    }
+    const milliseconds = Math.max(1, seconds) * 1000;
+    return { fastMs: milliseconds, maximumMs: milliseconds };
+  }
+  return { fastMs: DEFAULT_FAST_SOCKET_WAIT_MS, maximumMs: DEFAULT_MAX_SOCKET_WAIT_MS };
+}
+
+/** Content-safe launchctl output parser used only after the fast socket deadline expires. */
+export function launchdServiceIsRunning(output: string): boolean {
+  return /^\s*state = running\s*$/m.test(output) && /^\s*pid = \d+\s*$/m.test(output);
+}
+
+export interface SocketIdentity {
+  device: number;
+  inode: number;
+  changedAtMs: number;
+}
+
+/** A pre-restart listener is not evidence that the replacement is ready. */
+export function socketWasReplaced(previous: SocketIdentity | null, current: SocketIdentity | null): boolean {
+  if (!current) return false;
+  if (!previous) return true;
+  return (
+    current.device !== previous.device ||
+    current.inode !== previous.inode ||
+    current.changedAtMs !== previous.changedAtMs
+  );
+}
 
 /**
  * What a redeploy will actually do, before it does any of it.
@@ -150,11 +196,12 @@ export async function redeployCommand(argv: string[]): Promise<number> {
   });
 
   if (plan.skipped) {
-    result.ready = fs.existsSync(config.socketPath);
+    result.ready = await socketAcceptsConnections(config.socketPath);
     report(values.json, result, SKIP_NOTE[plan.skipped]);
     return 0;
   }
 
+  const previousSocket = socketIdentity(config.socketPath);
   if (!values.json) heading('restarting');
   const kick = spawnSync('launchctl', ['kickstart', '-k', `gui/${process.getuid?.() ?? ''}/${LABEL}`], {
     stdio: values.json ? 'pipe' : 'inherit',
@@ -171,15 +218,32 @@ export async function redeployCommand(argv: string[]): Promise<number> {
   result.restarted = true;
 
   // ── Wait ──────────────────────────────────────────────────────────────────
-  const timeoutMs = Math.max(1, Number(values.timeout ?? 30)) * 1000;
-  result.ready = await waitForSocket(config.socketPath, timeoutMs);
+  const waitPolicy = redeployWaitPolicy(values.timeout);
+  result.ready = await waitForSocket(config.socketPath, waitPolicy.fastMs, previousSocket);
+  let waitedMs = waitPolicy.fastMs;
+  if (!result.ready && waitPolicy.maximumMs > waitPolicy.fastMs && launchdReplacementIsRunning()) {
+    if (!values.json) {
+      line(
+        style.grey(
+          `replacement is still starting after ${waitPolicy.fastMs / 1000}s; ` +
+            `waiting up to ${waitPolicy.maximumMs / 1000}s`,
+        ),
+      );
+    }
+    result.ready = await waitForSocket(
+      config.socketPath,
+      waitPolicy.maximumMs - waitPolicy.fastMs,
+      previousSocket,
+    );
+    waitedMs = waitPolicy.maximumMs;
+  }
   if (!result.ready) {
     // The restart happened; the process did not come up. Reported as a failure rather than a
     // success with a caveat, because everything the caller does next will fail.
     fail(
       values.json,
       result,
-      `restarted, but nothing is listening on ${config.socketPath} after ${timeoutMs / 1000}s — ` +
+      `restarted, but nothing is listening on ${config.socketPath} after ${waitedMs / 1000}s — ` +
         'check `akno service status` and the log',
     );
     return 1;
@@ -190,16 +254,64 @@ export async function redeployCommand(argv: string[]): Promise<number> {
 }
 
 /**
- * The socket's existence is the readiness signal, because it is created last: the service takes the
- * write lock, opens the store and starts the watcher before it listens.
+ * Readiness requires a replacement socket that accepts connections. Existence alone can be the
+ * outgoing service's still-live path during a launchd handoff.
  */
-async function waitForSocket(socketPath: string, timeoutMs: number): Promise<boolean> {
+async function waitForSocket(
+  socketPath: string,
+  timeoutMs: number,
+  previous: SocketIdentity | null,
+): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (fs.existsSync(socketPath)) return true;
+    if (
+      socketWasReplaced(previous, socketIdentity(socketPath)) &&
+      (await socketAcceptsConnections(socketPath))
+    ) {
+      return true;
+    }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
-  return fs.existsSync(socketPath);
+  return (
+    socketWasReplaced(previous, socketIdentity(socketPath)) && (await socketAcceptsConnections(socketPath))
+  );
+}
+
+function socketIdentity(socketPath: string): SocketIdentity | null {
+  try {
+    const stat = fs.statSync(socketPath);
+    if (!stat.isSocket()) return null;
+    return { device: stat.dev, inode: stat.ino, changedAtMs: stat.ctimeMs };
+  } catch {
+    return null;
+  }
+}
+
+async function socketAcceptsConnections(socketPath: string): Promise<boolean> {
+  if (!fs.existsSync(socketPath)) return false;
+  return new Promise((resolve) => {
+    const socket = net.createConnection(socketPath);
+    let settled = false;
+    let timer: NodeJS.Timeout | null = null;
+    const finish = (ready: boolean): void => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      socket.destroy();
+      resolve(ready);
+    };
+    socket.once('connect', () => finish(true));
+    socket.once('error', () => finish(false));
+    timer = setTimeout(() => finish(false), 500);
+    timer.unref();
+  });
+}
+
+function launchdReplacementIsRunning(): boolean {
+  const inspected = spawnSync('launchctl', ['print', `gui/${process.getuid?.() ?? ''}/${LABEL}`], {
+    encoding: 'utf8',
+  });
+  return inspected.status === 0 && launchdServiceIsRunning(inspected.stdout ?? '');
 }
 
 /** Walks up for the workspace marker, so this works from any directory in the checkout. */

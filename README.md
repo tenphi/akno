@@ -9,9 +9,12 @@ time.
 Akno is useful when an agent needs continuity across conversations but its memory must remain inspectable,
 citable, reversible, and independent of a chat provider.
 
-> **Status:** active development and used on a real personal knowledge base. The core reading, writing,
-> ingestion, evidence-graph, grounded-answering, and guarded maintenance paths are implemented. Defaults remain
-> conservative: model-dependent inference is opt-in and scheduled maintenance starts in audit mode.
+> **Status:** active development and used on a real personal knowledge base. Reading, writing, ingestion,
+> evidence-graph retrieval, grounded answering, and autonomous maintenance are implemented at Akno's current
+> single-writer service boundary. Automatic changes use sealed plans, separate decisions, verification, and
+> durable safety pauses. Defaults remain conservative: model-dependent inference is opt-in and scheduled
+> maintenance starts in audit mode. Remaining work is release hardening and explicitly deferred capabilities,
+> not an unfinished core workflow.
 
 ## Why use it?
 

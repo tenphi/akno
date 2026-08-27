@@ -213,7 +213,10 @@ pnpm test
 pnpm akno redeploy
 ```
 
-`redeploy` builds packages, restarts the launchd service, and waits until the socket is ready. Building matters:
+`redeploy` builds packages, restarts the launchd service, and waits until the socket is ready. It uses a
+30-second fast readiness window and, when launchd confirms that the replacement process is still running, a
+bounded three-minute live-handoff window. `--timeout <seconds>` replaces both with an explicit hard deadline.
+Building matters:
 the running CLI imports compiled core and client packages, so restarting without a build can silently keep old
 behavior.
 
