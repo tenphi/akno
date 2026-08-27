@@ -145,7 +145,9 @@ inspect → seal exact plan → revise if needed → decide → recheck inputs �
 Planning and deciding are separate turns. In autonomous mode the curator receives the sealed proposal, not an
 open-ended request to edit files. Current policy, hashes, dependencies, and whole-run budgets can still block an
 accepted item. A human correction stays inside the original operation and evidence scope, preserves the old
-revision for audit, and must be approved again. See [The dream cycle](dream-cycle.md).
+revision for audit, and must be approved again. An automatic curator can request the same bounded correction
+from a separate model turn; the revised head must pass deterministic guards and a new curator decision, with a
+configured attempt cap preventing self-repair loops. See [The dream cycle](dream-cycle.md).
 
 ## Models and degradation
 

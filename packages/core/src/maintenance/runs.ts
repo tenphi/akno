@@ -391,6 +391,7 @@ function configurationFingerprint(ctx: AknoContext): string {
       repair: config.maintenance.repair,
       policies: config.maintenance.policies,
       limits: config.maintenance.limits,
+      maxRevisionAttempts: config.maintenance.maxRevisionAttempts,
       model: roleFingerprint(config.maintenance.model),
     },
     models: {

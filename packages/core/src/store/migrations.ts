@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 29;
+export const SCHEMA_VERSION = 30;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -35,6 +35,7 @@ export const MANAGED_ITEM_PLACEMENT_VERDICTS_MIGRATION_INDEX = 19;
 export const MANAGED_ITEM_SOURCES_MIGRATION_INDEX = 20;
 export const MANAGED_ITEM_ROUTING_VERDICTS_MIGRATION_INDEX = 21;
 export const MAINTENANCE_ITEM_REVISIONS_MIGRATION_INDEX = 22;
+export const MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX = 23;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -845,6 +846,12 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX maintenance_item_revisions_item
     ON maintenance_item_revisions(item_id, revision DESC);
+  `,
+  // The transition actor is distinct from the superseded proposal's decision actor: a human
+  // may revise an approved curator proposal, while an automatic revision records both as curator.
+  `
+  ALTER TABLE maintenance_item_revisions
+    ADD COLUMN revision_actor TEXT NOT NULL DEFAULT 'human';
   `,
 ];
 

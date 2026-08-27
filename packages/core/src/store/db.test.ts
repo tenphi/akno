@@ -64,6 +64,7 @@ describe('schema migration', () => {
       )
       .all() as { name: string }[];
     const columns = store.db.pragma('table_info(maintenance_items)') as { name: string }[];
+    const revisionColumns = store.db.pragma('table_info(maintenance_item_revisions)') as { name: string }[];
     const conflictCache = store.db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'conflict_verdicts'")
       .get() as { name: string } | undefined;
@@ -78,6 +79,7 @@ describe('schema migration', () => {
     expect(columns.map((row) => row.name)).toContain('evidence');
     expect(columns.map((row) => row.name)).toContain('policy');
     expect(columns.map((row) => row.name)).toContain('status_code');
+    expect(revisionColumns.map((row) => row.name)).toContain('revision_actor');
     expect(conflictCache?.name).toBe('conflict_verdicts');
     expect(conflictColumns.map((row) => row.name)).toContain('qualification');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);

@@ -604,6 +604,7 @@ function resolve(
         maxHighRiskItems: doc.maintenance?.limits?.max_high_risk_items ?? 3,
       },
       planRetention: { payloadDays: planPayloadDays, receiptDays: planReceiptDays },
+      maxRevisionAttempts: doc.maintenance?.max_revision_attempts ?? 1,
       // Resolved through the same path as any role, so a typo in the provider name fails the
       // same way and `doctor` can probe it like the rest.
       model: doc.maintenance?.model

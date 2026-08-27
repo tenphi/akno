@@ -304,6 +304,8 @@ const MaintenanceDoc = z.object({
   limits: MaintenanceLimitsDoc.optional(),
   /** Two-stage retention for private plan payloads and their compact audit receipts. */
   plan_retention: MaintenancePlanRetentionDoc.optional(),
+  /** Maximum model-authored corrections an automatic item may receive before a second revise is rejected. */
+  max_revision_attempts: z.number().int().min(0).max(3).optional(),
   /**
    * The model the cycle uses, when it should not be the one indexing uses.
    *
@@ -559,6 +561,8 @@ export interface AknoConfig {
     limits: MaintenanceLimits;
     /** Exact private payloads expire before compact terminal receipts. */
     planRetention: { payloadDays: number; receiptDays: number };
+    /** Model-authored correction attempts allowed for one automatically curated item. */
+    maxRevisionAttempts: number;
     /** Null when the cycle uses the `derive` role, which is the default. */
     model: ResolvedModelRole | null;
     /** Append a full record of every run to `<state_dir>/logs/dream.jsonl`. */

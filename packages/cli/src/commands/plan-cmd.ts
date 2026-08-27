@@ -281,6 +281,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['awaiting decisions', status.awaitingHuman],
     ['verification pending', status.verificationPending],
     ['budget deferred', status.budgetDeferred],
+    ['automatic revision attempts', status.authority.maxRevisionAttempts],
   ]);
   line('\n  transformation policies');
   for (const policy of ['auto', 'review', 'audit', 'off'] as const) {

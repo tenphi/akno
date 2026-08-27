@@ -65,7 +65,8 @@ automatic write authority.
 Hygiene, synthesis, split, extraction, merge, contradiction changes, broken-link changes, adoption, observation,
 and reflection use durable plans. Report-only conflict findings, the legacy repair surface, and housekeeping do
 not all become actionable queue items. A human can replace one sealed after-state with `plan revise`, but there
-is no snooze decision and a curator cannot yet request and evaluate a bounded regenerated revision by itself.
+is no snooze decision. An automatic curator can request a bounded correction inside the sealed path/evidence
+scope, but it cannot expand the plan or turn a report-only diagnostic into an operation.
 
 Consequently, some diagnostics still require a person or future planner to translate a report into an exact
 operation.

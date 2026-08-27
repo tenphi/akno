@@ -174,6 +174,14 @@ describe('maintenance profiles', () => {
       maxHighRiskItems: 0,
     });
   });
+
+  it('allows one bounded automatic revision by default and caps explicit overrides', () => {
+    expect(fixtureConfig({ profile: 'autonomous' }).maintenance.maxRevisionAttempts).toBe(1);
+    expect(
+      fixtureConfig({ profile: 'autonomous', max_revision_attempts: 0 }).maintenance.maxRevisionAttempts,
+    ).toBe(0);
+    expect(() => fixtureConfig({ profile: 'autonomous', max_revision_attempts: 4 })).toThrow();
+  });
 });
 
 function fixtureConfig(maintenance: NonNullable<ConfigDoc['maintenance']>) {

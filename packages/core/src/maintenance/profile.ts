@@ -26,6 +26,7 @@ export interface MaintenanceAuthority {
   adopt: MaintenancePhaseAuthority;
   policies: Record<MaintenanceTransform, MaintenancePolicy>;
   limits: MaintenanceLimits;
+  maxRevisionAttempts: number;
 }
 
 export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceAuthority {
@@ -60,6 +61,7 @@ export function configuredMaintenanceAuthority(config: AknoConfig): MaintenanceA
     adopt,
     policies,
     limits: { ...config.maintenance.limits },
+    maxRevisionAttempts: config.maintenance.maxRevisionAttempts,
   };
 }
 

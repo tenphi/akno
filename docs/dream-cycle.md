@@ -206,7 +206,7 @@ Every writable transformation follows the same stages:
 
 1. **Inspect:** find candidates without changing files.
 2. **Plan:** seal exact operations, source evidence, hashes, policy, and risk.
-3. **Decide:** a human or separate curator approves, rejects, or leaves the item pending.
+3. **Decide:** a human approves or rejects, while a separate curator may also request a bounded revision.
 4. **Apply:** recheck every sealed input and reserve the whole budget before the first write.
 5. **Re-index:** reconcile every affected path.
 6. **Verify:** confirm the expected disk and index outcome; roll back a proven failed result.
@@ -216,6 +216,13 @@ Every writable transformation follows the same stages:
 9. **Verify the run:** recheck every applied item together and seal a content-safe final receipt.
 
 Proposal generation never authorizes itself in the same model turn.
+
+For an automatic item, `revise` starts a new isolated correction call with the exact sealed operations,
+evidence, and actionable curator feedback. It may return replacement bodies only for existing create/replace
+paths. Akno refuses wider scope, duplicate paths, unchanged output, oversized pages, stale inputs, or output
+that fails transformation-specific preflight. A successful correction archives the old proposal and `revise`
+decision, increments the revision, and goes through the curator again. The default cap is one correction; a
+second request rejects the item instead of looping. No revision or decision writes knowledge-base files.
 
 ## Final run verification
 

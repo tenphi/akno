@@ -22,6 +22,8 @@ let server: {
   close: () => Promise<void>;
   calls: () => number;
   curatorCalls: () => number;
+  revisionCalls: () => number;
+  curatorRevision: (value: 'off' | 'once' | 'always') => void;
   loseMarker: (value: boolean) => void;
   changeNumber: (value: boolean) => void;
   echoDraft: (value: boolean) => void;
@@ -586,9 +588,10 @@ describe('plan-backed hygiene', () => {
 
   it('uses an independent curator in auto mode', async () => {
     const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    const plan = mem.plan(report.maintenancePlan!.id);
 
     expect(report.maintenancePlan).toMatchObject({ mode: 'auto', status: 'completed' });
-    expect(report.maintenancePlan?.items[0]).toMatchObject({
+    expect(plan.items[0]).toMatchObject({
       status: 'applied',
       decision: { actor: 'curator', outcome: 'approve' },
       verification: { status: 'passed' },
@@ -611,6 +614,89 @@ describe('plan-backed hygiene', () => {
     expect(report.run.status).toBe('completed');
     expect(server.calls()).toBe(3);
     expect(server.curatorCalls()).toBe(1);
+  });
+
+  it('lets the curator request one guarded revision and independently reviews the new head', async () => {
+    server.curatorRevision('once');
+
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+
+    expect(report.maintenancePlan).toMatchObject({ mode: 'auto', status: 'completed' });
+    expect(plan.items[0]).toMatchObject({
+      revision: 2,
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      previousRevisions: [
+        expect.objectContaining({
+          revision: 1,
+          actor: 'curator',
+          decision: expect.objectContaining({ actor: 'curator', outcome: 'revise' }),
+          reason: 'Use the clearer invented wording while preserving the exact scope.',
+        }),
+      ],
+      checks: [
+        expect.objectContaining({ name: 'curator-requested revision scope', status: 'passed' }),
+        expect.objectContaining({
+          name: 'curator-requested revision deterministic preflight',
+          status: 'passed',
+        }),
+      ],
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toContain(
+      'resides at 111 Example Street',
+    );
+    expect(server.calls()).toBe(5);
+    expect(server.curatorCalls()).toBe(2);
+    expect(server.revisionCalls()).toBe(1);
+  });
+
+  it('rejects another revision request after the configured bounded attempt', async () => {
+    const before = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
+    server.curatorRevision('always');
+
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+
+    expect(report.maintenancePlan).toMatchObject({ status: 'completed' });
+    expect(plan.items[0]).toMatchObject({
+      revision: 2,
+      status: 'rejected',
+      decision: {
+        actor: 'curator',
+        outcome: 'reject',
+        reason: expect.stringContaining('Revision limit reached'),
+      },
+      previousRevisions: [
+        expect.objectContaining({
+          actor: 'curator',
+          decision: expect.objectContaining({ outcome: 'revise' }),
+        }),
+      ],
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+    expect(server.curatorCalls()).toBe(2);
+    expect(server.revisionCalls()).toBe(1);
+  });
+
+  it('can disable automatic correction calls while retaining curator approval and rejection', async () => {
+    const before = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
+    await mem.close();
+    mem = await openMem(false, 'auto', { maxRevisionAttempts: 0 });
+    server.curatorRevision('once');
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = mem.plan(report.maintenancePlan!.id).items[0]!;
+
+    expect(item).toMatchObject({
+      revision: 1,
+      status: 'rejected',
+      decision: { outcome: 'reject', reason: expect.stringContaining('Revision limit reached') },
+      previousRevisions: [],
+    });
+    expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(before);
+    expect(server.curatorCalls()).toBe(1);
+    expect(server.revisionCalls()).toBe(0);
   });
 
   it('keeps applied bytes but degrades the run when changed facts cannot be refreshed', async () => {
@@ -1849,6 +1935,7 @@ async function openMem(
       max_high_risk_items?: number;
     };
     planRetention?: { payload_days?: number; receipt_days?: number };
+    maxRevisionAttempts?: number;
   } = {},
 ): Promise<Akno> {
   const profile =
@@ -1882,6 +1969,9 @@ async function openMem(
         ...(options.policies ? { policies: options.policies } : {}),
         ...(options.limits ? { limits: options.limits } : {}),
         ...(options.planRetention ? { plan_retention: options.planRetention } : {}),
+        ...(options.maxRevisionAttempts !== undefined
+          ? { max_revision_attempts: options.maxRevisionAttempts }
+          : {}),
         log_changes: true,
         curate: {
           verify: true,
@@ -1906,6 +1996,8 @@ async function openMem(
 async function startStub(): Promise<typeof server> {
   let calls = 0;
   let curatorCalls = 0;
+  let revisionCalls = 0;
+  let curatorRevision: 'off' | 'once' | 'always' = 'off';
   let drop = false;
   let changeNumber = false;
   let echoDraft = false;
@@ -1961,12 +2053,19 @@ async function startStub(): Promise<typeof server> {
         system.includes('synthesize one canonical') ||
         system.includes('merge two Markdown pages') ||
         system.includes('verify an automatic Markdown rewrite') ||
-        system.includes('independent curator')
+        system.includes('independent curator') ||
+        system.includes('correct an exact maintenance proposal')
       ) {
         calls++;
       }
       if (system.includes('independent curator')) curatorCalls++;
+      if (system.includes('correct an exact maintenance proposal')) revisionCalls++;
       if (system.includes('filter candidate Markdown page pairs')) semanticMergeCalls++;
+      if (system.includes('correct an exact maintenance proposal')) {
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ choices: [{ message: { content: curatorRevisionResponse(user) } }] }));
+        return;
+      }
       const content = user.startsWith('Page: ')
         ? JSON.stringify({ summary: 'An invented profile summary.', keywords: [], facts: [] })
         : system.includes('filter candidate Markdown page pairs')
@@ -1976,8 +2075,14 @@ async function startStub(): Promise<typeof server> {
             })
           : system.includes('independent curator')
             ? JSON.stringify({
-                outcome: 'approve',
-                reason: 'The rewrite is conservative and preserves knowledge.',
+                outcome:
+                  curatorRevision === 'always' || (curatorRevision === 'once' && curatorCalls === 1)
+                    ? 'revise'
+                    : 'approve',
+                reason:
+                  curatorRevision === 'always' || (curatorRevision === 'once' && curatorCalls === 1)
+                    ? 'Use the clearer invented wording while preserving the exact scope.'
+                    : 'The rewrite is conservative and preserves knowledge.',
               })
             : system.includes('verify an automatic Markdown rewrite')
               ? JSON.stringify({ ok: true, issues: [] })
@@ -2053,6 +2158,10 @@ async function startStub(): Promise<typeof server> {
     },
     calls: () => calls,
     curatorCalls: () => curatorCalls,
+    revisionCalls: () => revisionCalls,
+    curatorRevision: (value) => {
+      curatorRevision = value;
+    },
     loseMarker: (value) => {
       drop = value;
     },
@@ -2105,6 +2214,23 @@ async function startStub(): Promise<typeof server> {
     },
     userMessages: () => [...userMessages],
   };
+}
+
+function curatorRevisionResponse(user: string): string {
+  const payload = JSON.parse(user) as {
+    immutable_scope: {
+      operations: { type: 'replace' | 'create' | 'delete'; relPath: string; after?: string }[];
+    };
+  };
+  const operation = payload.immutable_scope.operations.find((candidate) => candidate.type !== 'delete')!;
+  return JSON.stringify({
+    operations: [
+      {
+        rel_path: operation.relPath,
+        after: operation.after!.replace('lives at', 'resides at'),
+      },
+    ],
+  });
 }
 
 function writeMergeFixture(): { canonical: string; duplicate: string; inbound: string } {

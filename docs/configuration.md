@@ -208,6 +208,7 @@ Transformation policies can lower individual classes:
       "payload_days": 30,
       "receipt_days": 180,
     },
+    "max_revision_attempts": 1,
   },
 }
 ```
@@ -215,6 +216,12 @@ Transformation policies can lower individual classes:
 Policy values are `off`, `audit`, `review`, and `auto`. Supported classes are `observe`, `reflect`, `hygiene`,
 `managed_item`, `synthesis`, `split`, `extract`, `merge`, `contradiction`, `broken_link`, and `adopt`. Page
 opt-ins, folder restrictions, merge allowlists, feature switches, and write budgets remain additional ceilings.
+
+`max_revision_attempts` is the number of correction calls permitted after an automatic curator returns
+`revise`; it defaults to `1` and accepts `0` through `3`. Each correction may replace complete after-state bytes
+only for paths already sealed on the item, must pass deterministic preflight, and receives a fresh curator
+decision. Another revision request at the limit becomes a rejection. Model or schema failure blocks the item
+without writing or caching a semantic rejection, so a later cycle can retry from fresh planning.
 
 `managed_item` is intentionally different from whole-page curation. It inspects only fragments introduced by
 a strict `akno:item` marker on `remember: integrate` knowledge pages; those pages do not also need `dream`
