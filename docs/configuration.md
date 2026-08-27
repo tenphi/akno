@@ -73,6 +73,7 @@ Folder policy can travel with the notes in `<akno_path>/akno.jsonc`:
     "sources/**": { "role": "source", "remember": "deny", "ingest": "document" },
     "templates/**": { "role": "ignored", "remember": "deny" },
     "inbox/**": { "ingest": "auto", "route": true },
+    "notes/**": { "max_depth": 1, "relocate_to": "notes" },
   },
 }
 ```
@@ -232,8 +233,14 @@ markers are counted as held findings and leave the page unchanged.
 
 `rule_drift` is also independent from page-wide dream opt-in. It can replace an existing top-level scalar
 `type` on a knowledge page only when a matching folder rule explicitly declares the exact expected `type`.
-It never writes source/reference pages and never guesses a path for `slug_pattern` or `max_depth` findings.
-`maintenance.curate.max_rule_drifts` bounds proposals per cycle; the default is `20`.
+For an over-deep page, `max_depth` diagnoses the problem but does not authorize a guessed move. Pair it with
+`relocate_to` in the same rule to name the exact destination folder; Akno preserves the basename and page bytes,
+updates every inbound knowledge-page link in the same high-risk item, verifies that the page id survived, and
+makes the complete change undoable. It declines relocation when the target exists, destination rules reject it,
+the page owns documents, it has path-relative outbound Markdown links or a self-link, or a source/reference page
+or `about` relationship points to it. `slug_pattern` drift remains report-only because a pattern does not name
+one exact filename. Source/reference pages are never rule-drift write targets.
+`maintenance.curate.max_rule_drifts` bounds both forms per cycle; the default is `20`.
 
 Canonical fragments are also checked against the current derived fact row: item id, page identity, payload
 line, and exact source-line hash must agree. Reusing an id on two pages or participating in a typed fact

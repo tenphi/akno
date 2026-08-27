@@ -79,7 +79,7 @@ import {
 import { verifyDreamRun, type DreamRunVerificationReceipt } from './run-verification.ts';
 import { Indexer } from '../index/indexer.ts';
 import { planManagedItems, type ManagedItemReport } from './managed-items.ts';
-import { planRuleDrifts, type RuleDriftDraft } from './rule-drift.ts';
+import { planRuleDrifts, ruleDriftPaths, type RuleDriftDraft } from './rule-drift.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -864,18 +864,19 @@ async function runPhase(
               });
             }
           }
-          const ruleDriftPaths = new Set([...linkMutations, ...linkSeals]);
+          const occupiedRuleDriftPaths = new Set([...linkMutations, ...linkSeals]);
           const selectedRuleDrifts: RuleDriftDraft[] = [];
           for (const draft of ruleDriftDrafts) {
-            if (ruleDriftPaths.has(draft.relPath)) continue;
+            const paths = ruleDriftPaths(draft);
+            if (paths.some((relPath) => occupiedRuleDriftPaths.has(relPath))) continue;
             selectedRuleDrifts.push(draft);
-            ruleDriftPaths.add(draft.relPath);
+            for (const relPath of paths) occupiedRuleDriftPaths.add(relPath);
           }
           const protectedPaths = new Set([
             ...managedPaths,
             ...contradictionPaths,
             ...linkDrafts.flatMap(linkDraftPaths),
-            ...selectedRuleDrifts.map((draft) => draft.relPath),
+            ...selectedRuleDrifts.flatMap(ruleDriftPaths),
           ]);
           const curationDrafts = result.drafts.filter(
             (draft) => !operationsTouchedByCurateDraft(draft).some((relPath) => protectedPaths.has(relPath)),

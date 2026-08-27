@@ -413,7 +413,7 @@
       // Merge is higher risk and therefore needs an explicit folder allowlist.
       // Use ["*"] only when every synthesize-opted knowledge folder is eligible.
       "max_merges": 2,
-      // Only explicit scalar page types with one exact folder-rule value qualify.
+      // Exact scalar type correction and explicitly routed max-depth relocation share this cap.
       "max_rule_drifts": 20,
       "merge_folders": [],
       // "exact" uses aliases and conservative graph subjects. "semantic" additionally
@@ -541,5 +541,8 @@
   // on purpose. Empty here because automatic filing should be opt-in:
   //
   //   "inbox/**": { "ingest": "auto", "route": true }
+  // A max_depth rule remains diagnostic unless the same rule also names `relocate_to`.
+  // That explicit folder authorizes a byte-preserving, link-safe relocation; Akno never
+  // invents a destination from the depth or slug pattern alone.
   "folders": {}
 }

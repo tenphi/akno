@@ -105,6 +105,25 @@ const ModelsDoc = z.object({
   vision: VisionRoleDoc.optional(),
 });
 
+const RelocationFolder = z
+  .string()
+  .min(1)
+  .refine(
+    (value) => {
+      const normalized = value.replace(/\\/g, '/');
+      return (
+        value === value.trim() &&
+        !value.includes('\\') &&
+        !normalized.startsWith('/') &&
+        !normalized.endsWith('/') &&
+        !normalized.endsWith('.md') &&
+        !/[?*#]/.test(normalized) &&
+        normalized.split('/').every((part) => part.length > 0 && part !== '.' && part !== '..')
+      );
+    },
+    { message: 'relocate_to must be one safe knowledge-base folder path without globs or .md' },
+  );
+
 /** One rule per glob. Most specific wins; `akno rules <path>` explains why. */
 export const FolderRuleDoc = z.object({
   /**
@@ -133,6 +152,11 @@ export const FolderRuleDoc = z.object({
   route: z.boolean().optional(),
   /** Enforced structure, reported by `doctor` rather than silently applied. */
   max_depth: z.number().int().positive().optional(),
+  /**
+   * Exact destination folder for autonomous `max_depth` repair. Merely naming a depth limit
+   * diagnoses drift; this separate declaration is what authorizes a unique relocation.
+   */
+  relocate_to: RelocationFolder.optional(),
   slug_pattern: z.string().optional(),
 });
 export type FolderRuleDoc = z.infer<typeof FolderRuleDoc>;
@@ -350,7 +374,7 @@ const MaintenanceDoc = z.object({
       max_splits: z.number().int().nonnegative().optional(),
       max_extracts: z.number().int().nonnegative().optional(),
       max_merges: z.number().int().nonnegative().optional(),
-      /** Explicit page types corrected to the exact value declared by a matching folder rule. */
+      /** Exact scalar type repairs and explicitly routed max-depth relocations per cycle. */
       max_rule_drifts: z.number().int().nonnegative().optional(),
       /** Exact folder prefixes eligible for identity-backed merge discovery; empty keeps merge disabled. */
       merge_folders: z.array(z.string().min(1)).optional(),

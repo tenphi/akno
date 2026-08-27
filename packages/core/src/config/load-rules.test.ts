@@ -31,6 +31,31 @@ describe('knowledge-base rules filename', () => {
     expect(config.sources).toContain(path.join(root, 'akno.jsonc'));
   });
 
+  it('loads an exact max-depth relocation folder and rejects path-like ambiguity', () => {
+    const root = inventedDirectory();
+    fs.writeFileSync(
+      path.join(root, 'akno.jsonc'),
+      '{"folders":{"notes/**":{"max_depth":1,"relocate_to":"archive"}}}\n',
+      'utf8',
+    );
+    expect(loadConfig({ isolated: true, overrides: { akno_path: root } }).rules).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ glob: 'notes/**', max_depth: 1, relocate_to: 'archive' }),
+      ]),
+    );
+
+    fs.writeFileSync(
+      path.join(root, 'akno.jsonc'),
+      '{"folders":{"notes/**":{"max_depth":1,"relocate_to":"../archive"}}}\n',
+      'utf8',
+    );
+    expect(
+      loadConfig({ isolated: true, overrides: { akno_path: root } }).rules.find(
+        (rule) => rule.glob === 'notes/**',
+      ),
+    ).toBeUndefined();
+  });
+
   it('rejects the old extension with an exact rename instruction', () => {
     const root = inventedDirectory();
     fs.writeFileSync(path.join(root, 'akno.json'), '{"folders":{}}\n', 'utf8');

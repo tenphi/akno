@@ -175,6 +175,9 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 - **contradiction:** add an unresolved warning, archive an explicitly superseded line, or qualify one claim from
   exact evidence;
 - **broken link:** rewrite only from exact move, alias, or canonical identity evidence.
+- **rule drift:** correct one exact scalar `type`, or relocate one over-deep attachment-free page when the same
+  folder rule names `relocate_to`; the relocation preserves page bytes and identity and atomically rewrites all
+  inbound knowledge-page links.
 
 Similarity alone never authorizes identity-changing work. A graph- or semantic-backed candidate is still
 rejected when the second page has a useful separate scope. Semantic verdicts are cached by content, endpoint,
@@ -201,7 +204,7 @@ Housekeeping reports the remaining state after writes: orphan documents, broken 
 identity collisions, ambiguous authored subjects, traversal hubs, and other structural diagnostics. It is
 read-only and grants no authority to merge or rewrite.
 
-Broken links, orphan documents, and qualified type drift can already have exact work waiting in a nonterminal
+Broken links, orphan documents, qualified type drift, and explicitly routed max-depth drift can already have exact work waiting in a nonterminal
 curate or adoption plan. Housekeeping marks those entries with the plan id, item id, policy, item status, and
 typed deferral code, and reports how many current findings are plan-backed. This prevents a review item or
 budget-deferred automatic item from looking like newly discovered duplicate work. The diagnostic remains in

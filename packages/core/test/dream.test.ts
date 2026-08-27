@@ -2148,6 +2148,132 @@ describe('housekeeping', () => {
     expect(fs.readFileSync(path.join(root, 'home/laundry.md'), 'utf8')).toBe(before);
   });
 
+  it('relocates an over-deep page only to an explicit rule destination and preserves identity and links', async () => {
+    await mem.close();
+    mem = await openMem({
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+      },
+      maintenance: {
+        profile: 'autonomous',
+        policies: {
+          observe: 'off',
+          reflect: 'off',
+          hygiene: 'off',
+          managed_item: 'off',
+          synthesis: 'off',
+          split: 'off',
+          extract: 'off',
+          merge: 'off',
+          contradiction: 'off',
+          broken_link: 'off',
+          rule_drift: 'auto',
+          adopt: 'off',
+        },
+        observe: { enabled: false },
+        conflicts: { enabled: false },
+      },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    const before = '---\ntitle: Ada Marlow\n---\n\n# Ada Marlow\n\nSee [[home/appliances]].\n';
+    fs.writeFileSync(path.join(root, 'notes/old/ada-marlow.md'), before, 'utf8');
+    fs.writeFileSync(
+      path.join(root, 'home/index.md'),
+      '---\ntitle: Home\n---\n\nSee [[notes/old/ada-marlow#Details|Ada]] and [profile](notes/old/ada-marlow.md#Details "Ada profile").\n',
+      'utf8',
+    );
+    await mem.index({});
+    const pageId = (await mem.read({ slug: 'notes/old/ada-marlow' })).page!.id;
+
+    const report = await mem.dream({ phase: 'curate' });
+    const item = report.maintenancePlan!.items.find((entry) => entry.kind === 'rule_drift')!;
+    expect(item).toMatchObject({
+      policy: 'auto',
+      risk: 'high',
+      status: 'applied',
+      decision: { actor: 'curator', outcome: 'approve' },
+      verification: { status: 'passed' },
+    });
+    const stored = mem.plan(report.maintenancePlan!.id).items.find((entry) => entry.id === item.id)!;
+    expect(stored.operations.map((operation) => [operation.type, operation.relPath])).toEqual([
+      ['create', 'archive/ada-marlow.md'],
+      ['replace', 'home/index.md'],
+      ['delete', 'notes/old/ada-marlow.md'],
+    ]);
+    expect(stored.evidence).toEqual([
+      expect.objectContaining({
+        type: 'rule',
+        ruleField: 'max_depth',
+        ruleGlob: 'notes/**',
+        maxDepth: 1,
+        relocateTo: 'archive',
+        destinationSlug: 'archive/ada-marlow',
+      }),
+    ]);
+    expect(fs.existsSync(path.join(root, 'notes/old/ada-marlow.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'archive/ada-marlow.md'), 'utf8')).toBe(before);
+    expect((await mem.read({ slug: 'archive/ada-marlow' })).page!.id).toBe(pageId);
+    expect(fs.readFileSync(path.join(root, 'home/index.md'), 'utf8')).toContain(
+      '[[archive/ada-marlow#Details|Ada]]',
+    );
+    expect(fs.readFileSync(path.join(root, 'home/index.md'), 'utf8')).toContain(
+      '[profile](archive/ada-marlow.md#Details "Ada profile")',
+    );
+
+    await mem.undo({ change_id: item.changeId! });
+    expect(fs.readFileSync(path.join(root, 'notes/old/ada-marlow.md'), 'utf8')).toBe(before);
+    expect(fs.existsSync(path.join(root, 'archive/ada-marlow.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'home/index.md'), 'utf8')).toContain(
+      '[[notes/old/ada-marlow#Details|Ada]]',
+    );
+  });
+
+  it('keeps max-depth drift report-only when no exact relocation folder is declared', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: { 'notes/**': { max_depth: 1 } },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'notes/old/bo-winters.md'), '# Bo Winters\n', 'utf8');
+    await mem.index({});
+
+    const curate = await mem.dream({ phase: 'curate' });
+    expect(curate.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
+      expect.objectContaining({ kind: 'rule_drift', subject: 'notes/old/bo-winters' }),
+    );
+    const housekeeping = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters'),
+    ).toMatchObject({ field: 'max_depth', plan: null });
+  });
+
+  it('declines byte-preserving relocation when a relative outbound reference would change meaning', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+      },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'notes/old/bo-winters.md'),
+      '# Bo Winters\n\nSee [warranty](../warranty.md).\n',
+      'utf8',
+    );
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
+      expect.objectContaining({ kind: 'rule_drift', subject: 'notes/old/bo-winters' }),
+    );
+  });
+
   it('never plans type correction for reference material', async () => {
     await mem.close();
     mem = await openMem({

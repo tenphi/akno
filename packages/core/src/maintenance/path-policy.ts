@@ -15,7 +15,7 @@ import type {
 import type { AknoContext } from '../context.ts';
 import { folderCatalog } from '../kb/folders.ts';
 import { isReserved } from '../reserved.ts';
-import { effectiveRule, matchRules } from '../rules/compile.ts';
+import { declaringRule, effectiveRule, matchRules } from '../rules/compile.ts';
 import type { MaintenanceMode } from './plans.ts';
 import { assertMaintenanceModeAllowed, effectiveTransformPolicy, profileMode } from './profile.ts';
 
@@ -230,7 +230,7 @@ export function pageAllowsMaintenanceTransform(
     return page.dreamManagement === 'hygiene' || page.dreamManagement === 'synthesize';
   }
   if (kind === 'rule_drift') {
-    return effectiveRule(page.slug, config.rules).type !== undefined;
+    return hasExactRuleRepair(config, page.slug);
   }
   return page.dreamManagement === requiredDreamMode(kind);
 }
@@ -288,7 +288,7 @@ function explainPageTransform(
         : kind === 'broken_link'
           ? page.dream === 'hygiene' || page.dream === 'synthesize'
           : kind === 'rule_drift'
-            ? effectiveRule(slug, config.rules).type !== undefined
+            ? hasExactRuleRepair(config, slug)
             : page.dream === required;
     if (!dreamAllowed) {
       blockers.push(
@@ -304,7 +304,7 @@ function explainPageTransform(
             : kind === 'broken_link'
               ? 'the page must declare dream: hygiene or dream: synthesize'
               : kind === 'rule_drift'
-                ? 'a matching folder rule must explicitly declare type before page metadata can be corrected'
+                ? 'a matching folder rule must declare type, or pair max_depth with relocate_to, before drift can be corrected'
                 : `the page must declare dream: ${required}`,
         ),
       );
@@ -536,6 +536,13 @@ function contentSafeRule(rule: Record<string, unknown>): Record<string, unknown>
       rule[key] === undefined ? [] : [[key, rule[key]]],
     ),
   );
+}
+
+function hasExactRuleRepair(config: AknoConfig, slug: string): boolean {
+  const rule = effectiveRule(slug, config.rules);
+  const depth = declaringRule(slug, config.rules, 'max_depth');
+  const relocation = declaringRule(slug, config.rules, 'relocate_to');
+  return rule.type !== undefined || (!!depth && !!relocation && depth.glob === relocation.glob);
 }
 
 function ruleSourceLabel(source: string, config: AknoConfig): string {

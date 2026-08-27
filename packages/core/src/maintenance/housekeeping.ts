@@ -46,7 +46,7 @@ export interface RuleDrift {
   /** What the rule expects, and what the page does instead. */
   expected: string;
   found: string;
-  /** An exact nonterminal correction exists only for qualified type drift. */
+  /** An exact nonterminal correction exists for type drift or an explicitly routed depth repair. */
   plan: HousekeepingPlanRef | null;
 }
 
@@ -142,7 +142,7 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
 /**
  * The exact plan is the authority here, not resemblance between a diagnostic and an operation.
  * Link evidence seals both endpoints; adoption evidence seals the document path and bytes; rule
- * evidence seals the exact type declaration. Newest plans win when an older audit plan and a later
+ * evidence seals the exact type or depth-relocation declaration. Newest plans win when an older audit plan and a later
  * review plan describe the same still-current work.
  */
 function pendingPlanCoverage(ctx: AknoContext): {
@@ -189,12 +189,18 @@ function pendingPlanCoverage(ctx: AknoContext): {
         }
       } else {
         for (const evidence of item.evidence) {
-          if (evidence.type !== 'rule' || !evidence.expectedType || !evidence.foundType) continue;
-          const key = ruleDriftKey(
-            item.subject,
-            `type: ${evidence.expectedType}`,
-            `type: ${evidence.foundType}`,
-          );
+          if (evidence.type !== 'rule') continue;
+          const key =
+            evidence.ruleField === 'max_depth' && evidence.maxDepth && evidence.foundDepth
+              ? ruleDriftKey(
+                  item.subject,
+                  `at most ${evidence.maxDepth} level(s) deep`,
+                  `${evidence.foundDepth} levels deep`,
+                )
+              : evidence.expectedType && evidence.foundType
+                ? ruleDriftKey(item.subject, `type: ${evidence.expectedType}`, `type: ${evidence.foundType}`)
+                : null;
+          if (!key) continue;
           if (!drift.has(key)) drift.set(key, ref);
         }
       }

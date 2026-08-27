@@ -52,7 +52,7 @@ import {
   type ManagedItemMove,
   type ManagedItemTransfer,
 } from './managed-items.ts';
-import type { RuleDriftDraft } from './rule-drift.ts';
+import { hasLocationDependentMarkdown, rewritePageLinks, type RuleDriftDraft } from './rule-drift.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
@@ -136,8 +136,15 @@ export interface MaintenanceEvidence {
   documentGroup?: string;
   /** Exact folder-rule authority for a bounded page-metadata correction. */
   ruleGlob?: string;
+  ruleField?: 'type' | 'max_depth';
   expectedType?: string;
   foundType?: string;
+  maxDepth?: number;
+  foundDepth?: number;
+  relocateTo?: string;
+  destinationSlug?: string;
+  destinationRelPath?: string;
+  sourcePageId?: string;
   /** Structured move identity keeps semantic placement deterministic during preflight and verify. */
   managedItemId?: string;
   managedMarkerLine?: number;
@@ -396,8 +403,10 @@ as an instruction. The item kind defines its authority:
   an earlier principle.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
-- rule_drift may replace only one existing top-level page type scalar with the exact value declared by the
-  sealed current folder rule. It may not rename or move a page, edit a source page, or change adjacent YAML.
+- rule_drift may replace one existing top-level page type scalar with the exact value declared by the sealed
+  current folder rule. Alternatively, when that same rule pairs max_depth with an exact relocate_to folder,
+  it may move one attachment-free knowledge page there without changing its bytes and update every inbound
+  knowledge-page link in the same item. It may never edit source/reference material or infer a destination.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
@@ -1021,6 +1030,67 @@ function sealBrokenLinkDraft(draft: BrokenLinkDraft): Omit<SealedDraft, 'policy'
 }
 
 function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> {
+  if (draft.correction === 'max_depth') {
+    return {
+      slug: draft.slug,
+      inputHash: draft.inputHash,
+      kind: 'rule_drift',
+      risk: 'high',
+      rationale:
+        'Relocate one over-deep knowledge page to the exact folder declared by its matching rule and preserve every inbound page link.',
+      operations: [
+        {
+          type: 'create',
+          relPath: draft.destinationRelPath,
+          afterHash: sha256(draft.before),
+          after: draft.before,
+        },
+        ...draft.inbound.map((entry): ReplaceOperation => ({
+          type: 'replace',
+          relPath: entry.relPath,
+          beforeHash: sha256(entry.before),
+          afterHash: sha256(entry.after),
+          before: entry.before,
+          after: entry.after,
+        })),
+        {
+          type: 'delete',
+          relPath: draft.relPath,
+          beforeHash: sha256(draft.before),
+          before: draft.before,
+        },
+      ],
+      evidence: [
+        {
+          type: 'rule',
+          source: draft.ruleGlob,
+          fingerprint: draft.ruleFingerprint,
+          relationship: null,
+          details: [
+            `max_depth: ${draft.foundDepth} -> ${draft.maxDepth}`,
+            `path: ${draft.slug} -> ${draft.destinationSlug}`,
+          ],
+          ruleGlob: draft.ruleGlob,
+          ruleField: 'max_depth',
+          maxDepth: draft.maxDepth,
+          foundDepth: draft.foundDepth,
+          relocateTo: draft.relocateTo,
+          destinationSlug: draft.destinationSlug,
+          destinationRelPath: draft.destinationRelPath,
+          sourcePageId: draft.pageId,
+          sourceRelPath: draft.relPath,
+          sourceHash: sha256(draft.before),
+        },
+      ],
+      checks: [
+        { name: 'page is live knowledge rather than reference material', status: 'passed' },
+        { name: 'the same depth rule declares one exact relocation folder', status: 'passed' },
+        { name: 'page owns no documents or location-dependent outbound links', status: 'passed' },
+        { name: 'every inbound knowledge-page link is rewritten in the same item', status: 'passed' },
+        { name: 'destination satisfies its current folder rules and does not exist', status: 'passed' },
+      ],
+    };
+  }
   return {
     slug: draft.slug,
     inputHash: draft.inputHash,
@@ -1046,6 +1116,7 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
         relationship: null,
         details: [`type: ${draft.foundType} -> ${draft.expectedType}`],
         ruleGlob: draft.ruleGlob,
+        ruleField: 'type',
         expectedType: draft.expectedType,
         foundType: draft.foundType,
       },
@@ -2733,6 +2804,9 @@ async function verifyApplied(
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
 ): Promise<string | null> {
+  const depthRuleDrift =
+    item.kind === 'rule_drift' &&
+    item.evidence.some((entry) => entry.type === 'rule' && entry.ruleField === 'max_depth');
   if (item.kind === 'managed_item') {
     const issue = managedItemOperationsIssue(
       operations.flatMap((operation) =>
@@ -2747,7 +2821,7 @@ async function verifyApplied(
     if (issue) return `the managed-item operation no longer passes deterministic checks: ${issue}`;
   }
   if (item.kind === 'rule_drift') {
-    const issue = ruleDriftOperationIssue(ctx, item, operations);
+    const issue = ruleDriftOperationIssue(ctx, item, operations, 'after');
     if (issue) return `the rule-drift operation no longer passes deterministic checks: ${issue}`;
   }
   const expectedMode =
@@ -2807,7 +2881,10 @@ async function verifyApplied(
     if (row.slug !== parsed.slug || row.rel_path !== operation.relPath) {
       return `${operation.relPath} resolved to a different structural identity.`;
     }
-    if (index === 0 && row.slug !== item.subject) {
+    const canonicalSubject = depthRuleDrift
+      ? item.evidence.find((entry) => entry.type === 'rule')?.destinationSlug
+      : item.subject;
+    if (index === 0 && row.slug !== canonicalSubject) {
       return 'The canonical operation no longer resolves to the planned subject.';
     }
     if (index === 0) {
@@ -2820,7 +2897,7 @@ async function verifyApplied(
     }
     if (item.kind === 'rule_drift') {
       const expected = item.evidence.find((entry) => entry.type === 'rule')?.expectedType;
-      if (!expected || row.type !== expected) {
+      if (!depthRuleDrift && (!expected || row.type !== expected)) {
         return `${operation.relPath} did not acquire its sealed folder-rule type.`;
       }
     }
@@ -2873,6 +2950,19 @@ async function verifyApplied(
       .prepare("SELECT count(*) AS n FROM links WHERE lower(to_slug) = lower(?) AND kind != 'embed'")
       .get(retired.slug) as { n: number };
     if (remaining.n > 0) return `The structural index still contains links to ${retired.slug}.`;
+  }
+  if (depthRuleDrift) {
+    const entry = item.evidence.find((candidate) => candidate.type === 'rule')!;
+    const destination = ctx.store.db
+      .prepare('SELECT id FROM pages WHERE slug = ?')
+      .get(entry.destinationSlug) as { id: string } | undefined;
+    if (!destination || destination.id !== entry.sourcePageId) {
+      return 'The relocated page did not preserve its sealed sidecar identity.';
+    }
+    const oldLinks = ctx.store.db
+      .prepare("SELECT count(*) AS n FROM links WHERE lower(to_slug) = lower(?) AND kind != 'embed'")
+      .get(item.subject) as { n: number };
+    if (oldLinks.n > 0) return `The structural index still contains links to ${item.subject}.`;
   }
   if (isInferenceKind(item.kind)) {
     const shapeIssue = observationOperationIssue(ctx, item, operations);
@@ -3033,6 +3123,9 @@ function itemRow(ctx: AknoContext, planId: string, itemId: string): ItemRow {
 
 function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   const composed = (item.componentCount ?? 1) > 1;
+  const depthRuleDrift =
+    item.kind === 'rule_drift' &&
+    item.evidence.some((entry) => entry.type === 'rule' && entry.ruleField === 'max_depth');
   if (
     composed &&
     (!['hygiene', 'synthesis'].includes(item.kind) ||
@@ -3058,6 +3151,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   if (
     item.kind !== 'adopt' &&
     !isInferenceKind(item.kind) &&
+    !depthRuleDrift &&
     (item.operations.length === 0 || item.operations[0]?.type !== 'replace')
   ) {
     throw new AknoError('invalid', `${item.id} does not start with one supported canonical replacement`);
@@ -3072,6 +3166,7 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
       item.kind !== 'contradiction' &&
       item.kind !== 'managed_item' &&
       item.kind !== 'broken_link' &&
+      item.kind !== 'rule_drift' &&
       !isInferenceKind(item.kind) &&
       item.kind !== 'adopt' &&
       !composed &&
@@ -3102,9 +3197,19 @@ function supportedOperations(item: MaintenanceItem): MaintenanceOperation[] {
   }
   if (
     item.kind === 'rule_drift' &&
+    !depthRuleDrift &&
     (item.operations.length !== 1 || item.operations.some((operation) => operation.type !== 'replace'))
   ) {
     throw new AknoError('invalid', `${item.id} must contain exactly one rule-drift replacement`);
+  }
+  if (
+    depthRuleDrift &&
+    (item.operations.length < 2 ||
+      item.operations[0]?.type !== 'create' ||
+      item.operations.at(-1)?.type !== 'delete' ||
+      item.operations.slice(1, -1).some((operation) => operation.type !== 'replace'))
+  ) {
+    throw new AknoError('invalid', `${item.id} contains an invalid depth-relocation operation set`);
   }
   if (item.kind === 'adopt' && item.operations.some((operation) => operation.type !== 'create')) {
     throw new AknoError('invalid', `${item.id} may only create its filing page`);
@@ -3266,16 +3371,20 @@ function ruleDriftOperationIssue(
   ctx: AknoContext,
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
+  state: 'before' | 'after' = 'before',
 ): string | null {
-  const operation = operations[0];
-  if (!operation || operation.type !== 'replace' || operations.length !== 1) {
-    return 'a rule-drift item requires exactly one page replacement';
-  }
   const evidence = item.evidence.filter((entry) => entry.type === 'rule');
   if (evidence.length !== 1 || item.evidence.length !== 1) {
     return 'a rule-drift item requires exactly one structured rule evidence record';
   }
   const entry = evidence[0]!;
+  if (entry.ruleField === 'max_depth') {
+    return depthRuleDriftOperationIssue(ctx, item, operations, entry, state);
+  }
+  const operation = operations[0];
+  if (!operation || operation.type !== 'replace' || operations.length !== 1) {
+    return 'a type rule-drift item requires exactly one page replacement';
+  }
   if (!entry.ruleGlob || !entry.expectedType || !entry.foundType || !entry.fingerprint) {
     return 'a rule-drift item contains incomplete type-rule evidence';
   }
@@ -3303,6 +3412,173 @@ function ruleDriftOperationIssue(
   if (expected === null || expected !== operation.after) {
     return 'the rule-drift replacement changes bytes beyond the existing top-level type scalar';
   }
+  return null;
+}
+
+function depthRuleDriftOperationIssue(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+  operations: MaintenanceOperation[],
+  entry: MaintenanceEvidence,
+  state: 'before' | 'after',
+): string | null {
+  const create = operations[0];
+  const remove = operations.at(-1);
+  const replacements = operations.slice(1, -1);
+  if (
+    operations.length < 2 ||
+    create?.type !== 'create' ||
+    remove?.type !== 'delete' ||
+    replacements.some((operation) => operation.type !== 'replace')
+  ) {
+    return 'a depth rule-drift item must create its destination, rewrite inbound pages, then retire its source';
+  }
+  const replacementOperations = replacements as ReplaceOperation[];
+  if (
+    !entry.ruleGlob ||
+    !entry.fingerprint ||
+    !entry.maxDepth ||
+    !entry.foundDepth ||
+    !entry.relocateTo ||
+    !entry.destinationSlug ||
+    !entry.destinationRelPath ||
+    !entry.sourcePageId ||
+    !entry.sourceRelPath ||
+    !entry.sourceHash
+  ) {
+    return 'a depth rule-drift item contains incomplete relocation evidence';
+  }
+  if (
+    create.relPath !== entry.destinationRelPath ||
+    remove.relPath !== entry.sourceRelPath ||
+    remove.relPath !== `${item.subject}.md` ||
+    create.relPath !== `${entry.destinationSlug}.md` ||
+    create.after !== remove.before ||
+    sha256(remove.before) !== entry.sourceHash
+  ) {
+    return 'the relocation does not preserve the exact source page bytes at its sealed destination';
+  }
+  const source = parsePage(remove.relPath, remove.before);
+  const destination = parsePage(create.relPath, create.after);
+  if (source.slug !== item.subject || destination.slug !== entry.destinationSlug) {
+    return 'the relocation changed one of its sealed page identities';
+  }
+  if (
+    hasLocationDependentMarkdown(remove.before, item.subject) ||
+    source.links.some((link) => link.toSlug === item.subject)
+  ) {
+    return 'the source has a location-dependent or self link that cannot survive a byte-preserving relocation';
+  }
+  const declaration = declaringRule(item.subject, ctx.config.rules, 'max_depth');
+  const relocateDeclaration = declaringRule(item.subject, ctx.config.rules, 'relocate_to');
+  const relocateTo = declaration?.relocate_to
+    ?.trim()
+    .replace(/\\/g, '/')
+    .replace(/^\/+|\/+$/g, '');
+  if (
+    declaration?.glob !== entry.ruleGlob ||
+    relocateDeclaration?.glob !== entry.ruleGlob ||
+    declaration.max_depth !== entry.maxDepth ||
+    relocateTo !== entry.relocateTo ||
+    sha256(
+      JSON.stringify({
+        glob: entry.ruleGlob,
+        max_depth: entry.maxDepth,
+        relocate_to: entry.relocateTo,
+      }),
+    ) !== entry.fingerprint
+  ) {
+    return 'the current depth and relocation rule no longer matches the sealed rule evidence';
+  }
+  const ruleRootDepth = entry.ruleGlob
+    .replace(/\/\*\*?$/, '')
+    .split('/')
+    .filter(Boolean).length;
+  const currentDepth = item.subject.split('/').length - ruleRootDepth;
+  if (currentDepth !== entry.foundDepth || currentDepth <= entry.maxDepth) {
+    return 'the source no longer has the sealed max-depth violation';
+  }
+  const basename = item.subject.slice(item.subject.lastIndexOf('/') + 1);
+  if (entry.destinationSlug !== `${entry.relocateTo}/${basename}`) {
+    return 'the destination is not the exact configured relocation folder plus the original basename';
+  }
+  const destinationRule = effectiveRule(entry.destinationSlug, ctx.config.rules);
+  const destinationPolicy = resolvePagePolicy(destination, destinationRule, ctx.config.paths.observations);
+  if (destinationPolicy.role !== 'knowledge') return 'the relocation destination is no longer live knowledge';
+  if (destinationRule.slug_pattern) {
+    try {
+      if (!new RegExp(destinationRule.slug_pattern).test(basename)) {
+        return 'the relocation destination no longer satisfies its slug rule';
+      }
+    } catch {
+      return 'the relocation destination has an invalid slug rule';
+    }
+  }
+  const destinationDepth = declaringRule(entry.destinationSlug, ctx.config.rules, 'max_depth');
+  if (destinationDepth?.max_depth !== undefined) {
+    const root = destinationDepth.glob
+      .replace(/\/\*\*?$/, '')
+      .split('/')
+      .filter(Boolean).length;
+    if (entry.destinationSlug.split('/').length - root > destinationDepth.max_depth) {
+      return 'the relocation destination no longer satisfies its depth rule';
+    }
+  }
+  const liveSlug = state === 'before' ? item.subject : entry.destinationSlug;
+  const page = ctx.store.db.prepare('SELECT id, role FROM pages WHERE slug = ?').get(liveSlug) as
+    { id: string; role: string } | undefined;
+  if (!page || page.id !== entry.sourcePageId || page.role !== 'knowledge') {
+    return 'the source no longer has its sealed live knowledge identity';
+  }
+  const documents = ctx.store.db
+    .prepare('SELECT count(*) AS n FROM documents WHERE page_id = ?')
+    .get(page.id) as { n: number };
+  if (documents.n > 0) return 'the source acquired owned documents after relocation was planned';
+  const aboutRows = ctx.store.db.prepare('SELECT id, about FROM pages WHERE id != ?').all(page.id) as {
+    id: string;
+    about: string;
+  }[];
+  if (
+    aboutRows.some((row) =>
+      storedJsonStrings(row.about).some((slug) => slug.toLowerCase() === liveSlug.toLowerCase()),
+    )
+  ) {
+    return `the ${state === 'before' ? 'source' : 'destination'} acquired an incoming about relationship`;
+  }
+
+  const planned = new Map(
+    replacementOperations.map((operation) => [
+      parsePage(operation.relPath, operation.before).slug,
+      operation,
+    ]),
+  );
+  const inbound = ctx.store.db
+    .prepare(
+      `SELECT DISTINCT p.slug, p.role FROM links l JOIN pages p ON p.id = l.from_page
+        WHERE lower(l.to_slug) = lower(?) AND l.from_page != ? AND l.kind != 'embed'`,
+    )
+    .all(state === 'before' ? item.subject : entry.destinationSlug, page.id) as {
+    slug: string;
+    role: string;
+  }[];
+  if (inbound.length !== planned.size || inbound.some((candidate) => candidate.role !== 'knowledge')) {
+    return `the ${state === 'before' ? 'source' : 'destination'} inbound-link set changed or contains reference material`;
+  }
+  for (const candidate of inbound) {
+    const operation = planned.get(candidate.slug);
+    if (!operation || operation.type !== 'replace') return 'the relocation does not cover every inbound link';
+    const expected = rewritePageLinks(operation.before, candidate.slug, item.subject, entry.destinationSlug);
+    if (expected === operation.before || expected !== operation.after) {
+      return `${operation.relPath} changes bytes beyond its sealed inbound-link rewrite`;
+    }
+  }
+  const inputHash = sha256(
+    JSON.stringify([
+      [remove.relPath, sha256(remove.before)],
+      ...replacementOperations.map((operation) => [operation.relPath, sha256(operation.before)]),
+    ]),
+  );
+  if (inputHash !== item.inputHash) return 'the relocation input set no longer matches its sealed hash';
   return null;
 }
 
@@ -3474,6 +3750,14 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
 }
 
+function storedJsonStrings(value: string): string[] {
+  try {
+    return stringArray(JSON.parse(value));
+  } catch {
+    return [];
+  }
+}
+
 function sameStringSet(left: string[], right: string[]): boolean {
   return (
     left.length === right.length &&
@@ -3540,6 +3824,9 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   }
   const creates = operations.filter((operation) => operation.type === 'create').length;
   const deletes = operations.filter((operation) => operation.type === 'delete').length;
+  const depthRuleDrift =
+    item.kind === 'rule_drift' &&
+    item.evidence.some((entry) => entry.type === 'rule' && entry.ruleField === 'max_depth');
   if (item.kind === 'extract' && creates !== 1) {
     return { status: 'blocked', detail: 'an extract item must create exactly one independent page' };
   }
@@ -3555,7 +3842,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
       detail: 'a merge item must delete exactly one duplicate and create no pages',
     };
   }
-  if (item.kind !== 'merge' && deletes > 0) {
+  if (item.kind !== 'merge' && !depthRuleDrift && deletes > 0) {
     return { status: 'blocked', detail: `${item.kind} items cannot delete pages` };
   }
   if (item.kind === 'contradiction' && (creates > 0 || deletes > 0)) {
@@ -3564,7 +3851,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (item.kind === 'broken_link' && (creates > 0 || deletes > 0)) {
     return { status: 'blocked', detail: 'a broken-link item may only replace existing pages' };
   }
-  if (item.kind === 'rule_drift' && (creates > 0 || deletes > 0)) {
+  if (item.kind === 'rule_drift' && !depthRuleDrift && (creates > 0 || deletes > 0)) {
     return { status: 'blocked', detail: 'a rule-drift item may only replace one existing page' };
   }
   if (
@@ -3672,7 +3959,10 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
       return { status: 'blocked', detail: `the plan produces duplicate page identity ${parsed.slug}` };
     }
     if (operation.type !== 'delete') slugs.add(parsed.slug);
-    if (index === 0 && parsed.slug !== item.subject) {
+    const canonicalSubject = depthRuleDrift
+      ? item.evidence.find((entry) => entry.type === 'rule')?.destinationSlug
+      : item.subject;
+    if (index === 0 && parsed.slug !== canonicalSubject) {
       return { status: 'blocked', detail: 'the canonical operation changed the planned page identity' };
     }
     if (index === 0) canonical = parsed;
