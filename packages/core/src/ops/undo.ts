@@ -1,6 +1,7 @@
 import { UndoInput, type UndoOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { pruneManagedSourceArchivesFromIndex } from '../maintenance/managed-item-sources.ts';
+import { realignMaintenanceIdentityAfterUndo } from '../maintenance/plans.ts';
 
 /**
  * **Remember which change to revert** is normally asked of the model. Here
@@ -10,6 +11,7 @@ import { pruneManagedSourceArchivesFromIndex } from '../maintenance/managed-item
 export async function undo(ctx: AknoContext, rawInput: unknown): Promise<UndoOutput> {
   const input = UndoInput.parse(rawInput);
   const reversed = await ctx.journal.undo(input.change_id);
+  realignMaintenanceIdentityAfterUndo(ctx, input.change_id);
 
   // Deliberately does **not** touch `files`, in either direction.
   //

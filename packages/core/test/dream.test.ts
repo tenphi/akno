@@ -2421,7 +2421,7 @@ describe('housekeeping', () => {
     expect(housekeeping.housekeeping!.ruleRepairs.reportOnly).toBe(1);
   });
 
-  it('declines byte-preserving relocation when a relative outbound reference would change meaning', async () => {
+  it('preserves relative page, self, and owned-document links while relocating', async () => {
     await mem.close();
     mem = await openMem({
       models: { derive: { id: null } },
@@ -2432,22 +2432,79 @@ describe('housekeeping', () => {
       maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
     });
     fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
-    fs.writeFileSync(
-      path.join(root, 'notes/old/bo-winters.md'),
-      '# Bo Winters\n\nSee [warranty](../warranty.md).\n',
-      'utf8',
-    );
+    const sourcePath = 'notes/old/bo-winters.md';
+    const documentPath = 'notes/old/bo-winters-3f8c1a2b.txt';
+    const before =
+      '# Bo Winters\n\nSee [warranty](../warranty.md), [[notes/old/bo-winters#Details|this page]], and ![evidence](bo-winters-3f8c1a2b.txt).\n';
+    fs.writeFileSync(path.join(root, sourcePath), before, 'utf8');
+    fs.writeFileSync(path.join(root, documentPath), 'Invented warranty evidence.\n', 'utf8');
     await mem.index({});
+    const pageId = (await mem.read({ slug: 'notes/old/bo-winters' })).page!.id;
 
     const report = await mem.dream({ phase: 'curate' });
-    expect(report.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
+    const item = report.maintenancePlan!.items.find((entry) => entry.kind === 'rule_drift')!;
+    const stored = mem.plan(report.maintenancePlan!.id).items.find((entry) => entry.id === item.id)!;
+    expect(stored.evidence).toEqual([
+      expect.objectContaining({
+        sourceReferencesRewritten: true,
+        sourcePageId: pageId,
+      }),
+    ]);
+    const destination = stored.operations.find(
+      (operation) => operation.type === 'create' && operation.relPath === 'archive/bo-winters.md',
+    );
+    expect(destination).toMatchObject({ type: 'create' });
+    expect(destination?.type === 'create' ? destination.after : '').toBe(
+      before
+        .replace('../warranty.md', 'notes/warranty.md')
+        .replace('[[notes/old/bo-winters#Details|this page]]', '[[archive/bo-winters#Details|this page]]'),
+    );
+    mem.decidePlan(
+      report.maintenancePlan!.id,
+      item.id,
+      'approve',
+      'The invented references retain their exact targets.',
+    );
+    const applied = await mem.applyPlan(report.maintenancePlan!.id);
+    expect(applied.plan.items.find((entry) => entry.id === item.id)).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect((await mem.read({ slug: 'archive/bo-winters' })).page!.id).toBe(pageId);
+    expect(fs.existsSync(path.join(root, 'archive/bo-winters-3f8c1a2b.txt'))).toBe(true);
+
+    const changeId = applied.plan.items.find((entry) => entry.id === item.id)!.changeId!;
+    await mem.undo({ change_id: changeId });
+    expect(fs.readFileSync(path.join(root, sourcePath), 'utf8')).toBe(before);
+    expect((await mem.read({ slug: 'notes/old/bo-winters' })).page!.id).toBe(pageId);
+    expect(fs.existsSync(path.join(root, documentPath))).toBe(true);
+  });
+
+  it('keeps relocation held for a relative local file the page does not own', async () => {
+    await mem.close();
+    mem = await openMem({
+      models: { derive: { id: null } },
+      folders: {
+        'notes/**': { max_depth: 1, relocate_to: 'archive' },
+        'archive/**': { role: 'knowledge' },
+      },
+      maintenance: { profile: 'audit', policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'notes/old'), { recursive: true });
+    const before = '# Bo Winters\n\nSee [shared evidence](evidence.txt).\n';
+    fs.writeFileSync(path.join(root, 'notes/old/bo-winters.md'), before, 'utf8');
+    fs.writeFileSync(path.join(root, 'notes/old/evidence.txt'), 'Invented shared evidence.\n', 'utf8');
+    await mem.index({});
+
+    const curate = await mem.dream({ phase: 'curate' });
+    expect(curate.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
       expect.objectContaining({ kind: 'rule_drift', subject: 'notes/old/bo-winters' }),
     );
     const housekeeping = await mem.dream({ phase: 'housekeeping' });
     expect(
       housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters')?.repair,
     ).toMatchObject({ status: 'held', code: 'location_dependent_reference' });
-    expect(housekeeping.housekeeping!.ruleRepairs.held).toBe(1);
+    expect(fs.readFileSync(path.join(root, 'notes/old/bo-winters.md'), 'utf8')).toBe(before);
   });
 
   it('keeps relocation held when reference material has an incoming about relationship', async () => {

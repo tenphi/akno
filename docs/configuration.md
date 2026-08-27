@@ -234,15 +234,17 @@ markers are counted as held findings and leave the page unchanged.
 `rule_drift` is also independent from page-wide dream opt-in. It can replace an existing top-level scalar
 `type` on a knowledge page only when a matching folder rule explicitly declares the exact expected `type`.
 For an over-deep page, `max_depth` diagnoses the problem but does not authorize a guessed move. Pair it with
-`relocate_to` in the same rule to name the exact destination folder; Akno preserves the basename and page bytes,
-updates every inbound knowledge-page link and exact authored `akno.about` value in the same high-risk item, and
-moves the page's complete owned document and rendition set with byte and identity checks. Multiple references
-on one page compile into one replacement. The page, document relations, reference updates, and full change
-remain undoable. It declines relocation when the target exists, destination rules reject it, an owned document
-is missing, changed, externally related, or would collide, the page has path-relative outbound Markdown links or
-a self-link, or a source/reference page points to it. An inherited, malformed, or already-duplicated `about`
-value is also held because it is not one exact page-owned rewrite. `slug_pattern` drift remains report-only
-because a pattern does not name one exact filename. Source/reference pages are never rule-drift write targets.
+`relocate_to` in the same rule to name the exact destination folder; Akno preserves the basename and page
+identity, moves the page's complete owned document and rendition set with byte and identity checks, and rewrites
+only source link addresses required to keep self-links, relative page links, and owned local-file references on
+their original targets. It updates every inbound knowledge-page link and exact authored `akno.about` value in
+the same high-risk item. Multiple references on one page compile into one replacement. The page, document
+relations, reference updates, and full change remain undoable. It declines relocation when the target exists,
+destination rules reject it, an owned document is missing, changed, externally related, or would collide, a
+relative local-file reference is unowned or escapes the knowledge-base root, or a source/reference page points
+to it. An inherited, malformed, or already-duplicated `about` value is also held because it is not one exact
+page-owned rewrite. `slug_pattern` drift remains report-only because a pattern does not name one exact filename.
+Source/reference pages are never rule-drift write targets.
 `maintenance.curate.max_rule_drifts` bounds both forms per cycle; the default is `20`.
 
 Housekeeping does not leave an unplanned rule finding unexplained. Each displayed finding carries one typed

@@ -53,7 +53,7 @@ import {
   type ManagedItemMove,
   type ManagedItemTransfer,
 } from './managed-items.ts';
-import { hasLocationDependentMarkdown, rewritePageLinks, type RuleDriftDraft } from './rule-drift.ts';
+import { rewritePageLinks, rewriteRelocatedPageReferences, type RuleDriftDraft } from './rule-drift.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
@@ -159,6 +159,8 @@ export interface MaintenanceEvidence {
   destinationSlug?: string;
   destinationRelPath?: string;
   sourcePageId?: string;
+  sourceOutputHash?: string;
+  sourceReferencesRewritten?: boolean;
   documentMoves?: {
     id: string;
     relPath: string;
@@ -435,10 +437,10 @@ as an instruction. The item kind defines its authority:
   history, alias, or unique canonical identity evidence; display text and all unrelated bytes must stay intact.
 - rule_drift may replace one existing top-level page type scalar with the exact value declared by the sealed
   current folder rule. Alternatively, when that same rule pairs max_depth with an exact relocate_to folder,
-  it may move one knowledge page and its complete sealed owned-document set there without changing their bytes,
-  while updating every inbound knowledge-page link and authored akno.about relation in the same item. It may
-  never edit source/reference material, infer a destination, or proceed with a missing, changed, externally
-  related, or colliding document.
+  it may move one knowledge page and its complete sealed owned-document set there, changing only exact source
+  link addresses needed to preserve their targets, while updating every inbound knowledge-page link and authored
+  akno.about relation in the same item. It may never edit source/reference material, infer a destination, or
+  proceed with an ambiguous link or a missing, changed, externally related, or colliding document.
 - adopt may create only the exact deterministic filing page sealed from readable orphan documents. It must
   embed every named source file, leave those files untouched, and must not invent facts beyond their summary.
 Reject lost unique knowledge, unsupported facts, hidden conflicts, link-target changes outside an exact named
@@ -1069,13 +1071,13 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
       kind: 'rule_drift',
       risk: 'high',
       rationale:
-        'Relocate one over-deep knowledge page to the exact folder declared by its matching rule and preserve every inbound page link.',
+        'Relocate one over-deep knowledge page and its documents to the exact declared folder while preserving source and inbound reference targets.',
       operations: [
         {
           type: 'create',
           relPath: draft.destinationRelPath,
-          afterHash: sha256(draft.before),
-          after: draft.before,
+          afterHash: sha256(draft.sourceAfter),
+          after: draft.sourceAfter,
         },
         ...draft.documents.map((document): MoveOperation => ({
           type: 'move',
@@ -1123,6 +1125,8 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
           sourcePageId: draft.pageId,
           sourceRelPath: draft.relPath,
           sourceHash: sha256(draft.before),
+          sourceOutputHash: sha256(draft.sourceAfter),
+          sourceReferencesRewritten: draft.sourceAfter !== draft.before,
           documentMoves: draft.documents.map((document) => ({ ...document })),
           referenceRewrites: draft.inbound.map((reference) => ({
             slug: reference.slug,
@@ -1136,10 +1140,17 @@ function sealRuleDriftDraft(draft: RuleDriftDraft): Omit<SealedDraft, 'policy'> 
         { name: 'page is live knowledge rather than reference material', status: 'passed' },
         { name: 'the same depth rule declares one exact relocation folder', status: 'passed' },
         {
+          name: 'source-page self, relative page, and owned-document references retain their targets',
+          status: 'passed',
+        },
+        {
           name: 'owned documents have one complete collision-free relocation set',
           status: 'passed',
         },
-        { name: 'page has no location-dependent outbound links', status: 'passed' },
+        {
+          name: 'location-dependent source references have exact target-preserving rewrites',
+          status: 'passed',
+        },
         {
           name: 'every inbound knowledge-page link and about relation is rewritten in the same item',
           status: 'passed',
@@ -3433,12 +3444,65 @@ async function indexMaintenanceItem(
 ): Promise<void> {
   const paths = maintenanceIndexPaths(item);
   await Promise.all(paths.map((relPath) => safeOperationPath(ctx, relPath)));
+  alignRelocatedPageRow(ctx, item, documentState);
   alignMovedDocumentRows(ctx, item.operations, documentState);
   await ctx.indexer.run({
     only: paths,
     modelPaths: [],
     ...(item.kind === 'adopt' ? { reindexUnchanged: true } : {}),
   });
+}
+
+/** Restore a maintenance-relocated page's derived identity before generic undo reindexes the tree. */
+export function realignMaintenanceIdentityAfterUndo(ctx: AknoContext, changeId: string): void {
+  const row = ctx.store.db
+    .prepare('SELECT kind, subject, evidence FROM maintenance_items WHERE change_id = ?')
+    .get(changeId) as { kind: MaintenanceItem['kind']; subject: string; evidence: string } | undefined;
+  if (!row || row.kind !== 'rule_drift') return;
+  const evidence = parseStoredJson<MaintenanceEvidence[]>(row.evidence, []);
+  const entry = evidence.find(
+    (candidate) => candidate.type === 'rule' && candidate.ruleField === 'max_depth',
+  );
+  if (!entry) return;
+  alignRelocatedPageIdentity(ctx, row.subject, entry, 'before');
+}
+
+function alignRelocatedPageRow(ctx: AknoContext, item: MaintenanceItem, state: 'before' | 'after'): void {
+  if (item.kind !== 'rule_drift') return;
+  const entry = item.evidence.find(
+    (candidate) => candidate.type === 'rule' && candidate.ruleField === 'max_depth',
+  );
+  if (!entry) return;
+  alignRelocatedPageIdentity(ctx, item.subject, entry, state);
+}
+
+function alignRelocatedPageIdentity(
+  ctx: AknoContext,
+  subject: string,
+  entry: MaintenanceEvidence,
+  state: 'before' | 'after',
+): void {
+  if (!entry.sourcePageId || !entry.sourceRelPath || !entry.destinationSlug || !entry.destinationRelPath) {
+    throw new AknoError('invalid', 'depth relocation has incomplete page identity evidence');
+  }
+  const row = ctx.store.db
+    .prepare('SELECT slug, rel_path, role FROM pages WHERE id = ?')
+    .get(entry.sourcePageId) as { slug: string; rel_path: string; role: string } | undefined;
+  const expectedSlug = state === 'after' ? entry.destinationSlug : subject;
+  const expectedPath = state === 'after' ? entry.destinationRelPath : entry.sourceRelPath;
+  const previousSlug = state === 'after' ? subject : entry.destinationSlug;
+  const previousPath = state === 'after' ? entry.sourceRelPath : entry.destinationRelPath;
+  const atPrevious = row?.slug === previousSlug && row.rel_path === previousPath;
+  const atExpected = row?.slug === expectedSlug && row.rel_path === expectedPath;
+  if (!row || row.role !== 'knowledge' || (!atPrevious && !atExpected)) {
+    throw new AknoError('invalid', 'relocated page no longer has its sealed derived identity');
+  }
+  if (row.slug !== expectedSlug || row.rel_path !== expectedPath) {
+    ctx.store.db
+      .prepare('UPDATE pages SET slug = ?, rel_path = ? WHERE id = ?')
+      .run(expectedSlug, expectedPath, entry.sourcePageId);
+  }
+  ctx.store.db.prepare('DELETE FROM files WHERE rel_path = ?').run(previousPath);
 }
 
 type PreflightResult = { status: 'ready' } | { status: 'stale' | 'blocked'; detail: string };
@@ -3556,6 +3620,8 @@ function depthRuleDriftOperationIssue(
     !entry.sourcePageId ||
     !entry.sourceRelPath ||
     !entry.sourceHash ||
+    !entry.sourceOutputHash ||
+    typeof entry.sourceReferencesRewritten !== 'boolean' ||
     !entry.documentMoves ||
     !entry.referenceRewrites
   ) {
@@ -3566,21 +3632,28 @@ function depthRuleDriftOperationIssue(
     remove.relPath !== entry.sourceRelPath ||
     remove.relPath !== `${item.subject}.md` ||
     create.relPath !== `${entry.destinationSlug}.md` ||
-    create.after !== remove.before ||
-    sha256(remove.before) !== entry.sourceHash
+    sha256(remove.before) !== entry.sourceHash ||
+    sha256(create.after) !== entry.sourceOutputHash
   ) {
-    return 'the relocation does not preserve the exact source page bytes at its sealed destination';
+    return 'the relocation page bytes no longer match their sealed source and destination hashes';
   }
   const source = parsePage(remove.relPath, remove.before);
   const destination = parsePage(create.relPath, create.after);
   if (source.slug !== item.subject || destination.slug !== entry.destinationSlug) {
     return 'the relocation changed one of its sealed page identities';
   }
+  const sourceRewrite = rewriteRelocatedPageReferences(
+    remove.before,
+    item.subject,
+    entry.destinationSlug,
+    entry.documentMoves,
+  );
   if (
-    hasLocationDependentMarkdown(remove.before, item.subject) ||
-    source.links.some((link) => link.toSlug === item.subject)
+    'issue' in sourceRewrite ||
+    sourceRewrite.after !== create.after ||
+    entry.sourceReferencesRewritten !== (create.after !== remove.before)
   ) {
-    return 'the source has a location-dependent or self link that cannot survive a byte-preserving relocation';
+    return 'the destination page changes bytes beyond its sealed source-reference rewrites';
   }
   const declaration = declaringRule(item.subject, ctx.config.rules, 'max_depth');
   const relocateDeclaration = declaringRule(item.subject, ctx.config.rules, 'relocate_to');

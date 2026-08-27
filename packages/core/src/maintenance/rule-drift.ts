@@ -28,6 +28,7 @@ export interface TypeRuleDriftDraft extends RuleDriftBase {
 export interface DepthRuleDriftDraft extends RuleDriftBase {
   correction: 'max_depth';
   before: string;
+  sourceAfter: string;
   pageId: string;
   maxDepth: number;
   foundDepth: number;
@@ -99,7 +100,6 @@ export type RuleRepairAssessment =
         | 'destination_not_knowledge'
         | 'destination_rule_conflict'
         | 'location_dependent_reference'
-        | 'self_link'
         | 'document_unavailable'
         | 'document_unreadable'
         | 'document_changed'
@@ -305,7 +305,6 @@ async function prepareDepthRepair(
   )
     return outcome('held', 'destination_occupied', 'a file already occupies the exact destination');
 
-  const parsed = parsePage(candidate.relPath, before);
   const destinationPage = parsePage(destinationRelPath, before);
   const destinationRule = effectiveRule(destinationSlug, ctx.config.rules);
   const destinationPolicy = resolvePagePolicy(
@@ -323,16 +322,6 @@ async function prepareDepthRepair(
       'the exact destination violates its current folder rules',
     );
   }
-  if (hasLocationDependentMarkdown(before, candidate.slug)) {
-    return outcome(
-      'held',
-      'location_dependent_reference',
-      'a relative Markdown reference would change meaning after a byte-preserving move',
-    );
-  }
-  if (parsed.links.some((link) => link.toSlug === candidate.slug)) {
-    return outcome('held', 'self_link', 'a self-link would still name the retired path');
-  }
   const preparedDocuments = await prepareDocumentMoves(
     ctx,
     candidate.pageId,
@@ -341,6 +330,15 @@ async function prepareDepthRepair(
     destinationRelPath,
   );
   if ('assessment' in preparedDocuments) return preparedDocuments;
+  const sourceRewrite = rewriteRelocatedPageReferences(
+    before,
+    candidate.slug,
+    destinationSlug,
+    preparedDocuments.documents,
+  );
+  if ('issue' in sourceRewrite) {
+    return outcome('held', 'location_dependent_reference', sourceRewrite.issue);
+  }
   const aboutRows = ctx.store.db
     .prepare('SELECT id, slug, rel_path, role, about FROM pages WHERE id != ? ORDER BY slug')
     .all(candidate.pageId) as {
@@ -448,7 +446,7 @@ async function prepareDepthRepair(
     assessment: {
       status: 'ready',
       code: 'exact_relocation',
-      reason: 'one exact byte-preserving relocation and complete inbound-reference update are available',
+      reason: 'one exact identity-preserving relocation and complete reference update are available',
     },
     draft: {
       kind: 'rule_drift',
@@ -457,6 +455,7 @@ async function prepareDepthRepair(
       relPath: candidate.relPath,
       inputHash,
       before,
+      sourceAfter: sourceRewrite.after,
       pageId: candidate.pageId,
       maxDepth: declaration.max_depth,
       foundDepth: candidate.foundDepth,
@@ -653,20 +652,100 @@ function destinationRuleIssues(slug: string, ctx: AknoContext): number {
   return 0;
 }
 
-export function hasLocationDependentMarkdown(content: string, fromSlug: string): boolean {
-  for (const match of content.matchAll(/!?\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+[^)]*)?\)/g)) {
-    const href = match[1]!;
-    if (/^[a-z]+:/i.test(href) || href.startsWith('#')) continue;
-    const target = href.split('#', 1)[0]!;
-    if (
-      target.startsWith('../') ||
-      target.startsWith('./') ||
-      !target.replace(/\.(md|markdown)$/i, '').includes('/')
-    ) {
-      if (normalizeLinkTarget(target, fromSlug)) return true;
+/** Preserve source-page link meaning while its folder changes, without interpreting prose. */
+export function rewriteRelocatedPageReferences(
+  content: string,
+  fromSlug: string,
+  toSlug: string,
+  documents: Pick<RuleDriftDocumentMove, 'relPath' | 'destinationRelPath'>[],
+): { after: string } | { issue: string } {
+  const documentDestinations = new Map(
+    documents.map((document) => [document.relPath.replaceAll('\\', '/'), document.destinationRelPath]),
+  );
+  const sourceDir = path.posix.dirname(`${fromSlug}.md`);
+  const destinationDir = path.posix.dirname(`${toSlug}.md`);
+  let issue: string | null = null;
+
+  // Canonical page self-links have one exact successor. This handles wikilinks and ordinary
+  // Markdown page links while retaining fragments, labels, aliases, and titles.
+  let after = rewritePageLinks(content, fromSlug, fromSlug, toSlug);
+  after = after.replace(
+    /(!?\[[^\]]*\]\(\s*<?)([^\s)>]+)(>?)(\s+[^)]*)?\)/g,
+    (whole, prefix, rawHref, closing, titlePart) => {
+      if (issue) return whole;
+      const href = String(rawHref);
+      if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('#') || href.startsWith('/')) {
+        return whole;
+      }
+      const hash = href.indexOf('#');
+      const target = (hash >= 0 ? href.slice(0, hash) : href).replaceAll('\\', '/');
+      const fragment = hash >= 0 ? href.slice(hash) : '';
+      if (!locationDependentTarget(target)) return whole;
+      if (target.includes('?')) {
+        issue = 'a relative Markdown reference contains a query and has no exact relocation rewrite';
+        return whole;
+      }
+      const sourcePath = resolveRelativePath(sourceDir, target);
+      if (!sourcePath) {
+        issue = 'a relative Markdown reference escapes the knowledge-base root';
+        return whole;
+      }
+      const extension = path.posix.extname(sourcePath).toLowerCase();
+      let rewrittenTarget: string;
+      if ((extension === '.md' || extension === '.markdown') && !String(prefix).startsWith('!')) {
+        const sourceTarget = sourcePath.slice(0, -extension.length);
+        rewrittenTarget = `${sourceTarget.toLowerCase() === fromSlug.toLowerCase() ? toSlug : sourceTarget}.md`;
+      } else {
+        const destination = documentDestinations.get(sourcePath);
+        if (!destination) {
+          issue = 'a relative local-file reference is not one of the page’s sealed owned documents';
+          return whole;
+        }
+        rewrittenTarget = path.posix.relative(destinationDir, destination);
+        if (!rewrittenTarget || rewrittenTarget.startsWith('../')) {
+          issue = 'an owned document has no safe relative path from the relocation destination';
+          return whole;
+        }
+      }
+      return `${String(prefix)}${rewrittenTarget}${fragment}${String(closing ?? '')}${String(titlePart ?? '')})`;
+    },
+  );
+  if (issue) return { issue };
+
+  after = after.replace(/\[\[([^\]|#]+)((?:#[^\]|]+)?(?:\|[^\]]+)?)\]\]/g, (whole, rawTarget, suffix) => {
+    if (issue) return whole;
+    const target = String(rawTarget).trim().replaceAll('\\', '/');
+    if (!/\.[A-Za-z0-9]{1,8}$/.test(target) || !locationDependentTarget(target)) return whole;
+    const sourcePath = resolveRelativePath(sourceDir, target);
+    if (!sourcePath) {
+      issue = 'a relative embedded-file reference escapes the knowledge-base root';
+      return whole;
     }
+    const destination = documentDestinations.get(sourcePath);
+    if (!destination) {
+      issue = 'a relative embedded-file reference is not one of the page’s sealed owned documents';
+      return whole;
+    }
+    const rewrittenTarget = path.posix.relative(destinationDir, destination);
+    if (!rewrittenTarget || rewrittenTarget.startsWith('../')) {
+      issue = 'an embedded owned document has no safe relative relocation path';
+      return whole;
+    }
+    return `[[${rewrittenTarget}${String(suffix)}]]`;
+  });
+  return issue ? { issue } : { after };
+}
+
+function locationDependentTarget(target: string): boolean {
+  return target.startsWith('../') || target.startsWith('./') || !target.includes('/');
+}
+
+function resolveRelativePath(sourceDir: string, target: string): string | null {
+  const resolved = path.posix.normalize(path.posix.join(sourceDir === '.' ? '' : sourceDir, target));
+  if (!resolved || resolved === '..' || resolved.startsWith('../') || path.posix.isAbsolute(resolved)) {
+    return null;
   }
-  return false;
+  return resolved.replace(/^\.\//, '');
 }
 
 /** Losslessly retarget page links, retaining aliases, fragments, labels, and titles. */
