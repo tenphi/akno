@@ -65,8 +65,10 @@ akno plan prune
 
 Status includes the next expected schedule, recent durable runs, policy, typed model degradation, decisions,
 item verification, final run verification, and budget use. Final verification rechecks every applied item's
-sealed disk/index outcome plus budget and model accounting; only aggregate counts and issue codes appear in
-the run receipt. Inspect exact private changes only with `akno plan diff <plan-id>`.
+sealed disk/index outcome, budget and model accounting, and the complete indexable knowledge-base diff. An
+unrelated concurrent add, edit, or removal is preserved but fails certification as an aggregate
+`unattributed_file_change`; paths never enter the run receipt. Inspect exact private planned changes only with
+`akno plan diff <plan-id>`.
 
 If a newer run makes queued work obsolete, retire the old plan without touching the knowledge base:
 

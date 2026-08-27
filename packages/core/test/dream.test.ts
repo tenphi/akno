@@ -780,7 +780,13 @@ describe('the full-run planning barrier', () => {
     const observation = first.maintenancePlans.find((plan) => plan.phase === 'observe')!;
 
     expect(server.requestKinds()).toEqual(['observe', 'reflect']);
-    expect(first.run.status).toBe('partially_completed');
+    expect(first.run.status).toBe('failed');
+    expect(first.verification).toMatchObject({
+      status: 'failed',
+      unattributedFiles: 1,
+      checks: { wholeSnapshot: 'failed' },
+      issues: [{ code: 'unattributed_file_change', count: 1 }],
+    });
     expect(observation.status).toBe('failed');
     expect(observation.items[0]).toMatchObject({
       status: 'stale',
@@ -819,13 +825,53 @@ describe('the full-run planning barrier', () => {
     const observation = report.maintenancePlans.find((plan) => plan.phase === 'observe')!;
 
     expect(server.requestKinds()).toEqual(['observe', 'reflect']);
-    expect(report.run.status).toBe('partially_completed');
+    expect(report.run.status).toBe('failed');
+    expect(report.verification).toMatchObject({
+      status: 'failed',
+      unattributedFiles: 1,
+      checks: { wholeSnapshot: 'failed' },
+      issues: [{ code: 'unattributed_file_change', count: 1 }],
+    });
     expect(observation.items[0]).toMatchObject({
       status: 'stale',
       statusCode: 'snapshot_drift',
       decision: null,
     });
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+  });
+
+  it('attributes sealed writes while reporting an unrelated concurrent edit without replacing it', async () => {
+    server.reply(OBSERVED);
+    server.onCurator(() => {
+      fs.appendFileSync(
+        path.join(root, 'notes/manual.md'),
+        '\nAn invented external annotation arrived during curation.\n',
+      );
+    });
+
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(report.maintenancePlan!.items[0]).toMatchObject({ status: 'applied' });
+    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
+      PATTERN,
+    );
+    expect(fs.readFileSync(path.join(root, 'notes/manual.md'), 'utf8')).toContain(
+      'invented external annotation',
+    );
+    expect(report.verification).toMatchObject({
+      status: 'failed',
+      appliedItems: 1,
+      affectedFiles: 1,
+      unattributedFiles: 1,
+      checks: {
+        appliedItems: 'passed',
+        affectedPaths: 'passed',
+        wholeSnapshot: 'failed',
+      },
+      issues: [{ code: 'unattributed_file_change', count: 1 }],
+    });
+    expect(report.run.status).toBe('failed');
+    expect(JSON.stringify(report.run.verification)).not.toContain('notes/manual');
   });
 });
 
@@ -2651,9 +2697,11 @@ describe('the cycle', () => {
       plans: 0,
       appliedItems: 0,
       affectedFiles: 0,
+      unattributedFiles: 0,
       checks: {
         appliedItems: 'not_applicable',
         affectedPaths: 'not_applicable',
+        wholeSnapshot: 'passed',
         budget: 'passed',
         modelUsage: 'passed',
       },

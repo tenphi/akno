@@ -1018,8 +1018,10 @@ function printRunVerification(verification: DreamRunReceipt['verification']): vo
     ['status', verification.status],
     ['applied items', verification.appliedItems],
     ['affected files', verification.affectedFiles],
+    ['unattributed files', verification.unattributedFiles ?? 'not recorded'],
     ['item receipts', verification.checks.appliedItems],
     ['affected paths', verification.checks.affectedPaths],
+    ['whole snapshot', verification.checks.wholeSnapshot],
     ['budget accounting', verification.checks.budget],
     ['model accounting', verification.checks.modelUsage],
   ]);

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import type { AknoConfig } from '../config/schema.ts';
-import { KB_RULES_FILE } from '../config/load.ts';
+import { indexScanIgnore } from '../config/load.ts';
 import { ledgerSlug } from '../reserved.ts';
 import { extract, type Extraction } from '../ingest/extract.ts';
 import { documentPart, documentRendition } from '../ingest/parts.ts';
@@ -470,7 +470,7 @@ export class Indexer {
    * described in `doctor` as a document whose contents could not be extracted.
    */
   private scanIgnore(): string[] {
-    return [...this.#config.ignore, KB_RULES_FILE];
+    return indexScanIgnore(this.#config.ignore);
   }
 
   /** The policy current rules give a slug, ignoring page-local declarations. */

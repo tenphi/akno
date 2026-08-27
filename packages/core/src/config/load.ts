@@ -25,6 +25,11 @@ import {
 export const KB_RULES_FILE = 'akno.jsonc';
 const LEGACY_KB_RULES_FILE = 'akno.json';
 
+/** Keep every whole-tree reader on the indexer's exact configured file scope. */
+export function indexScanIgnore(configured: readonly string[]): string[] {
+  return [...configured, KB_RULES_FILE];
+}
+
 export interface LoadOptions {
   /** Wins over every file, for `open({ aknoPath })` and `--akno-path`. */
   aknoPath?: string;

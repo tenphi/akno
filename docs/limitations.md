@@ -85,9 +85,11 @@ inference, and pinning every planner read to one global database revision remain
 item does seal and move its own complete attachment set; dependencies between separate items remain bounded.
 Ambiguous or persistent dependencies are deferred to a later cycle rather than guessed through.
 
-Final run verification rechecks all applied items and receipt accounting, but it does not treat an unrelated
-file edited concurrently by a user or sync client as an Akno failure. Whole-vault change attribution and
-strict snapshot isolation remain future concurrency policies.
+Final run verification hashes the complete indexable tree and treats an unrelated file added, removed, or
+edited concurrently by a user or sync client as a content-safe `unattributed_file_change`. It preserves those
+bytes and fails only the run's certification. It does not provide an operating-system filesystem snapshot or
+pin every planner query to one immutable database revision; affected sealed inputs still rely on the repeated
+preflight barrier, and strict read isolation remains future work.
 
 ## No configurable fail-fast maintenance mode
 

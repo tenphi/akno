@@ -1,17 +1,27 @@
 import { isDeepStrictEqual } from 'node:util';
 import type { AknoContext } from '../context.ts';
+import { indexScanIgnore } from '../config/load.ts';
+import { hashFile, mapWithConcurrency, scanTree } from '../kb/scan.ts';
 import type { DreamModelUsageReceipt } from './model-telemetry.ts';
 import type { MaintenanceBudgetReceipt, MaintenanceBudgetTracker } from './budget.ts';
-import { getMaintenancePlan, reverifyAppliedMaintenanceItem, type MaintenanceItem } from './plans.ts';
+import {
+  getMaintenancePlan,
+  reverifyAppliedMaintenanceItem,
+  type MaintenanceItem,
+  type MaintenanceOperation,
+} from './plans.ts';
+import type { DreamRunFileManifest } from './runs.ts';
 
 export type DreamRunVerificationStatus = 'passed' | 'failed';
-export type DreamRunVerificationCheckStatus = DreamRunVerificationStatus | 'not_applicable';
+export type DreamRunVerificationCheckStatus = DreamRunVerificationStatus | 'not_applicable' | 'not_recorded';
 export type DreamRunVerificationIssueCode =
   | 'plan_unavailable'
   | 'missing_change_id'
   | 'item_verification_incomplete'
   | 'item_verification_failed'
   | 'affected_path_mismatch'
+  | 'snapshot_scan_failed'
+  | 'unattributed_file_change'
   | 'budget_receipt_mismatch'
   | 'model_usage_mismatch';
 
@@ -27,9 +37,12 @@ export interface DreamRunVerificationReceipt {
   plans: number;
   appliedItems: number;
   affectedFiles: number;
+  /** Null on historical receipts and when the final filesystem scan could not complete. */
+  unattributedFiles: number | null;
   checks: {
     appliedItems: DreamRunVerificationCheckStatus;
     affectedPaths: DreamRunVerificationCheckStatus;
+    wholeSnapshot: DreamRunVerificationCheckStatus;
     budget: DreamRunVerificationStatus;
     modelUsage: DreamRunVerificationStatus;
   };
@@ -46,10 +59,12 @@ export async function verifyDreamRun(
   budgetTracker: MaintenanceBudgetTracker,
   budget: MaintenanceBudgetReceipt,
   modelUsage: DreamModelUsageReceipt,
+  baseline: DreamRunFileManifest,
 ): Promise<DreamRunVerificationReceipt> {
   const issues = new Map<DreamRunVerificationIssueCode, number>();
   const uniquePlanIds = [...new Set(planIds)];
   const affectedFiles = new Set<string>();
+  const itemsForAttribution: MaintenanceItem[] = [];
   let appliedItems = 0;
   let itemReceiptFailed = false;
   let affectedPathFailed = false;
@@ -65,6 +80,7 @@ export async function verifyDreamRun(
     }
 
     for (const item of items) {
+      itemsForAttribution.push(item);
       if (item.status === 'verification_failed') {
         addIssue(issues, 'item_verification_failed');
         itemReceiptFailed = true;
@@ -78,7 +94,10 @@ export async function verifyDreamRun(
       if (item.status !== 'applied') continue;
 
       appliedItems += 1;
-      for (const operation of item.operations) affectedFiles.add(operation.relPath);
+      for (const operation of item.operations) {
+        affectedFiles.add(operation.relPath);
+        if (operation.type === 'move') affectedFiles.add(operation.toRelPath);
+      }
       if (!item.changeId) {
         addIssue(issues, 'missing_change_id');
         itemReceiptFailed = true;
@@ -104,12 +123,27 @@ export async function verifyDreamRun(
   const modelUsagePassed = modelUsageIsConsistent(modelUsage);
   if (!modelUsagePassed) addIssue(issues, 'model_usage_mismatch');
 
+  let unattributedFiles: number | null = null;
+  let wholeSnapshotPassed = true;
+  try {
+    const observed = await captureCurrentFileManifest(ctx);
+    unattributedFiles = countUnattributedFileChanges(baseline, observed, itemsForAttribution);
+    if (unattributedFiles > 0) {
+      addIssue(issues, 'unattributed_file_change', unattributedFiles);
+      wholeSnapshotPassed = false;
+    }
+  } catch {
+    addIssue(issues, 'snapshot_scan_failed');
+    wholeSnapshotPassed = false;
+  }
+
   return {
     status: issues.size === 0 ? 'passed' : 'failed',
     checkedAt: new Date().toISOString(),
     plans: uniquePlanIds.length,
     appliedItems,
     affectedFiles: affectedFiles.size,
+    unattributedFiles,
     checks: {
       appliedItems:
         appliedItems === 0 && !itemReceiptFailed ? 'not_applicable' : itemReceiptFailed ? 'failed' : 'passed',
@@ -119,11 +153,43 @@ export async function verifyDreamRun(
           : affectedPathFailed
             ? 'failed'
             : 'passed',
+      wholeSnapshot: wholeSnapshotPassed ? 'passed' : 'failed',
       budget: budgetPassed ? 'passed' : 'failed',
       modelUsage: modelUsagePassed ? 'passed' : 'failed',
     },
     issues: [...issues].map(([code, count]) => ({ code, count })),
   };
+}
+
+/**
+ * Compare the observed tree with the run baseline plus every sealed write that reached disk.
+ * Paths touched by a failed item remain that item's responsibility; they are not also blamed on
+ * an unrelated user or sync-client edit.
+ */
+export function countUnattributedFileChanges(
+  baseline: DreamRunFileManifest,
+  observed: DreamRunFileManifest,
+  items: readonly Pick<MaintenanceItem, 'status' | 'changeId' | 'operations'>[],
+): number {
+  const expected = new Map(baseline);
+  const itemOwnedPaths = new Set<string>();
+
+  for (const item of items) {
+    const reachedDisk = item.status === 'applied' || item.status === 'verification_pending';
+    const ownsPath = reachedDisk || item.changeId !== null;
+    for (const operation of item.operations) {
+      if (ownsPath) addOperationPaths(itemOwnedPaths, operation);
+      if (reachedDisk) applyExpectedOperation(expected, operation);
+    }
+  }
+
+  const paths = new Set([...expected.keys(), ...observed.keys()]);
+  let unattributed = 0;
+  for (const relPath of paths) {
+    if (expected.get(relPath) === observed.get(relPath)) continue;
+    if (!itemOwnedPaths.has(relPath)) unattributed += 1;
+  }
+  return unattributed;
 }
 
 export function budgetReceiptMatchesTracker(
@@ -173,8 +239,40 @@ export function modelUsageIsConsistent(usage: DreamModelUsageReceipt): boolean {
 function addIssue(
   issues: Map<DreamRunVerificationIssueCode, number>,
   code: DreamRunVerificationIssueCode,
+  count = 1,
 ): void {
-  issues.set(code, (issues.get(code) ?? 0) + 1);
+  issues.set(code, (issues.get(code) ?? 0) + count);
+}
+
+async function captureCurrentFileManifest(ctx: AknoContext): Promise<Map<string, string>> {
+  const files = await scanTree({
+    root: ctx.config.aknoPath,
+    ignore: indexScanIgnore(ctx.config.ignore),
+    pageExtensions: ctx.config.pageExtensions,
+    maxPageBytes: ctx.config.maxPageBytes,
+  });
+  await mapWithConcurrency(files, ctx.config.index.hashConcurrency, async (file) => {
+    file.sha256 = await hashFile(file.absPath);
+  });
+  return new Map(files.map((file) => [file.relPath, file.sha256!]));
+}
+
+function addOperationPaths(paths: Set<string>, operation: MaintenanceOperation): void {
+  paths.add(operation.relPath);
+  if (operation.type === 'move') paths.add(operation.toRelPath);
+}
+
+function applyExpectedOperation(expected: Map<string, string>, operation: MaintenanceOperation): void {
+  if (operation.type === 'delete') {
+    expected.delete(operation.relPath);
+    return;
+  }
+  if (operation.type === 'move') {
+    expected.delete(operation.relPath);
+    expected.set(operation.toRelPath, operation.beforeHash);
+    return;
+  }
+  expected.set(operation.relPath, operation.afterHash);
 }
 
 function budgetValuesAreValid(receipt: MaintenanceBudgetReceipt): boolean {

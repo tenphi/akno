@@ -142,7 +142,24 @@ describe('durable dream runs', () => {
         autoEstimate: _autoEstimate,
         ...legacyStarted
       } = started;
-      const historical = { ...legacyStarted, profile: 'custom' };
+      const historical = {
+        ...legacyStarted,
+        profile: 'custom',
+        verification: {
+          status: 'passed',
+          checkedAt: '2030-01-02T03:04:05.000Z',
+          plans: 0,
+          appliedItems: 0,
+          affectedFiles: 0,
+          checks: {
+            appliedItems: 'not_applicable',
+            affectedPaths: 'not_applicable',
+            budget: 'passed',
+            modelUsage: 'passed',
+          },
+          issues: [],
+        },
+      };
       store.db
         .prepare('UPDATE maintenance_runs SET receipt = ? WHERE id = ?')
         .run(JSON.stringify(historical), started.id);
@@ -153,6 +170,10 @@ describe('durable dream runs', () => {
         modelUsage: { modelId: 'zephyr-model', calls: 0, totalTokens: null, stages: [] },
         degraded: [],
         autoEstimate: null,
+        verification: {
+          unattributedFiles: null,
+          checks: { wholeSnapshot: 'not_recorded' },
+        },
       });
     } finally {
       failDreamRun(ctx, started, new AknoError('interrupted', 'Invented test cleanup.'), 1, []);

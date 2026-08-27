@@ -53,6 +53,7 @@ import {
 import {
   beginDreamRun,
   completeDreamRun,
+  dreamRunFileManifest,
   failDreamRun,
   type DreamRunMode,
   type DreamRunReceipt,
@@ -440,6 +441,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       budget,
       report.budget,
       report.modelUsage,
+      dreamRunFileManifest(startedRun),
     );
     report.autoEstimate =
       report.run.mode === 'audit'

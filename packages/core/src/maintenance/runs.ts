@@ -41,6 +41,9 @@ export interface DreamSnapshotManifest {
   modelId: string | null;
 }
 
+/** Process-private path/hash state. It is never attached to or serialized with a run receipt. */
+export type DreamRunFileManifest = ReadonlyMap<string, string>;
+
 export interface DreamRunCounts {
   observations: number;
   curated: number;
@@ -122,6 +125,7 @@ interface ActiveRunRow extends ReceiptRow {
  * in that writer from a row left behind by its predecessor.
  */
 const ownedRunIds = new Set<string>();
+const runFileManifests = new WeakMap<DreamRunReceipt, DreamRunFileManifest>();
 
 export function beginDreamRun(
   ctx: AknoContext,
@@ -145,6 +149,7 @@ export function beginDreamRun(
       });
     }
   }
+  const captured = captureMaintenanceState(ctx, options.requestedPhases, options.modelId, startedAt);
   const receipt: DreamRunReceipt = {
     id: newPrefixedId('run'),
     startedAt,
@@ -154,7 +159,7 @@ export function beginDreamRun(
     mode: options.mode,
     dryRun: options.dryRun,
     requestedPhase: options.requestedPhase,
-    snapshot: captureMaintenanceSnapshot(ctx, options.requestedPhases, options.modelId, startedAt),
+    snapshot: captured.snapshot,
     phases: [],
     counts: emptyCounts(),
     budget: emptyBudget(ctx),
@@ -171,6 +176,7 @@ export function beginDreamRun(
     errorCode: null,
     persisted,
   };
+  runFileManifests.set(receipt, captured.files);
 
   if (persisted) {
     ctx.store.db
@@ -182,6 +188,13 @@ export function beginDreamRun(
     ownedRunIds.add(receipt.id);
   }
   return receipt;
+}
+
+/** Exact indexed baseline for final whole-tree attribution in this process. */
+export function dreamRunFileManifest(run: DreamRunReceipt): DreamRunFileManifest {
+  const manifest = runFileManifests.get(run);
+  if (!manifest) throw new AknoError('internal', `dream run ${run.id} has no process-local file manifest`);
+  return manifest;
 }
 
 export function completeDreamRun(
@@ -357,21 +370,33 @@ export function captureMaintenanceSnapshot(
   modelId: string | null,
   capturedAt = new Date().toISOString(),
 ): DreamSnapshotManifest {
+  return captureMaintenanceState(ctx, requestedPhases, modelId, capturedAt).snapshot;
+}
+
+function captureMaintenanceState(
+  ctx: AknoContext,
+  requestedPhases: DreamPhase[],
+  modelId: string | null,
+  capturedAt: string,
+): { snapshot: DreamSnapshotManifest; files: DreamRunFileManifest } {
   const rows = ctx.store.db
     .prepare('SELECT rel_path, sha256, indexed_at FROM files ORDER BY rel_path')
     .all() as { rel_path: string; sha256: string; indexed_at: string }[];
   const knowledgeState = rows.map((row) => [row.rel_path, row.sha256]);
   const indexState = rows.map((row) => [row.rel_path, row.sha256, row.indexed_at]);
   return {
-    capturedAt,
-    schemaVersion: SCHEMA_VERSION,
-    indexRevision: sha256(JSON.stringify({ schema: SCHEMA_VERSION, files: indexState })),
-    knowledgeBaseFingerprint: sha256(JSON.stringify(knowledgeState)),
-    configurationFingerprint: configurationFingerprint(ctx),
-    indexedFiles: rows.length,
-    requestedPhases: [...requestedPhases],
-    plannerVersion: 'dream-lifecycle-v2',
-    modelId,
+    snapshot: {
+      capturedAt,
+      schemaVersion: SCHEMA_VERSION,
+      indexRevision: sha256(JSON.stringify({ schema: SCHEMA_VERSION, files: indexState })),
+      knowledgeBaseFingerprint: sha256(JSON.stringify(knowledgeState)),
+      configurationFingerprint: configurationFingerprint(ctx),
+      indexedFiles: rows.length,
+      requestedPhases: [...requestedPhases],
+      plannerVersion: 'dream-lifecycle-v2',
+      modelId,
+    },
+    files: new Map(rows.map((row) => [row.rel_path, row.sha256])),
   };
 }
 
@@ -547,7 +572,7 @@ function parseReceipt(value: string): DreamRunReceipt | null {
       modelUsage: receipt.modelUsage ?? emptyDreamModelUsage(receipt.snapshot.modelId),
       degraded: Array.isArray(receipt.degraded) ? receipt.degraded : [],
       semanticMerge: receipt.semanticMerge ?? null,
-      verification: receipt.verification ?? null,
+      verification: normalizeRunVerification(receipt.verification),
       conflictRefresh: receipt.conflictRefresh ?? null,
       autoEstimate: receipt.autoEstimate ?? null,
       maintenancePlanIds: Array.isArray(receipt.maintenancePlanIds)
@@ -559,6 +584,20 @@ function parseReceipt(value: string): DreamRunReceipt | null {
   } catch {
     return null;
   }
+}
+
+function normalizeRunVerification(
+  verification: DreamRunVerificationReceipt | null | undefined,
+): DreamRunVerificationReceipt | null {
+  if (!verification) return null;
+  if (verification.unattributedFiles !== undefined && verification.checks.wholeSnapshot !== undefined) {
+    return verification;
+  }
+  return {
+    ...verification,
+    unattributedFiles: null,
+    checks: { ...verification.checks, wholeSnapshot: 'not_recorded' },
+  };
 }
 
 function runsTableAvailable(ctx: AknoContext): boolean {

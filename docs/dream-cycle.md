@@ -242,7 +242,8 @@ Every writable transformation follows the same stages:
 7. **Retry dependencies once:** replan only work invalidated by successful earlier items, using remaining budget.
 8. **Refresh changed claims:** derive the final page bytes, reclassify changed conflict fingerprints, and rebuild
    graph eligibility.
-9. **Verify the run:** recheck every applied item together and seal a content-safe final receipt.
+9. **Verify the run:** recheck every applied item, attribute the final knowledge-base diff, and seal a
+   content-safe receipt.
 
 Proposal generation never authorizes itself in the same model turn.
 
@@ -260,7 +261,9 @@ Akno re-runs the deterministic postconditions for all applied items attached to 
 has a journal id and passed item receipt, that its sealed final bytes still agree with the structural index,
 and that transformation-specific identity, ownership, and link conditions still hold. It also checks the
 whole-run budget against the live reservation tracker and proves that per-stage model calls and token totals
-sum to the reported aggregate.
+sum to the reported aggregate. Finally, it hashes the complete indexable knowledge-base tree and compares it
+with the run's private start manifest plus the exact operations that reached disk. This catches an unrelated
+file addition, removal, or modification even when the watcher has not indexed it yet.
 
 The run also stores a content-safe changed-claim receipt: changed-file and knowledge-page counts, current versus
 stale derivations, final conflict candidates, and unverified candidates. No paths or claims are retained. A
@@ -271,10 +274,14 @@ retry rather than certifying stale evidence.
 The result is stored on the run as counts and typed issue codes only—never paths, page text, prompts, or
 verifier details. A failed final check makes the run `failed`; the CLI exits non-zero and actionable scheduled
 notifications can surface it. Akno does not overwrite a path that changed after item verification. Exact
-per-item evidence and recovery details remain on the maintenance plan.
+per-item evidence and recovery details remain on the maintenance plan. An unrelated concurrent edit is left
+exactly as found, counted as `unattributed_file_change`, and makes the run fail certification. The durable
+receipt contains only the count; the private path/hash manifest is process-local and is never serialized.
 
-This check covers work the run claims to have applied. It does not yet freeze every planner read to one global
-database revision or classify unrelated edits made elsewhere in the knowledge base as maintenance failures.
+If a path owned by a journalled item no longer matches, the item verifier remains responsible for that failure;
+the whole-tree check does not double-report it as an unrelated edit. The scan covers the same indexable files as
+normal indexing, excluding configured ignores, dotfiles, and `akno.jsonc`. It does not yet freeze every planner
+read to one global database revision.
 
 ## Dependencies and concurrent edits
 

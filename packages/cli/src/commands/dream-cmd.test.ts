@@ -437,9 +437,11 @@ function fixtureVerification(): NonNullable<DreamReport['verification']> {
     plans: 1,
     appliedItems: 1,
     affectedFiles: 1,
+    unattributedFiles: 0,
     checks: {
       appliedItems: 'passed',
       affectedPaths: 'passed',
+      wholeSnapshot: 'passed',
       budget: 'passed',
       modelUsage: 'passed',
     },
