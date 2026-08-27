@@ -20,8 +20,9 @@ citable, reversible, and independent of a chat provider.
 > runtime assets, public entrypoints, and installed version identity—then exercises first-run configuration,
 > indexing, and recall. Schedule health keeps ephemeral dry-run diagnostics separate from real full cycles.
 > Recall, context, and timeline expose one canonical typed result shape, without pre-release compatibility
-> aliases that could hide evidence. The first `0.1.0` release is staged through that flow. Remaining work is
-> explicitly deferred capabilities, not an unfinished core workflow.
+> aliases that could hide evidence. The bootstrap `0.1.0` packages are published, and later releases use
+> tokenless npm trusted publishing through that flow. Remaining work is explicitly deferred capabilities, not
+> an unfinished core workflow.
 
 ## Why use it?
 

@@ -240,9 +240,12 @@ After changes reach `main`, [the release workflow](.github/workflows/release.yml
 and exposes the exact release diff for review. Merging it runs the complete gate again and publishes. The
 Changesets action then creates the package tags and GitHub releases automatically; do not create a tag by hand.
 
-The workflow needs the repository setting “Allow GitHub Actions to create and approve pull requests” and an
-`NPM_TOKEN` Actions secret with publish access to the `@tenphi` scope. It also requests an OIDC token so npm can
-attach provenance.
+The repository setting “Allow GitHub Actions to create and approve pull requests” must be enabled. Publishing
+uses npm trusted publishing, not a stored npm token: every public package authorizes the GitHub repository
+`tenphi/akno` and workflow filename `release.yml` for `npm publish`. The workflow requests `id-token: write` and
+npm exchanges that GitHub OIDC identity for a short-lived publish credential. npm requires version 11.5.1 or
+newer for this flow; the release job pins its npm client. Because the source repository is private, npm does not
+currently generate public provenance attestations even though the packages are public.
 
 Three things about it are worth knowing, because each one is a way a release breaks quietly:
 
