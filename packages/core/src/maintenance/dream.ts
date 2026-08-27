@@ -303,7 +303,6 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       findings: {
         empty_marker: 0,
         malformed_marker: 0,
-        legacy_marker: 0,
         duplicate_item: 0,
         misplaced_item: 0,
         placement_uncertain: 0,

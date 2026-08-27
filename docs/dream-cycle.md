@@ -147,8 +147,8 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 `hygiene` or `synthesize`. Managed-item maintenance separately inspects strict Akno-owned fragments on
 `remember: integrate` knowledge pages, even when the page has no `dream` value:
 
-- **managed item:** delete an empty marker, normalize one unambiguous legacy marker, or remove an exact
-  payload/provenance duplicate. It also verifies global id uniqueness, exact marker-to-fact line/hash binding,
+- **managed item:** delete an empty marker or remove an exact payload/provenance duplicate. It also verifies
+  global id uniqueness, exact marker-to-fact line/hash binding,
   typed conflict participation, and section fit. A qualified classifier may select only `keep`, `move`, or
   `uncertain`; one accepted same-page move must target an existing unique `##` section, and deterministic code
   moves the complete marker-plus-payload bytes. For items created with replayable evidence, another qualified

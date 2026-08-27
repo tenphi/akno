@@ -23,14 +23,14 @@ describe('managed item inspection', () => {
     expect(managedSectionHeading('**warranty**')).toBeNull();
   });
 
-  it('repairs only empty, legacy, and byte-identical duplicate owned fragments', () => {
+  it('repairs only empty and byte-identical duplicate owned fragments', () => {
     const before = `# Ada Marlow
 
 <!-- akno:item itm_empty source=fixture%3Aone origin=user -->
 
 ## Plans
 
-<!-- engram:item itm_first source=fixture%3Atwo origin=user -->
+<!-- akno:item itm_first source=fixture%3Atwo origin=user -->
 Ada Marlow plans to visit Blackwater Bay.
 
 <!-- akno:item itm_copy source=fixture%3Atwo origin=user -->
@@ -54,7 +54,6 @@ Authored context stays intact.
     expect(result.findings).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ code: 'empty_marker', outcome: 'planned' }),
-        expect.objectContaining({ code: 'legacy_marker', outcome: 'planned' }),
         expect.objectContaining({ code: 'duplicate_item', outcome: 'planned' }),
         expect.objectContaining({ code: 'item_conflict', outcome: 'held' }),
         expect.objectContaining({ code: 'malformed_marker', outcome: 'held' }),
@@ -423,7 +422,7 @@ akno:
 
 ## Preferences
 
-<!-- engram:item itm_first source=fixture%3Aone origin=user -->
+<!-- akno:item itm_first source=fixture%3Aone origin=user -->
 Ada Marlow prefers the Zephyr QX-100.
 
 <!-- akno:item itm_copy source=fixture%3Aone origin=user -->
@@ -492,8 +491,8 @@ This sentence is not managed by Akno.
       eligiblePages: 1,
       inspectedMarkers: 3,
       plannedPages: 1,
-      findings: { empty_marker: 1, legacy_marker: 1, duplicate_item: 1 },
-      outcomes: { planned: 3, held: 0, suppressed: 0 },
+      findings: { empty_marker: 1, duplicate_item: 1, source_unavailable: 1 },
+      outcomes: { planned: 2, held: 1, valid: 0, suppressed: 0 },
     });
     expect(report.maintenancePlan?.items).toEqual([
       expect.objectContaining({
@@ -503,9 +502,8 @@ This sentence is not managed by Akno.
         decision: expect.objectContaining({ actor: 'curator', outcome: 'approve' }),
       }),
     ]);
-    expect(report.run.counts.managedItems).toEqual({ planned: 3, held: 0, valid: 0, suppressed: 0 });
+    expect(report.run.counts.managedItems).toEqual({ planned: 2, held: 1, valid: 0, suppressed: 0 });
     expect(curatorCalls).toBe(1);
-    expect(after).not.toContain('engram:item');
     expect(after.match(/Ada Marlow prefers the Zephyr QX-100\./g)).toHaveLength(1);
     expect(after).not.toContain('itm_empty');
     expect(after).toContain('## Authored notes\n\nThis sentence is not managed by Akno.');

@@ -289,7 +289,6 @@ function privateReport(): DreamReport {
       findings: {
         empty_marker: 1,
         malformed_marker: 0,
-        legacy_marker: 0,
         duplicate_item: 0,
         misplaced_item: 0,
         placement_uncertain: 0,

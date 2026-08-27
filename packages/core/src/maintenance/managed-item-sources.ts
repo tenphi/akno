@@ -221,9 +221,7 @@ export function emptyManagedSourceMetrics(): ManagedSourceMetrics {
 
 /** Marker presence, including malformed-but-repairable neighbours, is enough to retain its private quote. */
 export function managedSourceItemIds(content: string): string[] {
-  return [...content.matchAll(/<!--\s*(?:akno|engram):item\s+([A-Za-z0-9_-]{4,80})\b/gi)].map(
-    (match) => match[1]!,
-  );
+  return [...content.matchAll(/<!--\s*akno:item\s+([A-Za-z0-9_-]{4,80})\b/gi)].map((match) => match[1]!);
 }
 
 /** Remove exact quotes that no longer have any marker in a complete current page scan. */

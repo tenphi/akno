@@ -29,7 +29,6 @@ import {
 const MANAGED_ITEM_FINDING_CODES = [
   'empty_marker',
   'malformed_marker',
-  'legacy_marker',
   'duplicate_item',
   'misplaced_item',
   'placement_uncertain',
@@ -148,7 +147,6 @@ export interface ManagedItemPlanOptions {
 }
 
 interface StrictMarker {
-  namespace: 'akno' | 'engram';
   id: string;
   source: string;
   origin: 'user' | 'assistant' | 'unknown';
@@ -171,7 +169,6 @@ export interface ManagedItemInspection {
 
 interface ManagedItemBinding {
   id: string;
-  namespace: StrictMarker['namespace'];
   source: string;
   origin: StrictMarker['origin'];
   markerLine: number;
@@ -202,8 +199,8 @@ interface UniqueHeading {
 }
 
 const STRICT_MARKER =
-  /^\s*<!--\s*(akno|engram):item\s+([A-Za-z0-9_-]{4,80})\s+source=([^\s]+)\s+origin=(user|assistant|unknown)\s*-->\s*$/i;
-const MARKER_LIKE = /<!--\s*(?:akno|engram):item\b/i;
+  /^\s*<!--\s*akno:item\s+([A-Za-z0-9_-]{4,80})\s+source=([^\s]+)\s+origin=(user|assistant|unknown)\s*-->\s*$/i;
+const MARKER_LIKE = /<!--\s*akno:item\b/i;
 const HEADING = /^\s{0,3}#{1,6}(?:\s+|$)/;
 const HTML_COMMENT = /^\s*<!--/;
 const MANAGED_PLACEMENT_PROMPT_VERSION = 'managed-placement-v2';
@@ -248,7 +245,6 @@ export function inspectManagedItems(content: string): ManagedItemInspection {
   const repairs: { code: ManagedItemFindingCode; line: number }[] = [];
   const bindings: ManagedItemBinding[] = [];
   const remove = new Set<number>();
-  const replacements = new Map<number, string>();
   const headingContexts = managedHeadingContexts(lines);
   const placementIssues = managedPlacementIssues(headingContexts);
   let inspectedMarkers = 0;
@@ -306,21 +302,12 @@ export function inspectManagedItems(content: string): ManagedItemInspection {
     bindings.push(managedBinding(marker, frontmatter.bodyLine, headingContexts));
     const misplaced = placementIssues.has(marker.markerIndex);
     if (misplaced) findings.push({ code: 'misplaced_item', line, outcome: 'held' });
-    if (marker.namespace === 'engram') {
-      findings.push({ code: 'legacy_marker', line, outcome: 'planned' });
-      repairs.push({ code: 'legacy_marker', line });
-      replacements.set(
-        marker.markerIndex,
-        lines[marker.markerIndex]!.replace(/(<!--\s*)engram:item/i, '$1akno:item'),
-      );
-    } else if (!misplaced) {
+    if (!misplaced) {
       findings.push({ code: 'valid', line, outcome: 'valid' });
     }
   }
 
-  const after =
-    prefix +
-    lines.flatMap((line, index) => (remove.has(index) ? [] : [replacements.get(index) ?? line])).join('\n');
+  const after = prefix + lines.flatMap((line, index) => (remove.has(index) ? [] : [line])).join('\n');
   return { after, inspectedMarkers, findings, repairs, bindings };
 }
 
@@ -465,7 +452,7 @@ export async function planManagedItems(
         .map((finding) => finding.line),
     );
     for (const binding of inspection.bindings) {
-      if (binding.namespace !== 'akno' || blockedLines.has(binding.markerLine)) continue;
+      if (blockedLines.has(binding.markerLine)) continue;
       const fact = facts.get(binding.id);
       const removed = removeManagedBlock(candidate.before, binding);
       if (!fact || !removed) continue;
@@ -831,9 +818,6 @@ function withBindingFindings(
       extra.set(binding.markerLine, 'item_conflict');
       continue;
     }
-    // The legacy namespace is intentionally normalized first. Its fact binding becomes checkable
-    // after apply re-indexes and derives the canonical marker.
-    if (binding.namespace === 'engram') continue;
     if (!ctx.config.index.facts || candidate.row.derived_hash !== candidate.row.body_hash) {
       extra.set(binding.markerLine, 'source_unavailable');
       continue;
@@ -1360,16 +1344,15 @@ function strictMarker(line: string): StrictMarker | null {
   if (!match) return null;
   let source: string;
   try {
-    source = decodeURIComponent(match[3]!);
+    source = decodeURIComponent(match[2]!);
   } catch {
     return null;
   }
   if (!source || source.includes('\0')) return null;
   return {
-    namespace: match[1]!.toLowerCase() as StrictMarker['namespace'],
-    id: match[2]!,
+    id: match[1]!,
     source,
-    origin: match[4]!.toLowerCase() as StrictMarker['origin'],
+    origin: match[3]!.toLowerCase() as StrictMarker['origin'],
   };
 }
 
@@ -1395,7 +1378,6 @@ function managedBinding(
   const context = headings.get(marker.markerIndex) ?? { heading: null, unique: false };
   return {
     id: marker.id,
-    namespace: marker.namespace,
     source: marker.source,
     origin: marker.origin,
     markerLine: bodyLine + marker.markerIndex,

@@ -227,9 +227,8 @@ without writing or caching a semantic rejection, so a later cycle can retry from
 
 `managed_item` is intentionally different from whole-page curation. It inspects only fragments introduced by
 a strict `akno:item` marker on `remember: integrate` knowledge pages; those pages do not also need `dream`
-authority. Its first deterministic repair set removes empty markers, canonicalizes unambiguous legacy
-`engram:item` markers, and removes byte-identical payload/provenance duplicates. Malformed or conflicting
-markers are counted as held findings and leave the page unchanged.
+authority. Its deterministic repair set removes empty markers and byte-identical payload/provenance duplicates.
+Malformed or conflicting markers are counted as held findings and leave the page unchanged.
 
 `rule_drift` is also independent from page-wide dream opt-in. It can replace an existing top-level scalar
 `type` on a knowledge page only when a matching folder rule explicitly declares the exact expected `type`.
