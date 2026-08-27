@@ -27,6 +27,7 @@ jobs:
     # watcher. A package published from a machine that could not run its own tests is a guess.
     runs-on: macos-latest
     permissions:
+      actions: write # dispatch CI for the generated release PR
       contents: write # version commits, package tags, and GitHub releases
       pull-requests: write # the rolling Changesets release PR
       id-token: write # npm provenance
@@ -104,6 +105,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      # A PR created with GITHUB_TOKEN does not emit another pull_request event. Dispatching CI
+      # explicitly keeps the generated version diff reviewable without requiring a personal token.
+      - name: Validate generated release PR
+        if: steps.changesets.outputs.pr-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.changesets.outputs.pr-number }}
+        run: |
+          branch=$(gh pr view "$PR_NUMBER" --json headRefName --jq .headRefName)
+          gh workflow run ci.yml --ref "$branch"
 
       - name: Rehearsal complete
         if: github.event_name == 'workflow_dispatch'
