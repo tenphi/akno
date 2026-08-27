@@ -83,6 +83,10 @@ unrelated concurrent add, edit, or removal is preserved but fails certification 
 `unattributed_file_change`; paths never enter the run receipt. Inspect exact private planned changes only with
 `akno plan diff <plan-id>`.
 
+Schedule health uses the latest non-dry-run full cycle. A later `--dry-run` remains visible in run history but
+cannot replace a healthy nightly result with a diagnostic failure. Use `--mode audit` when you want a durable,
+realistic no-write maintenance cycle that does count as a full attempt.
+
 If a newer run makes queued work obsolete, retire the old plan without touching the knowledge base:
 
 ```bash

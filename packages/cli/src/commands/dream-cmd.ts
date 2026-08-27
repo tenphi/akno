@@ -67,7 +67,8 @@ akno dream notify --schedule-health
   --phase <name>   Run one phase instead of every enabled one.
   --mode <policy>  audit | review | auto. May lower configured authority for one run;
                    it cannot raise it.
-  --dry-run        Run selected checks and proposals; change no knowledge-base files.
+  --dry-run        Run ephemeral diagnostics; change no knowledge-base files and do not count
+                   the result as nightly schedule health.
   --private-details
                    Include page names, source excerpts, URLs and other private content in
                    terminal or JSON output. Default output is safe to retain and share.

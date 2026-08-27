@@ -96,6 +96,20 @@ describe('durable dream runs', () => {
         22,
         [],
       );
+      const preview = beginDreamRun(ctx, {
+        requestedPhase: null,
+        requestedPhases: ['curate'],
+        mode: 'audit',
+        dryRun: true,
+        modelId: 'zephyr-model',
+      });
+      const previewFinished = failDreamRun(
+        ctx,
+        preview,
+        new AknoError('conflict', 'Invented preview conflict.'),
+        23,
+        [],
+      );
       const diagnostic = beginDreamRun(ctx, {
         requestedPhase: 'curate',
         requestedPhases: ['curate'],
@@ -111,7 +125,12 @@ describe('durable dream runs', () => {
         [],
       );
 
-      expect(listDreamRuns(ctx, 10)).toEqual([diagnosticFinished, secondFinished, firstFinished]);
+      expect(listDreamRuns(ctx, 10)).toEqual([
+        diagnosticFinished,
+        previewFinished,
+        secondFinished,
+        firstFinished,
+      ]);
       expect(listDreamRuns(ctx, 1)).toEqual([diagnosticFinished]);
       expect(getDreamRun(ctx, first.id)).toEqual(firstFinished);
       expect(latestFullDreamRun(ctx)).toEqual(secondFinished);

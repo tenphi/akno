@@ -314,6 +314,10 @@ planner barrier instead of waiting for the remaining model calls. The foreground
 the dream stops at its next phase boundary with a retryable `conflict`, sends no curator request, and applies no
 plan item. A later cycle may reuse unaffected exact plans and replans any affected sealed input.
 
+That aborted run remains visible in history. When it was invoked with legacy `--dry-run`, however, it does not
+replace the latest real full cycle used for nightly schedule health; an ephemeral diagnostic is not evidence
+that the scheduler itself failed.
+
 Before curator calls, Akno blocks automatic items that write the same path or invalidate another item's sealed
 input. Exact create-before-link relationships can order otherwise independent items. Cycles, duplicate planned
 identities, and incompatible delete/reference combinations are deferred rather than guessed through.

@@ -14,8 +14,9 @@ citable, reversible, and independent of a chat provider.
 > single-writer service boundary. Automatic changes use sealed plans, separate decisions, verification, and
 > durable safety pauses. Defaults remain conservative: model-dependent inference is opt-in and scheduled
 > maintenance starts in audit mode. The release gate now exercises the actual installed tarballs through
-> first-run configuration, indexing, and recall. Remaining work is narrower release hardening and explicitly
-> deferred capabilities, not an unfinished core workflow.
+> first-run configuration, indexing, and recall, while schedule health keeps ephemeral dry-run diagnostics
+> separate from real full cycles. Remaining work is narrower release hardening and explicitly deferred
+> capabilities, not an unfinished core workflow.
 
 ## Why use it?
 

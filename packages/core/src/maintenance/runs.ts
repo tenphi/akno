@@ -298,7 +298,7 @@ export function latestDreamRun(ctx: AknoContext): DreamRunReceipt | null {
   return listDreamRuns(ctx, 1)[0] ?? null;
 }
 
-/** Latest complete-cycle attempt; phase-specific diagnostics do not mask nightly health. */
+/** Latest durable complete-cycle attempt; phase-specific and legacy dry-run diagnostics do not mask health. */
 export function latestFullDreamRun(ctx: AknoContext): DreamRunReceipt | null {
   if (!runsTableAvailable(ctx)) return null;
   const rows = ctx.store.db
@@ -306,7 +306,7 @@ export function latestFullDreamRun(ctx: AknoContext): DreamRunReceipt | null {
     .iterate() as Iterable<ReceiptRow>;
   for (const row of rows) {
     const receipt = parseReceipt(row.receipt);
-    if (receipt?.requestedPhase === null) return receipt;
+    if (receipt?.requestedPhase === null && !receipt.dryRun) return receipt;
   }
   return null;
 }
