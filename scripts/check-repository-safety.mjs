@@ -41,7 +41,7 @@ for (const file of tracked) {
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
     if (/passport\s+(number|no)\s*[: ]/i.test(line)) add(file, index + 1, 'passport-number shape');
-    if (/\biban\s*[: ]/i.test(line)) add(file, index + 1, 'IBAN shape');
+    if (/\biban\s*[: ]/i.test(line)) add(file, index + 1, 'international-bank-account shape');
     if (/\+[0-9]{10,}/.test(line)) add(file, index + 1, 'international-phone shape');
     for (const match of line.matchAll(/(?<![0-9A-Fa-f.])(?:[0-9]{4}[ -]?){3}[0-9]{4}(?![0-9A-Fa-f.])/g)) {
       const digits = match[0].replace(/[ -]/g, '');
