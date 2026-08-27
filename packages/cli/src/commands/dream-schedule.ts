@@ -5,7 +5,7 @@ import type { DreamRunReceipt } from '@tenphi/akno-core';
 
 export const DREAM_SCHEDULE_LABEL = 'dev.akno.dream';
 export const DREAM_HEALTH_LABEL = 'dev.akno.dream-health';
-export const DREAM_SCHEDULE_GRACE_MS = 2 * 60 * 60 * 1_000;
+const DREAM_SCHEDULE_GRACE_MS = 2 * 60 * 60 * 1_000;
 
 export type DreamScheduleHealth =
   | 'unsupported'

@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { connect } from '@tenphi/akno-client';
 import { AknoError, open, type Akno } from '@tenphi/akno-core';
 import { serveSocket } from './socket.ts';
-import { runMaintenance } from '../ops-handle.ts';
+import { resolveOps, runMaintenance } from '../ops-handle.ts';
 
 /**
  * **The library is the product**: one op registry, three transports over it, so the doors
@@ -55,6 +55,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   await server?.close();
   await mem?.close();
   for (const dir of [root, stateDir]) fs.rmSync(dir, { recursive: true, force: true });
@@ -85,6 +86,38 @@ describe('the socket door', () => {
     } finally {
       await client.close();
     }
+  });
+
+  it('refuses a live service whose knowledge base does not match the requested target', async () => {
+    const otherRoot = path.join(root, 'invented-other-memory');
+    fs.mkdirSync(otherRoot);
+
+    await expect(
+      resolveOps({ connect: true, json: true }, { aknoPath: otherRoot, stateDir }),
+    ).rejects.toMatchObject({
+      code: 'conflict',
+      details: { reason: 'service_target_mismatch' },
+    });
+    await expect(
+      runMaintenance(
+        'plan',
+        { action: 'status' },
+        { connect: true, json: true },
+        { aknoPath: otherRoot, stateDir },
+        async (opened) => opened.maintenanceStatus(),
+      ),
+    ).rejects.toMatchObject({
+      code: 'conflict',
+      details: { reason: 'service_target_mismatch' },
+    });
+  });
+
+  it('retains an explicit config error instead of falling through to a conventional socket', async () => {
+    vi.stubEnv('AKNO_ISOLATED', '1');
+    vi.stubEnv('AKNO_CONFIG', path.join(stateDir, 'invented-missing-config.jsonc'));
+    vi.stubEnv('AKNO_SOCKET', server.path);
+
+    await expect(resolveOps({ json: true }, {})).rejects.toMatchObject({ code: 'invalid' });
   });
 
   it('runs compact answer discovery through the generated client surface', async () => {

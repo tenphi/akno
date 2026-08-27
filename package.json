@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "node scripts/smoke.mjs && node scripts/smoke-demo.mjs",
+    "smoke:packages": "pnpm build && node scripts/smoke-packages.mjs",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\"",

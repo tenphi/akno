@@ -252,7 +252,9 @@ Three things about it are worth knowing, because each one is a way a release bre
   number. If a publish fails partway, bump the patch rather than trying to reuse it.
 
 To rehearse a release without publishing, run the workflow from the Actions tab with `dry_run` left
-on: everything happens except the last step.
+on: everything happens except the last step. Locally, `pnpm smoke:packages` builds and packs all four
+packages, installs those tarballs together with npm in an isolated prefix, and verifies first-run config,
+model-free setup, native indexing, lexical recall, and byte-preserving behavior outside the checkout.
 
 ## Never use real data in tests
 

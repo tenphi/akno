@@ -1,6 +1,6 @@
 export const ANSWER_BENCH_ROOT = '_akno-answer-benchmark';
-export const ANSWER_BENCH_CORPUS_VERSION = 'answer-development-v1';
-export const ANSWER_BENCH_HELD_OUT_VERSION = 'answer-held-out-v1';
+const ANSWER_BENCH_CORPUS_VERSION = 'answer-development-v1';
+const ANSWER_BENCH_HELD_OUT_VERSION = 'answer-held-out-v1';
 export const ANSWER_BENCH_HELD_OUT_FINGERPRINT =
   '25118179977f288c4ad7cce26d9cb4c31a3a20936f2cb08fa4938860d7688db2';
 
@@ -20,7 +20,7 @@ export type AnswerBenchCategory =
   | 'graph'
   | 'empty';
 
-export interface AnswerBenchSource {
+interface AnswerBenchSource {
   id: string;
   path: string;
   content: string;

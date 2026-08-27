@@ -45,7 +45,7 @@ export interface ModelUsage {
 }
 
 /** Content-free receipt for one logical model call after compatibility retries settle. */
-export interface ModelCallReceipt {
+interface ModelCallReceipt {
   event: 'call';
   role: ResolvedModelRole['role'];
   modelId: string | null;
@@ -60,7 +60,7 @@ export interface ModelCallReceipt {
  * A caller rejected a transport-successful response because it did not satisfy the requested
  * output contract. This is a correction to the preceding call receipt, not another model call.
  */
-export interface ModelSemanticFailureObservation {
+interface ModelSemanticFailureObservation {
   event: 'semantic_failure';
   role: ResolvedModelRole['role'];
   modelId: string | null;

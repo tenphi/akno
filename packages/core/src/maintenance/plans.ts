@@ -1418,7 +1418,7 @@ export function listMaintenancePlans(
 }
 
 /** Nonterminal plans that may still need a decision, retry, apply, or verification. */
-export function listPendingMaintenancePlans(ctx: AknoContext, limit = 100): MaintenancePlanSummary[] {
+function listPendingMaintenancePlans(ctx: AknoContext, limit = 100): MaintenancePlanSummary[] {
   if (!maintenanceTablesAvailable(ctx)) return [];
   const requested = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 100;
   const rows = ctx.store.db
@@ -2934,7 +2934,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
   };
 }
 
-export function renderMaintenanceDiff(plan: MaintenancePlan, itemId?: string): string {
+function renderMaintenanceDiff(plan: MaintenancePlan, itemId?: string): string {
   if (plan.payloadPrunedAt) {
     throw new AknoError(
       'unavailable',

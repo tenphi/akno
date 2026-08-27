@@ -262,7 +262,7 @@ const ManagedFallbackSlug = z
     'expected a safe page slug without an extension',
   );
 
-export const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous'] as const;
+const MAINTENANCE_PROFILES = ['audit', 'review', 'autonomous'] as const;
 export type MaintenanceProfile = (typeof MAINTENANCE_PROFILES)[number];
 export const MAINTENANCE_TRANSFORMS = [
   'observe',
@@ -279,7 +279,7 @@ export const MAINTENANCE_TRANSFORMS = [
   'adopt',
 ] as const;
 export type MaintenanceTransform = (typeof MAINTENANCE_TRANSFORMS)[number];
-export const MAINTENANCE_POLICIES = ['off', 'audit', 'review', 'auto'] as const;
+const MAINTENANCE_POLICIES = ['off', 'audit', 'review', 'auto'] as const;
 export type MaintenancePolicy = (typeof MAINTENANCE_POLICIES)[number];
 export interface MaintenanceLimits {
   maxItems: number;

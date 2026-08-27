@@ -17,7 +17,7 @@ interface RuleDriftBase {
   ruleFingerprint: string;
 }
 
-export interface TypeRuleDriftDraft extends RuleDriftBase {
+interface TypeRuleDriftDraft extends RuleDriftBase {
   correction: 'type';
   before: string;
   after: string;
@@ -25,7 +25,7 @@ export interface TypeRuleDriftDraft extends RuleDriftBase {
   foundType: string;
 }
 
-export interface DepthRuleDriftDraft extends RuleDriftBase {
+interface DepthRuleDriftDraft extends RuleDriftBase {
   correction: 'max_depth';
   before: string;
   sourceAfter: string;

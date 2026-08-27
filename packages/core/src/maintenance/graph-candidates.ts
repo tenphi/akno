@@ -49,7 +49,7 @@ interface HubRow {
 
 const SIGNAL_PRIORITY: EntityNameSignal[] = ['canonical_slug', 'alias', 'title', 'basename'];
 /** Matches graph traversal's per-node fan-out cap; a greater degree makes path absence incomplete. */
-export const GRAPH_MAINTENANCE_HUB_DEGREE = 50;
+const GRAPH_MAINTENANCE_HUB_DEGREE = 50;
 
 export function discoverGraphMaintenanceCandidates(store: Store): GraphMaintenanceCandidate[] {
   const requiredTables = [

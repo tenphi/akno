@@ -54,6 +54,10 @@ Commands that support machine-readable output accept `--json`.
 | `--connect`          | Require a running service; do not fall back in process |
 | `-h`, `--help`       | Show command help                                      |
 
+When a command resolves an explicit memory or state directory, a running service must identify the same
+knowledge-base path in its handshake. Akno refuses a mismatched service instead of operating on the memory
+behind the default socket; pair `--akno-path` with that memory's `--state-dir` when connecting.
+
 ## Retrieval choices
 
 - Use `recall` when you want evidence cards or intend to synthesize with another model.

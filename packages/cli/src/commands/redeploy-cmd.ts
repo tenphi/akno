@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { once } from 'node:events';
 import { AknoError } from '@tenphi/akno-protocol';
 
 import { openOptionsFrom, parse } from '../args.ts';
@@ -289,22 +290,15 @@ function socketIdentity(socketPath: string): SocketIdentity | null {
 
 async function socketAcceptsConnections(socketPath: string): Promise<boolean> {
   if (!fs.existsSync(socketPath)) return false;
-  return new Promise((resolve) => {
-    const socket = net.createConnection(socketPath);
-    let settled = false;
-    let timer: NodeJS.Timeout | null = null;
-    const finish = (ready: boolean): void => {
-      if (settled) return;
-      settled = true;
-      if (timer) clearTimeout(timer);
-      socket.destroy();
-      resolve(ready);
-    };
-    socket.once('connect', () => finish(true));
-    socket.once('error', () => finish(false));
-    timer = setTimeout(() => finish(false), 500);
-    timer.unref();
-  });
+  const socket = net.createConnection(socketPath);
+  try {
+    await once(socket, 'connect', { signal: AbortSignal.timeout(500) });
+    return true;
+  } catch {
+    return false;
+  } finally {
+    socket.destroy();
+  }
 }
 
 function launchdReplacementIsRunning(): boolean {

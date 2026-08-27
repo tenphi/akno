@@ -13,7 +13,7 @@ export type RankingCategory = (typeof RANKING_CATEGORIES)[number];
 export type RankingBenchSplit = 'development' | 'test' | 'all';
 export type RelevanceGrade = 0 | 1 | 2 | 3;
 
-export interface RankingCandidate {
+interface RankingCandidate {
   id: string;
   text: string;
   sourceKind: 'page' | 'document';

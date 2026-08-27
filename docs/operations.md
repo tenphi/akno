@@ -14,6 +14,12 @@ akno recall "Zephyr QX-100 warranty"
 Without a service, most CLI commands open Akno in the current process. With a service, commands that need the
 writer are forwarded to it. `--connect` requires a live service and disables the in-process fallback.
 
+Akno verifies the service handshake against the resolved knowledge-base path before forwarding anything. A
+command with `--akno-path`, `--state-dir`, `AKNO_CONFIG`, `AKNO_PATH`, or `AKNO_STATE_DIR` therefore cannot
+silently use a conventional socket owned by another memory. If the requested memory has its own service, pass
+the matching state directory; otherwise stop that service or let the command run in process. An invalid
+explicit config remains a configuration error even when another Akno service is available.
+
 For foreground integrations:
 
 ```bash

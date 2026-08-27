@@ -4,7 +4,7 @@ import type { AknoContext } from '../context.ts';
 import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
 import { isReserved } from '../reserved.ts';
 
-export type RememberFallbackUnavailableReason =
+type RememberFallbackUnavailableReason =
   'reserved_path' | 'existing_page_not_admitted' | 'unindexed_page_exists' | 'folder_not_admitted';
 
 export type RememberFallbackResolution =

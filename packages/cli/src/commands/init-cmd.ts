@@ -55,7 +55,7 @@ interface InitValues {
   check: boolean;
 }
 
-export interface InitFollowUpCommands {
+interface InitFollowUpCommands {
   index(argv: string[]): Promise<number>;
   recall(argv: string[]): Promise<number>;
   service(argv: string[]): Promise<number>;

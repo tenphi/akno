@@ -61,7 +61,7 @@ export interface RankingMatrixRun {
   execution: RankingBenchReport['execution'];
 }
 
-export interface RankingMatrixExecution {
+interface RankingMatrixExecution {
   requests: number;
   endpointRequests: number;
   extraEndpointRequests: number;

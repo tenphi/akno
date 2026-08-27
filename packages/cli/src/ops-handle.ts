@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { connect, defaultSocketPath } from '@tenphi/akno-client';
 import { AknoError, loadConfig, open, type Akno, type MaintenanceStatus } from '@tenphi/akno-core';
 import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@tenphi/akno-protocol';
@@ -41,12 +42,12 @@ export async function resolveOps(
   openOptions: { aknoPath?: string; stateDir?: string },
   options: { write?: boolean; actor?: 'user' | 'agent' | 'akno' } = {},
 ): Promise<OpsHandle> {
-  const socketPath = socketFor(openOptions);
+  const target = serviceTarget(values, openOptions);
+  const socketPath = target.socketPath;
 
   if (values.connect || fs.existsSync(socketPath)) {
     try {
-      const client = await connect({
-        socket: socketPath,
+      const client = await connectToTarget(target, {
         // Stated per connection, because the alternative is a write from a person at a terminal
         // being gated as though an agent had asked — and a gated proposal being unanswerable
         // through the door the service is meant to be reached by.
@@ -59,7 +60,8 @@ export async function resolveOps(
         close: () => client.close(),
       };
     } catch (err) {
-      if (values.connect) throw err;
+      const error = AknoError.from(err);
+      if (values.connect || error.code !== 'unavailable') throw error;
       // A stale socket file from a crashed service is common enough that
       // failing here would be a bad default.
       if (!values.json) {
@@ -84,12 +86,68 @@ export async function resolveOps(
   };
 }
 
-function socketFor(openOptions: { aknoPath?: string; stateDir?: string }): string {
+interface ServiceTarget {
+  socketPath: string;
+  expectedAknoPath: string | null;
+}
+
+function serviceTarget(
+  values: { connect?: boolean },
+  openOptions: { aknoPath?: string; stateDir?: string },
+): ServiceTarget {
   try {
-    return loadConfig(openOptions).socketPath;
+    const config = loadConfig(openOptions);
+    return { socketPath: config.socketPath, expectedAknoPath: config.aknoPath };
+  } catch (error) {
+    // `--connect` without a memory/config override is an explicit request for the conventional
+    // service door. Every implicit or targeted call must retain the configuration error instead
+    // of using that door and accidentally operating on whichever knowledge base is already live.
+    if (values.connect && !hasExplicitMemoryTarget(openOptions)) {
+      return { socketPath: defaultSocketPath(), expectedAknoPath: null };
+    }
+    throw error;
+  }
+}
+
+function hasExplicitMemoryTarget(openOptions: { aknoPath?: string; stateDir?: string }): boolean {
+  return Boolean(
+    openOptions.aknoPath ||
+    openOptions.stateDir ||
+    process.env.AKNO_CONFIG ||
+    process.env.AKNO_PATH ||
+    process.env.AKNO_STATE_DIR,
+  );
+}
+
+async function connectToTarget(
+  target: ServiceTarget,
+  options: { actor?: 'user' | 'agent' | 'akno' } = {},
+): Promise<Awaited<ReturnType<typeof connect>>> {
+  const client = await connect({ socket: target.socketPath, ...options });
+  try {
+    if (
+      target.expectedAknoPath &&
+      pathIdentity(client.hello.akno_path) !== pathIdentity(target.expectedAknoPath)
+    ) {
+      throw new AknoError(
+        'conflict',
+        `the service on ${target.socketPath} is for ${client.hello.akno_path}, not ` +
+          `${target.expectedAknoPath}; use a matching --state-dir for the requested knowledge base`,
+        { reason: 'service_target_mismatch' },
+      );
+    }
+    return client;
+  } catch (error) {
+    await client.close().catch(() => {});
+    throw error;
+  }
+}
+
+function pathIdentity(value: string): string {
+  try {
+    return fs.realpathSync.native(value);
   } catch {
-    // Config may be incomplete — the caller will get a better error from `open()`.
-    return defaultSocketPath();
+    return path.resolve(value);
   }
 }
 
@@ -116,11 +174,12 @@ export async function runMaintenance<T>(
     waitEveryMs?: number;
   } = {},
 ): Promise<T> {
-  const socketPath = socketFor(openOptions);
+  const target = serviceTarget(values, openOptions);
+  const socketPath = target.socketPath;
 
   if (values.connect || fs.existsSync(socketPath)) {
     try {
-      const client = await connect({ socket: socketPath });
+      const client = await connectToTarget(target);
       try {
         if (!values.json) {
           process.stderr.write(style.grey(`via the service on ${socketPath}\n`));

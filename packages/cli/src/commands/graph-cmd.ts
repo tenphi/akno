@@ -87,7 +87,7 @@ export async function graphCommand(argv: string[]): Promise<number> {
   }
 }
 
-export function printGraph(result: GraphOutput): void {
+function printGraph(result: GraphOutput): void {
   line(
     `${statusLabel(result.status)} ${style.grey(`${result.paths.length} path${result.paths.length === 1 ? '' : 's'}`)} ` +
       `${style.grey(`${result.nodes.length} nodes, ${result.edges.length} edges`)}`,

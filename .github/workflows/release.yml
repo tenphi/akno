@@ -86,6 +86,7 @@ jobs:
           tar tzf "$out"/tenphi-akno-core-*.tgz | grep -qx 'package/swift/extract.swift' \
             || { echo "::error::akno-core has no swift/extract.swift — PDF and OCR would be dead"; exit 1; }
           echo "all four tarballs verified"
+          node scripts/smoke-packages.mjs "$out"
 
       # Dependency order: each package's deps must already resolve on the registry.
       - name: Publish

@@ -26,7 +26,7 @@ import {
   type ManagedRoutingPage,
 } from './managed-item-routing.ts';
 
-export const MANAGED_ITEM_FINDING_CODES = [
+const MANAGED_ITEM_FINDING_CODES = [
   'empty_marker',
   'malformed_marker',
   'legacy_marker',
@@ -48,7 +48,7 @@ export const MANAGED_ITEM_FINDING_CODES = [
 
 export type ManagedItemFindingCode = (typeof MANAGED_ITEM_FINDING_CODES)[number];
 
-export interface ManagedItemFinding {
+interface ManagedItemFinding {
   code: ManagedItemFindingCode;
   line: number;
   outcome: 'planned' | 'held' | 'valid';
@@ -67,7 +67,7 @@ export interface ManagedItemDraft {
   transfers: ManagedItemTransfer[];
 }
 
-export interface ManagedItemDestination {
+interface ManagedItemDestination {
   slug: string;
   relPath: string;
   before: string;
@@ -105,7 +105,7 @@ export interface ManagedItemTransfer {
   destinationHeadingSource?: string;
 }
 
-export interface ManagedItemPlacementMetrics {
+interface ManagedItemPlacementMetrics {
   pagesConsidered: number;
   classifierCalls: number;
   cacheHits: number;
@@ -1543,7 +1543,7 @@ export function applyManagedItemTransfer(
 }
 
 /** Replace only the one payload line bound to an exact managed id. Marker and surrounding bytes survive. */
-export function applyManagedItemCorrections(
+function applyManagedItemCorrections(
   content: string,
   corrections: readonly ManagedItemCorrection[],
 ): { ok: true; content: string } | { ok: false; content: string } {

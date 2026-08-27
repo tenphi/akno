@@ -7,7 +7,7 @@ import { newPrefixedId, sha256 } from '../store/ids.ts';
 import type { EntityNameSignal } from './graph.ts';
 
 export const CONTEXTUAL_ENTITY_PROMPT_VERSION = 'entity-context-v1';
-export const CONTEXTUAL_ENTITY_CONFIDENCE = 0.85;
+const CONTEXTUAL_ENTITY_CONFIDENCE = 0.85;
 
 const Grade = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 const Rationale = z.enum(['distinguishing_evidence', 'ambiguous', 'insufficient', 'conflicting']);

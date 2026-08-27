@@ -12,9 +12,9 @@ import {
   type ContextualMentionInput,
 } from './entity-resolution.ts';
 
-export const STRUCTURAL_GRAPH_VERSION = 'structural-v1';
-export const ENTITY_RESOLUTION_VERSION = 'entity-exact-v1';
-export const FACT_GRAPH_VERSION = 'fact-relationships-v1';
+const STRUCTURAL_GRAPH_VERSION = 'structural-v1';
+const ENTITY_RESOLUTION_VERSION = 'entity-exact-v1';
+const FACT_GRAPH_VERSION = 'fact-relationships-v1';
 
 export interface EvidenceGraphOptions {
   conflictModelId?: string | null;

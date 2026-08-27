@@ -303,9 +303,7 @@ export async function verifyConflicts(
   return { conflicts, warnings };
 }
 
-export function conflictFingerprint(
-  conflict: Pick<CrossPageConflict, 'subject' | 'attribute' | 'claims'>,
-): string {
+function conflictFingerprint(conflict: Pick<CrossPageConflict, 'subject' | 'attribute' | 'claims'>): string {
   return sha256(
     JSON.stringify({
       prompt: CONFLICT_PROMPT_VERSION,

@@ -19,7 +19,7 @@ import { declaringRule, effectiveRule, matchRules } from '../rules/compile.ts';
 import type { MaintenanceMode } from './plans.ts';
 import { assertMaintenanceModeAllowed, effectiveTransformPolicy, profileMode } from './profile.ts';
 
-export const PAGE_MAINTENANCE_TRANSFORMS = [
+const PAGE_MAINTENANCE_TRANSFORMS = [
   'hygiene',
   'managed_item',
   'synthesis',
@@ -40,7 +40,7 @@ const MODEL_PLANNED_PAGE_TRANSFORMS = new Set<PageMaintenanceTransform>([
   'merge',
 ]);
 export type MaintenancePathState = 'indexed_page' | 'not_indexed' | 'non_page' | 'ignored';
-export type MaintenancePolicySource = 'frontmatter' | 'folder_rule' | 'provenance' | 'default';
+type MaintenancePolicySource = 'frontmatter' | 'folder_rule' | 'provenance' | 'default';
 export type MaintenancePathOutcome =
   'ineligible' | 'off' | 'audit_only' | 'awaiting_human' | 'curator_then_apply' | 'apply_blocked';
 
