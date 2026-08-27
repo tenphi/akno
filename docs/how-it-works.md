@@ -203,6 +203,8 @@ receipts, service socket, and logs. These have different recovery properties:
 - sealed maintenance plans remain reviewable across restarts;
 - terminal plans shed exact private payloads before their compact audit receipts expire;
 - interrupted runs are reconciled from durable item state rather than assumed successful.
+- unsafe journal or byte-verification outcomes durably pause automatic apply until the owner resumes it;
+- three distinct automatic verification rollbacks pause only that transformation, leaving other classes active.
 
 The knowledge base itself should be backed up normally. Akno's journal is an operational reversal mechanism,
 not a substitute for version control or backups.

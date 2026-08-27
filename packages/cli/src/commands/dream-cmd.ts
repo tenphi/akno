@@ -1,4 +1,5 @@
 import {
+  MAINTENANCE_TRANSFORMS,
   loadConfig,
   AknoError,
   parsePhase,
@@ -9,6 +10,7 @@ import {
   type MaintenanceMode,
   type MaintenanceStatus,
   type MaintenanceStatusQuery,
+  type MaintenanceTransform,
 } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
 import { runMaintenance, type MaintenanceWaitUpdate } from '../ops-handle.ts';
@@ -35,6 +37,7 @@ import {
 
 const DREAM_HELP = `akno dream [options]
 akno dream status [--run <run_id> | --last <n> | --pending | --explain-policy <path>]
+akno dream resume <--profile | --transform <kind>>
 akno dream notify --schedule-health
 
   The maintenance cycle. Phases are selectable and safe to re-run.
@@ -77,6 +80,9 @@ akno dream notify --schedule-health
   --explain-policy <path>
                    Explain the resolved profile, page opt-in, structural eligibility,
                    budgets, decision path, and remaining guards for one page.
+  --profile        With resume, clear a whole-profile automatic-apply pause after inspection.
+  --transform <kind>
+                   With resume, clear one transformation pause or rollback streak.
   --json`;
 
 export async function dreamCommand(argv: string[]): Promise<number> {
@@ -91,6 +97,8 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     'private-details': boolean;
     scheduled: boolean;
     'schedule-health': boolean;
+    profile: boolean;
+    transform?: string;
   }>(argv, {
     phase: { type: 'string' },
     mode: { type: 'string' },
@@ -102,10 +110,47 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     'private-details': { type: 'boolean', default: false },
     scheduled: { type: 'boolean', default: false },
     'schedule-health': { type: 'boolean', default: false },
+    profile: { type: 'boolean', default: false },
+    transform: { type: 'string' },
   });
 
   if (values.help) {
     line(DREAM_HELP);
+    return 0;
+  }
+
+  if (positionals[0] === 'resume' && positionals.length === 1) {
+    const selected = Number(values.profile) + Number(values.transform !== undefined);
+    if (selected !== 1) {
+      throw new AknoError('invalid', 'dream resume requires exactly one of --profile or --transform');
+    }
+    if (
+      values.scheduled ||
+      values.phase !== undefined ||
+      values.mode !== undefined ||
+      values.run !== undefined ||
+      values.last !== undefined ||
+      values.pending ||
+      values['explain-policy'] !== undefined ||
+      values['dry-run'] ||
+      values['private-details'] ||
+      values['schedule-health']
+    ) {
+      throw new AknoError('invalid', 'dream resume cannot be combined with run or status options');
+    }
+    const scope = values.profile ? 'profile' : parseMaintenanceTransform(values.transform ?? '');
+    const recovery = await runMaintenance(
+      'plan',
+      { action: 'resume', scope },
+      values,
+      openOptionsFrom(values),
+      async (mem) => mem.resumeMaintenance(scope === 'profile' ? { profile: true } : { transform: scope }),
+    );
+    if (values.json) json({ recovery });
+    else {
+      line(style.green(`resumed ${scope === 'profile' ? 'automatic maintenance' : `${scope} maintenance`}`));
+      line(`  ${style.grey(`automatic apply: ${recovery.automaticApply}`)}`);
+    }
     return 0;
   }
 
@@ -150,7 +195,15 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     else printDreamStatus(status, query, schedule);
     return 0;
   }
-  if (positionals.length > 0 || values.run || values.last || values.pending || values['schedule-health']) {
+  if (
+    positionals.length > 0 ||
+    values.run ||
+    values.last ||
+    values.pending ||
+    values['schedule-health'] ||
+    values.profile ||
+    values.transform
+  ) {
     line(DREAM_HELP);
     return 1;
   }
@@ -203,6 +256,13 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     return dreamRunExitCode(report.run);
   }
   return printDream(report, values['private-details']);
+}
+
+function parseMaintenanceTransform(value: string): MaintenanceTransform {
+  if ((MAINTENANCE_TRANSFORMS as readonly string[]).includes(value)) {
+    return value as MaintenanceTransform;
+  }
+  throw new AknoError('invalid', `--transform must be one of: ${MAINTENANCE_TRANSFORMS.join(', ')}`);
 }
 
 async function notifyScheduledRun(
@@ -332,6 +392,7 @@ export function dreamStatusJson(
       awaitingHuman: status.awaitingHuman,
       verificationPending: status.verificationPending,
       budgetDeferred: status.budgetDeferred,
+      recovery: status.recovery,
       pendingPlans: status.pendingPlans,
     };
   }

@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 31;
+export const SCHEMA_VERSION = 32;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -37,6 +37,7 @@ export const MANAGED_ITEM_ROUTING_VERDICTS_MIGRATION_INDEX = 21;
 export const MAINTENANCE_ITEM_REVISIONS_MIGRATION_INDEX = 22;
 export const MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX = 23;
 export const MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX = 24;
+export const MAINTENANCE_RECOVERY_STATE_MIGRATION_INDEX = 25;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -872,6 +873,29 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX maintenance_action_receipts_plan
     ON maintenance_action_receipts(plan_id, action, started_at);
+  `,
+  // Persistent safety state is content-free and independent from the private plan payload. A
+  // terminal item is marked when its outcome contributes to the streak so a later run cannot
+  // count the same rollback again.
+  `
+  ALTER TABLE maintenance_items ADD COLUMN recovery_recorded_at TEXT;
+
+  CREATE TABLE maintenance_recovery_state (
+    scope_key             TEXT PRIMARY KEY,
+    scope                 TEXT NOT NULL,
+    transform             TEXT,
+    reason_code           TEXT NOT NULL,
+    consecutive_failures  INTEGER NOT NULL DEFAULT 0,
+    paused_at             TEXT,
+    last_failure_at       TEXT NOT NULL,
+    last_run_id           TEXT NOT NULL,
+    updated_at            TEXT NOT NULL,
+    CHECK (scope IN ('profile', 'transform')),
+    CHECK ((scope = 'profile' AND transform IS NULL) OR (scope = 'transform' AND transform IS NOT NULL)),
+    CHECK (consecutive_failures >= 0)
+  );
+  CREATE INDEX maintenance_recovery_state_paused
+    ON maintenance_recovery_state(scope, paused_at, updated_at);
   `,
 ];
 

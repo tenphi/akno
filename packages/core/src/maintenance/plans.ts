@@ -55,6 +55,7 @@ import {
   type ManagedItemTransfer,
 } from './managed-items.ts';
 import { rewritePageLinks, rewriteRelocatedPageReferences, type RuleDriftDraft } from './rule-drift.ts';
+import { maintenanceRecoveryStatus, type MaintenanceRecoveryStatus } from './recovery.ts';
 
 export type MaintenanceMode = 'audit' | 'review' | 'auto';
 export type MaintenancePlanPhase = 'observe' | 'reflect' | 'curate' | 'adopt';
@@ -326,6 +327,8 @@ export interface MaintenanceStatus {
   awaitingHuman: number;
   budgetDeferred: number;
   verificationPending: number;
+  /** Durable automatic-apply pauses and pre-threshold rollback streaks. */
+  recovery: MaintenanceRecoveryStatus;
 }
 
 export interface MaintenanceStatusQuery {
@@ -2885,6 +2888,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
       awaitingHuman: 0,
       budgetDeferred: 0,
       verificationPending: 0,
+      recovery: maintenanceRecoveryStatus(ctx),
     };
   }
   const latest = listMaintenancePlans(ctx, 1)[0] ?? null;
@@ -2926,6 +2930,7 @@ export function maintenanceStatus(ctx: AknoContext, query: MaintenanceStatusQuer
     awaitingHuman: awaiting.n,
     budgetDeferred: deferred.n,
     verificationPending: pending.n,
+    recovery: maintenanceRecoveryStatus(ctx),
   };
 }
 

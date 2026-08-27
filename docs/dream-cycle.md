@@ -282,6 +282,23 @@ If a path owned by a journalled item no longer matches, the item verifier remain
 the whole-tree check does not double-report it as an unrelated edit. The scan covers the same indexable files as
 normal indexing, excluding configured ignores, dotfiles, and `akno.jsonc`.
 
+## Persistent failure recovery
+
+Transient model errors use the model client's bounded request retries and are reconsidered by the next normal
+cycle. Budget deferrals also receive a fresh budget on the next run. They do not create a second background
+schedule or broaden authority.
+
+Unsafe apply evidence is different. If final verification cannot establish the sealed plan, journal receipt,
+or live affected bytes, Akno stores a content-safe profile pause and the next automatic run stops before taking
+the planner/write barrier. Audit and review modes remain available for diagnosis. Three distinct automatic
+verification rollbacks for one transformation create a class pause instead; its policy is treated as `off` for
+automatic runs while unrelated transformations continue. Each terminal item is counted once across restarts,
+and a verified success resets a streak that has not yet reached the threshold.
+
+Status includes the reason code, originating run id, count, and exact recovery command. After inspecting the
+run and private plan, clear only the intended scope with `akno dream resume --profile` or
+`akno dream resume --transform <kind>`. Resume changes no knowledge-base bytes or configured policy.
+
 ## Dependencies and concurrent edits
 
 A writable full cycle acquires one indexed revision before its first planner. Index passes already running

@@ -167,15 +167,16 @@ The default installed state lives under `~/.akno`; `state_dir` can move it. Its 
 
 Recovery depends on what is wrong:
 
-| Symptom                                      | First action                                           |
-| -------------------------------------------- | ------------------------------------------------------ |
-| Search is stale or derived state looks wrong | Run `akno index`                                       |
-| A journalled write was wrong                 | Run `akno undo <change-id>`                            |
-| A page or document was forgotten             | Undo it or recover it from `trash/` within retention   |
-| A maintenance item is unclear                | Inspect `dream status` and `plan diff` before applying |
-| A plan has the right scope but wrong result  | Correct it with `plan revise`; then review it again    |
-| Models changed behavior                      | Run `doctor`, then the relevant benchmark              |
-| Service seems stale after a checkout edit    | Run `pnpm akno redeploy`                               |
+| Symptom                                      | First action                                                |
+| -------------------------------------------- | ----------------------------------------------------------- |
+| Search is stale or derived state looks wrong | Run `akno index`                                            |
+| A journalled write was wrong                 | Run `akno undo <change-id>`                                 |
+| A page or document was forgotten             | Undo it or recover it from `trash/` within retention        |
+| A maintenance item is unclear                | Inspect `dream status` and `plan diff` before applying      |
+| A plan has the right scope but wrong result  | Correct it with `plan revise`; then review it again         |
+| Automatic apply is paused                    | Inspect status/plans, then use the displayed resume command |
+| Models changed behavior                      | Run `doctor`, then the relevant benchmark                   |
+| Service seems stale after a checkout edit    | Run `pnpm akno redeploy`                                    |
 
 Do not delete `akno.db` merely to refresh search: it also contains undo history, gated writes, maintenance
 plans, and run receipts. If those durable records no longer matter and a clean rebuild is intentional, stop
@@ -183,6 +184,25 @@ the service first and use the supported index workflow rather than removing file
 
 Akno's trash and journal are not backups. Keep the Markdown knowledge base under normal backup or version
 control.
+
+### Automatic-apply recovery
+
+`akno dream status` reports durable recovery state separately from configured authority. Akno pauses the whole
+automatic profile when final verification cannot prove its live bytes, sealed plan, or journal receipt. Three
+distinct automatically rolled-back items of one transformation pause only that class; unrelated maintenance
+continues. A verified later attempt clears a pre-threshold streak, but a pause never silently clears itself.
+
+After inspecting the referenced run and private plan details, resume explicitly:
+
+```bash
+akno dream resume --profile
+akno dream resume --transform merge
+```
+
+Resume clears the selected safety state; it does not alter configuration, approve a plan, or apply anything.
+Audit and review runs remain available while the autonomous profile is paused. Transient request retries stay
+bounded inside the model client, while ordinary nightly cadence supplies the later retry for model outages and
+fresh run budgets—Akno does not create a hidden multi-day retry schedule.
 
 ## Updating a checkout
 

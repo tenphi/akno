@@ -84,6 +84,7 @@ describe('dream status history views', () => {
       awaitingHuman: 0,
       verificationPending: 0,
       budgetDeferred: 0,
+      recovery: { automaticApply: 'available', profile: null, transforms: [] },
       pendingPlans: [report.maintenancePlan],
     });
     const schedule = {
@@ -463,6 +464,7 @@ function emptyStatus(): MaintenanceStatus {
     awaitingHuman: 0,
     budgetDeferred: 0,
     verificationPending: 0,
+    recovery: { automaticApply: 'available', profile: null, transforms: [] },
   };
 }
 
@@ -495,6 +497,7 @@ function statusAt(
     awaitingHuman: 0,
     budgetDeferred: 0,
     verificationPending: 0,
+    recovery: { automaticApply: 'available', profile: null, transforms: [] },
   };
 }
 

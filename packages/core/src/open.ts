@@ -63,6 +63,11 @@ import {
 } from './maintenance/plans.ts';
 import { recoverInterruptedDreamRuns } from './maintenance/runs.ts';
 import { explainMaintenancePath, type MaintenancePathPolicy } from './maintenance/path-policy.ts';
+import {
+  resumeMaintenanceRecovery,
+  type MaintenanceRecoveryScope,
+  type MaintenanceRecoveryStatus,
+} from './maintenance/recovery.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -139,6 +144,8 @@ export interface Akno extends AknoOps {
   prunePlans(options?: { apply?: boolean }): MaintenancePlanPruneResult;
   /** A small operational view of the maintenance queue. */
   maintenanceStatus(query?: MaintenanceStatusQuery): MaintenanceStatus;
+  /** Explicitly clear one durable automatic-maintenance safety pause after inspection. */
+  resumeMaintenance(scope: MaintenanceRecoveryScope): MaintenanceRecoveryStatus;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -466,6 +473,16 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     },
 
     maintenanceStatus: (query) => maintenanceStatus(ctx, query),
+
+    resumeMaintenance(scope) {
+      if (!writable) {
+        throw new AknoError(
+          'read_only',
+          `resuming automatic maintenance needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
+        );
+      }
+      return resumeMaintenanceRecovery(ctx, scope);
+    },
 
     async approve(
       proposalId: string,

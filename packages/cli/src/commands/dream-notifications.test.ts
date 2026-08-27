@@ -72,6 +72,37 @@ describe('scheduled maintenance notifications', () => {
     expect(notification?.body).toContain('curator: derive_failed');
   });
 
+  it('reports a durable automatic-apply pause without private diagnostics', () => {
+    const run = fixtureRun('run_ffffffff', { status: 'failed', errorCode: 'conflict' });
+    const notification = scheduledRunNotification(
+      'actionable',
+      run,
+      fixtureStatus({
+        recovery: {
+          automaticApply: 'partially_paused',
+          profile: null,
+          transforms: [
+            {
+              scope: 'transform',
+              transform: 'merge',
+              reason: 'rollback_threshold',
+              consecutiveFailures: 3,
+              pausedAt: '2030-01-02T03:00:00.000Z',
+              lastFailureAt: '2030-01-02T03:00:00.000Z',
+              lastRunId: run.id,
+              recoveryCommand: 'akno dream resume --transform merge',
+            },
+          ],
+        },
+      }),
+      [run],
+    );
+
+    expect(notification).toMatchObject({ causes: ['run_failed', 'automatic_apply_paused'] });
+    expect(notification?.body).toContain('automatic apply is paused for one or more transformations');
+    expect(JSON.stringify(notification)).not.toContain('Ada Marlow');
+  });
+
   it('uses the expected schedule window as the missed-cycle deduplication key', () => {
     const schedule = fixtureSchedule('overdue');
     expect(missedCycleNotification('actionable', schedule)).toMatchObject({
@@ -227,6 +258,7 @@ function fixtureStatus(overrides: Partial<MaintenanceStatus> = {}): MaintenanceS
     awaitingHuman: 0,
     budgetDeferred: 0,
     verificationPending: 0,
+    recovery: { automaticApply: 'available', profile: null, transforms: [] },
     ...overrides,
   };
 }

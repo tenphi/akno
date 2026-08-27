@@ -162,6 +162,12 @@ describe('the socket door', () => {
           idempotency_key: 1111,
         }),
       ).rejects.toMatchObject({ code: 'invalid' });
+      await expect(
+        client.command('plan', { action: 'resume', scope: 'invented_transform' }),
+      ).rejects.toMatchObject({ code: 'invalid' });
+      await expect(client.command('plan', { action: 'resume', scope: 'merge' })).rejects.toMatchObject({
+        code: 'not_found',
+      });
       const status = (await client.command('plan', { action: 'status' })) as { active: number };
       expect(status.active).toBe(0);
       const policy = (await client.command('plan', {

@@ -18,6 +18,7 @@ type MaintenanceNotificationCause =
   | 'run_incomplete'
   | 'verification_pending'
   | 'budget_backlog'
+  | 'automatic_apply_paused'
   | 'repeated_degradation'
   | 'missed_cycle'
   | 'quiet_success';
@@ -73,6 +74,14 @@ export function scheduledRunNotification(
   if (deferred > 0) {
     causes.push('budget_backlog');
     details.push(`${deferred} item${deferred === 1 ? '' : 's'} deferred by budget`);
+  }
+  if (status.recovery.automaticApply !== 'available') {
+    causes.push('automatic_apply_paused');
+    details.push(
+      status.recovery.automaticApply === 'paused'
+        ? 'automatic apply is paused for the profile'
+        : 'automatic apply is paused for one or more transformations',
+    );
   }
 
   const repeated = repeatedDegradations(run, history);

@@ -15,6 +15,7 @@ import {
   type Hello,
 } from '@tenphi/akno-protocol';
 import {
+  MAINTENANCE_TRANSFORMS,
   MAINTENANCE_PLAN_STATUSES,
   type Akno,
   type MaintenanceMode,
@@ -202,6 +203,19 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
           return akno.prunePlans({ apply: booleanFrom(input, 'apply', false) });
         case 'status':
           return akno.maintenanceStatus(statusQueryFrom(input));
+        case 'resume': {
+          const scope = stringFrom(input, 'scope');
+          if (scope === 'profile') return akno.resumeMaintenance({ profile: true });
+          if (!(MAINTENANCE_TRANSFORMS as readonly string[]).includes(scope)) {
+            throw new AknoError(
+              'invalid',
+              `resume scope must be profile or one of: ${MAINTENANCE_TRANSFORMS.join(', ')}`,
+            );
+          }
+          return akno.resumeMaintenance({
+            transform: scope as (typeof MAINTENANCE_TRANSFORMS)[number],
+          });
+        }
         case 'policy': {
           const mode = optionalMaintenanceMode(input);
           return akno.maintenancePolicy(stringFrom(input, 'path'), mode);

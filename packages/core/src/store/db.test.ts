@@ -75,6 +75,7 @@ describe('schema migration', () => {
       'maintenance_item_revisions',
       'maintenance_items',
       'maintenance_plans',
+      'maintenance_recovery_state',
       'maintenance_runs',
     ]);
     expect(columns.map((row) => row.name)).toContain('evidence');
@@ -697,6 +698,40 @@ describe('schema migration', () => {
     expect(columns.map((column) => column.name)).not.toEqual(
       expect.arrayContaining(['operations', 'evidence', 'reason', 'result']),
     );
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds durable content-safe recovery state to a version-thirty-one database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-recovery-state-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 25)) legacy.exec(migration);
+    legacy.pragma('user_version = 31');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const stateColumns = store.db.pragma('table_info(maintenance_recovery_state)') as { name: string }[];
+    const itemColumns = store.db.pragma('table_info(maintenance_items)') as { name: string }[];
+
+    expect(stateColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'scope_key',
+        'scope',
+        'transform',
+        'reason_code',
+        'consecutive_failures',
+        'paused_at',
+        'last_failure_at',
+        'last_run_id',
+      ]),
+    );
+    expect(stateColumns.map((column) => column.name)).not.toEqual(
+      expect.arrayContaining(['path', 'content', 'detail', 'operations', 'evidence']),
+    );
+    expect(itemColumns.map((column) => column.name)).toContain('recovery_recorded_at');
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 
     store.close();

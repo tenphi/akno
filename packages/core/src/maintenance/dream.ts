@@ -57,7 +57,6 @@ import {
   dreamRunIndexRevisionMatches,
   failDreamRun,
   refreshDreamRunSnapshot,
-  type DreamRunMode,
   type DreamRunReceipt,
 } from './runs.ts';
 import {
@@ -84,6 +83,12 @@ import { Indexer } from '../index/indexer.ts';
 import type { IndexRevisionBarrier } from '../index/revision-barrier.ts';
 import { planManagedItems, type ManagedItemReport } from './managed-items.ts';
 import { planRuleDrifts, ruleDriftPaths, type RuleDriftDraft } from './rule-drift.ts';
+import {
+  assertProfileAutomaticApplyAvailable,
+  configWithMaintenanceRecovery,
+  maintenanceRecoveryStatus,
+  recordMaintenanceRecovery,
+} from './recovery.ts';
 export type { CuratedPage } from './curate.ts';
 
 /**
@@ -263,8 +268,11 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   const telemetry = new DreamModelTelemetry(baseCycleModel.modelId);
   let modelStage: DreamModelStage = options.phase ?? 'conflicts';
   const pendingDerivation = new QueuedDeriveScheduler();
+  const runMode = dreamRunMode(ctx, options);
+  const recovery = maintenanceRecoveryStatus(ctx);
   const cycle: AknoContext = {
     ...ctx,
+    config: configWithMaintenanceRecovery(ctx.config, recovery, runMode),
     models: {
       ...ctx.models,
       derive: baseCycleModel.withOutcomeObserver((observation) => telemetry.observe(modelStage, observation)),
@@ -275,10 +283,10 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     derive: pendingDerivation,
   };
   const wanted = options.phase ? [options.phase] : DREAM_PHASES;
-  const startedRun = beginDreamRun(ctx, {
+  const startedRun = beginDreamRun(cycle, {
     requestedPhase: options.phase ?? null,
     requestedPhases: wanted,
-    mode: dreamRunMode(ctx, options),
+    mode: runMode,
     dryRun: options.dryRun ?? false,
     modelId: cycle.models.derive.modelId,
   });
@@ -368,6 +376,11 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     warnings: [],
     durationMs: 0,
   };
+  for (const entry of recovery.transforms.filter((candidate) => candidate.pausedAt !== null)) {
+    report.warnings.push(
+      `automatic ${entry.transform} maintenance is paused after ${entry.consecutiveFailures} consecutive verification rollbacks; resume it explicitly after inspection`,
+    );
+  }
 
   // Collected whether or not anything reads it, because the phases are where the information
   // is and threading it out conditionally is how a debugging flag ends up logging half a run.
@@ -409,6 +422,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   };
 
   try {
+    assertProfileAutomaticApplyAvailable(recovery, runMode);
     if (!options.phase && ctx.writable) {
       plannerBarrier = await ctx.indexer.acquireRevisionBarrier();
       // `beginDreamRun` claims exclusivity before waiting for an in-flight index pass. Once the
@@ -495,6 +509,12 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
           )
         : null;
     report.durationMs = Math.round(performance.now() - started);
+    recordMaintenanceRecovery(cycle, {
+      runId: startedRun.id,
+      mode: runMode,
+      planIds: report.maintenancePlans.map((plan) => plan.id),
+      verification: report.verification,
+    });
     report.planPrune = pruneMaintenancePlans(cycle, {
       apply: cycle.writable && !(options.dryRun ?? false),
     });
@@ -542,6 +562,17 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       report.budget,
       report,
     );
+    try {
+      recordMaintenanceRecovery(cycle, {
+        runId: startedRun.id,
+        mode: runMode,
+        planIds: report.maintenancePlans.map((plan) => plan.id),
+        verification: report.verification,
+      });
+    } catch {
+      // Preserve the original lifecycle error. A store that cannot retain recovery state is
+      // already surfaced by that failure and must not replace its more specific cause.
+    }
     throw error;
   }
 }
@@ -704,7 +735,7 @@ function livePagesForPaths(
   }[];
 }
 
-function dreamRunMode(ctx: AknoContext, options: DreamOptions): DreamRunMode {
+function dreamRunMode(ctx: AknoContext, options: DreamOptions): MaintenanceMode {
   if (options.dryRun) return 'audit';
   if (options.mode) return options.mode;
   return profileMode(ctx.config.maintenance.profile);

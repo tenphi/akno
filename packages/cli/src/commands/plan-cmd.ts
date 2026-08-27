@@ -293,6 +293,7 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['local notifications', status.notifications],
     ['cycle authority', status.authority.mode],
     ['automatic KB writes', status.authority.automaticKnowledgeBaseWrites ? 'allowed' : 'not allowed'],
+    ['automatic apply state', status.recovery.automaticApply],
     ['observe', status.authority.observe],
     ['reflect', status.authority.reflect],
     ['curate', status.authority.curate],
@@ -304,6 +305,25 @@ export function printMaintenanceStatus(status: MaintenanceStatus): void {
     ['budget deferred', status.budgetDeferred],
     ['automatic revision attempts', status.authority.maxRevisionAttempts],
   ]);
+  if (status.recovery.profile) {
+    line('\n  profile recovery pause');
+    kv([
+      ['reason', status.recovery.profile.reason],
+      ['paused', status.recovery.profile.pausedAt],
+      ['last run', status.recovery.profile.lastRunId],
+      ['resume with', status.recovery.profile.recoveryCommand],
+    ]);
+  }
+  if (status.recovery.transforms.length > 0) {
+    line('\n  transformation recovery');
+    for (const entry of status.recovery.transforms) {
+      const state = entry.pausedAt ? 'paused' : `${entry.consecutiveFailures}/3 rollbacks`;
+      line(
+        `    ${(entry.transform ?? 'unknown').padEnd(14)} ${state}` +
+          (entry.recoveryCommand ? ` · ${entry.recoveryCommand}` : ''),
+      );
+    }
+  }
   line('\n  transformation policies');
   for (const policy of ['auto', 'review', 'audit', 'off'] as const) {
     const kinds = Object.entries(status.authority.policies)

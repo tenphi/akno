@@ -17,18 +17,19 @@ export {
   type SetupConfigWritePlan,
   type SetupConfigWriteResult,
 } from './config/write-setup.ts';
-export type {
-  AknoConfig,
-  FolderRule,
-  MaintenanceLimits,
-  MaintenancePolicy,
-  MaintenanceProfile,
-  MaintenanceTransform,
-  ProviderApi,
-  ProviderTransport,
-  ReasoningEffort,
-  ResolvedModelRole,
-  ResolvedProvider,
+export {
+  MAINTENANCE_TRANSFORMS,
+  type AknoConfig,
+  type FolderRule,
+  type MaintenanceLimits,
+  type MaintenancePolicy,
+  type MaintenanceProfile,
+  type MaintenanceTransform,
+  type ProviderApi,
+  type ProviderTransport,
+  type ReasoningEffort,
+  type ResolvedModelRole,
+  type ResolvedProvider,
 } from './config/schema.ts';
 export {
   configuredTransformPolicy,
@@ -310,6 +311,13 @@ export type {
 } from './maintenance/graph-candidates.ts';
 export type { LinkIdentitySignal, LinkRepair, RepairResult } from './maintenance/link-repairs.ts';
 export type { RuleRepairAssessment } from './maintenance/rule-drift.ts';
+export {
+  MAINTENANCE_ROLLBACK_PAUSE_THRESHOLD,
+  type MaintenanceRecoveryEntry,
+  type MaintenanceRecoveryReason,
+  type MaintenanceRecoveryScope,
+  type MaintenanceRecoveryStatus,
+} from './maintenance/recovery.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 export {
