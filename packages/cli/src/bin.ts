@@ -24,13 +24,12 @@ import { dreamCommand } from './commands/dream-cmd.ts';
 import { planCommand } from './commands/plan-cmd.ts';
 import { adoptCommand } from './commands/adopt-cmd.ts';
 import { initCommand } from './commands/init-cmd.ts';
-
-const VERSION = '0.1.0';
+import { AKNO_VERSION } from './version.ts';
 
 const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a Markdown knowledge base
 
   ${style.bold('Reading')}
-    recall <query>       Search memory. Returns cited page and document cards.
+    recall <query>       Search memory. Returns cited page and document results.
     answer <question>    Answer from memory; returns citations and related identities.
     read <slug>          One exact page or document, in full.
     list                 Browse folders, pages, or a tree outline.
@@ -52,7 +51,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
 
   ${style.bold('Admin')}
     init                 Guided setup. Never guesses a path or overwrites silently.
-    dream                Seven maintenance phases: infer, curate, adopt, inspect, repair.
+    dream                Conflicts, observe, reflect, curate, adopt, repair, housekeeping.
     plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.
     serve                Hold the index, watcher and models in one process.
@@ -115,7 +114,7 @@ async function main(): Promise<number> {
     return 0;
   }
   if (name === '--version' || name === '-v' || name === 'version') {
-    line(VERSION);
+    line(AKNO_VERSION);
     return 0;
   }
 

@@ -60,7 +60,7 @@ behind the default socket; pair `--akno-path` with that memory's `--state-dir` w
 
 ## Retrieval choices
 
-- Use `recall` when you want evidence cards or intend to synthesize with another model.
+- Use `recall` when you want ranked evidence results or intend to synthesize with another model.
 - Use `answer` when you want Akno to answer a memory question and verify its support.
 - Use `read` when you already know the exact slug or document id.
 - Use `graph` when the relationship path matters more than page content.

@@ -6,6 +6,7 @@ import { connect } from '@tenphi/akno-client';
 import { AknoError, open, type Akno } from '@tenphi/akno-core';
 import { serveSocket } from './socket.ts';
 import { resolveOps, runMaintenance } from '../ops-handle.ts';
+import { AKNO_VERSION } from '../version.ts';
 
 /**
  * **The library is the product**: one op registry, three transports over it, so the doors
@@ -66,6 +67,7 @@ describe('the socket door', () => {
     const client = await connect({ socket: server.path });
     try {
       expect(client.hello.hello).toBe('akno');
+      expect(client.hello.version).toBe(AKNO_VERSION);
       expect(client.hello.writable).toBe(true);
       expect(client.hello.ops).toContain('recall');
       expect(client.hello.ops).toContain('answer');

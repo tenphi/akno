@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { AknoError, MCP_SERVER_NAME, OPS, type OpName } from '@tenphi/akno-protocol';
 import type { OpInput, OpResult } from '@tenphi/akno-protocol';
+import { AKNO_VERSION } from '../version.ts';
 
 /**
  * The stdio MCP door, for third-party agents that speak it:
@@ -20,7 +21,7 @@ export async function serveMcp(
   options: { allow?: string[]; log?: (message: string) => void } = {},
 ): Promise<{ close(): Promise<void> }> {
   const server = new McpServer(
-    { name: MCP_SERVER_NAME, version: '0.1.0' },
+    { name: MCP_SERVER_NAME, version: AKNO_VERSION },
     {
       // Named "memory" and described as memory, deliberately. A model reasons better about a
       // faculty it has than about a product it has been integrated with, and the brand is not

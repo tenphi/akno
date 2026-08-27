@@ -18,6 +18,9 @@
   "dependencies": {
     "zod": "catalog:"
   },
+  "engines": {
+    "node": ">=22.18"
+  },
   "publishConfig": {
     "access": "public"
   },

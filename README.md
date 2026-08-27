@@ -14,11 +14,12 @@ citable, reversible, and independent of a chat provider.
 > single-writer service boundary. Automatic changes use sealed plans, separate decisions, verification, and
 > durable safety pauses. Defaults remain conservative: model-dependent inference is opt-in and scheduled
 > maintenance starts in audit mode. User guidance now follows human edits, agent writes, and dream outcomes
-> through one end-to-end memory lifecycle. The release gate exercises the actual installed tarballs through
-> first-run configuration, indexing, and recall, while schedule health keeps ephemeral dry-run diagnostics
-> separate from real full cycles. Recall, context, and timeline now expose one canonical typed result shape,
-> without pre-release compatibility aliases that could hide evidence. Remaining work is narrower release
-> hardening and explicitly deferred capabilities, not an unfinished core workflow.
+> through one end-to-end memory lifecycle. The release gate verifies the actual tarballs—their metadata,
+> runtime assets, public entrypoints, and installed version identity—then exercises first-run configuration,
+> indexing, and recall. Schedule health keeps ephemeral dry-run diagnostics separate from real full cycles.
+> Recall, context, and timeline expose one canonical typed result shape, without pre-release compatibility
+> aliases that could hide evidence. Remaining work is narrower release hardening and explicitly deferred
+> capabilities, not an unfinished core workflow.
 
 ## Why use it?
 

@@ -37,13 +37,15 @@ cycle ship switched **off** for reasons measured on that base rather than guesse
 
 ### The maintenance cycle
 
-`dream` runs observe, reflect, curate, adopt, conflicts, repair and housekeeping. Each phase is independent,
-safe to re-run, and reports what a guardrail refused. `observe`, `reflect`, `curate` and `repair` ship off.
+`dream` runs conflicts, observe, reflect, curate, adopt, repair and housekeeping. Each phase is independent,
+safe to re-run, and reports what a guardrail refused. `observe`, `reflect`, and standalone `repair` ship
+disabled; curate and adopt produce non-writing plans under the default audit profile.
 
-### Three doors, one registry
+### Four surfaces, one registry
 
-In-process, a Unix socket, and MCP — all generated from one op registry, so schemas, descriptions and error
-codes are stated once. Exactly one process holds the write handle; a second opens read-only and says so.
+In-process, a Unix socket, loopback HTTP, and MCP — all generated from one op registry, so schemas, descriptions
+and error codes are stated once. Exactly one process holds the write handle; a second opens read-only and says
+so.
 
 ### Packages
 

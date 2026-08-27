@@ -428,10 +428,10 @@
       "extract_section_bytes": 1024
     },
     // Give a document that no page owns a page of its own, beside the file, from
-    // the summary extraction already produced. Without this its text is indexed
-    // and unreachable, because recall returns page cards. Honours a folder rule of
-    // `ingest: "file"`, which exists for exactly the case where a stub page per
-    // file would be noise — and never touches the file itself.
+    // the summary extraction already produced. Orphan text is directly recallable;
+    // adoption adds a browsable home, page metadata, and richer future organization.
+    // Honours a folder rule of `ingest: "file"`, which exists for exactly the case
+    // where a stub page per file would be noise — and never touches the file itself.
     "adopt": {
       // A folder of 500 unowned PDFs should not become 500 pages overnight before
       // anyone has read the first report.

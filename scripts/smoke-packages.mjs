@@ -13,8 +13,10 @@
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-package-smoke-'));
@@ -59,6 +61,37 @@ try {
     { cwd: scratch },
   );
 
+  const packageNames = ['@tenphi/akno-protocol', '@tenphi/akno-core', '@tenphi/akno-client', '@tenphi/akno'];
+  const manifests = packageNames.map((name) => installedManifest(name));
+  const versions = new Set(manifests.map(({ manifest }) => manifest.version));
+  assert(versions.size === 1, `installed package versions disagree: ${[...versions].join(', ')}`);
+  for (const { name, root: packageRoot, manifest } of manifests) {
+    assert(manifest.license === 'PolyForm-Noncommercial-1.0.0', `${name} has the wrong license metadata`);
+    assert(manifest.engines?.node === '>=22.18', `${name} does not declare the supported Node runtime`);
+    assert(fs.existsSync(path.join(packageRoot, 'LICENSE')), `${name} has no packaged LICENSE`);
+    assert(fs.existsSync(path.join(packageRoot, 'README.md')), `${name} has no packaged README`);
+    const dependencies = { ...manifest.dependencies, ...manifest.optionalDependencies };
+    assert(
+      Object.values(dependencies).every((value) => !/^(workspace|catalog):/.test(value)),
+      `${name} has an unresolved workspace or catalog dependency`,
+    );
+  }
+
+  const coreRoot = manifests.find(({ name }) => name === '@tenphi/akno-core').root;
+  assert(fs.existsSync(path.join(coreRoot, 'config', 'default.jsonc')), 'installed core has no defaults');
+  assert(
+    fs.existsSync(path.join(coreRoot, 'swift', 'extract.swift')),
+    'installed core has no extractor source',
+  );
+
+  const resolveInstalled = createRequire(path.join(installRoot, 'release-smoke.cjs')).resolve;
+  const protocol = await import(pathToFileURL(resolveInstalled('@tenphi/akno-protocol')).href);
+  const core = await import(pathToFileURL(resolveInstalled('@tenphi/akno-core')).href);
+  const client = await import(pathToFileURL(resolveInstalled('@tenphi/akno-client')).href);
+  assert(typeof protocol.OPS?.recall === 'object', 'installed protocol entrypoint has no recall schema');
+  assert(typeof core.open === 'function', 'installed core entrypoint has no open function');
+  assert(typeof client.connect === 'function', 'installed client entrypoint has no connect function');
+
   const cli = path.join(installRoot, 'node_modules', '.bin', 'akno');
   assert(fs.existsSync(cli), 'npm did not link the installed akno binary');
   const initialEnv = aknoEnv({
@@ -67,6 +100,12 @@ try {
     AKNO_STATE_DIR: stateDir,
   });
 
+  const installedVersion = manifests.find(({ name }) => name === '@tenphi/akno').manifest.version;
+  const reportedVersion = execute(cli, ['--version'], { cwd: scratch, env: initialEnv }).trim();
+  assert(
+    reportedVersion === installedVersion,
+    `installed CLI reports ${reportedVersion || 'nothing'}, package is ${installedVersion}`,
+  );
   execute(cli, ['--help'], { cwd: scratch, env: initialEnv });
   const initialConfig = jsonCli(cli, ['config'], initialEnv);
   assert(
@@ -120,6 +159,17 @@ try {
 
 function jsonCli(cli, args, env) {
   return JSON.parse(execute(cli, [...args, '--json'], { cwd: scratch, env }));
+}
+
+function installedManifest(name) {
+  const packageRoot = path.join(installRoot, 'node_modules', ...name.split('/'));
+  const manifestPath = path.join(packageRoot, 'package.json');
+  assert(fs.existsSync(manifestPath), `${name} was not installed`);
+  return {
+    name,
+    root: packageRoot,
+    manifest: JSON.parse(fs.readFileSync(manifestPath, 'utf8')),
+  };
 }
 
 function execute(command, args, options) {

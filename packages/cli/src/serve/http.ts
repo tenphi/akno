@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { AknoError, OPS, PROTOCOL_VERSION, isOpName, type Hello } from '@tenphi/akno-protocol';
 import type { Akno } from '@tenphi/akno-core';
+import { AKNO_VERSION } from '../version.ts';
 
 export interface HttpServer {
   readonly address: string;
@@ -59,7 +60,7 @@ async function route(
     const hello: Hello = {
       hello: 'akno',
       protocol: PROTOCOL_VERSION,
-      version: '0.1.0',
+      version: AKNO_VERSION,
       writable: akno.writable,
       akno_path: akno.config.aknoPath,
       ops: options.allow ?? Object.keys(OPS),

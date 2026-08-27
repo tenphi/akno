@@ -3,6 +3,8 @@
 A thin typed client for a running [Akno](https://github.com/tenphi/akno) service — the same interface as
 `@tenphi/akno-core`, with **no native dependencies**.
 
+It requires Node 22.18 or newer and is portable across operating systems.
+
 That is the point of it. A Linux container can reach a macOS host over the loopback HTTP door, or a local
 process can reach the Unix socket, and neither one pulls `better-sqlite3` into its build. The knowledge base
 and the index never enter the caller's sandbox, which is also what keeps Akno's single-writer property
@@ -11,7 +13,7 @@ intact.
 ```ts
 import { connect } from '@tenphi/akno-client';
 
-const akno = await connect({ socket: '~/.akno/akno.sock' });
+const akno = await connect(); // Uses ~/.akno/akno.sock by default.
 const result = await akno.call('recall', { query: 'car insurance renewal' });
 
 // A host may conservatively prepare evidence before its own model handles a turn.

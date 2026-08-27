@@ -222,7 +222,7 @@ export function readOnlyExplanation(
  *
  *   import { open } from '@tenphi/akno-core';
  *   const mem = await open({ aknoPath: '~/Notes' });
- *   const { cards } = await mem.recall({ query: 'car insurance renewal' });
+ *   const { results } = await mem.recall({ query: 'car insurance renewal' });
  *
  * Swapping `open()` for `connect()` from `@tenphi/akno-client` is the only difference
  * between embedding and connecting to a running service, so the decision is

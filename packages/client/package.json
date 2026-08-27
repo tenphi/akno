@@ -18,6 +18,9 @@
   "dependencies": {
     "@tenphi/akno-protocol": "workspace:*"
   },
+  "engines": {
+    "node": ">=22.18"
+  },
   "publishConfig": {
     "access": "public"
   },

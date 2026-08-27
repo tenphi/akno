@@ -22,6 +22,7 @@ import {
   type MaintenancePlanStatus,
   type MaintenanceStatusQuery,
 } from '@tenphi/akno-core';
+import { AKNO_VERSION } from '../version.ts';
 
 export interface SocketServer {
   readonly path: string;
@@ -56,7 +57,7 @@ export async function serveSocket(
     const hello: Hello = {
       hello: 'akno',
       protocol: PROTOCOL_VERSION,
-      version: '0.1.0',
+      version: AKNO_VERSION,
       writable: akno.writable,
       akno_path: akno.config.aknoPath,
       ops: options.allow ?? Object.keys(OPS),
