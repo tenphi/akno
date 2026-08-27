@@ -54,7 +54,9 @@ import {
   beginDreamRun,
   completeDreamRun,
   dreamRunFileManifest,
+  dreamRunIndexRevisionMatches,
   failDreamRun,
+  refreshDreamRunSnapshot,
   type DreamRunMode,
   type DreamRunReceipt,
 } from './runs.ts';
@@ -79,6 +81,7 @@ import {
 } from './model-telemetry.ts';
 import { verifyDreamRun, type DreamRunVerificationReceipt } from './run-verification.ts';
 import { Indexer } from '../index/indexer.ts';
+import type { IndexRevisionBarrier } from '../index/revision-barrier.ts';
 import { planManagedItems, type ManagedItemReport } from './managed-items.ts';
 import { planRuleDrifts, ruleDriftPaths, type RuleDriftDraft } from './rule-drift.ts';
 export type { CuratedPage } from './curate.ts';
@@ -374,8 +377,29 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
   const lastWritablePlanner = Math.max(
     ...(['observe', 'reflect', 'curate', 'adopt'] as DreamPhase[]).map((phase) => wanted.lastIndexOf(phase)),
   );
+  let plannerBarrier: IndexRevisionBarrier | null = null;
+  const releasePlannerBarrier = async (): Promise<void> => {
+    if (!plannerBarrier) return;
+    const barrier = plannerBarrier;
+    let revisionMatches = false;
+    try {
+      revisionMatches = dreamRunIndexRevisionMatches(ctx, startedRun);
+    } finally {
+      plannerBarrier = null;
+      await barrier.release();
+    }
+    if (!revisionMatches) {
+      throw new AknoError('internal', 'the indexed revision changed inside the dream planner barrier');
+    }
+  };
 
   try {
+    if (!options.phase && ctx.writable) {
+      plannerBarrier = await ctx.indexer.acquireRevisionBarrier();
+      // `beginDreamRun` claims exclusivity before waiting for an in-flight index pass. Once the
+      // barrier owns the lane, this becomes the exact revision every full-run planner reads.
+      refreshDreamRunSnapshot(ctx, startedRun);
+    }
     if (cycle.writable) finalizeRetryableMaintenancePlans(cycle);
     // A selected inference or curation phase still gets the same safety boundary as a full run.
     // It does not add a second visible phase to the report; it supplies that phase's prerequisites.
@@ -408,6 +432,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
         durationMs: Math.round(performance.now() - phaseStarted),
       });
       if (deferAutomaticApply && phaseIndex === lastWritablePlanner) {
+        await releasePlannerBarrier();
         await decideAndApplyPlannedPhases(cycle, report, applied, budget, telemetry);
         await retryDependencyDeferredPhases(cycle, options, report, applied, budget, telemetry, (stage) => {
           modelStage = stage;
@@ -421,6 +446,8 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
         );
       }
     }
+
+    await releasePlannerBarrier();
 
     if (!deferAutomaticApply) {
       modelStage = 'conflicts';
@@ -477,6 +504,12 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     ctx.derive.schedule(pendingDerivation.take());
     return report;
   } catch (error) {
+    try {
+      await releasePlannerBarrier();
+    } catch {
+      // The original failure remains the run error. Releasing the in-process lane is mandatory;
+      // queued index callers keep their own typed outcome and final tree verification did not run.
+    }
     // A valid write must not lose its ordinary background indexing merely because a later
     // planner or final verifier failed before the changed-claim barrier could consume it.
     ctx.derive.schedule(pendingDerivation.take());

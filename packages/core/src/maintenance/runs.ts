@@ -23,9 +23,9 @@ export type DreamRunProfile = MaintenanceProfile | 'legacy-custom';
 /**
  * Content-free identity of the indexed state a dream run began against.
  *
- * This is deliberately a manifest, not a claim that every current planner is isolated from
- * writes made by an earlier phase. It makes that future boundary measurable: once planners are
- * separated from apply, every item can point at this exact revision and configuration.
+ * A writable full cycle refreshes this manifest after acquiring its revision barrier, so every
+ * initial planner reads this index state. Selected phases and bounded post-apply retries instead
+ * use their immediate state and retain per-item input hashes as the write boundary.
  */
 export interface DreamSnapshotManifest {
   capturedAt: string;
@@ -195,6 +195,37 @@ export function dreamRunFileManifest(run: DreamRunReceipt): DreamRunFileManifest
   const manifest = runFileManifests.get(run);
   if (!manifest) throw new AknoError('internal', `dream run ${run.id} has no process-local file manifest`);
   return manifest;
+}
+
+/** Move a claimed run's start boundary to the revision held by its planner barrier. */
+export function refreshDreamRunSnapshot(ctx: AknoContext, run: DreamRunReceipt): void {
+  const captured = captureMaintenanceState(
+    ctx,
+    run.snapshot.requestedPhases,
+    run.snapshot.modelId,
+    new Date().toISOString(),
+  );
+  run.snapshot = captured.snapshot;
+  runFileManifests.set(run, captured.files);
+  if (!run.persisted) return;
+  const updated = ctx.store.db
+    .prepare("UPDATE maintenance_runs SET receipt = ? WHERE id = ? AND status = 'running'")
+    .run(JSON.stringify(run), run.id);
+  if (updated.changes !== 1) {
+    throw new AknoError('internal', `dream run ${run.id} lost its active receipt before planning`);
+  }
+}
+
+/** The barrier should make this invariant boring; the check turns future bypasses into a failure. */
+export function dreamRunIndexRevisionMatches(ctx: AknoContext, run: DreamRunReceipt): boolean {
+  return (
+    captureMaintenanceSnapshot(
+      ctx,
+      run.snapshot.requestedPhases,
+      run.snapshot.modelId,
+      run.snapshot.capturedAt,
+    ).indexRevision === run.snapshot.indexRevision
+  );
 }
 
 export function completeDreamRun(

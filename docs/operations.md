@@ -49,6 +49,11 @@ The scheduled command resolves `maintenance.profile` and policies at run time. C
 does not require reinstalling the schedule. Re-run installation after an Akno upgrade when release notes say
 the launchd definition changed.
 
+During the initial planner wave, the service holds one index revision. Watcher and explicit index passes that
+reach the shared indexer are queued, not discarded, then drained before curator decisions and apply. Filesystem
+edits themselves remain available and are handled by stale-input and whole-tree verification after the barrier;
+post-response model derivation scheduled after a foreground write resumes may finish later.
+
 `service uninstall` removes Akno's launchd files and prints the corresponding `launchctl bootout` commands. It
 does not remove the knowledge base or state directory.
 

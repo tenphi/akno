@@ -840,6 +840,50 @@ describe('the full-run planning barrier', () => {
     expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
   });
 
+  it('holds a concurrent index pass until every planner seals, then drains it before curation', async () => {
+    await withInferencePolicies();
+    server.reply(OBSERVED);
+    server.reflection({ observations: [] });
+    let indexSettled = false;
+    let settledDuringPlanning: boolean | null = null;
+    let settledAtCurator: boolean | null = null;
+    let queuedIndex: Promise<unknown> | null = null;
+    server.onReflect(() => {
+      fs.appendFileSync(
+        path.join(root, 'notes/manual.md'),
+        '\nAn invented external annotation arrived during the planner wave.\n',
+      );
+      queuedIndex = mem.index({ structuralOnly: true }).then((result) => {
+        indexSettled = true;
+        return result;
+      });
+      queueMicrotask(() => {
+        settledDuringPlanning = indexSettled;
+      });
+    });
+    server.onCurator(() => {
+      settledAtCurator = indexSettled;
+    });
+
+    const report = await mem.dream();
+    await queuedIndex;
+
+    expect(settledDuringPlanning).toBe(false);
+    expect(settledAtCurator).toBe(true);
+    expect(report.maintenancePlans.find((plan) => plan.phase === 'observe')!.items[0]).toMatchObject({
+      status: 'applied',
+    });
+    expect(report.verification).toMatchObject({
+      status: 'failed',
+      unattributedFiles: 1,
+      checks: { wholeSnapshot: 'failed' },
+      issues: [{ code: 'unattributed_file_change', count: 1 }],
+    });
+    expect(fs.readFileSync(path.join(root, 'notes/manual.md'), 'utf8')).toContain(
+      'invented external annotation',
+    );
+  });
+
   it('attributes sealed writes while reporting an unrelated concurrent edit without replacing it', async () => {
     server.reply(OBSERVED);
     server.onCurator(() => {

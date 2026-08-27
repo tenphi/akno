@@ -9,15 +9,57 @@ import { openStore } from '../store/db.ts';
 import {
   activeDreamRuns,
   beginDreamRun,
+  dreamRunFileManifest,
+  dreamRunIndexRevisionMatches,
   failDreamRun,
   getDreamRun,
   latestDreamRun,
   latestFullDreamRun,
   listDreamRuns,
   recoverInterruptedDreamRuns,
+  refreshDreamRunSnapshot,
 } from './runs.ts';
 
 describe('durable dream runs', () => {
+  it('moves the persisted start manifest to the revision acquired by the planner barrier', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-revision-kb-'));
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-revision-state-'));
+    const config = loadConfig({ aknoPath: root, stateDir, isolated: true, env: {} });
+    const store = openStore({ dbPath: config.dbPath, embeddingDimensions: 8 });
+    const ctx = { config, store, writable: true } as AknoContext;
+    const started = beginDreamRun(ctx, {
+      requestedPhase: null,
+      requestedPhases: ['observe', 'curate'],
+      mode: 'auto',
+      dryRun: false,
+      modelId: 'zephyr-model',
+    });
+    const firstRevision = started.snapshot.indexRevision;
+
+    try {
+      store.db
+        .prepare(
+          `INSERT INTO files(rel_path, size, mtime_ns, sha256, kind, indexed_at)
+           VALUES (?, ?, ?, ?, 'page', ?)`,
+        )
+        .run('people/ada-marlow.md', 111, '222', 'a'.repeat(64), '2030-01-02T03:04:05.000Z');
+
+      expect(dreamRunIndexRevisionMatches(ctx, started)).toBe(false);
+      refreshDreamRunSnapshot(ctx, started);
+
+      expect(started.snapshot.indexRevision).not.toBe(firstRevision);
+      expect(started.snapshot.indexedFiles).toBe(1);
+      expect(dreamRunIndexRevisionMatches(ctx, started)).toBe(true);
+      expect(dreamRunFileManifest(started).get('people/ada-marlow.md')).toBe('a'.repeat(64));
+      expect(latestDreamRun(ctx)!.snapshot).toEqual(started.snapshot);
+    } finally {
+      failDreamRun(ctx, started, new AknoError('interrupted', 'Invented test cleanup.'), 1, []);
+      store.close();
+      fs.rmSync(root, { recursive: true, force: true });
+      fs.rmSync(stateDir, { recursive: true, force: true });
+    }
+  });
+
   it('lists content-safe history newest first and resolves one receipt by id', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-history-kb-'));
     const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-run-history-state-'));

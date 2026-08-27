@@ -280,10 +280,16 @@ receipt contains only the count; the private path/hash manifest is process-local
 
 If a path owned by a journalled item no longer matches, the item verifier remains responsible for that failure;
 the whole-tree check does not double-report it as an unrelated edit. The scan covers the same indexable files as
-normal indexing, excluding configured ignores, dotfiles, and `akno.jsonc`. It does not yet freeze every planner
-read to one global database revision.
+normal indexing, excluding configured ignores, dotfiles, and `akno.jsonc`.
 
 ## Dependencies and concurrent edits
+
+A writable full cycle acquires one indexed revision before its first planner. Index passes already running
+finish first. Later watcher sweeps, active deferred derivation, and explicit `index` calls that reach the shared
+indexer queue behind the barrier. After every initial planner seals its plan, Akno proves that the indexed file
+revision still matches the run manifest, releases the barrier, and drains those queued passes before any curator
+call or apply. This keeps observe, reflect, curate, and adopt on one pre-decision index without holding a SQLite
+transaction open across model calls.
 
 Before curator calls, Akno blocks automatic items that write the same path or invalidate another item's sealed
 input. Exact create-before-link relationships can order otherwise independent items. Cycles, duplicate planned
@@ -295,6 +301,12 @@ later cycle. Unrelated work continues.
 
 After independent items apply and verify, each affected phase gets at most one same-run replan. Persistent
 dependencies wait for the next cycle; the workflow does not loop until the model eventually agrees.
+
+Filesystem editors are not locked out by the index barrier. A changed sealed input is still deferred by
+preflight, and an unrelated change is still preserved and reported by whole-tree verification. A selected
+single phase keeps its immediate plan/decision behavior; a read-only dry run opened in another process cannot
+pause the writable service's indexer. Model derivation scheduled only after a blocked foreground write resumes
+is ordinary post-response work; it is not part of the already-closed planner queue.
 
 ## Whole-run budgets
 

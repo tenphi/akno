@@ -32,6 +32,7 @@ import type { Store } from '../store/db.ts';
 import type { ModelClient } from '../models/client.ts';
 import { rebuildEvidenceGraph } from './graph.ts';
 import { resolveContextualEntityMentions } from './entity-resolution.ts';
+import { IndexRevisionCoordinator, type IndexRevisionBarrier } from './revision-barrier.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -142,6 +143,7 @@ export class Indexer {
   readonly #config: AknoConfig;
   readonly #store: Store;
   readonly #models: { embedding: ModelClient; derive: ModelClient };
+  readonly #revision = new IndexRevisionCoordinator();
 
   constructor(config: AknoConfig, store: Store, models: { embedding: ModelClient; derive: ModelClient }) {
     this.#config = config;
@@ -150,6 +152,15 @@ export class Indexer {
   }
 
   async run(options: IndexOptions = {}): Promise<IndexReport> {
+    return this.#revision.run(() => this.runPass(options));
+  }
+
+  /** Hold one indexed revision while a full dream run constructs its complete planner wave. */
+  acquireRevisionBarrier(): Promise<IndexRevisionBarrier> {
+    return this.#revision.acquire();
+  }
+
+  private async runPass(options: IndexOptions): Promise<IndexReport> {
     const started = performance.now();
     // Per pass: the folder may have changed since the last one, and a stale listing would
     // decide a rendition against files that are no longer there.

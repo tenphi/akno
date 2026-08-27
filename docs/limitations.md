@@ -80,16 +80,18 @@ A full dream cycle separates all planning from decisions and applies safe items 
 replan work invalidated by successful earlier items once. It does not repeatedly loop until every possible
 transformation settles.
 
-Cross-phase composition, arbitrary same-page proposal merging, cross-item document-attachment dependency
-inference, and pinning every planner read to one global database revision remain incomplete. A depth-relocation
-item does seal and move its own complete attachment set; dependencies between separate items remain bounded.
-Ambiguous or persistent dependencies are deferred to a later cycle rather than guessed through.
+Cross-phase composition, arbitrary same-page proposal merging, and cross-item document-attachment dependency
+inference remain incomplete. A depth-relocation item does seal and move its own complete attachment set;
+dependencies between separate items remain bounded. Ambiguous or persistent dependencies are deferred to a
+later cycle rather than guessed through.
 
 Final run verification hashes the complete indexable tree and treats an unrelated file added, removed, or
 edited concurrently by a user or sync client as a content-safe `unattributed_file_change`. It preserves those
 bytes and fails only the run's certification. It does not provide an operating-system filesystem snapshot or
-pin every planner query to one immutable database revision; affected sealed inputs still rely on the repeated
-preflight barrier, and strict read isolation remains future work.
+prevent editors from changing files during planning. A writable full cycle does pin the indexer's file revision
+across its initial planner wave and drains queued reconciliation before decisions. Selected single-phase runs
+remain immediate, and a read-only dry run in another process cannot pause the writable service's indexer;
+affected sealed inputs therefore still rely on repeated preflight in those paths.
 
 ## No configurable fail-fast maintenance mode
 
