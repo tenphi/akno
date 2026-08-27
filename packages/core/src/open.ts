@@ -51,6 +51,7 @@ import {
   reviseMaintenanceItem,
   supersedeMaintenancePlan,
   type ApplyMaintenanceResult,
+  type MaintenanceActionOptions,
   type MaintenancePlan,
   type MaintenancePlanStatus,
   type MaintenancePlanSummary,
@@ -123,9 +124,15 @@ export interface Akno extends AknoOps {
   /** Seal a corrected after-state as a new item revision; the previous proposal stays inspectable. */
   revisePlan(planId: string, itemId: string, input: MaintenanceRevisionInput): Promise<MaintenancePlan>;
   /** Record a human decision without applying it. */
-  decidePlan(planId: string, itemId: string, outcome: 'approve' | 'reject', reason?: string): MaintenancePlan;
+  decidePlan(
+    planId: string,
+    itemId: string,
+    outcome: 'approve' | 'reject',
+    reason?: string,
+    options?: MaintenanceActionOptions,
+  ): MaintenancePlan;
   /** Apply approved items with stale-input checks, journaling and verification. */
-  applyPlan(planId: string): Promise<ApplyMaintenanceResult>;
+  applyPlan(planId: string, options?: MaintenanceActionOptions): Promise<ApplyMaintenanceResult>;
   /** Retire a not-yet-applied plan while preserving its sealed audit history. */
   supersedePlan(planId: string, reason?: string): MaintenancePlan;
   /** Preview or apply configured two-stage retention to terminal maintenance plans. */
@@ -418,24 +425,24 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
       return reviseMaintenanceItem(ctx, planId, itemId, input);
     },
 
-    decidePlan(planId, itemId, outcome, reason = '') {
+    decidePlan(planId, itemId, outcome, reason = '', actionOptions = {}) {
       if (!writable) {
         throw new AknoError(
           'read_only',
           `deciding a maintenance plan needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
         );
       }
-      return decideMaintenanceItem(ctx, planId, itemId, outcome, 'human', reason);
+      return decideMaintenanceItem(ctx, planId, itemId, outcome, 'human', reason, actionOptions);
     },
 
-    async applyPlan(planId) {
+    async applyPlan(planId, actionOptions = {}) {
       if (!writable) {
         throw new AknoError(
           'read_only',
           `applying a maintenance plan needs the write handle — ${readOnlyExplanation(readOnlyReason, lockHeldBy)}`,
         );
       }
-      return applyMaintenancePlan(ctx, planId);
+      return applyMaintenancePlan(ctx, planId, undefined, actionOptions);
     },
 
     supersedePlan(planId, reason) {

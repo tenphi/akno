@@ -71,6 +71,7 @@ describe('schema migration', () => {
     const conflictColumns = store.db.pragma('table_info(conflict_verdicts)') as { name: string }[];
 
     expect(tables.map((row) => row.name)).toEqual([
+      'maintenance_action_receipts',
       'maintenance_item_revisions',
       'maintenance_items',
       'maintenance_plans',
@@ -664,6 +665,37 @@ describe('schema migration', () => {
     );
     expect(columns.map((column) => column.name)).not.toEqual(
       expect.arrayContaining(['slug', 'title', 'content', 'heading', 'reason', 'rationale']),
+    );
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('adds content-safe maintenance retry receipts to a version-thirty database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-action-receipt-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 24)) legacy.exec(migration);
+    legacy.pragma('user_version = 30');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(maintenance_action_receipts)') as { name: string }[];
+
+    expect(columns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'idempotency_key',
+        'action',
+        'request_hash',
+        'plan_id',
+        'item_id',
+        'started_at',
+        'completed_at',
+      ]),
+    );
+    expect(columns.map((column) => column.name)).not.toEqual(
+      expect.arrayContaining(['operations', 'evidence', 'reason', 'result']),
     );
     expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
 

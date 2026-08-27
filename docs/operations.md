@@ -86,6 +86,18 @@ akno plan supersede <plan-id> --reason "Replaced by a newer review."
 Only work that has not begun applying can be superseded. Interrupted apply and verification states stay in
 the queue so recovery cannot be hidden as cleanup.
 
+For an automated review client, make response-loss retries explicit:
+
+```bash
+akno plan decide <plan-id> --item <item-id> --approve \
+  --idempotency-key review:PLAN_ID:ITEM_ID:approve
+akno plan apply <plan-id> --idempotency-key apply:PLAN_ID
+```
+
+The key is bound to the exact request and survives service restarts. An exact retry is a no-op; reuse for a
+different decision or action is rejected as a conflict. Completed apply retries report `replayed: true` and no
+new file changes.
+
 `akno plan prune` is a content-safe preview of the configured two-stage retention boundary, including exact
 private bytes eligible for removal. Add `--apply` for an immediate manual pass. Every writable dream run also
 enforces the same policy: terminal exact operations/evidence expire before compact audit receipts, while active

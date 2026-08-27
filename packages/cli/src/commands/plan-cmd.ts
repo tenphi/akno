@@ -23,8 +23,8 @@ const PLAN_HELP = `akno plan [list] [--limit <n>] [--status <status,...>]
 akno plan show <plan_id>
 akno plan diff <plan_id> [--item <item_id>] [--revision <n>]
 akno plan revise <plan_id> --item <item_id> --after <file|-> [--path <kb-relative-path>] [--reason <text>]
-akno plan decide <plan_id> --item <item_id> <--approve | --reject> [--reason <text>]
-akno plan apply <plan_id>
+akno plan decide <plan_id> --item <item_id> <--approve | --reject> [--reason <text>] [--idempotency-key <key>]
+akno plan apply <plan_id> [--idempotency-key <key>]
 akno plan supersede <plan_id> [--reason <text>]
 akno plan prune [--apply]
 akno plan status
@@ -37,6 +37,7 @@ akno plan status
   revise seals a corrected full after-state; use --path when an item writes multiple pages.
   The previous revision remains inspectable with plan diff --item <id> --revision <n>.
   prune previews configured retention by default; --apply performs it.
+  --idempotency-key makes a lost-response retry safe and must identify only one exact request.
   --json`;
 
 export async function planCommand(argv: string[]): Promise<number> {
@@ -51,6 +52,7 @@ export async function planCommand(argv: string[]): Promise<number> {
     revision?: string;
     status?: string;
     apply: boolean;
+    'idempotency-key'?: string;
   }>(argv, {
     limit: { type: 'string' },
     item: { type: 'string' },
@@ -62,6 +64,7 @@ export async function planCommand(argv: string[]): Promise<number> {
     revision: { type: 'string' },
     status: { type: 'string' },
     apply: { type: 'boolean', default: false },
+    'idempotency-key': { type: 'string' },
   });
   const action = positionals[0] ?? 'list';
   const planId = positionals[1];
@@ -69,6 +72,11 @@ export async function planCommand(argv: string[]): Promise<number> {
   if (values.help) {
     line(PLAN_HELP);
     return 0;
+  }
+
+  if (values['idempotency-key'] && action !== 'decide' && action !== 'apply') {
+    fail('--idempotency-key is available only for plan decide and plan apply');
+    return 2;
   }
 
   if (action === 'list') {
@@ -201,10 +209,18 @@ export async function planCommand(argv: string[]): Promise<number> {
         item_id: values.item,
         outcome,
         reason: values.reason ?? '',
+        ...(values['idempotency-key'] ? { idempotency_key: values['idempotency-key'] } : {}),
       },
       values,
       openOptionsFrom(values),
-      async (mem) => mem.decidePlan(planId, values.item!, outcome, values.reason),
+      async (mem) =>
+        mem.decidePlan(
+          planId,
+          values.item!,
+          outcome,
+          values.reason,
+          values['idempotency-key'] ? { idempotencyKey: values['idempotency-key'] } : {},
+        ),
     );
     if (values.json) json(plan);
     else {
@@ -236,10 +252,15 @@ export async function planCommand(argv: string[]): Promise<number> {
 
   const result = await runMaintenance(
     'plan',
-    { action: 'apply', plan_id: planId },
+    {
+      action: 'apply',
+      plan_id: planId,
+      ...(values['idempotency-key'] ? { idempotency_key: values['idempotency-key'] } : {}),
+    },
     values,
     openOptionsFrom(values),
-    async (mem) => mem.applyPlan(planId),
+    async (mem) =>
+      mem.applyPlan(planId, values['idempotency-key'] ? { idempotencyKey: values['idempotency-key'] } : {}),
   );
   if (values.json) json(result);
   else printApplyResult(result);

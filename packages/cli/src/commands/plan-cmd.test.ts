@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { parsePlanStatuses, parseRevision, printPruneResult } from './plan-cmd.ts';
+import { parsePlanStatuses, parseRevision, planCommand, printPruneResult } from './plan-cmd.ts';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -52,5 +52,16 @@ describe('plan revision selection', () => {
     expect(parseRevision('0')).toBeNull();
     expect(parseRevision('1.5')).toBeNull();
     expect(stderr.mock.calls.flat().join('')).toContain('--revision must be a positive integer');
+  });
+});
+
+describe('plan retry keys', () => {
+  it('rejects a retry key on a read-only action before opening Akno', async () => {
+    const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+
+    await expect(planCommand(['status', '--idempotency-key', 'status:vulpine'])).resolves.toBe(2);
+    expect(stderr.mock.calls.flat().join('')).toContain(
+      '--idempotency-key is available only for plan decide and plan apply',
+    );
   });
 });

@@ -344,8 +344,9 @@ akno plan revise <plan-id> --item <item-id> --after ./corrected-page.md \
   --reason "Preserve the original terminology."
 akno plan diff <plan-id> --item <item-id> --revision 1
 
-akno plan decide <plan-id> --item <item-id> --approve
-akno plan apply <plan-id>
+akno plan decide <plan-id> --item <item-id> --approve \
+  --idempotency-key review:PLAN_ID:ITEM_ID:approve
+akno plan apply <plan-id> --idempotency-key apply:PLAN_ID
 
 # Retire queued work that a newer plan or a human decision made obsolete.
 akno plan supersede <plan-id> --reason "Replaced by a newer review."
@@ -378,6 +379,12 @@ that writes several pages, `--path` selects one already-sealed knowledge-base-re
 cannot add a path, change an operation type, or broaden evidence. Akno reruns apply-time deterministic guards,
 seals the previous proposal and any earlier decision as immutable private history, increments the item revision,
 and requires approval again. No knowledge-base file changes until `plan apply`.
+
+Automation should give every decision and apply request a stable opaque `--idempotency-key`. Repeating the
+exact request with that key returns its durable plan state without deciding again or creating another journal
+change, including after a service restart. The same key cannot be reused for a different item, outcome, reason,
+or action. A replayed apply reports `replayed: true`, an empty `files` list, and zero new budget use. Keys accept
+1–200 ASCII letters, digits, dots, underscores, colons, or hyphens and expire with the retained plan receipt.
 
 Terminal plans use two-stage retention: exact private operations and evidence are removed after 30 days by
 default, while compact decisions, hashes, and verification receipts remain for 180 days. The command previews

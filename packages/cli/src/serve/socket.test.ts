@@ -155,6 +155,13 @@ describe('the socket door', () => {
       await expect(
         client.command('plan', { action: 'prune', apply: 'invented_value' }),
       ).rejects.toMatchObject({ code: 'invalid' });
+      await expect(
+        client.command('plan', {
+          action: 'apply',
+          plan_id: 'pln_vulpine',
+          idempotency_key: 1111,
+        }),
+      ).rejects.toMatchObject({ code: 'invalid' });
       const status = (await client.command('plan', { action: 'status' })) as { active: number };
       expect(status.active).toBe(0);
       const policy = (await client.command('plan', {

@@ -178,15 +178,19 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
             throw new AknoError('invalid', 'outcome must be approve or reject');
           }
           const reason = (input as { reason?: unknown } | null)?.reason;
+          const idempotencyKey = optionalStringFrom(input, 'idempotency_key');
           return akno.decidePlan(
             idFrom(input, 'plan_id'),
             idFrom(input, 'item_id'),
             outcome,
             typeof reason === 'string' ? reason : '',
+            idempotencyKey ? { idempotencyKey } : {},
           );
         }
-        case 'apply':
-          return akno.applyPlan(idFrom(input, 'plan_id'));
+        case 'apply': {
+          const idempotencyKey = optionalStringFrom(input, 'idempotency_key');
+          return akno.applyPlan(idFrom(input, 'plan_id'), idempotencyKey ? { idempotencyKey } : {});
+        }
         case 'supersede': {
           const reason = (input as { reason?: unknown } | null)?.reason;
           return akno.supersedePlan(
@@ -228,6 +232,15 @@ function stringFrom(input: unknown, key: string): string {
   const value = (input as Record<string, unknown> | null)?.[key];
   if (typeof value !== 'string' || value.length === 0) {
     throw new AknoError('invalid', `${key} is required`);
+  }
+  return value;
+}
+
+function optionalStringFrom(input: unknown, key: string): string | undefined {
+  const value = (input as Record<string, unknown> | null)?.[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new AknoError('invalid', `${key} must be a non-empty string`);
   }
   return value;
 }

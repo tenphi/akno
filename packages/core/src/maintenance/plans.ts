@@ -223,6 +223,11 @@ export interface MaintenanceRevisionInput {
   reason?: string;
 }
 
+export interface MaintenanceActionOptions {
+  /** Opaque retry identity. Reusing it for a different request is a conflict. */
+  idempotencyKey?: string;
+}
+
 export interface MaintenanceRevisionSummary {
   revision: number;
   actor: 'human' | 'curator';
@@ -333,6 +338,8 @@ export interface ApplyMaintenanceResult {
   plan: MaintenancePlan;
   files: ChangeFile[];
   budget: MaintenanceBudgetReceipt;
+  /** True when an earlier keyed request supplied the durable result and no new write ran. */
+  replayed?: true;
 }
 
 export interface MaintenancePlanPruneResult {
@@ -2039,6 +2046,88 @@ export function findActiveMaintenancePlan(
   return row ? getMaintenancePlan(ctx, row.id) : null;
 }
 
+interface MaintenanceActionReceiptRow {
+  idempotency_key: string;
+  action: 'decide' | 'apply';
+  request_hash: string;
+  plan_id: string;
+  item_id: string | null;
+  started_at: string;
+  completed_at: string | null;
+}
+
+const MAINTENANCE_IDEMPOTENCY_KEY = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/;
+
+function normalizeMaintenanceIdempotencyKey(value: string | undefined): string | null {
+  if (value === undefined) return null;
+  if (!MAINTENANCE_IDEMPOTENCY_KEY.test(value)) {
+    throw new AknoError(
+      'invalid',
+      'idempotency key must be 1-200 ASCII letters, digits, dots, underscores, colons, or hyphens',
+    );
+  }
+  return value;
+}
+
+function maintenanceActionRequestHash(action: 'decide' | 'apply', input: object): string {
+  return sha256(JSON.stringify({ action, ...input }));
+}
+
+function maintenanceActionReceipt(ctx: AknoContext, key: string): MaintenanceActionReceiptRow | undefined {
+  return ctx.store.db
+    .prepare('SELECT * FROM maintenance_action_receipts WHERE idempotency_key = ?')
+    .get(key) as MaintenanceActionReceiptRow | undefined;
+}
+
+function assertMatchingMaintenanceAction(
+  receipt: MaintenanceActionReceiptRow,
+  action: 'decide' | 'apply',
+  requestHash: string,
+  planId: string,
+  itemId: string | null,
+): void {
+  if (
+    receipt.action !== action ||
+    receipt.request_hash !== requestHash ||
+    receipt.plan_id !== planId ||
+    receipt.item_id !== itemId
+  ) {
+    throw new AknoError(
+      'conflict',
+      'this idempotency key is already bound to a different maintenance request',
+      { action: receipt.action, plan_id: receipt.plan_id, item_id: receipt.item_id },
+    );
+  }
+}
+
+function insertMaintenanceActionReceipt(
+  ctx: AknoContext,
+  key: string,
+  action: 'decide' | 'apply',
+  requestHash: string,
+  planId: string,
+  itemId: string | null,
+  now: string,
+  completed = true,
+): void {
+  ctx.store.db
+    .prepare(
+      `INSERT INTO maintenance_action_receipts
+        (idempotency_key, action, request_hash, plan_id, item_id, started_at, completed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(key, action, requestHash, planId, itemId, now, completed ? now : null);
+}
+
+function completeMaintenanceActionReceipt(ctx: AknoContext, key: string): void {
+  ctx.store.db
+    .prepare(
+      `UPDATE maintenance_action_receipts SET completed_at = ?
+        WHERE idempotency_key = ? AND completed_at IS NULL`,
+    )
+    .run(new Date().toISOString(), key);
+}
+
 export function decideMaintenanceItem(
   ctx: AknoContext,
   planId: string,
@@ -2046,41 +2135,61 @@ export function decideMaintenanceItem(
   outcome: 'approve' | 'reject',
   actor: 'human' | 'curator',
   reason: string,
+  options: MaintenanceActionOptions = {},
 ): MaintenancePlan {
   requireWritable(ctx);
-  const plan = getMaintenancePlan(ctx, planId);
-  if (plan.status === 'superseded') {
-    throw new AknoError('invalid', `${planId} is superseded and cannot be decided`);
+  const key = normalizeMaintenanceIdempotencyKey(options.idempotencyKey);
+  const requestHash = maintenanceActionRequestHash('decide', {
+    planId,
+    itemId,
+    outcome,
+    actor,
+    reason,
+  });
+  if (key) {
+    const receipt = maintenanceActionReceipt(ctx, key);
+    if (receipt) {
+      assertMatchingMaintenanceAction(receipt, 'decide', requestHash, planId, itemId);
+      return getMaintenancePlan(ctx, planId);
+    }
   }
-  const item = itemRow(ctx, planId, itemId);
-  if (!['proposed', 'approved', 'rejected', 'blocked'].includes(item.status)) {
-    throw new AknoError('invalid', `${itemId} cannot be decided while it is ${item.status}`);
-  }
-  const now = new Date().toISOString();
-  ctx.store.db
-    .prepare(
-      `UPDATE maintenance_items SET status = ?, status_code = NULL, decision_actor = ?, decision_outcome = ?,
-       decision_reason = ?, decided_at = ?, updated_at = ? WHERE id = ? AND plan_id = ?`,
-    )
-    .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
-  if (
-    outcome === 'reject' &&
-    !isInferenceKind(item.kind) &&
-    item.kind !== 'contradiction' &&
-    item.kind !== 'managed_item' &&
-    item.kind !== 'broken_link' &&
-    item.kind !== 'rule_drift' &&
-    item.kind !== 'adopt'
-  ) {
-    const components = maintenanceCompositionComponents(
-      parseStoredJson<MaintenanceEvidence[]>(item.evidence, []),
-    );
-    markCurateRejected(
-      ctx,
-      components.length > 0 ? components : [{ slug: item.subject, inputHash: item.input_hash }],
-    );
-  }
-  refreshDecisionStatus(ctx, planId);
+
+  ctx.store.transaction(() => {
+    const plan = getMaintenancePlan(ctx, planId);
+    if (plan.status === 'superseded') {
+      throw new AknoError('invalid', `${planId} is superseded and cannot be decided`);
+    }
+    const item = itemRow(ctx, planId, itemId);
+    if (!['proposed', 'approved', 'rejected', 'blocked'].includes(item.status)) {
+      throw new AknoError('invalid', `${itemId} cannot be decided while it is ${item.status}`);
+    }
+    const now = new Date().toISOString();
+    ctx.store.db
+      .prepare(
+        `UPDATE maintenance_items SET status = ?, status_code = NULL, decision_actor = ?, decision_outcome = ?,
+         decision_reason = ?, decided_at = ?, updated_at = ? WHERE id = ? AND plan_id = ?`,
+      )
+      .run(outcome === 'approve' ? 'approved' : 'rejected', actor, outcome, reason, now, now, itemId, planId);
+    if (
+      outcome === 'reject' &&
+      !isInferenceKind(item.kind) &&
+      item.kind !== 'contradiction' &&
+      item.kind !== 'managed_item' &&
+      item.kind !== 'broken_link' &&
+      item.kind !== 'rule_drift' &&
+      item.kind !== 'adopt'
+    ) {
+      const components = maintenanceCompositionComponents(
+        parseStoredJson<MaintenanceEvidence[]>(item.evidence, []),
+      );
+      markCurateRejected(
+        ctx,
+        components.length > 0 ? components : [{ slug: item.subject, inputHash: item.input_hash }],
+      );
+    }
+    refreshDecisionStatus(ctx, planId);
+    if (key) insertMaintenanceActionReceipt(ctx, key, 'decide', requestHash, planId, itemId, now);
+  });
   return getMaintenancePlan(ctx, planId);
 }
 
@@ -2486,7 +2595,83 @@ function estimateMessageTokens(messages: { content: string }[]): number {
   return characters === 0 ? 0 : Math.ceil(characters / 4);
 }
 
+const keyedApplyRequests = new WeakMap<AknoContext, Map<string, Promise<ApplyMaintenanceResult>>>();
+
 export async function applyMaintenancePlan(
+  ctx: AknoContext,
+  planId: string,
+  sharedBudget?: MaintenanceBudgetTracker,
+  options: { onlyItemIds?: ReadonlySet<string>; idempotencyKey?: string } = {},
+): Promise<ApplyMaintenanceResult> {
+  const key = normalizeMaintenanceIdempotencyKey(options.idempotencyKey);
+  if (!key) return applyMaintenancePlanOnce(ctx, planId, sharedBudget, options);
+
+  requireWritable(ctx);
+  const onlyItemIds = options.onlyItemIds ? [...options.onlyItemIds].sort() : null;
+  const requestHash = maintenanceActionRequestHash('apply', { planId, onlyItemIds });
+  const receipt = maintenanceActionReceipt(ctx, key);
+  if (receipt) assertMatchingMaintenanceAction(receipt, 'apply', requestHash, planId, null);
+
+  const active = keyedApplyRequests.get(ctx)?.get(key);
+  if (active) {
+    const result = await active;
+    return replayedApplyResult(ctx, result.plan);
+  }
+
+  if (receipt?.completed_at) return replayedApplyResult(ctx, getMaintenancePlan(ctx, planId));
+
+  const current = getMaintenancePlan(ctx, planId);
+  if (!receipt) {
+    assertMaintenancePlanApplicable(current, options.onlyItemIds);
+    insertMaintenanceActionReceipt(
+      ctx,
+      key,
+      'apply',
+      requestHash,
+      planId,
+      null,
+      new Date().toISOString(),
+      false,
+    );
+  }
+
+  const resumable =
+    ['ready', 'awaiting_review', 'approved', 'applying', 'partially_completed'].includes(current.status) &&
+    current.items.some(
+      (item) =>
+        (!options.onlyItemIds || options.onlyItemIds.has(item.id)) &&
+        ['approved', 'applying', 'verification_pending'].includes(item.status),
+    );
+  if (!resumable) {
+    completeMaintenanceActionReceipt(ctx, key);
+    return replayedApplyResult(ctx, current);
+  }
+
+  const request = applyMaintenancePlanOnce(ctx, planId, sharedBudget, options).then((result) => {
+    completeMaintenanceActionReceipt(ctx, key);
+    return result;
+  });
+  const requests = keyedApplyRequests.get(ctx) ?? new Map<string, Promise<ApplyMaintenanceResult>>();
+  requests.set(key, request);
+  keyedApplyRequests.set(ctx, requests);
+  try {
+    return await request;
+  } finally {
+    requests.delete(key);
+    if (requests.size === 0) keyedApplyRequests.delete(ctx);
+  }
+}
+
+function replayedApplyResult(ctx: AknoContext, plan: MaintenancePlan): ApplyMaintenanceResult {
+  return {
+    plan,
+    files: [],
+    budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
+    replayed: true,
+  };
+}
+
+async function applyMaintenancePlanOnce(
   ctx: AknoContext,
   planId: string,
   sharedBudget?: MaintenanceBudgetTracker,
@@ -2495,18 +2680,9 @@ export async function applyMaintenancePlan(
   requireWritable(ctx);
   const budget = sharedBudget ?? createMaintenanceBudget(ctx.config.maintenance.limits);
   let plan = getMaintenancePlan(ctx, planId);
-  if (!['ready', 'awaiting_review', 'approved', 'applying', 'partially_completed'].includes(plan.status)) {
-    throw new AknoError('invalid', `${planId} is ${plan.status} and cannot be applied`);
-  }
+  assertMaintenancePlanApplicable(plan, options.onlyItemIds);
   const selected = (item: MaintenanceItem): boolean =>
     !options.onlyItemIds || options.onlyItemIds.has(item.id);
-  if (
-    !plan.items.some(
-      (item) => selected(item) && ['approved', 'applying', 'verification_pending'].includes(item.status),
-    )
-  ) {
-    throw new AknoError('invalid', `${planId} has no approved, interrupted, or pending items to apply`);
-  }
   setPlanStatus(ctx, planId, 'applying');
   const files: ChangeFile[] = [];
 
@@ -2615,6 +2791,20 @@ export async function applyMaintenancePlan(
   refreshApplyStatus(ctx, planId);
   plan = getMaintenancePlan(ctx, planId);
   return { plan, files, budget: maintenanceBudgetReceipt(budget) };
+}
+
+function assertMaintenancePlanApplicable(plan: MaintenancePlan, onlyItemIds?: ReadonlySet<string>): void {
+  if (!['ready', 'awaiting_review', 'approved', 'applying', 'partially_completed'].includes(plan.status)) {
+    throw new AknoError('invalid', `${plan.id} is ${plan.status} and cannot be applied`);
+  }
+  const selected = (item: MaintenanceItem): boolean => !onlyItemIds || onlyItemIds.has(item.id);
+  if (
+    !plan.items.some(
+      (item) => selected(item) && ['approved', 'applying', 'verification_pending'].includes(item.status),
+    )
+  ) {
+    throw new AknoError('invalid', `${plan.id} has no approved, interrupted, or pending items to apply`);
+  }
 }
 
 async function recoverInterruptedApply(ctx: AknoContext, item: MaintenanceItem): Promise<MaintenanceItem> {

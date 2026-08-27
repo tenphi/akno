@@ -318,6 +318,7 @@ export {
   type ApplyMaintenanceResult,
   type CreateOperation,
   type DeleteOperation,
+  type MaintenanceActionOptions,
   type MaintenanceCheck,
   type MaintenanceDecision,
   type MaintenanceEvidence,

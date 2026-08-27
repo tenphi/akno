@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 30;
+export const SCHEMA_VERSION = 31;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -36,6 +36,7 @@ export const MANAGED_ITEM_SOURCES_MIGRATION_INDEX = 20;
 export const MANAGED_ITEM_ROUTING_VERDICTS_MIGRATION_INDEX = 21;
 export const MAINTENANCE_ITEM_REVISIONS_MIGRATION_INDEX = 22;
 export const MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX = 23;
+export const MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX = 24;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -852,6 +853,25 @@ export const MIGRATIONS: string[] = [
   `
   ALTER TABLE maintenance_item_revisions
     ADD COLUMN revision_actor TEXT NOT NULL DEFAULT 'human';
+  `,
+  // An operator may lose a response after a decision or apply has already started. Bind an opaque
+  // retry key to the exact content-safe request fingerprint before replaying any effect. The plan
+  // and journal remain the result source of truth; duplicating private operations here would create
+  // a second retention surface.
+  `
+  CREATE TABLE maintenance_action_receipts (
+    idempotency_key TEXT PRIMARY KEY,
+    action          TEXT NOT NULL,
+    request_hash    TEXT NOT NULL,
+    plan_id         TEXT NOT NULL REFERENCES maintenance_plans(id) ON DELETE CASCADE,
+    item_id         TEXT,
+    started_at      TEXT NOT NULL,
+    completed_at    TEXT,
+    CHECK (action IN ('decide', 'apply')),
+    CHECK ((action = 'decide' AND item_id IS NOT NULL) OR (action = 'apply' AND item_id IS NULL))
+  );
+  CREATE INDEX maintenance_action_receipts_plan
+    ON maintenance_action_receipts(plan_id, action, started_at);
   `,
 ];
 

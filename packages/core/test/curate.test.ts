@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -459,6 +460,92 @@ describe('plan-backed hygiene', () => {
     await mem.undo({ change_id: changeId });
     expect(fs.readFileSync(page, 'utf8')).toBe(before);
     expect(() => mem.supersedePlan(planned.id)).toThrow(/completed/);
+  });
+
+  it('makes keyed decision and apply retries durable without duplicating a change', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    const decision = {
+      idempotencyKey: 'review:ada-hygiene:r1',
+    };
+
+    const firstDecision = mem.decidePlan(
+      planned.id,
+      item.id,
+      'approve',
+      'The invented hygiene edit is safe.',
+      decision,
+    );
+    const repeatedDecision = mem.decidePlan(
+      planned.id,
+      item.id,
+      'approve',
+      'The invented hygiene edit is safe.',
+      decision,
+    );
+    expect(repeatedDecision.items[0]!.decision?.at).toBe(firstDecision.items[0]!.decision?.at);
+    expect(() =>
+      mem.decidePlan(planned.id, item.id, 'reject', 'This is a different request.', decision),
+    ).toThrow(/already bound to a different maintenance request/);
+
+    await mem.close();
+    mem = await openMem(false);
+    expect(
+      mem.decidePlan(planned.id, item.id, 'approve', 'The invented hygiene edit is safe.', decision).items[0]!
+        .decision?.at,
+    ).toBe(firstDecision.items[0]!.decision?.at);
+
+    const changesBefore = mem.changes(20).length;
+    const apply = { idempotencyKey: 'apply:ada-hygiene:r1' };
+    const [firstApply, concurrentRetry] = await Promise.all([
+      mem.applyPlan(planned.id, apply),
+      mem.applyPlan(planned.id, apply),
+    ]);
+    expect(firstApply.plan).toMatchObject({ status: 'completed' });
+    expect(concurrentRetry).toMatchObject({ replayed: true, files: [] });
+    expect(mem.changes(20)).toHaveLength(changesBefore + 1);
+
+    await mem.close();
+    mem = await openMem(false);
+    const restartRetry = await mem.applyPlan(planned.id, apply);
+    expect(restartRetry).toMatchObject({ replayed: true, files: [], plan: { status: 'completed' } });
+    expect(mem.changes(20)).toHaveLength(changesBefore + 1);
+    await expect(mem.applyPlan(planned.id, decision)).rejects.toThrow(
+      /already bound to a different maintenance request/,
+    );
+  });
+
+  it('resumes an apply whose durable key was claimed before a restart', async () => {
+    const planned = (await mem.dream({ phase: 'curate', mode: 'review' })).maintenancePlan!;
+    const item = planned.items[0]!;
+    mem.decidePlan(planned.id, item.id, 'approve', 'The invented hygiene edit is safe.');
+
+    const key = 'apply:ada-hygiene:interrupted';
+    const requestHash = createHash('sha256')
+      .update(JSON.stringify({ action: 'apply', planId: planned.id, onlyItemIds: null }))
+      .digest('hex');
+    const database = new Database(path.join(stateDir, 'akno.db'));
+    database
+      .prepare(
+        `INSERT INTO maintenance_action_receipts
+          (idempotency_key, action, request_hash, plan_id, item_id, started_at, completed_at)
+         VALUES (?, 'apply', ?, ?, NULL, ?, NULL)`,
+      )
+      .run(key, requestHash, planned.id, new Date().toISOString());
+    database.close();
+
+    await mem.close();
+    mem = await openMem(false);
+    const result = await mem.applyPlan(planned.id, { idempotencyKey: key });
+
+    expect(result).not.toHaveProperty('replayed');
+    expect(result.plan).toMatchObject({ status: 'completed' });
+    const receiptDatabase = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+    const receipt = receiptDatabase
+      .prepare('SELECT completed_at FROM maintenance_action_receipts WHERE idempotency_key = ?')
+      .get(key);
+    receiptDatabase.close();
+    expect(receipt).toEqual({ completed_at: expect.any(String) });
   });
 
   it('seals a human correction as a new reviewable revision and preserves the old diff', async () => {

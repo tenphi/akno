@@ -12,6 +12,7 @@ import {
   ENTITY_GRAPH_MIGRATION_INDEX,
   FACT_GRAPH_MIGRATION_INDEX,
   MAINTENANCE_EVIDENCE_MIGRATION_INDEX,
+  MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX,
   MAINTENANCE_ITEM_POLICY_MIGRATION_INDEX,
   MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX,
   MAINTENANCE_ITEM_REVISIONS_MIGRATION_INDEX,
@@ -223,6 +224,9 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'maintenance_item_revisions', 'revision_actor')) {
         db.exec(MIGRATIONS[MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'maintenance_action_receipts')) {
+        db.exec(MIGRATIONS[MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
