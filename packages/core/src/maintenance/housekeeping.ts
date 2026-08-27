@@ -4,6 +4,7 @@ import { configuredTransformPolicy } from './profile.ts';
 import { declaringRule, effectiveRule, matchesGlob } from '../rules/compile.ts';
 import { discoverGraphMaintenanceCandidates, type GraphMaintenanceCandidate } from './graph-candidates.ts';
 import { getMaintenancePlan, type MaintenanceItemStatus, type MaintenanceItemStatusCode } from './plans.ts';
+import { prepareRuleRepair, type RuleDriftCandidate, type RuleRepairAssessment } from './rule-drift.ts';
 
 /**
  * The cycle reports broken links, orphaned documents, and pages that have drifted from their
@@ -48,7 +49,17 @@ export interface RuleDrift {
   found: string;
   /** An exact nonterminal correction exists for type drift or an explicitly routed depth repair. */
   plan: HousekeepingPlanRef | null;
+  /** Why exact repair is available, intentionally report-only, held, or already planned. */
+  repair: RuleRepairDisposition;
 }
+
+export type RuleRepairDisposition =
+  | RuleRepairAssessment
+  | {
+      status: 'plan_backed';
+      code: 'sealed_plan';
+      reason: string;
+    };
 
 export interface Housekeeping {
   brokenLinks: BrokenLink[];
@@ -60,6 +71,8 @@ export interface Housekeeping {
   counts: { brokenLinks: number; orphanedDocuments: number; drift: number; graphCandidates: number };
   /** Current findings for which Akno has already sealed an exact nonterminal operation. */
   planBacked: { brokenLinks: number; orphanedDocuments: number; drift: number };
+  /** Content-safe explanation totals for current rule findings. */
+  ruleRepairs: { planBacked: number; ready: number; held: number; reportOnly: number };
 }
 
 const LIST_CAP = 20;
@@ -70,7 +83,7 @@ const PLAN_BACKED_ITEM_STATUSES = new Set<MaintenanceItemStatus>([
   'verification_pending',
 ]);
 
-export function housekeeping(ctx: AknoContext): Housekeeping {
+export async function housekeeping(ctx: AknoContext): Promise<Housekeeping> {
   const coverage = pendingPlanCoverage(ctx);
   const brokenRows = ctx.store.db
     .prepare(
@@ -95,10 +108,23 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
 
   const orphanTotal = count(ctx, 'SELECT count(*) AS c FROM documents WHERE page_id IS NULL');
 
-  const drift = findDrift(ctx).map((entry) => ({
-    ...entry,
-    plan: coverage.drift.get(ruleDriftKey(entry.slug, entry.expected, entry.found)) ?? null,
-  }));
+  const drift: RuleDrift[] = [];
+  // Deliberately sequential: a malformed rule set can produce many findings, and housekeeping
+  // should not turn that into an unbounded burst of file opens against the owner's notes.
+  for (const { candidate, ...entry } of findDrift(ctx)) {
+    const plan = coverage.drift.get(ruleDriftKey(entry.slug, entry.expected, entry.found)) ?? null;
+    drift.push({
+      ...entry,
+      plan,
+      repair: plan
+        ? {
+            status: 'plan_backed',
+            code: 'sealed_plan',
+            reason: 'an exact nonterminal maintenance item already owns this finding',
+          }
+        : (await prepareRuleRepair(ctx, candidate)).assessment,
+    });
+  }
   const graphCandidates = discoverGraphMaintenanceCandidates(ctx.store);
   const adoptEnabled = configuredTransformPolicy(ctx.config, 'adopt') !== 'off';
 
@@ -135,6 +161,12 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
       brokenLinks: countPlanBackedBrokenLinks(ctx, coverage.brokenLinks),
       orphanedDocuments: countPlanBackedOrphans(ctx, coverage.orphanedDocuments),
       drift: drift.filter((entry) => entry.plan !== null).length,
+    },
+    ruleRepairs: {
+      planBacked: drift.filter((entry) => entry.repair.status === 'plan_backed').length,
+      ready: drift.filter((entry) => entry.repair.status === 'ready').length,
+      held: drift.filter((entry) => entry.repair.status === 'held').length,
+      reportOnly: drift.filter((entry) => entry.repair.status === 'report_only').length,
     },
   };
 }
@@ -251,12 +283,14 @@ function ruleDriftKey(slug: string, expected: string, found: string): string {
  * deliberately absent: a page declaring its own `role` in frontmatter **outranks** the rule
  * so that is the user overriding a default, not drift.
  */
-function findDrift(ctx: AknoContext): RuleDrift[] {
-  const pages = ctx.store.db
-    .prepare("SELECT slug, type FROM pages WHERE role != 'ignored' ORDER BY slug")
-    .all() as { slug: string; type: string | null }[];
+type RuleDriftFinding = Omit<RuleDrift, 'plan' | 'repair'> & { candidate: RuleDriftCandidate };
 
-  const out: RuleDrift[] = [];
+function findDrift(ctx: AknoContext): RuleDriftFinding[] {
+  const pages = ctx.store.db
+    .prepare("SELECT id, slug, rel_path, role, type FROM pages WHERE role != 'ignored' ORDER BY slug")
+    .all() as { id: string; slug: string; rel_path: string; role: string; type: string | null }[];
+
+  const out: RuleDriftFinding[] = [];
   for (const page of pages) {
     // `effectiveRule` merges values across matching rules. Each diagnostic points to the most
     // specific matching rule that declared that particular field, not merely the first match.
@@ -269,7 +303,16 @@ function findDrift(ctx: AknoContext): RuleDrift[] {
         rule: typeRule.glob,
         expected: `type: ${rule.type}`,
         found: `type: ${page.type}`,
-        plan: null,
+        candidate: {
+          pageId: page.id,
+          slug: page.slug,
+          relPath: page.rel_path,
+          role: page.role,
+          field: 'type',
+          ruleGlob: typeRule.glob,
+          expectedType: rule.type,
+          foundType: page.type,
+        },
       });
     }
 
@@ -283,7 +326,14 @@ function findDrift(ctx: AknoContext): RuleDrift[] {
           rule: slugRule.glob,
           expected: `slug matching ${rule.slug_pattern}`,
           found: basename,
-          plan: null,
+          candidate: {
+            pageId: page.id,
+            slug: page.slug,
+            relPath: page.rel_path,
+            role: page.role,
+            field: 'slug_pattern',
+            ruleGlob: slugRule.glob,
+          },
         });
       }
     }
@@ -304,7 +354,16 @@ function findDrift(ctx: AknoContext): RuleDrift[] {
           rule: depthRule.glob,
           expected: `at most ${rule.max_depth} level(s) deep`,
           found: `${depth} levels deep`,
-          plan: null,
+          candidate: {
+            pageId: page.id,
+            slug: page.slug,
+            relPath: page.rel_path,
+            role: page.role,
+            field: 'max_depth',
+            ruleGlob: depthRule.glob,
+            maxDepth: rule.max_depth,
+            foundDepth: depth,
+          },
         });
       }
     }

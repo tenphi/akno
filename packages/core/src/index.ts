@@ -302,12 +302,14 @@ export type {
   HousekeepingPlanRef,
   OrphanedDocument,
   RuleDrift,
+  RuleRepairDisposition,
 } from './maintenance/housekeeping.ts';
 export type {
   GraphMaintenanceCandidate,
   GraphMaintenanceCandidateKind,
 } from './maintenance/graph-candidates.ts';
 export type { LinkIdentitySignal, LinkRepair, RepairResult } from './maintenance/link-repairs.ts';
+export type { RuleRepairAssessment } from './maintenance/rule-drift.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
 export type { ProposalRow } from './write/gate.ts';
 export {

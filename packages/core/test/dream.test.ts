@@ -2032,7 +2032,10 @@ describe('housekeeping', () => {
 
   it('reports a page whose type contradicts its folder rule', async () => {
     await mem.close();
-    mem = await openMem({ folders: { 'home/**': { type: 'appliance' } } });
+    mem = await openMem({
+      folders: { 'home/**': { type: 'appliance' } },
+      maintenance: { policies: { rule_drift: 'audit' } },
+    });
     fs.writeFileSync(
       path.join(root, 'home/laundry.md'),
       '---\ntitle: Laundry\ntype: chore\n---\n\n# Laundry\n\nServiced in June.\n',
@@ -2046,6 +2049,44 @@ describe('housekeeping', () => {
     expect(drift?.found).toBe('type: chore');
     expect(drift?.field).toBe('type');
     expect(drift?.plan).toBeNull();
+    expect(drift?.repair).toMatchObject({ status: 'ready', code: 'exact_type' });
+    expect(report.housekeeping!.ruleRepairs.ready).toBe(1);
+  });
+
+  it('explains when exact rule repair is disabled by policy', async () => {
+    await mem.close();
+    mem = await openMem({
+      folders: { 'home/**': { type: 'appliance' } },
+      maintenance: { policies: { rule_drift: 'off' } },
+    });
+    fs.writeFileSync(
+      path.join(root, 'home/laundry.md'),
+      '---\ntitle: Laundry\ntype: chore\n---\n\n# Laundry\n',
+      'utf8',
+    );
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'housekeeping' });
+    expect(report.housekeeping!.drift.find((entry) => entry.slug === 'home/laundry')?.repair).toMatchObject({
+      status: 'held',
+      code: 'policy_off',
+    });
+  });
+
+  it('explains why slug-pattern drift remains report-only', async () => {
+    await mem.close();
+    mem = await openMem({
+      folders: { 'drafts/**': { slug_pattern: '^[a-z]+$' } },
+      maintenance: { policies: { rule_drift: 'audit' } },
+    });
+    fs.mkdirSync(path.join(root, 'drafts'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'drafts/bo-winters.md'), '# Bo Winters\n', 'utf8');
+    await mem.index({});
+
+    const report = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      report.housekeeping!.drift.find((entry) => entry.slug === 'drafts/bo-winters')?.repair,
+    ).toMatchObject({ status: 'report_only', code: 'slug_has_no_exact_repair' });
   });
 
   it('seals exact type drift in audit mode and marks housekeeping coverage', async () => {
@@ -2100,7 +2141,9 @@ describe('housekeeping', () => {
       policy: 'audit',
       status: 'proposed',
     });
+    expect(drift?.repair).toMatchObject({ status: 'plan_backed', code: 'sealed_plan' });
     expect(housekeepingReport.housekeeping!.planBacked.drift).toBe(1);
+    expect(housekeepingReport.housekeeping!.ruleRepairs.planBacked).toBe(1);
   });
 
   it('autonomously applies and verifies one exact type correction without page-wide dream authority', async () => {
@@ -2247,7 +2290,12 @@ describe('housekeeping', () => {
     const housekeeping = await mem.dream({ phase: 'housekeeping' });
     expect(
       housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters'),
-    ).toMatchObject({ field: 'max_depth', plan: null });
+    ).toMatchObject({
+      field: 'max_depth',
+      plan: null,
+      repair: { status: 'report_only', code: 'relocation_not_declared' },
+    });
+    expect(housekeeping.housekeeping!.ruleRepairs.reportOnly).toBe(1);
   });
 
   it('declines byte-preserving relocation when a relative outbound reference would change meaning', async () => {
@@ -2272,6 +2320,11 @@ describe('housekeeping', () => {
     expect(report.maintenancePlans.flatMap((plan) => plan.items)).not.toContainEqual(
       expect.objectContaining({ kind: 'rule_drift', subject: 'notes/old/bo-winters' }),
     );
+    const housekeeping = await mem.dream({ phase: 'housekeeping' });
+    expect(
+      housekeeping.housekeeping!.drift.find((entry) => entry.slug === 'notes/old/bo-winters')?.repair,
+    ).toMatchObject({ status: 'held', code: 'location_dependent_reference' });
+    expect(housekeeping.housekeeping!.ruleRepairs.held).toBe(1);
   });
 
   it('never plans type correction for reference material', async () => {
@@ -2293,8 +2346,11 @@ describe('housekeeping', () => {
     expect(fs.readFileSync(path.join(root, 'manuals/zephyr-qx-100.md'), 'utf8')).toBe(before);
     const housekeepingReport = await mem.dream({ phase: 'housekeeping' });
     expect(
-      housekeepingReport.housekeeping!.drift.find((entry) => entry.slug === 'manuals/zephyr-qx-100')?.plan,
-    ).toBeNull();
+      housekeepingReport.housekeeping!.drift.find((entry) => entry.slug === 'manuals/zephyr-qx-100'),
+    ).toMatchObject({
+      plan: null,
+      repair: { status: 'held', code: 'role_not_knowledge' },
+    });
   });
 
   it('includes graph findings as read-only housekeeping candidates', async () => {

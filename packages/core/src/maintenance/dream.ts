@@ -990,7 +990,7 @@ async function runPhase(
       return repairPhase(ctx, report);
     }
     case 'housekeeping': {
-      report.housekeeping = housekeeping(ctx);
+      report.housekeeping = await housekeeping(ctx);
       return null;
     }
   }

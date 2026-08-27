@@ -242,6 +242,12 @@ or `about` relationship points to it. `slug_pattern` drift remains report-only b
 one exact filename. Source/reference pages are never rule-drift write targets.
 `maintenance.curate.max_rule_drifts` bounds both forms per cycle; the default is `20`.
 
+Housekeeping does not leave an unplanned rule finding unexplained. Each displayed finding carries one typed
+repair disposition: `ready` when the exact planner can seal it, `plan_backed` when a nonterminal item already
+owns it, `report_only` when the rule does not determine one correction, or `held` with a deterministic safety
+code such as `owned_documents`, `reference_backlink`, or `location_dependent_reference`. Ordinary JSON output
+retains only aggregate disposition counts; page-specific codes and reasons require `--private-details`.
+
 Canonical fragments are also checked against the current derived fact row: item id, page identity, payload
 line, and exact source-line hash must agree. Reusing an id on two pages or participating in a typed fact
 conflict that excludes the claim from inference yields `item_conflict`; disabled, stale, or missing fact derivation yields `source_unavailable`

@@ -211,6 +211,12 @@ budget-deferred automatic item from looking like newly discovered duplicate work
 the total until the operation is applied and the index confirms that the broken link, orphan state, or metadata
 drift is gone.
 
+Every rule-drift finding also reports the planner's current disposition. `ready` means an exact operation can
+be sealed on the next eligible curate pass; `plan_backed` means it already has one; `report_only` means the rule
+does not identify a unique correction; and `held` names the deterministic guard preventing repair. This analysis
+is shared with the planner rather than reimplemented in reporting. Default operational JSON exposes only the
+four counts, while `--private-details` may show the page-specific code and explanation.
+
 An explicit scalar `type` on a knowledge page can be corrected when it conflicts with an explicit matching
 folder `type` rule. The rule supplies the one exact value and therefore the authority; Akno changes only that
 existing scalar, preserves every adjacent YAML byte, seals the rule with the page input, and rechecks both

@@ -51,7 +51,7 @@ akno dream notify --schedule-health
                    pages that state different values for the same thing.
     repair         Legacy report-only view of exact broken-link proposals. Durable fixes
                    are low-risk items in curate audit, review, or auto plans.
-    housekeeping   Broken links, orphaned documents, pages that drifted from their rules.
+    housekeeping   Broken links, orphaned documents, rule drift and exact repair disposition.
 
   A full/scheduled run resolves the configured maintenance profile. audit plans only,
   review waits for human decisions, autonomous uses a separate curator and applies only
@@ -932,6 +932,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
         housekeepingCount(house.counts.orphanedDocuments, house.planBacked.orphanedDocuments),
       ],
       ['pages off their rules', housekeepingCount(house.counts.drift, house.planBacked.drift)],
+      ['rule repairs', ruleRepairSummary(house.ruleRepairs)],
       ['graph review candidates', house.counts.graphCandidates],
     ]);
     if (privateDetails) {
@@ -945,6 +946,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
           `  ${style.yellow('·')} ${entry.slug}  ${style.grey(`${entry.rule} expects ${entry.expected}, found ${entry.found}`)}`,
         );
         if (entry.plan) line(`    ${style.grey(housekeepingPlanLabel(entry.plan))}`);
+        line(`    ${style.grey(`${entry.repair.status}/${entry.repair.code}: ${entry.repair.reason}`)}`);
       }
       if (house.brokenLinks.length > 0) {
         for (const link of house.brokenLinks.slice(0, 5)) {
@@ -1003,6 +1005,10 @@ function housekeepingCount(total: number, planBacked: number): string | number {
 function housekeepingPlanLabel(plan: HousekeepingPlanRef): string {
   const deferred = plan.statusCode ? ` · ${plan.statusCode}` : '';
   return `plan ${plan.planId}/${plan.itemId} · ${plan.policy}/${plan.status}${deferred}`;
+}
+
+function ruleRepairSummary(counts: NonNullable<DreamReport['housekeeping']>['ruleRepairs']): string {
+  return `${counts.planBacked} planned · ${counts.ready} ready · ${counts.held} held · ${counts.reportOnly} report-only`;
 }
 
 function printRunVerification(verification: DreamRunReceipt['verification']): void {
@@ -1150,7 +1156,11 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
         }
       : null,
     housekeeping: report.housekeeping
-      ? { counts: report.housekeeping.counts, planBacked: report.housekeeping.planBacked }
+      ? {
+          counts: report.housekeeping.counts,
+          planBacked: report.housekeeping.planBacked,
+          ruleRepairs: report.housekeeping.ruleRepairs,
+        }
       : null,
     warnings: report.warnings.length,
     changes: {
