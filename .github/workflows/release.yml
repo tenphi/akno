@@ -36,6 +36,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: No committed local config or secrets
+        run: pnpm check:repository
+
       # The full gate. A release runs everything CI runs, because the tag is the last chance.
       - run: pnpm build
       - run: pnpm lint
