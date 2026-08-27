@@ -1,28 +1,39 @@
 name: Release
 
-# Publishing is deliberate: a tag push, never a merge. The tag is the record of what was
-# published, and `pnpm publish` refuses a version already on the registry, so a re-run of a
-# failed job cannot quietly ship something different under the same number.
+# This follows the same release-PR loop as Tasty: ordinary changes carry small changeset files;
+# pushes to main update one version PR; merging that PR publishes and creates package tags.
+# A manual run is always a rehearsal and can never publish.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths:
+      - '.changeset/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.nvmrc'
+      - '.github/workflows/release.yml'
   workflow_dispatch:
-    inputs:
-      dry_run:
-        description: 'Pack and verify without publishing'
-        type: boolean
-        default: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     # macOS because the test suite exercises the Vision/PDFKit extractor and the FSEvents
     # watcher. A package published from a machine that could not run its own tests is a guess.
     runs-on: macos-latest
     permissions:
-      contents: read
+      contents: write # version commits, package tags, and GitHub releases
+      pull-requests: write # the rolling Changesets release PR
       id-token: write # npm provenance
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       # package.json is the single pnpm-version authority. Supplying another version here makes
       # action-setup reject the job before installation when the two declarations differ.
@@ -39,27 +50,14 @@ jobs:
       - name: No committed local config or secrets
         run: pnpm check:repository
 
-      # The full gate. A release runs everything CI runs, because the tag is the last chance.
+      # Publishing repeats the whole CI gate. The release PR can be reviewed like any other PR,
+      # but the merge commit is the immutable source of the package bytes.
       - run: pnpm build
       - run: pnpm lint
       - run: pnpm knip
       - run: pnpm test
       - run: node scripts/smoke.mjs
       - run: node scripts/smoke-demo.mjs
-
-      # The tag must name the version in the manifests, or the tag is a lie about what shipped.
-      - name: Tag matches package version
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          tagged="${GITHUB_REF_NAME#v}"
-          for pkg in protocol core client cli; do
-            found=$(node -p "require('./packages/$pkg/package.json').version")
-            if [ "$found" != "$tagged" ]; then
-              echo "::error::packages/$pkg is $found but the tag says $tagged"
-              exit 1
-            fi
-          done
-          echo "all four packages are $tagged"
 
       # What a tarball contains is not covered by the build or the tests, and it is the one
       # thing that cannot be fixed after the fact — a published version number is spent.
@@ -91,12 +89,22 @@ jobs:
           echo "all four tarballs verified"
           node scripts/smoke-packages.mjs "$out"
 
-      # Dependency order: each package's deps must already resolve on the registry.
-      - name: Publish
-        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
+      - name: Open release PR or publish
+        id: changesets
+        if: github.event_name == 'push'
+        uses: changesets/action@v2.1.1
+        with:
+          publish-script: pnpm release
+          version-script: pnpm version:packages
+          commit-message: 'chore: version packages'
+          pr-title: 'chore: release packages'
+          create-github-releases: true
+          push-git-tags: true
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          for pkg in protocol core client cli; do
-            (cd "packages/$pkg" && pnpm publish --access public --no-git-checks --provenance)
-          done
+          NPM_CONFIG_PROVENANCE: true
+
+      - name: Rehearsal complete
+        if: github.event_name == 'workflow_dispatch'
+        run: echo 'Release gates passed; manual runs do not version, tag, or publish.'

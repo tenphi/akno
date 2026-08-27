@@ -224,23 +224,31 @@ the line above it is noise.
 
 ## Releasing
 
-Four packages, one version, published from a tag by
-[`.github/workflows/release.yml`](.github/workflows/release.yml).
+Akno uses the same Changesets release-PR loop as Tasty. The four public packages are a fixed group: they keep
+one version and are published together, even when a change directly affects only one package.
 
 ```bash
-# 1. Bump all four to the same version, and write the CHANGELOG entry.
-# 2. Let CI go green on main.
-git tag v0.1.0 && git push origin v0.1.0
+pnpm changeset
 ```
 
-The workflow re-runs the whole gate, checks the tag against every manifest, verifies the tarballs,
-then publishes in dependency order: protocol, core, client, cli.
+Select the packages whose public behaviour changed, choose the appropriate semver bump, and write the
+user-facing changelog entry. Commit the generated `.changeset/*.md` file with the change. Documentation,
+tests, and internal tooling that do not affect a published package need no changeset.
+
+After changes reach `main`, [the release workflow](.github/workflows/release.yml) creates or updates one
+`chore: release packages` PR. That PR consumes the pending changesets, updates package versions and changelogs,
+and exposes the exact release diff for review. Merging it runs the complete gate again and publishes. The
+Changesets action then creates the package tags and GitHub releases automatically; do not create a tag by hand.
+
+The workflow needs the repository setting “Allow GitHub Actions to create and approve pull requests” and an
+`NPM_TOKEN` Actions secret with publish access to the `@tenphi` scope. It also requests an OIDC token so npm can
+attach provenance.
 
 Three things about it are worth knowing, because each one is a way a release breaks quietly:
 
-- **`pnpm publish`, never `npm publish`.** Only pnpm rewrites `workspace:*` and `catalog:` into real
-  version ranges. A tarball packed the other way asks a registry for `workspace:*` and fails on
-  install, and nothing before that point notices.
+- **Changesets detects this as a pnpm workspace and invokes `pnpm publish`.** That matters because pnpm rewrites
+  `workspace:*` and `catalog:` into real version ranges. A tarball packed another way asks a registry for those
+  protocols and fails on install.
 - **The tarball is not covered by the build or the suite.** `packages/core` needs
   `config/default.jsonc` and `swift/extract.swift` inside it — the first because an installed copy has
   no repo root to walk up to and throws `committed defaults are missing` without it, the second
@@ -251,10 +259,11 @@ Three things about it are worth knowing, because each one is a way a release bre
   the behaviour you want — re-running a half-failed job cannot ship different bytes under the same
   number. If a publish fails partway, bump the patch rather than trying to reuse it.
 
-To rehearse a release without publishing, run the workflow from the Actions tab with `dry_run` left
-on: everything happens except the last step. Locally, `pnpm smoke:packages` builds and packs all four
-packages, installs those tarballs together with npm in an isolated prefix, and verifies first-run config,
-model-free setup, native indexing, lexical recall, and byte-preserving behavior outside the checkout.
+To rehearse a release without publishing, manually run the Release workflow from the Actions tab. Manual runs
+always stop after verification; only a push to `main` can reach the Changesets action. Locally,
+`pnpm smoke:packages` builds and packs all four packages, installs those tarballs together with npm in an
+isolated prefix, and verifies first-run config, model-free setup, native indexing, lexical recall, and
+byte-preserving behavior outside the checkout.
 
 ## Never use real data in tests
 

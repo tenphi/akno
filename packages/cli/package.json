@@ -1,6 +1,6 @@
 {
   "name": "@tenphi/akno",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Akno \u2014 a two-way memory layer for agents over a Markdown knowledge base",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",

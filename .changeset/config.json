@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.0/schema.json",
+  "changelog": ["@changesets/changelog-github", { "repo": "tenphi/akno" }],
+  "commit": false,
+  "fixed": [["@tenphi/akno-protocol", "@tenphi/akno-core", "@tenphi/akno-client", "@tenphi/akno"]],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [],
+  "bumpVersionsWithWorkspaceProtocolOnly": true,
+  "privatePackages": { "version": false, "tag": false }
+}
