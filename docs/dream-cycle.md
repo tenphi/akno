@@ -200,6 +200,17 @@ Housekeeping reports the remaining state after writes: orphan documents, broken 
 identity collisions, ambiguous authored subjects, traversal hubs, and other structural diagnostics. It is
 read-only and grants no authority to merge or rewrite.
 
+Broken links and orphan documents can already have exact work waiting in a nonterminal curate or adoption
+plan. Housekeeping marks those entries with the plan id, item id, policy, item status, and typed deferral code,
+and reports how many current findings are plan-backed. This prevents a review item or budget-deferred automatic
+item from looking like newly discovered duplicate work. The diagnostic remains in the total until the operation
+is applied and the index confirms that the broken link or orphan state is gone.
+
+Rule drift and graph review candidates remain unplanned findings. A type mismatch does not establish whether
+the page or folder rule is wrong, and a slug pattern or depth violation does not establish one canonical new
+path. Graph ambiguity likewise cannot grant identity-edit authority. Those cases require a later qualified
+planner or an explicit human/configuration decision.
+
 ## The plan lifecycle
 
 Every writable transformation follows the same stages:

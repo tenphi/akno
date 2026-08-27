@@ -927,6 +927,19 @@ describe('repair', () => {
     expect(item.status).toBe('proposed');
     expect(report.repaired!.links).toEqual([expect.objectContaining({ action: 'planned' })]);
     expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
+
+    const housekeepingReport = await mem.dream({ phase: 'housekeeping' });
+    const covered = housekeepingReport.housekeeping!.brokenLinks.find(
+      (entry) => entry.from === 'home/appliances' && entry.to === 'home/boiler',
+    );
+    expect(covered?.plan).toMatchObject({
+      planId: report.maintenancePlan!.id,
+      itemId: item.id,
+      kind: 'broken_link',
+      policy: 'audit',
+      status: 'proposed',
+    });
+    expect(housekeepingReport.housekeeping!.planBacked.brokenLinks).toBe(1);
   });
 
   it('can audit deterministic link items without a model', async () => {
@@ -963,6 +976,13 @@ describe('repair', () => {
 
     expect(result.plan.items.find((candidate) => candidate.id === item.id)?.status).toBe('stale');
     expect(fs.readFileSync(path.join(root, 'home/appliances.md'), 'utf8')).toBe(before);
+
+    const housekeepingReport = await mem.dream({ phase: 'housekeeping' });
+    const uncovered = housekeepingReport.housekeeping!.brokenLinks.find(
+      (entry) => entry.from === 'home/appliances' && entry.to === 'home/boiler',
+    );
+    expect(uncovered?.plan).toBeNull();
+    expect(housekeepingReport.housekeeping!.planBacked.brokenLinks).toBe(0);
   });
 
   it('keeps the legacy repair phase report-only', async () => {
@@ -2518,6 +2538,19 @@ describe('adopt', () => {
     expect(mem.maintenanceDiff(report.maintenancePlan!.id)).toContain(
       '--- /dev/null\n+++ b/household/lease-scan.md',
     );
+
+    const housekeepingReport = await mem.dream({ phase: 'housekeeping' });
+    const orphan = housekeepingReport.housekeeping!.orphanedDocuments.find(
+      (entry) => entry.relPath === 'household/lease scan.txt',
+    );
+    expect(orphan?.plan).toMatchObject({
+      planId: report.maintenancePlan!.id,
+      itemId: report.maintenancePlan!.items[0]!.id,
+      kind: 'adopt',
+      policy: 'audit',
+      status: 'proposed',
+    });
+    expect(housekeepingReport.housekeeping!.planBacked.orphanedDocuments).toBe(1);
   });
 
   it('can audit adoption without a model', async () => {

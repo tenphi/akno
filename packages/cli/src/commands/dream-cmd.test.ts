@@ -27,6 +27,7 @@ describe('dream output privacy', () => {
     expect(safe).toContain('run_example');
     expect(safe).toContain('"componentCount":2');
     expect(safe).toContain('"graphCandidates":1');
+    expect(safe).toContain('"planBacked":{"brokenLinks":0,"orphanedDocuments":0}');
     expect(safe).toContain('"embeddingCacheHits":2');
     expect(safe).toContain('"managedItems":{"eligiblePages":1');
   });
@@ -369,6 +370,7 @@ function privateReport(): DreamReport {
         },
       ],
       counts: { brokenLinks: 0, orphanedDocuments: 0, drift: 0, graphCandidates: 1 },
+      planBacked: { brokenLinks: 0, orphanedDocuments: 0 },
     },
     changeId: null,
     adoptChangeId: null,

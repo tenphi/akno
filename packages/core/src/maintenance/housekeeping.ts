@@ -1,7 +1,9 @@
 import type { AknoContext } from '../context.ts';
+import type { MaintenancePolicy } from '../config/schema.ts';
 import { configuredTransformPolicy } from './profile.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
 import { discoverGraphMaintenanceCandidates, type GraphMaintenanceCandidate } from './graph-candidates.ts';
+import { getMaintenancePlan, type MaintenanceItemStatus, type MaintenanceItemStatusCode } from './plans.ts';
 
 /**
  * The cycle reports broken links, orphaned documents, and pages that have drifted from their
@@ -18,11 +20,25 @@ export interface BrokenLink {
   from: string;
   to: string;
   line: number | null;
+  /** An exact nonterminal repair already exists; this finding is not unplanned work. */
+  plan: HousekeepingPlanRef | null;
 }
 
 export interface OrphanedDocument {
   relPath: string;
   reason: string;
+  /** An exact nonterminal adoption already exists; this finding is not unplanned work. */
+  plan: HousekeepingPlanRef | null;
+}
+
+/** Content-safe identity for exact work already represented by the durable plan lifecycle. */
+export interface HousekeepingPlanRef {
+  planId: string;
+  itemId: string;
+  kind: 'broken_link' | 'adopt';
+  policy: Exclude<MaintenancePolicy, 'off'>;
+  status: MaintenanceItemStatus;
+  statusCode: MaintenanceItemStatusCode | null;
 }
 
 export interface RuleDrift {
@@ -41,11 +57,20 @@ export interface Housekeeping {
   graphCandidates: GraphMaintenanceCandidate[];
   /** Totals, because the lists are capped for a readable report. */
   counts: { brokenLinks: number; orphanedDocuments: number; drift: number; graphCandidates: number };
+  /** Current findings for which Akno has already sealed an exact nonterminal operation. */
+  planBacked: { brokenLinks: number; orphanedDocuments: number };
 }
 
 const LIST_CAP = 20;
+const PLAN_BACKED_ITEM_STATUSES = new Set<MaintenanceItemStatus>([
+  'proposed',
+  'approved',
+  'applying',
+  'verification_pending',
+]);
 
 export function housekeeping(ctx: AknoContext): Housekeeping {
+  const coverage = pendingPlanCoverage(ctx);
   const brokenRows = ctx.store.db
     .prepare(
       `SELECT p.slug AS from_slug, l.to_slug, l.line FROM links l
@@ -78,9 +103,11 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
       from: row.from_slug,
       to: row.to_slug,
       line: row.line,
+      plan: coverage.brokenLinks.get(brokenLinkKey(row.from_slug, row.to_slug)) ?? null,
     })),
     orphanedDocuments: orphanRows.map((row) => ({
       relPath: row.rel_path,
+      plan: coverage.orphanedDocuments.get(row.rel_path) ?? null,
       reason:
         row.availability === 'missing'
           ? row.extracted
@@ -100,7 +127,92 @@ export function housekeeping(ctx: AknoContext): Housekeeping {
       drift: drift.length,
       graphCandidates: graphCandidates.length,
     },
+    planBacked: {
+      brokenLinks: countPlanBackedBrokenLinks(ctx, coverage.brokenLinks),
+      orphanedDocuments: countPlanBackedOrphans(ctx, coverage.orphanedDocuments),
+    },
   };
+}
+
+/**
+ * The exact plan is the authority here, not resemblance between a diagnostic and an operation.
+ * Link evidence seals both endpoints; adoption evidence seals the document path and bytes. Newest
+ * plans win when an older audit plan and a later review plan describe the same still-current work.
+ */
+function pendingPlanCoverage(ctx: AknoContext): {
+  brokenLinks: Map<string, HousekeepingPlanRef>;
+  orphanedDocuments: Map<string, HousekeepingPlanRef>;
+} {
+  const brokenLinks = new Map<string, HousekeepingPlanRef>();
+  const orphanedDocuments = new Map<string, HousekeepingPlanRef>();
+
+  const plans = ctx.store.db
+    .prepare(
+      `SELECT id FROM maintenance_plans
+        WHERE status NOT IN ('completed', 'failed', 'superseded')
+        ORDER BY rowid DESC`,
+    )
+    .all() as { id: string }[];
+  for (const summary of plans) {
+    const plan = getMaintenancePlan(ctx, summary.id);
+    for (const item of plan.items) {
+      if (item.kind !== 'broken_link' && item.kind !== 'adopt') continue;
+      if (!PLAN_BACKED_ITEM_STATUSES.has(item.status)) continue;
+      const ref: HousekeepingPlanRef = {
+        planId: plan.id,
+        itemId: item.id,
+        kind: item.kind,
+        policy: item.policy,
+        status: item.status,
+        statusCode: item.statusCode,
+      };
+      if (item.kind === 'broken_link') {
+        for (const evidence of item.evidence) {
+          if (evidence.type !== 'link' || !evidence.brokenTarget) continue;
+          const key = brokenLinkKey(evidence.source, evidence.brokenTarget);
+          if (!brokenLinks.has(key)) brokenLinks.set(key, ref);
+        }
+      } else {
+        for (const evidence of item.evidence) {
+          if (evidence.type !== 'document' || !evidence.documentRelPath) continue;
+          if (!orphanedDocuments.has(evidence.documentRelPath)) {
+            orphanedDocuments.set(evidence.documentRelPath, ref);
+          }
+        }
+      }
+    }
+  }
+
+  return { brokenLinks, orphanedDocuments };
+}
+
+function countPlanBackedBrokenLinks(ctx: AknoContext, coverage: Map<string, HousekeepingPlanRef>): number {
+  let total = 0;
+  const countRows = ctx.store.db.prepare(
+    `SELECT count(*) AS c FROM links l JOIN pages p ON p.id = l.from_page
+      WHERE l.broken = 1 AND l.kind != 'embed' AND p.slug = ? AND l.to_slug = ?`,
+  );
+  for (const key of coverage.keys()) {
+    const [from, to] = key.split('\0');
+    if (from === undefined || to === undefined) continue;
+    total += (countRows.get(from, to) as { c: number }).c;
+  }
+  return total;
+}
+
+function countPlanBackedOrphans(ctx: AknoContext, coverage: Map<string, HousekeepingPlanRef>): number {
+  let total = 0;
+  const exists = ctx.store.db.prepare(
+    'SELECT 1 FROM documents WHERE page_id IS NULL AND rel_path = ? LIMIT 1',
+  );
+  for (const relPath of coverage.keys()) {
+    if (exists.get(relPath)) total++;
+  }
+  return total;
+}
+
+function brokenLinkKey(from: string, to: string): string {
+  return `${from}\0${to}`;
 }
 
 /**

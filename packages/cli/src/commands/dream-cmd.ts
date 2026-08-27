@@ -4,6 +4,7 @@ import {
   parsePhase,
   type DreamReport,
   type DreamRunReceipt,
+  type HousekeepingPlanRef,
   type MaintenancePathPolicy,
   type MaintenanceMode,
   type MaintenanceStatus,
@@ -925,8 +926,11 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     const house = report.housekeeping;
     heading('Housekeeping');
     kv([
-      ['broken links', house.counts.brokenLinks],
-      ['orphaned documents', house.counts.orphanedDocuments],
+      ['broken links', housekeepingCount(house.counts.brokenLinks, house.planBacked.brokenLinks)],
+      [
+        'orphaned documents',
+        housekeepingCount(house.counts.orphanedDocuments, house.planBacked.orphanedDocuments),
+      ],
       ['pages off their rules', house.counts.drift],
       ['graph review candidates', house.counts.graphCandidates],
     ]);
@@ -934,6 +938,7 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       for (const entry of house.orphanedDocuments.slice(0, 5)) {
         line(`  ${style.yellow('·')} ${entry.relPath}`);
         line(`    ${style.grey(entry.reason)}`);
+        if (entry.plan) line(`    ${style.grey(housekeepingPlanLabel(entry.plan))}`);
       }
       for (const entry of house.drift.slice(0, 5)) {
         line(
@@ -941,8 +946,10 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
         );
       }
       if (house.brokenLinks.length > 0) {
-        const shown = house.brokenLinks.slice(0, 5).map((link) => `${link.from} → ${link.to}`);
-        line(`  ${style.grey(`links: ${shown.join(', ')}`)}`);
+        for (const link of house.brokenLinks.slice(0, 5)) {
+          const plan = link.plan ? ` · ${housekeepingPlanLabel(link.plan)}` : '';
+          line(`  ${style.grey(`${link.from} → ${link.to}${plan}`)}`);
+        }
       }
       for (const entry of house.graphCandidates.slice(0, 5)) {
         line(`  ${style.yellow('·')} [${entry.kind}] ${entry.subject}`);
@@ -986,6 +993,15 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
 
 export function dreamRunExitCode(run: DreamRunReceipt): number {
   return run.status === 'failed' ? 1 : 0;
+}
+
+function housekeepingCount(total: number, planBacked: number): string | number {
+  return planBacked > 0 ? `${total} (${planBacked} plan-backed)` : total;
+}
+
+function housekeepingPlanLabel(plan: HousekeepingPlanRef): string {
+  const deferred = plan.statusCode ? ` · ${plan.statusCode}` : '';
+  return `plan ${plan.planId}/${plan.itemId} · ${plan.policy}/${plan.status}${deferred}`;
 }
 
 function printRunVerification(verification: DreamRunReceipt['verification']): void {
@@ -1132,7 +1148,9 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
           declined: report.repaired.declined.length,
         }
       : null,
-    housekeeping: report.housekeeping?.counts ?? null,
+    housekeeping: report.housekeeping
+      ? { counts: report.housekeeping.counts, planBacked: report.housekeeping.planBacked }
+      : null,
     warnings: report.warnings.length,
     changes: {
       observations: report.changeId,
