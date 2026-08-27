@@ -31,7 +31,7 @@ jobs:
       actions: write # dispatch CI for the generated release PR
       contents: write # version commits, package tags, and GitHub releases
       pull-requests: write # the rolling Changesets release PR
-      id-token: write # npm provenance
+      id-token: write # npm trusted publishing (OIDC)
     steps:
       - uses: actions/checkout@v5
         with:
