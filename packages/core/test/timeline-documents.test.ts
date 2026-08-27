@@ -60,7 +60,6 @@ describe('orphan document timeline evidence', () => {
       match: 'Service completed',
     });
     expect(result.status).toBe('ok');
-    expect(result.events).toEqual([]);
     expect(result.results).toHaveLength(1);
     expect(result.results[0]).toMatchObject({
       type: 'document_evidence',
@@ -74,7 +73,6 @@ describe('orphan document timeline evidence', () => {
 
     const mixed = await mem.timeline({ since: '2026-08-03', until: '2026-08-04', order: 'oldest' });
     expect(mixed.results.map((entry) => entry.type)).toEqual(['event', 'document_evidence']);
-    expect(mixed.events).toHaveLength(1);
     const limited = await mem.timeline({
       since: '2026-08-03',
       until: '2026-08-04',
@@ -90,7 +88,6 @@ describe('orphan document timeline evidence', () => {
 
     const context = await mem.context({ budget: 2000, timeline_days: 1000, structure: false });
     expect(context.timeline.some((entry) => entry.type === 'document_evidence')).toBe(true);
-    expect(context.events.every((event) => !('date_basis' in event))).toBe(true);
   });
 
   it('uses visibly labelled file metadata only when the document states no date', async () => {

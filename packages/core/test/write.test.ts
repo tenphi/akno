@@ -113,7 +113,9 @@ describe('write', () => {
     const page = await mem.read({ slug: 'home/wifi' });
     expect(page.page?.slug).toBe('home/wifi');
     const found = await mem.recall({ query: 'attic network', mode: 'lookup' });
-    expect(found.cards.map((card) => card.slug)).toContain('home/wifi');
+    expect(found.results.filter((entry) => entry.type === 'page').map((card) => card.slug)).toContain(
+      'home/wifi',
+    );
     await mem.close();
   });
 
@@ -462,8 +464,9 @@ describe('events', () => {
     const mem = await openAs('agent');
     await mem.write({ event: { date: '2026-08-05', summary: 'Back from a trip.' } });
     const found = await mem.timeline({ match: 'Back from' });
-    expect(found.events[0]?.date).toBe('2026-08-05');
-    expect(found.events[0]?.source).toBe('timeline');
+    const event = found.results.find((entry) => entry.type === 'event');
+    expect(event?.date).toBe('2026-08-05');
+    expect(event?.source).toBe('timeline');
     await mem.close();
   });
 });

@@ -13,11 +13,12 @@ cycle ship switched **off** for reasons measured on that base rather than guesse
 ### Retrieval
 
 - Hybrid search over FTS5 and vector embeddings, with rank fusion and an optional cross-encoder rerank.
-- Results are **page cards with line addresses**, so every claim traces to a sentence in a file.
+- Results are typed page or standalone-document evidence with exact source addresses.
 - Absence is a result, and it distinguishes _nothing matched_ from _the index is unavailable_.
 - `question` mode reports coverage: which concepts of the question the results actually cover.
 - A superseded value comes back labelled as superseded, never as a competing current claim.
-- `context` assembles the whole pre-turn bundle — structure, timeline, cards — against one token budget.
+- `context` assembles the whole pre-turn bundle — structure, timeline, and recall results — against one token
+  budget.
 
 ### Writing
 

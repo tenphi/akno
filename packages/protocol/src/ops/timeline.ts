@@ -76,8 +76,6 @@ export function isDocumentTimelineEvidence(result: TimelineResult): result is Do
 export const TimelineOutput = ResultEnvelope.extend({
   /** Authoritative mixed authored-event and document-evidence results. */
   results: z.array(TimelineResult),
-  /** @deprecated Authored-event compatibility view; use `results`. */
-  events: z.array(Event),
   total: z.number().int().nonnegative(),
   /** The window actually read, after defaults were applied. */
   range: z.object({ since: z.string().nullable(), until: z.string().nullable() }),

@@ -8,7 +8,7 @@ import {
   ResultEnvelope,
   SlugFilter,
 } from '../common.ts';
-import { Event, TimelineResult } from './timeline.ts';
+import { TimelineResult } from './timeline.ts';
 
 export const ContextProfile = z.enum(['default', 'auto_recall']);
 export type ContextProfile = z.infer<typeof ContextProfile>;
@@ -80,14 +80,10 @@ export const ContextOutput = ResultEnvelope.extend({
   /** Content-free receipt for the precision-first auto-recall activation decision. */
   activation: AutoRecallActivation.optional(),
   pinned: z.array(Card),
-  /** Authoritative mixed results for this turn's recall. */
+  /** Mixed page/document results for this turn's recall. */
   results: z.array(RecallResult),
-  /** @deprecated Page-only compatibility view; use `results`. */
-  cards: z.array(Card),
   /** Recent authored events and typed orphan-document date evidence. */
   timeline: z.array(TimelineResult),
-  /** @deprecated Authored-event compatibility view; use `timeline`. */
-  events: z.array(Event),
   structure: z.string().optional(),
   searched: z.array(z.string()),
   coverage: z.record(z.string(), z.boolean()).optional(),
@@ -97,9 +93,9 @@ export const ContextOutput = ResultEnvelope.extend({
    *  "that's everything" when it wasn't — default to visible. */
   dropped: z
     .object({
-      cards: z.number().int().nonnegative(),
-      events: z.number().int().nonnegative(),
-      timeline: z.number().int().nonnegative().optional(),
+      pinned: z.number().int().nonnegative(),
+      results: z.number().int().nonnegative(),
+      timeline: z.number().int().nonnegative(),
     })
     .optional(),
 });

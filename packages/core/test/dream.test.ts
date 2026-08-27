@@ -1353,7 +1353,11 @@ describe('observe', () => {
     // inferred pattern is not something that happened on a date.
     expect(page).not.toMatch(/- \*\*\d{4}-\d{2}-\d{2}\*\* \|/);
     const timeline = await mem.timeline({ limit: 50 });
-    expect(timeline.events.some((event) => event.summary.includes('appliances are serviced'))).toBe(false);
+    expect(
+      timeline.results.some(
+        (event) => event.type === 'event' && event.summary.includes('appliances are serviced'),
+      ),
+    ).toBe(false);
   });
 
   it('is safe to re-run: the same pattern is not written twice', async () => {
@@ -3021,7 +3025,7 @@ describe('adopt', () => {
       ownership: { status: 'orphan' },
       source: { kind: 'original_text', via: 'plain' },
     });
-    expect(before.cards).toHaveLength(0);
+    expect(before.results.filter((entry) => entry.type === 'page')).toHaveLength(0);
     const read = await mem.read({ document: standalone!.id });
     expect(read.document?.text).toContain('August 2027');
     const bundle = await mem.context({
@@ -3066,7 +3070,9 @@ describe('adopt', () => {
     // The point of the phase, not just that a page appeared.
     expect((await mem.doctor({ probeModels: false })).counts.documentsUnsearchable).toBe(0);
     const found = await mem.recall({ query: 'lease runs to August 2027', mode: 'lookup' });
-    const card = found.cards.find((entry) => entry.slug === 'household/lease-scan');
+    const card = found.results.find(
+      (entry) => entry.type === 'page' && entry.slug === 'household/lease-scan',
+    );
     expect(card?.documents?.[0]?.quote).toContain('August 2027');
     expect(found.results.filter((entry) => entry.type === 'document')).toHaveLength(0);
   });

@@ -63,7 +63,7 @@ try {
   const recall = JSON.parse(run('recall', 'dishwasher Zephyr warranty'));
   check(
     'finds the page lexically',
-    recall.cards.some((card) => card.slug === 'home/appliances'),
+    recall.results.some((result) => result.type === 'page' && result.slug === 'home/appliances'),
   );
   check(
     'reports the missing embedding model',
@@ -72,11 +72,13 @@ try {
   );
   check(
     'every line carries a real address',
-    recall.cards.every((card) =>
-      card.lines.every((line) => {
-        const file = fs.readFileSync(path.join(root, `${card.slug}.md`), 'utf8').split('\n');
-        return file[line.n - 1] === line.text;
-      }),
+    recall.results.every(
+      (result) =>
+        result.type === 'document' ||
+        result.lines.every((line) => {
+          const file = fs.readFileSync(path.join(root, `${result.slug}.md`), 'utf8').split('\n');
+          return file[line.n - 1] === line.text;
+        }),
     ),
   );
 
@@ -99,7 +101,7 @@ try {
   );
 
   const empty = JSON.parse(run('recall', 'zzzz nonexistent unicorn'));
-  check('absence is a result with a reason', empty.cards.length === 0 && Boolean(empty.note));
+  check('absence is a result with a reason', empty.results.length === 0 && Boolean(empty.note));
   check('absence reports what was searched', empty.searched.length > 0);
 
   const page = JSON.parse(run('read', 'home/lease'));
@@ -119,7 +121,10 @@ try {
   );
 
   const timeline = JSON.parse(run('timeline'));
-  check('timeline finds the event and its target', timeline.events[0]?.slug === 'home/appliances');
+  check(
+    'timeline finds the event and its target',
+    timeline.results.some((result) => result.type === 'event' && result.slug === 'home/appliances'),
+  );
 
   const listed = JSON.parse(run('list', '--kind', 'pages', '--type', 'contract'));
   check('filters pages by type', listed.pages.length === 1 && listed.pages[0].slug === 'home/lease');
@@ -147,7 +152,7 @@ try {
 
   const bundle = JSON.parse(run('context', 'what is the rent?', '--budget', '3000'));
   check('context fits its budget', bundle.budget_used <= 3000, `used ${bundle.budget_used}`);
-  check('context includes the ledger', bundle.events.length >= 0);
+  check('context includes the ledger', Array.isArray(bundle.timeline));
 
   const autoRecall = JSON.parse(
     run('context', 'Zephyr QX-100 warranty', '--profile', 'auto_recall', '--budget', '180'),

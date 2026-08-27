@@ -513,10 +513,7 @@ function gradeCase(
   const locatorsValid = output.results.every((result) => locatorIsExact(result, identities));
   const exactEvidenceOnly = output.results.every(evidenceIsExactOnly);
   const ambientContextAbsent =
-    output.pinned.length === 0 &&
-    output.timeline.length === 0 &&
-    output.events.length === 0 &&
-    output.structure === undefined;
+    output.pinned.length === 0 && output.timeline.length === 0 && output.structure === undefined;
   const conversationProtected = output.searched.length === 1 && output.searched[0] === benchCase.prompt;
   const budget = benchCase.budget ?? 1200;
   const budgetCompliant = output.budget_used <= budget;

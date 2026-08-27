@@ -24,6 +24,10 @@ let server: {
 };
 let mem: Akno;
 
+function pageResults(result: Awaited<ReturnType<Akno['recall']>>) {
+  return result.results.filter((entry) => entry.type === 'page');
+}
+
 /** A one-page PDF with a real text layer, so PDFKit has something to read. */
 function makePdf(text: string): Buffer {
   const escaped = text.replace(/([()\\])/g, '\\$1');
@@ -303,7 +307,7 @@ describe('storage', () => {
       folder: 'home',
     });
     const found = await mem.recall({ query: 'QX100-8842 serial', mode: 'lookup' });
-    expect(found.cards.some((card) => card.slug.includes('warranty-zephyr'))).toBe(true);
+    expect(pageResults(found).some((card) => card.slug.includes('warranty-zephyr'))).toBe(true);
   });
 
   it('is a no-op on the same bytes, and says where they already live', async () => {
@@ -797,7 +801,7 @@ describe('attachments on write', () => {
     });
 
     const found = await mem.recall({ query: 'unlocked shed', mode: 'lookup' });
-    expect(found.cards.map((card) => card.slug)).toContain('home/bicycle');
+    expect(pageResults(found).map((card) => card.slug)).toContain('home/bicycle');
   });
 
   it('leaves the page the caller wrote alone apart from the embed', async () => {
@@ -829,7 +833,7 @@ describe('attachments on write', () => {
     });
 
     const found = await mem.recall({ query: 'unlocked shed', mode: 'lookup' });
-    const card = found.cards.find((entry) => entry.slug === 'home/bicycle');
+    const card = pageResults(found).find((entry) => entry.slug === 'home/bicycle');
     const document = card?.documents?.find((entry) => entry.rel_path === written.documents![0]!.rel_path);
     expect(document?.quote).toContain('unlocked shed');
     // Never as a line of the Markdown page: the page has no such line, and a citation
@@ -859,7 +863,7 @@ describe('attachments on write', () => {
     expect(page).toContain('And a second one arrived.');
     // Both are searchable by their own contents, as two separate documents on one page.
     const found = await mem.recall({ query: 'service visit', mode: 'lookup' });
-    const card = found.cards.find((entry) => entry.slug === 'home/two-files');
+    const card = pageResults(found).find((entry) => entry.slug === 'home/two-files');
     expect(card?.documents?.some((entry) => entry.quote?.includes('service visit'))).toBe(true);
   });
 
@@ -914,7 +918,7 @@ describe('a document in several files', () => {
     await mem.index({});
 
     const found = await mem.recall({ query: 'deposit returned within thirty days', mode: 'lookup' });
-    const card = found.cards.find((entry) => entry.slug === 'home/lease');
+    const card = pageResults(found).find((entry) => entry.slug === 'home/lease');
     const document = card?.documents?.find((entry) => entry.quote);
 
     // One entry for the document, not one per file.
@@ -929,7 +933,7 @@ describe('a document in several files', () => {
 
   it('returns the whole document when either part is read', async () => {
     await mem.index({});
-    const card = (await mem.recall({ query: 'clause one the rent', mode: 'lookup' })).cards.find(
+    const card = pageResults(await mem.recall({ query: 'clause one the rent', mode: 'lookup' })).find(
       (entry) => entry.slug === 'home/lease',
     );
     const id = card!.documents![0]!.id;
@@ -946,7 +950,7 @@ describe('a document in several files', () => {
     server.reply({ summary: 'An apartment lease: rent, and a deposit returned within thirty days.' });
     await mem.index({});
 
-    const card = (await mem.recall({ query: 'deposit returned', mode: 'lookup' })).cards.find(
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
       (entry) => entry.slug === 'home/lease',
     );
     expect(card?.documents?.[0]?.summary).toBe(
@@ -970,7 +974,7 @@ describe('a document in several files', () => {
     expect(second.documentsExtracted).toBe(0);
     expect(second.documentsSummarized).toBe(1);
 
-    const card = (await mem.recall({ query: 'deposit returned', mode: 'lookup' })).cards.find(
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
       (entry) => entry.slug === 'home/lease',
     );
     expect(card?.documents?.[0]?.summary).toContain('thirty days');
@@ -993,7 +997,7 @@ describe('a document in several files', () => {
     await mem.index({});
 
     for (const who of ['ada', 'bo']) {
-      const card = (await mem.recall({ query: `second page for ${who}`, mode: 'lookup' })).cards.find(
+      const card = pageResults(await mem.recall({ query: `second page for ${who}`, mode: 'lookup' })).find(
         (entry) => entry.slug === `${who}/permit`,
       );
       expect(card?.documents).toHaveLength(1);
@@ -1062,7 +1066,7 @@ describe('a text rendition', () => {
 
     // Byte for byte what `read` returns. Two texts for one document that can disagree is
     // the whole failure this design exists to avoid.
-    const card = (await mem.recall({ query: 'deposit returned', mode: 'lookup' })).cards.find(
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
       (entry) => entry.slug === 'home/lease',
     );
     const stored = (await mem.read({ document: card!.documents![0]!.id })).document!.text!;
@@ -1101,7 +1105,7 @@ describe('a text rendition', () => {
     expect(first.chunksWritten).toBeGreaterThan(0);
 
     const found = await mem.recall({ query: 'deposit returned', mode: 'lookup' });
-    const cards = found.cards.filter((entry) => entry.slug === 'home/lease');
+    const cards = pageResults(found).filter((entry) => entry.slug === 'home/lease');
     expect(cards).toHaveLength(1);
     expect(cards[0]?.documents).toHaveLength(1);
     expect(cards[0]?.documents?.[0]?.rel_path).toBe('home/lease.pdf');
@@ -1163,7 +1167,7 @@ describe('a text rendition', () => {
 
     // Its chunks are gone: the words belong to the PDF and are indexed there.
     const found = await mem.recall({ query: 'deposit returned', mode: 'lookup' });
-    expect(found.cards.filter((entry) => entry.slug === 'home/lease')).toHaveLength(1);
+    expect(pageResults(found).filter((entry) => entry.slug === 'home/lease')).toHaveLength(1);
     expect((await mem.read({ document: 'home/lease.txt' })).document?.rel_path).toBe('home/lease.pdf');
   });
 

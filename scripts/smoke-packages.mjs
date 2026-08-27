@@ -104,7 +104,7 @@ try {
 
   const recalled = jsonCli(cli, ['recall', 'Zephyr warranty'], configuredEnv);
   assert(
-    recalled.cards?.some((card) => card.slug === 'equipment/zephyr'),
+    recalled.results?.some((result) => result.type === 'page' && result.slug === 'equipment/zephyr'),
     'installed lexical recall did not return the invented page',
   );
   assert(

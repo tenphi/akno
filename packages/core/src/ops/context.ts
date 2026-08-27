@@ -2,7 +2,6 @@ import {
   ContextInput,
   type Card,
   type ContextOutput,
-  type Event,
   type RecallResult,
   type RecallQualification,
   type TimelineResult,
@@ -35,8 +34,8 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   const budget = input.budget ?? 20_000;
   let remaining = budget;
   const degraded = new Set<NonNullable<ContextOutput['degraded']>[number]>();
-  let droppedCards = 0;
-  let droppedEvents = 0;
+  let droppedPinned = 0;
+  const droppedResults = 0;
   let droppedTimeline = 0;
 
   // ── Pinned pages first ───────────────────────────────────────────────────
@@ -49,7 +48,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
       const card = cardFromPage(result.page);
       const cost = estimateTokens(card);
       if (cost > remaining) {
-        droppedCards++;
+        droppedPinned++;
         continue;
       }
       pinned.push(card);
@@ -57,7 +56,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     } catch {
       // A pinned page that no longer exists should not fail the whole bundle;
       // the host's pin list is allowed to go stale.
-      droppedCards++;
+      droppedPinned++;
     }
   }
 
@@ -88,9 +87,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
         entry.type === 'event' ? entry.summary : `${entry.path} ${entry.quote ?? ''} ${entry.date_basis}`;
       const cost = Math.ceil((content.length + entry.date.length + 20) / 4);
       if (cost > ledgerBudget) {
-        const dropped = ledger.results.slice(index);
-        droppedTimeline = dropped.length;
-        droppedEvents = dropped.filter((candidate) => candidate.type === 'event').length;
+        droppedTimeline = ledger.results.length - index;
         break;
       }
       recentTimeline.push(entry);
@@ -99,12 +96,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     }
     for (const reason of ledger.degraded ?? []) degraded.add(reason);
   }
-  const events: Event[] = recentTimeline
-    .filter((entry) => entry.type === 'event')
-    .map(({ type: _type, ...event }) => event);
-
   // ── This turn's recall ───────────────────────────────────────────────────
-  let cards: Card[] = [];
   let results: RecallResult[] = [];
   let searched: string[] = [];
   let coverage: Record<string, boolean> | undefined;
@@ -123,15 +115,13 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     if (result.coverage) coverage = result.coverage;
     if (result.qualification) qualification = result.qualification;
     for (const reason of result.degraded ?? []) degraded.add(reason);
-    // A pinned page already in the bundle must not be paid for twice.
+    // A pinned page already in the bundle must not be returned twice.
     results = result.results.filter((entry) => entry.type === 'document' || !pinnedSlugs.has(entry.slug));
-    cards = result.cards.filter((card) => !pinnedSlugs.has(card.slug));
-    droppedCards += result.cards.length - cards.length;
     remaining -= result.budget_used;
   }
 
   const budgetUsed = budget - Math.max(0, remaining);
-  const anyDropped = droppedCards > 0 || droppedTimeline > 0;
+  const anyDropped = droppedPinned > 0 || droppedResults > 0 || droppedTimeline > 0;
   const unavailableTimelineOnly =
     results.length === 0 &&
     pinned.length === 0 &&
@@ -155,9 +145,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
       : {}),
     pinned,
     results,
-    cards,
     timeline: recentTimeline,
-    events,
     ...(structure ? { structure } : {}),
     searched,
     ...(coverage ? { coverage } : {}),
@@ -165,7 +153,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     budget_used: budgetUsed,
     // Default to visible. A silent trim reads as "that's everything".
     ...(anyDropped
-      ? { dropped: { cards: droppedCards, events: droppedEvents, timeline: droppedTimeline } }
+      ? { dropped: { pinned: droppedPinned, results: droppedResults, timeline: droppedTimeline } }
       : {}),
   };
 }
@@ -364,9 +352,7 @@ function emptyAutoRecall(options: EmptyAutoRecallOptions): ContextOutput {
     },
     pinned: [],
     results: [],
-    cards: [],
     timeline: [],
-    events: [],
     searched: options.searched,
     ...(options.qualification ? { qualification: options.qualification } : {}),
     budget_used: 0,
@@ -386,9 +372,6 @@ interface AssembledAutoRecallOptions {
 
 function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput {
   const fitted = fitAutoRecallResults(options.selected, options.budget);
-  const cards = fitted.results
-    .filter((result): result is Extract<RecallResult, { type: 'page' }> => result.type === 'page')
-    .map(({ type: _type, ...card }) => card);
   const reasons = [...options.degraded];
   const activated = fitted.results.length > 0;
   const dropped = options.selected.length - fitted.results.length;
@@ -407,13 +390,11 @@ function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput
     },
     pinned: [],
     results: fitted.results,
-    cards,
     timeline: [],
-    events: [],
     searched: options.searched,
     ...(options.qualification ? { qualification: options.qualification } : {}),
     budget_used: fitted.budgetUsed,
-    ...(dropped > 0 ? { dropped: { cards: dropped, events: 0, timeline: 0 } } : {}),
+    ...(dropped > 0 ? { dropped: { pinned: 0, results: dropped, timeline: 0 } } : {}),
   };
 }
 

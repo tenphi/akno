@@ -1,6 +1,5 @@
 import {
   TimelineInput,
-  type Event,
   type TimelineEvent,
   type TimelineOutput,
   type TimelineResult,
@@ -83,9 +82,6 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
   const allResults: TimelineResult[] = [...eventResults, ...documentResults];
   allResults.sort(resultOrder(input.order ?? 'newest'));
   const results = allResults.slice(0, limit);
-  const events: Event[] = results
-    .filter((result): result is TimelineEvent => result.type === 'event')
-    .map(({ type: _type, ...event }) => event);
 
   const documentStates = results
     .filter((result) => result.type === 'document_evidence')
@@ -111,7 +107,6 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
         }
       : {}),
     results,
-    events,
     total: allResults.length,
     range: { since: input.since ?? null, until: input.until ?? null },
   };

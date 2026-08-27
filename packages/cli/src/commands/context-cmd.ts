@@ -57,7 +57,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
 
     line(
       `${statusLabel(result.status)} ${style.grey(`${result.budget_used} tokens used`)}` +
-        `${result.dropped ? style.yellow(`  dropped ${result.dropped.cards} cards, ${result.dropped.timeline ?? result.dropped.events} timeline results`) : ''}`,
+        `${result.dropped ? style.yellow(`  dropped ${result.dropped.pinned} pinned, ${result.dropped.results} recall, ${result.dropped.timeline} timeline results`) : ''}`,
     );
     if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
     if (result.activation) {

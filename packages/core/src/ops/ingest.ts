@@ -370,7 +370,8 @@ async function route(
     // round trip and cannot improve on the thing being matched.
     expand: false,
   });
-  const related = result.cards.map((card) => card.slug);
+  const pages = result.results.filter((entry) => entry.type === 'page');
+  const related = pages.map((page) => page.slug);
 
   // An explicit destination is the caller's decision, not a guess to second-guess.
   if (input.folder) {
@@ -378,7 +379,7 @@ async function route(
   }
 
   const scored = new Map<string, number>();
-  for (const card of result.cards) {
+  for (const card of pages) {
     if (!card.slug.includes('/')) continue;
     if (card.relevance === undefined) continue;
     const folder = card.slug.slice(0, card.slug.lastIndexOf('/'));
@@ -391,7 +392,7 @@ async function route(
   const nearest =
     ranked.length > 0
       ? ranked.slice(0, 5).map(([folder]) => folder)
-      : [...new Set(result.cards.map((card) => card.slug.split('/')[0]!))].slice(0, 5);
+      : [...new Set(pages.map((card) => card.slug.split('/')[0]!))].slice(0, 5);
 
   // Folders the *evidence* supports. Everything below is chosen from this set and never
   // from outside it, which is the whole content of the threshold.

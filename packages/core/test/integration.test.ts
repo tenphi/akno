@@ -244,12 +244,14 @@ describe('recall without any model', () => {
     expect(result.status).toBe('degraded');
     // Absence — and weakness — has a *reason*, not a silent empty result.
     expect(result.degraded).toContain('no_embedding_model');
-    expect(result.cards.map((card) => card.slug)).toContain('home/appliances');
+    expect(result.results.filter((entry) => entry.type === 'page').map((card) => card.slug)).toContain(
+      'home/appliances',
+    );
   });
 
   it('returns a line address on every line it quotes', async () => {
     const result = await mem.recall({ query: 'rent per month landlord', mode: 'lookup' });
-    const card = result.cards.find((entry) => entry.slug === 'home/lease');
+    const card = result.results.find((entry) => entry.type === 'page' && entry.slug === 'home/lease');
     expect(card).toBeDefined();
     expect(card!.lines.length).toBeGreaterThan(0);
     for (const line of card!.lines) {
@@ -264,7 +266,9 @@ describe('recall without any model', () => {
       query: 'deliveries bicycles quiet hours waste lift balcony',
       mode: 'lookup',
     });
-    const card = result.cards.find((entry) => entry.slug === 'reference/building-rules');
+    const card = result.results.find(
+      (entry) => entry.type === 'page' && entry.slug === 'reference/building-rules',
+    );
     expect(card).toBeDefined();
     // The page has seven articles; the quote window defaults to six lines.
     expect(card!.lines.length).toBeLessThanOrEqual(6);
@@ -278,7 +282,9 @@ describe('recall without any model', () => {
       depth: 'full',
       include: ['source'],
     });
-    const card = result.cards.find((entry) => entry.slug === 'reference/building-rules');
+    const card = result.results.find(
+      (entry) => entry.type === 'page' && entry.slug === 'reference/building-rules',
+    );
     expect(card!.lines.length).toBeGreaterThan(6);
   });
 
@@ -290,7 +296,7 @@ describe('recall without any model', () => {
   it('proves absence rather than implying it', async () => {
     const result = await mem.recall({ query: 'zzzzz nonexistent unicorn ledger', mode: 'lookup' });
     expect(['empty', 'degraded']).toContain(result.status);
-    expect(result.cards).toHaveLength(0);
+    expect(result.results).toHaveLength(0);
     // The queries that found nothing are the proof.
     expect(result.searched.length).toBeGreaterThan(0);
     expect(result.note).toBeTruthy();
@@ -298,7 +304,9 @@ describe('recall without any model', () => {
 
   it('honours a folder filter', async () => {
     const result = await mem.recall({ query: 'dishwasher', filter: { folder: 'nested' } });
-    for (const card of result.cards) expect(card.slug.startsWith('nested/')).toBe(true);
+    for (const card of result.results) {
+      expect(card.type === 'document' || card.slug.startsWith('nested/')).toBe(true);
+    }
   });
 
   it('reports coverage in question mode', async () => {
@@ -317,7 +325,7 @@ describe('recall without any model', () => {
 describe('timeline', () => {
   it('indexes ledger lines and dated lines on ordinary pages alike', async () => {
     const result = await mem.timeline({ limit: 50 });
-    const dates = result.events.map((event) => event.date);
+    const dates = result.results.filter((entry) => entry.type === 'event').map((event) => event.date);
     expect(dates).toContain('2026-06-02');
     // This one is written on home/lease.md, not in the ledger.
     expect(dates).toContain('2024-08-05');
@@ -325,20 +333,23 @@ describe('timeline', () => {
 
   it('carries the link and the source address', async () => {
     const result = await mem.timeline({ match: 'dishwasher' });
-    expect(result.events[0]?.slug).toBe('home/appliances');
-    expect(result.events[0]?.source).toBe('timeline');
-    expect(result.events[0]?.line).toBeGreaterThan(0);
+    const event = result.results.find((entry) => entry.type === 'event');
+    expect(event?.slug).toBe('home/appliances');
+    expect(event?.source).toBe('timeline');
+    expect(event?.line).toBeGreaterThan(0);
   });
 
   it('filters by range', async () => {
     const result = await mem.timeline({ since: '2026-04', until: '2026-12' });
-    expect(result.events.map((event) => event.date)).toEqual(['2026-06-02']);
+    expect(result.results.filter((entry) => entry.type === 'event').map((event) => event.date)).toEqual([
+      '2026-06-02',
+    ]);
   });
 
   it('filters by subject in both senses', async () => {
     const linked = await mem.timeline({ subject: 'home/lease' });
     // The ledger line links to it, and the page carries its own dated line.
-    expect(linked.events.length).toBe(2);
+    expect(linked.results.filter((entry) => entry.type === 'event')).toHaveLength(2);
   });
 });
 
@@ -377,16 +388,18 @@ describe('context', () => {
       structure: true,
     });
     expect(result.pinned.map((card) => card.slug)).toEqual(['people/ada-marlow']);
-    expect(result.events.length).toBeGreaterThan(0);
+    expect(result.timeline.length).toBeGreaterThan(0);
     expect(result.structure).toBeTruthy();
     expect(result.budget_used).toBeLessThanOrEqual(4000);
     // A pinned page must not be paid for twice.
-    expect(result.cards.map((card) => card.slug)).not.toContain('people/ada-marlow');
+    expect(result.results.filter((entry) => entry.type === 'page').map((card) => card.slug)).not.toContain(
+      'people/ada-marlow',
+    );
   });
 
   it('survives a stale pin', async () => {
     const result = await mem.context({ budget: 2000, pinned: ['gone/missing'], structure: false });
-    expect(result.dropped?.cards).toBeGreaterThan(0);
+    expect(result.dropped?.pinned).toBeGreaterThan(0);
   });
 
   it('auto-recall injects exact evidence without ambient context or model qualification', async () => {
@@ -414,7 +427,11 @@ describe('context', () => {
     expect(result.structure).toBeUndefined();
     expect(result.budget_used).toBeLessThanOrEqual(240);
     expect(result.searched).toEqual(['What does Ada Marlow prefer?']);
-    expect(result.cards.every((card) => card.summary === null && card.links === undefined)).toBe(true);
+    expect(
+      result.results.every(
+        (entry) => entry.type === 'document' || (entry.summary === null && entry.links === undefined),
+      ),
+    ).toBe(true);
   });
 
   it('uses bounded recent context only to resolve a local reference', async () => {
@@ -480,7 +497,7 @@ describe('context', () => {
     expect(result.results).toEqual([]);
     expect(result.activation?.activated).toBe(false);
     expect(result.budget_used).toBe(0);
-    expect(result.dropped?.cards).toBeGreaterThan(0);
+    expect(result.dropped?.results).toBeGreaterThan(0);
   });
 
   it('requires a current prompt and bounds recent context for auto-recall', async () => {
@@ -546,7 +563,7 @@ describe('reconciling a hand edit', () => {
 
     await mem.index({});
     const result = await mem.recall({ query: 'rent per month', mode: 'lookup' });
-    const card = result.cards.find((entry) => entry.slug === 'home/lease');
+    const card = result.results.find((entry) => entry.type === 'page' && entry.slug === 'home/lease');
     expect(card!.lines.some((line) => line.text.includes('2222'))).toBe(true);
     expect(card!.lines.some((line) => line.text.includes('1111'))).toBe(false);
   });
@@ -812,7 +829,9 @@ describe('changing a rule', () => {
     // Reference pages are still searchable — the class governs what recall pulls in
     // unprompted, not whether the text is indexed.
     const found = await handle.recall({ query: 'transcript talking', mode: 'lookup' });
-    expect(found.cards.map((card) => card.slug)).toContain('logs/monday');
+    expect(found.results.filter((entry) => entry.type === 'page').map((card) => card.slug)).toContain(
+      'logs/monday',
+    );
     await handle.close();
   });
 

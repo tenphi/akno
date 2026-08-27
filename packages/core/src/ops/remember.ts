@@ -621,7 +621,8 @@ async function scoreDestinations(
   // ongoing complaint came to be appended below the event list of the page recording it, in
   // prose the event parser cannot see. The destination that scores highest is not always a
   // destination.
-  const candidates = result.cards
+  const candidates = result.results
+    .filter((entry) => entry.type === 'page')
     .filter(
       (card) =>
         card.role === 'knowledge' &&

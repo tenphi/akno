@@ -107,7 +107,8 @@ export async function qualifyManagedItemRouting(
   }
 
   const proposedHeading = managedSectionHeading(item.attribute);
-  const candidates: RoutingCandidate[] = found.cards
+  const candidates: RoutingCandidate[] = found.results
+    .filter((result) => result.type === 'page')
     .flatMap((card) => {
       const page = eligiblePages.get(card.slug);
       if (!page || page.id === source.id) return [];

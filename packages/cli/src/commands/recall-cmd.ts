@@ -5,12 +5,12 @@ import { resolveOps } from '../ops-handle.ts';
 
 const RECALL_HELP = `akno recall <query> [options]
 
-  Search memory. Returns cited page and standalone document cards.
+  Search memory. Returns cited page and standalone document results.
 
   --mode <m>          lookup | question | explore. Inferred from the query by
                       default; passing it explicitly always wins.
   --depth <d>         summary | lines | full
-  --limit <n>         Maximum cards.
+  --limit <n>         Maximum results.
   --budget <n>        Token budget for the whole response.
   --include <r,...>   Page roles to include, e.g. source. With --depth full
                       this lifts the source quote cap.

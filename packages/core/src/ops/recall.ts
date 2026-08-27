@@ -38,7 +38,6 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     return {
       status: 'empty',
       results: [],
-      cards: [],
       searched: [input.query],
       budget_used: 0,
       mode,
@@ -74,7 +73,6 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     return {
       status: 'empty',
       results: [],
-      cards: [],
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
@@ -98,7 +96,6 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     return {
       status: 'unavailable',
       results: [],
-      cards: [],
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
@@ -201,7 +198,6 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       status: reasons.length > 0 ? 'degraded' : 'empty',
       ...(reasons.length > 0 ? { degraded: reasons } : {}),
       results: [],
-      cards: [],
       searched,
       budget_used: 0,
       mode,
@@ -224,7 +220,6 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     return {
       status: 'unavailable',
       results: assembled.results,
-      cards: assembled.cards,
       searched,
       budget_used: assembled.budgetUsed,
       mode,
@@ -239,7 +234,6 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     status: reasons.length > 0 ? 'degraded' : 'ok',
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
     results: assembled.results,
-    cards: assembled.cards,
     searched,
     budget_used: assembled.budgetUsed,
     mode,
