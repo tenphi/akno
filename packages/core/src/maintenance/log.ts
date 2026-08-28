@@ -57,7 +57,7 @@ export async function logDreamRun(
   ctx: AknoContext,
   report: DreamReport,
   changes: AppliedChange[],
-  options: { dryRun: boolean },
+  options: { dryRun: boolean; changeIds: readonly string[] },
 ): Promise<string | null> {
   const plans =
     report.maintenancePlans.length > 0
@@ -82,14 +82,7 @@ export async function logDreamRun(
     autoEstimate: report.autoEstimate ?? null,
     degraded: report.degraded,
     phases: report.phases,
-    changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId]
-      .filter((id): id is string => id !== null)
-      .concat(
-        plans.flatMap((plan) =>
-          plan.items.map((item) => item.changeId).filter((id): id is string => id !== null),
-        ),
-      )
-      .filter((id, index, all) => all.indexOf(id) === index),
+    changeIds: [...options.changeIds],
     maintenancePlanIds: plans.map((plan) => plan.id),
     maintenancePlanId: report.maintenancePlan?.id ?? null,
     // What was written, with the added lines inline.

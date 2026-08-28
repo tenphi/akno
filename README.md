@@ -15,7 +15,8 @@ citable, reversible, and independent of a chat provider.
 > durable safety pauses. Defaults remain conservative: model-dependent inference is opt-in and scheduled
 > maintenance starts in audit mode. User guidance now follows human edits, agent writes, and dream outcomes
 > through one end-to-end memory lifecycle. Changesets collects release notes and maintains a reviewable version
-> PR; merging that PR publishes all four fixed-version packages and creates their tags automatically. The release
+> PR after ordinary changes land through feature PRs; merging the version PR publishes all four fixed-version
+> packages and creates their tags automatically. The release
 > gate verifies the actual tarballs—their metadata,
 > runtime assets, public entrypoints, and installed version identity—then exercises first-run configuration,
 > indexing, and recall. Schedule health keeps ephemeral dry-run diagnostics separate from real full cycles.

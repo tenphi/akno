@@ -1253,6 +1253,68 @@ describe('repair', () => {
     expect(fs.existsSync(path.join(root, 'household/vulpine-note.md'))).toBe(true);
   });
 
+  it('verifies only the work resumed from a plan used by an earlier run', async () => {
+    await withBrokenLinks('auto', {
+      max_items: 1,
+      max_files_changed: 10,
+      max_bytes_written: 10_000,
+      max_high_risk_items: 2,
+    });
+    fs.mkdirSync(path.join(root, 'products/manuals'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'products/zephyr.md'),
+      '---\ntitle: Zephyr QX-100\nakno:\n  management:\n    dream: hygiene\n---\n\n' +
+        'See [[products/zephyr-support|support notes]].\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'products/manuals/zephyr-support.md'),
+      '---\ntitle: Zephyr support\nakno:\n  aliases:\n    - products/zephyr-support\n---\n\n' +
+        'Invented support reference.\n',
+      'utf8',
+    );
+    await mem.index({});
+
+    const first = await mem.dream({ phase: 'curate' });
+    const firstPlan = mem.plan(first.maintenancePlan!.id);
+    const firstApplied = firstPlan.items.find((item) => item.status === 'applied')!;
+    const deferred = firstPlan.items.find((item) => item.statusCode === 'budget_exhausted')!;
+
+    expect(firstApplied.changeId).toBeTruthy();
+    expect(deferred).toMatchObject({ status: 'proposed', changeId: null });
+    expect(first.run.changeIds).toEqual([firstApplied.changeId]);
+
+    const previouslyChangedPath = firstApplied.operations[0]!.relPath;
+    fs.appendFileSync(
+      path.join(root, previouslyChangedPath),
+      '\nAn invented annotation added after the first maintenance run.\n',
+      'utf8',
+    );
+    await mem.index({});
+
+    const second = await mem.dream({ phase: 'curate' });
+    const resumed = mem.plan(firstPlan.id);
+    const resumedItem = resumed.items.find((item) => item.id === deferred.id)!;
+
+    expect(resumedItem).toMatchObject({ status: 'applied', verification: { status: 'passed' } });
+    expect(second.verification).toMatchObject({
+      status: 'passed',
+      appliedItems: 1,
+      affectedFiles: 1,
+      checks: { appliedItems: 'passed', affectedPaths: 'passed', wholeSnapshot: 'passed' },
+      issues: [],
+    });
+    expect(second.run.changeIds).toEqual([resumedItem.changeId]);
+    expect(second.run.changeIds).not.toContain(firstApplied.changeId);
+    expect(second.run.budget).toMatchObject({
+      used: { items: 1, filesChanged: 1, highRiskItems: 0 },
+      deferredItems: 0,
+    });
+    expect(fs.readFileSync(path.join(root, previouslyChangedPath), 'utf8')).toContain(
+      'An invented annotation added after the first maintenance run.',
+    );
+  });
+
   it('uses journalled move history when the new name has no textual resemblance', async () => {
     await mem.close();
     fs.writeFileSync(

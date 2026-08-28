@@ -50,12 +50,14 @@ export interface DreamRunVerificationReceipt {
 }
 
 /**
- * Re-run every deterministic item postcondition after the complete apply wave, then prove that
- * the content-safe accounting emitted by the run still matches its in-memory sources.
+ * Re-run deterministic postconditions for writes attributed to this invocation after its complete
+ * apply wave, then prove that the content-safe accounting matches its in-memory sources. Attached
+ * plans can contain applied history from earlier invocations and must not make that history new work.
  */
 export async function verifyDreamRun(
   ctx: AknoContext,
   planIds: readonly string[],
+  runChangeIds: readonly string[],
   budgetTracker: MaintenanceBudgetTracker,
   budget: MaintenanceBudgetReceipt,
   modelUsage: DreamModelUsageReceipt,
@@ -63,6 +65,7 @@ export async function verifyDreamRun(
 ): Promise<DreamRunVerificationReceipt> {
   const issues = new Map<DreamRunVerificationIssueCode, number>();
   const uniquePlanIds = [...new Set(planIds)];
+  const currentChanges = new Set(runChangeIds);
   const affectedFiles = new Set<string>();
   const itemsForAttribution: MaintenanceItem[] = [];
   let appliedItems = 0;
@@ -80,7 +83,8 @@ export async function verifyDreamRun(
     }
 
     for (const item of items) {
-      itemsForAttribution.push(item);
+      const belongsToRun = item.changeId !== null && currentChanges.has(item.changeId);
+      if (belongsToRun) itemsForAttribution.push(item);
       if (item.status === 'verification_failed') {
         addIssue(issues, 'item_verification_failed');
         itemReceiptFailed = true;
@@ -92,6 +96,7 @@ export async function verifyDreamRun(
         continue;
       }
       if (item.status !== 'applied') continue;
+      if (!belongsToRun) continue;
 
       appliedItems += 1;
       for (const operation of item.operations) {

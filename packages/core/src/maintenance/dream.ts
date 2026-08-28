@@ -375,6 +375,10 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     warnings: [],
     durationMs: 0,
   };
+  // An unfinished plan may span several invocations. Its old journal ids remain valuable plan
+  // history, but they are not evidence that this invocation wrote those files. Snapshot the
+  // boundary before recovery, planning, or apply can assign another id.
+  const previousMaintenanceChanges = storedMaintenanceChanges(cycle);
   for (const entry of recovery.transforms.filter((candidate) => candidate.pausedAt !== null)) {
     report.warnings.push(
       `automatic ${entry.transform} maintenance is paused after ${entry.consecutiveFailures} consecutive verification rollbacks; resume it explicitly after inspection`,
@@ -491,9 +495,12 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     report.budget = maintenanceBudgetReceipt(budget);
     report.modelUsage = telemetry.usage();
     report.degraded = telemetry.degradation();
+    const runChangeIds = currentDreamChangeIds(report, previousMaintenanceChanges);
+    scopeCompatibilityChangeIds(report, new Set(runChangeIds));
     report.verification = await verifyDreamRun(
       cycle,
       report.maintenancePlans.map((plan) => plan.id),
+      runChangeIds,
       budget,
       report.budget,
       report.modelUsage,
@@ -530,10 +537,13 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     }
 
     if (ctx.config.maintenance.logChanges) {
-      const logPath = await logDreamRun(ctx, report, applied, { dryRun: options.dryRun ?? false });
+      const logPath = await logDreamRun(ctx, report, applied, {
+        dryRun: options.dryRun ?? false,
+        changeIds: runChangeIds,
+      });
       if (logPath) report.logPath = logPath;
     }
-    report.run = completeDreamRun(ctx, startedRun, report);
+    report.run = completeDreamRun(ctx, startedRun, report, runChangeIds);
     // Any non-knowledge work, conflicts-disabled work, or failed derivation resumes through the
     // ordinary post-response worker only after the run has sealed its observed final state.
     ctx.derive.schedule(pendingDerivation.take());
@@ -573,6 +583,48 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       // already surfaced by that failure and must not replace its more specific cause.
     }
     throw error;
+  }
+}
+
+interface MaintenanceChangeBoundary {
+  byItem: Map<string, string | null>;
+  ids: Set<string>;
+}
+
+function storedMaintenanceChanges(ctx: AknoContext): MaintenanceChangeBoundary {
+  const rows = ctx.store.db.prepare('SELECT id, change_id FROM maintenance_items').all() as {
+    id: string;
+    change_id: string | null;
+  }[];
+  return {
+    byItem: new Map(rows.map((row) => [row.id, row.change_id])),
+    ids: new Set(rows.flatMap((row) => (row.change_id === null ? [] : [row.change_id]))),
+  };
+}
+
+function currentDreamChangeIds(report: DreamReport, previous: MaintenanceChangeBoundary): string[] {
+  const plans =
+    report.maintenancePlans.length > 0
+      ? report.maintenancePlans
+      : report.maintenancePlan
+        ? [report.maintenancePlan]
+        : [];
+  return [
+    ...[report.changeId, report.adoptChangeId, report.curateChangeId].filter(
+      (id): id is string => id !== null && !previous.ids.has(id),
+    ),
+    ...plans.flatMap((plan) =>
+      plan.items.flatMap((item) =>
+        item.changeId !== null && previous.byItem.get(item.id) !== item.changeId ? [item.changeId] : [],
+      ),
+    ),
+  ].filter((id, index, all) => all.indexOf(id) === index);
+}
+
+function scopeCompatibilityChangeIds(report: DreamReport, current: ReadonlySet<string>): void {
+  for (const field of ['changeId', 'adoptChangeId', 'curateChangeId'] as const) {
+    const changeId = report[field];
+    if (changeId !== null && !current.has(changeId)) report[field] = null;
   }
 }
 

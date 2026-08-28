@@ -232,6 +232,7 @@ export function completeDreamRun(
   ctx: AknoContext,
   started: DreamRunReceipt,
   report: DreamReport,
+  changeIds: readonly string[],
 ): DreamRunReceipt {
   const finishedAt = new Date().toISOString();
   const plans =
@@ -256,14 +257,7 @@ export function completeDreamRun(
     durationMs: report.durationMs,
     maintenancePlanIds: plans.map((plan) => plan.id),
     maintenancePlanId: plans.at(-1)?.id ?? null,
-    changeIds: [report.changeId, report.adoptChangeId, report.curateChangeId]
-      .filter((id): id is string => id !== null)
-      .concat(
-        plans.flatMap((plan) =>
-          plan.items.map((item) => item.changeId).filter((id): id is string => id !== null),
-        ),
-      )
-      .filter((id, index, all) => all.indexOf(id) === index),
+    changeIds: [...changeIds],
   };
   persistFinished(ctx, receipt);
   return receipt;

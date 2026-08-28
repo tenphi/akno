@@ -24,6 +24,22 @@ Doing one and not the other leaves half the system on the old code, and the symp
 Node 22.18+ (native type stripping) and pnpm 10+. `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320` (three
 days), so a brand-new release of a dependency will not resolve; that is deliberate.
 
+## Making a change
+
+Work on a branch and merge through a pull request; direct development pushes to `main` are not the project
+workflow. Run the relevant focused tests while iterating, then the complete local gate before opening the PR:
+
+```bash
+pnpm build
+pnpm lint
+pnpm knip
+pnpm test
+pnpm smoke
+```
+
+A change to published behavior also carries a Changesets file. After the feature PR merges, the release
+workflow opens or updates a separate version PR; publishing never happens from the feature branch.
+
 **macOS only.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin"]`, and there is no plan to change
 that — see [Platform](docs/operations.md#platform). Do not add a Linux or Windows code path "just in case": an untested
 second watcher is a correctness claim nobody has checked. `@tenphi/akno-client` is the exception and must stay
