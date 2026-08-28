@@ -1,6 +1,6 @@
 {
   "name": "@tenphi/akno-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Thin typed client for a running Akno service \u2014 identical interface to @tenphi/akno-core, no native dependencies",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
