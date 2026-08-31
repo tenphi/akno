@@ -26,7 +26,8 @@ Reply with JSON only:
       "page": "folder/page-name",
       "origin": "user or assistant — whose statement established the claim",
       "evidence": "one exact verbatim quote from the input that supports the sentence, or null",
-      "kind": "fact" }
+      "frame": "one exact verbatim source span containing the evidence and its modal or conversational context, or null",
+      "kind": "claim or decision or preference" }
   ],
   "events": [ { "date": "YYYY-MM-DD", "summary": "what happened, one clause" } ]
 }
@@ -52,6 +53,8 @@ Rules:
 - Resolve pronouns and relative dates against the text. Never invent a date you were not given.
 - Evidence must be copied byte-for-byte from the input, stay under 1200 characters, and contain
   enough context to verify every durable value in the candidate. Use null when no exact quote does.
+- Frame must also be copied byte-for-byte, contain the evidence, and include the surrounding words
+  that establish whether it was asserted, proposed, hypothetical, quoted, rejected, or corrected.
 - An "events" entry is something that happened on a date, not a value that is true.
 - "page" is a slug and nothing else: lowercase, hyphenated, no description, no punctuation beyond
   the single "/" between folder and page. Every other field above takes prose, so its example
@@ -84,7 +87,8 @@ export const RETAIN_SCHEMA = z.object({
       page: z.string().nullable(),
       origin: z.enum(['user', 'assistant']),
       evidence: z.string().nullable(),
-      kind: z.string(),
+      frame: z.string().nullable(),
+      kind: z.enum(['claim', 'decision', 'preference']),
     }),
   ),
   events: z.array(z.object({ date: z.string(), summary: z.string() })),
@@ -113,9 +117,12 @@ export interface RetainResult {
 export async function runRetain(
   text: string,
   model: ModelClient,
-  options: { mission?: string; today: string; folders?: FolderCatalogEntry[] } = {
-    today: new Date().toISOString().slice(0, 10),
-  },
+  options: {
+    mission?: string;
+    mentionedAt?: string;
+    timezone?: string;
+    folders?: FolderCatalogEntry[];
+  } = {},
 ): Promise<RetainResult> {
   const empty: RetainResult = { candidates: [], events: [], error: null };
   if (!model.available) return { ...empty, error: model.unavailableReason ?? 'derive model unavailable' };
@@ -132,7 +139,14 @@ export async function runRetain(
   const result = await model.chat(
     [
       { role: 'system', content: system },
-      { role: 'user', content: `Today is ${options.today}.\n\n${text}` },
+      {
+        role: 'user',
+        content: `${
+          options.mentionedAt
+            ? `Source mentioned at: ${options.mentionedAt}${options.timezone ? ` (${options.timezone})` : ''}.`
+            : 'Source mention time: unavailable. Do not resolve relative dates from processing time.'
+        }\n\n${text}`,
+      },
     ],
     { schema: RETAIN_SCHEMA, maxTokens: 1200 },
   );
@@ -235,16 +249,28 @@ export function cleanCandidates(
     const page =
       cleanedPage && pageIsAdmitted(cleanedPage, options.folders, options.pages) ? cleanedPage : null;
     const evidence = exactCandidateEvidence(record.evidence, options.sourceText);
+    const frame = exactCandidateEvidence(record.frame, options.sourceText);
+    // Automatic retention requires a byte-exact source binding. A fluent sentence without
+    // one is a proposal from the model, not memory Akno can safely write.
+    if (
+      options.sourceText !== undefined &&
+      (evidence === null || frame === null || !frame.includes(evidence) || UNSAFE_DISCOURSE.test(frame))
+    ) {
+      continue;
+    }
     out.push({
       text,
       subject:
         typeof record.subject === 'string' && record.subject.trim().length > 0
           ? record.subject.trim()
           : text.slice(0, 60),
-      kind: typeof record.kind === 'string' ? record.kind : 'fact',
+      kind:
+        record.kind === 'decision' || record.kind === 'preference' || record.kind === 'claim'
+          ? record.kind
+          : 'claim',
       ...(record.origin === 'user' || record.origin === 'assistant' ? { origin: record.origin } : {}),
       ...(page ? { page } : {}),
-      ...(evidence ? { evidence } : {}),
+      ...(frame ? { evidence: frame } : evidence ? { evidence } : {}),
     });
     if (out.length >= 12) break;
   }
@@ -255,8 +281,15 @@ function exactCandidateEvidence(value: unknown, sourceText: string | undefined):
   if (typeof value !== 'string' || sourceText === undefined) return null;
   const evidence = value.trim();
   if (evidence.length === 0 || evidence.length > 1200 || evidence.includes('\0')) return null;
-  return sourceText.includes(evidence) ? evidence : null;
+  return sourceText.indexOf(evidence) >= 0 &&
+    sourceText.indexOf(evidence) === sourceText.lastIndexOf(evidence)
+    ? evidence
+    : null;
 }
+
+/** A flat asserted v2 marker cannot faithfully represent these frames; structured retain can. */
+const UNSAFE_DISCOURSE =
+  /\b(suppose|assuming|hypothetical|counterfactual|might|maybe|perhaps|merely proposed|was proposed|were proposed|was rejected|were rejected|did not choose|not decided)\b/i;
 
 /** The immediate parent is the filing decision; every deeper segment would be an invented folder. */
 function pageIsAdmitted(

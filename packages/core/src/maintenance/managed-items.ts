@@ -8,6 +8,7 @@ import { parseJsonLoose } from '../models/client.ts';
 import { isReserved } from '../reserved.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { sha256 } from '../store/ids.ts';
+import { parseManagedMemoryMarker, type ManagedMemoryMarker } from '../write/managed-memory.ts';
 import {
   emptyManagedSourceMetrics,
   groundedManagedReplacement,
@@ -146,11 +147,7 @@ export interface ManagedItemPlanOptions {
   conflictClaims?: ReadonlySet<string>;
 }
 
-interface StrictMarker {
-  id: string;
-  source: string;
-  origin: 'user' | 'assistant' | 'unknown';
-}
+type StrictMarker = ManagedMemoryMarker;
 
 interface ParsedMarker extends StrictMarker {
   markerIndex: number;
@@ -169,8 +166,7 @@ export interface ManagedItemInspection {
 
 interface ManagedItemBinding {
   id: string;
-  source: string;
-  origin: StrictMarker['origin'];
+  origin: 'user' | 'assistant' | 'unknown';
   markerLine: number;
   payloadLine: number;
   payload: string;
@@ -198,8 +194,6 @@ interface UniqueHeading {
   key: string;
 }
 
-const STRICT_MARKER =
-  /^\s*<!--\s*akno:item\s+([A-Za-z0-9_-]{4,80})\s+source=([^\s]+)\s+origin=(user|assistant|unknown)\s*-->\s*$/i;
 const MARKER_LIKE = /<!--\s*akno:item\b/i;
 const HEADING = /^\s{0,3}#{1,6}(?:\s+|$)/;
 const HTML_COMMENT = /^\s*<!--/;
@@ -281,8 +275,7 @@ export function inspectManagedItems(content: string): ManagedItemInspection {
       remove.add(marker.markerIndex);
       continue;
     }
-
-    const key = `${marker.source}\0${marker.origin}\0${marker.payload}`;
+    const key = managedContentKey(marker)!;
     const matchingId = byId.get(marker.id);
     if (matchingId && managedContentKey(matchingId) !== key) {
       findings.push({ code: 'item_conflict', line, outcome: 'held' });
@@ -1123,7 +1116,6 @@ async function qualifyManagedItemSourceBindings(
       .map((binding) => ({
         itemId: binding.id,
         payload: binding.payload,
-        sourceRef: binding.source,
         origin: binding.origin,
       })),
   );
@@ -1340,20 +1332,7 @@ function cachedPlacementDecisions(
 }
 
 function strictMarker(line: string): StrictMarker | null {
-  const match = STRICT_MARKER.exec(line);
-  if (!match) return null;
-  let source: string;
-  try {
-    source = decodeURIComponent(match[2]!);
-  } catch {
-    return null;
-  }
-  if (!source || source.includes('\0')) return null;
-  return {
-    id: match[1]!,
-    source,
-    origin: match[3]!.toLowerCase() as StrictMarker['origin'],
-  };
+  return parseManagedMemoryMarker(line);
 }
 
 function managedPayloadIndex(lines: string[], markerIndex: number): number | null {
@@ -1367,7 +1346,16 @@ function managedPayloadIndex(lines: string[], markerIndex: number): number | nul
 }
 
 function managedContentKey(marker: ParsedMarker): string | null {
-  return marker.payload === null ? null : `${marker.source}\0${marker.origin}\0${marker.payload}`;
+  if (marker.payload === null) return null;
+  const semantic = {
+    ...marker,
+    id: undefined,
+    supports: undefined,
+    markerIndex: undefined,
+    payloadIndex: undefined,
+    payload: undefined,
+  };
+  return `${JSON.stringify(semantic)}\0${marker.payload}`;
 }
 
 function managedBinding(
@@ -1378,8 +1366,7 @@ function managedBinding(
   const context = headings.get(marker.markerIndex) ?? { heading: null, unique: false };
   return {
     id: marker.id,
-    source: marker.source,
-    origin: marker.origin,
+    origin: marker.sourceRole === 'user' || marker.sourceRole === 'assistant' ? marker.sourceRole : 'unknown',
     markerLine: bodyLine + marker.markerIndex,
     payloadLine: bodyLine + marker.payloadIndex!,
     payload: marker.payload!,

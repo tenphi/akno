@@ -26,30 +26,36 @@ describe('managed item inspection', () => {
   it('repairs only empty and byte-identical duplicate owned fragments', () => {
     const before = `# Ada Marlow
 
-<!-- akno:item itm_empty source=fixture%3Aone origin=user -->
+<!-- akno:item itm_empty v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 
 ## Plans
 
-<!-- akno:item itm_first source=fixture%3Atwo origin=user -->
+<!-- akno:item itm_first v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow plans to visit Blackwater Bay.
 
-<!-- akno:item itm_copy source=fixture%3Atwo origin=user -->
+<!-- akno:item itm_copy v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow plans to visit Blackwater Bay.
 
-<!-- akno:item itm_first source=fixture%3Athree origin=user -->
+<!-- akno:item itm_first v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow owns a Zephyr QX-100.
 
-<!-- akno:item bad source=fixture%3Afour origin=user -->
+<!-- akno:item bad v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Authored context stays intact.
 `;
 
     const result = inspectManagedItems(before);
 
     expect(result.after).toContain('## Plans');
-    expect(result.after).toContain('<!-- akno:item itm_first source=fixture%3Atwo origin=user -->');
+    expect(result.after).toContain(
+      '<!-- akno:item itm_first v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->',
+    );
     expect(result.after.match(/Ada Marlow plans to visit Blackwater Bay\./g)).toHaveLength(1);
-    expect(result.after).toContain('<!-- akno:item itm_first source=fixture%3Athree origin=user -->');
-    expect(result.after).toContain('<!-- akno:item bad source=fixture%3Afour origin=user -->');
+    expect(result.after).toContain(
+      '<!-- akno:item itm_first v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->',
+    );
+    expect(result.after).toContain(
+      '<!-- akno:item bad v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->',
+    );
     expect(result.after).toContain('Authored context stays intact.');
     expect(result.findings).toEqual(
       expect.arrayContaining([
@@ -68,19 +74,19 @@ Authored context stays intact.
   it('holds fragments whose section boundary is missing, ambiguous, or explicitly unsorted', () => {
     const before = `# Ada Marlow
 
-<!-- akno:item itm_one source=fixture%3Aone origin=user -->
+<!-- akno:item itm_one v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow owns a Zephyr QX-100.
 
 ## Unsorted
 
-<!-- akno:item itm_two source=fixture%3Atwo origin=assistant -->
+<!-- akno:item itm_two v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=assistant reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->
 Ada Marlow prefers Blackwater Bay.
 
 ## Records
 
 ## Records
 
-<!-- akno:item itm_three source=fixture%3Athree origin=user -->
+<!-- akno:item itm_three v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow renewed a Vulpine Mutual policy.
 `;
     const result = inspectManagedItems(before);
@@ -99,7 +105,7 @@ Authored preference context stays here.
 
 ## Equipment
 
-<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+<!-- akno:item itm_move v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 
 Authored equipment context stays here.
@@ -120,7 +126,7 @@ Authored equipment context stays here.
 
 Authored preference context stays here.
 
-<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+<!-- akno:item itm_move v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.`,
     );
     expect(result.content).toContain('## Equipment\n\n\n\nAuthored equipment context stays here.');
@@ -137,7 +143,7 @@ Ada Marlow prefers the Zephyr QX-100.`,
 
 ## Records
 
-<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+<!-- akno:item itm_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 
 Authored record context stays here.
@@ -159,7 +165,7 @@ Authored record context stays here.
     expect(result.content).toContain(
       `## Warranty
 
-<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+<!-- akno:item itm_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.`,
     );
     expect(managedItemRepairIssue(before, result.content, [move])).toBeNull();
@@ -176,7 +182,7 @@ The Zephyr QX-100 warranty lasts 1111 days.`,
 
 ## Records
 
-<!-- akno:item itm_route source=fixture%3Aone origin=user -->
+<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 
 Authored profile context stays here.
@@ -189,7 +195,7 @@ Authored warranty context stays here.
 
 ## Preferences
 
-<!-- akno:item itm_existing source=fixture%3Aexisting origin=user -->
+<!-- akno:item itm_existing v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 `;
     const transfer = {
@@ -213,7 +219,7 @@ Ada Marlow prefers the Zephyr QX-100.
 
 Authored warranty context stays here.
 
-<!-- akno:item itm_route source=fixture%3Aone origin=user -->
+<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.`,
     );
     expect(
@@ -422,13 +428,13 @@ akno:
 
 ## Preferences
 
-<!-- akno:item itm_first source=fixture%3Aone origin=user -->
+<!-- akno:item itm_first v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 
-<!-- akno:item itm_copy source=fixture%3Aone origin=user -->
+<!-- akno:item itm_copy v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 
-<!-- akno:item itm_empty source=fixture%3Atwo origin=assistant -->
+<!-- akno:item itm_empty v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=assistant reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->
 
 ## Authored notes
 
@@ -527,7 +533,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_route source=fixture%3Aroute origin=user -->
+<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 
 Authored profile context stays here.
@@ -549,7 +555,7 @@ Authored warranty context stays here.
 
 ## Preferences
 
-<!-- akno:item itm_existing source=fixture%3Aexisting origin=user -->
+<!-- akno:item itm_existing v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 `;
     fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
@@ -595,7 +601,7 @@ Ada Marlow prefers the Zephyr QX-100.
 
 Authored warranty context stays here.
 
-<!-- akno:item itm_route source=fixture%3Aroute origin=user -->
+<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 
 ## Preferences`,
@@ -638,7 +644,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_route_section source=fixture%3Aroute origin=user -->
+<!-- akno:item itm_route_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 `;
     const destination = `---
@@ -706,7 +712,7 @@ This page holds Zephyr QX-100 equipment and warranty documentation.
     expect(destinationAfter).toContain(
       `## Warranty
 
-<!-- akno:item itm_route_section source=fixture%3Aroute origin=user -->
+<!-- akno:item itm_route_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.`,
     );
 
@@ -727,7 +733,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_route_guard source=fixture%3Aroute origin=user -->
+<!-- akno:item itm_route_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 `;
     const destination = `---
@@ -784,7 +790,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_same source=fixture%3Aone origin=user -->
+<!-- akno:item itm_same v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow owns a Zephyr QX-100.
 `;
     const second = `---
@@ -798,7 +804,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_same source=fixture%3Atwo origin=user -->
+<!-- akno:item itm_same v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Bo Winters owns a Zephyr QX-100.
 `;
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), first);
@@ -830,7 +836,7 @@ akno:
 
 ## Preferences
 
-<!-- akno:item itm_fact source=fixture%3Aone origin=user -->
+<!-- akno:item itm_fact v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 `;
     const conflicting = `---
@@ -873,7 +879,7 @@ Authored preference context stays here.
 
 ## Equipment
 
-<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+<!-- akno:item itm_move v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 
 Authored equipment context stays here.
@@ -905,7 +911,7 @@ Authored equipment context stays here.
 
 Authored preference context stays here.
 
-<!-- akno:item itm_move source=fixture%3Aone origin=user -->
+<!-- akno:item itm_move v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.`,
     );
     expect(after).toContain('## Equipment\n\n\n\nAuthored equipment context stays here.');
@@ -937,7 +943,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+<!-- akno:item itm_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 
 Authored record context stays here.
@@ -976,7 +982,7 @@ Authored record context stays here.
     expect(after).toContain(
       `## Warranty
 
-<!-- akno:item itm_section source=fixture%3Aone origin=user -->
+<!-- akno:item itm_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.`,
     );
     expect(curatorCalls).toBe(1);
@@ -998,7 +1004,7 @@ akno:
 
 ## Preferences
 
-<!-- akno:item itm_uncertain source=fixture%3Aone origin=user -->
+<!-- akno:item itm_uncertain v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 
 ## Equipment
@@ -1043,7 +1049,7 @@ akno:
 
 ## Preferences
 
-<!-- akno:item itm_guard source=fixture%3Aone origin=user -->
+<!-- akno:item itm_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow prefers the Zephyr QX-100.
 
 ## Equipment
@@ -1090,7 +1096,7 @@ akno:
 
 Authored context stays here.
 
-<!-- akno:item itm_correct source=fixture%3Aone origin=user -->
+<!-- akno:item itm_correct v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 `;
     const evidence = 'The Zephyr QX-100 warranty lasts 2222 days.';
@@ -1147,7 +1153,7 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_reject source=fixture%3Aone origin=user -->
+<!-- akno:item itm_reject v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 `;
     fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), before);

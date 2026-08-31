@@ -17,6 +17,11 @@ import { detectConflict } from '../write/conflict.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { managedSourceReference, placeManagedItems, type ManagedItem } from '../write/placement.ts';
+import {
+  managedMemoryFingerprint,
+  renderManagedMemoryPayload,
+  type ManagedMemoryMarker,
+} from '../write/managed-memory.ts';
 import { resolveRememberFallback, type RememberFallbackResolution } from '../write/remember-fallback.ts';
 import { recall } from './recall.ts';
 import { appendToLedger, titleFromSlug } from './write.ts';
@@ -70,7 +75,8 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   const catalog = folderCatalog(ctx.config, ctx.store);
 
   const retained = await runRetain(input.text, curator, {
-    today: new Date().toISOString().slice(0, 10),
+    ...(input.mentioned_at ? { mentionedAt: input.mentioned_at } : {}),
+    ...(input.timezone ? { timezone: input.timezone } : {}),
     ...(mission ? { mission } : {}),
     folders: catalog,
   });
@@ -309,12 +315,44 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     }
     if (accepted.length === 0) continue;
 
-    const items: ManagedItem[] = accepted.map(({ candidate }) => ({
-      id: newPrefixedId('itm'),
-      text: candidate.text,
-      source: managedSourceReference(input.source ?? 'remember'),
-      origin: candidate.origin ?? 'unknown',
-    }));
+    const sourceRef = managedSourceReference(input.source ?? 'remember');
+    const inputHash = sha256(input.text);
+    const items: ManagedItem[] = accepted.map(({ candidate }) => {
+      const id = newPrefixedId('mem');
+      const sourceRole = candidate.origin ?? 'unknown';
+      const kind =
+        candidate.kind === 'decision' || candidate.kind === 'preference' ? candidate.kind : 'claim';
+      const basis =
+        sourceRole === 'user' && (kind === 'decision' || kind === 'preference')
+          ? ('self_attested' as const)
+          : ('source_report' as const);
+      const marker: ManagedMemoryMarker = {
+        id,
+        supports: [
+          {
+            receipt: managedMemoryFingerprint(`remember:${inputHash}`),
+            candidate: managedMemoryFingerprint(`${inputHash}:${candidate.text}`),
+            proofGroup: managedMemoryFingerprint(`remember-group:${sourceRef}:${inputHash}`),
+            selection: 'extracted',
+          },
+        ],
+        kind,
+        subject: 'unresolved',
+        sourceRole,
+        reporters: [],
+        commitment: 'asserted',
+        disposition: kind === 'decision' ? 'accepted' : 'active',
+        polarity: 'affirmed',
+        basis,
+        evidence: [],
+        links: [],
+      };
+      return {
+        id,
+        marker,
+        text: renderManagedMemoryPayload(candidate.text, marker),
+      };
+    });
     const placed = await placeManagedItems(current, items, curator);
     // Placement failure is recoverable and visible in Markdown: no claim is lost, and the next
     // curate pass has an explicit `## Unsorted` inbox to integrate.
@@ -329,11 +367,11 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
           ? [
               {
                 itemId: items[itemIndex]!.id,
-                sourceRef: items[itemIndex]!.source,
-                origin: items[itemIndex]!.origin,
+                sourceRef,
+                origin: candidateOrigin(items[itemIndex]!.marker.sourceRole),
                 evidence: entry.candidate.evidence,
                 evidenceHash: sha256(entry.candidate.evidence),
-                inputHash: sha256(input.text),
+                inputHash,
               },
             ]
           : [],
@@ -438,6 +476,10 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   };
 }
 
+function candidateOrigin(role: ManagedMemoryMarker['sourceRole']): ManagedSourceArchive['origin'] {
+  return role === 'user' || role === 'assistant' ? role : 'unknown';
+}
+
 function fallbackResult(
   needed: boolean,
   used: boolean,
@@ -458,7 +500,7 @@ function fallbackResult(
 interface ManagedSourceArchive {
   itemId: string;
   sourceRef: string;
-  origin: ManagedItem['origin'];
+  origin: 'user' | 'assistant' | 'unknown';
   evidence: string;
   evidenceHash: string;
   inputHash: string;

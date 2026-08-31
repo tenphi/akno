@@ -14,3 +14,4 @@ export * from './ops/graph.ts';
 export * from './ops/write.ts';
 export * from './ops/folder.ts';
 export * from './ops/mutate.ts';
+export * from './ops/retain.ts';

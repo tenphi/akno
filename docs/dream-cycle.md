@@ -311,11 +311,12 @@ revision still matches the run manifest, releases the barrier, and drains those 
 call or apply. This keeps observe, reflect, curate, and adopt on one pre-decision index without holding a SQLite
 transaction open across model calls.
 
-Foreground memory mutations have priority. `write`, `remember`, `forget`, `move`, `undo`, `ingest`, and `folder` keep
-their ordinary immediate structural-index guarantee: reaching the indexer unlocks and invalidates an active
-planner barrier instead of waiting for the remaining model calls. The foreground operation completes normally;
-the dream stops at its next phase boundary with a retryable `conflict`, sends no curator request, and applies no
-plan item. A later cycle may reuse unaffected exact plans and replans any affected sealed input.
+Foreground memory mutations have priority. `write`, `remember`, `retain`, `forget`, `move`, `undo`, `ingest`,
+`folder`, and `migrate` keep their ordinary immediate structural-index guarantee: reaching the indexer unlocks
+and invalidates an active planner barrier instead of waiting for the remaining model calls. The foreground
+operation completes normally; the dream stops at its next phase boundary with a retryable `conflict`, sends no
+curator request, and applies no plan item. A later cycle may reuse unaffected exact plans and replans any affected
+sealed input.
 
 That aborted run remains visible in history. When it was invoked with legacy `--dry-run`, however, it does not
 replace the latest real full cycle used for nightly schedule health; an ephemeral diagnostic is not evidence

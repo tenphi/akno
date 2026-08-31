@@ -33,6 +33,7 @@ import { graph as graphOp } from './ops/graph.ts';
 import { write as writeOp } from './ops/write.ts';
 import { folder as folderOp } from './ops/folder.ts';
 import { remember as rememberOp } from './ops/remember.ts';
+import { retain as retainOp } from './ops/retain.ts';
 import { forget as forgetOp } from './ops/forget.ts';
 import { undo as undoOp } from './ops/undo.ts';
 import { move as moveOp } from './ops/move.ts';
@@ -68,6 +69,11 @@ import {
   type MaintenanceRecoveryScope,
   type MaintenanceRecoveryStatus,
 } from './maintenance/recovery.ts';
+import {
+  migrateBrain,
+  type BrainMigrationOptions,
+  type BrainMigrationReport,
+} from './maintenance/brain-migration.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -146,6 +152,8 @@ export interface Akno extends AknoOps {
   maintenanceStatus(query?: MaintenanceStatusQuery): MaintenanceStatus;
   /** Explicitly clear one durable automatic-maintenance safety pause after inspection. */
   resumeMaintenance(scope: MaintenanceRecoveryScope): MaintenanceRecoveryStatus;
+  /** Explicitly upgrade owned Markdown markers; never runs as an indexing side effect. */
+  migrateBrain(options?: BrainMigrationOptions): Promise<BrainMigrationReport>;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -320,6 +328,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     write: writeOp,
     folder: folderOp,
     remember: rememberOp,
+    retain: retainOp,
     forget: forgetOp,
     undo: undoOp,
     move: moveOp,
@@ -385,6 +394,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     write: (input) => call('write', input),
     folder: (input) => call('folder', input),
     remember: (input) => call('remember', input),
+    retain: (input) => call('retain', input),
     forget: (input) => call('forget', input),
     undo: (input) => call('undo', input),
     move: (input) => call('move', input),
@@ -401,6 +411,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
     },
 
     doctor: (doctorOptions) => doctor(ctx, doctorOptions ?? {}),
+    migrateBrain: (migrationOptions) => migrateBrain(ctx, migrationOptions ?? {}),
 
     rules(slug: string) {
       const match = matchRules(slug, config.rules);

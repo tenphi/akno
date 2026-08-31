@@ -27,6 +27,7 @@ import {
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
+  RETAIN_RECEIPTS_MIGRATION_INDEX,
   SCHEMA_VERSION,
   SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
   SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX,
@@ -201,6 +202,16 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'maintenance_plans', 'payload_pruned_at')) {
         db.exec(MIGRATIONS[MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'retain_receipts')) {
+        db.exec(MIGRATIONS[RETAIN_RECEIPTS_MIGRATION_INDEX]!);
+      }
+      // Kept as a capability check because the retain schema was exercised against local
+      // development databases before its first release.
+      if (tableExists(db, 'retain_supports') && !columnExists(db, 'retain_supports', 'forgotten_by')) {
+        db.exec(
+          'ALTER TABLE retain_supports ADD COLUMN forgotten_by TEXT REFERENCES changes(id) ON DELETE SET NULL',
+        );
       }
       if (!columnExists(db, 'maintenance_items', 'component_count')) {
         db.exec(MIGRATIONS[MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX]!);

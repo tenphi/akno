@@ -478,7 +478,7 @@ describe('forget', () => {
       path.join(root, 'home/appliances.md'),
       `# Appliances
 
-<!-- akno:item itm_zephyr source=fixture%3Aone origin=user -->
+<!-- akno:item itm_zephyr v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
 `,
     );

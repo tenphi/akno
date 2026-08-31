@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 32;
+export const SCHEMA_VERSION = 33;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -38,6 +38,7 @@ export const MAINTENANCE_ITEM_REVISIONS_MIGRATION_INDEX = 22;
 export const MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX = 23;
 export const MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX = 24;
 export const MAINTENANCE_RECOVERY_STATE_MIGRATION_INDEX = 25;
+export const RETAIN_RECEIPTS_MIGRATION_INDEX = 26;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -896,6 +897,49 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX maintenance_recovery_state_paused
     ON maintenance_recovery_state(scope, paused_at, updated_at);
+  `,
+  // Source revisions are durable workflow identity, not derived search state. Their receipts make
+  // retries model- and write-free, while support rows let an explicit retraction remove exactly
+  // one source without erasing independently supported memory.
+  `
+  CREATE TABLE retain_receipts (
+    source_id           TEXT NOT NULL,
+    revision            TEXT NOT NULL,
+    request_hash        TEXT NOT NULL,
+    source_hash         TEXT NOT NULL,
+    source_group        TEXT,
+    receipt_fingerprint TEXT NOT NULL UNIQUE,
+    mode                TEXT NOT NULL,
+    result              TEXT NOT NULL,
+    change_id           TEXT,
+    created_at          TEXT NOT NULL,
+    PRIMARY KEY(source_id, revision),
+    CHECK (mode IN ('provided_exact', 'retract', 'migration'))
+  );
+  CREATE INDEX retain_receipts_source
+    ON retain_receipts(source_id, created_at);
+
+  CREATE TABLE retain_supports (
+    receipt_fingerprint   TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    candidate_id          TEXT NOT NULL,
+    candidate_fingerprint TEXT NOT NULL,
+    proof_group           TEXT NOT NULL,
+    memory_id             TEXT NOT NULL,
+    slug                  TEXT NOT NULL,
+    selection             TEXT NOT NULL,
+    source_ref            TEXT NOT NULL,
+    origin                TEXT NOT NULL,
+    input_hash            TEXT NOT NULL,
+    evidence              TEXT NOT NULL,
+    evidence_hash         TEXT NOT NULL,
+    retracted_by          TEXT REFERENCES retain_receipts(receipt_fingerprint) ON DELETE SET NULL,
+    forgotten_by          TEXT REFERENCES changes(id) ON DELETE SET NULL,
+    PRIMARY KEY(receipt_fingerprint, candidate_id),
+    CHECK (selection IN ('provided', 'extracted')),
+    CHECK (origin IN ('user', 'assistant', 'unknown'))
+  );
+  CREATE INDEX retain_supports_memory
+    ON retain_supports(memory_id, receipt_fingerprint);
   `,
 ];
 

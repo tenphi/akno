@@ -65,7 +65,7 @@ akno:
 
 ## Details
 
-<!-- akno:item itm_ada source=conversation origin=user -->
+<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow lives at 111 Example Street.
 `,
   );
@@ -1051,10 +1051,10 @@ akno:
 
 ## Details
 
-<!-- akno:item itm_ada source=conversation origin=user -->
+<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow lives at 111 Example Street.
 
-<!-- akno:item itm_compass source=conversation origin=user -->
+<!-- akno:item itm_compass v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow keeps a brass compass at Blackwater Bay.
 `,
     );
@@ -2315,7 +2315,7 @@ async function startStub(): Promise<typeof server> {
                         ? crossPageDraftResponse(user)
                         : synthesisDraft && system.includes('synthesize one canonical')
                           ? JSON.stringify({
-                              body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
+                              body: '# Ada Marlow\n\n## Details\n\n<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\nAda Marlow lives at 111 Example Street.\n\n## Interests\n\nAda Marlow maintains a brass compass collection. [[evidence/ada-interview]]\n',
                               splits: [],
                               extracts: [],
                               temporal: false,
@@ -2339,7 +2339,7 @@ async function startStub(): Promise<typeof server> {
                                     '# Ada Marlow\n\n## Details\n\n' +
                                     (drop
                                       ? ''
-                                      : '<!-- akno:item itm_ada source=conversation origin=user -->\n') +
+                                      : '<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\n') +
                                     `Ada Marlow lives at ${changeNumber ? '112' : '111'} Example Street.\n`,
                                 });
       response.writeHead(200, { 'content-type': 'application/json' });
@@ -2454,7 +2454,7 @@ akno:
 
 ## Details
 
-<!-- akno:item itm_ada source=conversation origin=user -->
+<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow lives at 111 Example Street.
 `,
   );
@@ -2471,7 +2471,7 @@ akno:
 
 ## Equipment
 
-<!-- akno:item itm_zephyr source=conversation origin=user -->
+<!-- akno:item itm_zephyr v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow tests the Zephyr QX-100 at Blackwater Bay.
 `,
   );
@@ -2627,7 +2627,7 @@ akno:
 
 # Ada Marlow
 
-<!-- akno:item itm_ada source=conversation origin=user -->
+<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow calibrates a brass compass at Blackwater Bay before maintaining the Zephyr QX-100 checklist. See [[people/bo-winters]].
 `,
   );
@@ -2642,7 +2642,7 @@ akno:
 
 # Bo Winters
 
-<!-- akno:item itm_bo source=conversation origin=user -->
+<!-- akno:item itm_bo v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Bo Winters files a five-year warranty note after reviewing the Zephyr QX-100 checklist. See [[people/ada-marlow]].
 `,
   );
@@ -2661,12 +2661,12 @@ akno:
 
 ## Details
 
-<!-- akno:item itm_ada source=conversation origin=user -->
+<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow lives at 111 Example Street.
 
 ## Equipment
 
-<!-- akno:item itm_zephyr source=conversation origin=user -->
+<!-- akno:item itm_zephyr v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 Ada Marlow keeps the Zephyr QX-100 near Blackwater Bay.
 - **Warranty:** five years
 `;
@@ -2699,7 +2699,7 @@ function splitDraftResponse(siblings: boolean): string {
         {
           suffix: 'history',
           title: 'Ada Marlow history',
-          body: '# Ada Marlow history\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+          body: '# Ada Marlow history\n\n<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\nAda Marlow lives at 111 Example Street.\n',
         },
       ],
       extracts: [],
@@ -2712,12 +2712,12 @@ function splitDraftResponse(siblings: boolean): string {
       {
         suffix: 'history',
         title: 'Ada Marlow records',
-        body: '# Ada Marlow records\n\n<!-- akno:item itm_ada source=conversation origin=user -->\nAda Marlow lives at 111 Example Street.\n',
+        body: '# Ada Marlow records\n\n<!-- akno:item itm_ada v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\nAda Marlow lives at 111 Example Street.\n',
       },
       {
         suffix: 'archive',
         title: 'Ada Marlow records',
-        body: '# Ada Marlow records\n\n<!-- akno:item itm_compass source=conversation origin=user -->\nAda Marlow keeps a brass compass at Blackwater Bay.\n',
+        body: '# Ada Marlow records\n\n<!-- akno:item itm_compass v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->\nAda Marlow keeps a brass compass at Blackwater Bay.\n',
       },
     ],
     extracts: [],

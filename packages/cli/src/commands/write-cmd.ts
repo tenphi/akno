@@ -244,13 +244,22 @@ const REMEMBER_HELP = `akno remember [text | -] [options]
   phrasing yourself. Reads stdin with '-'.
 
   --dry-run             Show what it would keep and where, without writing.
+  --mentioned-at <time> RFC 3339 source time for relative dates.
+  --timezone <zone>     IANA timezone for local calendar expressions.
   --actor <who>         user | agent.
   --json`;
 
 export async function rememberCommand(argv: string[]): Promise<number> {
-  const { values, positionals } = parse<{ 'dry-run': boolean; actor?: string }>(argv, {
+  const { values, positionals } = parse<{
+    'dry-run': boolean;
+    actor?: string;
+    'mentioned-at'?: string;
+    timezone?: string;
+  }>(argv, {
     'dry-run': { type: 'boolean', default: false },
     actor: { type: 'string' },
+    'mentioned-at': { type: 'string' },
+    timezone: { type: 'string' },
   });
 
   if (values.help || positionals.length === 0) {
@@ -267,6 +276,8 @@ export async function rememberCommand(argv: string[]): Promise<number> {
   try {
     const result = await handle.ops.remember({
       text,
+      ...(values['mentioned-at'] ? { mentioned_at: values['mentioned-at'] } : {}),
+      ...(values.timezone ? { timezone: values.timezone } : {}),
       ...(values['dry-run'] ? { dry_run: true } : {}),
     });
 

@@ -22,6 +22,7 @@ import {
   UndoInput,
   UndoOutput,
 } from './ops/mutate.ts';
+import { RetainInput, RetainOutput } from './ops/retain.ts';
 
 /**
  * The library is the product: one op registry, one schema per op, three
@@ -183,6 +184,19 @@ export const OPS = {
       'location could receive one or more retained claims; inspect their typed approval reasons. A configured ' +
       'fallback page is used only after ordinary routing and page creation fail, and never grants itself write ' +
       'permission.',
+  }),
+  retain: op({
+    name: 'retain',
+    kind: 'write',
+    input: RetainInput,
+    output: RetainOutput,
+    implemented: true,
+    description:
+      'Replay-safe retention for identified external source revisions. The first shipped mode accepts ' +
+      'caller-provided candidates with exact source spans and exact destinations, preserving discourse, ' +
+      'attribution, epistemic basis, relations, and typed time. Replaying an identical source revision is ' +
+      'a no-op; changing its bytes or interpretation is a typed revision conflict. Explicit retraction removes ' +
+      'only support owned by the addressed source revision.',
   }),
   forget: op({
     name: 'forget',

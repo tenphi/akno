@@ -737,4 +737,48 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds replay-safe retain receipts to a version-thirty-two database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-retain-receipt-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 26)) legacy.exec(migration);
+    legacy.pragma('user_version = 32');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const receiptColumns = store.db.pragma('table_info(retain_receipts)') as { name: string }[];
+    const supportColumns = store.db.pragma('table_info(retain_supports)') as { name: string }[];
+
+    expect(receiptColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'source_id',
+        'revision',
+        'request_hash',
+        'source_hash',
+        'receipt_fingerprint',
+        'result',
+        'change_id',
+      ]),
+    );
+    expect(supportColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'receipt_fingerprint',
+        'candidate_id',
+        'candidate_fingerprint',
+        'proof_group',
+        'memory_id',
+        'source_ref',
+        'origin',
+        'input_hash',
+        'evidence_hash',
+        'retracted_by',
+        'forgotten_by',
+      ]),
+    );
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

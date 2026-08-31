@@ -6,6 +6,7 @@ import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { deleteManagedSourceArchives, managedSourceItemIds } from '../maintenance/managed-item-sources.ts';
+import { forgetRetainSupports } from '../write/retain-supports.ts';
 
 /**
  * **This is the honest version of forgetting.**
@@ -77,6 +78,7 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
     summary: `removed ${fact.slug}:${fact.line_start}`,
     files: [fileEntry(result)],
   });
+  forgetRetainSupports(ctx, fact.item_id ? [fact.item_id] : [], changeId);
   deleteManagedSourceArchives(ctx, fact.item_id ? [fact.item_id] : []);
 
   // The indexer re-derives, and the fact is gone because its source is gone. It
@@ -143,6 +145,8 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
     summary: `trashed ${slug}${documents.length > 0 ? ` and ${documents.length} attachment(s)` : ''}`,
     files,
   });
+
+  forgetRetainSupports(ctx, managedSourceItemIds(content), changeId);
 
   // Replayable quotes are private evidence for live managed fragments, not an independent
   // archive. An explicit page retraction removes them even though undo may restore the Markdown;

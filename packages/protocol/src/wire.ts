@@ -38,6 +38,7 @@ export const COMMAND_NAMES = [
   'changes',
   'proposals',
   'plan',
+  'migrate',
 ] as const;
 export type CommandName = (typeof COMMAND_NAMES)[number];
 
