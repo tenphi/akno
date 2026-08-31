@@ -70,13 +70,19 @@ akno service status
 akno service uninstall
 ```
 
-`service install` writes macOS launchd user agents:
+`service install` writes background user-service definitions:
 
-| Label                   | Behavior                                                                   |
+| Unit / label            | Behavior                                                                   |
 | ----------------------- | -------------------------------------------------------------------------- |
 | `dev.akno`              | KeepAlive service for the index, watcher, models, socket, and write handle |
 | `dev.akno.dream`        | One nightly `akno dream --scheduled` pass; default 03:00 local time        |
 | `dev.akno.dream-health` | Checks for a missed cycle after a two-hour grace window                    |
+
+On macOS these are launchd agents. On Linux they are systemd user service/timer units under
+`$XDG_CONFIG_HOME/systemd/user` (or `~/.config/systemd/user`). Installation reloads the user manager, enables the
+nightly timers, starts or restarts the main service, and waits until its socket accepts connections. `--no-dream`
+disables and removes any previously installed timers. The generated commands retain explicit `--akno-path` and
+`--state-dir` targets.
 
 The scheduled command resolves `maintenance.profile` and policies at run time. Changing authority therefore
 does not require reinstalling the schedule. Re-run installation after an Akno upgrade when release notes say
@@ -89,8 +95,8 @@ A foreground memory mutation instead takes priority: its structural index comple
 the planner revision, and makes the dream stop before curator decisions or writes. Post-response model
 derivation may finish later without delaying the foreground result.
 
-`service uninstall` removes Akno's launchd files and prints the corresponding `launchctl bootout` commands. It
-does not remove the knowledge base or state directory.
+`service uninstall` stops and removes Akno's launchd or systemd user definitions, then reloads the relevant user
+manager. It does not remove the knowledge base or state directory.
 
 ## Nightly status and notifications
 

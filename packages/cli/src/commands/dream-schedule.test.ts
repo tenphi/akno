@@ -1,6 +1,6 @@
 import type { DreamRunReceipt } from '@tenphi/akno-core';
 import { describe, expect, it } from 'vitest';
-import { calculateDreamSchedule, parseDreamCalendar } from './dream-schedule.ts';
+import { calculateDreamSchedule, parseDreamCalendar, parseSystemdCalendar } from './dream-schedule.ts';
 
 describe('dream schedule status', () => {
   it('parses the daily launchd interval without reading program arguments or paths', () => {
@@ -12,6 +12,20 @@ describe('dream schedule status', () => {
       `),
     ).toEqual({ hour: 3, minute: 15 });
     expect(parseDreamCalendar('<key>RunAtLoad</key><true/>')).toBeNull();
+  });
+
+  it('parses the exact daily systemd calendar written by the installer', () => {
+    expect(parseSystemdCalendar('[Timer]\nOnCalendar=*-*-* 03:15:00\nPersistent=true\n')).toEqual({
+      hour: 3,
+      minute: 15,
+    });
+    expect(parseSystemdCalendar('OnCalendar=weekly')).toBeNull();
+  });
+
+  it('calculates Linux schedule health with the same grace semantics as macOS', () => {
+    expect(
+      calculateDreamSchedule(probe(new Date(2030, 0, 2, 4, 59), { platform: 'linux' }), null).health,
+    ).toBe('within_window');
   });
 
   it('distinguishes absent, unloaded, invalid, and newly installed schedules', () => {
