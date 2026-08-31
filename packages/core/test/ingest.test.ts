@@ -24,6 +24,27 @@ let server: {
 };
 let mem: Akno;
 
+async function openMem(trustedUrlOrigins: string[] = []): Promise<Akno> {
+  return open({
+    aknoPath: root,
+    stateDir,
+    isolated: true,
+    actor: 'user',
+    overrides: {
+      akno_path: root,
+      state_dir: stateDir,
+      providers: { stub: { base_url: server.url } },
+      ingest: { trusted_url_origins: trustedUrlOrigins },
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    },
+  });
+}
+
 function pageResults(result: Awaited<ReturnType<Akno['recall']>>) {
   return result.results.filter((entry) => entry.type === 'page');
 }
@@ -149,24 +170,7 @@ beforeEach(async () => {
     'utf8',
   );
 
-  mem = await open({
-    aknoPath: root,
-    stateDir,
-    isolated: true,
-    actor: 'user',
-    overrides: {
-      akno_path: root,
-      state_dir: stateDir,
-      providers: { stub: { base_url: server.url } },
-      ingest: { trusted_url_hosts: ['127.0.0.1'] },
-      models: {
-        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
-        reranker: { id: null, enabled: false },
-        derive: { provider: 'stub', id: 'stub-derive' },
-        expansion: { provider: 'stub', id: 'stub-derive' },
-      },
-    },
-  });
+  mem = await openMem();
   await mem.index({});
 });
 
@@ -531,8 +535,11 @@ describe('a URL', () => {
     const instance = http.createServer(handler);
     await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
     const { port } = instance.address() as { port: number };
+    const origin = `http://127.0.0.1:${port}`;
+    await mem.close();
+    mem = await openMem([origin]);
     return {
-      origin: `http://127.0.0.1:${port}`,
+      origin,
       close: async () => {
         instance.close();
         instance.closeAllConnections();

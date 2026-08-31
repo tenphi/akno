@@ -35,8 +35,8 @@ export interface FetchOptions {
   url: string;
   maxBytes: number;
   timeoutMs?: number;
-  /** Exact hostnames explicitly trusted to reach non-public destinations. */
-  trustedHosts?: string[];
+  /** Exact origins explicitly trusted to reach non-public destinations. */
+  trustedOrigins?: string[];
   /** Test seam; production uses the operating system resolver. */
   resolve?: (hostname: string) => Promise<ResolvedAddress[]>;
   maxRedirects?: number;
@@ -47,7 +47,7 @@ const REDIRECTS = new Set([301, 302, 303, 307, 308]);
 
 export async function fetchDocument(options: FetchOptions): Promise<Fetched> {
   const timeoutMs = options.timeoutMs ?? 60_000;
-  const trusted = new Set((options.trustedHosts ?? []).map(normalizeHost));
+  const trusted = new Set((options.trustedOrigins ?? []).map(normalizeTrustedOrigin));
   const resolve = options.resolve ?? resolveHost;
   let url = parseUrl(options.url);
   let redirects = 0;
@@ -81,10 +81,11 @@ export async function fetchDocument(options: FetchOptions): Promise<Fetched> {
   const originalName = filenameFor(response.headers, url, contentType);
   const directory = await fsp.mkdtemp(path.join(os.tmpdir(), 'akno-fetch-'));
   const target = path.join(directory, originalName);
-  const handle = await fsp.open(target, 'w');
 
   let written = 0;
+  let handle: Awaited<ReturnType<typeof fsp.open>> | null = null;
   try {
+    handle = await fsp.open(target, 'w');
     for await (const chunk of response) {
       const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as Uint8Array);
       written += bytes.byteLength;
@@ -99,9 +100,9 @@ export async function fetchDocument(options: FetchOptions): Promise<Fetched> {
     }
   } catch (error) {
     await fsp.rm(directory, { recursive: true, force: true });
-    throw error;
+    throw networkFailure(error);
   } finally {
-    await handle.close().catch(() => {});
+    if (handle) await handle.close().catch(() => {});
   }
 
   if (written === 0) {
@@ -120,10 +121,10 @@ export async function cleanupFetch(fetched: Fetched): Promise<void> {
 /** Exposed for deterministic policy tests without making a network request. */
 export async function assertSafeUrlDestination(
   raw: string,
-  options: Pick<FetchOptions, 'trustedHosts' | 'resolve'> = {},
+  options: Pick<FetchOptions, 'trustedOrigins' | 'resolve'> = {},
 ): Promise<void> {
   const url = parseUrl(raw);
-  const trusted = new Set((options.trustedHosts ?? []).map(normalizeHost));
+  const trusted = new Set((options.trustedOrigins ?? []).map(normalizeTrustedOrigin));
   await permittedAddresses(url, trusted, options.resolve ?? resolveHost);
 }
 
@@ -138,15 +139,12 @@ async function permittedAddresses(
     addresses = isIP(hostname)
       ? [{ address: hostname, family: isIP(hostname) as 4 | 6 }]
       : await resolve(hostname);
-  } catch (error) {
-    throw new AknoError(
-      'unavailable',
-      `could not resolve URL host: ${error instanceof Error ? error.message : String(error)}`,
-    );
+  } catch {
+    throw new AknoError('unavailable', 'could not resolve URL host');
   }
   if (addresses.length === 0) throw new AknoError('unavailable', 'URL host resolved to no addresses');
 
-  if (!trusted.has(hostname) && addresses.some((entry) => !isPublicAddress(entry))) {
+  if (!trusted.has(url.origin) && addresses.some((entry) => !isPublicAddress(entry))) {
     throw new AknoError('forbidden', 'URL destination is not allowed by network policy', {
       reason: 'network_destination_denied',
     });
@@ -160,22 +158,7 @@ async function resolveHost(hostname: string): Promise<ResolvedAddress[]> {
 }
 
 function isPublicAddress(entry: ResolvedAddress): boolean {
-  const mapped = mappedIpv4(entry.address);
-  if (mapped) return !DENIED_DESTINATIONS.check(mapped, 'ipv4');
   return !DENIED_DESTINATIONS.check(entry.address, entry.family === 4 ? 'ipv4' : 'ipv6');
-}
-
-function mappedIpv4(address: string): string | null {
-  const lower = address.toLowerCase();
-  const marker = lower.lastIndexOf(':ffff:');
-  const tail = marker >= 0 ? lower.slice(marker + 6) : lower.startsWith('::ffff:') ? lower.slice(7) : '';
-  if (!tail) return null;
-  if (/^\d+\.\d+\.\d+\.\d+$/.test(tail)) return tail;
-  const groups = tail.split(':');
-  if (groups.length !== 2 || groups.some((group) => !/^[0-9a-f]{1,4}$/.test(group))) return null;
-  const high = Number.parseInt(groups[0]!, 16);
-  const low = Number.parseInt(groups[1]!, 16);
-  return `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`;
 }
 
 function deniedDestinations(): BlockList {
@@ -203,8 +186,11 @@ function deniedDestinations(): BlockList {
     ['::', 128],
     ['::1', 128],
     ['::', 96],
+    ['::ffff:0:0', 96],
+    ['::ffff:0:0:0', 96],
     ['64:ff9b::', 96],
     ['64:ff9b:1::', 48],
+    ['100::', 64],
     ['fc00::', 7],
     ['fe80::', 10],
     ['ff00::', 8],
@@ -237,15 +223,7 @@ function request(url: URL, addresses: ResolvedAddress[], timeoutMs: number): Pro
       },
       resolve,
     );
-    req.on('error', (error) => {
-      const timedOut = error.name === 'AbortError' || error.name === 'TimeoutError';
-      reject(
-        new AknoError(
-          'unavailable',
-          timedOut ? 'fetching URL timed out' : `could not fetch URL: ${error.message}`,
-        ),
-      );
-    });
+    req.on('error', (error) => reject(networkFailure(error)));
   });
 }
 
@@ -273,6 +251,23 @@ function normalizeHost(value: string): string {
     .replace(/^\[|\]$/g, '')
     .replace(/\.$/, '')
     .toLowerCase();
+}
+
+function normalizeTrustedOrigin(value: string): string {
+  const url = parseUrl(value);
+  if (url.pathname !== '/' || url.search || url.hash) {
+    throw new AknoError('invalid', 'a trusted URL origin may contain only scheme, host, and port');
+  }
+  return url.origin;
+}
+
+function networkFailure(error: unknown): AknoError {
+  if (error instanceof AknoError) return error;
+  const name = error instanceof Error ? error.name : '';
+  return new AknoError(
+    'unavailable',
+    name === 'AbortError' || name === 'TimeoutError' ? 'fetching URL timed out' : 'could not fetch URL',
+  );
 }
 
 function header(headers: IncomingHttpHeaders, name: string): string | null {

@@ -19,7 +19,12 @@ describe('URL ingest network policy', () => {
     'http://169.254.169.254/invented',
     'http://[::1]/invented',
     'http://[fc00::1111]/invented',
+    'http://[100::1111]/invented',
     'http://[::ffff:127.0.0.1]/invented',
+    'http://[::ffff:0:7f00:1]/invented',
+    // An arbitrary IPv6 address containing `ffff` is not an IPv4-mapped address. It must still
+    // be checked against its real prefix instead of only against its final 32 bits.
+    'http://[fc00::ffff:0808:0808]/invented',
   ])('rejects non-public literal destination %s', async (url) => {
     await expect(assertSafeUrlDestination(url)).rejects.toMatchObject({
       code: 'forbidden',
@@ -38,11 +43,11 @@ describe('URL ingest network policy', () => {
     ).rejects.toMatchObject({ code: 'forbidden' });
   });
 
-  it('allows an exact trusted internal host while still resolving it', async () => {
+  it('allows one exact trusted internal origin while still resolving it', async () => {
     let resolved = 0;
     await expect(
-      assertSafeUrlDestination('http://memory.vulpine.test/file', {
-        trustedHosts: ['memory.vulpine.test'],
+      assertSafeUrlDestination('http://memory.vulpine.test:8111/file', {
+        trustedOrigins: ['http://memory.vulpine.test:8111'],
         resolve: async () => {
           resolved++;
           return [{ address: '10.11.12.13', family: 4 }];
@@ -50,6 +55,20 @@ describe('URL ingest network policy', () => {
       }),
     ).resolves.toBeUndefined();
     expect(resolved).toBe(1);
+
+    for (const url of ['http://memory.vulpine.test:8222/file', 'https://memory.vulpine.test:8111/file']) {
+      await expect(
+        assertSafeUrlDestination(url, {
+          trustedOrigins: ['http://memory.vulpine.test:8111'],
+          resolve: async () => [{ address: '10.11.12.13', family: 4 }],
+        }),
+      ).rejects.toMatchObject({ code: 'forbidden' });
+    }
+    await expect(
+      assertSafeUrlDestination('http://memory.vulpine.test:8111/file', {
+        trustedOrigins: ['http://memory.vulpine.test:8111/private-path'],
+      }),
+    ).rejects.toMatchObject({ code: 'invalid' });
   });
 
   it('pins a trusted local download and enforces the byte limit on the stream', async () => {
@@ -64,7 +83,7 @@ describe('URL ingest network policy', () => {
       const fetched = await fetchDocument({
         url: `http://localhost:${server.port}/note`,
         maxBytes: 2222,
-        trustedHosts: ['localhost'],
+        trustedOrigins: [`http://localhost:${server.port}`],
       });
       temporary.push(fetched.path.slice(0, fetched.path.lastIndexOf('/')));
       expect(fs.readFileSync(fetched.path, 'utf8')).toBe('Invented Vulpine note.');
@@ -74,7 +93,7 @@ describe('URL ingest network policy', () => {
         fetchDocument({
           url: `${server.origin}/large`,
           maxBytes: 111,
-          trustedHosts: ['127.0.0.1'],
+          trustedOrigins: [server.origin],
         }),
       ).rejects.toMatchObject({ code: 'invalid' });
       await cleanupFetch(fetched);
@@ -94,12 +113,31 @@ describe('URL ingest network policy', () => {
         fetchDocument({
           url: `${server.origin}/redirect`,
           maxBytes: 2222,
-          trustedHosts: ['127.0.0.1'],
+          trustedOrigins: [server.origin],
         }),
       ).rejects.toMatchObject({
         code: 'forbidden',
         details: { reason: 'network_destination_denied' },
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it('turns a broken response stream into a typed error without exposing its destination', async () => {
+    const server = await fixtureServer((_request, response) => {
+      response.writeHead(200, { 'content-type': 'text/plain' });
+      response.write('Invented partial bytes.');
+      setImmediate(() => response.destroy());
+    });
+    try {
+      const failure = await fetchDocument({
+        url: `${server.origin}/broken`,
+        maxBytes: 2222,
+        trustedOrigins: [server.origin],
+      }).catch((error: unknown) => error);
+      expect(failure).toMatchObject({ code: 'unavailable' });
+      expect(String((failure as Error).message)).not.toContain('127.0.0.1');
     } finally {
       await server.close();
     }

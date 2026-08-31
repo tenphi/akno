@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { normalizeLinkTarget, parsePage, resolvePagePolicy, resolveRole } from './page.ts';
 import {
   parseFrontmatter,
+  mergeTopLevelStringArray,
   replaceNestedStringArrayValue,
   replaceTopLevelString,
   serializeYamlString,
   serializeYamlStringArray,
+  withAknoAliases,
   withId,
 } from './frontmatter.ts';
 
@@ -66,6 +68,66 @@ describe('generated YAML values', () => {
   it('rejects values outside the generated frontmatter schema', () => {
     expect(() => serializeYamlString(1111)).toThrow(/must be a string/);
     expect(() => serializeYamlStringArray(['Ada Marlow', 1111])).toThrow(/array of strings/);
+  });
+
+  it('appends to block and flow string arrays without touching neighboring frontmatter', () => {
+    for (const original of [
+      '---\nevidence:\n  - home/appliances # exact relation\nunknown: keep # exact\n---\n\nBody.\n',
+      '---\nevidence: [home/appliances]\nunknown: keep # exact\n---\n\nBody.\n',
+    ]) {
+      const merged = mergeTopLevelStringArray(original, 'evidence', [
+        'home/appliances',
+        'sources/Vulpine: policy #1',
+      ]);
+      expect(merged).not.toBeNull();
+      expect(parseFrontmatter(merged!).data.evidence).toEqual([
+        'home/appliances',
+        'sources/Vulpine: policy #1',
+      ]);
+      expect(merged).toContain('unknown: keep # exact');
+      if (original.includes('exact relation')) expect(merged).toContain('# exact relation');
+      expect(merged).toContain('\n\nBody.\n');
+    }
+  });
+
+  it('preserves duplicate existing members while still appending a missing value', () => {
+    const original =
+      '---\nevidence: [home/appliances, home/appliances]\nunknown: keep # exact\n---\n\nBody.\n';
+    const merged = mergeTopLevelStringArray(original, 'evidence', [
+      'home/appliances',
+      'sources/Vulpine: policy #1',
+    ]);
+
+    expect(merged).not.toBeNull();
+    expect(parseFrontmatter(merged!).data.evidence).toEqual([
+      'home/appliances',
+      'home/appliances',
+      'sources/Vulpine: policy #1',
+    ]);
+    expect(merged).toContain('evidence: [home/appliances, home/appliances, ');
+  });
+
+  it('refuses a sequence containing values outside the owned field schema', () => {
+    expect(
+      mergeTopLevelStringArray('---\nevidence: [home/appliances, 1111]\n---\n', 'evidence', ['notes']),
+    ).toBeNull();
+  });
+
+  it('adds a missing alias when duplicate existing aliases mask the array length', () => {
+    const merged = withAknoAliases('---\nakno:\n  aliases: [Ada Marlow, Ada Marlow]\n---\n\n# Ada\n', [
+      'Bo Winters',
+    ]);
+
+    expect(merged).not.toBeNull();
+    expect(parseFrontmatter(merged!).data).toMatchObject({
+      akno: { aliases: ['Ada Marlow', 'Bo Winters'] },
+    });
+  });
+
+  it('refuses to discard a non-string from an existing alias sequence', () => {
+    expect(
+      withAknoAliases('---\nakno:\n  aliases: [Ada Marlow, 1111]\n---\n\n# Ada\n', ['Bo Winters']),
+    ).toBeNull();
   });
 });
 

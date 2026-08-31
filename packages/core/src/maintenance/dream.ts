@@ -7,7 +7,11 @@ import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { sha256 } from '../store/ids.ts';
 import { rebuildEvidenceGraph } from '../index/graph.ts';
-import { parseFrontmatter, serializeYamlString } from '../kb/frontmatter.ts';
+import {
+  mergeTopLevelStringArray,
+  serializeYamlString,
+  serializeYamlStringArray,
+} from '../kb/frontmatter.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
@@ -1968,9 +1972,8 @@ function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
 function newObservationPage(subject: string, observation: ObservationCandidate, today: string): string {
   const title = subject.charAt(0).toUpperCase() + subject.slice(1);
   return (
-    `---\ntitle: ${serializeYamlString(title, 'title')}\nderived: true\nevidence:\n${observation.evidence
-      .map((slug) => `  - ${serializeYamlString(slug, 'evidence')}`)
-      .join('\n')}\n---\n\n` +
+    `---\ntitle: ${serializeYamlString(title, 'title')}\nderived: true\n` +
+    `evidence: ${serializeYamlStringArray(observation.evidence, 'evidence')}\n---\n\n` +
     `# ${title}\n\n` +
     `Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n` +
     `- ${today} — ${observation.pattern} ${citation(observation.evidence)}\n`
@@ -1984,24 +1987,21 @@ function appendObservation(current: string, line: string, evidence: string[]): s
 }
 
 function mergeEvidence(current: string, evidence: string[]): string {
-  const match = /^---\n([\s\S]*?)\n---\n/.exec(current);
+  const merged = mergeTopLevelStringArray(current, 'evidence', evidence);
+  if (merged !== null) return merged;
+
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(current);
   if (!match) return current;
 
   const front = match[1]!;
-  const parsed = parseFrontmatter(current).data.evidence;
-  const listed = new Set(
-    Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === 'string') : [],
-  );
-  const missing = evidence.filter((slug) => !listed.has(slug));
-  if (missing.length === 0) return current;
+  // An existing key that is not one exact string sequence is user-edited or malformed. Refuse
+  // to guess around it; the plan verifier will keep the unsupported observation unapplied.
+  if (/^evidence:/m.test(front)) return current;
 
-  // Appended under the existing `evidence:` key, or added as one. Every other frontmatter key
-  // is left byte for byte: that promise holds for pages Akno authors too.
-  const added = missing.map((slug) => `  - ${serializeYamlString(slug, 'evidence')}`).join('\n');
-  const nextFront = /^evidence:/m.test(front)
-    ? front.replace(/^(evidence:(?:\r?\n[ \t]+-[^\r\n]*)*)/m, `$1\n${added}`)
-    : `${front}\nevidence:\n${added}`;
-  return current.replace(match[0], `---\n${nextFront}\n---\n`);
+  // Add the owned key without round-tripping any neighboring frontmatter.
+  const newline = match[0].includes('\r\n') ? '\r\n' : '\n';
+  const nextFront = `${front}${newline}evidence: ${serializeYamlStringArray(evidence, 'evidence')}`;
+  return current.replace(match[0], `---${newline}${nextFront}${newline}---${newline}`);
 }
 
 function citation(evidence: string[]): string {

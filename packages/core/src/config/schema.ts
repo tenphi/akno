@@ -246,9 +246,31 @@ const IngestDoc = z.object({
   blocked_extensions: z.array(z.string()).optional(),
   text_rendition: z.boolean().optional(),
   text_rendition_min_chars: z.number().int().nonnegative().optional(),
-  /** Exact hostnames allowed to resolve to private or otherwise non-public destinations. */
-  trusted_url_hosts: z.array(z.string().min(1)).optional(),
+  /** Exact origins allowed to resolve to private or otherwise non-public destinations. */
+  trusted_url_origins: z
+    .array(
+      z.string().refine(isHttpOrigin, {
+        message: 'expected an http(s) origin containing only scheme, host, and optional port',
+      }),
+    )
+    .optional(),
 });
+
+function isHttpOrigin(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
+      !url.username &&
+      !url.password &&
+      url.pathname === '/' &&
+      !url.search &&
+      !url.hash
+    );
+  } catch {
+    return false;
+  }
+}
 
 /**
  * A **mission** appends emphasis to a fixed system prompt and never replaces it. That
@@ -609,7 +631,7 @@ export interface AknoConfig {
     /** Under this many characters, the page already says everything the file does. */
     textRenditionMinChars: number;
     /** Narrow opt-in for URL ingest from a known internal origin. */
-    trustedUrlHosts: string[];
+    trustedUrlOrigins: string[];
   };
   maintenance: {
     /** Named authority policy for the complete cycle. */

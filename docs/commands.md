@@ -86,8 +86,8 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
   `akno doctor` reports whether the configured fallback is ready.
 - Use `ingest` for a file, folder, or URL; use `inbox` for configured drop folders.
 - URL ingest accepts only HTTP(S), resolves every address, rejects non-public destinations, pins the request to
-  a validated address, and repeats the policy for redirects. `ingest.trusted_url_hosts` is an exact-host opt-in
-  for a known internal origin; it has no wildcard form.
+  a validated address, and repeats the policy for redirects. `ingest.trusted_url_origins` is an exact
+  scheme/host/port opt-in for a known internal service; it has no path or wildcard form.
 - Use `forget` for a deliberate retraction and `undo` when reversing a known Akno change.
 - Use `plan` for maintenance decisions. `approve` and `decline` are for held remember/ingest routing proposals,
   not dream-plan items.

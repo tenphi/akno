@@ -93,9 +93,9 @@ built-in listener is plain HTTP, so carry non-loopback traffic through a trusted
 
 URL ingest denies loopback, private, link-local, multicast, unspecified, metadata, and other non-public IPv4
 and IPv6 destinations after DNS resolution. Every answer must pass, the request is pinned to one validated
-address, and redirects are resolved and checked again. A known internal origin can be opted in by exact
-hostname—never wildcard—with `ingest.trusted_url_hosts`. This exception allows that host's resolved addresses;
-it does not turn off redirect checks for another host.
+address, and redirects are resolved and checked again. A known internal service can be opted in by exact
+scheme, hostname, and port—never by path or wildcard—with `ingest.trusted_url_origins`. The exception does not
+authorize another port, protocol, or redirect origin on the same host.
 
 ## Knowledge-base rules
 

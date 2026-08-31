@@ -270,14 +270,14 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     input: OpInput<N>,
     callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
   ): Promise<OpResult<N>> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
     if (callOptions.actor) {
       throw new AknoError(
         'forbidden',
         'HTTP actors are assigned by the server credential; use a different credential for another actor',
       );
     }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const result = await fetch(`${base}/op/${op}`, {
         method: 'POST',

@@ -614,7 +614,7 @@ function resolve(
       ),
       textRendition: doc.ingest?.text_rendition ?? false,
       textRenditionMinChars: doc.ingest?.text_rendition_min_chars ?? 1000,
-      trustedUrlHosts: doc.ingest?.trusted_url_hosts ?? [],
+      trustedUrlOrigins: (doc.ingest?.trusted_url_origins ?? []).map((origin) => new URL(origin).origin),
     },
     maintenance: {
       profile: maintenanceProfile,

@@ -56,7 +56,7 @@ async function ingestUrl(
   const fetched = await fetchDocument({
     url: input.url!,
     maxBytes: ctx.config.ingest.maxFileBytes,
-    trustedHosts: ctx.config.ingest.trustedUrlHosts,
+    trustedOrigins: ctx.config.ingest.trustedUrlOrigins,
   });
   try {
     return await ingestFile(ctx, input, {
