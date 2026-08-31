@@ -3,27 +3,21 @@
 Akno is a memory layer for agents built on a Markdown knowledge base you own.
 
 It lets an agent search, answer from, and deliberately update the same files you edit in Obsidian, vim, or any
-other editor. The files remain the source of truth; Akno's SQLite index is disposable and can be rebuilt at any
-time.
+other editor. The files remain the source of truth. Search projections in Akno's SQLite database are
+rebuildable in place; the same database also holds durable undo, plan, receipt, and recovery state, so deleting
+it is not a safe way to refresh search.
 
 Akno is useful when an agent needs continuity across conversations but its memory must remain inspectable,
 citable, reversible, and independent of a chat provider.
 
-> **Status:** active development and used on a real personal knowledge base. Reading, writing, ingestion,
-> evidence-graph retrieval, grounded answering, and autonomous maintenance are implemented at Akno's current
-> single-writer service boundary. Automatic changes use sealed plans, separate decisions, verification, and
-> durable safety pauses. Defaults remain conservative: model-dependent inference is opt-in and scheduled
-> maintenance starts in audit mode. User guidance now follows human edits, agent writes, and dream outcomes
-> through one end-to-end memory lifecycle. Changesets collects release notes and maintains a reviewable version
-> PR after ordinary changes land through feature PRs; merging the version PR publishes all four fixed-version
-> packages and creates their tags automatically. The release
-> gate verifies the actual tarballs—their metadata,
-> runtime assets, public entrypoints, and installed version identity—then exercises first-run configuration,
-> indexing, and recall. Schedule health keeps ephemeral dry-run diagnostics separate from real full cycles.
-> Recall, context, and timeline expose one canonical typed result shape, without pre-release compatibility
-> aliases that could hide evidence. The bootstrap `0.1.0` packages are published, and later releases use
-> tokenless npm trusted publishing through that flow. Remaining work is explicitly deferred capabilities, not
-> an unfinished core workflow.
+> **Status:** active development and used on a real personal knowledge base. The current `0.3.0` release ships
+> reading, writing, document ingestion, evidence-graph retrieval, grounded answering, and autonomous maintenance
+> at Akno's single-writer service boundary. It also includes replay-safe provided-exact `retain`, source-scoped
+> retraction, typed v2 managed-memory markers, and an explicit dry-runnable and undoable migration from legacy
+> markers. Automatic retain extraction and placement, unified temporal memory, and co-located observations remain
+> follow-up work. Defaults stay conservative: model-dependent inference is opt-in, scheduled maintenance starts
+> in audit mode, and network and persistence boundaries fail closed. Releases use Changesets and tokenless npm
+> trusted publishing; CI verifies the packaged artifacts and installed first-run workflow before publication.
 
 ## Why use it?
 
@@ -68,9 +62,9 @@ akno init
 ```
 
 The configuration write is isolated from later actions. Guided setup then offers, with a separate confirmation
-for each, to build the disposable index, run a first recall, and install the macOS background service with its
-nightly schedule. Every offer defaults to no; non-interactive setup remains configuration-only. The equivalent
-commands are:
+for each, to build the rebuildable search projections, run a first recall, and install the macOS background
+service with its nightly schedule. Every offer defaults to no; non-interactive setup remains
+configuration-only. The equivalent commands are:
 
 ```bash
 akno index
@@ -118,6 +112,13 @@ See [The memory lifecycle](docs/memory-lifecycle.md) for the everyday human/agen
 
 `akno --help` and `akno <command> --help` describe the installed interface. The
 [command reference](docs/commands.md) explains which operation to choose and whether it writes.
+
+Use `remember` for one unkeyed transcript or note when Akno should extract and route durable memory. Use
+`retain` when a host has a stable source id and revision and can provide typed candidates, exact supporting
+spans, and exact admitted destinations. Identical revisions replay without another write; explicit retraction
+removes only the addressed source support. Automatic extraction and automatic placement through `retain` are
+tracked as later milestones in [issue #3](https://github.com/tenphi/akno/issues/3). See
+[Writing and ingestion](docs/writing.md#retain-identified-sources) for the complete request shape.
 
 ## Autonomous maintenance
 
