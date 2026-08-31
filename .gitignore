@@ -35,6 +35,7 @@ config/*.local.jsonc
 # ─── Build & deps ─────────────────────────────────────────────────────────
 node_modules/
 dist/
+.astro/
 *.tsbuildinfo
 .pnpm-store/
 

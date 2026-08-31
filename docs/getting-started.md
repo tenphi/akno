@@ -131,7 +131,8 @@ context.
 
 ## Try the demo knowledge base
 
-The repository contains only invented material under [`examples/demo-brain`](../examples/demo-brain).
+The repository contains only invented material under
+[`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples/demo-brain).
 
 ```bash
 cp -R examples/demo-brain /tmp/akno-demo
