@@ -23,10 +23,10 @@ and the consequence of a missing role.
 
 ```text
 recall / answer / read / list / graph / timeline / context
-write / remember / forget / undo / move / folder
+write / remember / retain / forget / undo / move / folder
 ingest / inbox / adopt
 dream / plan
-serve / service / doctor / rules / config / bench / redeploy
+migrate / serve / service / doctor / rules / config / bench / redeploy
 ```
 
 `akno --help` and `akno <command> --help` describe the installed interface. The service exposes the same typed

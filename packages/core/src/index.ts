@@ -319,6 +319,7 @@ export {
   type MaintenanceRecoveryStatus,
 } from './maintenance/recovery.ts';
 export type { ChangeFile, ChangeSummary, FileAction } from './write/journal.ts';
+export type { BrainMigrationOptions, BrainMigrationReport } from './maintenance/brain-migration.ts';
 export type { ProposalRow } from './write/gate.ts';
 export {
   CURATOR_SCHEMA,

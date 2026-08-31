@@ -16,6 +16,7 @@ knowledge base, and which model roles may be involved.
 | `context <query>`     | Assemble broad context or precision-first automatic recall | No                         | Embedding; reranker at an ambiguous boundary  |
 | `write`               | Create, append, patch, or replace a page                   | Yes                        | Vision for textless attachments only          |
 | `remember <text>`     | Extract durable knowledge and route it                     | Yes or held proposal       | Maintenance or derive, plus recall roles      |
+| `retain <json\|->`    | Replay-safe exact retention or source-scoped retraction    | Yes or typed hold          | None in provided-exact mode                   |
 | `folder <path>`       | Declare a folder and its default policy                    | Yes, `akno.jsonc`          | None                                          |
 | `approve` / `decline` | Resolve a held routing proposal                            | Approval may write         | Depends on the held action                    |
 | `forget`              | Retract a fact or trash a page/document                    | Yes                        | None                                          |
@@ -25,6 +26,7 @@ knowledge base, and which model roles may be involved.
 | `inbox`               | Process arrivals in configured routed folders              | Yes                        | Same as ingest                                |
 | `adopt <document-id>` | Give an orphan document a minimal owned page               | Policy-dependent plan      | Maintenance or derive                         |
 | `dream`               | Run the seven maintenance phases                           | Depends on policy          | Maintenance or derive                         |
+| `migrate`             | Explicitly upgrade Akno-owned brain markers                | Yes; dry-run available     | None                                          |
 | `plan`                | Inspect, revise, decide, apply, retire, or prune plans     | Apply only                 | None after planning                           |
 | `serve`               | Run watcher and operation doors                            | No by itself               | None by itself                                |
 | `service`             | Install, inspect, or remove background jobs                | Outside the knowledge base | None                                          |
@@ -74,6 +76,9 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 
 - Use `write` when destination and wording are already known.
 - Use `remember` when Akno must decide what is durable and where it belongs.
+- Use `retain` when a host has a stable source id and revision. The provided-exact mode validates byte-exact
+  source spans, preserves discourse and attribution, suppresses identical revision replays, and retracts only
+  the support owned by an explicitly addressed source revision.
 - Treat `no_writable_destination` as an authorization hold, not an empty memory result: inspect the typed
   approval reason and name or admit a destination. `requires_folder` instead asks the caller to declare taxonomy.
 - `maintenance.retain.fallback_page` can provide one exact last-resort destination. It is used only after
@@ -86,6 +91,8 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 - Use `plan revise` when the proposed destination and transformation are right but the exact result is not.
   It creates a guarded immutable revision inside the existing path/evidence scope and invalidates approval;
   it does not edit the knowledge base by itself.
+- Run `migrate --dry-run` before `migrate` when an upgrade introduces a new owned Markdown grammar. Migration
+  is operator-only, journalled, undoable, and never happens as an indexing side effect.
 
 See [Writing and ingestion](writing.md) and [The dream cycle](dream-cycle.md).
 

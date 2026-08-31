@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
 import { aknoItemId, type ParsedPage } from '../kb/page.ts';
+import { parseManagedMemoryMarker, type ManagedMemoryMarker } from '../write/managed-memory.ts';
 
 /**
  * Deriving structure from text already in the knowledge base — facts,
@@ -163,7 +164,12 @@ export async function derivePage(
     };
   }
 
-  const byLine = new Map(mineable.map((entry) => [entry.line, { text: entry.text, itemId: entry.itemId }]));
+  const byLine = new Map(
+    mineable.map((entry) => [
+      entry.line,
+      { text: entry.text, itemId: entry.itemId, factEligible: entry.factEligible },
+    ]),
+  );
 
   return {
     summary: options.summaries ? cleanSummary(parsed.summary) : null,
@@ -197,10 +203,13 @@ export function bodyItemIds(page: ParsedPage): Set<string> {
 }
 
 /** Lines eligible for fact mining: above the fence, non-blank, not a heading. */
-function mineableLines(page: ParsedPage): { line: number; text: string; itemId: string | null }[] {
-  const out: { line: number; text: string; itemId: string | null }[] = [];
+function mineableLines(
+  page: ParsedPage,
+): { line: number; text: string; itemId: string | null; factEligible: boolean }[] {
+  const out: { line: number; text: string; itemId: string | null; factEligible: boolean }[] = [];
   const fence = page.sourceFenceLine;
   let pendingItem: string | null = null;
+  let pendingFactEligible = true;
   for (let i = 0; i < page.lines.length; i++) {
     const line = page.bodyLine + i;
     if (fence !== null && line >= fence) break;
@@ -209,13 +218,28 @@ function mineableLines(page: ParsedPage): { line: number; text: string; itemId: 
     const marker = aknoItemId(text);
     if (marker) {
       pendingItem = marker;
+      const managed = parseManagedMemoryMarker(text);
+      // An old or malformed owned marker has unknown semantics until explicit migration or repair.
+      pendingFactEligible = managed ? managedMemoryFactEligible(managed) : false;
       continue;
     }
-    if (/^#{1,6}\s+/.test(text) || /^<!--.*-->$/.test(text)) continue;
-    out.push({ line, text, itemId: pendingItem });
+    if (/^#{1,6}\s+/.test(text) || /^<!--.*-->$/.test(text)) {
+      pendingItem = null;
+      pendingFactEligible = true;
+      continue;
+    }
+    out.push({ line, text, itemId: pendingItem, factEligible: pendingFactEligible });
     pendingItem = null;
+    pendingFactEligible = true;
   }
   return out;
+}
+
+function managedMemoryFactEligible(marker: ManagedMemoryMarker): boolean {
+  if (marker.basis === 'source_report') return false;
+  if (marker.commitment !== 'asserted') return false;
+  if (!['claim', 'decision', 'preference', 'event'].includes(marker.kind)) return false;
+  return ['active', 'accepted', 'completed', 'resolved'].includes(marker.disposition);
 }
 
 function cleanSummary(value: unknown): string | null {
@@ -245,7 +269,7 @@ function cleanKeywords(value: unknown): string[] {
  */
 function cleanFacts(
   value: unknown,
-  byLine: Map<number, { text: string; itemId: string | null }>,
+  byLine: Map<number, { text: string; itemId: string | null; factEligible: boolean }>,
 ): DerivedFact[] {
   if (!Array.isArray(value)) return [];
   const out: DerivedFact[] = [];
@@ -257,6 +281,7 @@ function cleanFacts(
     const line = Number(record.line);
     const source = byLine.get(line);
     if (!Number.isInteger(line) || source === undefined) continue;
+    if (!source.factEligible) continue;
 
     const claim = typeof record.claim === 'string' ? record.claim.trim().replace(/\s+/g, ' ') : '';
     if (claim.length < 3 || claim.length > 500) continue;

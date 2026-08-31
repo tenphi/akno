@@ -25,12 +25,12 @@ safe paths, journalling, or re-indexing.
 
 Akno has four kinds of state with different recovery rules:
 
-| State                                  | Meaning                                  | If it disappears                                   |
-| -------------------------------------- | ---------------------------------------- | -------------------------------------------------- |
-| Markdown and source documents          | The actual knowledge base                | Restore it from version control or backup          |
-| Search index, facts, events, and graph | A derived reading of the current files   | Rebuild it with `akno index`                       |
-| Journal and recoverable trash          | Akno's reversal history                  | Akno loses some ability to undo earlier operations |
-| Plans and run receipts                 | Proposed changes and maintenance history | Pending review and detailed audit history are lost |
+| State                                    | Meaning                                                             | If it disappears                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Markdown and source documents            | The actual knowledge base                                           | Restore it from version control or backup                                                            |
+| Search index, facts, events, and graph   | A derived reading of the current files                              | Rebuild it with `akno index`                                                                         |
+| Journal and recoverable trash            | Akno's reversal history                                             | Akno loses some ability to undo earlier operations                                                   |
+| Plans, run receipts, and source receipts | Proposed changes, maintenance history, and keyed retention identity | Pending review, detailed audit history, replay safety, and source-scoped retraction lineage are lost |
 
 An indexed fact, summary, embedding, or graph edge is not a second source of truth. It is valid only while its
 source locator and source hash still match the files.
@@ -71,9 +71,9 @@ fact.
 
 ### Use Akno's write operations
 
-Commands such as `write`, `remember`, `forget`, `move`, `ingest`, and `folder` validate the request. When an
-operation is accepted, Akno uses guarded filesystem operations, records a change id, and reconciles the affected
-index. Use `--actor user` only when the request really is a human decision:
+Commands such as `write`, `remember`, `retain`, `forget`, `move`, `ingest`, and `folder` validate the request.
+When an operation is accepted, Akno uses guarded filesystem operations, records a change id, and reconciles the
+affected index. Use `--actor user` only when the request really is a human decision:
 
 ```bash
 akno write --actor user --slug equipment/zephyr --append "The inspection is due in 2030."
@@ -112,6 +112,7 @@ An agent can use memory without receiving general filesystem authority:
 - `answer` produces and verifies a direct cited answer;
 - `read`, `timeline`, and `graph` inspect known memory more precisely;
 - `remember` extracts durable claims and finds an authorized destination;
+- `retain` stores caller-selected claims from identified, replayable source revisions;
 - exact mutation operations change only the requested and permitted scope.
 
 The agent cannot promote itself to human through MCP. It also cannot turn a related search result into a writable

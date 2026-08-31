@@ -18,7 +18,7 @@ knowledge-base files
        │                 ▼
        │       recall · answer · context
        │
-       └── guarded mutations ◀── write · remember · ingest · dream
+       └── guarded mutations ◀── write · remember · retain · ingest · migrate · dream
                  │
                  └── journal · re-index · verify
 ```
@@ -138,6 +138,12 @@ one validated exact input quote
 in private state, with only a hash of the full input. This lets the dream cycle verify or narrowly correct the
 generated sentence later without granting authority over the containing page. Ingestion similarly separates
 extraction, naming, routing, file movement, page creation, and indexing.
+
+`retain` is the deterministic host-facing counterpart: the caller supplies stable source identity, exact spans,
+typed discourse and attribution, and an exact admitted destination. Akno validates those claims, makes source
+revision replay idempotent, keeps independent support lineage, and performs source-scoped retraction without a
+model call. Managed-memory maintenance parses only the current v2 marker grammar; `akno migrate` is the explicit,
+dry-runnable and undoable boundary for upgrading strict legacy owned blocks.
 
 Maintenance adds another boundary:
 

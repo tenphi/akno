@@ -84,6 +84,7 @@ describe('the socket door', () => {
         'changes',
         'proposals',
         'plan',
+        'migrate',
       ]);
     } finally {
       await client.close();

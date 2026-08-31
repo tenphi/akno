@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
+import { managedMemoryBlock, type ManagedMemoryMarker } from './managed-memory.ts';
 
 export interface ManagedItem {
   id: string;
   text: string;
-  source: string;
-  origin: 'user' | 'assistant' | 'unknown';
+  marker: ManagedMemoryMarker;
 }
 
 export interface PlacementResult {
@@ -118,11 +118,7 @@ function secondLevelHeadings(body: string): string[] {
 }
 
 function managedBlock(item: ManagedItem): string {
-  return `<!-- akno:item ${item.id} source=${encodeMarker(item.source)} origin=${item.origin} -->\n${item.text.trim()}`;
-}
-
-function encodeMarker(value: string): string {
-  return encodeURIComponent(managedSourceReference(value));
+  return managedMemoryBlock(item.marker, item.text);
 }
 
 /** Return the exact source label that survives the bounded marker encoding. */
@@ -137,7 +133,7 @@ export function managedSourceReference(value: string): string {
   return bounded || 'remember';
 }
 
-function appendManagedBlock(body: string, heading: string, block: string): string {
+export function appendManagedBlock(body: string, heading: string, block: string): string {
   const lines = body.replace(/\s+$/, '').split('\n');
   const wanted = heading.toLowerCase();
   const matches = lines

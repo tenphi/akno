@@ -24,6 +24,8 @@ import { dreamCommand } from './commands/dream-cmd.ts';
 import { planCommand } from './commands/plan-cmd.ts';
 import { adoptCommand } from './commands/adopt-cmd.ts';
 import { initCommand } from './commands/init-cmd.ts';
+import { migrateCommand } from './commands/migrate-cmd.ts';
+import { retainCommand } from './commands/retain-cmd.ts';
 import { AKNO_VERSION } from './version.ts';
 
 const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a Markdown knowledge base
@@ -40,6 +42,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
   ${style.bold('Writing')}
     write                Create, append, patch or replace a page.
     remember <text>      Hand over notes; Akno decides what to keep and where.
+    retain <json|->      Replay-safe retention from an identified source revision.
     forget               Retract a fact, trash a page or a document.
     undo <change_id>     Reverse a change. \`--list\` shows recent ones.
     move <from> <to>     Relocate a page with its documents.
@@ -54,6 +57,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     dream                Conflicts, observe, reflect, curate, adopt, repair, housekeeping.
     plan                 Inspect, decide and apply durable maintenance plans.
     index                Reconcile the index against the knowledge base.
+    migrate              Upgrade Akno-owned brain markers explicitly and undoably.
     serve                Hold the index, watcher and models in one process.
     service              Manage the macOS launchd agent.
     redeploy             Apply local changes: build, restart the service, wait for it.
@@ -84,6 +88,7 @@ const COMMANDS: Record<string, Command> = {
   graph: graphCommand,
   write: writeCommand,
   remember: rememberCommand,
+  retain: retainCommand,
   forget: forgetCommand,
   undo: undoCommand,
   move: moveCommand,
@@ -97,6 +102,7 @@ const COMMANDS: Record<string, Command> = {
   approve: approveCommand,
   decline: (argv: string[]) => approveCommand(argv, true),
   index: indexCommand,
+  migrate: migrateCommand,
   serve: serveCommand,
   service: serviceCommand,
   redeploy: redeployCommand,

@@ -23,6 +23,7 @@ interface StubCandidate {
   page?: string;
   origin?: 'user' | 'assistant';
   evidence?: string | null;
+  frame?: string | null;
 }
 
 interface StubServer {
@@ -63,7 +64,7 @@ function topicEmbedding(text: string): number[] {
 async function startStubChat(): Promise<typeof server> {
   let system = '';
   let candidates: StubCandidate[] = [
-    { text: 'The rent is 1234 EUR per month.', subject: 'apartment rent', kind: 'fact' },
+    { text: 'The rent is 1111 EUR per month.', subject: 'apartment rent', kind: 'claim' },
   ];
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -86,13 +87,23 @@ async function startStubChat(): Promise<typeof server> {
         messages?: { role: string; content: string }[];
       };
       system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
+      const sourceText = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      const grounded = candidates.map((candidate) => ({
+        ...candidate,
+        ...(candidate.evidence === undefined && sourceText.includes(candidate.text)
+          ? { evidence: candidate.text }
+          : {}),
+        ...(candidate.frame === undefined && sourceText.includes(candidate.text)
+          ? { frame: candidate.text }
+          : {}),
+      }));
       response.end(
         JSON.stringify({
           choices: [
             {
               message: {
                 content: JSON.stringify({
-                  candidates,
+                  candidates: grounded,
                   events: [],
                 }),
               },
@@ -201,7 +212,7 @@ describe('the retain tier’s config', () => {
     // keeps the tier honest lives in the fixed part.
     const mem = await openMem({ maintenance: { retain: { mission: 'Prefer amounts and dates.' } } });
     try {
-      await mem.remember({ text: 'The rent went up to 1234 EUR from September.' });
+      await mem.remember({ text: 'The rent went up to 1111 EUR from September.' });
       expect(server.lastSystem()).toContain('Prefer amounts and dates.');
       expect(server.lastSystem()).toContain('Prose, not triples');
     } finally {
@@ -212,7 +223,7 @@ describe('the retain tier’s config', () => {
   it('runs with no mission configured, which is the default', async () => {
     const mem = await openMem();
     try {
-      await mem.remember({ text: 'The rent went up to 1234 EUR from September.' });
+      await mem.remember({ text: 'The rent went up to 1111 EUR from September.' });
       expect(server.lastSystem()).toContain('Prose, not triples');
       expect(server.lastSystem()).not.toContain('Additional emphasis');
     } finally {
@@ -224,7 +235,7 @@ describe('the retain tier’s config', () => {
     const mem = await openMem({ maintenance: { retain: { enabled: false } } });
     server.forget();
     try {
-      const result = await mem.remember({ text: 'The rent went up to 1234 EUR from September.' });
+      const result = await mem.remember({ text: 'The rent went up to 1111 EUR from September.' });
       expect(result.outcome).toBe('noop');
       expect(result.note).toMatch(/disabled in config/);
       // And it did not quietly call the model first.
@@ -243,7 +254,7 @@ describe('fact-injection admission', () => {
         text: 'The Zephyr QX-100 warranty lasts five years.',
         subject: 'Zephyr warranty',
         page: 'home/zephyr-warranty',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({ folders: { '**': { role: 'knowledge' } } });
@@ -315,7 +326,7 @@ describe('fact-injection admission', () => {
         text: 'The lease warranty lasts five years.',
         subject: 'lease warranty',
         page: 'home/lease',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({
@@ -347,7 +358,7 @@ describe('what remember reports as written', () => {
         text: evidence,
         subject: 'Zephyr selection',
         page: 'home/zephyr-selection',
-        kind: 'fact',
+        kind: 'claim',
         origin: 'user',
         evidence,
       },
@@ -396,14 +407,14 @@ describe('what remember reports as written', () => {
     }
   });
 
-  it('writes a candidate but archives no unverifiable model-supplied quote', async () => {
+  it('holds a candidate whose model-supplied quote is not in the source', async () => {
     const input = 'Ada Marlow selected the Zephyr QX-100.';
     server.respondWith([
       {
         text: input,
         subject: 'Zephyr selection',
         page: 'home/zephyr-selection',
-        kind: 'fact',
+        kind: 'claim',
         origin: 'user',
         evidence: 'This sentence does not occur in the supplied input.',
       },
@@ -411,7 +422,8 @@ describe('what remember reports as written', () => {
     const mem = await openMem();
     try {
       const result = await mem.remember({ text: input, source: 'fixture:conversation' });
-      expect(result.wrote?.[0]?.slug).toBe('home/zephyr-selection');
+      expect(result.outcome).toBe('noop');
+      expect(result.wrote).toBeUndefined();
       const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
       const count = db.prepare('SELECT COUNT(*) AS n FROM managed_item_sources').get() as { n: number };
       db.close();
@@ -427,7 +439,7 @@ describe('what remember reports as written', () => {
         text: 'The bicycle is stored beside the blue cabinet.',
         subject: 'bicycle storage',
         page: 'home/bicycle-storage',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem();
@@ -447,7 +459,7 @@ describe('what remember reports as written', () => {
         text: 'The bicycle is stored beside the blue cabinet.',
         subject: 'bicycle storage',
         page: 'storage/bicycle',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem();
@@ -480,7 +492,7 @@ describe('the title on a page remember creates', () => {
         text: 'The bicycle is stored beside the blue cabinet.',
         subject: 'bicycle storage',
         page: 'home/bicycle-storage',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem();
@@ -501,7 +513,7 @@ describe('the title on a page remember creates', () => {
         text: 'The Zephyr QX-100 is scheduled for calibration at dawn.',
         subject: 'Zephyr calibration',
         page: 'home/blackwater-expedition',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem();
@@ -549,7 +561,7 @@ describe('routing a claim whose attribute its page does not yet state', () => {
         text: 'Vulpine Lodge has a pool, a sauna, a gym, a wellness area and towel service.',
         subject: 'Vulpine Lodge',
         page: 'trips/vulpine-lodge',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem(embedded);
@@ -571,7 +583,7 @@ describe('routing a claim whose attribute its page does not yet state', () => {
         text: 'The Vulpine Lodge pool is open until 22:00.',
         subject: 'opening hours',
         page: 'trips/anything',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem(embedded);
@@ -602,7 +614,7 @@ describe('a routing refusal against a page that already exists', () => {
         text: 'The meal box order was confirmed for Thursday and Friday.',
         subject: 'meal orders',
         page: 'home/lease',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem();
@@ -629,7 +641,7 @@ describe('a routing refusal against a page that already exists', () => {
         text: 'The meal box order was confirmed for Thursday and Friday.',
         subject: 'meal orders',
         page: 'home/meal-orders',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem();
@@ -687,7 +699,7 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
         text: 'The meal box order was confirmed, a meal for Thursday and a meal for Friday.',
         subject: 'meal orders',
         page: 'household/concerts',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem(embedded);
@@ -745,7 +757,7 @@ describe('routing when the strongest semantic match is read-only', () => {
         text: 'The meal box order was confirmed for Thursday and Friday.',
         subject: 'meal orders',
         page: 'household/meal-orders',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
 
@@ -790,7 +802,7 @@ describe('routing when the strongest semantic match is read-only', () => {
         text: 'The meal box order was confirmed for Thursday and Friday.',
         subject: 'meal orders',
         page: 'household/reference',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
 
@@ -855,7 +867,7 @@ describe('configured remember fallback', () => {
         text: 'The meal box order was confirmed for Thursday and Friday.',
         subject: 'meal orders',
         page: 'household/reference',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({
@@ -907,7 +919,7 @@ describe('configured remember fallback', () => {
       {
         text: 'Ada Marlow prefers brass instruments.',
         subject: 'Ada Marlow preference',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({
@@ -949,7 +961,7 @@ describe('configured remember fallback', () => {
         text: 'The Zephyr QX-100 warranty lasts five years.',
         subject: 'Zephyr warranty',
         page: 'home/zephyr-warranty',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem(configured);
@@ -978,7 +990,7 @@ describe('configured remember fallback', () => {
       {
         text: 'Ada Marlow prefers brass instruments.',
         subject: 'Ada Marlow preference',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem(configured);
@@ -1019,7 +1031,7 @@ describe('configured remember fallback', () => {
       {
         text: 'Ada Marlow prefers brass instruments.',
         subject: 'Ada Marlow preference',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({
@@ -1045,7 +1057,7 @@ describe('configured remember fallback', () => {
       {
         text: 'Ada Marlow prefers brass instruments.',
         subject: 'Ada Marlow preference',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({ maintenance: { retain: { fallback_page: 'timeline' } } });
@@ -1074,18 +1086,18 @@ it('reports a held destination even when another retained claim was written', as
       text: 'The Zephyr QX-100 warranty lasts five years.',
       subject: 'Zephyr warranty',
       page: 'home/zephyr-warranty',
-      kind: 'fact',
+      kind: 'claim',
     },
     {
       text: 'Ada Marlow prefers brass instruments.',
       subject: 'Ada Marlow preference',
-      kind: 'fact',
+      kind: 'claim',
     },
   ]);
   const mem = await openMem();
   try {
     const result = await mem.remember({
-      text: 'The warranty and preference were confirmed.',
+      text: 'The Zephyr QX-100 warranty lasts five years. Ada Marlow prefers brass instruments.',
     });
     expect(result.outcome).toBe('no_writable_destination');
     expect(result.wrote).toEqual([
@@ -1120,7 +1132,7 @@ describe('a folder that refuses remembered claims', () => {
         text: 'The account was warned for two years of inactivity.',
         subject: 'Vulpine Mutual account inactivity',
         page: 'references/vulpine-account',
-        kind: 'fact',
+        kind: 'claim',
       },
     ]);
     const mem = await openMem({
@@ -1204,7 +1216,7 @@ describe('a caller-supplied mission', () => {
     });
     server.forget();
     try {
-      await mem.remember({ text: 'The rent went up to 1234 EUR from September.' });
+      await mem.remember({ text: 'The rent went up to 1111 EUR from September.' });
       expect(cycle.lastSystem()).toContain('Prose, not triples');
       // And the derive model was not asked to do the cycle's work.
       expect(server.lastSystem()).not.toContain('Prose, not triples');
@@ -1225,6 +1237,13 @@ describe('a caller-supplied mission', () => {
  */
 describe('answering a held proposal', () => {
   it('refuses an approval with no destination, and says what is missing', async () => {
+    server.respondWith([
+      {
+        text: 'The bicycle key lives with the concierge.',
+        subject: 'bicycle key',
+        kind: 'claim',
+      },
+    ]);
     const mem = await openMem();
     try {
       const result = await mem.remember({ text: 'The bicycle key lives with the concierge.' });
@@ -1241,6 +1260,13 @@ describe('answering a held proposal', () => {
   });
 
   it('writes the held claim to the page the owner names, creating it when new', async () => {
+    server.respondWith([
+      {
+        text: 'The bicycle key lives with the concierge.',
+        subject: 'bicycle key',
+        kind: 'claim',
+      },
+    ]);
     const mem = await openMem();
     try {
       const result = await mem.remember({ text: 'The bicycle key lives with the concierge.' });
@@ -1253,7 +1279,7 @@ describe('answering a held proposal', () => {
       const body = fs.readFileSync(path.join(root, 'home/bicycle-storage.md'), 'utf8');
       // The stub's retained claim, whatever the input text was. Once, not twice: a
       // create-from-append writes it as the body and nothing else.
-      expect(body.match(/The rent is 1234 EUR per month\./g)).toHaveLength(1);
+      expect(body.match(/The bicycle key lives with the concierge\./g)).toHaveLength(1);
       expect(mem.proposals().map((row) => row.id)).not.toContain(proposal);
     } finally {
       await mem.close();

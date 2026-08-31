@@ -5,17 +5,18 @@ record, and applying maintenance plans. Choosing the narrowest operation keeps a
 
 ## Choose the right write operation
 
-| Intent                                                  | Operation  |
-| ------------------------------------------------------- | ---------- |
-| Put exact wording at an exact destination               | `write`    |
-| Hand over unstructured text and keep its durable claims | `remember` |
-| Declare what belongs in a folder                        | `folder`   |
-| Import a file, folder, or URL                           | `ingest`   |
-| Process configured drop folders                         | `inbox`    |
-| Give an orphan document a page                          | `adopt`    |
-| Retract a sentence or trash an object                   | `forget`   |
-| Relocate a page and its documents                       | `move`     |
-| Reverse a journalled change                             | `undo`     |
+| Intent                                                      | Operation  |
+| ----------------------------------------------------------- | ---------- |
+| Put exact wording at an exact destination                   | `write`    |
+| Hand over unstructured text and keep its durable claims     | `remember` |
+| Retain identified source revisions with provided candidates | `retain`   |
+| Declare what belongs in a folder                            | `folder`   |
+| Import a file, folder, or URL                               | `ingest`   |
+| Process configured drop folders                             | `inbox`    |
+| Give an orphan document a page                              | `adopt`    |
+| Retract a sentence or trash an object                       | `forget`   |
+| Relocate a page and its documents                           | `move`     |
+| Reverse a journalled change                                 | `undo`     |
 
 If you know both wording and destination, use `write`. If Akno must decide what is durable and where it belongs,
 use `remember`.
@@ -43,6 +44,8 @@ page policy.
 ```bash
 akno remember "Ada Marlow confirmed that the Zephyr QX-100 warranty lasts five years."
 akno remember "..." --dry-run
+akno remember "The inspection is due tomorrow." \
+  --mentioned-at 2031-03-04T10:00:00Z --timezone UTC
 ```
 
 `remember` is for conversation excerpts, rough notes, or other raw material. It uses the current folder
@@ -74,14 +77,20 @@ semantic ambiguity remains `requires_approval`, while an undeclared target folde
 It does not create pages in unexplained or read-only folders. `adopt` and immediate index reconciliation make
 accepted memory visible without another manual step.
 
-For each retained sentence, the model also identifies one bounded exact quote from the input. Akno validates
-the quote before storing it privately alongside the managed-item id and keeps only a hash of the complete
-input. The dream cycle can therefore re-check generated wording even when the page has no `dream: hygiene` or
-`dream: synthesize` permission. A safe correction may change only that one generated payload line and still
-passes the ordinary sealed plan and curator or human decision path. Older items and new items for which no
-valid exact quote was returned remain readable but report `source_unavailable`; Akno will not guess a semantic
-correction for them. Explicitly forgetting the fact or page removes its retained quote; a complete maintenance
-scan also prunes quotes whose managed marker no longer exists.
+Relative dates are resolved only when the caller supplies the source's RFC 3339 `--mentioned-at` time. An IANA
+`--timezone` supplies calendar context without licensing a location guess. When source time is absent, Akno does
+not substitute its processing clock.
+
+### Evidence and later maintenance
+
+For each sentence extracted by `remember`, the model also identifies one bounded exact quote from the input.
+Akno validates the quote before storing it privately alongside the managed-item id and keeps only a hash of the
+complete input. The dream cycle can therefore re-check generated wording even when the page has no
+`dream: hygiene` or `dream: synthesize` permission. A safe correction may change only that one generated payload
+line and still passes the ordinary sealed plan and curator or human decision path. Older items and new items for
+which no valid exact quote was returned remain readable but report `source_unavailable`; Akno will not guess a
+semantic correction for them. Explicitly forgetting the fact or page retires its retained quote from active
+verification; a complete maintenance scan also prunes quotes whose managed marker no longer exists.
 
 The dream cycle can also correct where an injected fact lives. It uses ordinary retrieval to nominate a small
 set of existing writable knowledge pages, then asks a separate classifier whether the current page is clearly
@@ -94,6 +103,120 @@ finding.
 
 Use `approve` or `decline` for held routing proposals. These are separate from maintenance-plan decisions,
 which use `akno plan decide`.
+
+## Retain identified sources
+
+`retain` is the host-facing path when source identity must survive retries. It currently accepts JSON with
+provided candidates, exact source spans, and exact destinations, or an explicit retraction:
+
+```bash
+akno retain request.json
+akno retain request.json --dry-run
+akno retain - < request.json
+```
+
+Assuming `memory/**` is admitted as `knowledge + remember: integrate`, this complete request creates a managed
+page when needed and places the decision under its deterministic `## Unsorted` section:
+
+```json
+{
+  "sources": [
+    {
+      "source_id": "conversation:1111",
+      "revision": "1",
+      "source_group": "conversation:1111",
+      "source_kind": "conversation",
+      "mentioned_at": "2031-03-04T10:00:00Z",
+      "timezone": "UTC",
+      "locator": "conversation:1111#turn-1",
+      "input": {
+        "items": [
+          {
+            "item_id": "turn-1",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "mentioned_at": "2031-03-04T10:00:00Z",
+            "text": "I selected the five-year warranty for the Zephyr QX-100."
+          }
+        ]
+      },
+      "retention": {
+        "mode": "provided",
+        "placement": "exact",
+        "candidates": [
+          {
+            "candidate_id": "warranty-selection",
+            "kind": "decision",
+            "text": "Ada Marlow selected the five-year warranty for the Zephyr QX-100.",
+            "subject": "Zephyr QX-100 warranty",
+            "attribution": {
+              "source_role": "user",
+              "source_speaker": "Ada Marlow"
+            },
+            "discourse": {
+              "commitment": "asserted",
+              "disposition": "accepted"
+            },
+            "epistemic": {
+              "basis": "self_attested"
+            },
+            "support": [
+              {
+                "item_id": "turn-1",
+                "quote": "I selected the five-year warranty for the Zephyr QX-100."
+              }
+            ],
+            "discourse_frame": [
+              {
+                "item_id": "turn-1",
+                "quote": "I selected the five-year warranty for the Zephyr QX-100."
+              }
+            ],
+            "time": {
+              "start": "2031-03-04",
+              "precision": "day",
+              "relation": "occurred",
+              "status": "actual",
+              "timezone": "UTC",
+              "mentioned_at": "2031-03-04T10:00:00Z"
+            },
+            "destination": {
+              "slug": "memory/zephyr-qx-100-warranty"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+The tuple `source_id + revision` is immutable. Repeating identical source metadata, bytes, and retention
+instructions returns the stored result without another write; changing any of them under the same tuple returns
+`revision_conflict`. Exact support and discourse-frame spans must resolve uniquely inside the supplied text or
+structured source item. Every accepted source has at most one journal change, and one failed source does not
+erase successful siblings. On an existing page, a named exact section must already exist exactly once; omission
+uses the deterministic `## Unsorted` fallback. Reports, hypotheses, proposals, plans, questions, and rejected
+options stay searchable with visible status but are excluded from ordinary derived facts.
+
+A later revision never implies deletion. Retraction names the earlier `target_revision` and, optionally, exact
+candidate ids. When another source still supports the same memory, Akno removes only the addressed support and
+keeps the readable item. An explicit user `forget` also retires keyed support, so replaying an old source
+revision cannot resurrect memory the user removed; undo restores both the Markdown and its support state.
+
+## Brain migration
+
+Owned Markdown grammar changes are explicit:
+
+```bash
+akno migrate --dry-run
+akno migrate
+```
+
+The normal managed-memory parser reads only the current v2 grammar. The legacy decoder exists only in this
+operator command. Migration rewrites strict owned blocks conservatively as attributed reports, holds malformed
+or ambiguous blocks, journals the exact files, re-indexes changed paths, and can be reversed with `undo`.
+Ordinary indexing never rewrites the knowledge base.
 
 ## Documents and ingestion
 

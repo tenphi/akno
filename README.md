@@ -90,7 +90,7 @@ Markdown pages + documents
           │                         │
           │                         └── recall / answer / read / timeline / context
           │
-          └── journalled writes <── write / remember / ingest / guarded dream plans
+          └── journalled writes <── write / remember / retain / ingest / guarded dream plans
 ```
 
 Four ideas explain most of Akno:
@@ -108,13 +108,13 @@ See [The memory lifecycle](docs/memory-lifecycle.md) for the everyday human/agen
 
 ## Main commands
 
-| Intent                      | Commands                                                                              |
-| --------------------------- | ------------------------------------------------------------------------------------- |
-| Find or inspect memory      | `recall`, `answer`, `read`, `list`, `timeline`, `graph`, `context`                    |
-| Capture or correct memory   | `write`, `remember`, `forget`, `undo`, `move`, `folder`                               |
-| Bring in documents          | `ingest`, `inbox`, `adopt`                                                            |
-| Maintain the knowledge base | `dream`, `plan`, `approve`, `decline`                                                 |
-| Operate Akno                | `init`, `index`, `serve`, `service`, `doctor`, `rules`, `config`, `bench`, `redeploy` |
+| Intent                      | Commands                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------ |
+| Find or inspect memory      | `recall`, `answer`, `read`, `list`, `timeline`, `graph`, `context`                               |
+| Capture or correct memory   | `write`, `remember`, `retain`, `forget`, `undo`, `move`, `folder`                                |
+| Bring in documents          | `ingest`, `inbox`, `adopt`                                                                       |
+| Maintain the knowledge base | `dream`, `plan`, `approve`, `decline`                                                            |
+| Operate Akno                | `init`, `index`, `migrate`, `serve`, `service`, `doctor`, `rules`, `config`, `bench`, `redeploy` |
 
 `akno --help` and `akno <command> --help` describe the installed interface. The
 [command reference](docs/commands.md) explains which operation to choose and whether it writes.
@@ -154,7 +154,7 @@ The guides are also published at [akno.tenphi.me](https://akno.tenphi.me/).
 | [Core concepts](docs/concepts.md)            | Pages, documents, roles, rules, evidence, identity, and result states |
 | [Configuration](docs/configuration.md)       | Config layers, secrets, models, profiles, and knowledge-base rules    |
 | [Reading memory](docs/reading.md)            | Recall, grounded answers, graph, timeline, and automatic context      |
-| [Writing and ingestion](docs/writing.md)     | Exact writes, remember, documents, inbox, undo, and adoption          |
+| [Writing and ingestion](docs/writing.md)     | Exact writes, retain/remember, migration, documents, and reversal     |
 | [The dream cycle](docs/dream-cycle.md)       | Phases, plans, policies, budgets, decisions, and verification         |
 | [How Akno works](docs/how-it-works.md)       | Architecture, indexing, retrieval, writes, and service boundaries     |
 | [Operations](docs/operations.md)             | Service installation, diagnostics, recovery, privacy, and platform    |

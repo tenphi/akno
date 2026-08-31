@@ -11,6 +11,10 @@ export const RememberInput = z.object({
   text: z.string().min(1),
   /** Free-form provenance note, e.g. `telegram:2026-08-06`. */
   source: z.string().optional(),
+  /** When this text was said or written; the only clock allowed to resolve relative dates. */
+  mentioned_at: z.string().datetime({ offset: true }).optional(),
+  /** IANA timezone for local calendar expressions. Omission never licenses a location guess. */
+  timezone: z.string().min(1).max(100).optional(),
   /**
    * What to pay attention to in *this* text — attribution for a forwarded message, a channel whose
    * content is mostly logistics, a subject the caller knows matters.

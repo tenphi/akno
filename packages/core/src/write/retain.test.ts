@@ -62,6 +62,22 @@ describe('what survives the retain guards', () => {
       texts([candidate('The rent is 1450 EUR per month.'), candidate('The RENT is 1450 EUR per month.')]),
     ).toHaveLength(1);
   });
+
+  it('requires a unique discourse frame and rejects a hypothetical frame', () => {
+    const source = 'Suppose the Zephyr QX-100 warranty lasts ten years.';
+    expect(
+      cleanCandidates(
+        [
+          candidate('The Zephyr QX-100 warranty lasts ten years.', {
+            kind: 'claim',
+            evidence: 'the Zephyr QX-100 warranty lasts ten years',
+            frame: source,
+          }),
+        ],
+        { sourceText: source },
+      ),
+    ).toEqual([]);
+  });
 });
 
 /**

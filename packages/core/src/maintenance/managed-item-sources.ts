@@ -8,7 +8,6 @@ import { sha256 } from '../store/ids.ts';
 export interface ManagedSourceCandidate {
   itemId: string;
   payload: string;
-  sourceRef: string;
   origin: 'user' | 'assistant' | 'unknown';
 }
 
@@ -287,7 +286,6 @@ function readSourceRows(ctx: AknoContext, itemIds: string[]): Map<string, Source
 function validSourceRow(candidate: ManagedSourceCandidate, row: SourceRow | undefined): boolean {
   return Boolean(
     row &&
-    row.source_ref === candidate.sourceRef &&
     row.origin === candidate.origin &&
     row.evidence.length > 0 &&
     row.evidence.length <= 1200 &&
