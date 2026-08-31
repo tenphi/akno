@@ -124,8 +124,9 @@ The generative roles have separate reasoning and output settings because their l
 differ. Expansion and reranking are interactive and can use `reasoning_effort: "none"`; derivation and
 maintenance can use more effort off the hot path.
 
-See [`config/default.jsonc`](../config/default.jsonc) for every field and
-[`config/local.example.jsonc`](../config/local.example.jsonc) for a specialist setup.
+See [`config/default.jsonc`](https://github.com/tenphi/akno/blob/main/config/default.jsonc) for every field and
+[`config/local.example.jsonc`](https://github.com/tenphi/akno/blob/main/config/local.example.jsonc) for a
+specialist setup.
 
 ## Reranking and qualification
 

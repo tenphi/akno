@@ -83,9 +83,9 @@ or fallback.
 
 Primary evidence:
 
-- [held-out matrix](../benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-2026-08-25.json)
-- [latency receipt](../benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-latency-2026-08-25.json)
-- [production-path receipt](../benchmarks/ranking/results/test-end-to-end-openai-luna-v9-stable-ids-corpus-v5-semantic-tail-2026-08-25.json)
+- [held-out matrix](https://github.com/tenphi/akno/blob/main/benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-2026-08-25.json)
+- [latency receipt](https://github.com/tenphi/akno/blob/main/benchmarks/ranking/results/test-openai-luna-v9-stable-ids-corpus-v5-latency-2026-08-25.json)
+- [production-path receipt](https://github.com/tenphi/akno/blob/main/benchmarks/ranking/results/test-end-to-end-openai-luna-v9-stable-ids-corpus-v5-semantic-tail-2026-08-25.json)
 
 These numbers qualify one frozen configuration against one invented corpus. They do not claim that every query,
 endpoint load, future model revision, or private knowledge base will behave identically.
@@ -101,9 +101,9 @@ measurements when doing so requires no new provider call; the artifact must reco
 
 Detailed corpus contracts and historical evidence live beside each benchmark:
 
-- [ranking](../benchmarks/ranking/README.md)
-- [automatic recall](../benchmarks/auto-recall/README.md)
-- [automatic recall plus host answer](../benchmarks/auto-recall-answer/README.md)
+- [ranking](https://github.com/tenphi/akno/blob/main/benchmarks/ranking/README.md)
+- [automatic recall](https://github.com/tenphi/akno/blob/main/benchmarks/auto-recall/README.md)
+- [automatic recall plus host answer](https://github.com/tenphi/akno/blob/main/benchmarks/auto-recall-answer/README.md)
 
 ## Running a relevant gate
 

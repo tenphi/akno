@@ -78,7 +78,7 @@ akno doctor
 akno recall "How long is the Zephyr QX-100 warranty?"
 ```
 
-Need invented notes to try? Copy [`examples/demo-brain`](examples/demo-brain) and follow the
+Need invented notes to try? Copy [`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples/demo-brain) and follow the
 [getting-started guide](docs/getting-started.md#try-the-demo-knowledge-base).
 
 ## The working model
@@ -145,6 +145,8 @@ Read [The dream cycle](docs/dream-cycle.md) before enabling scheduled writes.
 
 ## Documentation
 
+The guides are also published at [akno.tenphi.me](https://akno.tenphi.me/).
+
 | Guide                                        | Use it for                                                            |
 | -------------------------------------------- | --------------------------------------------------------------------- |
 | [Getting started](docs/getting-started.md)   | Installation, guided setup, the demo, and a safe adoption path        |
@@ -174,10 +176,12 @@ pnpm test
 pnpm akno init
 ```
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) for architecture and testing invariants, and [AGENTS.md](AGENTS.md) for
-the repository's strict rule against copying real knowledge-base data into tests, documentation, or commits.
+Read [CONTRIBUTING.md](https://github.com/tenphi/akno/blob/main/CONTRIBUTING.md) for architecture and testing
+invariants, and [AGENTS.md](https://github.com/tenphi/akno/blob/main/AGENTS.md) for the repository's strict rule
+against copying real knowledge-base data into tests, documentation, or commits.
 
 ## License
 
-Akno is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). Personal and other
+Akno is source-available under the
+[PolyForm Noncommercial License 1.0.0](https://github.com/tenphi/akno/blob/main/LICENSE). Personal and other
 noncommercial use is permitted; commercial use requires a separate licence.

@@ -22,12 +22,12 @@ more depth without making every reader carry the complete implementation history
 
 ## Common paths
 
-| Goal                              | Read                                                                                                              |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Understand everyday behavior      | [Memory lifecycle](memory-lifecycle.md) → [Core concepts](concepts.md)                                            |
-| Try Akno safely                   | [Getting started](getting-started.md) → [Memory lifecycle](memory-lifecycle.md)                                   |
-| Connect an agent host             | [Reading memory: automatic context](reading.md#automatic-context-for-an-agent-host) → [Operations](operations.md) |
-| Import existing files             | [Writing and ingestion](writing.md#documents-and-ingestion) → [Core concepts](concepts.md#pages-and-documents)    |
-| Enable autonomous maintenance     | [Memory lifecycle](memory-lifecycle.md#what-the-dream-cycle-does) → [Dream cycle](dream-cycle.md)                 |
-| Diagnose missing or slow behavior | [Operations](operations.md#diagnostics) → [Benchmarks](benchmarks.md)                                             |
-| Change Akno itself                | [CONTRIBUTING.md](../CONTRIBUTING.md) and [AGENTS.md](../AGENTS.md)                                               |
+| Goal                              | Read                                                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Understand everyday behavior      | [Memory lifecycle](memory-lifecycle.md) → [Core concepts](concepts.md)                                                                          |
+| Try Akno safely                   | [Getting started](getting-started.md) → [Memory lifecycle](memory-lifecycle.md)                                                                 |
+| Connect an agent host             | [Reading memory: automatic context](reading.md#automatic-context-for-an-agent-host) → [Operations](operations.md)                               |
+| Import existing files             | [Writing and ingestion](writing.md#documents-and-ingestion) → [Core concepts](concepts.md#pages-and-documents)                                  |
+| Enable autonomous maintenance     | [Memory lifecycle](memory-lifecycle.md#what-the-dream-cycle-does) → [Dream cycle](dream-cycle.md)                                               |
+| Diagnose missing or slow behavior | [Operations](operations.md#diagnostics) → [Benchmarks](benchmarks.md)                                                                           |
+| Change Akno itself                | [CONTRIBUTING.md](https://github.com/tenphi/akno/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/tenphi/akno/blob/main/AGENTS.md) |
