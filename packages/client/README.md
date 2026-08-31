@@ -22,6 +22,13 @@ const context = await akno.context({
   query: 'When does the Zephyr QX-100 warranty end?',
   budget: 1200,
 });
+
+// HTTP is public read-only on loopback by default. A configured bearer identity
+// grants exactly its server-owned actor and operation set.
+const remote = await connect({
+  http: 'memory.vulpine.test:7777',
+  token: process.env.AKNO_HTTP_AGENT_TOKEN,
+});
 ```
 
 Schemas and error codes come from

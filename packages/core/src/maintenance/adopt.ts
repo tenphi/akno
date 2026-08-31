@@ -6,6 +6,7 @@ import { cleanSlug } from '../ingest/name.ts';
 import type { Extraction } from '../ingest/extract.ts';
 import { provenanceLines } from '../ingest/store.ts';
 import { sha256 } from '../store/ids.ts';
+import { serializeYamlString } from '../kb/frontmatter.ts';
 
 /**
  * A page for a document that has none, written beside the file.
@@ -326,7 +327,7 @@ function composeDocumentPage(group: OrphanGroup): string {
     .join('\n\n');
 
   return (
-    `---\ntitle: ${title}\n---\n\n` +
+    `---\ntitle: ${serializeYamlString(title, 'title')}\n---\n\n` +
     `# ${title}\n\n` +
     (summary ? `${summary}\n\n` : `A document stored here. Its text is indexed and searchable.\n\n`) +
     `${embeds}\n`

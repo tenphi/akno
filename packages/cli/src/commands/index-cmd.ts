@@ -14,8 +14,8 @@ const INDEX_HELP = `akno index [options]
                       facts). Structure indexes in milliseconds.
   --rederive          Re-run summaries and fact derivation even where the body
                       hash has not moved.
-  --rebuild           Delete the index first, then index from scratch. Costs one
-                      re-index and no data; the knowledge base is untouched.
+  --rebuild           Recompute every reproducible projection in place. Preserves
+                      journal, plans, retained evidence, and other durable state.
   --json              Machine-readable report.`;
 
 export async function indexCommand(argv: string[]): Promise<number> {
@@ -36,22 +36,11 @@ export async function indexCommand(argv: string[]): Promise<number> {
     return 0;
   }
 
-  if (values.rebuild) {
-    const { loadConfig } = await import('@tenphi/akno-core');
-    const config = loadConfig(openOptionsFrom(values));
-    const fs = await import('node:fs');
-    // Deleting the index costs one re-index and no data. That property is the
-    // design — so `--rebuild` is allowed to be this blunt.
-    for (const suffix of ['', '-wal', '-shm']) {
-      fs.rmSync(`${config.dbPath}${suffix}`, { force: true });
-    }
-    line(style.grey(`removed ${config.dbPath}`));
-  }
-
   const input = {
     ...(values.verify ? { verify: true } : {}),
     ...(values.structural ? { structuralOnly: true } : {}),
     ...(values.rederive ? { rederive: true } : {}),
+    ...(values.rebuild ? { rebuild: true } : {}),
   };
 
   // Through the service when one is running — it holds the write handle. In-process it also

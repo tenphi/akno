@@ -165,6 +165,28 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       ['Office formats', report.extraction.textutil ? 'textutil' : 'unavailable'],
     ]);
 
+    heading('Doors');
+    kv([
+      ['MCP operations', report.doors.mcpAllow.join(', ') || 'none'],
+      [
+        'HTTP',
+        report.doors.http.address
+          ? `${report.doors.http.address}; public: ${report.doors.http.publicAllow.join(', ') || 'none'}`
+          : 'off',
+      ],
+      [
+        'HTTP identities',
+        report.doors.http.identities.length > 0
+          ? report.doors.http.identities
+              .map(
+                (identity) =>
+                  `${identity.name} (${identity.actor}; ${identity.credentialSet ? 'credential set' : 'disabled'})`,
+              )
+              .join(', ')
+          : 'none',
+      ],
+    ]);
+
     heading('Reserved paths');
     for (const entry of report.reserved) {
       const state =

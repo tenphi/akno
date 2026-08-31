@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { connect, defaultSocketPath } from '@tenphi/akno-client';
 import { AknoError, loadConfig, open, type Akno, type MaintenanceStatus } from '@tenphi/akno-core';
-import type { CommandName, AknoOps, OpInput, OpName, OpResult } from '@tenphi/akno-protocol';
+import type { CommandName, AknoOps, Hello, OpInput, OpName, OpResult } from '@tenphi/akno-protocol';
 import { style } from './output.ts';
 
 export interface OpsHandle {
@@ -15,6 +15,8 @@ export interface OpsHandle {
   /** Set when the ops run in-process, for commands that need more than the ops. */
   akno: Akno | null;
   via: 'socket' | 'in-process';
+  /** Service handshake, including door policy. Null for an in-process handle. */
+  hello: Hello | null;
   close(): Promise<void>;
 }
 
@@ -57,6 +59,7 @@ export async function resolveOps(
         ops: client,
         akno: null,
         via: 'socket',
+        hello: client.hello,
         close: () => client.close(),
       };
     } catch (err) {
@@ -82,6 +85,7 @@ export async function resolveOps(
     ops: akno,
     akno,
     via: 'in-process',
+    hello: null,
     close: () => akno.close(),
   };
 }

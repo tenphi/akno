@@ -8,6 +8,7 @@ import { cleanupFetch, fetchDocument } from '../ingest/fetch.ts';
 import { nameDocument, nameIsUseless, type NamedDocument } from '../ingest/name.ts';
 import { provenanceLines, recordDocument, storeDocument } from '../ingest/store.ts';
 import { hashFile } from '../kb/scan.ts';
+import { serializeYamlString } from '../kb/frontmatter.ts';
 import { physicalFolders } from '../kb/folders.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
@@ -52,7 +53,11 @@ async function ingestUrl(
   ctx: AknoContext,
   input: ReturnType<typeof IngestInput.parse>,
 ): Promise<IngestOutput> {
-  const fetched = await fetchDocument({ url: input.url!, maxBytes: ctx.config.ingest.maxFileBytes });
+  const fetched = await fetchDocument({
+    url: input.url!,
+    maxBytes: ctx.config.ingest.maxFileBytes,
+    trustedOrigins: ctx.config.ingest.trustedUrlOrigins,
+  });
   try {
     return await ingestFile(ctx, input, {
       source: fetched.path,
@@ -473,11 +478,13 @@ function composePage(options: {
   label?: string;
 }): string {
   const { named, extraction } = options;
-  const front = [`title: ${titleCase(named.title)}`];
-  if (named.type) front.push(`type: ${named.type}`);
+  const front = [`title: ${serializeYamlString(titleCase(named.title), 'title')}`];
+  if (named.type) front.push(`type: ${serializeYamlString(named.type, 'type')}`);
   // Frontmatter, not prose: a URL is machine-readable provenance, and every key Akno does
   // not own is preserved untouched, so adding one of its own here is safe.
-  if (options.sourceUrl) front.push(`source_url: ${options.sourceUrl}`);
+  if (options.sourceUrl) {
+    front.push(`source_url: ${serializeYamlString(options.sourceUrl, 'source_url')}`);
+  }
 
   const facts = provenanceLines(extraction);
   if (options.label) facts.push(`- Label: ${options.label}`);

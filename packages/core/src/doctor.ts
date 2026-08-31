@@ -62,6 +62,14 @@ export interface DoctorReport {
   lockHeldBy: number | null;
   readOnlyReason: 'requested' | 'held' | 'unwritable' | null;
   vectorBackend: 'vec0' | 'fallback';
+  doors: {
+    mcpAllow: string[];
+    http: {
+      address: string | null;
+      publicAllow: string[];
+      identities: { name: string; actor: string; allow: string[]; credentialSet: boolean }[];
+    };
+  };
   counts: {
     pages: number;
     chunks: number;
@@ -388,6 +396,11 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
         `extension. Write '${rule.glob.slice(0, -extension.length)}' instead.`,
     );
   }
+  for (const identity of ctx.config.server.httpAccess) {
+    if (identity.token === null) {
+      warnings.push(`HTTP identity '${identity.name}' is disabled because ${identity.tokenEnv} is not set.`);
+    }
+  }
 
   return {
     aknoPath: ctx.config.aknoPath,
@@ -397,6 +410,19 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
     lockHeldBy: ctx.lockHeldBy,
     readOnlyReason: ctx.readOnlyReason,
     vectorBackend: ctx.store.vectors.kind,
+    doors: {
+      mcpAllow: ctx.config.server.mcpAllow,
+      http: {
+        address: ctx.config.server.http,
+        publicAllow: ctx.config.server.httpPublicAllow,
+        identities: ctx.config.server.httpAccess.map((identity) => ({
+          name: identity.name,
+          actor: identity.actor,
+          allow: identity.allow,
+          credentialSet: identity.token !== null,
+        })),
+      },
+    },
     counts,
     byRole,
     factInjection: {

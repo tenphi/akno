@@ -1,9 +1,9 @@
 /**
- * One SQLite file. Deleting it costs one re-index and no data — that
- * property is the design, and it is why nothing here is a source of truth.
- * The journal, live maintenance plans, replayable managed-item source quotes, and content-safe run receipts are
- * the durable exceptions. The journal keeps prior bytes for undo; a sealed plan keeps exact proposed bytes so a
- * decision survives a restart and never has to regenerate a possibly different rewrite; one bounded exact
+ * One SQLite file holds both reproducible projections and deliberately durable workflow state.
+ * `akno index --rebuild` refreshes the former in place; deleting this file loses the journal,
+ * live maintenance plans, replayable managed-item source quotes, retain receipts and recovery state.
+ * The journal keeps prior bytes for undo; a sealed plan keeps exact proposed bytes so a decision
+ * survives a restart and never has to regenerate a possibly different rewrite; one bounded exact
  * quote lets a generated sentence be checked later; the receipt explains the lifecycle around them.
  *
  * The first entry is the canonical 0.1.0 schema, compacted from historical versions
@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 33;
+export const SCHEMA_VERSION = 34;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -39,6 +39,7 @@ export const MAINTENANCE_REVISION_ACTOR_MIGRATION_INDEX = 23;
 export const MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX = 24;
 export const MAINTENANCE_RECOVERY_STATE_MIGRATION_INDEX = 25;
 export const RETAIN_RECEIPTS_MIGRATION_INDEX = 26;
+export const CHANGE_FILE_HASHES_MIGRATION_INDEX = 27;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -272,8 +273,8 @@ export const MIGRATIONS: string[] = [
   CREATE INDEX changes_at ON changes(at DESC);
 
   -- One row per file the change touched, in application order. 'before' holds the
-  -- previous bytes rather than a pointer to them, which is why undo survives a
-  -- full rebuild of every other table: only the journal is irreplaceable.
+  -- previous bytes rather than a pointer to them, which is why undo survives an
+  -- in-place rebuild of reproducible projections.
   CREATE TABLE change_files (
     change_id  TEXT NOT NULL REFERENCES changes(id) ON DELETE CASCADE,
     ord        INTEGER NOT NULL,
@@ -940,6 +941,13 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX retain_supports_memory
     ON retain_supports(memory_id, receipt_fingerprint);
+  `,
+  // Undo is a compare-and-swap over the knowledge base. Text rows can derive these hashes from
+  // their journaled bytes, while binary deletes and renames need the exact post-change digest
+  // recorded here so a later edit is never mistaken for the file Akno originally changed.
+  `
+  ALTER TABLE change_files ADD COLUMN before_hash TEXT;
+  ALTER TABLE change_files ADD COLUMN after_hash TEXT;
   `,
 ];
 

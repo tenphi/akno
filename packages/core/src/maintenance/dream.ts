@@ -7,6 +7,11 @@ import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { sha256 } from '../store/ids.ts';
 import { rebuildEvidenceGraph } from '../index/graph.ts';
+import {
+  mergeTopLevelStringArray,
+  serializeYamlString,
+  serializeYamlStringArray,
+} from '../kb/frontmatter.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
@@ -1879,6 +1884,13 @@ async function prepareObservation(
     evidence: observation.evidence,
     action: existing === null ? 'created' : 'refined',
   };
+  if (next === null) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'the existing observation page has an unsupported evidence declaration',
+    };
+  }
   const sealedEvidence = await observationEvidence(ctx, observation.evidence, evidenceRole);
   if (sealedEvidence.length !== observation.evidence.length) {
     return {
@@ -1967,9 +1979,8 @@ function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
 function newObservationPage(subject: string, observation: ObservationCandidate, today: string): string {
   const title = subject.charAt(0).toUpperCase() + subject.slice(1);
   return (
-    `---\ntitle: ${title}\nderived: true\nevidence:\n${observation.evidence
-      .map((slug) => `  - ${slug}`)
-      .join('\n')}\n---\n\n` +
+    `---\ntitle: ${serializeYamlString(title, 'title')}\nderived: true\n` +
+    `evidence: ${serializeYamlStringArray(observation.evidence, 'evidence')}\n---\n\n` +
     `# ${title}\n\n` +
     `Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n` +
     `- ${today} — ${observation.pattern} ${citation(observation.evidence)}\n`
@@ -1977,27 +1988,29 @@ function newObservationPage(subject: string, observation: ObservationCandidate, 
 }
 
 /** Appends the new line and unions the evidence, leaving every existing line alone. */
-function appendObservation(current: string, line: string, evidence: string[]): string {
+function appendObservation(current: string, line: string, evidence: string[]): string | null {
   const merged = mergeEvidence(current, evidence);
-  return `${merged.replace(/\s+$/, '')}\n${line}\n`;
+  if (merged === null) return null;
+  const newline = current.includes('\r\n') ? '\r\n' : '\n';
+  return `${merged.replace(/\s+$/, '')}${newline}${line}${newline}`;
 }
 
-function mergeEvidence(current: string, evidence: string[]): string {
-  const match = /^---\n([\s\S]*?)\n---\n/.exec(current);
-  if (!match) return current;
+function mergeEvidence(current: string, evidence: string[]): string | null {
+  const merged = mergeTopLevelStringArray(current, 'evidence', evidence);
+  if (merged !== null) return merged;
+
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(current);
+  if (!match) return null;
 
   const front = match[1]!;
-  const listed = new Set([...front.matchAll(/^\s*-\s*(\S+)\s*$/gm)].map((entry) => entry[1]!));
-  const missing = evidence.filter((slug) => !listed.has(slug));
-  if (missing.length === 0) return current;
+  // An existing key that is not one exact string sequence is user-edited or malformed. Refuse
+  // to guess around it and propagate that refusal so no unsupported observation is appended.
+  if (/^evidence:/m.test(front)) return null;
 
-  // Appended under the existing `evidence:` key, or added as one. Every other frontmatter key
-  // is left byte for byte: that promise holds for pages Akno authors too.
-  const added = missing.map((slug) => `  - ${slug}`).join('\n');
-  const nextFront = /^evidence:/m.test(front)
-    ? front.replace(/^(evidence:(?:\n\s*-\s*\S+)*)/m, `$1\n${added}`)
-    : `${front}\nevidence:\n${added}`;
-  return current.replace(match[0], `---\n${nextFront}\n---\n`);
+  // Add the owned key without round-tripping any neighboring frontmatter.
+  const newline = match[0].includes('\r\n') ? '\r\n' : '\n';
+  const nextFront = `${front}${newline}evidence: ${serializeYamlStringArray(evidence, 'evidence')}`;
+  return current.replace(match[0], `---${newline}${nextFront}${newline}---${newline}`);
 }
 
 function citation(evidence: string[]): string {

@@ -72,4 +72,26 @@ describe('config output redaction', () => {
       },
     });
   });
+
+  it('redacts resolved HTTP bearer credentials', () => {
+    const output = configForOutput({
+      providers: {},
+      models: {},
+      maintenance: { model: null },
+      server: {
+        httpAccess: [
+          {
+            name: 'vulpine-agent',
+            token: 'invented-http-secret-1111',
+            tokenEnv: 'AKNO_HTTP_AGENT_TOKEN',
+            actor: 'agent',
+            allow: ['recall'],
+          },
+        ],
+      },
+    } as unknown as AknoConfig) as { server: { httpAccess: { token: string }[] } };
+
+    expect(output.server.httpAccess[0]!.token).toBe('<set>');
+    expect(JSON.stringify(output)).not.toContain('invented-http-secret-1111');
+  });
 });

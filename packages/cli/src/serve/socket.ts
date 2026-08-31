@@ -61,6 +61,7 @@ export async function serveSocket(
       writable: akno.writable,
       akno_path: akno.config.aknoPath,
       ops: options.allow ?? Object.keys(OPS),
+      mcp_ops: intersect(akno.config.server.mcpAllow, options.allow),
       commands: [...COMMAND_NAMES],
     };
     socket.write(encodeLine(hello));
@@ -114,6 +115,12 @@ export async function serveSocket(
       fs.rmSync(socketPath, { force: true });
     },
   };
+}
+
+function intersect(policy: string[], restriction: string[] | undefined): string[] {
+  if (!restriction) return [...policy];
+  const allowed = new Set(restriction);
+  return policy.filter((name) => allowed.has(name));
 }
 
 /**

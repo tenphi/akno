@@ -30,8 +30,8 @@ migrate / serve / service / doctor / rules / config / bench / redeploy
 ```
 
 `akno --help` and `akno <command> --help` describe the installed interface. The service exposes the same typed
-operation registry in process, over an owner-only Unix socket, through loopback HTTP for containers, and over
-stdio MCP for agent hosts.
+operation registry in process, over an owner-only Unix socket, through HTTP with public read-only loopback and
+configured bearer identities, and over stdio MCP for agent hosts.
 
 ## Documentation
 

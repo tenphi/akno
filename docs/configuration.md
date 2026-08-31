@@ -61,6 +61,43 @@ stateless and may contain private memory. A failed Responses call does not fall 
 cross-transport retry could duplicate cost and change schema behavior. Automatic one-time capability resolution
 uses only invented probe text. A real Akno request never falls through to the other transport.
 
+## Door and network policy
+
+`server.mcp_allow` is the authoritative operation set for MCP. A stdio adapter that forwards through the
+running service reads that policy from the service handshake. `akno serve --mcp --allow ...` may narrow the
+set for one host, but cannot add an operation the service policy denied.
+
+Loopback HTTP is usable without a credential and is limited to read operations in
+`server.http_public_allow`; that list may narrow the public surface but cannot grant a write. Authenticated
+identities are environment-backed secret references:
+
+```jsonc
+{
+  "server": {
+    "http_public_allow": ["recall", "answer", "read"],
+    "http_access": [
+      {
+        "name": "vulpine-agent",
+        "token": { "env": "AKNO_HTTP_AGENT_TOKEN" },
+        "actor": "agent",
+        "allow": ["recall", "answer", "read", "retain"],
+      },
+    ],
+  },
+}
+```
+
+A missing token variable disables that identity and appears in `akno doctor`. A non-loopback HTTP bind is
+refused unless at least one identity has a resolved credential. The credential selects both actor and
+operations; an HTTP caller cannot supply `actor: "user"` itself. `akno config` redacts resolved tokens. The
+built-in listener is plain HTTP, so carry non-loopback traffic through a trusted tunnel or TLS reverse proxy.
+
+URL ingest denies loopback, private, link-local, multicast, unspecified, metadata, and other non-public IPv4
+and IPv6 destinations after DNS resolution. Every answer must pass, the request is pinned to one validated
+address, and redirects are resolved and checked again. A known internal service can be opted in by exact
+scheme, hostname, and port—never by path or wildcard—with `ingest.trusted_url_origins`. The exception does not
+authorize another port, protocol, or redirect origin on the same host.
+
 ## Knowledge-base rules
 
 Folder policy can travel with the notes in `<akno_path>/akno.jsonc`:

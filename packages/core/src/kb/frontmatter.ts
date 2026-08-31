@@ -1,3 +1,4 @@
+import { AknoError } from '@tenphi/akno-protocol';
 import YAML, { isMap, isPair, isScalar, isSeq } from 'yaml';
 
 /**
@@ -26,6 +27,94 @@ export interface Frontmatter {
 }
 
 const FENCE = /^---\r?\n/;
+
+/**
+ * Render a generated YAML string without letting its contents become YAML syntax.
+ * JSON string syntax is a YAML 1.2 string syntax too, and gives every troublesome
+ * scalar — newlines, comments, brackets, dates, booleans and the empty string — one
+ * unambiguous representation.
+ */
+export function serializeYamlString(value: unknown, field = 'frontmatter value'): string {
+  if (typeof value !== 'string') {
+    throw new AknoError('invalid', `${field} must be a string`, {
+      reason: 'invalid_frontmatter_value',
+      field,
+    });
+  }
+  return JSON.stringify(value);
+}
+
+/** Render an inline YAML sequence whose members are guaranteed to stay strings. */
+export function serializeYamlStringArray(value: unknown, field = 'frontmatter value'): string {
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string')) {
+    throw new AknoError('invalid', `${field} must be an array of strings`, {
+      reason: 'invalid_frontmatter_value',
+      field,
+    });
+  }
+  return `[${value.map((entry) => serializeYamlString(entry, field)).join(', ')}]`;
+}
+
+/**
+ * Append missing strings to one existing top-level sequence while leaving every existing byte alone.
+ * The YAML parser supplies the exact sequence boundary; new members are serialized safely and
+ * appended in the sequence's existing block or flow style.
+ */
+export function mergeTopLevelStringArray(content: string, key: string, additions: unknown): string | null {
+  // Validate even when the key is absent or malformed. Callers should never silently ignore a
+  // value they would have been unable to serialize safely.
+  serializeYamlStringArray(additions, key);
+  const values = additions as string[];
+  const fm = parseFrontmatter(content);
+  if (!fm.present) return null;
+
+  const document = YAML.parseDocument(fm.raw, { keepSourceTokens: true });
+  if (document.errors.length > 0 || !isMap(document.contents)) return null;
+  const matches = document.contents.items.filter(
+    (item) => isPair(item) && isScalar(item.key) && item.key.value === key,
+  );
+  if (matches.length !== 1) return null;
+  const sequence = matches[0]!.value;
+  if (!isSeq(sequence) || !sequence.range) return null;
+  if (sequence.items.some((item) => !isScalar(item) || typeof item.value !== 'string')) return null;
+
+  const existing = sequence.items.map((item) => (item as { value: string }).value);
+  const missing = [...new Set(values)].filter((value) => !existing.includes(value));
+  if (missing.length === 0) return content;
+
+  const [start, end] = sequence.range;
+  if (start < 0 || end < start || end > fm.raw.length) return null;
+  const original = fm.raw.slice(start, end);
+  let replacement: string;
+  if (sequence.flow) {
+    const close = original.lastIndexOf(']');
+    if (close < 0) return null;
+    // A multiline flow sequence keeps its closing bracket on a separate line. Insert before
+    // that trailing whitespace; putting the comma immediately before `]` starts a new mapping
+    // key on the closing line instead of extending the sequence.
+    const beforeClose = original.slice(0, close);
+    const trailingWhitespace = /\s*$/.exec(beforeClose)?.[0] ?? '';
+    const insertionPoint = beforeClose.length - trailingWhitespace.length;
+    replacement =
+      beforeClose.slice(0, insertionPoint) +
+      `${existing.length > 0 ? ', ' : ''}${missing.map((value) => serializeYamlString(value, key)).join(', ')}` +
+      trailingWhitespace +
+      original.slice(close);
+  } else {
+    const newline = fm.raw.includes('\r\n') ? '\r\n' : '\n';
+    const trailingNewline = original.endsWith(newline) ? newline : '';
+    const lineStart = fm.raw.lastIndexOf('\n', start - 1) + 1;
+    const indent = fm.raw.slice(lineStart, start);
+    if (!/^[ \t]*$/.test(indent)) return null;
+    replacement =
+      original.slice(0, original.length - trailingNewline.length) +
+      newline +
+      missing.map((value) => `${indent}- ${serializeYamlString(value, key)}`).join(newline) +
+      trailingNewline;
+  }
+  const rawStart = content.indexOf('\n') + 1;
+  return content.slice(0, rawStart + start) + replacement + content.slice(rawStart + end);
+}
 
 export function parseFrontmatter(content: string): Frontmatter {
   if (!FENCE.test(content)) {
@@ -112,7 +201,7 @@ export function replaceTopLevelString(content: string, key: string, value: strin
   const [start, end] = scalar.range;
   if (start < 0 || end < start || end > fm.raw.length) return null;
   const rawStart = content.indexOf('\n') + 1;
-  return content.slice(0, rawStart + start) + JSON.stringify(value) + content.slice(rawStart + end);
+  return content.slice(0, rawStart + start) + serializeYamlString(value, key) + content.slice(rawStart + end);
 }
 
 /**
@@ -159,7 +248,10 @@ export function replaceNestedStringArrayValue(
       let result = content;
       for (const [start, end] of ranges) {
         if (start < 0 || end < start || end > fm.raw.length) return null;
-        result = result.slice(0, rawStart + start) + JSON.stringify(to) + result.slice(rawStart + end);
+        result =
+          result.slice(0, rawStart + start) +
+          serializeYamlString(to, keys.join('.')) +
+          result.slice(rawStart + end);
       }
       return result;
     }
@@ -178,10 +270,10 @@ export function replaceNestedStringArrayValue(
 export function withId(content: string, id: string): string {
   const fm = parseFrontmatter(content);
   if (!fm.present) {
-    return `---\nid: ${id}\n---\n\n${content}`;
+    return `---\nid: ${serializeYamlString(id, 'id')}\n---\n\n${content}`;
   }
   if (typeof fm.data.id === 'string' && fm.data.id.length > 0) return content;
-  return spliceAfterFence(content, [`id: ${id}`]);
+  return spliceAfterFence(content, [`id: ${serializeYamlString(id, 'id')}`]);
 }
 
 /**
@@ -225,11 +317,12 @@ export function withAknoAliases(content: string, aliases: string[]): string | nu
   if (akno !== undefined && !record) return null;
   const existingValue = record?.aliases;
   if (existingValue !== undefined && !Array.isArray(existingValue)) return null;
-  const existing = (existingValue ?? []).filter((value): value is string => typeof value === 'string');
+  if (existingValue?.some((value) => typeof value !== 'string')) return null;
+  const existing = (existingValue ?? []) as string[];
   const wanted = [...new Set([...existing, ...additions])];
-  if (wanted.length === existing.length) return content;
+  if (additions.every((value) => existing.includes(value))) return content;
   const missing = wanted.filter((value) => !existing.includes(value));
-  const rendered = wanted.map((value) => `    - ${JSON.stringify(value)}`);
+  const rendered = wanted.map((value) => `    - ${serializeYamlString(value, 'akno.aliases')}`);
 
   if (!fm.present || !record) {
     return spliceAfterFence(content, ['akno:', '  aliases:', ...rendered]);
@@ -257,13 +350,17 @@ export function withAknoAliases(content: string, aliases: string[]): string | nu
     const match = /^  aliases:[ \t]*(.*)$/.exec(lines[aliasesIndex]!);
     const tail = match?.[1]?.trim() ?? '';
     if (tail.startsWith('[') && tail.endsWith(']')) {
-      lines[aliasesIndex] = `  aliases: ${JSON.stringify(wanted)}`;
+      lines[aliasesIndex] = `  aliases: ${serializeYamlStringArray(wanted, 'akno.aliases')}`;
     } else if (tail.length === 0) {
       let insertAt = aliasesIndex + 1;
       while (insertAt < blockEnd && (/^[ \t]{4,}/.test(lines[insertAt]!) || !lines[insertAt]!.trim())) {
         insertAt++;
       }
-      lines.splice(insertAt, 0, ...missing.map((value) => `    - ${JSON.stringify(value)}`));
+      lines.splice(
+        insertAt,
+        0,
+        ...missing.map((value) => `    - ${serializeYamlString(value, 'akno.aliases')}`),
+      );
     } else {
       return null;
     }

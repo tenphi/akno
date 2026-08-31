@@ -47,22 +47,25 @@ export interface ConnectOptions {
   socket?: string;
   /** `host:port` for a loopback HTTP door instead of a socket. */
   http?: string;
+  /** Bearer credential for a server.http_access identity. HTTP only. */
+  token?: string;
   timeoutMs?: number;
   /** Fail rather than warn when the server's protocol version differs. */
   strictVersion?: boolean;
   /**
-   * Who this connection speaks for. Default `agent`, which is what the gate assumes.
+   * Who this Unix-socket connection speaks for. Default `agent`, which is what the gate assumes.
    *
    * A host that mediates between a person and an agent needs both, and can say so per call. The
    * distinction is not cosmetic: `user` is never gated, so a proposal the agent could not write is
-   * answered by passing `actor: 'user'` on the replay — the mechanism `akno approve` uses.
+   * answered by passing `actor: 'user'` on the replay — the mechanism `akno approve` uses. HTTP
+   * instead assigns actor authority from its bearer identity and rejects this option.
    */
   actor?: 'user' | 'agent' | 'akno';
 }
 
 export interface AknoClient extends AknoOps {
   readonly hello: HelloMessage;
-  /** `actor` overrides the connection's default for this one call. */
+  /** `actor` overrides a Unix socket's default for this call; HTTP rejects actor overrides. */
   call<N extends OpName>(
     op: N,
     input: OpInput<N>,
@@ -234,19 +237,32 @@ async function connectSocket(socketPath: string, options: ConnectOptions): Promi
  * property that makes WAL concurrency safe.
  */
 async function connectHttp(address: string, options: ConnectOptions): Promise<AknoClient> {
-  const base = address.startsWith('http') ? address.replace(/\/+$/, '') : `http://${address}`;
-  const timeoutMs = options.timeoutMs ?? 30_000;
-
-  let response: Response;
-  try {
-    response = await fetch(`${base}/hello`);
-  } catch (err) {
+  if (options.actor) {
     throw new AknoError(
-      'unavailable',
-      `no Akno service at ${base}: ${err instanceof Error ? err.message : String(err)}`,
+      'forbidden',
+      'HTTP actors are assigned by the server credential; actor overrides are available only on the Unix socket',
     );
   }
-  const hello = Hello.parse(await response.json());
+  const base = address.startsWith('http') ? address.replace(/\/+$/, '') : `http://${address}`;
+  const timeoutMs = options.timeoutMs ?? 30_000;
+  const authHeaders: Record<string, string> = options.token
+    ? { authorization: `Bearer ${options.token}` }
+    : {};
+
+  let hello: HelloMessage;
+  try {
+    const response = await fetch(`${base}/hello`, {
+      headers: authHeaders,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const helloBody = (await response.json()) as unknown;
+    if (!response.ok) {
+      throw AknoError.from((helloBody as { error?: unknown }).error ?? helloBody);
+    }
+    hello = Hello.parse(helloBody);
+  } catch (error) {
+    throw httpFailure(error, 'handshake');
+  }
   assertVersion(hello, options);
 
   async function call<N extends OpName>(
@@ -254,24 +270,27 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     input: OpInput<N>,
     callOptions: { actor?: 'user' | 'agent' | 'akno' } = {},
   ): Promise<OpResult<N>> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    const actor = callOptions.actor ?? options.actor;
+    if (callOptions.actor) {
+      throw new AknoError(
+        'forbidden',
+        'HTTP actors are assigned by the server credential; use a different credential for another actor',
+      );
+    }
     try {
       const result = await fetch(`${base}/op/${op}`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          ...(actor ? { 'x-akno-actor': actor } : {}),
+          ...authHeaders,
         },
         body: JSON.stringify(input ?? {}),
-        signal: controller.signal,
+        signal: AbortSignal.timeout(timeoutMs),
       });
       const body = (await result.json()) as { ok?: boolean; result?: unknown; error?: unknown };
       if (!body.ok) throw AknoError.from(body.error);
       return body.result as OpResult<N>;
-    } finally {
-      clearTimeout(timer);
+    } catch (error) {
+      throw httpFailure(error, op);
     }
   }
 
@@ -287,6 +306,16 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     },
     close: async (): Promise<void> => {},
   };
+}
+
+function httpFailure(error: unknown, action: string): AknoError {
+  if (error instanceof AknoError) return error;
+  const name = error instanceof Error ? error.name : '';
+  const timedOut = name === 'AbortError' || name === 'TimeoutError';
+  return new AknoError(
+    'unavailable',
+    timedOut ? `Akno HTTP ${action} timed out` : `Akno HTTP ${action} failed`,
+  );
 }
 
 // ─── Shared ─────────────────────────────────────────────────────────────────

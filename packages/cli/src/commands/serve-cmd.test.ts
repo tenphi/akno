@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { plist, serviceTargetArgs } from './serve-cmd.ts';
+import { effectiveMcpAllow, plist, serviceTargetArgs } from './serve-cmd.ts';
 
 describe('launchd service definitions', () => {
   it('persists an explicitly selected knowledge base and state directory', () => {
@@ -42,5 +42,17 @@ describe('launchd service definitions', () => {
     expect(rendered).toContain('<string>--schedule-health</string>');
     expect(rendered).toContain('<key>Hour</key><integer>5</integer>');
     expect(rendered).toContain('<key>Minute</key><integer>5</integer>');
+  });
+});
+
+describe('MCP forwarding policy', () => {
+  it('inherits the service policy and lets an override only narrow it', () => {
+    const service = ['recall', 'read'];
+    expect(effectiveMcpAllow(service, undefined)).toEqual(service);
+    expect(effectiveMcpAllow(service, ['read', 'write'])).toEqual(['read']);
+  });
+
+  it('fails closed when an older service did not announce an MCP policy', () => {
+    expect(effectiveMcpAllow([], undefined)).toEqual([]);
   });
 });

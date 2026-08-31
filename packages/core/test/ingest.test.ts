@@ -24,6 +24,27 @@ let server: {
 };
 let mem: Akno;
 
+async function openMem(trustedUrlOrigins: string[] = []): Promise<Akno> {
+  return open({
+    aknoPath: root,
+    stateDir,
+    isolated: true,
+    actor: 'user',
+    overrides: {
+      akno_path: root,
+      state_dir: stateDir,
+      providers: { stub: { base_url: server.url } },
+      ingest: { trusted_url_origins: trustedUrlOrigins },
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    },
+  });
+}
+
 function pageResults(result: Awaited<ReturnType<Akno['recall']>>) {
   return result.results.filter((entry) => entry.type === 'page');
 }
@@ -149,23 +170,7 @@ beforeEach(async () => {
     'utf8',
   );
 
-  mem = await open({
-    aknoPath: root,
-    stateDir,
-    isolated: true,
-    actor: 'user',
-    overrides: {
-      akno_path: root,
-      state_dir: stateDir,
-      providers: { stub: { base_url: server.url } },
-      models: {
-        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
-        reranker: { id: null, enabled: false },
-        derive: { provider: 'stub', id: 'stub-derive' },
-        expansion: { provider: 'stub', id: 'stub-derive' },
-      },
-    },
-  });
+  mem = await openMem();
   await mem.index({});
 });
 
@@ -289,8 +294,8 @@ describe('storage', () => {
       folder: 'home',
     });
     const page = fs.readFileSync(path.join(root, `${result.slug}.md`), 'utf8');
-    expect(page).toContain('title: Zephyr appliance warranty');
-    expect(page).toContain('type: warranty');
+    expect(page).toContain('title: "Zephyr appliance warranty"');
+    expect(page).toContain('type: "warranty"');
     expect(page).toContain(NAMED.summary);
     expect(page).toContain(`![[${path.basename(result.rel_path!)}]]`);
     // What a person would have written: what it is, and where the thing itself lives. The
@@ -530,8 +535,11 @@ describe('a URL', () => {
     const instance = http.createServer(handler);
     await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
     const { port } = instance.address() as { port: number };
+    const origin = `http://127.0.0.1:${port}`;
+    await mem.close();
+    mem = await openMem([origin]);
     return {
-      origin: `http://127.0.0.1:${port}`,
+      origin,
       close: async () => {
         instance.close();
         instance.closeAllConnections();
@@ -551,7 +559,7 @@ describe('a URL', () => {
       expect(result.text_from).toBe('text-layer');
       // Where it came from is the question a downloaded document cannot otherwise answer.
       const page = fs.readFileSync(path.join(root, `${result.slug}.md`), 'utf8');
-      expect(page).toContain(`source_url: ${fixture.origin}/download`);
+      expect(page).toContain(`source_url: ${JSON.stringify(`${fixture.origin}/download`)}`);
     } finally {
       await fixture.close();
     }
@@ -978,6 +986,38 @@ describe('a document in several files', () => {
       (entry) => entry.slug === 'home/lease',
     );
     expect(card?.documents?.[0]?.summary).toContain('thirty days');
+  });
+
+  it('rebuilds unchanged document extraction, embeddings, and summaries', async () => {
+    server.reply({ summary: 'The first invented lease summary.' });
+    await mem.index({});
+
+    server.reply({ summary: 'The refreshed invented lease summary.' });
+    const rebuilt = await mem.index({ rebuild: true });
+
+    expect(rebuilt.documentsExtracted).toBe(2);
+    expect(rebuilt.chunksEmbedded).toBeGreaterThan(0);
+    expect(rebuilt.documentsSummarized).toBe(1);
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    expect(card?.documents?.[0]?.summary).toBe('The refreshed invented lease summary.');
+  });
+
+  it('rederives an unchanged document summary without re-extracting or re-embedding it', async () => {
+    server.reply({ summary: 'The first invented lease summary.' });
+    await mem.index({});
+
+    server.reply({ summary: 'The rederived invented lease summary.' });
+    const rederived = await mem.index({ rederive: true });
+
+    expect(rederived.documentsExtracted).toBe(0);
+    expect(rederived.chunksEmbedded).toBe(0);
+    expect(rederived.documentsSummarized).toBe(1);
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    expect(card?.documents?.[0]?.summary).toBe('The rederived invented lease summary.');
   });
 
   it('does not group two people’s files that happen to share a name', async () => {

@@ -191,23 +191,26 @@ implementation status. Akno exposes that registry through:
 
 - the in-process API;
 - an owner-only Unix socket for local clients;
-- loopback HTTP for a containerized agent; and
+- policy-scoped HTTP for a containerized or remote agent; and
 - stdio MCP for general agent hosts.
 
 The default service owns the database, file watcher, models, and single write handle. A CLI command uses the
 running socket when available and can otherwise open an in-process instance unless `--connect` requires the
 service. MCP normally translates onto that same socket instead of opening a second writer.
 
-Socket filesystem permissions are the local authentication boundary. HTTP has no built-in authentication and
-should remain on loopback; its allowed operation set is deliberately narrower. MCP has its own explicit allow
-list because an agent cannot claim the user's authority.
+Socket filesystem permissions are the local authentication boundary. Unauthenticated loopback HTTP is
+read-only by default. Bearer identities are configured as environment-backed secret references and map to a
+server-owned actor plus operation set; non-loopback binds require one. MCP has its own explicit allow list,
+which remains effective when stdio MCP forwards through the service, because an agent cannot claim the user's
+authority.
 
 ## State and recovery
 
 The state directory contains the SQLite index, write journal, recoverable trash, private maintenance plans and
 receipts, service socket, and logs. These have different recovery properties:
 
-- the index is disposable and rebuilt with `akno index`;
+- search projections are reproducible and refreshed in place with `akno index --rebuild`; the database file
+  itself is not disposable because it also contains the durable records below;
 - journal and trash preserve undo history and should not be deleted casually;
 - sealed maintenance plans remain reviewable across restarts;
 - terminal plans shed exact private payloads before their compact audit receipts expire;

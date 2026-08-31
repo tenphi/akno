@@ -12,6 +12,7 @@ import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
 import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
 import { parsePage } from '../kb/page.ts';
+import { serializeYamlString } from '../kb/frontmatter.ts';
 import { contentWords } from '../kb/words.ts';
 import { detectConflict } from '../write/conflict.ts';
 import { fileEntry, type ChangeFile } from '../write/journal.ts';
@@ -561,7 +562,7 @@ function titleFor(candidate: RetainCandidate, slug: string): string {
 }
 
 function newManagedPage(title: string): string {
-  return `---\ntitle: ${JSON.stringify(title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# ${title}\n`;
+  return `---\ntitle: ${serializeYamlString(title, 'title')}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# ${title}\n`;
 }
 
 // ─── Routing ────────────────────────────────────────────────────────────────

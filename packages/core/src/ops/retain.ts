@@ -12,7 +12,7 @@ import {
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { folderCatalog } from '../kb/folders.ts';
-import { parseFrontmatter } from '../kb/frontmatter.ts';
+import { parseFrontmatter, serializeYamlString } from '../kb/frontmatter.ts';
 import { parsePage } from '../kb/page.ts';
 import { isReserved } from '../reserved.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
@@ -957,7 +957,7 @@ function occurrences(text: string, needle: string): number {
 }
 
 function newManagedPage(title: string): string {
-  return `---\ntitle: ${JSON.stringify(title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# ${title}\n`;
+  return `---\ntitle: ${serializeYamlString(title, 'title')}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# ${title}\n`;
 }
 
 function slugTitle(slug: string): string {

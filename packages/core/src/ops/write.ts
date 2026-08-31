@@ -3,7 +3,13 @@ import path from 'node:path';
 import { AknoError, WriteInput, type WriteOutput, type WriteTarget } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { parsePage } from '../kb/page.ts';
-import { declaredFrontmatter, readString, spliceAfterFence } from '../kb/frontmatter.ts';
+import {
+  declaredFrontmatter,
+  readString,
+  serializeYamlString,
+  serializeYamlStringArray,
+  spliceAfterFence,
+} from '../kb/frontmatter.ts';
 import { detectConflict } from '../write/conflict.ts';
 import { applyEdit, type BodyEdit, type EditResult } from '../write/edit.ts';
 import { insertEvent, newLedger } from '../write/ledger.ts';
@@ -478,16 +484,20 @@ function composeNewPage(input: ReturnType<typeof WriteInput.parse>, slug: string
 
   if (declared) {
     const missing = [
-      declared.data.title === undefined ? `title: ${title}` : null,
-      input.type && declared.data.type === undefined ? `type: ${input.type}` : null,
-      input.tags?.length && declared.data.tags === undefined ? `tags: [${input.tags.join(', ')}]` : null,
+      declared.data.title === undefined ? `title: ${serializeYamlString(title, 'title')}` : null,
+      input.type && declared.data.type === undefined
+        ? `type: ${serializeYamlString(input.type, 'type')}`
+        : null,
+      input.tags?.length && declared.data.tags === undefined
+        ? `tags: ${serializeYamlStringArray(input.tags, 'tags')}`
+        : null,
     ].filter((line): line is string => line !== null);
     return `${spliceAfterFence(declared.head, missing)}\n${heading}${body}${links}\n`;
   }
 
-  const front = [`title: ${title}`];
-  if (input.type) front.push(`type: ${input.type}`);
-  if (input.tags?.length) front.push(`tags: [${input.tags.join(', ')}]`);
+  const front = [`title: ${serializeYamlString(title, 'title')}`];
+  if (input.type) front.push(`type: ${serializeYamlString(input.type, 'type')}`);
+  if (input.tags?.length) front.push(`tags: ${serializeYamlStringArray(input.tags, 'tags')}`);
 
   return `---\n${front.join('\n')}\n---\n\n${heading}${body}${links}\n`;
 }

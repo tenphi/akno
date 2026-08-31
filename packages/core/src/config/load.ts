@@ -588,6 +588,22 @@ function resolve(
       socket: doc.server?.socket ?? 'akno.sock',
       http: doc.server?.http ?? null,
       mcpAllow: doc.server?.mcp_allow ?? ['recall', 'answer', 'read', 'list', 'timeline', 'context', 'graph'],
+      httpPublicAllow: doc.server?.http_public_allow ?? [
+        'recall',
+        'answer',
+        'read',
+        'list',
+        'timeline',
+        'context',
+        'graph',
+      ],
+      httpAccess: (doc.server?.http_access ?? []).map((identity) => ({
+        name: identity.name,
+        token: resolveSecret(identity.token, env),
+        tokenEnv: identity.token.env,
+        actor: identity.actor ?? 'agent',
+        allow: identity.allow,
+      })),
     },
     ingest: {
       maxFileBytes: Math.round((doc.ingest?.max_file_mb ?? 25) * 1_048_576),
@@ -598,6 +614,7 @@ function resolve(
       ),
       textRendition: doc.ingest?.text_rendition ?? false,
       textRenditionMinChars: doc.ingest?.text_rendition_min_chars ?? 1000,
+      trustedUrlOrigins: (doc.ingest?.trusted_url_origins ?? []).map((origin) => new URL(origin).origin),
     },
     maintenance: {
       profile: maintenanceProfile,

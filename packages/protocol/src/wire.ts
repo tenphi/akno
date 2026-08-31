@@ -55,15 +55,12 @@ export const WireRequest = z.object({
   /**
    * Who this call speaks for. Absent means the service's own actor, which is `agent`.
    *
-   * On the socket and the loopback HTTP door the caller is trusted to say — filesystem permissions
-   * and loopback are the authentication, and a caller that can open either could write anything it
-   * liked regardless. The gate is not a defence against that caller; it is a policy about *whose*
-   * request this is, and only the caller knows. A host mediating for an agent and a person at
-   * a terminal both need to say "this one is the user speaking" — otherwise approving a gated
-   * proposal is impossible through the very door the service is meant to be reached by.
+   * On the Unix socket the caller is trusted to say — owner-only filesystem permissions are its
+   * authentication. A host mediating for an agent and a person at a terminal both need to say
+   * "this one is the user speaking" or a gated proposal cannot be answered through that door.
    *
-   * The MCP door never sets it. That door faces the agent itself, which does not get to claim to be
-   * the user, and is why `server.mcp_allow` exists on it and not here.
+   * MCP never sets it. HTTP never sends it either: a bearer credential maps to a server-owned actor,
+   * while unauthenticated loopback traffic is always `agent`. Network callers cannot self-promote.
    */
   actor: z.enum(['user', 'agent', 'akno']).optional(),
 });
@@ -94,6 +91,8 @@ export const Hello = z.object({
   writable: z.boolean(),
   akno_path: z.string(),
   ops: z.array(z.string()),
+  /** MCP policy owned by the service, distinct from the trusted socket's own operations. */
+  mcp_ops: z.array(z.string()).optional(),
   /** Maintenance commands this door accepts. Absent from an older server. */
   commands: z.array(z.string()).optional(),
 });
