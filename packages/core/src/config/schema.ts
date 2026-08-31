@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PageRole, RememberManagement } from '@tenphi/akno-protocol';
+import { PageRole, RememberManagement, isOpName } from '@tenphi/akno-protocol';
 
 /**
  * The config document as it appears on disk. Every field is optional here —
@@ -218,10 +218,25 @@ const WatchDoc = z.object({
   verify_interval_ms: z.number().int().nonnegative().optional(),
 });
 
+const OperationNameDoc = z.string().refine(isOpName, { message: 'unknown operation name' });
+
 const ServerDoc = z.object({
   socket: z.string().optional(),
   http: z.string().nullable().optional(),
-  mcp_allow: z.array(z.string()).optional(),
+  mcp_allow: z.array(OperationNameDoc).optional(),
+  /** Unauthenticated loopback HTTP is read-only unless explicitly narrowed or widened here. */
+  http_public_allow: z.array(OperationNameDoc).optional(),
+  /** Bearer credentials map to server-owned actor identities and operation sets. */
+  http_access: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        token: SecretRef,
+        actor: z.enum(['user', 'agent', 'akno']).optional(),
+        allow: z.array(OperationNameDoc).min(1),
+      }),
+    )
+    .optional(),
 });
 
 const IngestDoc = z.object({
@@ -231,6 +246,8 @@ const IngestDoc = z.object({
   blocked_extensions: z.array(z.string()).optional(),
   text_rendition: z.boolean().optional(),
   text_rendition_min_chars: z.number().int().nonnegative().optional(),
+  /** Exact hostnames allowed to resolve to private or otherwise non-public destinations. */
+  trusted_url_hosts: z.array(z.string().min(1)).optional(),
 });
 
 /**
@@ -568,7 +585,19 @@ export interface AknoConfig {
     };
   };
   watch: { enabled: boolean; debounceMs: number; sweepIntervalMs: number; verifyIntervalMs: number };
-  server: { socket: string; http: string | null; mcpAllow: string[] };
+  server: {
+    socket: string;
+    http: string | null;
+    mcpAllow: string[];
+    httpPublicAllow: string[];
+    httpAccess: {
+      name: string;
+      token: string | null;
+      tokenEnv: string;
+      actor: 'user' | 'agent' | 'akno';
+      allow: string[];
+    }[];
+  };
   ingest: {
     maxFileBytes: number;
     maxOcrPages: number;
@@ -579,6 +608,8 @@ export interface AknoConfig {
     textRendition: boolean;
     /** Under this many characters, the page already says everything the file does. */
     textRenditionMinChars: number;
+    /** Narrow opt-in for URL ingest from a known internal origin. */
+    trustedUrlHosts: string[];
   };
   maintenance: {
     /** Named authority policy for the complete cycle. */

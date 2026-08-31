@@ -7,7 +7,7 @@ import { reconcileRetainManagedSources } from '../write/retain-supports.ts';
 /**
  * **Remember which change to revert** is normally asked of the model. Here
  * the journal does it: `undo` takes an id that outlives the session, the process,
- * and a full rebuild of every other table.
+ * and an in-place rebuild of reproducible projections.
  */
 export async function undo(ctx: AknoContext, rawInput: unknown): Promise<UndoOutput> {
   const input = UndoInput.parse(rawInput);

@@ -89,9 +89,9 @@ describe('write', () => {
     });
     expect(result.outcome).toBe('ok');
     const content = read('home/wifi.md');
-    expect(content).toContain('title: Wifi');
-    expect(content).toContain('type: note');
-    expect(content).toContain('tags: [home]');
+    expect(content).toContain('title: "Wifi"');
+    expect(content).toContain('type: "note"');
+    expect(content).toContain('tags: ["home"]');
     expect(content).toContain('# Wifi');
     expect(content).toContain('- SSID: Attic');
     await mem.close();
@@ -130,6 +130,22 @@ describe('write', () => {
     const mem = await openAs('agent');
     await mem.write({ slug: 'home/lease', append: '- Deposit: 2222 EUR' });
     expect(read('home/lease.md').startsWith('---\ntitle: Apartment lease\ntype: contract\n---\n')).toBe(true);
+    await mem.close();
+  });
+
+  it('serializes generated frontmatter without changing its meaning', async () => {
+    const mem = await openAs('agent');
+    await mem.write({
+      slug: 'home/vulpine-policy',
+      content: 'Invented policy note.',
+      title: 'Vulpine: Mutual # policy',
+      type: 'true',
+      tags: ['Blackwater Bay, west', '2031-08-05', ''],
+    });
+    const content = read('home/vulpine-policy.md');
+    expect(content).toContain('title: "Vulpine: Mutual # policy"');
+    expect(content).toContain('type: "true"');
+    expect(content).toContain('tags: ["Blackwater Bay, west", "2031-08-05", ""]');
     await mem.close();
   });
 
@@ -765,18 +781,48 @@ describe('undo', () => {
     await mem.close();
   });
 
-  it('survives a full rebuild of every other table', async () => {
-    // Only the journal is irreplaceable. It records the previous bytes, not a
-    // pointer to them, so undo works after the index is thrown away.
+  it('survives an in-place rebuild of every reproducible projection', async () => {
+    // A rebuild re-reads every page without replacing durable journal state.
     const mem = await openAs('agent');
     const before = read('home/lease.md');
     const result = await mem.write({ slug: 'home/lease', append: '- Deposit: 2222 EUR' });
-    await mem.close();
-
-    const reopened = await openAs('agent');
-    await reopened.undo({ change_id: result.change_id! });
+    await mem.index({ rebuild: true, structuralOnly: true });
+    await mem.undo({ change_id: result.change_id! });
     expect(read('home/lease.md')).toBe(before);
-    await reopened.close();
+    await mem.close();
+  });
+
+  it('refuses a stale modified file before changing any file', async () => {
+    const mem = await openAs('agent');
+    const result = await mem.write({
+      slug: 'home/appliances',
+      append: '- Warranty: five years',
+      event: { date: '2031-08-05', summary: 'Registered the Zephyr warranty.' },
+    });
+    const pageAfter = read('home/appliances.md');
+    fs.appendFileSync(path.join(root, 'timeline.md'), '\nManual invented timeline edit.\n');
+    const timelineAfterEdit = read('timeline.md');
+
+    await expect(mem.undo({ change_id: result.change_id! })).rejects.toMatchObject({
+      code: 'conflict',
+      details: { reason: 'stale_undo' },
+    });
+    expect(read('home/appliances.md')).toBe(pageAfter);
+    expect(read('timeline.md')).toBe(timelineAfterEdit);
+    await mem.close();
+  });
+
+  it('refuses when a created file was deleted or recreated', async () => {
+    const mem = await openAs('agent');
+    const deleted = await mem.write({ slug: 'home/vulpine-note', content: 'Invented note.' });
+    fs.rmSync(path.join(root, 'home/vulpine-note.md'));
+    await expect(mem.undo({ change_id: deleted.change_id! })).rejects.toMatchObject({ code: 'conflict' });
+
+    const recreated = await mem.write({ slug: 'home/blackwater-note', content: 'First invented note.' });
+    fs.writeFileSync(path.join(root, 'home/blackwater-note.md'), 'Recreated by a person.\n', 'utf8');
+    await expect(mem.undo({ change_id: recreated.change_id! })).rejects.toMatchObject({ code: 'conflict' });
+    expect(read('home/blackwater-note.md')).toBe('Recreated by a person.\n');
+    await mem.close();
   });
 });
 
@@ -825,6 +871,20 @@ describe('move', () => {
     await mem.undo({ change_id: result.change_id! });
     expect(read('home/appliances.md')).toBe(before);
     expect(fs.existsSync(path.join(root, 'home/kitchen/appliances.md'))).toBe(false);
+    await mem.close();
+  });
+
+  it('refuses a stale move destination or occupied source', async () => {
+    const mem = await openAs('agent');
+    const moved = await mem.move({ from: 'home/appliances', to: 'home/kitchen/appliances' });
+    fs.appendFileSync(path.join(root, 'home/kitchen/appliances.md'), '\nPerson-authored edit.\n');
+    await expect(mem.undo({ change_id: moved.change_id! })).rejects.toMatchObject({ code: 'conflict' });
+    expect(fs.existsSync(path.join(root, 'home/appliances.md'))).toBe(false);
+
+    const second = await mem.move({ from: 'home/lease', to: 'home/kitchen/lease' });
+    fs.writeFileSync(path.join(root, 'home/lease.md'), 'A new page at the old path.\n', 'utf8');
+    await expect(mem.undo({ change_id: second.change_id! })).rejects.toMatchObject({ code: 'conflict' });
+    expect(read('home/lease.md')).toBe('A new page at the old path.\n');
     await mem.close();
   });
 });
@@ -931,6 +991,27 @@ describe('a document with its text beside it', () => {
     expect(fs.readFileSync(path.join(root, PDF))).toEqual(bytes);
     expect(read(TXT)).toContain('Clause seven.');
     expect(fs.existsSync(path.join(root, `home/kitchen/lease-${HASH}.pdf`))).toBe(false);
+    await mem.close();
+  });
+
+  it('refuses to undo after a moved attachment was modified', async () => {
+    const mem = await openAs('agent');
+    await mem.index({});
+    const result = await mem.move({ from: 'home/lease', to: 'home/kitchen/lease' });
+    const movedPdf = `home/kitchen/lease-${HASH}.pdf`;
+    fs.appendFileSync(path.join(root, movedPdf), Buffer.from('\nInvented later bytes.'));
+
+    await expect(mem.undo({ change_id: result.change_id! })).rejects.toMatchObject({
+      code: 'conflict',
+      details: {
+        reason: 'stale_undo',
+        conflicts: expect.arrayContaining([
+          expect.objectContaining({ path: movedPdf, reason: 'move_destination_modified' }),
+        ]),
+      },
+    });
+    expect(fs.existsSync(path.join(root, movedPdf))).toBe(true);
+    expect(fs.existsSync(path.join(root, PDF))).toBe(false);
     await mem.close();
   });
 

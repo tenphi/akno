@@ -781,4 +781,23 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds file-state hashes to a version-thirty-three journal', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-journal-hash-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 27)) legacy.exec(migration);
+    legacy.pragma('user_version = 33');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(change_files)') as { name: string }[];
+    expect(columns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['before_hash', 'after_hash']),
+    );
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

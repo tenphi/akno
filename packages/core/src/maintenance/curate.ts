@@ -3,7 +3,7 @@ import path from 'node:path';
 import { z } from 'zod';
 import type { AknoContext } from '../context.ts';
 import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
-import { parseFrontmatter, withAknoAliases } from '../kb/frontmatter.ts';
+import { parseFrontmatter, serializeYamlString, withAknoAliases } from '../kb/frontmatter.ts';
 import { AKNO_ITEM, normalizeLinkTarget, parsePage } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { effectiveRule, matchesGlob } from '../rules/compile.ts';
@@ -2721,11 +2721,11 @@ function normalizeHeadingReference(value: string): string {
 }
 
 function childPage(split: SplitDraft, canonicalSlug: string): string {
-  return `---\ntitle: ${JSON.stringify(split.title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n    dream: synthesize\n  about:\n    - ${JSON.stringify(canonicalSlug)}\n---\n\n${split.body}`;
+  return `---\ntitle: ${serializeYamlString(split.title, 'title')}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n    dream: synthesize\n  about:\n    - ${serializeYamlString(canonicalSlug, 'akno.about')}\n---\n\n${split.body}`;
 }
 
 function extractionPage(extraction: ExtractionDraft, sourceSlug: string): string {
-  return `---\ntitle: ${JSON.stringify(extraction.title)}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n    dream: synthesize\n---\n\n${extractionPageBody(extraction, sourceSlug)}`;
+  return `---\ntitle: ${serializeYamlString(extraction.title, 'title')}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n    dream: synthesize\n---\n\n${extractionPageBody(extraction, sourceSlug)}`;
 }
 
 function extractionPageBody(extraction: ExtractionDraft, sourceSlug: string): string {

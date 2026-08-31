@@ -1409,7 +1409,7 @@ describe('observe', () => {
     // `derived` and `evidence` are the two keys Akno writes on pages it authors. They
     // are what makes an inference identifiable as one afterwards.
     expect(page).toContain('derived: true');
-    expect(page).toContain('- home/appliances');
+    expect(page).toContain('- "home/appliances"');
     expect(page).toContain(PATTERN);
     // Not `- **YYYY-MM-DD** |`, which is read as a timeline event anywhere it appears: an
     // inferred pattern is not something that happened on a date.
@@ -3124,7 +3124,7 @@ describe('adopt', () => {
     const page = fs.readFileSync(path.join(root, 'household/lease-scan.md'), 'utf8');
     // The title comes from the filename, tidied — nothing invented about a file Akno was not
     // asked to name. The embed is what makes the ownership hold on the next pass.
-    expect(page).toContain('title: Lease scan');
+    expect(page).toContain('title: "Lease scan"');
     expect(page).toContain('![[lease scan.txt]]');
     // The file itself is untouched: only the inbox moves files, ever.
     expect(fs.existsSync(path.join(root, 'household/lease scan.txt'))).toBe(true);

@@ -5,8 +5,8 @@ truth every door is generated from.
 
 It requires Node 22.18 or newer and has no native dependencies.
 
-Akno exposes the same operations in-process, over an owner-only Unix socket, through loopback HTTP for
-containerized hosts, and over MCP. Every surface is generated from this registry, so an op's input schema,
+Akno exposes the same operations in-process, over an owner-only Unix socket, through policy-scoped HTTP for
+containerized or remote hosts, and over MCP. Every surface is generated from this registry, so an op's input schema,
 output schema, description and error codes are stated once. A call that is invalid over MCP is invalid
 in-process, and fails identically.
 

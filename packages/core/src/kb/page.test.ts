@@ -4,6 +4,8 @@ import {
   parseFrontmatter,
   replaceNestedStringArrayValue,
   replaceTopLevelString,
+  serializeYamlString,
+  serializeYamlStringArray,
   withId,
 } from './frontmatter.ts';
 
@@ -38,6 +40,32 @@ describe('parseFrontmatter', () => {
     const fm = parseFrontmatter('# Just a heading\n');
     expect(fm.present).toBe(false);
     expect(fm.bodyLine).toBe(1);
+  });
+});
+
+describe('generated YAML values', () => {
+  it('keeps punctuation, newlines, Unicode, primitives and empty values as strings', () => {
+    const values = [
+      'Vulpine: Mutual # policy',
+      '"quoted" and [bracketed], values',
+      'true',
+      'null',
+      '2031-08-05',
+      'line one\nline two',
+      'Blackwater Bay — café',
+      '',
+    ];
+    for (const value of values) {
+      const parsed = parseFrontmatter(`---\nvalue: ${serializeYamlString(value)}\n---\n`).data;
+      expect(parsed.value).toBe(value);
+    }
+    const array = parseFrontmatter(`---\nvalues: ${serializeYamlStringArray(values)}\n---\n`).data.values;
+    expect(array).toEqual(values);
+  });
+
+  it('rejects values outside the generated frontmatter schema', () => {
+    expect(() => serializeYamlString(1111)).toThrow(/must be a string/);
+    expect(() => serializeYamlStringArray(['Ada Marlow', 1111])).toThrow(/array of strings/);
   });
 });
 
@@ -100,12 +128,12 @@ describe('withId', () => {
     // frontmatter keys Akno does not own.
     expect(updated).toContain("date: '2026-05-26T00:00:00.000Z'");
     expect(updated).toContain('tags:\n  - family');
-    expect(updated).toContain('id: 01JQZ4T7K2E9ABCD\ntitle: Ada');
-    expect(updated.replace('id: 01JQZ4T7K2E9ABCD\n', '')).toBe(content);
+    expect(updated).toContain('id: "01JQZ4T7K2E9ABCD"\ntitle: Ada');
+    expect(updated.replace('id: "01JQZ4T7K2E9ABCD"\n', '')).toBe(content);
   });
 
   it('creates a block when the page has none', () => {
-    expect(withId('# Heading\n', 'ABC')).toBe('---\nid: ABC\n---\n\n# Heading\n');
+    expect(withId('# Heading\n', 'ABC')).toBe('---\nid: "ABC"\n---\n\n# Heading\n');
   });
 
   it('leaves an existing id alone', () => {

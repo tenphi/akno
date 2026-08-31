@@ -29,9 +29,35 @@ akno serve --http 127.0.0.1:7777
 ```
 
 - The Unix socket is the default local door. Owner-only filesystem permissions are its authentication.
-- MCP is a stdio adapter for agent hosts. `server.mcp_allow` controls which operations the agent receives.
-- HTTP is for a containerized agent that cannot open the host socket. It has no built-in authentication; bind it
-  only to loopback and expose the smallest useful allow list.
+- MCP is a stdio adapter for agent hosts. `server.mcp_allow` controls which operations the agent receives,
+  including when the adapter forwards through an already-running service. `--allow` can narrow that policy;
+  it cannot widen it.
+- HTTP is for a containerized or remote agent that cannot open the host socket. Unauthenticated loopback
+  callers receive only `server.http_public_allow` (read operations by default). A non-loopback bind requires at
+  least one resolved bearer identity in `server.http_access`; each credential owns its actor and allowlist.
+
+For authenticated HTTP, keep the credential in the environment and only name it in config:
+
+```jsonc
+{
+  "server": {
+    "http": "0.0.0.0:7777",
+    "http_access": [
+      {
+        "name": "vulpine-agent",
+        "token": { "env": "AKNO_HTTP_AGENT_TOKEN" },
+        "actor": "agent",
+        "allow": ["recall", "answer", "read"],
+      },
+    ],
+  },
+}
+```
+
+The typed client passes that credential with `connect({ http, token })`. HTTP rejects `x-akno-actor` and client
+actor overrides, because identity is assigned by the server credential. The built-in listener is plain HTTP;
+put a non-loopback deployment behind a trusted tunnel or TLS reverse proxy so the bearer token is encrypted in
+transit, and restrict access from that proxy to Akno.
 
 ## Install the background service
 
@@ -177,20 +203,21 @@ The default installed state lives under `~/.akno`; `state_dir` can move it. Its 
 
 Recovery depends on what is wrong:
 
-| Symptom                                      | First action                                                |
-| -------------------------------------------- | ----------------------------------------------------------- |
-| Search is stale or derived state looks wrong | Run `akno index`                                            |
-| A journalled write was wrong                 | Run `akno undo <change-id>`                                 |
-| A page or document was forgotten             | Undo it or recover it from `trash/` within retention        |
-| A maintenance item is unclear                | Inspect `dream status` and `plan diff` before applying      |
-| A plan has the right scope but wrong result  | Correct it with `plan revise`; then review it again         |
-| Automatic apply is paused                    | Inspect status/plans, then use the displayed resume command |
-| Models changed behavior                      | Run `doctor`, then the relevant benchmark                   |
-| Service seems stale after a checkout edit    | Run `pnpm akno redeploy`                                    |
+| Symptom                                      | First action                                                   |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| Search is stale or derived state looks wrong | Run `akno index`, or `akno index --rebuild` for a full refresh |
+| A journalled write was wrong                 | Run `akno undo <change-id>`                                    |
+| A page or document was forgotten             | Undo it or recover it from `trash/` within retention           |
+| A maintenance item is unclear                | Inspect `dream status` and `plan diff` before applying         |
+| A plan has the right scope but wrong result  | Correct it with `plan revise`; then review it again            |
+| Automatic apply is paused                    | Inspect status/plans, then use the displayed resume command    |
+| Models changed behavior                      | Run `doctor`, then the relevant benchmark                      |
+| Service seems stale after a checkout edit    | Run `pnpm akno redeploy`                                       |
 
-Do not delete `akno.db` merely to refresh search: it also contains undo history, gated writes, maintenance
-plans, and run receipts. If those durable records no longer matter and a clean rebuild is intentional, stop
-the service first and use the supported index workflow rather than removing files under a live writer.
+Do not delete `akno.db` merely to refresh search: it also contains undo history, gated writes, retained-source
+receipts, maintenance plans, recovery state, and run receipts. `akno index --rebuild` re-hashes every file and
+recomputes reproducible page, chunk, embedding, derivation, and graph projections in place. It is safe through
+the running service and preserves every durable record.
 
 Akno's trash and journal are not backups. Keep the Markdown knowledge base under normal backup or version
 control.

@@ -312,7 +312,9 @@ akno undo --list
 - `move` relocates a page with its owned documents and reports inbound links rather than silently rewriting
   unrelated pages.
 - `undo` restores journalled bytes and survives an index rebuild because the journal is durable state, not a
-  search artifact.
+  search artifact. Before changing anything it verifies every affected path still matches the exact
+  post-change state. A later edit, deletion, recreation, moved destination, source collision, or damaged trash
+  snapshot returns a typed `conflict` with paths and reasons; the whole undo remains unapplied.
 
 Akno's trash is recoverable within `trash_retention_days`. If an automated change is wrong, prefer its change
 id and `undo` over manual reconstruction.

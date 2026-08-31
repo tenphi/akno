@@ -15,8 +15,9 @@
   // rather than guessing which folder holds your notes.
   "akno_path": null,
 
-  // Everything Akno derives — the index, the trash, the journal, logs, the
-  // socket. Deleting it costs one re-index and no data.
+  // Akno's private state: reproducible search projections alongside durable
+  // journal, maintenance, recovery, proposal, and retained-source records.
+  // Use `akno index --rebuild` to refresh projections without deleting this.
   "state_dir": "~/.akno",
 
   // ─── Reserved paths ───────────────────────────────────────────────────────
@@ -36,8 +37,8 @@
   // ─── Identity ─────────────────────────────────────────────────────────────
   // Akno's only write into a page is a frontmatter `id:`. Off by default: the
   // sidecar map in akno.db carries identity, and renames are followed by body
-  // hash. Turn this on for identity that survives `rm akno.db` and a move to
-  // another machine.
+  // hash. Turn this on for identity that survives a fresh state database or a
+  // move to another machine.
   "write_ids": false,
 
   // ─── Ingestion & structure ────────────────────────────────────────────────
@@ -470,8 +471,19 @@
   "server": {
     // Unix socket, relative to state_dir. Filesystem permissions are the auth.
     "socket": "akno.sock",
-    // Loopback HTTP for sandboxed or remote agents. Null = off.
+    // Loopback HTTP for sandboxed agents. Null = off. Unauthenticated callers
+    // receive only the public read operations below.
     "http": null,
+    "http_public_allow": ["recall", "answer", "read", "list", "timeline", "context", "graph"],
+    // A non-loopback bind is refused unless at least one bearer identity resolves
+    // its token from the environment. The server maps that credential to both an
+    // actor and an allowlist; clients cannot declare their own actor over HTTP.
+    // Example (token value belongs in .env, never here):
+    // "http_access": [
+    //   { "name": "container-agent", "token": { "env": "AKNO_HTTP_AGENT_TOKEN" },
+    //     "actor": "agent", "allow": ["recall", "read"] }
+    // ],
+    "http_access": [],
     // Ops an MCP caller may invoke. Trust is a parameter, not a property of the
     // transport — the same code runs with different permissions. Add "adopt" to
     // expose only the document-scoped, plan-backed filing action to an agent.
@@ -481,6 +493,10 @@
   // ─── Ingest ───────────────────────────────────────────────────────────────
   "ingest": {
     "max_file_mb": 25,
+    // URL ingest resolves every address, rejects non-public destinations, pins the
+    // connection to a validated address, and repeats that check for redirects.
+    // Exact internal hostnames may be opted in here; wildcards are not accepted.
+    "trusted_url_hosts": [],
     // Pages OCR'd before stopping. A 200-page scan need not be fully searchable to
     // be findable, and the ingest report says how many were read. Measured on this
     // hardware: ~0.6s per page through the Vision framework.

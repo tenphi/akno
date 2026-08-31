@@ -60,9 +60,9 @@ export async function forgetCommand(argv: string[]): Promise<number> {
 const UNDO_HELP = `akno undo <change_id>
 akno undo --list
 
-  Reverse a change. The id outlives the session, the process, and a full rebuild of
-  every table except the journal — which holds the previous bytes rather than a
-  pointer to them.
+  Reverse a change. The id outlives the session, the process, and an in-place rebuild
+  of reproducible projections. The durable journal holds the previous bytes rather
+  than a pointer to them.
 
   --list          Recent changes, newest first.
   --json`;

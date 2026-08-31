@@ -158,6 +158,7 @@ beforeEach(async () => {
       akno_path: root,
       state_dir: stateDir,
       providers: { stub: { base_url: server.url } },
+      ingest: { trusted_url_hosts: ['127.0.0.1'] },
       models: {
         embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPICS.length + 1 },
         reranker: { id: null, enabled: false },
@@ -289,8 +290,8 @@ describe('storage', () => {
       folder: 'home',
     });
     const page = fs.readFileSync(path.join(root, `${result.slug}.md`), 'utf8');
-    expect(page).toContain('title: Zephyr appliance warranty');
-    expect(page).toContain('type: warranty');
+    expect(page).toContain('title: "Zephyr appliance warranty"');
+    expect(page).toContain('type: "warranty"');
     expect(page).toContain(NAMED.summary);
     expect(page).toContain(`![[${path.basename(result.rel_path!)}]]`);
     // What a person would have written: what it is, and where the thing itself lives. The
@@ -551,7 +552,7 @@ describe('a URL', () => {
       expect(result.text_from).toBe('text-layer');
       // Where it came from is the question a downloaded document cannot otherwise answer.
       const page = fs.readFileSync(path.join(root, `${result.slug}.md`), 'utf8');
-      expect(page).toContain(`source_url: ${fixture.origin}/download`);
+      expect(page).toContain(`source_url: ${JSON.stringify(`${fixture.origin}/download`)}`);
     } finally {
       await fixture.close();
     }

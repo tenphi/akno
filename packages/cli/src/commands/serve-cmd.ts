@@ -18,8 +18,8 @@ const SERVE_HELP = `akno serve [options]
 
   --mcp                     stdio MCP, for any agent that speaks it. Logs go to
                             stderr because stdout is the protocol.
-  --http <host:port>        Loopback HTTP, for agents in containers or on another
-                            host. No auth of its own — put it behind one.
+  --http <host:port>        HTTP for containers or remote agents. Loopback is
+                            public read-only; non-loopback requires http_access.
   --socket <path>           Override the unix socket path.
   --no-watch                Do not watch the knowledge base.
   --index-on-start          Reconcile before accepting connections.
@@ -103,11 +103,8 @@ export async function serveCommand(argv: string[]): Promise<number> {
     watchForAReleasedHandle(mem.lockHeldBy, log);
   }
 
-  const allow = values.allow
-    ? values.allow.split(',').map((op) => op.trim())
-    : isMcp
-      ? mem.config.server.mcpAllow
-      : undefined;
+  const requestedAllow = values.allow?.split(',').map((op) => op.trim());
+  const allow = isMcp ? effectiveMcpAllow(mem.config.server.mcpAllow, requestedAllow) : requestedAllow;
 
   if (values['index-on-start'] && mem.writable) {
     const report = await mem.index({});
@@ -139,14 +136,23 @@ export async function serveCommand(argv: string[]): Promise<number> {
 
     const httpAddress = values.http ?? mem.config.server.http;
     if (httpAddress) {
-      const server = await serveHttp(mem, httpAddress, { ...(allow ? { allow } : {}), log });
+      const identities = mem.config.server.httpAccess
+        .filter((identity) => identity.token !== null)
+        .map((identity) => ({ ...identity, token: identity.token! }));
+      const missingIdentities = mem.config.server.httpAccess.filter((identity) => identity.token === null);
+      for (const identity of missingIdentities) {
+        warn(`HTTP identity '${identity.name}' is disabled because ${identity.tokenEnv} is not set.`);
+      }
+      const server = await serveHttp(mem, httpAddress, {
+        ...(allow ? { allow } : {}),
+        publicAllow: mem.config.server.httpPublicAllow,
+        identities,
+        log,
+      });
       closers.push(() => server.close());
       const [host] = server.address.split(':');
       if (host !== '127.0.0.1' && host !== 'localhost') {
-        warn(
-          `the HTTP door is bound to ${server.address}, not loopback. It has no authentication of ` +
-            'its own — anything that can reach that address can read your knowledge base.',
-        );
+        log(`HTTP bearer authentication active for ${identities.length} identity/identities`);
       }
       log(`HTTP ready on ${server.address}`);
     }
@@ -178,13 +184,11 @@ async function serveMcpThroughService(
     return null;
   }
 
-  // The service's own `mcp_allow` cannot be read through the socket, so an explicit `--allow`
-  // is the only narrowing available here. Saying so beats a door that is quietly wider than
-  // the operator believes: the socket door they connected to has its own allow list, and this
-  // one inherits nothing from it.
-  const allow = values.allow?.split(',').map((op) => op.trim());
-  const server = await serveMcp(handle.ops, { ...(allow ? { allow } : {}), log });
-  log(`MCP ready over stdio — ${allow ? `${allow.length} ops` : 'all ops'}, through the running service`);
+  const servicePolicy = handle.hello?.mcp_ops ?? [];
+  const requested = values.allow?.split(',').map((op) => op.trim());
+  const allow = effectiveMcpAllow(servicePolicy, requested);
+  const server = await serveMcp(handle.ops, { allow, log });
+  log(`MCP ready over stdio — ${allow.length} ops, through the running service`);
   try {
     await waitForShutdown(log, { onStdinEnd: true });
     return 0;
@@ -192,6 +196,12 @@ async function serveMcpThroughService(
     await server.close();
     await handle.close();
   }
+}
+
+export function effectiveMcpAllow(policy: string[], restriction: string[] | undefined): string[] {
+  if (!restriction) return [...policy];
+  const allowed = new Set(restriction);
+  return policy.filter((name) => allowed.has(name));
 }
 
 function waitForShutdown(

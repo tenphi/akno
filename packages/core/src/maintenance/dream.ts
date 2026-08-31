@@ -7,6 +7,7 @@ import type { ChangeFile } from '../write/journal.ts';
 import { normalizeSlug } from '../ops/write.ts';
 import { sha256 } from '../store/ids.ts';
 import { rebuildEvidenceGraph } from '../index/graph.ts';
+import { parseFrontmatter, serializeYamlString } from '../kb/frontmatter.ts';
 import { runObserveMission, type ObservationCandidate } from './observe.ts';
 import { planBrokenLinks, type BrokenLinkDraft, type LinkRepair, type RepairResult } from './link-repairs.ts';
 import {
@@ -1967,8 +1968,8 @@ function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
 function newObservationPage(subject: string, observation: ObservationCandidate, today: string): string {
   const title = subject.charAt(0).toUpperCase() + subject.slice(1);
   return (
-    `---\ntitle: ${title}\nderived: true\nevidence:\n${observation.evidence
-      .map((slug) => `  - ${slug}`)
+    `---\ntitle: ${serializeYamlString(title, 'title')}\nderived: true\nevidence:\n${observation.evidence
+      .map((slug) => `  - ${serializeYamlString(slug, 'evidence')}`)
       .join('\n')}\n---\n\n` +
     `# ${title}\n\n` +
     `Patterns Akno inferred from pages listed as evidence. Not authored claims.\n\n` +
@@ -1987,15 +1988,18 @@ function mergeEvidence(current: string, evidence: string[]): string {
   if (!match) return current;
 
   const front = match[1]!;
-  const listed = new Set([...front.matchAll(/^\s*-\s*(\S+)\s*$/gm)].map((entry) => entry[1]!));
+  const parsed = parseFrontmatter(current).data.evidence;
+  const listed = new Set(
+    Array.isArray(parsed) ? parsed.filter((entry): entry is string => typeof entry === 'string') : [],
+  );
   const missing = evidence.filter((slug) => !listed.has(slug));
   if (missing.length === 0) return current;
 
   // Appended under the existing `evidence:` key, or added as one. Every other frontmatter key
   // is left byte for byte: that promise holds for pages Akno authors too.
-  const added = missing.map((slug) => `  - ${slug}`).join('\n');
+  const added = missing.map((slug) => `  - ${serializeYamlString(slug, 'evidence')}`).join('\n');
   const nextFront = /^evidence:/m.test(front)
-    ? front.replace(/^(evidence:(?:\n\s*-\s*\S+)*)/m, `$1\n${added}`)
+    ? front.replace(/^(evidence:(?:\r?\n[ \t]+-[^\r\n]*)*)/m, `$1\n${added}`)
     : `${front}\nevidence:\n${added}`;
   return current.replace(match[0], `---\n${nextFront}\n---\n`);
 }

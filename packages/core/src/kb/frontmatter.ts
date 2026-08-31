@@ -1,3 +1,4 @@
+import { AknoError } from '@tenphi/akno-protocol';
 import YAML, { isMap, isPair, isScalar, isSeq } from 'yaml';
 
 /**
@@ -26,6 +27,33 @@ export interface Frontmatter {
 }
 
 const FENCE = /^---\r?\n/;
+
+/**
+ * Render a generated YAML string without letting its contents become YAML syntax.
+ * JSON string syntax is a YAML 1.2 string syntax too, and gives every troublesome
+ * scalar — newlines, comments, brackets, dates, booleans and the empty string — one
+ * unambiguous representation.
+ */
+export function serializeYamlString(value: unknown, field = 'frontmatter value'): string {
+  if (typeof value !== 'string') {
+    throw new AknoError('invalid', `${field} must be a string`, {
+      reason: 'invalid_frontmatter_value',
+      field,
+    });
+  }
+  return JSON.stringify(value);
+}
+
+/** Render an inline YAML sequence whose members are guaranteed to stay strings. */
+export function serializeYamlStringArray(value: unknown, field = 'frontmatter value'): string {
+  if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string')) {
+    throw new AknoError('invalid', `${field} must be an array of strings`, {
+      reason: 'invalid_frontmatter_value',
+      field,
+    });
+  }
+  return `[${value.map((entry) => serializeYamlString(entry, field)).join(', ')}]`;
+}
 
 export function parseFrontmatter(content: string): Frontmatter {
   if (!FENCE.test(content)) {
@@ -112,7 +140,7 @@ export function replaceTopLevelString(content: string, key: string, value: strin
   const [start, end] = scalar.range;
   if (start < 0 || end < start || end > fm.raw.length) return null;
   const rawStart = content.indexOf('\n') + 1;
-  return content.slice(0, rawStart + start) + JSON.stringify(value) + content.slice(rawStart + end);
+  return content.slice(0, rawStart + start) + serializeYamlString(value, key) + content.slice(rawStart + end);
 }
 
 /**
@@ -159,7 +187,10 @@ export function replaceNestedStringArrayValue(
       let result = content;
       for (const [start, end] of ranges) {
         if (start < 0 || end < start || end > fm.raw.length) return null;
-        result = result.slice(0, rawStart + start) + JSON.stringify(to) + result.slice(rawStart + end);
+        result =
+          result.slice(0, rawStart + start) +
+          serializeYamlString(to, keys.join('.')) +
+          result.slice(rawStart + end);
       }
       return result;
     }
@@ -178,10 +209,10 @@ export function replaceNestedStringArrayValue(
 export function withId(content: string, id: string): string {
   const fm = parseFrontmatter(content);
   if (!fm.present) {
-    return `---\nid: ${id}\n---\n\n${content}`;
+    return `---\nid: ${serializeYamlString(id, 'id')}\n---\n\n${content}`;
   }
   if (typeof fm.data.id === 'string' && fm.data.id.length > 0) return content;
-  return spliceAfterFence(content, [`id: ${id}`]);
+  return spliceAfterFence(content, [`id: ${serializeYamlString(id, 'id')}`]);
 }
 
 /**
@@ -229,7 +260,7 @@ export function withAknoAliases(content: string, aliases: string[]): string | nu
   const wanted = [...new Set([...existing, ...additions])];
   if (wanted.length === existing.length) return content;
   const missing = wanted.filter((value) => !existing.includes(value));
-  const rendered = wanted.map((value) => `    - ${JSON.stringify(value)}`);
+  const rendered = wanted.map((value) => `    - ${serializeYamlString(value, 'akno.aliases')}`);
 
   if (!fm.present || !record) {
     return spliceAfterFence(content, ['akno:', '  aliases:', ...rendered]);
@@ -257,13 +288,17 @@ export function withAknoAliases(content: string, aliases: string[]): string | nu
     const match = /^  aliases:[ \t]*(.*)$/.exec(lines[aliasesIndex]!);
     const tail = match?.[1]?.trim() ?? '';
     if (tail.startsWith('[') && tail.endsWith(']')) {
-      lines[aliasesIndex] = `  aliases: ${JSON.stringify(wanted)}`;
+      lines[aliasesIndex] = `  aliases: ${serializeYamlStringArray(wanted, 'akno.aliases')}`;
     } else if (tail.length === 0) {
       let insertAt = aliasesIndex + 1;
       while (insertAt < blockEnd && (/^[ \t]{4,}/.test(lines[insertAt]!) || !lines[insertAt]!.trim())) {
         insertAt++;
       }
-      lines.splice(insertAt, 0, ...missing.map((value) => `    - ${JSON.stringify(value)}`));
+      lines.splice(
+        insertAt,
+        0,
+        ...missing.map((value) => `    - ${serializeYamlString(value, 'akno.aliases')}`),
+      );
     } else {
       return null;
     }

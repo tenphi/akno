@@ -93,7 +93,7 @@ describe('applyEdit adopting a frontmatter block the caller sent', () => {
   it('carries `id` forward, because the caller has no reason to be holding it', () => {
     const identified = `---\nid: 01JQZ4T7K2E9ABCD\ntitle: Lease\n---\n\n# Lease\n`;
     const result = applyEdit(identified, { kind: 'content', content: SENT });
-    expect(result.content).toContain('id: 01JQZ4T7K2E9ABCD');
+    expect(result.content).toContain('id: "01JQZ4T7K2E9ABCD"');
     expect(result.frontmatter?.dropped).toEqual([]);
   });
 

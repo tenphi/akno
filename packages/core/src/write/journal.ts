@@ -1,18 +1,15 @@
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { AknoError } from '@tenphi/akno-protocol';
 import type { Store } from '../store/db.ts';
-import { newPrefixedId } from '../store/ids.ts';
+import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { restoreFile, type WriteResult } from './atomic.ts';
 
 /**
- * **The journal is the only irreplaceable table.** Everything else is
- * derived from the Markdown and rebuilt by `akno index`; this holds the previous
- * bytes, and there is nowhere else to get them.
- *
- * It records content, not pointers — so `undo` still works after
- * `rm akno.db && akno index` has thrown away every fact id the change might
- * otherwise have referenced — which is why a fact id is never stored here.
+ * The journal is durable state: it holds previous bytes, and there is nowhere else
+ * to get them. `akno index --rebuild` deliberately preserves it while refreshing
+ * reproducible projections, which is why a fact id is never stored here.
  *
  * The unit is a **change**, not a file. One `write` can touch a page, the event
  * ledger and an attachment; `undo` reverses all of them or none, because a page
@@ -48,6 +45,39 @@ export interface ChangeSummary {
   files: { relPath: string; action: FileAction }[];
 }
 
+interface ChangeFileRow {
+  rel_path: string;
+  action: FileAction;
+  before: string | null;
+  after: string | null;
+  snapshot: string | null;
+  moved_to: string | null;
+  before_hash: string | null;
+  after_hash: string | null;
+}
+
+interface UndoConflict {
+  path: string;
+  reason:
+    | 'move_source_occupied'
+    | 'move_destination_missing'
+    | 'move_destination_not_file'
+    | 'move_destination_unverifiable'
+    | 'move_destination_modified'
+    | 'expected_absent'
+    | 'expected_file_missing'
+    | 'expected_regular_file'
+    | 'file_modified'
+    | 'recovery_snapshot_missing'
+    | 'recovery_snapshot_modified';
+}
+
+interface AppliedReversal {
+  file: ChangeFileRow;
+  /** A created binary has no text in `after`; keep its exact bytes for rollback. */
+  postBytes: Buffer | null;
+}
+
 export class Journal {
   readonly #store: Store;
   readonly #aknoPath: string;
@@ -76,10 +106,26 @@ export class Journal {
         .run(changeId, now, input.actor, input.op, input.summary, 'applied');
 
       const insert = this.#store.db.prepare(
-        `INSERT INTO change_files(change_id, ord, rel_path, action, before, after, snapshot, moved_to)
-         VALUES(?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO change_files(
+           change_id, ord, rel_path, action, before, after, snapshot, moved_to,
+           before_hash, after_hash
+         ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       );
       input.files.forEach((file, index) => {
+        const beforeHash =
+          file.before !== null
+            ? sha256(file.before)
+            : file.snapshot
+              ? hashFileIfPresent(path.join(this.#trashDir, file.snapshot))
+              : null;
+        const afterHash =
+          file.after !== null
+            ? sha256(file.after)
+            : file.movedTo
+              ? hashFileIfPresent(path.join(this.#aknoPath, file.movedTo))
+              : file.action === 'created'
+                ? hashFileIfPresent(path.join(this.#aknoPath, file.relPath))
+                : null;
         insert.run(
           changeId,
           index,
@@ -89,6 +135,8 @@ export class Journal {
           file.after,
           file.snapshot ?? null,
           file.movedTo ?? null,
+          beforeHash,
+          afterHash,
         );
       });
     });
@@ -97,7 +145,7 @@ export class Journal {
   }
 
   /**
-   * Reverses a change: every file back to its previous bytes, in reverse order.
+   * Reverses a change only when every file still has the exact post-change state.
    *
    * Reverse order matters for a move — the change created the destination and
    * deleted the source, so undoing destination-first leaves the source free to be
@@ -114,76 +162,160 @@ export class Journal {
 
     const files = this.#store.db
       .prepare('SELECT * FROM change_files WHERE change_id = ? ORDER BY ord DESC')
-      .all(changeId) as {
-      rel_path: string;
-      action: FileAction;
-      before: string | null;
-      after: string | null;
-      snapshot: string | null;
-      moved_to: string | null;
-    }[];
+      .all(changeId) as ChangeFileRow[];
+
+    const conflicts = await this.#undoConflicts(files);
+    if (conflicts.length > 0) {
+      throw new AknoError(
+        'conflict',
+        `cannot undo ${changeId}: ${conflicts.length} file${conflicts.length === 1 ? '' : 's'} no longer match the applied change`,
+        {
+          reason: 'stale_undo',
+          conflicts,
+          recovery:
+            'Review the current files, restore the expected post-change state, then retry undo; no files were changed.',
+        },
+      );
+    }
 
     const restored: string[] = [];
     const removed: string[] = [];
     const reversedMoves: { from: string; to: string }[] = [];
-    for (const file of files) {
-      if (file.moved_to) {
-        // The change was a rename, so its reversal is the rename back. Nothing was created
-        // and nothing was destroyed, which is why this case cannot go through `restoreFile`.
-        const from = path.join(this.#aknoPath, file.moved_to);
-        const target = path.join(this.#aknoPath, file.rel_path);
-        await fsp.mkdir(path.dirname(target), { recursive: true });
-        let reversed = true;
-        await fsp.rename(from, target).catch(async (err: NodeJS.ErrnoException) => {
-          // Already gone is not a reason to abandon the rest of the reversal — the file was
-          // moved again, or removed, since. Everything else still goes back.
-          if (err.code !== 'ENOENT') throw err;
-          reversed = false;
-        });
-        if (reversed) reversedMoves.push({ from: file.moved_to, to: file.rel_path });
-        restored.push(file.rel_path);
-        continue;
+    const applied: AppliedReversal[] = [];
+    try {
+      for (const file of files) {
+        const postBytes = await this.#rollbackBytes(file);
+        await this.#reverseFile(file);
+        applied.push({ file, postBytes });
+        if (file.moved_to) reversedMoves.push({ from: file.moved_to, to: file.rel_path });
+        if (!file.moved_to && !file.snapshot && file.before === null) removed.push(file.rel_path);
+        else restored.push(file.rel_path);
       }
-      if (file.snapshot) {
-        // A binary: the bytes are in trash, not in the journal.
-        const source = path.join(this.#trashDir, file.snapshot);
-        const target = path.join(this.#aknoPath, file.rel_path);
-        await fsp.mkdir(path.dirname(target), { recursive: true });
-        await fsp.copyFile(source, target);
-      } else {
-        await restoreFile(this.#aknoPath, file.rel_path, file.before);
-      }
-      // No prior content and no snapshot means the change created this file, so putting it
-      // back is deleting it. Two opposite outcomes reported under one word is one of them
-      // being reported wrongly.
-      if (!file.snapshot && file.before === null) removed.push(file.rel_path);
-      else restored.push(file.rel_path);
-    }
 
-    // A document row carries retained extraction and provenance that a structural re-index cannot
-    // always reproduce without another model call. Follow successful attachment renames back before
-    // the scanner runs, just as the forward move follows them, rather than deleting and recreating
-    // the row from its content-derived id.
-    if (reversedMoves.length > 0) {
       this.#store.transaction(() => {
-        const moveDocument = this.#store.db.prepare(
-          'UPDATE OR IGNORE documents SET rel_path = ? WHERE rel_path = ?',
-        );
-        const moveRenders = this.#store.db.prepare('UPDATE documents SET renders = ? WHERE renders = ?');
-        const moveGroup = this.#store.db.prepare('UPDATE documents SET group_key = ? WHERE group_key = ?');
-        for (const move of reversedMoves) moveDocument.run(move.to, move.from);
-        for (const move of reversedMoves) {
-          moveRenders.run(move.to, move.from);
-          moveGroup.run(move.to, move.from);
+        // A document row carries retained extraction and provenance that a structural re-index cannot
+        // always reproduce without another model call. Follow successful attachment renames back before
+        // the scanner runs, just as the forward move follows them, rather than deleting and recreating
+        // the row from its content-derived id.
+        if (reversedMoves.length > 0) {
+          const moveDocument = this.#store.db.prepare(
+            'UPDATE OR IGNORE documents SET rel_path = ? WHERE rel_path = ?',
+          );
+          const moveRenders = this.#store.db.prepare('UPDATE documents SET renders = ? WHERE renders = ?');
+          const moveGroup = this.#store.db.prepare('UPDATE documents SET group_key = ? WHERE group_key = ?');
+          for (const move of reversedMoves) moveDocument.run(move.to, move.from);
+          for (const move of reversedMoves) {
+            moveRenders.run(move.to, move.from);
+            moveGroup.run(move.to, move.from);
+          }
         }
+        this.#store.db
+          .prepare("UPDATE changes SET status = 'undone', undone_at = ? WHERE id = ?")
+          .run(new Date().toISOString(), changeId);
       });
+    } catch (error) {
+      await this.#restorePostChangeState(applied);
+      throw error;
     }
-
-    this.#store.db
-      .prepare("UPDATE changes SET status = 'undone', undone_at = ? WHERE id = ?")
-      .run(new Date().toISOString(), changeId);
 
     return { restored, removed, summary: change.summary };
+  }
+
+  async #undoConflicts(files: ChangeFileRow[]): Promise<UndoConflict[]> {
+    const conflicts: UndoConflict[] = [];
+    for (const file of files) {
+      if (file.moved_to) {
+        const sourceState = await fileState(path.join(this.#aknoPath, file.rel_path));
+        if (sourceState.kind !== 'missing') {
+          conflicts.push({ path: file.rel_path, reason: 'move_source_occupied' });
+        }
+        const destinationState = await fileState(path.join(this.#aknoPath, file.moved_to));
+        if (destinationState.kind === 'missing') {
+          conflicts.push({ path: file.moved_to, reason: 'move_destination_missing' });
+        } else if (destinationState.kind !== 'file') {
+          conflicts.push({ path: file.moved_to, reason: 'move_destination_not_file' });
+        } else if (!file.after_hash) {
+          conflicts.push({ path: file.moved_to, reason: 'move_destination_unverifiable' });
+        } else if (destinationState.hash !== file.after_hash) {
+          conflicts.push({ path: file.moved_to, reason: 'move_destination_modified' });
+        }
+      } else {
+        const current = await fileState(path.join(this.#aknoPath, file.rel_path));
+        const expectedHash = file.after_hash ?? (file.after === null ? null : sha256(file.after));
+        if (expectedHash === null && current.kind !== 'missing') {
+          conflicts.push({ path: file.rel_path, reason: 'expected_absent' });
+        } else if (expectedHash !== null && current.kind === 'missing') {
+          conflicts.push({ path: file.rel_path, reason: 'expected_file_missing' });
+        } else if (expectedHash !== null && current.kind !== 'file') {
+          conflicts.push({ path: file.rel_path, reason: 'expected_regular_file' });
+        } else if (expectedHash !== null && current.kind === 'file' && current.hash !== expectedHash) {
+          conflicts.push({ path: file.rel_path, reason: 'file_modified' });
+        }
+      }
+
+      if (file.snapshot) {
+        const snapshot = await fileState(path.join(this.#trashDir, file.snapshot));
+        const expected = file.before_hash;
+        if (snapshot.kind !== 'file') {
+          conflicts.push({ path: file.rel_path, reason: 'recovery_snapshot_missing' });
+        } else if (expected && snapshot.hash !== expected) {
+          conflicts.push({ path: file.rel_path, reason: 'recovery_snapshot_modified' });
+        }
+      }
+    }
+    return conflicts;
+  }
+
+  async #reverseFile(file: ChangeFileRow): Promise<void> {
+    if (file.moved_to) {
+      const from = path.join(this.#aknoPath, file.moved_to);
+      const target = path.join(this.#aknoPath, file.rel_path);
+      await fsp.mkdir(path.dirname(target), { recursive: true });
+      await fsp.rename(from, target);
+      return;
+    }
+    if (file.snapshot) {
+      const source = path.join(this.#trashDir, file.snapshot);
+      const target = path.join(this.#aknoPath, file.rel_path);
+      await fsp.mkdir(path.dirname(target), { recursive: true });
+      await fsp.copyFile(source, target);
+      return;
+    }
+    await restoreFile(this.#aknoPath, file.rel_path, file.before);
+  }
+
+  async #rollbackBytes(file: ChangeFileRow): Promise<Buffer | null> {
+    if (file.moved_to || file.snapshot || file.after !== null || !file.after_hash) return null;
+    return fsp.readFile(path.join(this.#aknoPath, file.rel_path));
+  }
+
+  /** Roll back a partially applied reversal to the state that passed preflight. */
+  async #restorePostChangeState(applied: AppliedReversal[]): Promise<void> {
+    let rollbackError: unknown = null;
+    for (const reversal of [...applied].reverse()) {
+      const { file, postBytes } = reversal;
+      try {
+        if (file.moved_to) {
+          const source = path.join(this.#aknoPath, file.rel_path);
+          const destination = path.join(this.#aknoPath, file.moved_to);
+          await fsp.mkdir(path.dirname(destination), { recursive: true });
+          await fsp.rename(source, destination);
+        } else if (postBytes) {
+          const destination = path.join(this.#aknoPath, file.rel_path);
+          await fsp.mkdir(path.dirname(destination), { recursive: true });
+          await fsp.writeFile(destination, postBytes);
+        } else {
+          await restoreFile(this.#aknoPath, file.rel_path, file.after);
+        }
+      } catch (error) {
+        rollbackError ??= error;
+      }
+    }
+    if (rollbackError) {
+      throw new AknoError('internal', 'undo failed and its filesystem rollback was incomplete', {
+        reason: 'undo_rollback_failed',
+      });
+    }
   }
 
   list(limit = 20): ChangeSummary[] {
@@ -263,4 +395,25 @@ export function fileEntry(result: WriteResult): ChangeFile {
     before: result.before,
     after: result.after,
   };
+}
+
+function hashFileIfPresent(absPath: string): string | null {
+  try {
+    return sha256(fs.readFileSync(absPath));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function fileState(
+  absPath: string,
+): Promise<{ kind: 'missing' } | { kind: 'other' } | { kind: 'file'; hash: string }> {
+  const stat = await fsp.lstat(absPath).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  });
+  if (!stat) return { kind: 'missing' };
+  if (!stat.isFile()) return { kind: 'other' };
+  return { kind: 'file', hash: sha256(await fsp.readFile(absPath)) };
 }

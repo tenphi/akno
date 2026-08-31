@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { connect } from '@tenphi/akno-client';
 import { AknoError, open, type Akno } from '@tenphi/akno-core';
 import { serveSocket } from './socket.ts';
@@ -72,6 +74,15 @@ describe('the socket door', () => {
       expect(client.hello.ops).toContain('recall');
       expect(client.hello.ops).toContain('answer');
       expect(client.hello.ops).toContain('write');
+      expect(client.hello.mcp_ops).toEqual([
+        'recall',
+        'answer',
+        'read',
+        'list',
+        'timeline',
+        'context',
+        'graph',
+      ]);
       // Advertised separately from the ops: the ops are what an agent calls about memory, these are
       // what an operator asks of the process — including gates, journal reads, and maintenance plans,
       // which are deliberately *not* ops so an agent cannot approve its own proposal.
@@ -90,6 +101,52 @@ describe('the socket door', () => {
       await client.close();
     }
   });
+
+  it('announces MCP policy separately and lets a socket restriction only narrow it', async () => {
+    await server.close();
+    server = await serveSocket(mem, path.join(stateDir, 'akno.sock'), {
+      allow: ['recall', 'write'],
+    });
+    const client = await connect({ socket: server.path });
+    try {
+      expect(client.hello.ops).toEqual(['recall', 'write']);
+      expect(client.hello.mcp_ops).toEqual(['recall']);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('keeps the read-only service policy through an MCP-to-socket forwarding process', async () => {
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: [
+        path.resolve('packages/cli/src/bin.ts'),
+        'serve',
+        '--mcp',
+        '--no-watch',
+        '--akno-path',
+        root,
+        '--state-dir',
+        stateDir,
+      ],
+      stderr: 'pipe',
+    });
+    const client = new Client({ name: 'vulpine-fixture', version: '1.0.0' });
+    try {
+      await client.connect(transport);
+      const tools = await client.listTools();
+      expect(tools.tools.map((tool) => tool.name)).toContain('read');
+      expect(tools.tools.map((tool) => tool.name)).not.toContain('write');
+      const refused = await client.callTool({
+        name: 'write',
+        arguments: { slug: 'home/forbidden-note', content: 'Invented note.' },
+      });
+      expect(refused).toMatchObject({ isError: true });
+      expect(fs.existsSync(path.join(root, 'home/forbidden-note.md'))).toBe(false);
+    } finally {
+      await client.close();
+    }
+  }, 15_000);
 
   it('refuses a live service whose knowledge base does not match the requested target', async () => {
     const otherRoot = path.join(root, 'invented-other-memory');
@@ -231,6 +288,25 @@ describe('the socket door', () => {
         pendingPlans: unknown[];
       };
       expect(pending.pendingPlans).toEqual([]);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('rebuilds projections through the live writer without losing undo state', async () => {
+    const client = await connect({ socket: server.path });
+    try {
+      const before = fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8');
+      const written = await client.write({ slug: 'home/lease', append: '- Deposit: 2222 EUR' });
+      const report = (await client.command('index', {
+        rebuild: true,
+        structuralOnly: true,
+      })) as { hashed: number; pagesIndexed: number };
+      expect(report.hashed).toBeGreaterThan(0);
+      expect(report.pagesIndexed).toBeGreaterThan(0);
+
+      await client.undo({ change_id: written.change_id! });
+      expect(fs.readFileSync(path.join(root, 'home/lease.md'), 'utf8')).toBe(before);
     } finally {
       await client.close();
     }

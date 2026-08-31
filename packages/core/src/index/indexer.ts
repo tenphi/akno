@@ -42,6 +42,11 @@ export interface IndexOptions {
   /** Re-derive summaries and facts even where the body hash has not moved. */
   rederive?: boolean;
   /**
+   * Recompute every reproducible projection without replacing the database that also holds
+   * journal, maintenance, recovery, proposal and retained-source records.
+   */
+  rebuild?: boolean;
+  /**
    * Re-examine the named paths even though nothing about them changed.
    *
    * The point is ownership, not content: after a page is written *for* an existing attachment,
@@ -171,6 +176,20 @@ export class Indexer {
   }
 
   private async runPass(options: IndexOptions): Promise<IndexReport> {
+    if (options.rebuild) {
+      // A rebuild is an exhaustive reconciliation, not a database reset. Re-reading every
+      // byte replaces page-owned projections and invalidates their embeddings, while forced
+      // derivation refreshes the model-backed projections. Durable records remain in the
+      // same transactionally managed store and therefore remain usable after the pass.
+      options = {
+        ...options,
+        verify: true,
+        rederive: true,
+        reindexUnchanged: true,
+        only: undefined,
+        modelPaths: undefined,
+      };
+    }
     const started = performance.now();
     // Per pass: the folder may have changed since the last one, and a stale listing would
     // decide a rendition against files that are no longer there.

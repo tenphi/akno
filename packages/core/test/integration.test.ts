@@ -669,7 +669,7 @@ describe('rebuilding the index', () => {
     await mem.index({});
 
     const after = await mem.doctor({ probeModels: false });
-    // `rm akno.db && akno index` reproduces every chunk, event and link.
+    // `akno index --rebuild` reproduces every chunk, event and link without deleting durable state.
     expect(after.counts.pages).toBe(before.counts.pages);
     expect(after.counts.chunks).toBe(before.counts.chunks);
     expect(after.counts.events).toBe(before.counts.events);
