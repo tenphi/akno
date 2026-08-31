@@ -282,8 +282,8 @@ async function notifyScheduledRun(
         config.stateDir,
       ),
     );
-  } catch (error) {
-    reportNotificationDelivery({ status: 'failed', error: AknoError.from(error).code });
+  } catch {
+    reportNotificationDelivery({ status: 'failed', reason: 'preparation_failed' });
   }
 }
 
@@ -331,15 +331,44 @@ async function notifyScheduleHealth(values: Parameters<typeof openOptionsFrom>[0
   );
   if (values.json) json({ notification: delivery, schedule });
   else reportNotificationDelivery(delivery);
-  return delivery.status === 'failed' ? 2 : 0;
+  return notificationDeliveryExitCode(delivery);
+}
+
+export function notificationDeliveryExitCode(delivery: NotificationDelivery): number {
+  return delivery.status === 'failed' ||
+    delivery.status === 'unavailable' ||
+    delivery.status === 'sent_unrecorded'
+    ? 2
+    : 0;
+}
+
+export function notificationDeliveryMessage(
+  delivery: NotificationDelivery,
+): { level: 'warning' | 'info'; text: string } | null {
+  if (delivery.status === 'failed') {
+    return { level: 'warning', text: `notification delivery failed (${delivery.reason})` };
+  }
+  if (delivery.status === 'unavailable') {
+    return { level: 'warning', text: `notification delivery unavailable (${delivery.reason})` };
+  }
+  if (delivery.status === 'sent_unrecorded') {
+    return {
+      level: 'warning',
+      text: 'local maintenance notification sent but deduplication state was not saved',
+    };
+  }
+  if (delivery.status === 'sent') {
+    return { level: 'info', text: 'local maintenance notification sent' };
+  }
+  return null;
 }
 
 function reportNotificationDelivery(delivery: NotificationDelivery): void {
-  if (delivery.status === 'failed') {
-    process.stderr.write(style.yellow(`notification delivery failed (${delivery.error ?? 'unknown'})\n`));
-  } else if (delivery.status === 'sent') {
-    process.stderr.write(style.grey('local maintenance notification sent\n'));
-  }
+  const message = notificationDeliveryMessage(delivery);
+  if (!message) return;
+  process.stderr.write(
+    message.level === 'warning' ? style.yellow(`${message.text}\n`) : style.grey(`${message.text}\n`),
+  );
 }
 
 async function loadMaintenancePathPolicy(

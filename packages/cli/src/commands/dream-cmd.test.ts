@@ -7,6 +7,8 @@ import {
   dreamRunIsReadOnly,
   dreamStatusJson,
   dreamStatusQuery,
+  notificationDeliveryExitCode,
+  notificationDeliveryMessage,
   safeDreamReport,
 } from './dream-cmd.ts';
 
@@ -58,6 +60,44 @@ describe('dream authority output', () => {
     expect(dreamRunExitCode({ ...run, status: 'partially_completed' })).toBe(0);
     expect(dreamRunExitCode({ ...run, status: 'awaiting_review' })).toBe(0);
     expect(dreamRunExitCode(run)).toBe(0);
+  });
+});
+
+describe('scheduled notification exit status', () => {
+  it('fails when a required notification was not durably delivered', () => {
+    expect(notificationDeliveryExitCode({ status: 'failed', reason: 'preparation_failed' })).toBe(2);
+    expect(
+      notificationDeliveryExitCode({
+        status: 'unavailable',
+        backend: 'linux_syslog',
+        reason: 'backend_missing',
+      }),
+    ).toBe(2);
+    expect(
+      notificationDeliveryExitCode({
+        status: 'sent_unrecorded',
+        backend: 'linux_syslog',
+        reason: 'state_write_failed',
+      }),
+    ).toBe(2);
+  });
+
+  it('succeeds for disabled, unnecessary, duplicate, and durable delivery outcomes', () => {
+    expect(notificationDeliveryExitCode({ status: 'disabled' })).toBe(0);
+    expect(notificationDeliveryExitCode({ status: 'not_needed' })).toBe(0);
+    expect(notificationDeliveryExitCode({ status: 'duplicate' })).toBe(0);
+    expect(notificationDeliveryExitCode({ status: 'sent', backend: 'linux_syslog' })).toBe(0);
+  });
+
+  it('reports unavailable delivery without exposing notification content', () => {
+    expect(
+      notificationDeliveryMessage({
+        status: 'unavailable',
+        backend: 'linux_syslog',
+        reason: 'backend_missing',
+      }),
+    ).toEqual({ level: 'warning', text: 'notification delivery unavailable (backend_missing)' });
+    expect(notificationDeliveryMessage({ status: 'disabled' })).toBeNull();
   });
 });
 
