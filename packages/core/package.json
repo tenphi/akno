@@ -31,7 +31,8 @@
     "prepack": "node ../../scripts/pack-assets.mjs"
   },
   "os": [
-    "darwin"
+    "darwin",
+    "linux"
   ],
   "engines": {
     "node": ">=22.18"

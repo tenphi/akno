@@ -190,12 +190,13 @@ maintenance policy, including why a transformation is off, audit-only, reviewabl
 
 ## State and recovery
 
-The default installed state lives under `~/.akno`; `state_dir` can move it. Its important contents are:
+The default installed state lives under `~/.akno` on macOS and `$XDG_STATE_HOME/akno` on Linux (with the XDG
+fallback `~/.local/state/akno`); `state_dir` can move it. Its important contents are:
 
 ```text
 <state_dir>/
   akno.db       derived index, journal, gates, plans, and run receipts
-  akno.sock     local service socket
+  akno.sock     local service socket on macOS, Linux fallback, or an explicit state_dir
   akno.lock     current writer metadata
   provider-capabilities.json  content-free api:auto selections
   trash/        recoverable forgotten files
@@ -276,9 +277,10 @@ untrusted collaborative-write model.
 
 ## Platform
 
-Akno's core and CLI target macOS. Document extraction deliberately uses PDFKit, Vision, and `textutil`; service
-installation deliberately uses launchd. These paths are tested as one platform rather than maintained as
-untested portability branches.
+Akno's core and CLI package metadata supports macOS and Linux. Linux includes native indexing, platform-aware
+XDG config/state/runtime paths, and a manually started socket service. Its default socket is
+`$XDG_RUNTIME_DIR/akno/akno.sock`, falling back to private state when that variable is unavailable.
 
-`@tenphi/akno-client` and `@tenphi/akno-protocol` are portable. A Linux container or another process can call an
-Akno service running on the macOS host through loopback HTTP or the Unix socket where available.
+Document extraction still deliberately uses macOS PDFKit, Vision, and `textutil`, and managed background
+installation still deliberately uses launchd. Linux document extraction and systemd units are not part of this
+runtime-foundation scope. `@tenphi/akno-client` and `@tenphi/akno-protocol` remain portable.

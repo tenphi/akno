@@ -8,18 +8,23 @@ inspectable without turning credentials or private paths into repository data.
 Precedence runs from lowest to highest:
 
 ```text
-packaged default.jsonc → <state_dir>/config.json → checkout config/local.jsonc → AKNO_* environment
+packaged default.jsonc → platform machine config → checkout config/local.jsonc → AKNO_* environment
 ```
 
-| Layer                     | Purpose                                                                |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `config/default.jsonc`    | Committed, machine-independent defaults and comments for every setting |
-| `<state_dir>/config.json` | Installed machine configuration, normally `~/.akno/config.json`        |
-| `config/local.jsonc`      | Gitignored checkout-specific paths, endpoints, and model ids           |
-| Environment               | Invocation-specific paths and credentials                              |
+| Layer                   | Purpose                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `config/default.jsonc`  | Committed, machine-independent defaults and comments for every setting       |
+| Platform machine config | `~/.akno/config.json` on macOS; `$XDG_CONFIG_HOME/akno/config.json` on Linux |
+| `config/local.jsonc`    | Gitignored checkout-specific paths, endpoints, and model ids                 |
+| Environment             | Invocation-specific paths and credentials                                    |
 
 An installed package has no checkout `config/local.jsonc`. `AKNO_CONFIG` selects an explicit machine-config
 path. Use `akno config` to see the resolved, redacted result and every contributing source.
+
+The default private state is `~/.akno` on macOS and `$XDG_STATE_HOME/akno` on Linux (falling back to
+`~/.local/state/akno`). The default Linux socket is `$XDG_RUNTIME_DIR/akno/akno.sock`; when no runtime directory
+is available it stays under private state. `AKNO_STATE_DIR`, `AKNO_SOCKET`, `state_dir`, and `server.socket`
+remain explicit overrides; environment values win over files.
 
 ## Secrets
 

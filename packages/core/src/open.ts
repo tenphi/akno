@@ -98,7 +98,7 @@ export interface OpenOptions extends LoadOptions {
    * it at zero — they should say so immediately rather than hang.
    */
   writeLockWaitMs?: number;
-  /** Start the FSEvents watcher and the periodic sweep. Off for one-shot commands. */
+  /** Start the native filesystem watcher and periodic sweep. Off for one-shot commands. */
   watch?: boolean;
   watchEvents?: AknoWatchEvents;
   /**

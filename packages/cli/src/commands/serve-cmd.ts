@@ -262,7 +262,9 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   }
 
   if (process.platform !== 'darwin') {
-    warn('`akno service` manages a macOS launchd agent; v1 targets macOS only.');
+    warn(
+      '`akno service` manages a macOS launchd agent; managed Linux service installation is not available.',
+    );
     return 1;
   }
 

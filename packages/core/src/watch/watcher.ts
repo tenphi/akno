@@ -13,10 +13,10 @@ export interface WatcherEvents {
 }
 
 /**
- * **FSEvents, not polling.** Node's recursive `fs.watch` uses FSEvents on
- * macOS: native, cheap, and it reports renames as renames.
+ * **Native events, not polling.** Node's recursive `fs.watch` uses the host
+ * watcher: native, cheap, and able to report renames.
  *
- * But FSEvents coalesces under load and can drop events after a sleep/wake or a
+ * But filesystem events coalesce under load and can drop events after a sleep/wake or a
  * large sync, so a **periodic hash sweep is the backstop.** Watching alone is not
  * a correctness guarantee; hashing is. At ~10ms for a typical knowledge base the
  * sweep can run every few minutes and cost nothing.
@@ -50,7 +50,7 @@ export class Watcher {
         { recursive: true, persistent: true },
         (_type, filename) => {
           if (!filename) {
-            // A null filename means FSEvents coalesced and cannot say what moved.
+            // A null filename means the watcher coalesced and cannot say what moved.
             // The only correct response is to treat the whole tree as suspect.
             this.dirty = true;
             this.schedule();
@@ -118,7 +118,7 @@ export class Watcher {
 
   private schedule(): void {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
-    // FSEvents coalesces, but an editor still produces a write storm on save.
+    // Native watchers coalesce, but an editor still produces a write storm on save.
     this.debounceTimer = setTimeout(() => void this.flush(), this.#config.watch.debounceMs);
   }
 

@@ -369,10 +369,12 @@ describe('the socket door', () => {
     }
   });
 
-  it('refuses to open a socket whose path macOS cannot hold', async () => {
-    // The bind silently truncates past 104 bytes and the chmod then fails with a bare ENOENT
-    // stack trace — which is what a deep `state_dir` produced.
+  it('refuses to open a socket whose path the host cannot hold', async () => {
+    // Native bind errors for this boundary are opaque and differ by platform, so validation
+    // reports the applicable sockaddr_un limit before touching the filesystem.
     const tooLong = path.join(stateDir, 'x'.repeat(120), 'akno.sock');
-    await expect(serveSocket(mem, tooLong)).rejects.toThrow(/macOS allows 104/);
+    await expect(serveSocket(mem, tooLong)).rejects.toThrow(
+      process.platform === 'linux' ? /Linux allows 108/ : /macOS allows 104/,
+    );
   });
 });

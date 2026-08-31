@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { AknoError } from '@tenphi/akno-protocol';
+import { AknoError, defaultPlatformPaths } from '@tenphi/akno-protocol';
 import { readJsoncFile } from './jsonc.ts';
 import { expandTilde, findRepoRoot, resolveUserPath } from './paths.ts';
 import { compileRules } from '../rules/compile.ts';
@@ -35,7 +35,7 @@ export interface LoadOptions {
   aknoPath?: string;
   stateDir?: string;
   /**
-   * Skip `config/local.jsonc` and `~/.akno/config.json`, leaving committed
+   * Skip `config/local.jsonc` and the platform machine config, leaving committed
    * defaults plus env. Also settable with `AKNO_ISOLATED=1`, which is how CI
    * keeps a developer's local overlay out of a test run.
    */
@@ -43,6 +43,9 @@ export interface LoadOptions {
   /** Extra overlay applied last, above env. Used by tests and one-shot CLI flags. */
   overrides?: ConfigDoc;
   env?: NodeJS.ProcessEnv;
+  /** Deterministic platform seams for path resolution tests. */
+  platform?: NodeJS.Platform;
+  homeDir?: string;
 }
 
 /**
@@ -50,7 +53,7 @@ export interface LoadOptions {
  * repo's gitignore strategy is built around:
  *
  *   1. `config/default.jsonc`       committed, machine-independent, every key
- *   2. `~/.akno/config.json`      the installed machine's own config
+ *   2. platform machine config     the installed machine's own config
  *   3. `config/local.jsonc`         gitignored dev overlay for this checkout
  *   4. `AKNO_*` environment       for containers and CI
  *
@@ -65,6 +68,11 @@ export interface LoadOptions {
  */
 export function loadConfig(options: LoadOptions = {}): AknoConfig {
   const env = { ...dotEnv(), ...(options.env ?? process.env) };
+  const platformPaths = defaultPlatformPaths({
+    platform: options.platform,
+    env,
+    homeDir: options.homeDir,
+  });
   // A developer's `config/local.jsonc` must not be able to perturb a CI run or a
   // test. `AKNO_ISOLATED=1` restricts the stack to committed defaults plus env.
   const isolated = options.isolated ?? isTruthy(env.AKNO_ISOLATED ?? '');
@@ -91,7 +99,7 @@ export function loadConfig(options: LoadOptions = {}): AknoConfig {
   recordRules(defaultLayer, defaultPath);
 
   if (!isolated) {
-    for (const candidate of machineConfigCandidates(env, options)) {
+    for (const candidate of machineConfigCandidates(env, options, platformPaths.configDir)) {
       const doc = readJsoncFile<unknown>(candidate);
       if (doc) {
         const layer = parseLayer(doc, candidate);
@@ -131,7 +139,7 @@ export function loadConfig(options: LoadOptions = {}): AknoConfig {
   if (options.aknoPath) doc.akno_path = options.aknoPath;
   if (options.stateDir) doc.state_dir = options.stateDir;
 
-  return resolve(doc, sources, ruleLayers, env);
+  return resolve(doc, sources, ruleLayers, env, platformPaths);
 }
 
 function namedMaintenanceMode(profile: AknoConfig['maintenance']['profile']): 'audit' | 'review' | 'auto' {
@@ -177,10 +185,11 @@ function findDefaultConfig(): string {
   return path.join(findRepoRoot() ?? process.cwd(), 'config', 'default.jsonc');
 }
 
-function machineConfigCandidates(env: NodeJS.ProcessEnv, options: LoadOptions): string[] {
+function machineConfigCandidates(env: NodeJS.ProcessEnv, options: LoadOptions, configDir: string): string[] {
   if (env.AKNO_CONFIG) return [resolveUserPath(env.AKNO_CONFIG)];
-  const stateDir = expandTilde(options.stateDir ?? env.AKNO_STATE_DIR ?? '~/.akno');
-  return [path.join(stateDir, 'config.json'), path.join(stateDir, 'config.jsonc')];
+  const explicitStateDir = options.stateDir ?? env.AKNO_STATE_DIR;
+  const directory = explicitStateDir ? expandTilde(explicitStateDir) : configDir;
+  return [path.join(directory, 'config.json'), path.join(directory, 'config.jsonc')];
 }
 
 function repoLocalConfigPath(): string | null {
@@ -236,6 +245,7 @@ function envOverlay(env: NodeJS.ProcessEnv): ConfigDoc {
   const doc: ConfigDoc = {};
   if (env.AKNO_PATH) doc.akno_path = env.AKNO_PATH;
   if (env.AKNO_STATE_DIR) doc.state_dir = env.AKNO_STATE_DIR;
+  if (env.AKNO_SOCKET) doc.server = { ...doc.server, socket: env.AKNO_SOCKET };
   if (env.AKNO_HTTP) doc.server = { ...doc.server, http: env.AKNO_HTTP };
   if (env.AKNO_WRITE_IDS) doc.write_ids = isTruthy(env.AKNO_WRITE_IDS);
   if (env.AKNO_MODEL_BASE_URL) {
@@ -442,12 +452,13 @@ function resolve(
   sources: string[],
   ruleLayers: { folders: Record<string, unknown>; source: string }[],
   env: NodeJS.ProcessEnv,
+  platformPaths: ReturnType<typeof defaultPlatformPaths>,
 ): AknoConfig {
   if (!doc.akno_path) {
     throw new AknoError(
       'invalid',
       'akno_path is not set. Point Akno at your knowledge base in config/local.jsonc ' +
-        '(copy config/local.example.jsonc), in ~/.akno/config.json, or with AKNO_PATH.',
+        '(copy config/local.example.jsonc), in the platform machine config, or with AKNO_PATH.',
     );
   }
 
@@ -459,7 +470,13 @@ function resolve(
     throw new AknoError('invalid', `akno_path is not a directory: ${aknoPath}`);
   }
 
-  const stateDir = resolveUserPath(doc.state_dir ?? '~/.akno');
+  const stateDir = resolveUserPath(doc.state_dir ?? platformPaths.stateDir);
+  const configuredSocket = doc.server?.socket;
+  const socketPath = configuredSocket
+    ? resolveUserPath(configuredSocket, stateDir)
+    : doc.state_dir
+      ? path.join(stateDir, 'akno.sock')
+      : platformPaths.socketPath;
   const providers = resolveProviders(doc.providers, env);
   const maintenanceProfile = doc.maintenance?.profile ?? 'audit';
   const namedMode = namedMaintenanceMode(maintenanceProfile);
@@ -511,7 +528,7 @@ function resolve(
     aknoPath,
     stateDir,
     dbPath: path.join(stateDir, 'akno.db'),
-    socketPath: path.join(stateDir, doc.server?.socket ?? 'akno.sock'),
+    socketPath,
     lockPath: path.join(stateDir, 'akno.lock'),
     trashDir: path.join(stateDir, 'trash'),
     logDir: path.join(stateDir, 'logs'),
@@ -585,7 +602,7 @@ function resolve(
       verifyIntervalMs: doc.watch?.verify_interval_ms ?? 3_600_000,
     },
     server: {
-      socket: doc.server?.socket ?? 'akno.sock',
+      socket: configuredSocket ?? socketPath,
       http: doc.server?.http ?? null,
       mcpAllow: doc.server?.mcp_allow ?? ['recall', 'answer', 'read', 'list', 'timeline', 'context', 'graph'],
       httpPublicAllow: doc.server?.http_public_allow ?? [

@@ -5,10 +5,11 @@
   // This file is version-controlled and must stay machine-independent: no home
   // paths, no endpoints, no credentials, no model ids that assume a particular
   // server. Override anything here in `config/local.jsonc` (gitignored) or in
-  // `~/.akno/config.json`.
+  // the platform machine config (`~/.akno/config.json` on macOS,
+  // `$XDG_CONFIG_HOME/akno/config.json` on Linux).
   //
   // Precedence, lowest to highest:
-  //   config/default.jsonc → ~/.akno/config.json → config/local.jsonc → AKNO_* env
+  //   config/default.jsonc → platform machine config → config/local.jsonc → AKNO_* env
   // ───────────────────────────────────────────────────────────────────────────
 
   // The Markdown knowledge base. Null on purpose: Akno refuses to start
@@ -18,7 +19,8 @@
   // Akno's private state: reproducible search projections alongside durable
   // journal, maintenance, recovery, proposal, and retained-source records.
   // Use `akno index --rebuild` to refresh projections without deleting this.
-  "state_dir": "~/.akno",
+  // Null uses ~/.akno on macOS or $XDG_STATE_HOME/akno on Linux.
+  "state_dir": null,
 
   // ─── Reserved paths ───────────────────────────────────────────────────────
   // Remappable so a collision with something you already have is resolvable.
@@ -289,9 +291,9 @@
   // ─── Watching ─────────────────────────────────────────────────────────────
   "watch": {
     "enabled": true,
-    // FSEvents coalesces; this debounce collapses an editor's write storm.
+    // Native filesystem watchers coalesce; this debounce collapses an editor's write storm.
     "debounce_ms": 400,
-    // The correctness path. FSEvents can drop events after sleep/wake or a
+    // The correctness path. Filesystem watchers can drop events after sleep/wake or a
     // large sync, so a periodic stat sweep is the backstop, not the watcher.
     "sweep_interval_ms": 300000,
     // Full hash sweep — catches a sync client or restore that preserved mtime.
@@ -469,8 +471,10 @@
 
   // ─── Doors ────────────────────────────────────────────────────────────────
   "server": {
-    // Unix socket, relative to state_dir. Filesystem permissions are the auth.
-    "socket": "akno.sock",
+    // Unix socket. Null uses state_dir on macOS and $XDG_RUNTIME_DIR/akno on Linux
+    // (falling back to state_dir when XDG_RUNTIME_DIR is unavailable). A relative
+    // override is resolved against state_dir. Filesystem permissions are the auth.
+    "socket": null,
     // Loopback HTTP for sandboxed agents. Null = off. Unauthenticated callers
     // receive only the public read operations below.
     "http": null,
