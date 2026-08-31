@@ -1,5 +1,11 @@
 # @tenphi/akno-protocol
 
+## 0.2.0
+
+### Minor Changes
+
+- [#21](https://github.com/tenphi/akno/pull/21) [`7095fdc`](https://github.com/tenphi/akno/commit/7095fdc9e0edcdc04b0045e9986c4abbe593bfc9) Thanks [@tenphi](https://github.com/tenphi)! - Add replay-safe provided-exact retention and source-scoped retraction with typed v2 memory markers, deterministic noncanonical fact exclusion, reversible user-forget support, and an explicit dry-runnable and undoable brain migration for legacy managed items.
+
 ## 0.1.1
 
 ### Patch Changes
