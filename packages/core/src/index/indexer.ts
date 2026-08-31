@@ -359,14 +359,15 @@ export class Indexer {
     if (!options.structuralOnly) {
       const scoped = options.modelPaths ?? options.only;
       const scope = scoped ? this.#pageIdsFor(scoped) : null;
+      const rebuild = options.rebuild ?? false;
       // Before embedding, so the chunks it produces are embedded in the same pass rather
       // than sitting unsearchable until the next one.
-      await this.extractPending(report, progress, options.only ?? null);
+      await this.extractPending(report, progress, options.only ?? null, rebuild);
       // After extraction, so a document read this pass gets its text beside it in the same
       // pass, and before embedding, because a rendition produces nothing to embed.
-      await this.writeRenditions(report, progress, options.only ?? null);
-      await this.embedPending(report, progress, scope);
-      await this.summarizeDocuments(report, progress);
+      await this.writeRenditions(report, progress, options.only ?? null, rebuild);
+      await this.embedPending(report, progress, scope, rebuild);
+      await this.summarizeDocuments(report, progress, options.rederive ?? false);
       await this.derivePending(report, progress, options.rederive ?? false, scope);
     }
 
@@ -1099,9 +1100,10 @@ export class Indexer {
    * hand, or one that predates Akno entirely. Their text is read, chunked, and indexed
    * against the document, so the file is searchable by its own content.
    *
-   * The invalidation rule is the *file* hash, which is why `extracted_sha` exists:
-   * re-extract when the bytes change, and never otherwise. Extraction is local — PDFKit,
-   * Vision, `textutil` — so a backlog costs seconds, not model calls.
+   * The steady-state invalidation rule is the *file* hash, which is why `extracted_sha`
+   * exists: re-extract when the bytes change, or when an explicit rebuild asks every
+   * reproducible projection to refresh. Extraction is local — PDFKit, Vision, `textutil`
+   * — so a backlog costs seconds, not model calls.
    *
    * A document with no page of its own is chunked with a NULL page id and returned as a
    * first-class document card. Organization improves the result, but is not a visibility gate.
@@ -1110,6 +1112,7 @@ export class Indexer {
     report: IndexReport,
     progress: (p: IndexProgress) => void,
     only: string[] | null,
+    force: boolean,
   ): Promise<void> {
     const scopeClause = only ? ` AND d.rel_path IN (${only.map(() => '?').join(',')})` : '';
     const stale = this.#store.db
@@ -1117,7 +1120,7 @@ export class Indexer {
         `SELECT DISTINCT d.group_key FROM documents d
           WHERE d.renders IS NULL
             AND d.availability = 'available'
-            AND (
+            AND (? = 1 OR
                   d.extracted_sha IS NULL
                OR d.extracted_sha != d.sha256
                -- Self-healing: a page removed and restored takes its document's chunks with
@@ -1126,7 +1129,7 @@ export class Indexer {
                 )
           ${scopeClause}`,
       )
-      .all(...(only ?? [])) as { group_key: string }[];
+      .all(force ? 1 : 0, ...(only ?? [])) as { group_key: string }[];
     if (stale.length === 0) return;
 
     // Whole groups, in part order. One stale part shifts the page offsets of every part
@@ -1224,6 +1227,7 @@ export class Indexer {
     report: IndexReport,
     progress: (p: IndexProgress) => void,
     only: string[] | null,
+    force: boolean,
   ): Promise<void> {
     if (!this.#config.ingest.textRendition) return;
 
@@ -1238,10 +1242,10 @@ export class Indexer {
            FROM documents d LEFT JOIN pages p ON p.id = d.page_id
           WHERE d.renders IS NULL
             AND d.availability = 'available'
-            AND (d.rendition_sha IS NULL OR d.rendition_sha != d.sha256)
+            AND (? = 1 OR d.rendition_sha IS NULL OR d.rendition_sha != d.sha256)
           ${scopeClause}`,
       )
-      .all(...(only ?? [])) as {
+      .all(force ? 1 : 0, ...(only ?? [])) as {
       id: string;
       rel_path: string;
       sha256: string;
@@ -1435,11 +1439,15 @@ export class Indexer {
    * half-summaries describing halves of one thing.
    *
    * Kept separate from extraction because the two are invalidated by different things:
-   * extraction by the file's hash, a summary by not having one. A model that was down,
-   * or that failed to answer in JSON, is retried on the next pass instead of waiting for the
-   * bytes on disk to change.
+   * extraction by the file's hash, a summary by not having one or by an explicit rederive.
+   * A model that was down, or that failed to answer in JSON, is retried on the next pass
+   * instead of waiting for the bytes on disk to change.
    */
-  private async summarizeDocuments(report: IndexReport, progress: (p: IndexProgress) => void): Promise<void> {
+  private async summarizeDocuments(
+    report: IndexReport,
+    progress: (p: IndexProgress) => void,
+    force: boolean,
+  ): Promise<void> {
     if (!this.#models.derive.available) return;
 
     const groups = this.#store.db
@@ -1448,9 +1456,9 @@ export class Indexer {
           WHERE renders IS NULL
           GROUP BY group_key
           HAVING sum(CASE WHEN availability = 'missing' THEN 1 ELSE 0 END) = 0
-             AND sum(CASE WHEN text IS NOT NULL AND summary IS NULL THEN 1 ELSE 0 END) > 0`,
+             AND sum(CASE WHEN text IS NOT NULL AND (? = 1 OR summary IS NULL) THEN 1 ELSE 0 END) > 0`,
       )
-      .all() as { group_key: string }[];
+      .all(force ? 1 : 0) as { group_key: string }[];
     if (groups.length === 0) return;
 
     // Renditions excluded: one summary per document means the file holding a copy of the
@@ -1529,6 +1537,7 @@ export class Indexer {
     report: IndexReport,
     progress: (p: IndexProgress) => void,
     scope: Set<string> | null,
+    force: boolean,
   ): Promise<void> {
     if (!this.#models.embedding.available) return;
     if (scope && scope.size === 0) return;
@@ -1538,12 +1547,13 @@ export class Indexer {
         ? this.#store.db
             .prepare(
               `SELECT id, text, heading_path FROM chunks
-                WHERE embedded = 0 AND page_id IN (${[...scope].map(() => '?').join(',')}) ORDER BY id`,
+                WHERE (? = 1 OR embedded = 0)
+                  AND page_id IN (${[...scope].map(() => '?').join(',')}) ORDER BY id`,
             )
-            .all(...scope)
+            .all(force ? 1 : 0, ...scope)
         : this.#store.db
-            .prepare('SELECT id, text, heading_path FROM chunks WHERE embedded = 0 ORDER BY id')
-            .all()
+            .prepare('SELECT id, text, heading_path FROM chunks WHERE ? = 1 OR embedded = 0 ORDER BY id')
+            .all(force ? 1 : 0)
     ) as { id: number; text: string; heading_path: string }[];
     if (pending.length === 0) return;
 

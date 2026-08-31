@@ -69,6 +69,7 @@ interface UndoConflict {
     | 'expected_regular_file'
     | 'file_modified'
     | 'recovery_snapshot_missing'
+    | 'recovery_snapshot_unverifiable'
     | 'recovery_snapshot_modified';
 }
 
@@ -258,7 +259,12 @@ export class Journal {
         const expected = file.before_hash;
         if (snapshot.kind !== 'file') {
           conflicts.push({ path: file.rel_path, reason: 'recovery_snapshot_missing' });
-        } else if (expected && snapshot.hash !== expected) {
+        } else if (!expected) {
+          // Rows created before snapshot hashes existed cannot prove that the private copy
+          // still holds the bytes Akno removed. Restoring unknown bytes would make an old
+          // journal entry more authoritative than the user's current knowledge base.
+          conflicts.push({ path: file.rel_path, reason: 'recovery_snapshot_unverifiable' });
+        } else if (snapshot.hash !== expected) {
           conflicts.push({ path: file.rel_path, reason: 'recovery_snapshot_modified' });
         }
       }

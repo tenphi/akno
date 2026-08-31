@@ -1027,4 +1027,34 @@ describe('a document with its text beside it', () => {
     expect(read(TXT)).toContain('Clause seven.');
     await mem.close();
   });
+
+  it('refuses a legacy binary snapshot whose original digest is unavailable', async () => {
+    let mem = await openAs('user');
+    await mem.index({});
+    const documents = (await mem.read({ slug: 'home/lease' })).page!.documents!;
+    const pdf = documents.find((entry) => entry.rel_path === PDF)!;
+    const forgotten = await mem.forget({ document: pdf.id });
+    await mem.close();
+
+    // Schema 34 added snapshot hashes. A migrated older row has NULL here, so the
+    // bytes in trash cannot be authenticated even if a file still occupies the slot.
+    const database = new Database(path.join(stateDir, 'akno.db'));
+    database
+      .prepare('UPDATE change_files SET before_hash = NULL WHERE change_id = ? AND rel_path = ?')
+      .run(forgotten.change_id!, PDF);
+    database.close();
+
+    mem = await openAs('user');
+    await expect(mem.undo({ change_id: forgotten.change_id! })).rejects.toMatchObject({
+      code: 'conflict',
+      details: {
+        reason: 'stale_undo',
+        conflicts: expect.arrayContaining([
+          expect.objectContaining({ path: PDF, reason: 'recovery_snapshot_unverifiable' }),
+        ]),
+      },
+    });
+    expect(fs.existsSync(path.join(root, PDF))).toBe(false);
+    await mem.close();
+  });
 });

@@ -988,6 +988,38 @@ describe('a document in several files', () => {
     expect(card?.documents?.[0]?.summary).toContain('thirty days');
   });
 
+  it('rebuilds unchanged document extraction, embeddings, and summaries', async () => {
+    server.reply({ summary: 'The first invented lease summary.' });
+    await mem.index({});
+
+    server.reply({ summary: 'The refreshed invented lease summary.' });
+    const rebuilt = await mem.index({ rebuild: true });
+
+    expect(rebuilt.documentsExtracted).toBe(2);
+    expect(rebuilt.chunksEmbedded).toBeGreaterThan(0);
+    expect(rebuilt.documentsSummarized).toBe(1);
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    expect(card?.documents?.[0]?.summary).toBe('The refreshed invented lease summary.');
+  });
+
+  it('rederives an unchanged document summary without re-extracting or re-embedding it', async () => {
+    server.reply({ summary: 'The first invented lease summary.' });
+    await mem.index({});
+
+    server.reply({ summary: 'The rederived invented lease summary.' });
+    const rederived = await mem.index({ rederive: true });
+
+    expect(rederived.documentsExtracted).toBe(0);
+    expect(rederived.chunksEmbedded).toBe(0);
+    expect(rederived.documentsSummarized).toBe(1);
+    const card = pageResults(await mem.recall({ query: 'deposit returned', mode: 'lookup' })).find(
+      (entry) => entry.slug === 'home/lease',
+    );
+    expect(card?.documents?.[0]?.summary).toBe('The rederived invented lease summary.');
+  });
+
   it('does not group two people’s files that happen to share a name', async () => {
     // Same basename, different folders. Welding these together would put one person's
     // permit inside the other's document.
