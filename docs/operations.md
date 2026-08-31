@@ -33,8 +33,9 @@ akno serve --http 127.0.0.1:7777
   including when the adapter forwards through an already-running service. `--allow` can narrow that policy;
   it cannot widen it.
 - HTTP is for a containerized or remote agent that cannot open the host socket. Unauthenticated loopback
-  callers receive only `server.http_public_allow` (read operations by default). A non-loopback bind requires at
-  least one resolved bearer identity in `server.http_access`; each credential owns its actor and allowlist.
+  callers receive only `server.http_public_allow`, which may narrow but cannot widen the read-only public
+  surface. A non-loopback bind requires at least one resolved bearer identity in `server.http_access`; each
+  credential owns its actor and allowlist.
 
 For authenticated HTTP, keep the credential in the environment and only name it in config:
 

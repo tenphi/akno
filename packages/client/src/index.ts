@@ -249,20 +249,20 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     ? { authorization: `Bearer ${options.token}` }
     : {};
 
-  let response: Response;
+  let hello: HelloMessage;
   try {
-    response = await fetch(`${base}/hello`, { headers: authHeaders });
-  } catch (err) {
-    throw new AknoError(
-      'unavailable',
-      `no Akno service at ${base}: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    const response = await fetch(`${base}/hello`, {
+      headers: authHeaders,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    const helloBody = (await response.json()) as unknown;
+    if (!response.ok) {
+      throw AknoError.from((helloBody as { error?: unknown }).error ?? helloBody);
+    }
+    hello = Hello.parse(helloBody);
+  } catch (error) {
+    throw httpFailure(error, 'handshake');
   }
-  const helloBody = (await response.json()) as unknown;
-  if (!response.ok) {
-    throw AknoError.from((helloBody as { error?: unknown }).error ?? helloBody);
-  }
-  const hello = Hello.parse(helloBody);
   assertVersion(hello, options);
 
   async function call<N extends OpName>(
@@ -276,8 +276,6 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
         'HTTP actors are assigned by the server credential; use a different credential for another actor',
       );
     }
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const result = await fetch(`${base}/op/${op}`, {
         method: 'POST',
@@ -286,13 +284,13 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
           ...authHeaders,
         },
         body: JSON.stringify(input ?? {}),
-        signal: controller.signal,
+        signal: AbortSignal.timeout(timeoutMs),
       });
       const body = (await result.json()) as { ok?: boolean; result?: unknown; error?: unknown };
       if (!body.ok) throw AknoError.from(body.error);
       return body.result as OpResult<N>;
-    } finally {
-      clearTimeout(timer);
+    } catch (error) {
+      throw httpFailure(error, op);
     }
   }
 
@@ -308,6 +306,16 @@ async function connectHttp(address: string, options: ConnectOptions): Promise<Ak
     },
     close: async (): Promise<void> => {},
   };
+}
+
+function httpFailure(error: unknown, action: string): AknoError {
+  if (error instanceof AknoError) return error;
+  const name = error instanceof Error ? error.name : '';
+  const timedOut = name === 'AbortError' || name === 'TimeoutError';
+  return new AknoError(
+    'unavailable',
+    timedOut ? `Akno HTTP ${action} timed out` : `Akno HTTP ${action} failed`,
+  );
 }
 
 // ─── Shared ─────────────────────────────────────────────────────────────────

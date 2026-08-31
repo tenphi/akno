@@ -1499,6 +1499,29 @@ describe('observe', () => {
     expect(page.match(/^- \d{4}-\d{2}-\d{2} —/gm)).toHaveLength(2);
   });
 
+  it('does not append when the existing evidence declaration cannot be merged safely', async () => {
+    const relPath = 'observations/home-appliance-servicing.md';
+    const before =
+      '---\ntitle: "Home appliance servicing"\nderived: true\nevidence: home/appliances\n---\n\n' +
+      '- 2031-08-05 — Existing invented pattern. [[home/appliances]]\n';
+    fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
+    fs.writeFileSync(path.join(root, relPath), before, 'utf8');
+    await mem.index({ structuralOnly: true });
+    server.reply(OBSERVED);
+
+    const report = await mem.dream({ phase: 'observe' });
+
+    expect(fs.readFileSync(path.join(root, relPath), 'utf8')).toBe(before);
+    expect(report.observations).toHaveLength(0);
+    expect(report.rejected).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          reason: 'the existing observation page has an unsupported evidence declaration',
+        }),
+      ]),
+    );
+  });
+
   it('never uses a reference page as evidence', async () => {
     // A reference page is somebody else's words. A pattern inferred from a manual is
     // exactly the failure this tier must not have.

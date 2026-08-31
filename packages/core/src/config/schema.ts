@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PageRole, RememberManagement, isOpName } from '@tenphi/akno-protocol';
+import { OPS, PageRole, RememberManagement, isOpName } from '@tenphi/akno-protocol';
 
 /**
  * The config document as it appears on disk. Every field is optional here —
@@ -219,13 +219,16 @@ const WatchDoc = z.object({
 });
 
 const OperationNameDoc = z.string().refine(isOpName, { message: 'unknown operation name' });
+const PublicReadOperationNameDoc = z.string().refine((name) => isOpName(name) && OPS[name].kind === 'read', {
+  message: 'expected a read operation name',
+});
 
 const ServerDoc = z.object({
   socket: z.string().optional(),
   http: z.string().nullable().optional(),
   mcp_allow: z.array(OperationNameDoc).optional(),
-  /** Unauthenticated loopback HTTP is read-only unless explicitly narrowed or widened here. */
-  http_public_allow: z.array(OperationNameDoc).optional(),
+  /** Unauthenticated loopback HTTP can narrow, but never widen, the read-only policy. */
+  http_public_allow: z.array(PublicReadOperationNameDoc).optional(),
   /** Bearer credentials map to server-owned actor identities and operation sets. */
   http_access: z
     .array(

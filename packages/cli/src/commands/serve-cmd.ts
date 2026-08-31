@@ -150,8 +150,7 @@ export async function serveCommand(argv: string[]): Promise<number> {
         log,
       });
       closers.push(() => server.close());
-      const [host] = server.address.split(':');
-      if (host !== '127.0.0.1' && host !== 'localhost') {
+      if (!server.loopback) {
         log(`HTTP bearer authentication active for ${identities.length} identity/identities`);
       }
       log(`HTTP ready on ${server.address}`);

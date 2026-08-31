@@ -74,6 +74,7 @@ describe('generated YAML values', () => {
     for (const original of [
       '---\nevidence:\n  - home/appliances # exact relation\nunknown: keep # exact\n---\n\nBody.\n',
       '---\nevidence: [home/appliances]\nunknown: keep # exact\n---\n\nBody.\n',
+      '---\nevidence: [\n  home/appliances\n]\nunknown: keep # exact\n---\n\nBody.\n',
     ]) {
       const merged = mergeTopLevelStringArray(original, 'evidence', [
         'home/appliances',

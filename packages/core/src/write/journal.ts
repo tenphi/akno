@@ -278,7 +278,7 @@ export class Journal {
       const source = path.join(this.#trashDir, file.snapshot);
       const target = path.join(this.#aknoPath, file.rel_path);
       await fsp.mkdir(path.dirname(target), { recursive: true });
-      await fsp.copyFile(source, target);
+      await copyFileAtomic(source, target);
       return;
     }
     await restoreFile(this.#aknoPath, file.rel_path, file.before);
@@ -303,7 +303,7 @@ export class Journal {
         } else if (postBytes) {
           const destination = path.join(this.#aknoPath, file.rel_path);
           await fsp.mkdir(path.dirname(destination), { recursive: true });
-          await fsp.writeFile(destination, postBytes);
+          await writeBytesAtomic(destination, postBytes);
         } else {
           await restoreFile(this.#aknoPath, file.rel_path, file.after);
         }
@@ -416,4 +416,33 @@ async function fileState(
   if (!stat) return { kind: 'missing' };
   if (!stat.isFile()) return { kind: 'other' };
   return { kind: 'file', hash: sha256(await fsp.readFile(absPath)) };
+}
+
+async function copyFileAtomic(source: string, destination: string): Promise<void> {
+  await replaceAtomically(destination, (temporary) => fsp.copyFile(source, temporary));
+}
+
+async function writeBytesAtomic(destination: string, bytes: Buffer): Promise<void> {
+  await replaceAtomically(destination, (temporary) => fsp.writeFile(temporary, bytes));
+}
+
+/** Keep a failed binary restore out of the user-visible path, just like page writes. */
+async function replaceAtomically(
+  destination: string,
+  populate: (temporary: string) => Promise<void>,
+): Promise<void> {
+  const temporary = `${destination}.akno.tmp`;
+  try {
+    await populate(temporary);
+    const handle = await fsp.open(temporary, 'r');
+    try {
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    await fsp.rename(temporary, destination);
+  } catch (error) {
+    await fsp.rm(temporary, { force: true }).catch(() => {});
+    throw error;
+  }
 }

@@ -1,11 +1,13 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import http from 'node:http';
+import { isIP } from 'node:net';
 import { AknoError, OPS, PROTOCOL_VERSION, isOpName, type Hello, type OpName } from '@tenphi/akno-protocol';
 import type { Akno } from '@tenphi/akno-core';
 import { AKNO_VERSION } from '../version.ts';
 
 export interface HttpServer {
   readonly address: string;
+  readonly loopback: boolean;
   close(): Promise<void>;
 }
 
@@ -43,7 +45,7 @@ export async function serveHttp(
 ): Promise<HttpServer> {
   const [host, portText] = splitAddress(address);
   const port = Number(portText);
-  if (!Number.isInteger(port) || port < 0 || port > 65_535) {
+  if (!/^\d+$/.test(portText) || !Number.isInteger(port) || port < 0 || port > 65_535) {
     throw new AknoError('invalid', `not a valid host:port — ${address}`);
   }
 
@@ -61,7 +63,10 @@ export async function serveHttp(
   }
   ensureDistinctCredentials(identities);
 
-  const publicOps = isLoopback(host) ? allowedOps(options.publicAllow ?? readOps(), options.allow) : [];
+  const loopbackTarget = isLoopback(host);
+  const publicOps = loopbackTarget
+    ? allowedOps(options.publicAllow ?? readOps(), options.allow).filter((name) => OPS[name].kind === 'read')
+    : [];
   const server = http.createServer((request, response) => {
     void route(request, response, akno, {
       publicOps,
@@ -79,9 +84,18 @@ export async function serveHttp(
   });
 
   const bound = server.address();
+  const actualHost = typeof bound === 'object' && bound ? bound.address : host;
   const actualPort = typeof bound === 'object' && bound ? bound.port : port;
+  const loopback = isLoopback(actualHost);
+  if (loopbackTarget && !loopback) {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    throw new AknoError('forbidden', `HTTP loopback name ${host} resolved to non-loopback ${actualHost}`, {
+      reason: 'http_auth_required',
+    });
+  }
   return {
-    address: `${host}:${actualPort}`,
+    address: formatAddress(actualHost, actualPort),
+    loopback,
     async close(): Promise<void> {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     },
@@ -278,5 +292,12 @@ function splitAddress(address: string): [string, string] {
 }
 
 function isLoopback(host: string): boolean {
-  return host === '127.0.0.1' || host === '::1' || host.toLowerCase() === 'localhost';
+  const normalized = host.toLowerCase();
+  if (normalized === 'localhost' || normalized === '::1') return true;
+  if (isIP(normalized) !== 4) return false;
+  return normalized.split('.')[0] === '127';
+}
+
+function formatAddress(host: string, port: number): string {
+  return isIP(host) === 6 ? `[${host}]:${port}` : `${host}:${port}`;
 }

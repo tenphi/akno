@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -68,6 +69,20 @@ describe('the HTTP door', () => {
     }
   });
 
+  it('does not let a programmatic public policy widen loopback beyond reads', async () => {
+    await server.close();
+    server = await serveHttp(mem, '127.0.0.1:0', { publicAllow: ['read', 'write'] });
+    const client = await connect({ http: server.address });
+    try {
+      expect(client.hello.ops).toEqual(['read']);
+      await expect(
+        client.write({ slug: 'private/public-write', content: 'Invented note.' }),
+      ).rejects.toMatchObject({ code: 'forbidden' });
+    } finally {
+      await client.close();
+    }
+  });
+
   it('maps a bearer credential to a server-owned user actor and operation set', async () => {
     const client = await connect({ http: server.address, token: 'invented-owner-token-1111' });
     try {
@@ -105,5 +120,38 @@ describe('the HTTP door', () => {
       code: 'forbidden',
       details: { reason: 'http_auth_required' },
     });
+  });
+
+  it('returns a usable bracketed address for an IPv6 loopback bind', async () => {
+    await server.close();
+    server = await serveHttp(mem, '[::1]:0', { publicAllow: ['read'] });
+    expect(server.address).toMatch(/^\[::1\]:\d+$/);
+
+    const client = await connect({ http: server.address });
+    try {
+      expect(client.hello.ops).toEqual(['read']);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('rejects an empty or non-decimal port', async () => {
+    await expect(serveHttp(mem, '127.0.0.1:')).rejects.toMatchObject({ code: 'invalid' });
+    await expect(serveHttp(mem, '127.0.0.1:1e3')).rejects.toMatchObject({ code: 'invalid' });
+  });
+
+  it('applies the client timeout to the HTTP handshake and returns a typed failure', async () => {
+    const stalled = http.createServer(() => {});
+    await new Promise<void>((resolve) => stalled.listen(0, '127.0.0.1', resolve));
+    const { port } = stalled.address() as { port: number };
+    try {
+      await expect(connect({ http: `127.0.0.1:${port}`, timeoutMs: 25 })).rejects.toMatchObject({
+        code: 'unavailable',
+        message: 'Akno HTTP handshake timed out',
+      });
+    } finally {
+      stalled.closeAllConnections();
+      await new Promise<void>((resolve) => stalled.close(() => resolve()));
+    }
   });
 });

@@ -89,9 +89,16 @@ export function mergeTopLevelStringArray(content: string, key: string, additions
   if (sequence.flow) {
     const close = original.lastIndexOf(']');
     if (close < 0) return null;
+    // A multiline flow sequence keeps its closing bracket on a separate line. Insert before
+    // that trailing whitespace; putting the comma immediately before `]` starts a new mapping
+    // key on the closing line instead of extending the sequence.
+    const beforeClose = original.slice(0, close);
+    const trailingWhitespace = /\s*$/.exec(beforeClose)?.[0] ?? '';
+    const insertionPoint = beforeClose.length - trailingWhitespace.length;
     replacement =
-      original.slice(0, close) +
+      beforeClose.slice(0, insertionPoint) +
       `${existing.length > 0 ? ', ' : ''}${missing.map((value) => serializeYamlString(value, key)).join(', ')}` +
+      trailingWhitespace +
       original.slice(close);
   } else {
     const newline = fm.raw.includes('\r\n') ? '\r\n' : '\n';

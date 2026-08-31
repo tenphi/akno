@@ -1884,6 +1884,13 @@ async function prepareObservation(
     evidence: observation.evidence,
     action: existing === null ? 'created' : 'refined',
   };
+  if (next === null) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'the existing observation page has an unsupported evidence declaration',
+    };
+  }
   const sealedEvidence = await observationEvidence(ctx, observation.evidence, evidenceRole);
   if (sealedEvidence.length !== observation.evidence.length) {
     return {
@@ -1981,22 +1988,24 @@ function newObservationPage(subject: string, observation: ObservationCandidate, 
 }
 
 /** Appends the new line and unions the evidence, leaving every existing line alone. */
-function appendObservation(current: string, line: string, evidence: string[]): string {
+function appendObservation(current: string, line: string, evidence: string[]): string | null {
   const merged = mergeEvidence(current, evidence);
-  return `${merged.replace(/\s+$/, '')}\n${line}\n`;
+  if (merged === null) return null;
+  const newline = current.includes('\r\n') ? '\r\n' : '\n';
+  return `${merged.replace(/\s+$/, '')}${newline}${line}${newline}`;
 }
 
-function mergeEvidence(current: string, evidence: string[]): string {
+function mergeEvidence(current: string, evidence: string[]): string | null {
   const merged = mergeTopLevelStringArray(current, 'evidence', evidence);
   if (merged !== null) return merged;
 
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(current);
-  if (!match) return current;
+  if (!match) return null;
 
   const front = match[1]!;
   // An existing key that is not one exact string sequence is user-edited or malformed. Refuse
-  // to guess around it; the plan verifier will keep the unsupported observation unapplied.
-  if (/^evidence:/m.test(front)) return current;
+  // to guess around it and propagate that refusal so no unsupported observation is appended.
+  if (/^evidence:/m.test(front)) return null;
 
   // Add the owned key without round-tripping any neighboring frontmatter.
   const newline = match[0].includes('\r\n') ? '\r\n' : '\n';

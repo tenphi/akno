@@ -20,6 +20,10 @@ describe('URL ingest network policy', () => {
     'http://[::1]/invented',
     'http://[fc00::1111]/invented',
     'http://[100::1111]/invented',
+    'http://[100:0:0:1::1111]/invented',
+    'http://[fec0::1111]/invented',
+    'http://[3fff::1111]/invented',
+    'http://[5f00::1111]/invented',
     'http://[::ffff:127.0.0.1]/invented',
     'http://[::ffff:0:7f00:1]/invented',
     // An arbitrary IPv6 address containing `ffff` is not an IPv4-mapped address. It must still

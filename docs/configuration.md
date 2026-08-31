@@ -67,8 +67,9 @@ uses only invented probe text. A real Akno request never falls through to the ot
 running service reads that policy from the service handshake. `akno serve --mcp --allow ...` may narrow the
 set for one host, but cannot add an operation the service policy denied.
 
-Loopback HTTP is usable without a credential and defaults to read operations in
-`server.http_public_allow`. Authenticated identities are environment-backed secret references:
+Loopback HTTP is usable without a credential and is limited to read operations in
+`server.http_public_allow`; that list may narrow the public surface but cannot grant a write. Authenticated
+identities are environment-backed secret references:
 
 ```jsonc
 {
