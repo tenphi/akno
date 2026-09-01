@@ -59,7 +59,7 @@ const HELP = `${style.bold('akno')} — a two-way memory layer for agents over a
     index                Reconcile the index against the knowledge base.
     migrate              Upgrade Akno-owned brain markers explicitly and undoably.
     serve                Hold the index, watcher and models in one process.
-    service              Manage the macOS launchd agent.
+    service              Manage the macOS launchd or Linux systemd user service.
     redeploy             Apply local changes: build, restart the service, wait for it.
     doctor               What's present, what's degraded, and what that costs.
     rules [path]         Which rule governs a path, and why.

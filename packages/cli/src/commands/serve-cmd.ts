@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { open } from '@tenphi/akno-core';
 import { openOptionsFrom, parse } from '../args.ts';
@@ -232,7 +233,7 @@ function waitForShutdown(
 
 const SERVICE_HELP = `akno service <install | uninstall | status> [options]
 
-  Manage the macOS launchd user agents, so nobody hand-edits XML.
+  Manage the background user service (launchd on macOS, systemd --user on Linux).
 
     dev.akno        KeepAlive — the index, watcher and models in one process, which
                       is why it outlives every host that talks to it.
@@ -261,10 +262,17 @@ export async function serviceCommand(argv: string[]): Promise<number> {
     return values.help ? 0 : 1;
   }
 
+  const action = positionals[0];
+  if (!['install', 'uninstall', 'status'].includes(action ?? '')) {
+    line(SERVICE_HELP);
+    return 1;
+  }
+
+  if (process.platform === 'linux') {
+    return linuxServiceCommand(action as 'install' | 'uninstall' | 'status', values);
+  }
   if (process.platform !== 'darwin') {
-    warn(
-      '`akno service` manages a macOS launchd agent; managed Linux service installation is not available.',
-    );
+    warn('`akno service` supports macOS launchd and Linux systemd --user.');
     return 1;
   }
 
@@ -272,7 +280,6 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   const plistPath = path.join(agents, `${PLIST_LABEL}.plist`);
   const dreamPath = path.join(agents, `${DREAM_SCHEDULE_LABEL}.plist`);
   const dreamHealthPath = path.join(agents, `${DREAM_HEALTH_LABEL}.plist`);
-  const action = positionals[0];
 
   if (action === 'status') {
     let installed = false;
@@ -324,10 +331,10 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
   const binary = process.argv[1] ?? 'akno';
-  // An installer reached through guided setup carries the exact target the user confirmed.
-  // Persist those flags in every agent; otherwise launchd would later resolve whichever
-  // checkout config happens to be visible from its working directory.
-  const targetArgs = serviceTargetArgs(values);
+  // Persist the fully resolved target in every agent. A service starts outside the installer's
+  // working directory and environment, so retaining only explicit flags would let defaults,
+  // config discovery, or environment-selected paths drift before its next start.
+  const targetArgs = serviceTargetArgs(config);
   const args = ['serve', ...targetArgs, ...(values.http ? ['--http', values.http] : [])];
 
   fs.mkdirSync(agents, { recursive: true });
@@ -397,11 +404,109 @@ export async function serviceCommand(argv: string[]): Promise<number> {
   return 0;
 }
 
-export function serviceTargetArgs(values: { 'akno-path'?: string; 'state-dir'?: string }): string[] {
-  return [
-    ...(values['akno-path'] ? ['--akno-path', values['akno-path']] : []),
-    ...(values['state-dir'] ? ['--state-dir', values['state-dir']] : []),
-  ];
+async function linuxServiceCommand(
+  action: 'install' | 'uninstall' | 'status',
+  values: {
+    http?: string;
+    'dream-hour'?: string;
+    dream: boolean;
+    'akno-path'?: string;
+    'state-dir'?: string;
+  },
+): Promise<number> {
+  const { installSystemdService, systemdPaths, systemdUnitIsActive, uninstallSystemdService } =
+    await import('./service-systemd.ts');
+  const paths = systemdPaths(PLIST_LABEL);
+  const units = [
+    [PLIST_LABEL, paths.service, `${PLIST_LABEL}.service`],
+    [DREAM_SCHEDULE_LABEL, paths.dreamTimer, `${DREAM_SCHEDULE_LABEL}.timer`],
+    [DREAM_HEALTH_LABEL, paths.healthTimer, `${DREAM_HEALTH_LABEL}.timer`],
+  ] as const;
+
+  if (action === 'status') {
+    let installed = false;
+    for (const [, target, unit] of units) {
+      if (!fs.existsSync(target)) {
+        line(`${style.grey('not installed')}  ${target}`);
+        continue;
+      }
+      installed = true;
+      const active = systemdUnitIsActive(unit);
+      line(`${style.green('installed')}  ${target}`);
+      line(style.grey(`  ${active ? 'active' : 'inactive'}  systemctl --user status ${unit}`));
+    }
+    return installed ? 0 : 1;
+  }
+
+  if (action === 'uninstall') {
+    const existed = Object.values(paths).some(
+      (unitPath) => unitPath !== paths.directory && fs.existsSync(unitPath),
+    );
+    uninstallSystemdService(PLIST_LABEL);
+    if (!existed) {
+      line(style.grey('not installed'));
+      return 0;
+    }
+    for (const unitPath of Object.values(paths).filter((candidate) => candidate !== paths.directory)) {
+      line(`removed ${unitPath}`);
+    }
+    return 0;
+  }
+
+  // Validate before writing any unit, so a typo cannot leave a partial installation.
+  const hour = dreamHour(values['dream-hour']);
+  const { loadConfig } = await import('@tenphi/akno-core');
+  const config = loadConfig(openOptionsFrom(values));
+  const binary = process.argv[1] ?? 'akno';
+  const targetArgs = serviceTargetArgs(config);
+  await installSystemdService({
+    label: PLIST_LABEL,
+    node: process.execPath,
+    script: binary,
+    serviceArgs: [
+      'serve',
+      ...targetArgs,
+      '--socket',
+      config.socketPath,
+      ...(values.http ? ['--http', values.http] : []),
+    ],
+    dreamArgs: ['dream', '--scheduled', ...targetArgs],
+    healthArgs: ['dream', 'notify', '--schedule-health', ...targetArgs],
+    dreamHour: hour,
+    dream: values.dream,
+    socketPath: config.socketPath,
+    target: {
+      aknoPath: config.aknoPath,
+      stateDir: config.stateDir,
+      socketPath: config.socketPath,
+      configPath: resolvedServiceConfigPath(process.env.AKNO_CONFIG),
+    },
+  });
+  line(`wrote ${paths.service}`);
+  if (values.dream) {
+    line(`wrote ${paths.dreamService} and ${paths.dreamTimer}`);
+    line(`wrote ${paths.healthService} and ${paths.healthTimer}`);
+    line(style.grey(`  maintenance profile: ${config.maintenance.profile} (resolved at run time)`));
+  }
+  line(style.green(`ready  ${config.socketPath}`));
+  line(style.grey(`logs: journalctl --user -u ${PLIST_LABEL}.service`));
+  return 0;
+}
+
+export function resolvedServiceConfigPath(
+  selector: string | undefined,
+  cwd = process.cwd(),
+  home = os.homedir(),
+): string | null {
+  if (!selector) return null;
+  if (selector === '~' || selector.startsWith('~/')) {
+    return path.resolve(home, selector.slice(2));
+  }
+  return path.resolve(cwd, selector);
+}
+
+export function serviceTargetArgs(config: { aknoPath: string; stateDir: string }): string[] {
+  return ['--akno-path', config.aknoPath, '--state-dir', config.stateDir];
 }
 
 /** An hour outside 0-23 is a typo, and a nightly job at "25:00" would silently never run. */

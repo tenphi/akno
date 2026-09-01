@@ -155,15 +155,36 @@ export async function doctorCommand(argv: string[]): Promise<number> {
     }
 
     heading('Extraction');
-    kv([
-      [
-        'PDF and images',
-        report.extraction.swift
-          ? 'PDFKit text layer, Vision OCR (macOS frameworks)'
-          : 'unavailable — the Swift helper could not be built',
-      ],
-      ['Office formats', report.extraction.textutil ? 'textutil' : 'unavailable'],
-    ]);
+    if (report.extraction.backend === 'linux-native') {
+      kv([
+        [
+          'PDF text layer',
+          report.extraction.pdfinfo && report.extraction.pdftotext
+            ? 'Poppler'
+            : 'unavailable — install Poppler',
+        ],
+        [
+          'PDF and image OCR',
+          report.extraction.pdftoppm && report.extraction.tesseract
+            ? 'Poppler rasterization, Tesseract OCR'
+            : 'unavailable — install Poppler and Tesseract',
+        ],
+        [
+          'Office formats',
+          report.extraction.libreoffice ? 'LibreOffice' : 'unavailable — install LibreOffice',
+        ],
+      ]);
+    } else {
+      kv([
+        [
+          'PDF and images',
+          report.extraction.swift
+            ? 'PDFKit text layer, Vision OCR (macOS frameworks)'
+            : 'unavailable — the Swift helper could not be built',
+        ],
+        ['Office formats', report.extraction.textutil ? 'textutil' : 'unavailable'],
+      ]);
+    }
 
     heading('Doors');
     kv([

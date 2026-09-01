@@ -1,12 +1,16 @@
 import fs from 'node:fs';
-import net from 'node:net';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { once } from 'node:events';
 import { AknoError } from '@tenphi/akno-protocol';
 
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, kv, line, style } from '../output.ts';
+import {
+  aknoSocketIsReady,
+  readSystemdInstallTarget,
+  systemdPaths,
+  type SystemdInstallTarget,
+} from './service-systemd.ts';
 
 /**
  * `akno redeploy` — one command to apply local changes end-to-end.
@@ -120,26 +124,35 @@ export interface RedeployPlan {
   build: boolean;
   restart: boolean;
   /** Why the restart is not happening, when it is not. Null when it is. */
-  skipped: 'asked' | 'not-darwin' | 'no-service' | null;
+  skipped: 'asked' | 'unsupported' | 'no-service' | null;
 }
 
 export function redeployPlan(input: {
   build: boolean;
   restart: boolean;
   darwin: boolean;
+  linux: boolean;
   serviceInstalled: boolean;
 }): RedeployPlan {
   if (!input.restart) return { build: input.build, restart: false, skipped: 'asked' };
-  if (!input.darwin) return { build: input.build, restart: false, skipped: 'not-darwin' };
+  if (!input.darwin && !input.linux) return { build: input.build, restart: false, skipped: 'unsupported' };
   if (!input.serviceInstalled) return { build: input.build, restart: false, skipped: 'no-service' };
   return { build: input.build, restart: true, skipped: null };
 }
 
 const SKIP_NOTE: Record<NonNullable<RedeployPlan['skipped']>, string> = {
   asked: 'the service was left alone',
-  'not-darwin': 'restarting a service is macOS-only for now — restart it yourself',
+  unsupported: 'restarting a service is supported on macOS and Linux — restart it yourself',
   'no-service': `no service installed (${LABEL}) — nothing to restart. \`akno service install\` sets one up.`,
 };
+
+export function redeployTarget(
+  linux: boolean,
+  current: SystemdInstallTarget,
+  installed: SystemdInstallTarget | null,
+): SystemdInstallTarget {
+  return linux && installed ? installed : current;
+}
 
 export async function redeployCommand(argv: string[]): Promise<number> {
   const { values } = parse<{ build: boolean; restart: boolean; timeout?: string }>(argv, {
@@ -186,25 +199,43 @@ export async function redeployCommand(argv: string[]): Promise<number> {
   // ── Restart ───────────────────────────────────────────────────────────────
   const { loadConfig } = await import('@tenphi/akno-core');
   const config = loadConfig(openOptionsFrom(values));
-  result.socket = config.socketPath;
 
-  const plist = path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents', `${LABEL}.plist`);
+  const darwin = process.platform === 'darwin';
+  const linux = process.platform === 'linux';
+  const target = redeployTarget(
+    linux,
+    {
+      aknoPath: config.aknoPath,
+      stateDir: config.stateDir,
+      socketPath: config.socketPath,
+      configPath: process.env.AKNO_CONFIG ?? null,
+    },
+    linux ? readSystemdInstallTarget(LABEL) : null,
+  );
+  result.socket = target.socketPath;
+  const serviceDefinition = darwin
+    ? path.join(process.env.HOME ?? '', 'Library', 'LaunchAgents', `${LABEL}.plist`)
+    : systemdPaths(LABEL).service;
   const plan = redeployPlan({
     build: values.build,
     restart: values.restart,
-    darwin: process.platform === 'darwin',
-    serviceInstalled: fs.existsSync(plist),
+    darwin,
+    linux,
+    serviceInstalled: fs.existsSync(serviceDefinition),
   });
 
   if (plan.skipped) {
-    result.ready = await socketAcceptsConnections(config.socketPath);
+    result.ready = await socketAcceptsConnections(target.socketPath);
     report(values.json, result, SKIP_NOTE[plan.skipped]);
     return 0;
   }
 
-  const previousSocket = socketIdentity(config.socketPath);
+  const previousSocket = socketIdentity(target.socketPath);
   if (!values.json) heading('restarting');
-  const kick = spawnSync('launchctl', ['kickstart', '-k', `gui/${process.getuid?.() ?? ''}/${LABEL}`], {
+  const restartCommand = darwin
+    ? (['launchctl', ['kickstart', '-k', `gui/${process.getuid?.() ?? ''}/${LABEL}`]] as const)
+    : (['systemctl', ['--user', 'restart', `${LABEL}.service`]] as const);
+  const kick = spawnSync(restartCommand[0], restartCommand[1], {
     stdio: values.json ? 'pipe' : 'inherit',
     encoding: 'utf8',
   });
@@ -212,7 +243,7 @@ export async function redeployCommand(argv: string[]): Promise<number> {
     fail(
       values.json,
       result,
-      `launchctl kickstart failed (exit ${kick.status ?? 'unknown'})${buildTail(kick.stderr)}`,
+      `${restartCommand[0]} restart failed (exit ${kick.status ?? 'unknown'})${buildTail(kick.stderr)}`,
     );
     return 1;
   }
@@ -220,9 +251,9 @@ export async function redeployCommand(argv: string[]): Promise<number> {
 
   // ── Wait ──────────────────────────────────────────────────────────────────
   const waitPolicy = redeployWaitPolicy(values.timeout);
-  result.ready = await waitForSocket(config.socketPath, waitPolicy.fastMs, previousSocket);
+  result.ready = await waitForSocket(target.socketPath, waitPolicy.fastMs, previousSocket);
   let waitedMs = waitPolicy.fastMs;
-  if (!result.ready && waitPolicy.maximumMs > waitPolicy.fastMs && launchdReplacementIsRunning()) {
+  if (!result.ready && waitPolicy.maximumMs > waitPolicy.fastMs && replacementIsRunning(darwin)) {
     if (!values.json) {
       line(
         style.grey(
@@ -232,7 +263,7 @@ export async function redeployCommand(argv: string[]): Promise<number> {
       );
     }
     result.ready = await waitForSocket(
-      config.socketPath,
+      target.socketPath,
       waitPolicy.maximumMs - waitPolicy.fastMs,
       previousSocket,
     );
@@ -244,7 +275,7 @@ export async function redeployCommand(argv: string[]): Promise<number> {
     fail(
       values.json,
       result,
-      `restarted, but nothing is listening on ${config.socketPath} after ${waitedMs / 1000}s — ` +
+      `restarted, but nothing is listening on ${target.socketPath} after ${waitedMs / 1000}s — ` +
         'check `akno service status` and the log',
     );
     return 1;
@@ -289,19 +320,13 @@ function socketIdentity(socketPath: string): SocketIdentity | null {
 }
 
 async function socketAcceptsConnections(socketPath: string): Promise<boolean> {
-  if (!fs.existsSync(socketPath)) return false;
-  const socket = net.createConnection(socketPath);
-  try {
-    await once(socket, 'connect', { signal: AbortSignal.timeout(500) });
-    return true;
-  } catch {
-    return false;
-  } finally {
-    socket.destroy();
-  }
+  return aknoSocketIsReady(socketPath);
 }
 
-function launchdReplacementIsRunning(): boolean {
+function replacementIsRunning(darwin: boolean): boolean {
+  if (!darwin) {
+    return spawnSync('systemctl', ['--user', 'is-active', '--quiet', `${LABEL}.service`]).status === 0;
+  }
   const inspected = spawnSync('launchctl', ['print', `gui/${process.getuid?.() ?? ''}/${LABEL}`], {
     encoding: 'utf8',
   });

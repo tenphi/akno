@@ -455,7 +455,7 @@ async function runGuidedFirstRun(
     prompt.say('First recall was skipped because a fresh setup needs an index to search.');
   }
 
-  if ((options.platform ?? process.platform) === 'darwin') {
+  if (['darwin', 'linux'].includes(options.platform ?? process.platform)) {
     prompt.say(
       'The background service watches for changes and installs nightly maintenance using the selected profile.',
     );
@@ -472,7 +472,7 @@ async function runGuidedFirstRun(
       serviceInstalled = true;
     }
   } else {
-    prompt.say('Background service installation is currently available on macOS only.');
+    prompt.say('Background service installation requires macOS launchd or Linux systemd --user.');
   }
 
   heading('Ready');
@@ -480,7 +480,7 @@ async function runGuidedFirstRun(
   else if (!recalled) line(style.grey('Try: akno recall "your question"'));
   line(style.grey('Check: akno doctor'));
   line(style.grey('Safe maintenance trial: akno dream --mode audit'));
-  if (!serviceInstalled && (options.platform ?? process.platform) === 'darwin') {
+  if (!serviceInstalled && ['darwin', 'linux'].includes(options.platform ?? process.platform)) {
     line(style.grey('Optional background service: akno service install'));
   }
   return 0;

@@ -1,14 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveMcpAllow, plist, serviceTargetArgs } from './serve-cmd.ts';
+import { effectiveMcpAllow, plist, resolvedServiceConfigPath, serviceTargetArgs } from './serve-cmd.ts';
 
 describe('launchd service definitions', () => {
-  it('persists an explicitly selected knowledge base and state directory', () => {
+  it('persists the resolved knowledge base and state directory when no target flags were passed', () => {
     expect(
       serviceTargetArgs({
-        'akno-path': '/invented/knowledge-base',
-        'state-dir': '/invented/state',
+        aknoPath: '/invented/resolved-knowledge-base',
+        stateDir: '/invented/resolved-state',
       }),
-    ).toEqual(['--akno-path', '/invented/knowledge-base', '--state-dir', '/invented/state']);
+    ).toEqual([
+      '--akno-path',
+      '/invented/resolved-knowledge-base',
+      '--state-dir',
+      '/invented/resolved-state',
+    ]);
+  });
+
+  it('resolves a custom config selector before persisting it', () => {
+    expect(resolvedServiceConfigPath('config/custom.jsonc', '/invented/checkout', '/invented/home')).toBe(
+      '/invented/checkout/config/custom.jsonc',
+    );
+    expect(resolvedServiceConfigPath('~/.akno/custom.jsonc', '/invented/checkout', '/invented/home')).toBe(
+      '/invented/home/.akno/custom.jsonc',
+    );
+    expect(resolvedServiceConfigPath(undefined, '/invented/checkout', '/invented/home')).toBeNull();
   });
 
   it('marks the nightly cycle as scheduled without baking in maintenance authority', () => {
