@@ -9,6 +9,7 @@ import {
   missedCycleNotification,
   scheduledCommandFailureNotification,
   scheduledRunNotification,
+  type MaintenanceNotification,
 } from './dream-notifications.ts';
 import type { DreamScheduleStatus } from './dream-schedule.ts';
 
@@ -144,6 +145,59 @@ describe('scheduled maintenance notifications', () => {
     );
   });
 
+  it('delivers Linux server notifications to syslog through argv', () => {
+    const stateDir = temporaryStateDir();
+    const spawn = vi.fn(() => successfulSpawn());
+    const notification: MaintenanceNotification = {
+      fingerprint: 'run:run_linuxaaa',
+      title: 'Akno needs attention; $(touch /tmp/never)',
+      body: 'cycle failed `touch /tmp/never`',
+      causes: ['run_failed'],
+    };
+
+    expect(
+      deliverMaintenanceNotification('actionable', notification, stateDir, {
+        platform: 'linux',
+        spawn,
+        commandExists: (command: string) => command === '/usr/bin/logger',
+      }),
+    ).toEqual({ status: 'sent', backend: 'linux_syslog' });
+    expect(spawn).toHaveBeenCalledWith(
+      '/usr/bin/logger',
+      ['--tag', 'akno', '--', 'Akno needs attention; $(touch /tmp/never): cycle failed `touch /tmp/never`'],
+      { encoding: 'utf8', timeout: 5_000 },
+    );
+  });
+
+  it('reports unavailable Linux delivery as a typed outcome', () => {
+    const notification = scheduledCommandFailureNotification(
+      'actionable',
+      'unavailable',
+      new Date(2030, 0, 2),
+    )!;
+
+    expect(
+      deliverMaintenanceNotification('actionable', notification, temporaryStateDir(), {
+        platform: 'linux',
+        commandExists: () => false,
+      }),
+    ).toEqual({ status: 'unavailable', backend: 'linux_syslog', reason: 'backend_missing' });
+  });
+
+  it('reports an unsupported platform as a typed availability outcome', () => {
+    const notification = scheduledCommandFailureNotification(
+      'actionable',
+      'unavailable',
+      new Date(2030, 0, 2),
+    )!;
+
+    expect(
+      deliverMaintenanceNotification('actionable', notification, temporaryStateDir(), {
+        platform: 'win32',
+      }),
+    ).toEqual({ status: 'unavailable', reason: 'platform_unsupported' });
+  });
+
   it('does not mark a failed delivery as sent', () => {
     const stateDir = temporaryStateDir();
     const spawn = vi.fn(() => ({ ...successfulSpawn(), status: 1 }));
@@ -155,8 +209,30 @@ describe('scheduled maintenance notifications', () => {
 
     expect(
       deliverMaintenanceNotification('actionable', notification, stateDir, { platform: 'darwin', spawn }),
-    ).toEqual({ status: 'failed', error: 'osascript exited 1' });
+    ).toEqual({ status: 'failed', backend: 'macos_notification', reason: 'nonzero_exit' });
     expect(fs.existsSync(path.join(stateDir, 'maintenance-notifications.json'))).toBe(false);
+  });
+
+  it('reports notification state write failures as a typed outcome', () => {
+    const directory = temporaryStateDir();
+    const invalidStateDir = path.join(directory, 'not-a-directory');
+    fs.writeFileSync(invalidStateDir, 'invented fixture');
+    const notification = scheduledCommandFailureNotification(
+      'actionable',
+      'unavailable',
+      new Date(2030, 0, 2),
+    )!;
+
+    expect(
+      deliverMaintenanceNotification('actionable', notification, invalidStateDir, {
+        platform: 'darwin',
+        spawn: vi.fn(() => successfulSpawn()),
+      }),
+    ).toEqual({
+      status: 'sent_unrecorded',
+      backend: 'macos_notification',
+      reason: 'state_write_failed',
+    });
   });
 });
 

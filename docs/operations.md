@@ -156,8 +156,11 @@ Local notifications are off by default:
 ```
 
 `actionable` reports review backlog, failures, incomplete verification, exhausted budgets, repeated typed
-degradation, and missed schedules. `all` also reports healthy scheduled completion. Notifications contain
-counts, states, timestamps, and run ids—not note text, paths, diffs, prompts, model output, or provider errors.
+degradation, and missed schedules. `all` also reports healthy scheduled completion. macOS uses a local user
+notification; Linux writes to the local system log with `logger`, which is suitable for headless servers and
+journald-backed systems. If that command is absent, delivery reports a typed `backend_missing` outcome rather
+than silently succeeding. Notifications contain counts, states, timestamps, and run ids—not note text, paths,
+diffs, prompts, model output, or provider errors.
 
 ## Diagnostics
 
