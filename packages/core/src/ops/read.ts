@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
+import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
 import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
@@ -80,7 +81,7 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
     )
     .all(row.id) as (LineFact & { claim: string })[];
 
-  const withConfidence = annotateLines(lines, facts);
+  const withConfidence = annotateLines(qualifyManagedMemoryLines(lines, allLines), facts);
 
   const links = ctx.store.db
     .prepare('SELECT DISTINCT to_slug, broken FROM links WHERE from_page = ?')

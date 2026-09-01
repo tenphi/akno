@@ -10,12 +10,12 @@ it is not a safe way to refresh search.
 Akno is useful when an agent needs continuity across conversations but its memory must remain inspectable,
 citable, reversible, and independent of a chat provider.
 
-> **Status:** active development and used on a real personal knowledge base. The current `0.3.0` release ships
-> reading, writing, document ingestion, evidence-graph retrieval, grounded answering, and autonomous maintenance
-> at Akno's single-writer service boundary. It also includes replay-safe provided-exact `retain`, source-scoped
-> retraction, typed v2 managed-memory markers, and an explicit dry-runnable and undoable migration from legacy
-> markers. Automatic retain extraction and placement, unified temporal memory, and co-located observations remain
-> follow-up work. Defaults stay conservative: model-dependent inference is opt-in, scheduled maintenance starts
+> **Status:** active development and used on a real personal knowledge base. The current source ships reading,
+> writing, document ingestion, evidence-graph retrieval, grounded answering, and autonomous maintenance at Akno's
+> single-writer service boundary. Keyed `retain` can accept typed candidates or extract them from coherent text and
+> structured conversations, route them automatically or to exact destinations, replay identical revisions without
+> another model call, and retract source-owned support. Unified temporal queries, source-reference intake, and
+> co-located observations remain follow-up work. Defaults stay conservative: model-dependent inference is opt-in, scheduled maintenance starts
 > in audit mode, and network and persistence boundaries fail closed. Releases use Changesets and tokenless npm
 > trusted publishing; CI verifies the packaged artifacts and installed first-run workflow before publication.
 
@@ -120,10 +120,9 @@ See [The memory lifecycle](docs/memory-lifecycle.md) for the everyday human/agen
 [command reference](docs/commands.md) explains which operation to choose and whether it writes.
 
 Use `remember` for one unkeyed transcript or note when Akno should extract and route durable memory. Use
-`retain` when a host has a stable source id and revision and can provide typed candidates, exact supporting
-spans, and exact admitted destinations. Identical revisions replay without another write; explicit retraction
-removes only the addressed source support. Automatic extraction and automatic placement through `retain` are
-tracked as later milestones in [issue #3](https://github.com/tenphi/akno/issues/3). See
+`retain` when a host has a stable source id and revision and needs replay safety. The host may provide the full
+typed candidates or let Akno extract, independently verify, and automatically place them. Identical revisions
+replay before another model call or write; explicit retraction removes only the addressed source support. See
 [Writing and ingestion](docs/writing.md#retain-identified-sources) for the complete request shape.
 
 ## Autonomous maintenance

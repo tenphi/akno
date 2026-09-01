@@ -16,7 +16,7 @@ knowledge base, and which model roles may be involved.
 | `context <query>`     | Assemble broad context or precision-first automatic recall              | No                         | Embedding; reranker at an ambiguous boundary  |
 | `write`               | Create, append, patch, or replace a page                                | Yes                        | Vision for textless attachments only          |
 | `remember <text>`     | Extract durable knowledge and route it                                  | Yes or held proposal       | Maintenance or derive, plus recall roles      |
-| `retain <json\|->`    | Replay-safe exact retention or source-scoped retraction                 | Yes or typed hold          | None in provided-exact mode                   |
+| `retain <json\|->`    | Replay-safe automatic/exact retention or source-scoped retraction       | Yes or typed hold          | Maintenance/derive; recall roles for routing  |
 | `folder <path>`       | Declare a folder and its default policy                                 | Yes, `akno.jsonc`          | None                                          |
 | `approve` / `decline` | Resolve a held routing proposal                                         | Approval may write         | Depends on the held action                    |
 | `forget`              | Retract a fact or trash a page/document                                 | Yes                        | None                                          |
@@ -76,9 +76,10 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 
 - Use `write` when destination and wording are already known.
 - Use `remember` when Akno must decide what is durable and where it belongs.
-- Use `retain` when a host has a stable source id and revision. The provided-exact mode validates byte-exact
-  source spans, preserves discourse and attribution, suppresses identical revision replays, and retracts only
-  the support owned by an explicitly addressed source revision.
+- Use `retain` when a host has a stable source id and revision. Extract mode interprets and independently
+  verifies coherent source context before automatic placement; provided mode accepts typed candidates with
+  either exact or automatic placement. Every mode validates byte-exact source spans, preserves discourse and
+  attribution, suppresses identical revision replays, and retracts only explicitly addressed source support.
 - Treat `no_writable_destination` as an authorization hold, not an empty memory result: inspect the typed
   approval reason and name or admit a destination. `requires_folder` instead asks the caller to declare taxonomy.
 - `maintenance.retain.fallback_page` can provide one exact last-resort destination. It is used only after

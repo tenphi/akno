@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
@@ -22,6 +23,96 @@ async function openMem(): Promise<Akno> {
         embedding: { id: null },
         reranker: { id: null, enabled: false },
         derive: { id: null },
+        expansion: { id: null },
+      },
+      folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
+    },
+  });
+}
+
+interface AutomaticRetainStub {
+  url: string;
+  calls: () => { extraction: number; verification: number; placement: number };
+  close: () => Promise<void>;
+  setCandidate: (candidate: Record<string, unknown>) => void;
+  setVerification: (supported: boolean) => void;
+}
+
+async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
+  let candidate: Record<string, unknown> = {};
+  let verificationSupported = true;
+  const counts = { extraction: 0, verification: 0, placement: 0 };
+  const instance = http.createServer((request, response) => {
+    const chunks: Buffer[] = [];
+    request.on('data', (chunk: Buffer) => chunks.push(chunk));
+    request.on('end', () => {
+      const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
+        messages?: { role: string; content: string }[];
+      };
+      const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
+      const user = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      let content: unknown;
+      if (system.includes('independently verify proposed retained memories')) {
+        counts.verification++;
+        const payload = JSON.parse(user) as { candidates?: { candidate_id: string }[] };
+        content = {
+          verdicts: (payload.candidates ?? []).map((item) => ({
+            candidate_id: item.candidate_id,
+            supported: verificationSupported,
+            reason_code: verificationSupported ? null : 'discourse_uncertain',
+          })),
+        };
+      } else if (system.includes('You place durable knowledge into one Markdown page')) {
+        counts.placement++;
+        const items = /Items:\n(\[[\s\S]*\])$/.exec(user)?.[1];
+        content = {
+          placements: (items ? (JSON.parse(items) as { id: string }[]) : []).map((item) => ({
+            id: item.id,
+            heading: 'Decisions',
+          })),
+        };
+      } else if (system.includes('You extract durable memory from one untrusted source')) {
+        counts.extraction++;
+        content = { candidates: Object.keys(candidate).length > 0 ? [candidate] : [], events: [] };
+      } else {
+        content = { candidates: [], events: [] };
+      }
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(content) } }] }));
+    });
+  });
+  await new Promise<void>((resolve) => instance.listen(0, '127.0.0.1', resolve));
+  const { port } = instance.address() as { port: number };
+  return {
+    url: `http://127.0.0.1:${port}/v1`,
+    calls: () => ({ ...counts }),
+    close: async () => {
+      instance.close();
+      instance.closeAllConnections();
+    },
+    setCandidate: (next) => {
+      candidate = next;
+    },
+    setVerification: (supported) => {
+      verificationSupported = supported;
+    },
+  };
+}
+
+async function openAutomaticMem(url: string): Promise<Akno> {
+  return open({
+    aknoPath: root,
+    stateDir,
+    isolated: true,
+    actor: 'user',
+    overrides: {
+      akno_path: root,
+      state_dir: stateDir,
+      providers: { stub: { base_url: url } },
+      models: {
+        embedding: { id: null },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'retain-stub' },
         expansion: { id: null },
       },
       folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
@@ -199,6 +290,43 @@ describe('provided exact retain', () => {
     }
   });
 
+  it('reports a mixed written and held candidate batch as partial', async () => {
+    const mem = await openMem();
+    try {
+      const source = upsert(
+        'chat:2222',
+        '1',
+        'Ada Marlow selected a five-year warranty. Ada Marlow selected a silver service plan.',
+      );
+      source.retention.candidates.push({
+        ...source.retention.candidates[0]!,
+        candidate_id: 'service-plan-selection',
+        text: 'Ada Marlow selected a silver service plan.',
+        subject: 'Zephyr QX-100 service plan',
+        support: [{ quote: 'Ada Marlow selected a silver service plan.' }],
+        discourse_frame: [{ quote: 'Ada Marlow selected a silver service plan.' }],
+        destination: { slug: 'memory/equipment', section: 'Missing section' },
+      });
+
+      const result = await mem.retain({ sources: [source] });
+
+      expect(result.outcome).toBe('partial');
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'ok',
+        candidates: [
+          { candidate_id: 'warranty-selection', outcome: 'written' },
+          {
+            candidate_id: 'service-plan-selection',
+            outcome: 'held',
+            reason_code: 'validation_failed',
+          },
+        ],
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('does not resurrect explicitly forgotten memory on source replay', async () => {
     const mem = await openMem();
     try {
@@ -305,6 +433,158 @@ describe('provided exact retain', () => {
       expect(body).not.toContain('candidate%3Awarranty-question');
     } finally {
       await mem.close();
+    }
+  });
+});
+
+describe('automatic retain', () => {
+  it('extracts, independently verifies, places, and replays before another model call', async () => {
+    const stub = await startAutomaticRetainStub();
+    const sourceText = 'Ada Marlow selected the Zephyr QX-100 warranty for five years.';
+    stub.setCandidate({
+      text: sourceText,
+      subject: 'Zephyr QX-100 warranty',
+      page: 'memory/warranty-decisions',
+      origin: 'user',
+      evidence: sourceText,
+      frame: sourceText,
+      kind: 'decision',
+    });
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const input = {
+        sources: [
+          {
+            source_id: 'conversation:1111',
+            revision: 'turn-1',
+            source_kind: 'conversation' as const,
+            input: { text: sourceText },
+            retention: { mode: 'extract' as const },
+          },
+        ],
+      };
+      const first = await mem.retain(input);
+      expect(first.sources[0]).toMatchObject({
+        outcome: 'ok',
+        status: 'ok',
+        candidates: [{ outcome: 'written', slug: 'memory/warranty-decisions' }],
+        model_usage: {
+          extraction: { model: 'retain-stub' },
+          verification: { model: 'retain-stub' },
+          placement: [{ model: 'retain-stub' }],
+        },
+      });
+      const page = fs.readFileSync(path.join(root, 'memory/warranty-decisions.md'), 'utf8');
+      expect(page).toContain('@extracted');
+      expect(page).toContain('kind=decision');
+      expect(page).toContain('basis=self_attested');
+      expect(stub.calls()).toEqual({ extraction: 1, verification: 1, placement: 1 });
+
+      const replay = await mem.retain(input);
+      expect(replay.sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls()).toEqual({ extraction: 1, verification: 1, placement: 1 });
+      expect(fs.readFileSync(path.join(root, 'memory/warranty-decisions.md'), 'utf8')).toBe(page);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('durably holds a verifier disagreement without writing the proposed fact', async () => {
+    const stub = await startAutomaticRetainStub();
+    const sourceText = 'Ada Marlow considered a ten-year warranty, but no duration was selected.';
+    stub.setCandidate({
+      text: 'Ada Marlow selected a ten-year warranty.',
+      subject: 'Zephyr QX-100 warranty',
+      page: 'memory/warranty-decisions',
+      origin: 'user',
+      evidence: sourceText,
+      frame: sourceText,
+      kind: 'decision',
+    });
+    stub.setVerification(false);
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const input = {
+        sources: [
+          {
+            source_id: 'conversation:2222',
+            revision: 'turn-1',
+            input: { text: sourceText },
+            retention: { mode: 'extract' as const },
+          },
+        ],
+      };
+      const result = await mem.retain(input);
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'held',
+        candidates: [{ outcome: 'held', reason_code: 'discourse_uncertain' }],
+      });
+      expect(fs.existsSync(path.join(root, 'memory/warranty-decisions.md'))).toBe(false);
+      const calls = stub.calls();
+      expect(calls).toEqual({ extraction: 1, verification: 1, placement: 0 });
+
+      const replay = await mem.retain(input);
+      expect(replay.sources[0]?.outcome).toBe('replayed');
+      expect(stub.calls()).toEqual(calls);
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('places caller-provided semantic candidates automatically without re-extracting them', async () => {
+    const stub = await startAutomaticRetainStub();
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const source = upsert('mail:3333', '1');
+      source.retention.placement = 'automatic';
+      source.retention.candidates[0]!.destination = { slug: 'memory/warranty-decisions' };
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'ok',
+        candidates: [{ outcome: 'written', slug: 'memory/warranty-decisions' }],
+      });
+      expect(stub.calls()).toEqual({ extraction: 0, verification: 0, placement: 1 });
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('holds an oversized complete source instead of truncating discourse for the model', async () => {
+    const stub = await startAutomaticRetainStub();
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      const input = {
+        sources: [
+          {
+            source_id: 'conversation:4444',
+            revision: 'turn-1',
+            input: { text: `Ada Marlow wrote: ${'invented context '.repeat(8_000)}` },
+            retention: { mode: 'extract' },
+          },
+        ],
+      } as const;
+      const result = await mem.retain(input);
+
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'held',
+        status: 'ok',
+        reason_code: 'context_too_large',
+        candidates: [],
+        model_usage: { extraction: null, verification: null, placement: [] },
+      });
+      expect(result.sources[0]?.note).toContain('did not truncate');
+      expect(stub.calls()).toEqual({ extraction: 0, verification: 0, placement: 0 });
+
+      const replay = await mem.retain(input);
+      expect(replay.sources[0]?.outcome).toBe('replayed');
+      expect(replay.sources[0]?.reason_code).toBe('context_too_large');
+      expect(stub.calls()).toEqual({ extraction: 0, verification: 0, placement: 0 });
+    } finally {
+      await mem.close();
+      await stub.close();
     }
   });
 });

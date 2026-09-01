@@ -43,6 +43,19 @@ export interface ManagedMemoryMarker {
   time?: RetainedTime;
 }
 
+/**
+ * Canonical answer/fact eligibility is deliberately narrower than searchability.
+ * Reports, tentative language, plans, questions, and inactive dispositions remain
+ * retrievable with their qualification, but cannot silently become factual evidence.
+ */
+export function managedMemoryAnswerEligible(marker: ManagedMemoryMarker): boolean {
+  if (marker.basis === 'source_report') return false;
+  if (marker.commitment !== 'asserted') return false;
+  if (marker.time?.status === 'planned' || marker.time?.status === 'tentative') return false;
+  if (!['claim', 'decision', 'preference', 'event'].includes(marker.kind)) return false;
+  return ['active', 'accepted', 'completed', 'resolved'].includes(marker.disposition);
+}
+
 const ID = /^[A-Za-z0-9_-]{4,80}$/;
 const FINGERPRINT = /^[a-f0-9]{12,64}$/;
 const KINDS = new Set(['claim', 'decision', 'preference', 'plan', 'event', 'question']);

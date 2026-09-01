@@ -5,18 +5,18 @@ record, and applying maintenance plans. Choosing the narrowest operation keeps a
 
 ## Choose the right write operation
 
-| Intent                                                      | Operation  |
-| ----------------------------------------------------------- | ---------- |
-| Put exact wording at an exact destination                   | `write`    |
-| Hand over unstructured text and keep its durable claims     | `remember` |
-| Retain identified source revisions with provided candidates | `retain`   |
-| Declare what belongs in a folder                            | `folder`   |
-| Import a file, folder, or URL                               | `ingest`   |
-| Process configured drop folders                             | `inbox`    |
-| Give an orphan document a page                              | `adopt`    |
-| Retract a sentence or trash an object                       | `forget`   |
-| Relocate a page and its documents                           | `move`     |
-| Reverse a journalled change                                 | `undo`     |
+| Intent                                                  | Operation  |
+| ------------------------------------------------------- | ---------- |
+| Put exact wording at an exact destination               | `write`    |
+| Hand over unstructured text and keep its durable claims | `remember` |
+| Retain identified, replayable source revisions          | `retain`   |
+| Declare what belongs in a folder                        | `folder`   |
+| Import a file, folder, or URL                           | `ingest`   |
+| Process configured drop folders                         | `inbox`    |
+| Give an orphan document a page                          | `adopt`    |
+| Retract a sentence or trash an object                   | `forget`   |
+| Relocate a page and its documents                       | `move`     |
+| Reverse a journalled change                             | `undo`     |
 
 If you know both wording and destination, use `write`. If Akno must decide what is durable and where it belongs,
 use `remember`.
@@ -106,14 +106,60 @@ which use `akno plan decide`.
 
 ## Retain identified sources
 
-`retain` is the host-facing path when source identity must survive retries. It currently accepts JSON with
-provided candidates, exact source spans, and exact destinations, or an explicit retraction:
+`retain` is the host-facing path when source identity must survive retries. It accepts coherent text or ordered
+source items for extraction, caller-provided semantic candidates, and explicit source-scoped retraction:
 
 ```bash
 akno retain request.json
 akno retain request.json --dry-run
 akno retain - < request.json
 ```
+
+The retention mode and placement policy are independent where applicable:
+
+- `mode: "extract"` runs Akno's fixed discourse-aware extraction and a separate semantic verification call,
+  then uses automatic routing and section placement;
+- `mode: "provided", placement: "automatic"` trusts the caller's selection and semantic shape, validates its
+  exact source spans, and lets Akno choose an admitted destination;
+- `mode: "provided", placement: "exact"` validates and writes to each supplied destination without a
+  synchronous model call; and
+- `mode: "retract"` removes only support owned by an addressed earlier receipt.
+
+For the automatic host path, the smallest useful request is:
+
+```json
+{
+  "sources": [
+    {
+      "source_id": "conversation:2222",
+      "revision": "turn-7",
+      "source_group": "conversation:2222",
+      "source_kind": "conversation",
+      "mentioned_at": "2031-03-04T10:00:00Z",
+      "timezone": "UTC",
+      "input": {
+        "items": [
+          {
+            "item_id": "turn-7",
+            "role": "user",
+            "speaker": "Ada Marlow",
+            "text": "I selected the five-year warranty for the Zephyr QX-100."
+          }
+        ]
+      },
+      "retention": {
+        "mode": "extract",
+        "mission": "Preserve product decisions and their duration."
+      }
+    }
+  ]
+}
+```
+
+The mission is additive emphasis, not a replacement for Akno's fixed retention rules. Extraction refuses to
+truncate a coherent source whose omitted discourse could reverse its meaning; it returns the typed
+`context_too_large` hold instead. Every accepted candidate has unique exact proposition support, a complete
+discourse frame, deterministic candidate identity, and an independent semantic-verification verdict.
 
 Assuming `memory/**` is admitted as `knowledge + remember: integrate`, this complete request creates a managed
 page when needed and places the decision under its deterministic `## Unsorted` section:
@@ -197,7 +243,17 @@ instructions returns the stored result without another write; changing any of th
 structured source item. Every accepted source has at most one journal change, and one failed source does not
 erase successful siblings. On an existing page, a named exact section must already exist exactly once; omission
 uses the deterministic `## Unsorted` fallback. Reports, hypotheses, proposals, plans, questions, and rejected
-options stay searchable with visible status but are excluded from ordinary derived facts.
+options stay searchable with visible status and typed line qualification but are excluded from ordinary derived
+facts and factual `answer` evidence. Automatic routing can write only to an existing admitted knowledge page, a
+new managed page under an exactly admitted folder, or the configured admitted fallback. A stronger read-only
+match blocks a weaker writable destination.
+
+Automatic responses include content-free receipts for extraction, verification, and section-placement model
+calls. `held` candidates carry stable reason codes such as `discourse_uncertain`, `time_unresolved`,
+`routing_uncertain`, and `no_writable_destination`; callers should branch on those codes rather than explanatory
+prose. A source-level `apply_failed` is reported as typed degradation rather than a successful empty result.
+`--dry-run` computes the same interpretation and routing but writes no page, journal change, or replay
+receipt.
 
 A later revision never implies deletion. Retraction names the earlier `target_revision` and, optionally, exact
 candidate ids. When another source still supports the same memory, Akno removes only the addressed support and

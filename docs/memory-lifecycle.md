@@ -112,7 +112,7 @@ An agent can use memory without receiving general filesystem authority:
 - `answer` produces and verifies a direct cited answer;
 - `read`, `timeline`, and `graph` inspect known memory more precisely;
 - `remember` extracts durable claims and finds an authorized destination;
-- `retain` stores caller-selected claims from identified, replayable source revisions;
+- `retain` extracts or accepts typed memory from identified, replayable source revisions;
 - exact mutation operations change only the requested and permitted scope.
 
 The agent cannot promote itself to human through MCP. It also cannot turn a related search result into a writable

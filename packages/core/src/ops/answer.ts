@@ -162,6 +162,19 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     };
   }
   if (evidence.length === 0) {
+    const noncanonicalMemoryFound = recalled.results.some(
+      (result) =>
+        result.type === 'page' && result.lines.some((line) => line.memory?.answer_eligible === false),
+    );
+    if (noncanonicalMemoryFound) {
+      return {
+        status: recalled.status,
+        outcome: 'not_answered',
+        ...base,
+        ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
+        note: 'related memory was found, but it was explicitly noncanonical and cannot ground a factual answer',
+      };
+    }
     return {
       status: 'degraded',
       degraded: dedupeReasons([...(recalled.degraded ?? []), 'answer_failed']),
@@ -461,15 +474,19 @@ function buildEvidence(results: RecallResult[]): AnswerContextItem[] {
 
   for (const result of results) {
     if (result.type === 'page') {
-      if (result.lines.length > 0) {
+      const eligibleLines = result.lines.filter(
+        (line) => line.memory?.answer_eligible !== false && !/^\s*<!--/.test(line.text),
+      );
+      if (eligibleLines.length > 0) {
         add(`page:${result.slug}`, {
           type: 'page',
           slug: result.slug,
           title: result.title,
-          lines: result.lines.map((line) => ({
+          lines: eligibleLines.map((line) => ({
             n: line.n,
             text: line.text,
             ...(line.confidence !== undefined ? { confidence: line.confidence } : {}),
+            ...(line.memory !== undefined ? { memory: line.memory } : {}),
           })),
         });
       }

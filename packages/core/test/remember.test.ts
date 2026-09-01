@@ -86,8 +86,48 @@ async function startStubChat(): Promise<typeof server> {
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}') as {
         messages?: { role: string; content: string }[];
       };
-      system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
+      const requestSystem = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const sourceText = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      if (requestSystem.includes('independently verify proposed retained memories')) {
+        const payload = JSON.parse(sourceText) as { candidates?: { candidate_id?: string }[] };
+        response.end(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    verdicts: (payload.candidates ?? []).map((candidate) => ({
+                      candidate_id: candidate.candidate_id,
+                      supported: true,
+                      reason_code: null,
+                    })),
+                  }),
+                },
+              },
+            ],
+          }),
+        );
+        return;
+      }
+      if (requestSystem.includes('You place durable knowledge into one Markdown page')) {
+        const items = /Items:\n(\[[\s\S]*\])$/.exec(sourceText)?.[1];
+        const parsed = items ? (JSON.parse(items) as { id: string }[]) : [];
+        response.end(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    placements: parsed.map((item) => ({ id: item.id, heading: 'Details' })),
+                  }),
+                },
+              },
+            ],
+          }),
+        );
+        return;
+      }
+      system = requestSystem;
       const grounded = candidates.map((candidate) => ({
         ...candidate,
         ...(candidate.evidence === undefined && sourceText.includes(candidate.text)

@@ -58,6 +58,14 @@ A result card reports role, relevance, contributing candidate arms, cited excerp
 Question mode also reports concept coverage. A relevant page that does not cover one requested attribute is not
 evidence for that part of the answer.
 
+When a returned line is an Akno-managed level-one memory, it also carries `memory` qualification: kind,
+attribution, commitment, disposition, polarity, epistemic basis, and `answer_eligible`. Reports, hypotheses,
+counterfactuals, proposals, rejected decisions, plans, and questions remain searchable and readable with that
+status. They are not silently converted into ordinary current facts. Authored prose has no `memory` field;
+managed canonical claims and accepted decisions report `answer_eligible: true`.
+An owned marker whose current semantics cannot be parsed reports `status: "unavailable"` and
+`answer_eligible: false`; malformed or unmigrated managed memory never falls back to authored-fact behavior.
+
 ### Reranking also qualifies
 
 A successful reranker may remove judged-irrelevant candidates. Candidates outside its bounded window are
@@ -82,6 +90,10 @@ locators itself. A separate verifier call judges each answer block only against 
 Unsupported blocks are withheld. A missing model produces `degraded/not_answered`; complete empty recall
 produces `empty/not_found`. If equally applicable evidence gives incompatible values without an authority rule,
 Akno abstains rather than choosing one or inventing a conflict explanation.
+
+Lines whose managed-memory qualification says `answer_eligible: false` are removed before evidence is shown to
+the answer model. If they are the only related memory, `answer` returns `not_answered` while preserving the
+related page identities; it does not call the model or claim the topic was never discussed.
 
 Reranking is off by default for `answer` because generation and verification already select supporting
 evidence. `--rerank` opts into another sequential model call for especially noisy corpora or weaker answer
