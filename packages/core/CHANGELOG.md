@@ -1,5 +1,18 @@
 # @tenphi/akno-core
 
+## 0.5.0
+
+### Minor Changes
+
+- [#41](https://github.com/tenphi/akno/pull/41) [`40bea09`](https://github.com/tenphi/akno/commit/40bea091395336c96d9beceacc0b4c0cf1006081) Thanks [@tenphi](https://github.com/tenphi)! - Add replay-safe automatic retention for coherent text and structured source items, with independent semantic
+  verification, automatic admitted placement, typed holds and model receipts, and retrieval qualification that
+  keeps noncanonical memory searchable without using it as ordinary factual answer evidence.
+
+### Patch Changes
+
+- Updated dependencies [[`40bea09`](https://github.com/tenphi/akno/commit/40bea091395336c96d9beceacc0b4c0cf1006081)]:
+  - @tenphi/akno-protocol@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
