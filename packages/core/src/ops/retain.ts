@@ -2,8 +2,11 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
   RetainInput,
+  type DegradedReason,
   type ProvidedRetainCandidate,
   type RetainCandidateResult,
+  type RetainHoldReason,
+  type RetainModelCallReceipt,
   type RetainOutput,
   type RetainRetraction,
   type RetainSourceResult,
@@ -11,6 +14,7 @@ import {
   type RetainUpsertSource,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
+import { ModelClient } from '../models/client.ts';
 import { folderCatalog } from '../kb/folders.ts';
 import { parseFrontmatter, serializeYamlString } from '../kb/frontmatter.ts';
 import { parsePage } from '../kb/page.ts';
@@ -30,8 +34,16 @@ import {
   type ManagedMemoryMarker,
   type ManagedMemorySupport,
 } from '../write/managed-memory.ts';
-import { appendManagedBlock, managedSourceReference } from '../write/placement.ts';
+import { appendManagedBlock, managedSourceReference, placeManagedItems } from '../write/placement.ts';
+import {
+  modelCallReceipt,
+  runRetain,
+  type RetainCandidate,
+  type RetainHeldCandidate,
+} from '../write/retain.ts';
+import { resolveRememberFallback } from '../write/remember-fallback.ts';
 import { reconcileRetainManagedSources } from '../write/retain-supports.ts';
+import { routeAutomaticCandidate } from './remember.ts';
 import { normalizeSlug } from './write.ts';
 
 interface ReceiptRow {
@@ -77,6 +89,10 @@ interface ManagedBlockLocation {
   payload: string;
 }
 
+type ResolvedRetainCandidate = (ProvidedRetainCandidate | RetainCandidate) & {
+  destination: { slug: string; section?: string };
+};
+
 export async function retain(ctx: AknoContext, rawInput: unknown): Promise<RetainOutput> {
   const input = RetainInput.parse(rawInput);
   const results: RetainSourceResult[] = [];
@@ -84,7 +100,15 @@ export async function retain(ctx: AknoContext, rawInput: unknown): Promise<Retai
     try {
       results.push(
         'input' in source
-          ? await retainProvidedExact(ctx, source, input.dry_run ?? false)
+          ? source.retention.mode === 'extract'
+            ? await retainExtracted(ctx, source, input.dry_run ?? false)
+            : await retainCandidates(ctx, source, source.retention.candidates, {
+                dryRun: input.dry_run ?? false,
+                selection: 'provided',
+                placement: source.retention.placement,
+                initialResults: [],
+                modelUsage: { extraction: null, verification: null, placement: [] },
+              })
           : await retractSource(ctx, source, input.dry_run ?? false),
       );
     } catch (error) {
@@ -92,36 +116,130 @@ export async function retain(ctx: AknoContext, rawInput: unknown): Promise<Retai
         source_id: source.source_id,
         revision: source.revision,
         outcome: 'held',
+        status: 'degraded',
+        degraded: ['retain_apply_failed'],
+        reason_code: 'apply_failed',
         candidates: [],
         note: `source apply failed: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
   }
-  const held = results.filter(
-    (result) => result.outcome === 'held' || result.outcome === 'revision_conflict',
-  ).length;
+  const incomplete = results.some(
+    (result) =>
+      result.outcome === 'held' ||
+      result.outcome === 'revision_conflict' ||
+      result.candidates.some(
+        (candidate) => candidate.outcome === 'held' || candidate.outcome === 'not_found',
+      ),
+  );
   const effective = results.filter((result) => result.outcome === 'ok').length;
+  const degraded = [...new Set(results.flatMap((result) => result.degraded ?? []))];
+  const allEmpty = results.length > 0 && results.every((result) => result.status === 'empty');
   return {
-    status: 'ok',
-    outcome: held > 0 && effective > 0 ? 'partial' : effective > 0 ? 'ok' : 'noop',
+    status: degraded.length > 0 ? 'degraded' : allEmpty ? 'empty' : 'ok',
+    ...(degraded.length > 0 ? { degraded } : {}),
+    outcome: incomplete && effective > 0 ? 'partial' : effective > 0 ? 'ok' : 'noop',
     sources: results,
   };
 }
 
-async function retainProvidedExact(
+async function retainExtracted(
   ctx: AknoContext,
   source: RetainUpsertSource,
   dryRun: boolean,
+): Promise<RetainSourceResult> {
+  if (source.retention.mode !== 'extract') throw new Error('retain extract received a provided source');
+  const sourceHash = sha256(JSON.stringify(source.input));
+  const requestHash = sha256(JSON.stringify(source));
+  const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
+  if (replay) return replay;
+  const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
+  if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
+
+  const curator = retentionModel(ctx);
+  const text =
+    'text' in source.input ? source.input.text : source.input.items.map((item) => item.text).join('\n');
+  const extracted = await runRetain(text, curator, {
+    ...(source.mentioned_at ? { mentionedAt: source.mentioned_at } : {}),
+    ...(source.timezone ? { timezone: source.timezone } : {}),
+    ...(source.retention.mission ? { mission: source.retention.mission } : {}),
+    ...('items' in source.input ? { sourceItems: source.input.items } : {}),
+    folders: folderCatalog(ctx.config, ctx.store),
+    sourceId: source.source_id,
+    revision: source.revision,
+  });
+  if (extracted.sourceHold) {
+    return retainCandidates(ctx, source, [], {
+      dryRun,
+      selection: 'extracted',
+      placement: 'automatic',
+      initialResults: [],
+      modelUsage: { ...extracted.modelUsage, placement: [] },
+      sourceHold: extracted.sourceHold,
+    });
+  }
+  const initialResults = extracted.held.map(heldCandidateResult);
+  if (extracted.error) {
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      status: 'degraded',
+      degraded: [extracted.degradedReason ?? 'derive_failed'],
+      candidates: initialResults,
+      model_usage: { ...extracted.modelUsage, placement: [] },
+      note: `automatic retention could not complete: ${extracted.error}`,
+    };
+  }
+
+  return retainCandidates(ctx, source, extracted.candidates, {
+    dryRun,
+    selection: 'extracted',
+    placement: 'automatic',
+    initialResults,
+    modelUsage: { ...extracted.modelUsage, placement: [] },
+  });
+}
+
+async function retainCandidates(
+  ctx: AknoContext,
+  source: RetainUpsertSource,
+  suppliedCandidates: readonly (ProvidedRetainCandidate | RetainCandidate)[],
+  options: {
+    dryRun: boolean;
+    selection: 'provided' | 'extracted';
+    placement: 'exact' | 'automatic';
+    initialResults: RetainCandidateResult[];
+    modelUsage: {
+      extraction: RetainModelCallReceipt | null;
+      verification: RetainModelCallReceipt | null;
+      placement: RetainModelCallReceipt[];
+    };
+    sourceHold?: { reason_code: RetainHoldReason; reason: string };
+  },
 ): Promise<RetainSourceResult> {
   const sourceHash = sha256(JSON.stringify(source.input));
   const requestHash = sha256(JSON.stringify(source));
   const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
   if (replay) return replay;
-
   const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
-  if (groupIssue) {
-    return conflictResult(source.source_id, source.revision, groupIssue);
-  }
+  if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
+
+  const resolved =
+    options.placement === 'automatic'
+      ? await resolveAutomaticCandidates(ctx, suppliedCandidates)
+      : {
+          candidates: suppliedCandidates.filter(hasDestination),
+          held: suppliedCandidates
+            .filter((candidate) => !candidate.destination)
+            .map((candidate) => ({
+              candidate_id: candidate.candidate_id,
+              outcome: 'held' as const,
+              reason_code: 'validation_failed' as const,
+              reason: 'provided exact candidates require a destination',
+            })),
+        };
+  const candidates = resolved.candidates;
 
   const receiptFingerprint = managedMemoryFingerprint(
     `receipt:${source.source_id}:${source.revision}:${requestHash}`,
@@ -129,19 +247,23 @@ async function retainProvidedExact(
   const proofGroup = managedMemoryFingerprint(`proof:${source.source_group ?? source.source_id}`);
   const stages = new Map<string, PageStage>();
   const pendingSupports: PendingSupport[] = [];
-  const candidateResults: RetainCandidateResult[] = [];
-  const candidateIds = new Set(source.retention.candidates.map((candidate) => candidate.candidate_id));
+  const candidateResults: RetainCandidateResult[] = [...options.initialResults, ...resolved.held];
+  const candidateIds = new Set(suppliedCandidates.map((candidate) => candidate.candidate_id));
   const candidateOrder = new Map(
-    source.retention.candidates.map((candidate, index) => [candidate.candidate_id, index]),
+    [
+      ...options.initialResults.map((result) => result.candidate_id),
+      ...suppliedCandidates.map((candidate) => candidate.candidate_id),
+    ].map((candidateId, index) => [candidateId, index]),
   );
   const candidateMemoryIds = new Map<string, string>();
-  const ordered = dependencyOrder(source.retention.candidates);
+  const ordered = dependencyOrder(candidates);
 
-  for (const candidate of source.retention.candidates) {
+  for (const candidate of candidates) {
     if (ordered.blocked.has(candidate.candidate_id)) {
       candidateResults.push({
         candidate_id: candidate.candidate_id,
         outcome: 'held',
+        reason_code: 'validation_failed',
         reason: 'candidate relation cycle or blocked dependency',
       });
     }
@@ -150,7 +272,12 @@ async function retainProvidedExact(
   for (const candidate of ordered.candidates) {
     const issue = candidateIssue(ctx, source, candidate, candidateIds);
     if (issue) {
-      candidateResults.push({ candidate_id: candidate.candidate_id, outcome: 'held', reason: issue });
+      candidateResults.push({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        reason_code: candidateIssueReasonCode(issue),
+        reason: issue,
+      });
       continue;
     }
     const missingTarget = (candidate.relations ?? []).find(
@@ -161,6 +288,7 @@ async function retainProvidedExact(
       candidateResults.push({
         candidate_id: candidate.candidate_id,
         outcome: 'held',
+        reason_code: 'validation_failed',
         reason: `relation target candidate ${missingTarget.target.candidate_id} was not retained`,
       });
       continue;
@@ -173,6 +301,7 @@ async function retainProvidedExact(
         candidate_id: candidate.candidate_id,
         outcome: 'held',
         slug,
+        reason_code: stage.issue.includes('unreadable') ? 'source_unavailable' : 'no_writable_destination',
         reason: stage.issue,
       });
       continue;
@@ -188,7 +317,7 @@ async function retainProvidedExact(
       receipt: receiptFingerprint,
       candidate: candidateFingerprint,
       proofGroup,
-      selection: 'provided',
+      selection: options.selection,
     };
     const proposedId = newPrefixedId('mem');
     const marker = markerFromProvidedCandidate(proposedId, candidate, support, candidateMemoryIds);
@@ -212,6 +341,7 @@ async function retainProvidedExact(
           outcome: 'held',
           memory_id: memoryId,
           slug,
+          reason_code: 'support_limit',
           reason: 'support_limit',
         });
         continue;
@@ -228,6 +358,7 @@ async function retainProvidedExact(
       const row = ctx.store.db.prepare('SELECT id FROM pages WHERE slug = ?').get(slug) as
         { id: string } | undefined;
       if (
+        options.placement === 'exact' &&
         stage.before !== null &&
         candidate.destination.section &&
         countSection(stage.after, candidate.destination.section) !== 1
@@ -236,6 +367,7 @@ async function retainProvidedExact(
           candidate_id: candidate.candidate_id,
           outcome: 'held',
           slug,
+          reason_code: 'validation_failed',
           reason: 'exact destination section is absent or ambiguous',
         });
         continue;
@@ -255,16 +387,39 @@ async function retainProvidedExact(
             candidate_id: candidate.candidate_id,
             outcome: 'held',
             slug,
+            reason_code: 'conflict',
             reason: 'conflict',
           });
           continue;
         }
       }
-      stage.after = appendBlock(
-        stage.after,
-        candidate.destination.section ?? 'Unsorted',
-        managedMemoryBlock(marker, payload),
-      );
+      if (options.placement === 'automatic') {
+        const curator = retentionModel(ctx);
+        const placed = await placeManagedItems(
+          stage.after,
+          [{ id: memoryId, marker, text: payload }],
+          curator,
+        );
+        stage.after = placed.content;
+        if (placed.modelOutcome)
+          options.modelUsage.placement.push(modelCallReceipt(curator, placed.modelOutcome));
+        if (placed.error) {
+          candidateResults.push({
+            candidate_id: candidate.candidate_id,
+            outcome,
+            memory_id: memoryId,
+            slug,
+            reason_code: 'placement_degraded',
+            reason: `written under Unsorted because semantic section placement degraded: ${placed.error}`,
+          });
+        }
+      } else {
+        stage.after = appendBlock(
+          stage.after,
+          candidate.destination.section ?? 'Unsorted',
+          managedMemoryBlock(marker, payload),
+        );
+      }
     }
 
     const evidence = sourceEvidence(candidate);
@@ -275,36 +430,62 @@ async function retainProvidedExact(
       proof_group: proofGroup,
       memory_id: memoryId,
       slug,
-      selection: 'provided',
+      selection: options.selection,
       evidence,
       evidence_hash: sha256(evidence),
       source_ref: managedSourceReference(source.locator ?? source.source_id),
       origin: sourceOrigin(candidate.attribution.source_role),
       input_hash: sourceHash,
     });
-    candidateResults.push({
-      candidate_id: candidate.candidate_id,
-      outcome,
-      memory_id: memoryId,
-      slug,
-    });
+    if (!candidateResults.some((result) => result.candidate_id === candidate.candidate_id)) {
+      candidateResults.push({ candidate_id: candidate.candidate_id, outcome, memory_id: memoryId, slug });
+    }
     candidateMemoryIds.set(candidate.candidate_id, memoryId);
   }
 
   candidateResults.sort(
-    (left, right) => candidateOrder.get(left.candidate_id)! - candidateOrder.get(right.candidate_id)!,
+    (left, right) =>
+      (candidateOrder.get(left.candidate_id) ?? Number.MAX_SAFE_INTEGER) -
+      (candidateOrder.get(right.candidate_id) ?? Number.MAX_SAFE_INTEGER),
   );
 
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
+  const placementDegraded = candidateResults.some((result) => result.reason_code === 'placement_degraded');
+  const degraded: DegradedReason[] = placementDegraded
+    ? [retentionModel(ctx).available ? 'derive_failed' : 'no_derive_model']
+    : [];
   const preview: RetainSourceResult = {
     source_id: source.source_id,
     revision: source.revision,
-    outcome:
-      changed.length > 0 ? 'ok' : candidateResults.some((item) => item.outcome === 'held') ? 'held' : 'noop',
+    outcome: options.sourceHold
+      ? 'held'
+      : changed.length > 0
+        ? 'ok'
+        : candidateResults.some((item) => item.outcome === 'held')
+          ? 'held'
+          : 'noop',
     candidates: candidateResults,
-    ...(dryRun ? { note: 'dry run — nothing was written and no replay receipt was created' } : {}),
+    ...(options.sourceHold ? { reason_code: options.sourceHold.reason_code } : {}),
+    status:
+      degraded.length > 0
+        ? 'degraded'
+        : options.sourceHold
+          ? 'ok'
+          : candidateResults.length === 0
+            ? 'empty'
+            : 'ok',
+    ...(degraded.length > 0 ? { degraded } : {}),
+    ...(options.placement === 'automatic' ? { model_usage: options.modelUsage } : {}),
+    ...(options.sourceHold ? { note: options.sourceHold.reason } : {}),
+    ...(options.dryRun
+      ? {
+          note: options.sourceHold
+            ? `${options.sourceHold.reason}; dry run — no replay receipt was created`
+            : 'dry run — nothing was written and no replay receipt was created',
+        }
+      : {}),
   };
-  if (dryRun) return preview;
+  if (options.dryRun) return preview;
 
   const committed = await commitStages(
     ctx,
@@ -319,7 +500,12 @@ async function retainProvidedExact(
       sourceHash,
       requestHash,
       receiptFingerprint,
-      mode: 'provided_exact',
+      mode:
+        options.selection === 'extracted'
+          ? 'extract_automatic'
+          : options.placement === 'automatic'
+            ? 'provided_automatic'
+            : 'provided_exact',
       result,
       changeId,
       supports: pendingSupports,
@@ -330,6 +516,87 @@ async function retainProvidedExact(
   }
   await reindexStages(ctx, changed);
   return result;
+}
+
+async function resolveAutomaticCandidates(
+  ctx: AknoContext,
+  candidates: readonly (ProvidedRetainCandidate | RetainCandidate)[],
+): Promise<{ candidates: ResolvedRetainCandidate[]; held: RetainCandidateResult[] }> {
+  const resolved: ResolvedRetainCandidate[] = [];
+  const held: RetainCandidateResult[] = [];
+  const catalog = folderCatalog(ctx.config, ctx.store);
+  const fallback = await resolveRememberFallback(ctx, catalog);
+
+  for (const candidate of candidates) {
+    const suggested = candidate.destination?.slug;
+    const routed = await routeAutomaticCandidate(
+      ctx,
+      {
+        ...candidate,
+        ...(suggested ? { page: suggested } : {}),
+      } as RetainCandidate,
+      { constrainToSuggestedFolder: suggested !== undefined },
+    );
+    let slug = routed.slug;
+    if (!slug && suggested && !pageExists(ctx, suggested) && admittedAutomaticSlug(catalog, suggested)) {
+      slug = suggested;
+    }
+    if (!slug && fallback && fallback.status !== 'unavailable') slug = fallback.slug;
+
+    if (!slug) {
+      const reasonCode =
+        routed.blocked || (!suggested && routed.nearest.length === 0)
+          ? 'no_writable_destination'
+          : 'routing_uncertain';
+      held.push({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        reason_code: reasonCode,
+        reason: routed.blocked
+          ? `the strongest semantic destination is read-only: ${routed.blocked}`
+          : suggested && pageExists(ctx, suggested)
+            ? 'the suggested existing page was not judged a safe semantic destination'
+            : 'no admitted writable destination could be established',
+      });
+      continue;
+    }
+    resolved.push({ ...candidate, destination: { slug } });
+  }
+  return { candidates: resolved, held };
+}
+
+function hasDestination(
+  candidate: ProvidedRetainCandidate | RetainCandidate,
+): candidate is ResolvedRetainCandidate {
+  return candidate.destination !== undefined;
+}
+
+function pageExists(ctx: AknoContext, slug: string): boolean {
+  return ctx.store.db.prepare('SELECT 1 FROM pages WHERE slug = ?').get(slug) !== undefined;
+}
+
+function admittedAutomaticSlug(catalog: ReturnType<typeof folderCatalog>, slug: string): boolean {
+  const parent = slug.slice(0, slug.lastIndexOf('/'));
+  return catalog.some(
+    (folder) =>
+      folder.path === parent &&
+      folder.role === 'knowledge' &&
+      folder.remember === 'integrate' &&
+      folder.creatable,
+  );
+}
+
+function retentionModel(ctx: AknoContext): ModelClient {
+  return ctx.config.maintenance.model ? new ModelClient(ctx.config.maintenance.model) : ctx.models.derive;
+}
+
+function heldCandidateResult(candidate: RetainHeldCandidate): RetainCandidateResult {
+  return {
+    candidate_id: candidate.candidate_id,
+    outcome: 'held',
+    reason_code: candidate.reason_code,
+    reason: candidate.reason,
+  };
 }
 
 async function retractSource(
@@ -349,6 +616,7 @@ async function retractSource(
       source_id: source.source_id,
       revision: source.revision,
       outcome: 'held',
+      reason_code: 'source_unavailable',
       candidates: [],
       note: 'target_revision was not retained',
     };
@@ -376,12 +644,22 @@ async function retractSource(
     }
     const stage = await existingPageStage(ctx, stages, support.slug);
     if ('issue' in stage) {
-      results.push({ candidate_id: candidateId, outcome: 'held', reason: stage.issue });
+      results.push({
+        candidate_id: candidateId,
+        outcome: 'held',
+        reason_code: 'source_unavailable',
+        reason: stage.issue,
+      });
       continue;
     }
     const block = managedBlocks(stage.after).find((entry) => entry.marker.id === support.memory_id);
     if (!block) {
-      results.push({ candidate_id: candidateId, outcome: 'held', reason: 'owned memory block changed' });
+      results.push({
+        candidate_id: candidateId,
+        outcome: 'held',
+        reason_code: 'conflict',
+        reason: 'owned memory block changed',
+      });
       continue;
     }
     const nextSupports = block.marker.supports.filter(
@@ -389,7 +667,12 @@ async function retractSource(
         !(entry.receipt === support.receipt_fingerprint && entry.candidate === support.candidate_fingerprint),
     );
     if (nextSupports.length === block.marker.supports.length) {
-      results.push({ candidate_id: candidateId, outcome: 'held', reason: 'support marker changed' });
+      results.push({
+        candidate_id: candidateId,
+        outcome: 'held',
+        reason_code: 'conflict',
+        reason: 'support marker changed',
+      });
       continue;
     }
     stage.after =
@@ -503,7 +786,7 @@ function sourceGroupIssue(ctx: AknoContext, sourceId: string, group: string | un
 function candidateIssue(
   ctx: AknoContext,
   source: RetainUpsertSource,
-  candidate: ProvidedRetainCandidate,
+  candidate: ResolvedRetainCandidate,
   candidateIds: ReadonlySet<string>,
 ): string | null {
   if (candidate.text.includes('\n') || candidate.text.includes('\0'))
@@ -571,6 +854,12 @@ function candidateIssue(
     }
   }
   return null;
+}
+
+function candidateIssueReasonCode(issue: string): RetainHoldReason {
+  return /(?:support|discourse_frame|source|evidence).*(?:missing|ambiguous|unavailable)/i.test(issue)
+    ? 'source_unavailable'
+    : 'validation_failed';
 }
 
 function structuredAttributionIssue(
@@ -834,7 +1123,7 @@ function persistReceipt(
     sourceHash: string;
     requestHash: string;
     receiptFingerprint: string;
-    mode: 'provided_exact' | 'retract';
+    mode: 'provided_exact' | 'provided_automatic' | 'extract_automatic' | 'retract';
     result: RetainSourceResult;
     changeId: string | null;
     supports: readonly PendingSupport[];
@@ -907,17 +1196,19 @@ function sourceOrigin(role: ProvidedRetainCandidate['attribution']['source_role'
   return role === 'user' || role === 'assistant' ? role : 'unknown';
 }
 
-function dependencyOrder(candidates: readonly ProvidedRetainCandidate[]): {
-  candidates: ProvidedRetainCandidate[];
+function dependencyOrder<T extends ProvidedRetainCandidate>(
+  candidates: readonly T[],
+): {
+  candidates: T[];
   blocked: Set<string>;
 } {
   const byId = new Map(candidates.map((candidate) => [candidate.candidate_id, candidate]));
-  const ordered: ProvidedRetainCandidate[] = [];
+  const ordered: T[] = [];
   const blocked = new Set<string>();
   const visited = new Set<string>();
   const visiting: string[] = [];
 
-  const visit = (candidate: ProvidedRetainCandidate): boolean => {
+  const visit = (candidate: T): boolean => {
     if (visited.has(candidate.candidate_id)) return !blocked.has(candidate.candidate_id);
     const cycleAt = visiting.indexOf(candidate.candidate_id);
     if (cycleAt >= 0) {

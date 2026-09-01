@@ -192,11 +192,12 @@ export const OPS = {
     output: RetainOutput,
     implemented: true,
     description:
-      'Replay-safe retention for identified external source revisions. The first shipped mode accepts ' +
-      'caller-provided candidates with exact source spans and exact destinations, preserving discourse, ' +
-      'attribution, epistemic basis, relations, and typed time. Replaying an identical source revision is ' +
-      'a no-op; changing its bytes or interpretation is a typed revision conflict. Explicit retraction removes ' +
-      'only support owned by the addressed source revision.',
+      'Replay-safe retention for identified external source revisions. Extract mode interprets coherent text ' +
+      'or ordered source items, independently verifies complete semantics, and routes accepted memory ' +
+      'automatically. Provided candidates may use exact model-free placement or the same automatic routing. ' +
+      'Every path preserves exact source support, discourse, attribution, epistemic basis, relations, and typed ' +
+      'time. Replaying an identical source revision occurs before another model call or write; changing its ' +
+      'bytes or interpretation is a typed revision conflict. Explicit retraction removes only addressed support.',
   }),
   forget: op({
     name: 'forget',

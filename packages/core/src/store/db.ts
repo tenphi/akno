@@ -28,6 +28,7 @@ import {
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
+  RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX,
   RETAIN_RECEIPTS_MIGRATION_INDEX,
   SCHEMA_VERSION,
   SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
@@ -214,6 +215,9 @@ function migrate(db: Database.Database): void {
           'ALTER TABLE retain_supports ADD COLUMN forgotten_by TEXT REFERENCES changes(id) ON DELETE SET NULL',
         );
       }
+      if (!tableDefinitionIncludes(db, 'retain_receipts', "'extract_automatic'")) {
+        db.exec(MIGRATIONS[RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX]!);
+      }
       if (!columnExists(db, 'maintenance_items', 'component_count')) {
         db.exec(MIGRATIONS[MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX]!);
       }
@@ -257,6 +261,12 @@ function tableExists(db: Database.Database, name: string): boolean {
     .prepare("SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = ?")
     .get(name) as { present: number } | undefined;
   return row?.present === 1;
+}
+
+function tableDefinitionIncludes(db: Database.Database, name: string, text: string): boolean {
+  const row = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?").get(name) as
+    { sql: string | null } | undefined;
+  return row?.sql?.includes(text) ?? false;
 }
 
 function columnExists(db: Database.Database, table: string, column: string): boolean {

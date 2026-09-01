@@ -782,6 +782,81 @@ describe('schema migration', () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
+  it('widens durable retain receipt modes without losing existing receipts', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-retain-automatic-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 28)) legacy.exec(migration);
+    legacy
+      .prepare(
+        `INSERT INTO retain_receipts(
+           source_id, revision, request_hash, source_hash, source_group, receipt_fingerprint,
+           mode, result, change_id, created_at
+         ) VALUES (?, ?, ?, ?, ?, ?, 'provided_exact', ?, NULL, ?)`,
+      )
+      .run(
+        'fixture:1111',
+        '1',
+        'request-1111',
+        'source-1111',
+        'fixture:1111',
+        'receipt-1111',
+        '{}',
+        new Date(0).toISOString(),
+      );
+    legacy
+      .prepare(
+        `INSERT INTO retain_supports(
+           receipt_fingerprint, candidate_id, candidate_fingerprint, proof_group, memory_id, slug,
+           selection, source_ref, origin, input_hash, evidence, evidence_hash, retracted_by, forgotten_by
+         ) VALUES (?, ?, ?, ?, ?, ?, 'provided', ?, 'user', ?, ?, ?, NULL, NULL)`,
+      )
+      .run(
+        'receipt-1111',
+        'candidate-1111',
+        'candidate-fingerprint-1111',
+        'proof-group-1111',
+        'memory-1111',
+        'memory/equipment',
+        'fixture:1111',
+        'input-1111',
+        'Invented exact evidence.',
+        'evidence-1111',
+      );
+    legacy.pragma('user_version = 34');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    expect(store.db.prepare('SELECT mode FROM retain_receipts').get()).toEqual({ mode: 'provided_exact' });
+    expect(store.db.prepare('SELECT candidate_id FROM retain_supports').get()).toEqual({
+      candidate_id: 'candidate-1111',
+    });
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(() =>
+      store.db
+        .prepare(
+          `INSERT INTO retain_receipts(
+             source_id, revision, request_hash, source_hash, source_group, receipt_fingerprint,
+             mode, result, change_id, created_at
+           ) VALUES (?, ?, ?, ?, ?, ?, 'extract_automatic', ?, NULL, ?)`,
+        )
+        .run(
+          'fixture:2222',
+          '1',
+          'request-2222',
+          'source-2222',
+          'fixture:2222',
+          'receipt-2222',
+          '{}',
+          new Date(0).toISOString(),
+        ),
+    ).not.toThrow();
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
   it('adds file-state hashes to a version-thirty-three journal', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-journal-hash-migration-'));
     const dbPath = path.join(dir, 'akno.db');

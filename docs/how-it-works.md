@@ -139,11 +139,18 @@ in private state, with only a hash of the full input. This lets the dream cycle 
 generated sentence later without granting authority over the containing page. Ingestion similarly separates
 extraction, naming, routing, file movement, page creation, and indexing.
 
-`retain` is the deterministic host-facing counterpart: the caller supplies stable source identity, exact spans,
-typed discourse and attribution, and an exact admitted destination. Akno validates those claims, makes source
-revision replay idempotent, keeps independent support lineage, and performs source-scoped retraction without a
-model call. Managed-memory maintenance parses only the current v2 marker grammar; `akno migrate` is the explicit,
-dry-runnable and undoable boundary for upgrading strict legacy owned blocks.
+`retain` is the keyed host-facing counterpart. The caller supplies stable source identity and either complete
+typed candidates or coherent text/ordered items for Akno to interpret. Extracted candidates pass deterministic
+exact-span and discourse-frame validation plus a separate semantic-verification call. Provided candidates can
+use exact model-free placement or the same automatic routing and section-placement engine as `remember`.
+Identical source revisions replay before another model call or write; changed interpretations conflict, and
+source-scoped retraction removes only the addressed support.
+
+Managed payload lines keep their level-one discourse and epistemic qualification through `read` and `recall`.
+Noncanonical items remain searchable, but graph fact mining and factual `answer` evidence use the same narrow
+eligibility rule, so a report or hypothesis does not become true merely because it was retained. Managed-memory
+maintenance parses only the current v2 marker grammar; `akno migrate` is the explicit, dry-runnable and undoable
+boundary for upgrading strict legacy owned blocks.
 
 Maintenance adds another boundary:
 

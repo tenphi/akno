@@ -19,9 +19,9 @@ import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { managedSourceReference, placeManagedItems, type ManagedItem } from '../write/placement.ts';
 import {
+  markerFromProvidedCandidate,
   managedMemoryFingerprint,
   renderManagedMemoryPayload,
-  type ManagedMemoryMarker,
 } from '../write/managed-memory.ts';
 import { resolveRememberFallback, type RememberFallbackResolution } from '../write/remember-fallback.ts';
 import { recall } from './recall.ts';
@@ -82,12 +82,21 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     folders: catalog,
   });
 
+  if (retained.sourceHold) {
+    return {
+      status: 'ok',
+      outcome: 'noop',
+      considered: [],
+      note: `nothing was kept: ${retained.sourceHold.reason}`,
+    };
+  }
+
   if (retained.error) {
     // No model means no `remember`. Saying so is the whole contract —
     // silently keeping nothing would look identical to "nothing was worth keeping".
     return {
       status: 'degraded',
-      degraded: [curator.degradedReason({})],
+      degraded: [retained.degradedReason ?? curator.degradedReason({})],
       outcome: 'noop',
       note: `the retain mission could not run: ${retained.error}`,
     };
@@ -106,7 +115,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   const routed = await Promise.all(
     retained.candidates.map(async (candidate) => ({
       candidate,
-      ...(await route(ctx, candidate)),
+      ...(await routeAutomaticCandidate(ctx, candidate)),
     })),
   );
   const configuredFallback = await resolveRememberFallback(ctx, catalog);
@@ -318,36 +327,36 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
 
     const sourceRef = managedSourceReference(input.source ?? 'remember');
     const inputHash = sha256(input.text);
-    const items: ManagedItem[] = accepted.map(({ candidate }) => {
-      const id = newPrefixedId('mem');
-      const sourceRole = candidate.origin ?? 'unknown';
-      const kind =
-        candidate.kind === 'decision' || candidate.kind === 'preference' ? candidate.kind : 'claim';
-      const basis =
-        sourceRole === 'user' && (kind === 'decision' || kind === 'preference')
-          ? ('self_attested' as const)
-          : ('source_report' as const);
-      const marker: ManagedMemoryMarker = {
+    const acceptedIds = new Set(accepted.map(({ candidate }) => candidate.candidate_id));
+    const placeable = accepted.filter(({ candidate }) =>
+      (candidate.relations ?? []).every(
+        (relation) => !('candidate_id' in relation.target) || acceptedIds.has(relation.target.candidate_id),
+      ),
+    );
+    if (placeable.length !== accepted.length) {
+      for (const entry of accepted) {
+        if (placeable.includes(entry)) continue;
+        considered[entry.index]!.kept = false;
+        considered[entry.index]!.slug = null;
+      }
+    }
+    if (placeable.length === 0) continue;
+    const memoryIds = new Map(
+      placeable.map(({ candidate }) => [candidate.candidate_id, newPrefixedId('mem')]),
+    );
+    const items: ManagedItem[] = placeable.map(({ candidate }) => {
+      const id = memoryIds.get(candidate.candidate_id)!;
+      const marker = markerFromProvidedCandidate(
         id,
-        supports: [
-          {
-            receipt: managedMemoryFingerprint(`remember:${inputHash}`),
-            candidate: managedMemoryFingerprint(`${inputHash}:${candidate.text}`),
-            proofGroup: managedMemoryFingerprint(`remember-group:${sourceRef}:${inputHash}`),
-            selection: 'extracted',
-          },
-        ],
-        kind,
-        subject: 'unresolved',
-        sourceRole,
-        reporters: [],
-        commitment: 'asserted',
-        disposition: kind === 'decision' ? 'accepted' : 'active',
-        polarity: 'affirmed',
-        basis,
-        evidence: [],
-        links: [],
-      };
+        candidate,
+        {
+          receipt: managedMemoryFingerprint(`remember:${inputHash}`),
+          candidate: managedMemoryFingerprint(`${inputHash}:${candidate.candidate_id}`),
+          proofGroup: managedMemoryFingerprint(`remember-group:${sourceRef}:${inputHash}`),
+          selection: 'extracted',
+        },
+        memoryIds,
+      );
       return {
         id,
         marker,
@@ -362,8 +371,8 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       relPath,
       content: placed.content,
       existed: Boolean(row),
-      indexes: accepted.map((entry) => entry.index),
-      sources: accepted.flatMap((entry, itemIndex) =>
+      indexes: placeable.map((entry) => entry.index),
+      sources: placeable.flatMap((entry, itemIndex) =>
         entry.candidate.evidence
           ? [
               {
@@ -477,7 +486,9 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   };
 }
 
-function candidateOrigin(role: ManagedMemoryMarker['sourceRole']): ManagedSourceArchive['origin'] {
+function candidateOrigin(
+  role: RetainCandidate['attribution']['source_role'],
+): ManagedSourceArchive['origin'] {
   return role === 'user' || role === 'assistant' ? role : 'unknown';
 }
 
@@ -567,7 +578,7 @@ function newManagedPage(title: string): string {
 
 // ─── Routing ────────────────────────────────────────────────────────────────
 
-interface RouteDecision {
+export interface AutomaticRouteDecision {
   slug: string | null;
   score: number;
   nearest: string[];
@@ -575,7 +586,7 @@ interface RouteDecision {
   blocked: string | null;
 }
 
-type RoutedCandidate = RouteDecision & { candidate: RetainCandidate };
+type RoutedCandidate = AutomaticRouteDecision & { candidate: RetainCandidate };
 
 /**
  * An internal `recall` finds where a claim belongs. **Best score at or above
@@ -623,13 +634,23 @@ type RoutedCandidate = RouteDecision & { candidate: RetainCandidate };
  * was creating a page, never on the path that already routed, and it can only rescue a miss:
  * a claim that routed keeps the destination its own text chose.
  */
-async function route(ctx: AknoContext, candidate: RetainCandidate): Promise<RouteDecision> {
-  const byClaim = await scoreDestinations(ctx, `${candidate.subject}. ${candidate.text}`, candidate);
+export async function routeAutomaticCandidate(
+  ctx: AknoContext,
+  candidate: RetainCandidate,
+  options: { constrainToSuggestedFolder?: boolean } = {},
+): Promise<AutomaticRouteDecision> {
+  const constrainToSuggestedFolder = options.constrainToSuggestedFolder ?? true;
+  const byClaim = await scoreDestinations(
+    ctx,
+    `${candidate.subject}. ${candidate.text}`,
+    candidate,
+    constrainToSuggestedFolder,
+  );
   if (byClaim.slug !== null || byClaim.blocked !== null) return byClaim;
 
   const subject = candidate.subject.trim();
   if (subject.length === 0) return byClaim;
-  const bySubject = await scoreDestinations(ctx, subject, candidate);
+  const bySubject = await scoreDestinations(ctx, subject, candidate, constrainToSuggestedFolder);
   if (bySubject.slug !== null || bySubject.blocked !== null) return bySubject;
 
   // Neither routed. Report whichever came closer, and prefer the claim pass's suggestions:
@@ -642,7 +663,8 @@ async function scoreDestinations(
   ctx: AknoContext,
   query: string,
   candidate: RetainCandidate,
-): Promise<RouteDecision> {
+  constrainToSuggestedFolder: boolean,
+): Promise<AutomaticRouteDecision> {
   const result = await recall(ctx, {
     query,
     mode: 'lookup',
@@ -670,7 +692,7 @@ async function scoreDestinations(
       (card) =>
         card.role === 'knowledge' &&
         !isReserved(card.slug, ctx.config) &&
-        isInsideSuggestedFolder(card.slug, candidate.page),
+        (!constrainToSuggestedFolder || isInsideSuggestedFolder(card.slug, candidate.page)),
     )
     .map((card) => {
       const policy = ctx.store.db

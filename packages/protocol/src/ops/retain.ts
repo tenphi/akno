@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ResultEnvelope } from '../common.ts';
+import { DegradedReason, ResultEnvelope } from '../common.ts';
 
 const RetainRef = z.string().min(1).max(300);
 
@@ -182,7 +182,13 @@ export const ProvidedRetainCandidate = z
     discourse_frame: z.array(RetainSourceSpan).min(1).max(16),
     relations: z.array(RetainedRelation).max(8).optional(),
     time: RetainedTime.optional(),
-    destination: z.object({ slug: z.string().min(1), section: z.string().min(1).max(100).optional() }),
+    /**
+     * Required by `provided + exact`; optional as a bounded taxonomy suggestion for automatic
+     * placement. Extraction never grants this suggestion write authority.
+     */
+    destination: z
+      .object({ slug: z.string().min(1), section: z.string().min(1).max(100).optional() })
+      .optional(),
   })
   .superRefine((candidate, ctx) => {
     const allowed: Record<typeof candidate.kind, readonly (typeof candidate.discourse.disposition)[]> = {
@@ -250,20 +256,39 @@ export const RetainUpsertSource = z
       z.object({ text: z.string().min(1).max(500_000) }),
       z.object({ items: z.array(RetainSourceItem).min(1).max(500) }),
     ]),
-    retention: z.object({
-      mode: z.literal('provided'),
-      placement: z.literal('exact'),
-      candidates: z.array(ProvidedRetainCandidate).min(1).max(50),
-    }),
+    retention: z.union([
+      z.object({
+        mode: z.literal('provided'),
+        placement: z.enum(['exact', 'automatic']),
+        candidates: z.array(ProvidedRetainCandidate).min(1).max(50),
+      }),
+      z.object({
+        mode: z.literal('extract'),
+        /** Additive source-specific emphasis; it never replaces the fixed retention policy. */
+        mission: z.string().max(2000).optional(),
+      }),
+    ]),
   })
   .superRefine((source, ctx) => {
-    const candidateIds = source.retention.candidates.map((candidate) => candidate.candidate_id);
-    if (new Set(candidateIds).size !== candidateIds.length) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['retention', 'candidates'],
-        message: 'candidate ids must be unique within one source revision',
-      });
+    if (source.retention.mode === 'provided') {
+      const candidateIds = source.retention.candidates.map((candidate) => candidate.candidate_id);
+      if (new Set(candidateIds).size !== candidateIds.length) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['retention', 'candidates'],
+          message: 'candidate ids must be unique within one source revision',
+        });
+      }
+      if (
+        source.retention.placement === 'exact' &&
+        source.retention.candidates.some((candidate) => candidate.destination === undefined)
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['retention', 'candidates'],
+          message: 'provided exact candidates require a destination',
+        });
+      }
     }
     if ('items' in source.input) {
       const itemIds = source.input.items.map((item) => item.item_id);
@@ -298,11 +323,38 @@ export const RetainInput = z.object({
 });
 export type RetainInput = z.infer<typeof RetainInput>;
 
+export const RetainHoldReason = z.enum([
+  'source_unavailable',
+  'discourse_uncertain',
+  'context_too_large',
+  'time_unresolved',
+  'noncanonical_without_context',
+  'no_writable_destination',
+  'routing_uncertain',
+  'conflict',
+  'support_limit',
+  'placement_degraded',
+  'apply_failed',
+  'validation_failed',
+]);
+export type RetainHoldReason = z.infer<typeof RetainHoldReason>;
+
+/** Content-free receipt for one automatic-retention model request. */
+export const RetainModelCallReceipt = z.object({
+  model: z.string(),
+  latency_ms: z.number().nonnegative(),
+  input_tokens: z.number().int().nonnegative().nullable(),
+  output_tokens: z.number().int().nonnegative().nullable(),
+  total_tokens: z.number().int().nonnegative().nullable(),
+});
+export type RetainModelCallReceipt = z.infer<typeof RetainModelCallReceipt>;
+
 export const RetainCandidateResult = z.object({
   candidate_id: z.string(),
   outcome: z.enum(['written', 'duplicate', 'support_added', 'retracted', 'held', 'not_found']),
   memory_id: z.string().optional(),
   slug: z.string().optional(),
+  reason_code: RetainHoldReason.optional(),
   reason: z.string().optional(),
 });
 export type RetainCandidateResult = z.infer<typeof RetainCandidateResult>;
@@ -313,6 +365,17 @@ export const RetainSourceResult = z.object({
   outcome: z.enum(['ok', 'replayed', 'noop', 'held', 'revision_conflict']),
   change_id: z.string().optional(),
   candidates: z.array(RetainCandidateResult),
+  /** Source-level hold when no safe candidate boundary exists yet. */
+  reason_code: RetainHoldReason.optional(),
+  status: z.enum(['ok', 'empty', 'degraded', 'unavailable']).optional(),
+  degraded: z.array(DegradedReason).optional(),
+  model_usage: z
+    .object({
+      extraction: RetainModelCallReceipt.nullable(),
+      verification: RetainModelCallReceipt.nullable(),
+      placement: z.array(RetainModelCallReceipt),
+    })
+    .optional(),
   note: z.string().optional(),
 });
 export type RetainSourceResult = z.infer<typeof RetainSourceResult>;

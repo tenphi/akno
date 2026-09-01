@@ -40,6 +40,46 @@ export const ResultStatus = z.enum(['ok', 'empty', 'degraded', 'unavailable']);
 export type ResultStatus = z.infer<typeof ResultStatus>;
 
 /**
+ * Semantic qualification for an Akno-managed level-one memory item.
+ *
+ * The payload stays searchable even when it is a report, proposal, hypothesis,
+ * or rejection. `answer_eligible` is the deterministic boundary that prevents
+ * those useful-but-noncanonical memories from becoming ordinary factual answer
+ * evidence.
+ */
+export const MemoryQualification = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal('qualified'),
+    id: z.string(),
+    level: z.literal(1),
+    kind: z.enum(['claim', 'decision', 'preference', 'plan', 'event', 'question']),
+    subject: z.string(),
+    source_role: z.enum(['user', 'assistant', 'external', 'unknown']),
+    source_speaker: z.string().optional(),
+    commitment: z.enum(['asserted', 'tentative', 'hypothetical', 'counterfactual', 'none']),
+    disposition: z.enum([
+      'active',
+      'proposed',
+      'accepted',
+      'rejected',
+      'resolved',
+      'cancelled',
+      'completed',
+      'superseded',
+    ]),
+    polarity: z.enum(['affirmed', 'negated']),
+    basis: z.enum(['self_attested', 'source_report', 'cited_evidence', 'system_record']),
+    answer_eligible: z.boolean(),
+  }),
+  z.object({
+    status: z.literal('unavailable'),
+    id: z.string(),
+    answer_eligible: z.literal(false),
+  }),
+]);
+export type MemoryQualification = z.infer<typeof MemoryQualification>;
+
+/**
  * Every line Akno returns carries the file and line it came from. `confidence`
  * is present when a fact was derived from this line — how sure the deriver is
  * that the line states a well-formed durable claim, not how sure it is the claim
@@ -49,6 +89,8 @@ export const Line = z.object({
   n: z.number().int().positive(),
   text: z.string(),
   confidence: z.number().min(0).max(1).optional(),
+  /** Present when this line is the visible payload of an Akno-managed memory item. */
+  memory: MemoryQualification.optional(),
   /**
    * The live fact this line produced, when it produced one — the handle `forget`
    * takes to retract it.
@@ -290,6 +332,10 @@ export const DegradedReason = z.enum([
   'embedding_failed',
   'rerank_failed',
   'derive_failed',
+  /** Automatic retention could not independently verify extracted semantics. */
+  'retain_verification_failed',
+  /** A retained source could not complete its validated write/reconciliation path. */
+  'retain_apply_failed',
   'expansion_failed',
   'no_vector_index',
   'partial_index',

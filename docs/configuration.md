@@ -154,7 +154,7 @@ Every role is optional and degrades independently:
 | ----------- | --------------------------------------------------------- | ------------------------------------------------------ |
 | `embedding` | Semantic candidate generation                             | Lexical and exact-graph candidates only                |
 | `reranker`  | Candidate ordering and optional irrelevance qualification | Rank-fusion order                                      |
-| `derive`    | Summaries, facts, naming, `remember`, and planner work    | Those derived capabilities report unavailable          |
+| `derive`    | Summaries, facts, naming, `remember`, `retain`, and plans | Those derived capabilities report unavailable          |
 | `expansion` | Query reformulation                                       | Search the original query only                         |
 | `answer`    | Direct grounded synthesis and verification                | `answer` reports `not_answered`; discovery still works |
 | `vision`    | Description of images with no readable text               | OCR and ordinary document extraction still work        |

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
-import { parseJsonLoose, type ModelClient } from '../models/client.ts';
+import { parseJsonLoose, type ModelClient, type ModelOutcome } from '../models/client.ts';
 import { managedMemoryBlock, type ManagedMemoryMarker } from './managed-memory.ts';
 
 export interface ManagedItem {
@@ -13,6 +13,8 @@ export interface PlacementResult {
   content: string;
   unsorted: string[];
   error: string | null;
+  /** Internal content-free accounting source; callers decide how to expose the receipt. */
+  modelOutcome: ModelOutcome<string> | null;
 }
 
 const SYSTEM = `You place durable knowledge into one Markdown page.
@@ -40,13 +42,14 @@ export async function placeManagedItems(
   items: ManagedItem[],
   model: ModelClient,
 ): Promise<PlacementResult> {
-  if (items.length === 0) return { content, unsorted: [], error: null };
+  if (items.length === 0) return { content, unsorted: [], error: null, modelOutcome: null };
 
   const frontmatter = parseFrontmatter(content);
   const body = content.slice(frontmatter.bodyOffset);
   const existing = secondLevelHeadings(body);
   let chosen = new Map<string, string>();
   let error: string | null = null;
+  let modelOutcome: ModelOutcome<string> | null = null;
 
   if (model.available) {
     const result = await model.chat(
@@ -61,6 +64,7 @@ export async function placeManagedItems(
       ],
       { schema: PLACEMENT_SCHEMA, maxTokens: Math.min(1600, 200 + items.length * 100) },
     );
+    modelOutcome = result;
     if (result.ok && result.value) {
       const parsed = parseJsonLoose<{ placements?: unknown }>(result.value);
       chosen = cleanPlacements(parsed?.placements, new Set(items.map((item) => item.id)));
@@ -84,6 +88,7 @@ export async function placeManagedItems(
     content: content.slice(0, frontmatter.bodyOffset) + nextBody,
     unsorted,
     error,
+    modelOutcome,
   };
 }
 

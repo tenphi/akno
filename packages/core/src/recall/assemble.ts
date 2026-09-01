@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
+import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
 import type {
   Card,
   Depth,
@@ -366,9 +367,10 @@ export class Assembler {
     const allLines = content.split('\n');
 
     if (depth === 'full' && maxLines === Number.POSITIVE_INFINITY) {
-      return allLines
+      const lines = allLines
         .map((text, index) => ({ n: index + 1, text }))
         .filter((line) => line.text.trim().length > 0);
+      return qualifyManagedMemoryLines(lines, allLines);
     }
 
     // Collect the line ranges of the matching chunks, best first.
@@ -398,7 +400,7 @@ export class Assembler {
       }
       if (out.length >= maxLines) break;
     }
-    return out;
+    return qualifyManagedMemoryLines(out, allLines);
   }
 
   private factsFor(pageId: string): FactRow[] {

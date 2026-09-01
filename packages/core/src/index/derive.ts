@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
 import { aknoItemId, type ParsedPage } from '../kb/page.ts';
-import { parseManagedMemoryMarker, type ManagedMemoryMarker } from '../write/managed-memory.ts';
+import { managedMemoryAnswerEligible, parseManagedMemoryMarker } from '../write/managed-memory.ts';
 
 /**
  * Deriving structure from text already in the knowledge base — facts,
@@ -220,7 +220,7 @@ function mineableLines(
       pendingItem = marker;
       const managed = parseManagedMemoryMarker(text);
       // An old or malformed owned marker has unknown semantics until explicit migration or repair.
-      pendingFactEligible = managed ? managedMemoryFactEligible(managed) : false;
+      pendingFactEligible = managed ? managedMemoryAnswerEligible(managed) : false;
       continue;
     }
     if (/^#{1,6}\s+/.test(text) || /^<!--.*-->$/.test(text)) {
@@ -233,13 +233,6 @@ function mineableLines(
     pendingFactEligible = true;
   }
   return out;
-}
-
-function managedMemoryFactEligible(marker: ManagedMemoryMarker): boolean {
-  if (marker.basis === 'source_report') return false;
-  if (marker.commitment !== 'asserted') return false;
-  if (!['claim', 'decision', 'preference', 'event'].includes(marker.kind)) return false;
-  return ['active', 'accepted', 'completed', 'resolved'].includes(marker.disposition);
 }
 
 function cleanSummary(value: unknown): string | null {

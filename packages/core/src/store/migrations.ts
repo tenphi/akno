@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 34;
+export const SCHEMA_VERSION = 35;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -40,6 +40,7 @@ export const MAINTENANCE_ACTION_RECEIPTS_MIGRATION_INDEX = 24;
 export const MAINTENANCE_RECOVERY_STATE_MIGRATION_INDEX = 25;
 export const RETAIN_RECEIPTS_MIGRATION_INDEX = 26;
 export const CHANGE_FILE_HASHES_MIGRATION_INDEX = 27;
+export const RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX = 28;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -948,6 +949,60 @@ export const MIGRATIONS: string[] = [
   `
   ALTER TABLE change_files ADD COLUMN before_hash TEXT;
   ALTER TABLE change_files ADD COLUMN after_hash TEXT;
+  `,
+  // SQLite cannot widen a CHECK constraint in place. Rebuild the receipt and dependent support
+  // tables together so automatic modes remain durable without weakening any existing foreign key.
+  `
+  ALTER TABLE retain_supports RENAME TO retain_supports_before_automatic;
+  ALTER TABLE retain_receipts RENAME TO retain_receipts_before_automatic;
+  DROP INDEX retain_supports_memory;
+  DROP INDEX retain_receipts_source;
+
+  CREATE TABLE retain_receipts (
+    source_id           TEXT NOT NULL,
+    revision            TEXT NOT NULL,
+    request_hash        TEXT NOT NULL,
+    source_hash         TEXT NOT NULL,
+    source_group        TEXT,
+    receipt_fingerprint TEXT NOT NULL UNIQUE,
+    mode                TEXT NOT NULL,
+    result              TEXT NOT NULL,
+    change_id           TEXT,
+    created_at          TEXT NOT NULL,
+    PRIMARY KEY(source_id, revision),
+    CHECK (mode IN ('provided_exact', 'provided_automatic', 'extract_automatic', 'retract', 'migration'))
+  );
+  CREATE INDEX retain_receipts_source
+    ON retain_receipts(source_id, created_at);
+  INSERT INTO retain_receipts
+    SELECT * FROM retain_receipts_before_automatic;
+
+  CREATE TABLE retain_supports (
+    receipt_fingerprint   TEXT NOT NULL REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    candidate_id          TEXT NOT NULL,
+    candidate_fingerprint TEXT NOT NULL,
+    proof_group           TEXT NOT NULL,
+    memory_id             TEXT NOT NULL,
+    slug                  TEXT NOT NULL,
+    selection             TEXT NOT NULL,
+    source_ref            TEXT NOT NULL,
+    origin                TEXT NOT NULL,
+    input_hash            TEXT NOT NULL,
+    evidence              TEXT NOT NULL,
+    evidence_hash         TEXT NOT NULL,
+    retracted_by          TEXT REFERENCES retain_receipts(receipt_fingerprint) ON DELETE SET NULL,
+    forgotten_by          TEXT REFERENCES changes(id) ON DELETE SET NULL,
+    PRIMARY KEY(receipt_fingerprint, candidate_id),
+    CHECK (selection IN ('provided', 'extracted')),
+    CHECK (origin IN ('user', 'assistant', 'unknown'))
+  );
+  CREATE INDEX retain_supports_memory
+    ON retain_supports(memory_id, receipt_fingerprint);
+  INSERT INTO retain_supports
+    SELECT * FROM retain_supports_before_automatic;
+
+  DROP TABLE retain_supports_before_automatic;
+  DROP TABLE retain_receipts_before_automatic;
   `,
 ];
 

@@ -350,6 +350,63 @@ describe('grounded answer discovery surface', () => {
       total_tokens: null,
     });
   });
+
+  it('returns report qualification from recall but never offers the report as factual answer evidence', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The lantern warranty lasts eight years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    write(
+      'reports/lantern.md',
+      [
+        '# Lantern report',
+        '',
+        '<!-- akno:item mem_report v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=external speaker=Bo%20Winters reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->',
+        '- **Reported by Bo Winters:** Bo Winters said the lantern warranty lasts eight years.',
+        '',
+      ].join('\n'),
+    );
+    await memory.index({ verify: true });
+
+    const recalled = await memory.recall({
+      query: 'lantern warranty eight years',
+      filter: { folder: 'reports' },
+      expand: false,
+      graph: false,
+      rerank: false,
+    });
+    const report = recalled.results.find((result) => result.type === 'page');
+    expect(report?.type === 'page' ? report.lines[0]?.memory : undefined).toMatchObject({
+      status: 'qualified',
+      kind: 'claim',
+      source_role: 'external',
+      source_speaker: 'Bo Winters',
+      basis: 'source_report',
+      answer_eligible: false,
+    });
+
+    const result = await memory.answer({
+      question: 'How long is the lantern warranty?',
+      filter: { folder: 'reports' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+
+    expect(result).toMatchObject({
+      outcome: 'not_answered',
+      answer: null,
+      context: [],
+      citations: [],
+      related_page_slugs: ['reports/lantern'],
+      model_usage: { generation: null, verification: null },
+    });
+    expect(result.note).toContain('explicitly noncanonical');
+    expect(modelRequests).toHaveLength(0);
+  });
 });
 
 async function useAnswerModel(script: {
