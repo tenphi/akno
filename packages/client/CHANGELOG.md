@@ -1,5 +1,16 @@
 # @tenphi/akno-client
 
+## 0.6.0
+
+### Minor Changes
+
+- [#42](https://github.com/tenphi/akno/pull/42) [`0c09ba7`](https://github.com/tenphi/akno/commit/0c09ba7ff4cc6e6591c3908a60a5949dab4799e8) Thanks [@tenphi](https://github.com/tenphi)! - Add one clock-relative timeline across authored events, retained states, plans and deadlines, and document date evidence. Timeline reads now support explicit clocks, temporal and actionability filters, bounded recurrence, and grouped counts; recall, answers, and automatic context preserve temporal eligibility instead of treating planned or expired memory as current fact. The wire protocol advances to version 2 because timeline adds a retained-memory result variant and required clock metadata.
+
+### Patch Changes
+
+- Updated dependencies [[`0c09ba7`](https://github.com/tenphi/akno/commit/0c09ba7ff4cc6e6591c3908a60a5949dab4799e8)]:
+  - @tenphi/akno-protocol@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes

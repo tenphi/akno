@@ -1,6 +1,6 @@
 {
   "name": "@tenphi/akno-core",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Akno \u2014 the memory layer itself: index, ops, watcher, models",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
