@@ -6,8 +6,22 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { sha256 } from '../store/ids.ts';
 import type { ImagePart, ModelClient } from '../models/client.ts';
+import {
+  selectDocumentExtractorBackend,
+  type DocumentExtractionRequest,
+  type DocumentExtractionResult,
+  type DocumentExtractorBackend,
+  type ExtractionProvenance,
+} from './extractor-contract.ts';
+import {
+  createLinuxDocumentExtractor,
+  createNodeLinuxCommandRunner,
+  linuxExtractionCapabilities,
+  type LinuxCommandRunner,
+} from './linux-extractor.ts';
 
 const run = promisify(execFile);
+const linuxBackend = createLinuxDocumentExtractor(createNodeLinuxCommandRunner());
 
 /**
  * **Extraction happens on arrival, always** — text layer first, OCR for scans,
@@ -35,7 +49,7 @@ export interface Extraction {
   /** Vision's mean confidence over recognised lines. Null for a text layer. */
   confidence: number | null;
   /** How the text was obtained, for `doctor` and for the ingest report. */
-  via: 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'vision' | 'none';
+  via: 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'libreoffice' | 'vision' | 'none';
   /** Set when nothing could be extracted, and why. Never thrown. */
   note: string | null;
   /**
@@ -108,9 +122,40 @@ export async function extract(options: ExtractOptions): Promise<Extraction> {
     return { text: text.trim(), pageCount: null, ocr: false, confidence: null, via: 'plain', note: null };
   }
 
-  if (TEXTUTIL_EXTENSIONS.has(extension)) return textutil(options.absPath);
-  if (extension === '.pdf') return pdf(options);
-  if (IMAGE_EXTENSIONS.has(extension)) return image(options);
+  if (TEXTUTIL_EXTENSIONS.has(extension) || extension === '.pdf' || IMAGE_EXTENSIONS.has(extension)) {
+    const backend = selectDocumentExtractorBackend(process.platform, {
+      linux: linuxBackend,
+      macos: macosBackend,
+    });
+    const result = await backend.extract(options);
+
+    // Image description is model-backed rather than platform-backed. Keep it available when
+    // native OCR is unsupported, while preserving the typed native-backend degradation when
+    // no configured model can make the image searchable.
+    // The legacy macOS image backend already performs this fallback. Retrying it here when
+    // that request returns no description doubles latency and potentially billable work.
+    if (
+      backend.name !== 'macos-native' &&
+      !result.text &&
+      IMAGE_EXTENSIONS.has(extension) &&
+      options.vision?.available
+    ) {
+      const described = await describeImage(options.absPath, options.vision);
+      if (described) {
+        return toLegacyExtraction({
+          text: described,
+          pages: { count: 1, sections: [] },
+          ocr: false,
+          confidence: null,
+          provenance: { backend: 'model-fallback', tool: 'vision-model' },
+          text_from: 'vision',
+          degradation: null,
+        });
+      }
+    }
+
+    return toLegacyExtraction(result);
+  }
 
   return none(`no extractor for ${extension || 'a file with no extension'}`);
 }
@@ -118,6 +163,44 @@ export async function extract(options: ExtractOptions): Promise<Extraction> {
 function none(note: string): Extraction {
   return { text: '', pageCount: null, ocr: false, confidence: null, via: 'none', note };
 }
+
+export function toLegacyExtraction(result: DocumentExtractionResult): Extraction {
+  return {
+    text: result.text,
+    pageCount: result.pages?.count ?? null,
+    ocr: result.ocr,
+    confidence: result.confidence,
+    via: result.text_from,
+    note: result.degradation?.message ?? null,
+    ...(result.pages?.sections.length ? { sections: result.pages.sections } : {}),
+  };
+}
+
+function failed(message: string, provenance: ExtractionProvenance): DocumentExtractionResult {
+  return {
+    text: '',
+    pages: null,
+    ocr: false,
+    confidence: null,
+    provenance,
+    text_from: 'none',
+    degradation: { kind: 'extraction-failed', message },
+  };
+}
+
+const macosBackend: DocumentExtractorBackend = {
+  name: 'macos-native',
+  extract: async (options) => {
+    const extension = path.extname(options.absPath).toLowerCase();
+    if (TEXTUTIL_EXTENSIONS.has(extension)) return textutil(options.absPath);
+    if (extension === '.pdf') return pdf(options);
+    if (IMAGE_EXTENSIONS.has(extension)) return image(options);
+    return failed(`no macOS extractor for ${extension || 'a file with no extension'}`, {
+      backend: 'macos-native',
+      tool: null,
+    });
+  },
+};
 
 // ─── PDF and images, via the cached Swift helper ─────────────────────────────
 
@@ -130,10 +213,13 @@ interface SwiftResult {
   error?: string;
 }
 
-async function pdf(options: ExtractOptions): Promise<Extraction> {
+async function pdf(options: DocumentExtractionRequest): Promise<DocumentExtractionResult> {
   const binary = await ensureExtractor();
   if (!binary) {
-    return none('the extractor could not be built — is the Xcode command line tools package installed?');
+    return failed('the extractor could not be built — is the Xcode command line tools package installed?', {
+      backend: 'macos-native',
+      tool: 'pdfkit',
+    });
   }
 
   const result = await callSwift(binary, [
@@ -142,24 +228,31 @@ async function pdf(options: ExtractOptions): Promise<Extraction> {
     '--ocr-pages',
     String(options.maxOcrPages),
   ]);
-  if (!result) return none('the extractor did not return a result');
-  if (result.error) return none(result.error);
+  if (!result) {
+    return failed('the extractor did not return a result', { backend: 'macos-native', tool: 'pdfkit' });
+  }
+  if (result.error) return failed(result.error, { backend: 'macos-native', tool: 'pdfkit' });
 
   return {
     text: result.text.trim(),
-    pageCount: result.pages,
+    pages: { count: result.pages, sections: result.sections ?? [] },
     ocr: result.ocr,
     confidence: result.confidence ?? null,
-    via: result.ocr ? 'ocr' : 'text-layer',
-    ...(result.sections?.length ? { sections: result.sections } : {}),
-    note:
+    provenance: { backend: 'macos-native', tool: result.ocr ? 'vision' : 'pdfkit' },
+    text_from: result.ocr ? 'ocr' : 'text-layer',
+    degradation:
       result.ocr && result.pages > options.maxOcrPages
-        ? `scanned: OCR read the first ${options.maxOcrPages} of ${result.pages} pages`
+        ? {
+            kind: 'partial-extraction',
+            message: `scanned: OCR read the first ${options.maxOcrPages} of ${result.pages} pages`,
+            pages_read: options.maxOcrPages,
+            pages_total: result.pages,
+          }
         : null,
   };
 }
 
-async function image(options: ExtractOptions): Promise<Extraction> {
+async function image(options: DocumentExtractionRequest): Promise<DocumentExtractionResult> {
   const binary = await ensureExtractor();
   const result = binary ? await callSwift(binary, ['image', options.absPath]) : null;
 
@@ -167,12 +260,12 @@ async function image(options: ExtractOptions): Promise<Extraction> {
   if (text.length > 0) {
     return {
       text,
-      pageCount: 1,
+      pages: { count: 1, sections: [{ page: 1, text }] },
       ocr: true,
       confidence: result?.confidence ?? null,
-      via: 'ocr',
-      note: null,
-      sections: [{ page: 1, text }],
+      provenance: { backend: 'macos-native', tool: 'vision' },
+      text_from: 'ocr',
+      degradation: null,
     };
   }
 
@@ -183,14 +276,23 @@ async function image(options: ExtractOptions): Promise<Extraction> {
   if (options.vision?.available) {
     const described = await describeImage(options.absPath, options.vision);
     if (described) {
-      return { text: described, pageCount: 1, ocr: false, confidence: null, via: 'vision', note: null };
+      return {
+        text: described,
+        pages: { count: 1, sections: [] },
+        ocr: false,
+        confidence: null,
+        provenance: { backend: 'macos-native', tool: 'vision-model' },
+        text_from: 'vision',
+        degradation: null,
+      };
     }
   }
 
-  return none(
+  return failed(
     binary
       ? 'no text found in the image, and no vision model is configured to describe it'
       : 'the extractor could not be built, and no vision model is configured',
+    { backend: 'macos-native', tool: binary ? 'vision' : null },
   );
 }
 
@@ -246,7 +348,7 @@ async function callSwift(binary: string, args: string[]): Promise<SwiftResult | 
 
 // ─── textutil, which ships with macOS ───────────────────────────────────────
 
-async function textutil(absPath: string): Promise<Extraction> {
+async function textutil(absPath: string): Promise<DocumentExtractionResult> {
   try {
     const { stdout } = await run('/usr/bin/textutil', ['-convert', 'txt', '-stdout', absPath], {
       maxBuffer: 10 * 1_048_576,
@@ -254,10 +356,21 @@ async function textutil(absPath: string): Promise<Extraction> {
     });
     const text = stdout.trim();
     return text.length > 0
-      ? { text, pageCount: null, ocr: false, confidence: null, via: 'textutil', note: null }
-      : none('textutil found no text');
+      ? {
+          text,
+          pages: null,
+          ocr: false,
+          confidence: null,
+          provenance: { backend: 'macos-native', tool: 'textutil' },
+          text_from: 'textutil',
+          degradation: null,
+        }
+      : failed('textutil found no text', { backend: 'macos-native', tool: 'textutil' });
   } catch (err) {
-    return none(`textutil could not read the file: ${err instanceof Error ? err.message : String(err)}`);
+    return failed(`textutil could not read the file: ${err instanceof Error ? err.message : String(err)}`, {
+      backend: 'macos-native',
+      tool: 'textutil',
+    });
   }
 }
 
@@ -326,16 +439,52 @@ function findSwiftSource(): string | null {
   return null;
 }
 
-/** What `doctor` reports, so a missing capability is visible rather than surprising. */
-export async function extractionCapabilities(): Promise<{
+export interface ExtractionCapabilities {
+  backend: 'macos-native' | 'linux-native' | 'unsupported';
+  libreoffice: boolean;
   swift: boolean;
   textutil: boolean;
+  pdfinfo: boolean;
+  pdftotext: boolean;
+  pdftoppm: boolean;
+  tesseract: boolean;
   note: string | null;
-}> {
+}
+
+/** What `doctor` reports, so a missing capability is visible rather than surprising. */
+export async function extractionCapabilities(
+  platform = process.platform,
+  linuxCommands: LinuxCommandRunner = createNodeLinuxCommandRunner(),
+): Promise<ExtractionCapabilities> {
+  if (platform === 'linux') {
+    const capabilities = await linuxExtractionCapabilities(linuxCommands);
+    return { swift: false, textutil: false, ...capabilities };
+  }
+
+  if (platform !== 'darwin') {
+    return {
+      backend: 'unsupported',
+      libreoffice: false,
+      swift: false,
+      textutil: false,
+      pdfinfo: false,
+      pdftotext: false,
+      pdftoppm: false,
+      tesseract: false,
+      note: `document extraction is not supported on ${platform}`,
+    };
+  }
+
   const binary = await ensureExtractor();
   return {
+    backend: 'macos-native',
+    libreoffice: false,
     swift: binary !== null,
     textutil: fs.existsSync('/usr/bin/textutil'),
+    pdfinfo: false,
+    pdftotext: false,
+    pdftoppm: false,
+    tesseract: false,
     note: binary
       ? null
       : 'PDF and image extraction is unavailable: the Swift helper could not be built. ' +

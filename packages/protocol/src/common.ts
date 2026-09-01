@@ -185,7 +185,7 @@ export type DocumentRef = z.infer<typeof DocumentRef>;
 /** How searchable text was obtained from a standalone document. */
 export const DocumentTextSource = z.object({
   kind: z.enum(['original_text', 'ocr_text', 'model_description', 'none']),
-  via: z.enum(['plain', 'textutil', 'text-layer', 'ocr', 'vision', 'none']),
+  via: z.enum(['plain', 'textutil', 'libreoffice', 'text-layer', 'ocr', 'vision', 'none']),
   confidence: z.number().min(0).max(1).nullable().optional(),
 });
 export type DocumentTextSource = z.infer<typeof DocumentTextSource>;

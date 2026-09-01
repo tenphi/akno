@@ -39,7 +39,16 @@ describe('platform-aware configuration paths', () => {
     const config = loadConfig({
       platform: 'linux',
       homeDir: '/home/invented',
+      // Keep the assertion about discovery while preventing a real checkout-local
+      // `akno_path` from becoming this test's resolved value.
+      overrides: { akno_path: root },
       env: {
+        // Machine-config discovery is the subject of this test. A checkout's gitignored
+        // `.env` must not select a different config, path, or isolation mode first.
+        AKNO_CONFIG: '',
+        AKNO_ISOLATED: '',
+        AKNO_PATH: '',
+        AKNO_STATE_DIR: '',
         XDG_CONFIG_HOME: path.join(xdgRoot, 'config'),
         XDG_STATE_HOME: path.join(xdgRoot, 'state'),
       },
