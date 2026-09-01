@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
 import { aknoItemId, type ParsedPage } from '../kb/page.ts';
-import { managedMemoryAnswerEligible, parseManagedMemoryMarker } from '../write/managed-memory.ts';
+import { managedMemoryFactEligible, parseManagedMemoryMarker } from '../write/managed-memory.ts';
 
 /**
  * Deriving structure from text already in the knowledge base — facts,
@@ -220,7 +220,7 @@ function mineableLines(
       pendingItem = marker;
       const managed = parseManagedMemoryMarker(text);
       // An old or malformed owned marker has unknown semantics until explicit migration or repair.
-      pendingFactEligible = managed ? managedMemoryAnswerEligible(managed) : false;
+      pendingFactEligible = managed ? managedMemoryFactEligible(managed) : false;
       continue;
     }
     if (/^#{1,6}\s+/.test(text) || /^<!--.*-->$/.test(text)) {

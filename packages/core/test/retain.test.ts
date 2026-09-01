@@ -167,6 +167,56 @@ function upsert(sourceId: string, revision: string, text = 'Ada Marlow selected 
 }
 
 describe('provided exact retain', () => {
+  it('holds relative time unless the source supplies the exact clock and timezone', async () => {
+    const mem = await openMem();
+    try {
+      const text = 'Ada Marlow plans a Zephyr QX-100 inspection tomorrow.';
+      const result = await mem.retain({
+        sources: [
+          {
+            source_id: 'chat:relative-1111',
+            revision: '1',
+            mentioned_at: '2031-04-12T09:00:00Z',
+            input: { text },
+            retention: {
+              mode: 'provided',
+              placement: 'exact',
+              candidates: [
+                {
+                  candidate_id: 'inspection-plan',
+                  kind: 'plan',
+                  text,
+                  subject: 'Zephyr QX-100',
+                  attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+                  discourse: { commitment: 'asserted', disposition: 'accepted' },
+                  epistemic: { basis: 'self_attested' },
+                  support: [{ quote: text }],
+                  discourse_frame: [{ quote: text }],
+                  destination: { slug: 'memory/equipment', section: 'Warranty' },
+                  time: {
+                    start: '2031-04-13',
+                    precision: 'day',
+                    relation: 'scheduled',
+                    status: 'planned',
+                    mentioned_at: '2031-04-12T09:00:00Z',
+                    timezone: 'UTC',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      });
+
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'held',
+        candidates: [{ outcome: 'held', reason_code: 'time_unresolved' }],
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('writes v2 memory once and replays without touching bytes or the journal', async () => {
     const mem = await openMem();
     try {

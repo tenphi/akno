@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { SpawnSyncReturns } from 'node:child_process';
+import { PROTOCOL_VERSION } from '@tenphi/akno-protocol';
 import { describe, expect, it, vi } from 'vitest';
 import {
   installSystemdService,
@@ -48,7 +49,7 @@ describe('systemd user service definitions', () => {
       isCompatibleAknoHello(
         `${JSON.stringify({
           hello: 'akno',
-          protocol: 1,
+          protocol: PROTOCOL_VERSION,
           version: '0.1.0',
           writable: true,
           akno_path: '/invented/base',

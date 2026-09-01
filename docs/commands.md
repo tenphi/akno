@@ -12,7 +12,7 @@ knowledge base, and which model roles may be involved.
 | `read <slug>`         | Read one exact page or document                                         | No                         | None                                          |
 | `list`                | Browse folders, pages, or a tree                                        | No                         | None                                          |
 | `graph [seed]`        | Inspect bounded exact evidence paths and locators                       | No                         | None                                          |
-| `timeline`            | Retrieve authored events and typed document dates                       | No                         | None                                          |
+| `timeline`            | Read unified event, state, plan, deadline, and document time            | No                         | None                                          |
 | `context <query>`     | Assemble broad context or precision-first automatic recall              | No                         | Embedding; reranker at an ambiguous boundary  |
 | `write`               | Create, append, patch, or replace a page                                | Yes                        | Vision for textless attachments only          |
 | `remember <text>`     | Extract durable knowledge and route it                                  | Yes or held proposal       | Maintenance or derive, plus recall roles      |
@@ -66,7 +66,8 @@ behind the default socket; pair `--akno-path` with that memory's `--state-dir` w
 - Use `answer` when you want Akno to answer a memory question and verify its support.
 - Use `read` when you already know the exact slug or document id.
 - Use `graph` when the relationship path matters more than page content.
-- Use `timeline` when time is the primary filter.
+- Use `timeline` when time is the primary filter. Its clock is explicit in the result; `--view actionable`
+  narrows active or accepted scheduled work without hiding history from the default view.
 - Use `context --profile auto_recall` from an agent host before a substantive turn with no explicit memory
   question.
 

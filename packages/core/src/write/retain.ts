@@ -497,11 +497,15 @@ export function cleanCandidateBatch(
       });
       continue;
     }
-    if (RELATIVE_TIME.test(sourceEvidence(spans.frame)) && (!time || !time.mentioned_at)) {
+    if (
+      RELATIVE_TIME.test(sourceEvidence(spans.frame)) &&
+      (!time?.mentioned_at || !options.timezone || time.timezone !== options.timezone)
+    ) {
       held.push({
         candidate_id: provisionalId,
         reason_code: 'time_unresolved',
-        reason: 'relative calendar language has no exact source mention time and was not resolved',
+        reason:
+          'relative calendar language has no exact source mention time and IANA timezone and was not resolved',
       });
       continue;
     }

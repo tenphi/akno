@@ -357,6 +357,7 @@ export {
   OP_NAMES,
   PROTOCOL_VERSION,
   type Card,
+  type ClockRelation,
   type DegradedReason,
   type DocumentTimelineEvidence,
   type AknoOps,
@@ -371,5 +372,7 @@ export {
   type PageRole,
   type RecallMode,
   type ResultStatus,
+  type RetainedTime,
+  type TimelineMemory,
   type TimelineResult,
 } from '@tenphi/akno-protocol';

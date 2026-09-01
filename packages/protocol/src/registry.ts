@@ -115,9 +115,9 @@ export const OPS = {
     output: TimelineOutput,
     implemented: true,
     description:
-      'When things happened. Dated events, filtered by range, by subject page, or by text match. Events are ' +
-      'indexed from the ledger and from dated lines on any page, so a date written on the page it belongs to ' +
-      'is found too.',
+      'One read-time clock over authored events, retained states/plans/deadlines, and dated document evidence. ' +
+      'Filter by clock relation, source meaning, status, disposition, subject, or range; use the actionable view ' +
+      'for accepted upcoming or overdue work. Partial dates stay partial and document dates never become events.',
   }),
   context: op({
     name: 'context',

@@ -51,9 +51,14 @@ export interface ManagedMemoryMarker {
 export function managedMemoryAnswerEligible(marker: ManagedMemoryMarker): boolean {
   if (marker.basis === 'source_report') return false;
   if (marker.commitment !== 'asserted') return false;
-  if (marker.time?.status === 'planned' || marker.time?.status === 'tentative') return false;
+  if (marker.time && marker.time.status !== 'actual') return false;
   if (!['claim', 'decision', 'preference', 'event'].includes(marker.kind)) return false;
   return ['active', 'accepted', 'completed', 'resolved'].includes(marker.disposition);
+}
+
+/** A clock-scoped valid state cannot become an unscoped current graph fact. */
+export function managedMemoryFactEligible(marker: ManagedMemoryMarker): boolean {
+  return managedMemoryAnswerEligible(marker) && marker.time?.relation !== 'valid';
 }
 
 const ID = /^[A-Za-z0-9_-]{4,80}$/;

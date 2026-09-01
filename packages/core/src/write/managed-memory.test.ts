@@ -57,6 +57,39 @@ describe('managed memory v2 marker', () => {
     expect(parseManagedMemoryMarker(malformed)).toBeNull();
   });
 
+  it('rejects recurrence that ends before its anchor or lacks instant calendar rules', () => {
+    const marker = markerFromProvidedCandidate('mem_1111', candidate, {
+      receipt: 'aaaaaaaaaaaa',
+      candidate: 'bbbbbbbbbbbb',
+      proofGroup: 'cccccccccccc',
+      selection: 'provided',
+    });
+    expect(() =>
+      renderManagedMemoryMarker({
+        ...marker,
+        time: {
+          start: '2031-04-20',
+          precision: 'day',
+          relation: 'scheduled',
+          status: 'planned',
+          recurrence: { frequency: 'daily', until: '2031-04-19' },
+        },
+      }),
+    ).toThrow('invalid temporal envelope');
+    expect(() =>
+      renderManagedMemoryMarker({
+        ...marker,
+        time: {
+          start: '2031-04-20T09:00:00+02:00',
+          precision: 'instant',
+          relation: 'scheduled',
+          status: 'planned',
+          recurrence: { frequency: 'daily' },
+        },
+      }),
+    ).toThrow('invalid temporal envelope');
+  });
+
   it('rejects an assistant claim disguised as self-attested memory', () => {
     const marker = markerFromProvidedCandidate('mem_1111', candidate, {
       receipt: 'aaaaaaaaaaaa',

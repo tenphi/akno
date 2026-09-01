@@ -14,9 +14,11 @@ citable, reversible, and independent of a chat provider.
 > writing, document ingestion, evidence-graph retrieval, grounded answering, and autonomous maintenance at Akno's
 > single-writer service boundary. Keyed `retain` can accept typed candidates or extract them from coherent text and
 > structured conversations, route them automatically or to exact destinations, replay identical revisions without
-> another model call, and retract source-owned support. Unified temporal queries, source-reference intake, and
-> co-located observations remain follow-up work. Defaults stay conservative: model-dependent inference is opt-in, scheduled maintenance starts
-> in audit mode, and network and persistence boundaries fail closed. Releases use Changesets and tokenless npm
+> another model call, and retract source-owned support. `timeline` now reads authored events, retained world-time
+> states/plans/deadlines, and document date evidence through one explicit clock. Source-reference intake and
+> co-located observations remain follow-up work. Defaults stay conservative: model-dependent inference is
+> opt-in, scheduled maintenance starts in audit mode, and network and persistence boundaries fail closed.
+> Releases use Changesets and tokenless npm
 > trusted publishing; CI verifies the packaged artifacts and installed first-run workflow before publication.
 
 ## Why use it?
@@ -86,7 +88,7 @@ Need invented notes to try? Copy [`examples/demo-brain`](https://github.com/tenp
 ```text
 Markdown pages + documents
           │
-          ├── index/watch ──> disposable search, facts, events, and evidence graph
+          ├── index/watch ──> disposable search, facts, temporal entries, and evidence graph
           │                         │
           │                         └── recall / answer / read / timeline / context
           │

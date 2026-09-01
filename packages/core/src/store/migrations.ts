@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 35;
+export const SCHEMA_VERSION = 36;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -41,6 +41,7 @@ export const MAINTENANCE_RECOVERY_STATE_MIGRATION_INDEX = 25;
 export const RETAIN_RECEIPTS_MIGRATION_INDEX = 26;
 export const CHANGE_FILE_HASHES_MIGRATION_INDEX = 27;
 export const RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX = 28;
+export const TEMPORAL_ENTRIES_MIGRATION_INDEX = 29;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1003,6 +1004,52 @@ export const MIGRATIONS: string[] = [
 
   DROP TABLE retain_supports_before_automatic;
   DROP TABLE retain_receipts_before_automatic;
+  `,
+  // Retained world time is a rebuildable projection of v2 managed markers. Keeping it apart
+  // from authored events prevents a planned date or document timestamp from acquiring event
+  // semantics merely because every kind participates in one timeline query.
+  `
+  CREATE TABLE IF NOT EXISTS temporal_entries (
+    entry_key        TEXT PRIMARY KEY,
+    memory_id        TEXT NOT NULL,
+    source_page      TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_slug      TEXT NOT NULL,
+    line             INTEGER NOT NULL,
+    summary          TEXT NOT NULL,
+    kind             TEXT NOT NULL,
+    subject          TEXT NOT NULL,
+    relation         TEXT NOT NULL,
+    temporal_status  TEXT NOT NULL,
+    disposition      TEXT NOT NULL,
+    precision        TEXT NOT NULL,
+    start            TEXT,
+    until            TEXT,
+    timezone         TEXT,
+    mentioned_at     TEXT,
+    recurrence       TEXT,
+    evidence         TEXT NOT NULL DEFAULT '[]',
+    answer_eligible  INTEGER NOT NULL DEFAULT 0,
+    CHECK (line > 0),
+    CHECK (kind IN ('claim', 'decision', 'preference', 'plan', 'event', 'question')),
+    CHECK (relation IN ('occurred', 'valid', 'scheduled', 'due')),
+    CHECK (temporal_status IN ('actual', 'scheduled', 'planned', 'tentative')),
+    CHECK (disposition IN ('active', 'proposed', 'accepted', 'rejected', 'resolved', 'cancelled', 'completed', 'superseded')),
+    CHECK (precision IN ('instant', 'day', 'month', 'year', 'unknown')),
+    CHECK (answer_eligible IN (0, 1)),
+    UNIQUE(source_page, memory_id)
+  );
+  CREATE INDEX IF NOT EXISTS temporal_entries_memory ON temporal_entries(memory_id);
+  CREATE INDEX IF NOT EXISTS temporal_entries_page ON temporal_entries(source_page, line);
+  CREATE INDEX IF NOT EXISTS temporal_entries_bounds ON temporal_entries(start, until);
+
+  CREATE TABLE IF NOT EXISTS temporal_projection_issues (
+    source_page TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    line        INTEGER NOT NULL,
+    reason      TEXT NOT NULL,
+    PRIMARY KEY(source_page, line),
+    CHECK (line > 0),
+    CHECK (reason IN ('invalid_temporal_marker', 'missing_temporal_payload'))
+  );
   `,
 ];
 

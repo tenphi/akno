@@ -819,6 +819,24 @@ function candidateIssue(
   const attributionIssue = structuredAttributionIssue(source, candidate);
   if (attributionIssue) return attributionIssue;
   if (sourceEvidence(candidate).length > 1200) return 'discourse frame exceeds the evidence limit';
+  if (RELATIVE_TIME.test(sourceEvidence(candidate))) {
+    const sourceItems = 'items' in source.input ? source.input.items : [];
+    const supportedMentionTimes = new Set([
+      ...(source.mentioned_at ? [source.mentioned_at] : []),
+      ...candidate.discourse_frame.flatMap((span) => {
+        const item = sourceItems.find((entry) => entry.item_id === span.item_id);
+        return item?.mentioned_at ? [item.mentioned_at] : [];
+      }),
+    ]);
+    if (
+      !source.timezone ||
+      !candidate.time?.mentioned_at ||
+      candidate.time.timezone !== source.timezone ||
+      !supportedMentionTimes.has(candidate.time.mentioned_at)
+    ) {
+      return 'relative time is unresolved without the exact source mention time and timezone';
+    }
+  }
   if (
     candidate.subject_ref &&
     !ctx.store.db.prepare('SELECT 1 FROM graph_entities WHERE id = ?').get(candidate.subject_ref.entity_id)
@@ -857,10 +875,14 @@ function candidateIssue(
 }
 
 function candidateIssueReasonCode(issue: string): RetainHoldReason {
+  if (issue.startsWith('relative time is unresolved')) return 'time_unresolved';
   return /(?:support|discourse_frame|source|evidence).*(?:missing|ambiguous|unavailable)/i.test(issue)
     ? 'source_unavailable'
     : 'validation_failed';
 }
+
+const RELATIVE_TIME =
+  /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b/i;
 
 function structuredAttributionIssue(
   source: RetainUpsertSource,

@@ -71,6 +71,8 @@ export async function indexCommand(argv: string[]): Promise<number> {
       ['pages summarized', report.pagesDerived],
       ['facts derived', report.factsDerived],
       ['events indexed', report.eventsIndexed],
+      ['temporal memories', report.temporalEntriesIndexed],
+      ['temporal holds', report.temporalProjectionIssues > 0 ? report.temporalProjectionIssues : '-'],
       ['graph nodes', report.graphNodes],
       ['graph edges', report.graphEdges],
       ['graph entities', report.graphEntities],

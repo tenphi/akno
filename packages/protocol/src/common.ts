@@ -39,6 +39,175 @@ export type Depth = z.infer<typeof Depth>;
 export const ResultStatus = z.enum(['ok', 'empty', 'degraded', 'unavailable']);
 export type ResultStatus = z.infer<typeof ResultStatus>;
 
+export const TemporalPrecision = z.enum(['instant', 'day', 'month', 'year', 'unknown']);
+export type TemporalPrecision = z.infer<typeof TemporalPrecision>;
+
+export const TemporalRelation = z.enum(['occurred', 'valid', 'scheduled', 'due']);
+export type TemporalRelation = z.infer<typeof TemporalRelation>;
+
+export const TemporalStatus = z.enum(['actual', 'scheduled', 'planned', 'tentative']);
+export type TemporalStatus = z.infer<typeof TemporalStatus>;
+
+export const IanaTimezone = z
+  .string()
+  .min(1)
+  .max(100)
+  .refine(validTimezone, 'timezone must be an IANA timezone');
+export type IanaTimezone = z.infer<typeof IanaTimezone>;
+
+export const TemporalRecurrence = z.object({
+  frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
+  interval: z.number().int().positive().max(100).optional(),
+  weekdays: z
+    .array(z.enum(['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su']))
+    .max(7)
+    .optional(),
+  until: z.string().min(1).max(100).optional(),
+});
+export type TemporalRecurrence = z.infer<typeof TemporalRecurrence>;
+
+export const RetainedTime = z
+  .object({
+    start: z.string().min(1).max(100).optional(),
+    until: z.string().min(1).max(100).optional(),
+    precision: TemporalPrecision,
+    relation: TemporalRelation,
+    status: TemporalStatus,
+    timezone: IanaTimezone.optional(),
+    mentioned_at: z.string().datetime({ offset: true }).optional(),
+    recurrence: TemporalRecurrence.optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.precision !== 'unknown' && value.start === undefined && value.until === undefined) {
+      ctx.addIssue({ code: 'custom', message: 'retained time needs start or until' });
+    }
+    for (const [name, boundary] of [
+      ['start', value.start],
+      ['until', value.until],
+    ] as const) {
+      if (boundary !== undefined && !validTemporalBoundary(boundary, value.precision)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [name],
+          message: `${name} does not match ${value.precision} precision`,
+        });
+      }
+    }
+    const allowedStatus = {
+      occurred: ['actual'],
+      valid: ['actual', 'tentative'],
+      scheduled: ['scheduled', 'planned', 'tentative'],
+      due: ['scheduled', 'planned', 'tentative'],
+    }[value.relation];
+    if (!allowedStatus.includes(value.status)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['status'],
+        message: `${value.status} is not valid for ${value.relation}`,
+      });
+    }
+    if (value.start && value.until && temporalBoundaryAfter(value.start, value.until, value.precision)) {
+      ctx.addIssue({ code: 'custom', path: ['until'], message: 'temporal interval is reversed' });
+    }
+    if (value.recurrence) {
+      if (!value.start) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['recurrence'],
+          message: 'recurrence requires an anchored start',
+        });
+      }
+      if (value.recurrence.weekdays && value.recurrence.frequency !== 'weekly') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['recurrence', 'weekdays'],
+          message: 'weekdays are valid only for weekly recurrence',
+        });
+      }
+      if (value.recurrence.until && !validTemporalBoundary(value.recurrence.until, value.precision)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['recurrence', 'until'],
+          message: `recurrence until does not match ${value.precision} precision`,
+        });
+      }
+      if (
+        value.start &&
+        value.recurrence.until &&
+        temporalBoundaryAfter(value.start, value.recurrence.until, value.precision)
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['recurrence', 'until'],
+          message: 'recurrence until precedes its anchored start',
+        });
+      }
+      if (value.precision === 'instant' && !value.timezone) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['timezone'],
+          message: 'an instant recurrence requires an IANA timezone',
+        });
+      }
+      const frequencySupported =
+        value.precision === 'instant' ||
+        value.precision === 'day' ||
+        (value.precision === 'month' && ['monthly', 'yearly'].includes(value.recurrence.frequency)) ||
+        (value.precision === 'year' && value.recurrence.frequency === 'yearly');
+      if (!frequencySupported) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['recurrence', 'frequency'],
+          message: `${value.recurrence.frequency} recurrence cannot preserve ${value.precision} precision`,
+        });
+      }
+    }
+  });
+export type RetainedTime = z.infer<typeof RetainedTime>;
+
+export const ClockRelation = z.enum([
+  'past',
+  'today',
+  'current_period',
+  'ongoing',
+  'future',
+  'overdue',
+  'undated',
+]);
+export type ClockRelation = z.infer<typeof ClockRelation>;
+
+function validTemporalBoundary(value: string, precision: TemporalPrecision): boolean {
+  if (precision === 'unknown') return value.length <= 100;
+  if (precision === 'instant') return z.string().datetime({ offset: true }).safeParse(value).success;
+  if (precision === 'year') return /^\d{4}$/.test(value);
+  if (precision === 'month') {
+    const match = /^(\d{4})-(\d{2})$/.exec(value);
+    return Boolean(match && Number(match[2]) >= 1 && Number(match[2]) <= 12);
+  }
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function temporalBoundaryAfter(left: string, right: string, precision: TemporalPrecision): boolean {
+  if (precision === 'unknown') return false;
+  if (precision === 'instant') return Date.parse(left) > Date.parse(right);
+  return left > right;
+}
+
+function validTimezone(value: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: value }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Semantic qualification for an Akno-managed level-one memory item.
  *
@@ -70,6 +239,14 @@ export const MemoryQualification = z.discriminatedUnion('status', [
     polarity: z.enum(['affirmed', 'negated']),
     basis: z.enum(['self_attested', 'source_report', 'cited_evidence', 'system_record']),
     answer_eligible: z.boolean(),
+    current_eligible: z.boolean(),
+    temporal: z
+      .object({
+        time: RetainedTime,
+        clock_relation: ClockRelation,
+        actionable: z.boolean(),
+      })
+      .optional(),
   }),
   z.object({
     status: z.literal('unavailable'),
@@ -336,6 +513,10 @@ export const DegradedReason = z.enum([
   'retain_verification_failed',
   /** A retained source could not complete its validated write/reconciliation path. */
   'retain_apply_failed',
+  /** Retained temporal rows are absent, stale, or excluded by malformed temporal metadata. */
+  'partial_temporal_index',
+  /** A bounded recurrence/range guard stopped timeline expansion. */
+  'timeline_range_limited',
   'expansion_failed',
   'no_vector_index',
   'partial_index',
@@ -408,4 +589,13 @@ export type SlugFilter = z.infer<typeof SlugFilter>;
 /** `YYYY`, `YYYY-MM` or `YYYY-MM-DD` — the granularities a ledger is filtered by. */
 export const DatePrefix = z
   .string()
-  .regex(/^\d{4}(-\d{2}(-\d{2})?)?$/, 'expected YYYY, YYYY-MM or YYYY-MM-DD');
+  .regex(/^\d{4}(-\d{2}(-\d{2})?)?$/, 'expected YYYY, YYYY-MM or YYYY-MM-DD')
+  .refine(validDatePrefix, 'date prefix is not a real calendar period');
+
+function validDatePrefix(value: string): boolean {
+  if (value.length === 4) return true;
+  const month = Number(value.slice(5, 7));
+  if (month < 1 || month > 12) return false;
+  if (value.length === 7) return true;
+  return validTemporalBoundary(value, 'day');
+}

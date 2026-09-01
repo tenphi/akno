@@ -92,10 +92,17 @@ export async function contextCommand(argv: string[]): Promise<number> {
       for (const entry of result.timeline) {
         if (entry.type === 'event') {
           line(`  ${style.bold(entry.date)}  ${truncate(entry.summary, 78)}`);
+        } else if (entry.type === 'memory') {
+          line(
+            `  ${style.bold(entry.start ?? entry.until ?? 'undated')}  ${truncate(entry.summary, 70)} ` +
+              style.grey(
+                `[${entry.source_kind}; ${entry.temporal_status}; ${entry.disposition}; ${entry.clock_relation}]`,
+              ),
+          );
         } else {
           line(
             `  ${style.bold(entry.date)}  ${truncate(entry.label, 62)} ` +
-              style.grey(`[document; ${entry.date_basis}]`),
+              style.grey(`[document; ${entry.clock_relation}; ${entry.date_basis}]`),
           );
           if (entry.quote) line(`    ${truncate(entry.quote.replaceAll('\n', ' '), 96)}`);
         }

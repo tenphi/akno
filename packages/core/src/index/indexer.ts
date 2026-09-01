@@ -33,6 +33,7 @@ import type { ModelClient } from '../models/client.ts';
 import { rebuildEvidenceGraph } from './graph.ts';
 import { resolveContextualEntityMentions } from './entity-resolution.ts';
 import { IndexRevisionCoordinator, type IndexRevisionBarrier } from './revision-barrier.ts';
+import { replaceTemporalEntries, TEMPORAL_PROJECTION_VERSION } from '../timeline/projection.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -106,6 +107,8 @@ export interface IndexReport {
   /** `<file>.txt` written beside a document this pass. Zero unless `ingest.text_rendition`. */
   renditionsWritten: number;
   eventsIndexed: number;
+  temporalEntriesIndexed: number;
+  temporalProjectionIssues: number;
   factsDerived: number;
   graphNodes: number;
   graphEdges: number;
@@ -209,6 +212,8 @@ export class Indexer {
       documentsSummarized: 0,
       renditionsWritten: 0,
       eventsIndexed: 0,
+      temporalEntriesIndexed: 0,
+      temporalProjectionIssues: 0,
       factsDerived: 0,
       graphNodes: 0,
       graphEdges: 0,
@@ -249,6 +254,12 @@ export class Indexer {
     // exactly the failure Akno exists to avoid. A `--only` pass sees a fraction of the
     // tree and is not the place to conclude anything about the rest of it.
     const reclassified = options.only ? new Set<string>() : this.reclassify(report);
+    const temporalProjectionStale =
+      !options.only && this.#store.meta('temporal_projection_version') !== TEMPORAL_PROJECTION_VERSION;
+    const temporalProjectionPaths = temporalProjectionStale ? this.temporalProjectionPaths(report) : [];
+    if (temporalProjectionStale) {
+      for (const relPath of temporalProjectionPaths) reclassified.add(relPath);
+    }
     if (!options.only) for (const relPath of this.pageFilesWithNoPage(report)) reclassified.add(relPath);
 
     // ── Stat fast path ─────────────────────────────────────────────────────
@@ -325,10 +336,14 @@ export class Indexer {
     const pageFiles = needsIndex.filter((file) => file.kind === 'page');
     progress({ phase: 'pages', done: 0, total: pageFiles.length });
     let pageIndex = 0;
+    let pageProjectionFailed = false;
+    const projectedPaths = new Set<string>();
     for (const file of pageFiles) {
       try {
-        await this.indexPage(file, report);
+        if (await this.indexPage(file, report)) projectedPaths.add(file.relPath);
+        else pageProjectionFailed = true;
       } catch (err) {
+        pageProjectionFailed = true;
         report.warnings.push(`could not index ${file.relPath}: ${errorMessage(err)}`);
       }
       progress({ phase: 'pages', done: ++pageIndex, total: pageFiles.length, detail: file.relPath });
@@ -416,6 +431,13 @@ export class Indexer {
     report.graphNonTraversableFacts = graph.nonTraversableFacts;
     progress({ phase: 'graph', done: 1, total: 1 });
 
+    const projectionUpgradeComplete = temporalProjectionPaths.every(
+      (relPath) => !present.has(relPath) || projectedPaths.has(relPath),
+    );
+    if (temporalProjectionStale && !pageProjectionFailed && projectionUpgradeComplete) {
+      this.#store.setMeta('temporal_projection_version', TEMPORAL_PROJECTION_VERSION);
+    }
+
     report.durationMs = performance.now() - started;
     progress({ phase: 'done', done: 1, total: 1 });
     return report;
@@ -470,6 +492,18 @@ export class Indexer {
     }
     this.#store.setMeta(RULES_FINGERPRINT, fingerprint);
     return moved;
+  }
+
+  private temporalProjectionPaths(report: IndexReport): string[] {
+    const rows = this.#store.db.prepare("SELECT rel_path FROM files WHERE kind = 'page'").all() as {
+      rel_path: string;
+    }[];
+    if (rows.length > 0) {
+      report.warnings.push(
+        `the temporal projection changed: ${rows.length} page${rows.length === 1 ? '' : 's'} will be re-indexed`,
+      );
+    }
+    return rows.map((row) => row.rel_path);
   }
 
   /**
@@ -635,13 +669,13 @@ export class Indexer {
 
   // ─── One page ─────────────────────────────────────────────────────────────
 
-  private async indexPage(file: ScannedFile, report: IndexReport): Promise<void> {
+  private async indexPage(file: ScannedFile, report: IndexReport): Promise<boolean> {
     if (file.dataless) {
       report.warnings.push(
         `${file.relPath} reads as a placeholder — a sync client has evicted it. Not indexed; ` +
           'download it or turn off storage optimization for this folder.',
       );
-      return;
+      return false;
     }
 
     const content = await fsp.readFile(file.absPath, 'utf8');
@@ -656,7 +690,7 @@ export class Indexer {
       if (existing) this.removePage(existing);
       this.recordFile(file, null);
       report.ignored++;
-      return;
+      return true;
     }
 
     const pageId = this.resolvePageId(page, file);
@@ -677,6 +711,9 @@ export class Indexer {
       this.upsertPage(pageId, page, resolved, file);
       this.replaceChunks(pageId, effectiveChunks);
       this.replaceEvents(pageId, page);
+      const temporal = replaceTemporalEntries(this.#store, pageId, page, resolved.role);
+      report.temporalEntriesIndexed += temporal.indexed;
+      report.temporalProjectionIssues += temporal.issues;
       this.replaceLinks(pageId, page);
       this.recordFile(file, pageId);
     });
@@ -689,6 +726,7 @@ export class Indexer {
     if (this.#config.writeIds && !page.frontmatterId) {
       await this.writeIdIntoPage(file, content, pageId, report);
     }
+    return true;
   }
 
   /**

@@ -319,4 +319,28 @@ describe('automatic retain discourse quality corpus', () => {
     expect(unresolved.candidates).toEqual([]);
     expect(unresolved.held).toEqual([expect.objectContaining({ reason_code: 'time_unresolved' })]);
   });
+
+  it('holds relative calendar language when the mention time has no timezone', () => {
+    const result = cleanCandidateBatch(
+      [
+        {
+          text: 'Ada Marlow will visit Blackwater Bay tomorrow.',
+          kind: 'plan',
+          support: [{ quote: 'Ada Marlow will visit Blackwater Bay tomorrow.' }],
+          frame: [{ quote: 'Ada Marlow will visit Blackwater Bay tomorrow.' }],
+          time: {
+            start: '2026-09-02',
+            precision: 'day',
+            relation: 'scheduled',
+            status: 'planned',
+            mentioned_at: '2026-09-01T07:00:00Z',
+          },
+        },
+      ],
+      { mentionedAt: '2026-09-01T07:00:00Z' },
+    );
+
+    expect(result.candidates).toEqual([]);
+    expect(result.held).toEqual([expect.objectContaining({ reason_code: 'time_unresolved' })]);
+  });
 });
