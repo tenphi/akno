@@ -1,10 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { describe, expect, it, vi } from 'vitest';
+import type { ModelClient } from '../models/client.ts';
 import {
   selectDocumentExtractorBackend,
   type DocumentExtractionResult,
   type DocumentExtractorBackend,
 } from './extractor-contract.ts';
-import { toLegacyExtraction } from './extract.ts';
+import { extract, toLegacyExtraction } from './extract.ts';
 
 const MACOS_RESULT: DocumentExtractionResult = {
   text: 'Warranty: five years',
@@ -99,5 +103,38 @@ describe('document extractor contract', () => {
       via: 'libreoffice',
       note: null,
     });
+  });
+
+  it('does not retry a failed vision fallback after native image OCR finds no text', async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-extractor-contract-'));
+    const image = path.join(directory, 'blank.png');
+    fs.writeFileSync(
+      image,
+      Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==',
+        'base64',
+      ),
+    );
+    const chat = vi.fn(async () => ({
+      ok: false,
+      value: null,
+      reason: 'request_failed' as const,
+      error: 'invented endpoint failure',
+      latencyMs: 1,
+    }));
+
+    try {
+      const result = await extract({
+        absPath: image,
+        maxBytes: 1024,
+        maxOcrPages: 1,
+        vision: { available: true, chat } as unknown as ModelClient,
+      });
+
+      expect(result.text).toBe('');
+      expect(chat).toHaveBeenCalledTimes(1);
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
   });
 });

@@ -132,7 +132,14 @@ export async function extract(options: ExtractOptions): Promise<Extraction> {
     // Image description is model-backed rather than platform-backed. Keep it available when
     // native OCR is unsupported, while preserving the typed native-backend degradation when
     // no configured model can make the image searchable.
-    if (!result.text && IMAGE_EXTENSIONS.has(extension) && options.vision?.available) {
+    // The legacy macOS image backend already performs this fallback. Retrying it here when
+    // that request returns no description doubles latency and potentially billable work.
+    if (
+      backend.name !== 'macos-native' &&
+      !result.text &&
+      IMAGE_EXTENSIONS.has(extension) &&
+      options.vision?.available
+    ) {
       const described = await describeImage(options.absPath, options.vision);
       if (described) {
         return toLegacyExtraction({
