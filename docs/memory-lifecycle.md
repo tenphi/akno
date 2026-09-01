@@ -142,6 +142,11 @@ A successful retained item has a stable marker around the generated sentence. Th
 boundary: later maintenance may inspect and repair that item without acquiring authority over the human prose
 around it.
 
+When the marker carries typed world time, reads preserve the original precision, relation, status, timezone,
+and recurrence while computing currentness from the caller's clock. This lets a past state remain inspectable
+without being injected as a current fact, and lets an accepted plan answer a future-oriented question without
+becoming a factual claim.
+
 Possible results matter:
 
 | Result                        | Meaning                                                                               |

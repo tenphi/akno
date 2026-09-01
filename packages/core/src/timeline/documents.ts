@@ -4,12 +4,14 @@ import type { AknoContext } from '../context.ts';
 import { canSuggestDocumentAdoption } from '../ingest/adoption-eligibility.ts';
 import { documentAvailability } from '../ingest/availability.ts';
 import { sha256 } from '../store/ids.ts';
+import { classifyRetainedTime, type TimelineClock } from './clock.ts';
 
 export interface DocumentTimelineOptions {
   since?: string;
   until?: string;
   match?: string;
   subject?: string;
+  clock: TimelineClock;
 }
 
 interface DocumentDateRow {
@@ -112,8 +114,11 @@ function extractedEvidence(
       seen.add(found.date);
       out.push({
         type: 'document_evidence',
+        origin: 'document',
+        source_kind: 'document_evidence',
         id: evidenceId(first.id, found.date, 'extracted', `${chunk.document_id}:${found.raw}`),
         date: found.date,
+        ...documentTemporal(found.date, options.clock),
         date_basis: 'extracted',
         document_id: first.id,
         path: first.rel_path,
@@ -165,8 +170,11 @@ function metadataEvidence(
   const basis = useCreated ? 'file_created' : 'file_modified';
   return {
     type: 'document_evidence',
+    origin: 'document',
+    source_kind: 'document_evidence',
     id: evidenceId(first.id, date, basis, first.rel_path),
     date,
+    ...documentTemporal(date, options.clock),
     date_basis: basis,
     document_id: first.id,
     path: first.rel_path,
@@ -174,6 +182,43 @@ function metadataEvidence(
     mime: first.mime,
     availability,
     ...suggestedAction(ctx, first, parts, availability.status),
+  };
+}
+
+function documentTemporal(
+  date: string,
+  clock: TimelineClock,
+): Pick<
+  DocumentTimelineEvidence,
+  | 'start'
+  | 'until'
+  | 'precision'
+  | 'relation'
+  | 'temporal_status'
+  | 'disposition'
+  | 'clock_relation'
+  | 'timezone'
+  | 'mentioned_at'
+  | 'actionable'
+> {
+  const time = {
+    start: date,
+    until: date,
+    precision: 'day' as const,
+    relation: 'occurred' as const,
+    status: 'actual' as const,
+  };
+  return {
+    start: date,
+    until: date,
+    precision: 'day' as const,
+    relation: 'evidenced' as const,
+    temporal_status: 'evidence' as const,
+    disposition: null,
+    clock_relation: classifyRetainedTime(time, null, clock),
+    timezone: null,
+    mentioned_at: null,
+    actionable: false,
   };
 }
 

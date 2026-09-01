@@ -875,4 +875,36 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds a rebuildable temporal projection to a version-thirty-five database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-temporal-projection-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 29)) legacy.exec(migration);
+    legacy.pragma('user_version = 35');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const temporalColumns = store.db.pragma('table_info(temporal_entries)') as { name: string }[];
+    const issueColumns = store.db.pragma('table_info(temporal_projection_issues)') as { name: string }[];
+    expect(temporalColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'memory_id',
+        'source_page',
+        'relation',
+        'temporal_status',
+        'disposition',
+        'precision',
+        'recurrence',
+      ]),
+    );
+    expect(issueColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['source_page', 'line', 'reason']),
+    );
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

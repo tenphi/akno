@@ -22,14 +22,22 @@ export {
   isDocumentTimelineEvidence,
   isPageCard,
   isTimelineEvent,
+  isTimelineMemory,
 } from '@tenphi/akno-protocol';
 export type {
+  ClockRelation,
   DocumentCard,
   DocumentTimelineEvidence,
   PageCard,
   RecallResult,
+  RetainedTime,
+  TimelineDisposition,
   TimelineEvent,
+  TimelineInput,
+  TimelineMemory,
+  TimelineOutput,
   TimelineResult,
+  TimelineSourceKind,
 } from '@tenphi/akno-protocol';
 
 /**

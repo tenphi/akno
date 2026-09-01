@@ -26,6 +26,7 @@ describe('managed memory line qualification', () => {
           polarity: 'affirmed',
           basis: 'self_attested',
           answer_eligible: true,
+          current_eligible: true,
         },
       },
     ]);
@@ -87,6 +88,27 @@ describe('managed memory line qualification', () => {
       status: 'qualified',
       kind: 'event',
       answer_eligible: false,
+      current_eligible: false,
+      temporal: {
+        clock_relation: expect.any(String),
+        actionable: true,
+      },
+    });
+  });
+
+  it('distinguishes historical validity from static answer eligibility at the requested clock', () => {
+    const fileLines = [
+      `<!-- akno:item mem_state v=2 supports=${SUPPORT} level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested relation=valid temporal=actual precision=day start=2031-04-01 until=2031-04-02 -->`,
+      '- Ada Marlow uses the Zephyr QX-100 during the trial.',
+    ];
+    const [line] = qualifyManagedMemoryLines([{ n: 2, text: fileLines[1]! }], fileLines, {
+      asOf: '2031-04-12T10:00:00+02:00',
+      timezone: 'Europe/Amsterdam',
+    });
+    expect(line?.memory).toMatchObject({
+      answer_eligible: true,
+      current_eligible: false,
+      temporal: { clock_relation: 'past', actionable: false },
     });
   });
 });

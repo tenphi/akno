@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DegradedReason, ResultEnvelope } from '../common.ts';
+import { DegradedReason, IanaTimezone, ResultEnvelope, RetainedTime } from '../common.ts';
 
 const RetainRef = z.string().min(1).max(300);
 
@@ -19,115 +19,6 @@ export const RetainEvidenceRef = z.union([
   z.object({ journal_event_id: RetainRef }),
 ]);
 export type RetainEvidenceRef = z.infer<typeof RetainEvidenceRef>;
-
-export const RetainedTime = z
-  .object({
-    start: z.string().min(1).max(100).optional(),
-    until: z.string().min(1).max(100).optional(),
-    precision: z.enum(['instant', 'day', 'month', 'year', 'unknown']),
-    relation: z.enum(['occurred', 'valid', 'scheduled', 'due']),
-    status: z.enum(['actual', 'scheduled', 'planned', 'tentative']),
-    timezone: z.string().min(1).max(100).optional(),
-    mentioned_at: z.string().datetime({ offset: true }).optional(),
-    recurrence: z
-      .object({
-        frequency: z.enum(['daily', 'weekly', 'monthly', 'yearly']),
-        interval: z.number().int().positive().max(100).optional(),
-        weekdays: z
-          .array(z.enum(['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su']))
-          .max(7)
-          .optional(),
-        until: z.string().min(1).max(100).optional(),
-      })
-      .optional(),
-  })
-  .superRefine((value, ctx) => {
-    if (value.precision !== 'unknown' && value.start === undefined && value.until === undefined) {
-      ctx.addIssue({ code: 'custom', message: 'retained time needs start or until' });
-    }
-    for (const [name, boundary] of [
-      ['start', value.start],
-      ['until', value.until],
-    ] as const) {
-      if (boundary !== undefined && !validTemporalBoundary(boundary, value.precision)) {
-        ctx.addIssue({
-          code: 'custom',
-          path: [name],
-          message: `${name} does not match ${value.precision} precision`,
-        });
-      }
-    }
-    const allowedStatus = {
-      occurred: ['actual'],
-      valid: ['actual', 'tentative'],
-      scheduled: ['scheduled', 'planned', 'tentative'],
-      due: ['scheduled', 'planned', 'tentative'],
-    }[value.relation];
-    if (!allowedStatus.includes(value.status)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['status'],
-        message: `${value.status} is not valid for ${value.relation}`,
-      });
-    }
-    if (value.start && value.until && temporalBoundaryAfter(value.start, value.until, value.precision)) {
-      ctx.addIssue({ code: 'custom', path: ['until'], message: 'temporal interval is reversed' });
-    }
-    if (value.recurrence) {
-      if (!value.start) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['recurrence'],
-          message: 'recurrence requires an anchored start',
-        });
-      }
-      if (value.recurrence.weekdays && value.recurrence.frequency !== 'weekly') {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['recurrence', 'weekdays'],
-          message: 'weekdays are valid only for weekly recurrence',
-        });
-      }
-      if (value.recurrence.until && !validTemporalBoundary(value.recurrence.until, value.precision)) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['recurrence', 'until'],
-          message: `recurrence until does not match ${value.precision} precision`,
-        });
-      }
-    }
-  });
-export type RetainedTime = z.infer<typeof RetainedTime>;
-
-function validTemporalBoundary(
-  value: string,
-  precision: 'instant' | 'day' | 'month' | 'year' | 'unknown',
-): boolean {
-  if (precision === 'unknown') return value.length <= 100;
-  if (precision === 'instant') return z.string().datetime({ offset: true }).safeParse(value).success;
-  if (precision === 'year') return /^\d{4}$/.test(value);
-  if (precision === 'month') {
-    const match = /^(\d{4})-(\d{2})$/.exec(value);
-    return Boolean(match && Number(match[2]) >= 1 && Number(match[2]) <= 12);
-  }
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-}
-
-function temporalBoundaryAfter(
-  left: string,
-  right: string,
-  precision: 'instant' | 'day' | 'month' | 'year' | 'unknown',
-): boolean {
-  if (precision === 'unknown') return false;
-  if (precision === 'instant') return Date.parse(left) > Date.parse(right);
-  return left > right;
-}
 
 export const RetainedRelation = z.object({
   type: z.enum(['corrects', 'supersedes', 'contradicts', 'fulfills', 'answers', 'caused_by']),
@@ -250,7 +141,7 @@ export const RetainUpsertSource = z
     source_group: z.string().min(1).max(300).optional(),
     source_kind: z.enum(['conversation', 'email', 'article', 'document', 'note', 'other']).optional(),
     mentioned_at: z.string().datetime({ offset: true }).optional(),
-    timezone: z.string().min(1).max(100).optional(),
+    timezone: IanaTimezone.optional(),
     locator: z.string().min(1).max(1000).optional(),
     input: z.union([
       z.object({ text: z.string().min(1).max(500_000) }),

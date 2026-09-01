@@ -8,7 +8,9 @@
  * disconnects long-lived hosts from otherwise unchanged operations until they are
  * restarted, which turns a service-only deploy into lost memory calls.
  */
-export const PROTOCOL_VERSION = 1;
+// Timeline gained a third result variant (`memory`) and new required clock fields.
+// An older client cannot safely exhaustively consume that existing exchange.
+export const PROTOCOL_VERSION = 2;
 
 /** Advertised MCP server name. The spec calls for `memory`, not `akno`. */
 export const MCP_SERVER_NAME = 'memory';

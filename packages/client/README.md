@@ -11,7 +11,7 @@ and the index never enter the caller's sandbox, which is also what keeps Akno's 
 intact.
 
 ```ts
-import { connect } from '@tenphi/akno-client';
+import { connect, isTimelineMemory } from '@tenphi/akno-client';
 
 const akno = await connect(); // Uses the platform Akno runtime socket by default.
 const result = await akno.call('recall', { query: 'car insurance renewal' });
@@ -22,6 +22,15 @@ const context = await akno.context({
   query: 'When does the Zephyr QX-100 warranty end?',
   budget: 1200,
 });
+
+// One explicit clock covers authored events, retained world time, and document evidence.
+const timeline = await akno.timeline({
+  scope: 'future',
+  view: 'actionable',
+  timezone: 'Europe/Amsterdam',
+  order: 'nearest',
+});
+const retained = timeline.results.filter(isTimelineMemory);
 
 // HTTP is public read-only on loopback by default. A configured bearer identity
 // grants exactly its server-owned actor and operation set.

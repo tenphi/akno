@@ -77,9 +77,10 @@ semantic ambiguity remains `requires_approval`, while an undeclared target folde
 It does not create pages in unexplained or read-only folders. `adopt` and immediate index reconciliation make
 accepted memory visible without another manual step.
 
-Relative dates are resolved only when the caller supplies the source's RFC 3339 `--mentioned-at` time. An IANA
-`--timezone` supplies calendar context without licensing a location guess. When source time is absent, Akno does
-not substitute its processing clock.
+Relative dates are resolved only when the caller supplies both the source's RFC 3339 `--mentioned-at` time and
+an IANA `--timezone`. The timezone supplies calendar context without licensing a location guess. When either
+part of the source clock is absent, Akno does not substitute its processing clock and holds the candidate as
+`time_unresolved`.
 
 ### Evidence and later maintenance
 

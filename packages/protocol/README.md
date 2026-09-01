@@ -17,6 +17,11 @@ This package exists so `@tenphi/akno-client` can share schemas with `@tenphi/akn
 import { OPS, OP_NAMES, AknoError } from '@tenphi/akno-protocol';
 
 OPS.recall.input.parse({ query: 'car insurance renewal' });
+OPS.timeline.input.parse({
+  as_of: '2031-04-12T10:00:00+02:00',
+  timezone: 'Europe/Amsterdam',
+  view: 'actionable',
+});
 ```
 
 Full documentation: [github.com/tenphi/akno](https://github.com/tenphi/akno#readme)

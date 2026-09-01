@@ -36,6 +36,10 @@ migrate / serve / service / doctor / rules / config / bench / redeploy
 operation registry in process, over an owner-only Unix socket, through HTTP with public read-only loopback and
 configured bearer identities, and over stdio MCP for agent hosts.
 
+`akno timeline` reads authored events, retained states/plans/deadlines, and dated document evidence through one
+clock-relative view. Use `--view actionable --order nearest` for active or accepted work while the default view
+keeps cancelled, completed, and superseded history visible.
+
 ## Documentation
 
 - [Project overview](https://github.com/tenphi/akno#readme)

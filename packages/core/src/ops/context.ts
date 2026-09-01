@@ -9,6 +9,12 @@ import {
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { estimateTokens } from '../recall/assemble.ts';
+import {
+  canonicalMemoryEligibleNow,
+  futureMemoryEligible,
+  historicalMemoryEligible,
+  temporalQueryIntent,
+} from '../timeline/eligibility.ts';
 import { recall } from './recall.ts';
 import { read } from './read.ts';
 import { timeline } from './timeline.ts';
@@ -78,14 +84,20 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   const days = input.timeline_days ?? 90;
   if (days > 0) {
     const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
-    const ledger = await timeline(ctx, { since, limit: 60 });
+    const until = new Date().toISOString().slice(0, 10);
+    const ledger = await timeline(ctx, { since, until, limit: 60, order: 'nearest' });
     // The ledger is capped at a fraction of the budget: recent history is
     // context, not the answer, and a long ledger must not crowd out the cards.
     let ledgerBudget = Math.floor(remaining * 0.25);
     for (const [index, entry] of ledger.results.entries()) {
       const content =
-        entry.type === 'event' ? entry.summary : `${entry.path} ${entry.quote ?? ''} ${entry.date_basis}`;
-      const cost = Math.ceil((content.length + entry.date.length + 20) / 4);
+        entry.type === 'event'
+          ? entry.summary
+          : entry.type === 'memory'
+            ? `${entry.summary} ${entry.slug}`
+            : `${entry.path} ${entry.quote ?? ''} ${entry.date_basis}`;
+      const boundary = entry.start ?? entry.until ?? '';
+      const cost = Math.ceil((content.length + boundary.length + 20) / 4);
       if (cost > ledgerBudget) {
         droppedTimeline = ledger.results.length - index;
         break;
@@ -208,7 +220,11 @@ async function autoRecallContext(
   }
 
   const degraded = new Set(initial.degraded ?? []);
-  const signals = initial.results.map((result) => activationSignal(result, input.query, resolutionContext));
+  const eligibleInitial = initial.results.flatMap((result) => {
+    const eligible = temporallyEligibleResult(result, input.query);
+    return eligible ? [eligible] : [];
+  });
+  const signals = eligibleInitial.map((result) => activationSignal(result, input.query, resolutionContext));
   const mechanicalCompoundConflict = hasMechanicalCompoundConflict(signals, input.query);
   const complementary = complementaryCompoundSignals(signals, input.query);
   if (complementary.length > 0) {
@@ -280,10 +296,11 @@ async function autoRecallContext(
     qualified.qualification?.model === 'llm' ? 2 / 3 : AUTO_RECALL_NATIVE_QUALIFICATION_THRESHOLD;
   const qualifiedSelection = qualificationApplied
     ? qualified.results
-        .filter(
-          (result) =>
-            temporalEvidenceEligible(result, input.query) && (result.relevance ?? 0) >= minimumRelevance,
-        )
+        .flatMap((result) => {
+          const eligible = temporallyEligibleResult(result, input.query);
+          return eligible ? [eligible] : [];
+        })
+        .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
         .slice(0, AUTO_RECALL_MAX_RESULTS)
     : [];
   const qualifiedComplementary = complementaryCompoundSignals(
@@ -447,10 +464,7 @@ function mechanicalCompoundCandidates(signals: ActivationSignal[], query: string
   const subjectTokens = meaningfulTokens(query).filter((token) => !COMPOUND_FIELD_TOKENS.has(token));
   if (subjectTokens.length === 0) return [];
   return signals.filter(
-    (signal) =>
-      signal.plausible &&
-      temporalEvidenceEligible(signal.result, query) &&
-      overlapRatio(subjectTokens, evidenceText(signal.result)) === 1,
+    (signal) => signal.plausible && overlapRatio(subjectTokens, evidenceText(signal.result)) === 1,
   );
 }
 
@@ -497,7 +511,6 @@ function activationSignal(
       );
     });
   const semantic = result.relevance ?? 0;
-  const temporallyEligible = temporalEvidenceEligible(result, query);
   // A topical page can repeat the requested field without containing its value: “the price record was
   // reviewed” is not the price. Mechanical numeric and duration questions therefore need an explicit value
   // before lexical overlap may bypass qualification. The qualifier handles less mechanical attribute/value
@@ -521,8 +534,8 @@ function activationSignal(
   const exact =
     !requestedValueMissing &&
     (identityRelationSupported || exactEvidence || (resolvedIdentity && overlap > 0));
-  const strong = temporallyEligible && (exact || strongSemantic || dualArmSemantic);
-  const plausible = temporallyEligible && (strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45);
+  const strong = exact || strongSemantic || dualArmSemantic;
+  const plausible = strong || overlap > 0 || contextOverlap > 0 || semantic >= 0.45;
   return {
     result,
     basis: exact ? 'exact' : 'semantic',
@@ -630,12 +643,27 @@ function resultIdentity(result: RecallResult): string {
   return result.type === 'page' ? `page:${result.slug}` : `document:${result.id}`;
 }
 
-function temporalEvidenceEligible(result: RecallResult, query: string): boolean {
-  if (!/\b(current|active|latest)\b/i.test(query)) return true;
-  if (result.type === 'page' && result.superseded) return false;
-  const evidence = evidenceText(result);
-  const stale = /(?:^|\s)(?:the\s+)?(?:old|former|archived|superseded)\s+/im.test(evidence);
-  const fresh = /(?:^|\s)(?:the\s+)?(?:current|active|latest)\s+/im.test(evidence);
+function temporallyEligibleResult(result: RecallResult, query: string): RecallResult | null {
+  if (result.type !== 'page') return result;
+  const intent = temporalQueryIntent(query);
+  if (intent.current && result.superseded) return null;
+
+  const lines = result.lines.filter((line) => {
+    const memory = line.memory;
+    if (!memory) return !intent.current || ordinaryCurrentEligible(line.text);
+    if (memory.status !== 'qualified') return false;
+    if (intent.history) return historicalMemoryEligible(memory, intent.sourceReport);
+    if (intent.future) return futureMemoryEligible(memory) || canonicalMemoryEligibleNow(memory);
+    if (intent.current) return memory.current_eligible;
+    return canonicalMemoryEligibleNow(memory);
+  });
+  const hasDocumentEvidence = result.documents?.some((document) => Boolean(document.quote?.trim())) === true;
+  return lines.length > 0 || hasDocumentEvidence ? { ...result, lines } : null;
+}
+
+function ordinaryCurrentEligible(text: string): boolean {
+  const stale = /(?:^|\s)(?:the\s+)?(?:old|former|archived|superseded)\s+/im.test(text);
+  const fresh = /(?:^|\s)(?:the\s+)?(?:current|active|latest)\s+/im.test(text);
   return !stale || fresh;
 }
 

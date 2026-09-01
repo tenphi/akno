@@ -34,6 +34,7 @@ import {
   SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
   SEMANTIC_MERGE_VERDICTS_MIGRATION_INDEX,
   STRUCTURAL_GRAPH_MIGRATION_INDEX,
+  TEMPORAL_ENTRIES_MIGRATION_INDEX,
 } from './migrations.ts';
 import { openVectorIndex, reconcileDimensions, type VectorIndex } from './vectors.ts';
 
@@ -250,6 +251,9 @@ function migrate(db: Database.Database): void {
       }
       if (!columnExists(db, 'change_files', 'after_hash')) {
         db.exec(MIGRATIONS[CHANGE_FILE_HASHES_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'temporal_entries') || !tableExists(db, 'temporal_projection_issues')) {
+        db.exec(MIGRATIONS[TEMPORAL_ENTRIES_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

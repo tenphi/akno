@@ -12,7 +12,7 @@ and automatic host context. The split keeps fast or inspectable operations from 
 | Open a known page or document      | `read`     | Exact content, optionally a line range                    |
 | Browse the taxonomy                | `list`     | Folders, filtered pages, or a tree                        |
 | Inspect relationships              | `graph`    | Bounded exact evidence paths and locators, without bodies |
-| Ask what happened in a period      | `timeline` | Authored events and typed dated-document evidence         |
+| Read history or actionable time    | `timeline` | Events, retained world time, and dated-document evidence  |
 | Prepare one agent turn             | `context`  | A bounded bundle; `auto_recall` is precision-first        |
 
 Do not call both `answer` and `recall` by default for one question: `answer` already retrieves. Call `recall`
@@ -63,6 +63,9 @@ attribution, commitment, disposition, polarity, epistemic basis, and `answer_eli
 counterfactuals, proposals, rejected decisions, plans, and questions remain searchable and readable with that
 status. They are not silently converted into ordinary current facts. Authored prose has no `memory` field;
 managed canonical claims and accepted decisions report `answer_eligible: true`.
+Time-scoped items also report their stored temporal envelope, a read-time `clock_relation`, whether they are
+actionable, and `current_eligible`. A past validity interval may remain valid historical evidence while being
+ineligible for a question about what is current.
 An owned marker whose current semantics cannot be parsed reports `status: "unavailable"` and
 `answer_eligible: false`; malformed or unmigrated managed memory never falls back to authored-fact behavior.
 
@@ -91,9 +94,11 @@ Unsupported blocks are withheld. A missing model produces `degraded/not_answered
 produces `empty/not_found`. If equally applicable evidence gives incompatible values without an authority rule,
 Akno abstains rather than choosing one or inventing a conflict explanation.
 
-Lines whose managed-memory qualification says `answer_eligible: false` are removed before evidence is shown to
-the answer model. If they are the only related memory, `answer` returns `not_answered` while preserving the
-related page identities; it does not call the model or claim the topic was never discussed.
+By default, lines whose managed-memory qualification says `answer_eligible: false` are removed before evidence
+is shown to the answer model. If they are the only related memory, `answer` returns `not_answered` while
+preserving the related page identities; it does not call the model or claim the topic was never discussed.
+Accepted or active plans remain non-factual, but may ground an explicitly future-oriented question. For
+time-scoped factual items, current-value questions admit only intervals that are current at the reader clock.
 
 Reranking is off by default for `answer` because generation and verification already select supporting
 evidence. `--rerank` opts into another sequential model call for especially noisy corpora or weaker answer
@@ -137,13 +142,38 @@ node and relation identities plus source locators, not copied page claims. Follo
 akno timeline --since 2031-01 --until 2031-06
 akno timeline --match warranty
 akno timeline --subject people/ada-marlow
+akno timeline --scope today --timezone Europe/Amsterdam
+akno timeline --view actionable --order nearest
+akno timeline --source deadline --clock overdue
+akno timeline --as-of 2031-04-12T10:00:00+02:00 --timezone Europe/Amsterdam
 akno timeline --source document
 ```
 
-Timeline combines authored events with typed date evidence from documents. A dated orphan document can appear
-without being converted into an event or canonical page. Owned documents remain grouped under their pages.
-File-created or file-modified metadata is used only when no supported date can be extracted, and it is labelled
-as metadata rather than authored fact.
+Timeline combines three sources without collapsing their meanings:
+
+- authored dated lines remain `event` results;
+- typed retained time becomes `event`, `state`, `plan`, or `deadline` according to its relation;
+- a dated orphan document remains `document_evidence`, never an event or canonical claim.
+
+The default `history` view keeps inactive, rejected, completed, and cancelled records visible. The
+`actionable` view admits only active or accepted scheduled work and deadlines; it is a query, not a reminder or
+scheduler. Filter further with `--status`, `--disposition`, `--source`, an exact `--clock` relation, or the broad
+`--scope past|today|future|all`. `--source both` remains a compatibility alias for `all`.
+
+Every result is classified at read time as `past`, `today`, `current_period`, `ongoing`, `future`, `overdue`, or
+`undated`. The response includes the exact `as_of`, IANA timezone, local date, and grouped counts, so a caller can
+repeat the same query deterministically. Month and year precision remain partial periods; Akno does not invent a
+day. Open validity intervals may be ongoing. Only an active or accepted due item can be overdue.
+
+`--since` and `--until` use inclusive overlap semantics. Recurrence expands only when both bounds define a
+closed range and is bounded; an unbounded query returns only the stored anchor. A half-bounded range also
+returns the anchor when it overlaps, but reports degradation because later matching occurrences cannot be
+enumerated authoritatively. An instant recurrence needs an IANA timezone because a numeric offset cannot
+describe later daylight-saving transitions. If expansion or the retained temporal projection is incomplete,
+the result is `degraded` rather than falsely authoritative.
+
+Owned documents remain grouped under their pages. For orphan evidence, file-created or file-modified metadata
+is used only when no supported date can be extracted, and is labelled as metadata rather than authored fact.
 
 ## Context for a deliberate agent turn
 
@@ -175,6 +205,10 @@ A strong exact or semantic match can activate directly; borderline candidates ne
 evidence excludes semantic near-duplicates. Attribute questions require evidence for the attribute, not merely
 the entity name. Conflicting values cause abstention. Recent conversation can resolve a narrow local reference
 but cannot make unrelated memory relevant.
+
+Temporal qualification is applied before automatic activation. Current prompts cannot activate expired valid
+states; future prompts may activate asserted, active or accepted plans, while generic factual prompts cannot
+turn planned or scheduled memory into current fact.
 
 `empty` is a normal “inject nothing” result. The host should call the profile at most once per turn, place
 non-empty evidence inside a clearly delimited untrusted-memory section, and never persist the returned bundle as

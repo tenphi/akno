@@ -152,6 +152,13 @@ eligibility rule, so a report or hypothesis does not become true merely because 
 maintenance parses only the current v2 marker grammar; `akno migrate` is the explicit, dry-runnable and undoable
 boundary for upgrading strict legacy owned blocks.
 
+Typed world time in those v2 markers also builds a disposable temporal projection. `timeline` reads that
+projection beside authored dated lines and orphan-document date evidence, then classifies every result against
+the request's `as_of` and IANA timezone. Clock relations are never persisted, so `past`, `today`, `ongoing`, and
+`future` move as the reader clock moves while the Markdown remains unchanged. Invalid temporal markers and
+interrupted projection upgrades produce typed degradation; a full index pass can rebuild the projection from
+Markdown without modifying the knowledge base.
+
 Maintenance adds another boundary:
 
 ```text

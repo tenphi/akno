@@ -6,6 +6,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AnswerOutput } from '@tenphi/akno-protocol';
 import { open, type Akno } from '../open.ts';
 import { sha256 } from '../store/ids.ts';
+import {
+  managedMemoryBlock,
+  renderManagedMemoryPayload,
+  type ManagedMemoryMarker,
+} from '../write/managed-memory.ts';
 
 let root: string;
 let stateDir: string;
@@ -407,7 +412,158 @@ describe('grounded answer discovery surface', () => {
     expect(result.note).toContain('explicitly noncanonical');
     expect(modelRequests).toHaveLength(0);
   });
+
+  it('uses the reader clock to separate expired state, factual history, and actionable future work', async () => {
+    const expired = temporalMarker('mem_expired', {
+      time: {
+        start: '2001-01-01',
+        until: '2001-12-31',
+        precision: 'day',
+        relation: 'valid',
+        status: 'actual',
+      },
+    });
+    const planned = temporalMarker('mem_planned', {
+      kind: 'plan',
+      disposition: 'accepted',
+      time: {
+        start: '2031-04-20',
+        precision: 'day',
+        relation: 'scheduled',
+        status: 'planned',
+      },
+    });
+    const cancelled = temporalMarker('mem_cancelled', {
+      kind: 'plan',
+      disposition: 'cancelled',
+      time: {
+        start: '2031-04-18',
+        precision: 'day',
+        relation: 'scheduled',
+        status: 'planned',
+      },
+    });
+    write(
+      'memory/temporal-answer.md',
+      [
+        '# Temporal answer memory',
+        '',
+        managedMemoryBlock(
+          expired,
+          renderManagedMemoryPayload('Ada Marlow currently evaluates the Zephyr QX-100.', expired),
+        ),
+        '',
+        managedMemoryBlock(
+          planned,
+          renderManagedMemoryPayload('Ada Marlow plans a Zephyr QX-100 inspection.', planned),
+        ),
+        '',
+        managedMemoryBlock(
+          cancelled,
+          renderManagedMemoryPayload('Ada Marlow cancelled the Blackwater Bay inspection.', cancelled),
+        ),
+        '',
+      ].join('\n'),
+    );
+    await memory.index({ verify: true });
+
+    const autoCurrent = await memory.context({
+      profile: 'auto_recall',
+      query: 'Ada Marlow currently evaluates the Zephyr QX-100.',
+      filter: { folder: 'memory' },
+      budget: 1200,
+    });
+    expect(JSON.stringify(autoCurrent.results)).not.toContain('currently evaluates');
+
+    const autoFuture = await memory.context({
+      profile: 'auto_recall',
+      query: 'Ada Marlow plans a Zephyr QX-100 inspection.',
+      filter: { folder: 'memory' },
+      budget: 1200,
+    });
+    expect(autoFuture.results[0]).toMatchObject({
+      type: 'page',
+      lines: [expect.objectContaining({ text: expect.stringContaining('plans a Zephyr') })],
+    });
+    expect(JSON.stringify(autoFuture.results)).not.toContain('currently evaluates');
+
+    const current = await memory.answer({
+      question: 'What is Ada Marlow currently evaluating?',
+      filter: { folder: 'memory' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    expect(current.context).toEqual([]);
+    expect(current.note).toContain('world-time interval is not current');
+
+    const future = await memory.answer({
+      question: 'What inspection is planned next for Ada Marlow?',
+      filter: { folder: 'memory' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    expect(future.context?.[0]).toMatchObject({
+      type: 'page',
+      slug: 'memory/temporal-answer',
+      lines: expect.arrayContaining([
+        expect.objectContaining({ text: expect.stringContaining('plans a Zephyr') }),
+      ]),
+    });
+
+    const generic = await memory.answer({
+      question: 'What does the Zephyr inspection record say?',
+      filter: { folder: 'memory' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    expect(JSON.stringify(generic.context)).not.toContain('plans a Zephyr');
+
+    const historical = await memory.answer({
+      question: 'Which Blackwater Bay inspection was cancelled?',
+      filter: { folder: 'memory' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    expect(historical.context?.[0]).toMatchObject({
+      type: 'page',
+      lines: expect.arrayContaining([
+        expect.objectContaining({ text: expect.stringContaining('cancelled the Blackwater Bay') }),
+      ]),
+    });
+  });
 });
+
+function temporalMarker(
+  id: string,
+  overrides: Partial<ManagedMemoryMarker> & Pick<ManagedMemoryMarker, 'time'>,
+): ManagedMemoryMarker {
+  return {
+    id,
+    supports: [
+      {
+        receipt: 'aaaaaaaaaaaa',
+        candidate: 'bbbbbbbbbbbb',
+        proofGroup: 'cccccccccccc',
+        selection: 'provided',
+      },
+    ],
+    kind: 'claim',
+    subject: 'unresolved',
+    sourceRole: 'user',
+    reporters: [],
+    commitment: 'asserted',
+    disposition: 'active',
+    polarity: 'affirmed',
+    basis: 'self_attested',
+    evidence: [],
+    links: [],
+    ...overrides,
+  };
+}
 
 async function useAnswerModel(script: {
   generation: unknown;

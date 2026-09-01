@@ -6,10 +6,16 @@ import {
   type AnswerModelCallReceipt,
   type AnswerOutput,
   type DegradedReason,
+  type Line,
   type RecallResult,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { type ModelClient, type ModelOutcome, type ModelUsage, parseJsonLoose } from '../models/client.ts';
+import {
+  futureMemoryEligible,
+  historicalMemoryEligible,
+  temporalQueryIntent,
+} from '../timeline/eligibility.ts';
 import { recall } from './recall.ts';
 
 export const ANSWER_PROMPT_VERSION = 'answer-generation-v3';
@@ -118,7 +124,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       ),
     ).values(),
   ];
-  const evidence = buildEvidence(recalled.results);
+  const evidence = buildEvidence(recalled.results, input.question);
   const base: Omit<AnswerOutput, 'status' | 'outcome' | 'degraded' | 'note'> = {
     answer: null,
     coverage: recalled.coverage ?? {},
@@ -162,6 +168,26 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     };
   }
   if (evidence.length === 0) {
+    const intent = temporalQueryIntent(input.question);
+    const temporallyIneligibleMemoryFound =
+      intent.current &&
+      !intent.future &&
+      recalled.results.some(
+        (result) =>
+          result.type === 'page' &&
+          result.lines.some(
+            (line) => line.memory?.status === 'qualified' && line.memory.current_eligible === false,
+          ),
+      );
+    if (temporallyIneligibleMemoryFound) {
+      return {
+        status: recalled.status,
+        outcome: 'not_answered',
+        ...base,
+        ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
+        note: 'related memory was found, but its world-time interval is not current at this clock',
+      };
+    }
     const noncanonicalMemoryFound = recalled.results.some(
       (result) =>
         result.type === 'page' && result.lines.some((line) => line.memory?.answer_eligible === false),
@@ -463,7 +489,7 @@ function modelCallReceipt(model: ModelClient, outcome: ModelOutcome<unknown>): A
 }
 
 /** Assign opaque ids after retrieval so source identity and rank are never model-selectable instructions. */
-function buildEvidence(results: RecallResult[]): AnswerContextItem[] {
+function buildEvidence(results: RecallResult[], question: string): AnswerContextItem[] {
   const out: UnlabeledEvidence[] = [];
   const seen = new Set<string>();
   const add = (key: string, item: UnlabeledEvidence): void => {
@@ -475,7 +501,7 @@ function buildEvidence(results: RecallResult[]): AnswerContextItem[] {
   for (const result of results) {
     if (result.type === 'page') {
       const eligibleLines = result.lines.filter(
-        (line) => line.memory?.answer_eligible !== false && !/^\s*<!--/.test(line.text),
+        (line) => answerLineEligible(line, question) && !/^\s*<!--/.test(line.text),
       );
       if (eligibleLines.length > 0) {
         add(`page:${result.slug}`, {
@@ -511,6 +537,20 @@ function buildEvidence(results: RecallResult[]): AnswerContextItem[] {
   }
 
   return out.map((item, index) => ({ ...item, evidence_id: `E${index + 1}` }) as AnswerContextItem);
+}
+
+function answerLineEligible(line: Line, question: string): boolean {
+  const memory = line.memory;
+  if (!memory) return true;
+  if (memory.status !== 'qualified') return false;
+  const intent = temporalQueryIntent(question);
+  if (intent.current && !intent.future) return memory.current_eligible;
+  if (memory.temporal?.time.relation === 'valid' && !intent.history && !memory.current_eligible) {
+    return false;
+  }
+  if (memory.answer_eligible) return true;
+  if (intent.history) return historicalMemoryEligible(memory, intent.sourceReport);
+  return intent.future && futureMemoryEligible(memory);
 }
 
 function evidenceText(item: AnswerContextItem): string {
