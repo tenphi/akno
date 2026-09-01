@@ -140,6 +140,8 @@ export const FolderRuleDoc = z.object({
   role: PageRole.optional(),
   /** Whether the conversational curator may place claims in this folder. */
   remember: RememberManagement.optional(),
+  /** Whether observe may add only owned level-two blocks to existing pages. */
+  observe: z.enum(['deny', 'integrate']).optional(),
   /** Canonical entity pages the folder's pages concern. */
   about: z.array(z.string().min(1)).optional(),
   type: z.string().optional(),

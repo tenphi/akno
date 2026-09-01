@@ -42,9 +42,9 @@ akno dream notify --schedule-health
 
   The maintenance cycle. Phases are selectable and safe to re-run.
 
-    observe        Combine repeated facts into stable patterns. Writes pages under
-                   observations/ with their evidence, and never restates a fact.
-    reflect        Plan-backed decision principles built on observation-page evidence.
+    observe        Co-locate stable L2 patterns on admitted exact-subject pages with
+                   exact fact lineage; never restates a fact or edits adjacent prose.
+    reflect        Plan-backed decision principles built on eligible L2 observations.
                    Off by default until the observation tier has enough repeated history.
     curate         Managed-fragment repair plus page-authorized hygiene or synthesis.
                    Runs a draft pass, a verification pass and deterministic guards.

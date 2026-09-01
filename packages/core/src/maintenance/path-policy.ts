@@ -190,13 +190,14 @@ export function explainMaintenancePath(
         kind: 'observe',
         policy: effectiveTransformPolicy(ctx.config, 'observe', runMode),
         enabled: ctx.config.maintenance.observe.enabled,
-        reason: 'observe writes derived pattern pages from evidence groups, not this page as a target',
+        reason:
+          'observe starts from exact-subject fact groups; this page is targetable only when it is the unique admitted subject page with observe integration',
       },
       {
         kind: 'reflect',
         policy: effectiveTransformPolicy(ctx.config, 'reflect', runMode),
         enabled: ctx.config.maintenance.reflect.enabled,
-        reason: 'reflect writes derived principle pages from observation groups, not this page as a target',
+        reason: 'reflect writes the separate principles page from eligible projected observation ids',
       },
       {
         kind: 'adopt',

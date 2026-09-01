@@ -26,7 +26,7 @@ knowledge base, and which model roles may be involved.
 | `inbox`               | Process arrivals in configured routed folders                           | Yes                        | Same as ingest                                |
 | `adopt <document-id>` | Give an orphan document a minimal owned page                            | Policy-dependent plan      | Maintenance or derive                         |
 | `dream`               | Run the seven maintenance phases                                        | Depends on policy          | Maintenance or derive                         |
-| `migrate`             | Explicitly upgrade Akno-owned brain markers                             | Yes; dry-run available     | None                                          |
+| `migrate`             | Upgrade owned brain markers or co-locate legacy observations            | Yes; dry-run available     | None                                          |
 | `plan`                | Inspect, revise, decide, apply, retire, or prune plans                  | Apply only                 | None after planning                           |
 | `serve`               | Run watcher and operation doors                                         | No by itself               | None by itself                                |
 | `service`             | Install, inspect, or remove background jobs                             | Outside the knowledge base | None                                          |
@@ -96,8 +96,9 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 - Use `plan revise` when the proposed destination and transformation are right but the exact result is not.
   It creates a guarded immutable revision inside the existing path/evidence scope and invalidates approval;
   it does not edit the knowledge base by itself.
-- Run `migrate --dry-run` before `migrate` when an upgrade introduces a new owned Markdown grammar. Migration
-  is operator-only, journalled, undoable, and never happens as an indexing side effect.
+- Run `migrate --dry-run` before `migrate` when an upgrade introduces a new owned memory-marker grammar. Use
+  `migrate --observations --dry-run` followed by `migrate --observations` for legacy detached observation
+  lines. Both modes are operator-only, journalled, undoable, and never run as an indexing side effect.
 
 See [Writing and ingestion](writing.md) and [The dream cycle](dream-cycle.md).
 

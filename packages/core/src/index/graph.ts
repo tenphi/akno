@@ -11,14 +11,17 @@ import {
   type CachedContextualResolution,
   type ContextualMentionInput,
 } from './entity-resolution.ts';
+import { qualifyObservationEntries } from '../observations/projection.ts';
 
 const STRUCTURAL_GRAPH_VERSION = 'structural-v1';
 const ENTITY_RESOLUTION_VERSION = 'entity-exact-v1';
 const FACT_GRAPH_VERSION = 'fact-relationships-v1';
+const OBSERVATION_GRAPH_VERSION = 'observation-lineage-v1';
 
 export interface EvidenceGraphOptions {
   conflictModelId?: string | null;
   contextualModelId?: string | null;
+  observationMinEvidence?: number;
 }
 
 export interface EvidenceGraphReport {
@@ -63,7 +66,7 @@ interface ContextualEntityResolution {
 
 type EntityResolution = ExactEntityResolution | ContextualEntityResolution;
 
-type NodeKind = 'entity' | 'page' | 'document' | 'fact' | 'event';
+type NodeKind = 'entity' | 'page' | 'document' | 'fact' | 'event' | 'observation';
 type EntityType = 'person' | 'organization' | 'place' | 'product' | 'event' | 'concept' | 'other';
 
 interface PageRow {
@@ -691,6 +694,70 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         validFrom: fact.valid_from,
         validTo: fact.valid_to,
       });
+    }
+
+    // Observation qualification consumes the fact statuses just rebuilt above. Only the
+    // eligible projection enters the graph; its prose never manufactures another fact edge.
+    qualifyObservationEntries(store, options.observationMinEvidence);
+    const observations = store.db
+      .prepare(
+        `SELECT id, source_page, marker_line, subject_entity, payload_hash
+           FROM observation_entries WHERE eligible = 1 ORDER BY id`,
+      )
+      .all() as {
+      id: string;
+      source_page: string;
+      marker_line: number;
+      subject_entity: string;
+      payload_hash: string;
+    }[];
+    for (const observation of observations) {
+      addNode('observation', observation.id, observation.payload_hash, OBSERVATION_GRAPH_VERSION);
+      addEdge({
+        from: requiredNode(nodeIds, 'entity', observation.subject_entity),
+        to: requiredNode(nodeIds, 'observation', observation.id),
+        relation: 'has_attribute',
+        predicate: 'observed_pattern',
+        sourceKind: 'page_line',
+        sourcePage: observation.source_page,
+        sourceDocument: null,
+        sourceEvent: null,
+        line: observation.marker_line + 1,
+        sourceField: 'akno:observation',
+        sourceHash: observation.payload_hash,
+        derivation: 'fact',
+        version: OBSERVATION_GRAPH_VERSION,
+      });
+      const evidence = store.db
+        .prepare(
+          `SELECT oe.fact_id, oe.source_line_hash, f.page_id, f.line_start
+             FROM observation_evidence oe JOIN facts f ON f.id = oe.fact_id
+            WHERE oe.observation_id = ? ORDER BY oe.ordinal`,
+        )
+        .all(observation.id) as {
+        fact_id: string;
+        source_line_hash: string;
+        page_id: string;
+        line_start: number;
+      }[];
+      for (const locator of evidence) {
+        addEdge({
+          from: requiredNode(nodeIds, 'observation', observation.id),
+          to: requiredNode(nodeIds, 'fact', locator.fact_id),
+          relation: 'derived_from',
+          predicate: null,
+          sourceKind: 'fact_line',
+          sourcePage: locator.page_id,
+          sourceDocument: null,
+          sourceEvent: null,
+          sourceFact: locator.fact_id,
+          line: locator.line_start,
+          sourceField: 'akno:observation.evidence',
+          sourceHash: locator.source_line_hash,
+          derivation: 'fact',
+          version: OBSERVATION_GRAPH_VERSION,
+        });
+      }
     }
 
     for (const document of documents) {

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
+import { qualifyObservationLines } from '../observations/projection.ts';
 import type {
   Card,
   Depth,
@@ -100,17 +101,16 @@ export class Assembler {
       .map((entry) => {
         const page = this.pageRow(entry.pageId);
         return page
-          ? {
-              kind: 'page' as const,
-              ranked: entry.score * this.rankFactor(page),
-              result: this.pageResult(
+          ? (() => {
+              const result = this.pageResult(
                 page,
                 entry.hits,
                 entry.score * this.rankFactor(page),
                 entry.relevance,
                 options,
-              ),
-            }
+              );
+              return { kind: 'page' as const, ranked: result.score, result };
+            })()
           : null;
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
@@ -189,6 +189,16 @@ export class Assembler {
     options: AssembleOptions,
   ): Extract<RecallResult, { type: 'page' }> {
     const card = this.buildCard(page, hits, score, options);
+    // A co-located page can return authored context beside the matched owned block. Treat the
+    // card as observation-backed whenever that block is in the evidence window; requiring every
+    // adjacent line to be derived would accidentally give the L2 claim authored-fact rank.
+    const observationBacked = card.lines.some((line) => line.observation?.status === 'eligible');
+    if (observationBacked) {
+      const patternIntent = options.concepts.some((concept) =>
+        /\b(pattern|tendenc|habit|usually|often|recurr|consistent)\w*\b/i.test(concept),
+      );
+      card.score = round(card.score * (patternIntent ? 1.15 : 0.65));
+    }
     if (relevance !== undefined) card.relevance = round(relevance);
     return { type: 'page', ...card };
   }
@@ -370,7 +380,7 @@ export class Assembler {
       const lines = allLines
         .map((text, index) => ({ n: index + 1, text }))
         .filter((line) => line.text.trim().length > 0);
-      return qualifyManagedMemoryLines(lines, allLines);
+      return this.qualifyObservationLines(page.id, qualifyManagedMemoryLines(lines, allLines), allLines);
     }
 
     // Collect the line ranges of the matching chunks, best first.
@@ -400,7 +410,13 @@ export class Assembler {
       }
       if (out.length >= maxLines) break;
     }
-    return qualifyManagedMemoryLines(out, allLines);
+    return this.qualifyObservationLines(page.id, qualifyManagedMemoryLines(out, allLines), allLines);
+  }
+
+  private qualifyObservationLines(pageId: string, lines: Line[], allLines: string[]): Line[] {
+    return qualifyObservationLines(this.#store, pageId, lines, allLines).filter(
+      (line) => !line.observation || line.observation.status === 'eligible',
+    );
   }
 
   private factsFor(pageId: string): FactRow[] {

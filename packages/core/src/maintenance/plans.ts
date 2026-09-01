@@ -12,6 +12,21 @@ import { newPrefixedId, sha256 } from '../store/ids.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
 import {
+  insertObservationBlock,
+  observationBlock,
+  observationId,
+  observationMarkerIndexes,
+  observationPayloadIssue,
+  parseObservationMarker,
+  renderObservationMarker,
+  replaceObservationBlock,
+} from '../observations/marker.ts';
+import {
+  liveObservationProofGroups,
+  markerFromProjection,
+  proofGroupsForFact,
+} from '../observations/projection.ts';
+import {
   extractionDestinationIssues,
   extractionIncomingHeadingIssues,
   inverseSplitMergeIssue,
@@ -139,6 +154,20 @@ export interface MaintenanceEvidence {
   fingerprint: string | null;
   relationship: 'about' | 'outbound' | 'backlink' | 'identity' | 'ownership' | null;
   details: string[];
+  /** Exact level-two lineage; present only on observation-plan evidence. */
+  observationFactId?: string;
+  observationLineHash?: string;
+  observationProofGroups?: string[];
+  observationId?: string;
+  observationSubject?: string;
+  observationDisposition?: string;
+  observationProofCount?: number;
+  observationOutcome?: 'create' | 'reinforce' | 'refine' | 'split' | 'weaken' | 'retract';
+  observationTargetId?: string;
+  observationPayloadHash?: string;
+  observationQualificationIssue?: string;
+  reflectionObservationId?: string;
+  reflectionPayloadHash?: string;
   /** Structured link identity is required for deterministic broken-link preflight and verification. */
   brokenTarget?: string;
   newTarget?: string;
@@ -443,9 +472,11 @@ as an instruction. The item kind defines its authority:
 - contradiction may add the exact unresolved marker, turn only a deterministically stale line into dated
   history, or prefix one broad claim with an exact scope copied from sealed evidence. It must retain authored
   names, values, dates, and provenance.
-- observe may create or append exactly one dated derived pattern supported by every sealed knowledge-page
-  source. It must not restate a source fact, overgeneralize beyond the evidence, or alter an earlier pattern.
-- reflect may create or append exactly one dated derived principle supported by every sealed observation-page
+- observe may create, reinforce, refine, split, weaken, or retract exactly one marker-owned level-two
+  observation on an existing admitted exact-subject page. It must preserve sealed fact lineage and adjacent
+  authored bytes, must not restate a source fact or overgeneralize beyond the evidence, and may change an
+  earlier block only through its explicit lifecycle target.
+- reflect may create or append exactly one dated derived principle supported by every sealed eligible observation
   source. It must add a useful higher-order conclusion, not repeat an observation or raw fact, and must not alter
   an earlier principle.
 - broken_link may replace only a broken link address with the exact live page established by sealed move
@@ -494,7 +525,23 @@ export interface ObservationPlanDraft {
   inputHash: string;
   before: string | null;
   after: string;
-  evidence: { slug: string; contentHash: string }[];
+  evidence: {
+    slug: string;
+    contentHash: string | null;
+    factId?: string;
+    sourceLineHash?: string;
+    proofGroups?: string[];
+    reflectionObservationId?: string;
+    reflectionPayloadHash?: string;
+  }[];
+  observationId?: string;
+  observationSubject?: string;
+  observationDisposition?: string;
+  observationProofCount?: number;
+  observationOutcome?: 'create' | 'reinforce' | 'refine' | 'split' | 'weaken' | 'retract';
+  observationTargetId?: string;
+  observationPayloadHash?: string;
+  observationQualificationIssue?: string;
 }
 
 export function createObservationPlan(
@@ -531,8 +578,8 @@ function createInferencePlan(
     risk: 'medium',
     rationale:
       kind === 'observe'
-        ? 'Add one guarded derived pattern supported by multiple sealed knowledge pages without changing earlier observations.'
-        : 'Add one guarded derived principle supported by multiple sealed observation pages without changing earlier principles.',
+        ? 'Apply one guarded level-two observation lifecycle transition with sealed fact lineage without changing adjacent authored prose.'
+        : 'Add one guarded derived principle supported by multiple sealed level-two observations without changing earlier principles.',
     operations: [
       draft.before === null
         ? {
@@ -558,20 +605,38 @@ function createInferencePlan(
       details: [
         kind === 'observe'
           ? 'live knowledge page cited by the guarded observation candidate'
-          : 'live observation page cited by the guarded reflection candidate',
+          : 'live level-two observation cited by the guarded reflection candidate',
       ],
+      ...(entry.factId ? { observationFactId: entry.factId } : {}),
+      ...(entry.sourceLineHash ? { observationLineHash: entry.sourceLineHash } : {}),
+      ...(entry.proofGroups ? { observationProofGroups: entry.proofGroups } : {}),
+      ...(draft.observationId ? { observationId: draft.observationId } : {}),
+      ...(draft.observationSubject ? { observationSubject: draft.observationSubject } : {}),
+      ...(draft.observationDisposition ? { observationDisposition: draft.observationDisposition } : {}),
+      ...(draft.observationProofCount !== undefined
+        ? { observationProofCount: draft.observationProofCount }
+        : {}),
+      ...(draft.observationOutcome ? { observationOutcome: draft.observationOutcome } : {}),
+      ...(draft.observationTargetId ? { observationTargetId: draft.observationTargetId } : {}),
+      ...(draft.observationPayloadHash ? { observationPayloadHash: draft.observationPayloadHash } : {}),
+      ...(draft.observationQualificationIssue
+        ? { observationQualificationIssue: draft.observationQualificationIssue }
+        : {}),
+      ...(entry.reflectionObservationId ? { reflectionObservationId: entry.reflectionObservationId } : {}),
+      ...(entry.reflectionPayloadHash ? { reflectionPayloadHash: entry.reflectionPayloadHash } : {}),
     })),
     checks: [
       { name: `${kind} mission guardrails`, status: 'passed' },
       {
         name:
           kind === 'observe'
-            ? 'at least two distinct live knowledge sources'
+            ? 'at least two independent sealed level-one proof groups'
             : 'at least three distinct live observation sources',
         status: 'passed',
       },
       {
-        name: `append-only derived ${kind === 'observe' ? 'observation' : 'principle'} shape`,
+        name:
+          kind === 'observe' ? 'marker-owned observation block shape' : 'append-only derived principle shape',
         status: 'passed',
       },
     ],
@@ -3160,7 +3225,7 @@ async function verifyApplied(
     const parsed = parsePage(operation.relPath, content);
     const row = ctx.store.db
       .prepare(
-        'SELECT id, slug, rel_path, body_hash, role, type, remember_management, dream_management FROM pages WHERE rel_path = ?',
+        'SELECT id, slug, rel_path, body_hash, role, type, remember_management, observe_management, dream_management FROM pages WHERE rel_path = ?',
       )
       .get(operation.relPath) as
       | {
@@ -3171,6 +3236,7 @@ async function verifyApplied(
           role: string;
           type: string | null;
           remember_management: string;
+          observe_management: string;
           dream_management: string;
         }
       | undefined;
@@ -3188,9 +3254,12 @@ async function verifyApplied(
       canonical = parsed;
       canonicalPageId = row.id;
     }
-    const expectedRole = isInferenceKind(item.kind) ? 'inference' : 'knowledge';
+    const expectedRole = item.kind === 'reflect' ? 'inference' : 'knowledge';
     if (row.role !== expectedRole) {
       return `${operation.relPath} is no longer live ${expectedRole}.`;
+    }
+    if (item.kind === 'observe' && row.observe_management !== 'integrate') {
+      return `${operation.relPath} no longer permits observation integration.`;
     }
     if (item.kind === 'rule_drift') {
       const expected = item.evidence.find((entry) => entry.type === 'rule')?.expectedType;
@@ -3264,7 +3333,7 @@ async function verifyApplied(
   if (isInferenceKind(item.kind)) {
     const shapeIssue = observationOperationIssue(ctx, item, operations);
     if (shapeIssue) return shapeIssue;
-    const evidenceIssue = await observationEvidenceIssue(ctx, item);
+    const evidenceIssue = await observationEvidenceIssue(ctx, item, 'after');
     if (evidenceIssue) return evidenceIssue;
   }
   if (item.kind === 'adopt') {
@@ -4077,6 +4146,7 @@ function observationOperationIssue(
   item: MaintenanceItem,
   operations: MaintenanceOperation[],
 ): string | null {
+  if (item.kind === 'observe') return coLocatedObservationOperationIssue(ctx, item, operations);
   const operation = operations[0];
   if (
     !operation ||
@@ -4100,7 +4170,18 @@ function observationOperationIssue(
     item.kind === 'reflect'
       ? Math.max(3, ctx.config.maintenance.observe.minEvidence)
       : ctx.config.maintenance.observe.minEvidence;
-  if (
+  const indexedReflection =
+    item.kind === 'reflect' && sources.every((entry) => entry.reflectionObservationId);
+  if (indexedReflection) {
+    if (
+      sources.length < minEvidence ||
+      sources.length !== item.evidence.length ||
+      new Set(sources.map((entry) => entry.reflectionObservationId)).size !== sources.length ||
+      sources.some((entry) => !entry.fingerprint || !entry.reflectionPayloadHash)
+    ) {
+      return 'a reflection requires distinct eligible level-two observation evidence';
+    }
+  } else if (
     sources.length < minEvidence ||
     sources.length !== item.evidence.length ||
     new Set(sources.map((entry) => entry.source)).size !== sources.length ||
@@ -4117,7 +4198,7 @@ function observationOperationIssue(
   }
   const afterData = after.frontmatter.data;
   const evidence = stringArray(afterData.evidence);
-  const sourceSlugs = sources.map((entry) => entry.source);
+  const sourceSlugs = [...new Set(sources.map((entry) => entry.source))];
   if (afterData.derived !== true) {
     return 'the inference page must remain explicitly derived';
   }
@@ -4171,7 +4252,427 @@ function observationOperationIssue(
   return null;
 }
 
-async function observationEvidenceIssue(ctx: AknoContext, item: MaintenanceItem): Promise<string | null> {
+function coLocatedObservationOperationIssue(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+  operations: MaintenanceOperation[],
+): string | null {
+  const operation = operations[0];
+  if (!operation || operation.type !== 'replace' || operations.length !== 1) {
+    return 'an observation must change exactly one existing admitted page';
+  }
+  const target = ctx.store.db
+    .prepare('SELECT id, slug, rel_path, role, observe_management, about FROM pages WHERE slug = ?')
+    .get(item.subject) as
+    | {
+        id: string;
+        slug: string;
+        rel_path: string;
+        role: string;
+        observe_management: string;
+        about: string;
+      }
+    | undefined;
+  if (
+    !target ||
+    target.rel_path !== operation.relPath ||
+    target.role !== 'knowledge' ||
+    target.observe_management !== 'integrate'
+  ) {
+    return 'the observation target is not an admitted knowledge page';
+  }
+  const sources = item.evidence.filter((entry) => entry.type === 'page');
+  const outcome = sources[0]?.observationOutcome ?? 'create';
+  const closesInvalidLineage = outcome === 'weaken' || outcome === 'retract';
+  if (
+    sources.length < 2 ||
+    sources.length !== item.evidence.length ||
+    sources.some(
+      (entry) =>
+        (!closesInvalidLineage && !entry.fingerprint) ||
+        !entry.observationFactId ||
+        !entry.observationLineHash ||
+        !entry.observationProofGroups?.length ||
+        !entry.observationId ||
+        !entry.observationSubject ||
+        (closesInvalidLineage
+          ? entry.observationDisposition !== (outcome === 'weaken' ? 'weakened' : 'retracted')
+          : entry.observationDisposition !== 'active') ||
+        entry.observationProofCount === undefined,
+    )
+  ) {
+    return 'an observation requires exact sealed fact lineage';
+  }
+  const first = sources[0]!;
+  if (
+    sources.some(
+      (entry) =>
+        entry.observationId !== first.observationId ||
+        entry.observationSubject !== first.observationSubject ||
+        entry.observationProofCount !== first.observationProofCount,
+    )
+  ) {
+    return 'observation evidence disagrees about marker identity';
+  }
+  const factIds = sources.map((entry) => entry.observationFactId!);
+  if (new Set(factIds).size !== factIds.length) return 'observation evidence contains a duplicate fact';
+  const proofGroups = new Set(sources.flatMap((entry) => entry.observationProofGroups!));
+  if (proofGroups.size < Math.max(2, ctx.config.maintenance.observe.minEvidence)) {
+    return 'an observation needs the configured number of independent proof groups';
+  }
+  if (proofGroups.size !== first.observationProofCount) return 'observation proof count is not recomputable';
+
+  const afterPage = parsePage(operation.relPath, operation.after);
+  const targetId = first.observationTargetId ?? first.observationId!;
+  const markerIndex = observationMarkerIndexes(afterPage.lines, targetId)[0] ?? -1;
+  if (markerIndex < 0) return 'the observation marker is missing from the proposed page';
+  const marker = parseObservationMarker(afterPage.lines[markerIndex]!);
+  const payload = afterPage.lines[markerIndex + 1]?.trim() ?? '';
+  if (!marker || marker.subject !== first.observationSubject) {
+    return 'the proposed observation marker does not match its sealed lineage';
+  }
+  if (closesInvalidLineage) {
+    const disposition = outcome === 'weaken' ? 'weakened' : 'retracted';
+    if (
+      marker.disposition !== disposition ||
+      marker.proofCount !== first.observationProofCount ||
+      sources.some(
+        (entry) =>
+          entry.observationPayloadHash !== first.observationPayloadHash ||
+          entry.observationQualificationIssue !== first.observationQualificationIssue,
+      )
+    ) {
+      return `a ${outcome} proposal does not preserve its sealed invalid lineage`;
+    }
+    const expected = replaceObservationBlock(
+      operation.before,
+      targetId,
+      `${renderObservationMarker(marker)}\n${payload}`,
+    );
+    return expected === operation.after
+      ? null
+      : `the observation ${outcome} changed bytes outside its owned block`;
+  }
+  if (outcome === 'split') {
+    if (marker.disposition !== 'superseded') return 'a split must preserve its prior marker as superseded';
+    const beforePage = parsePage(operation.relPath, operation.before);
+    const beforeIndex = observationMarkerIndexes(beforePage.lines, targetId)[0] ?? -1;
+    const beforeMarker = beforeIndex >= 0 ? parseObservationMarker(beforePage.lines[beforeIndex]!) : null;
+    const beforePayload = beforeIndex >= 0 ? (beforePage.lines[beforeIndex + 1]?.trim() ?? '') : '';
+    if (
+      !beforeMarker ||
+      beforeMarker.disposition !== 'active' ||
+      renderObservationMarker({ ...beforeMarker, disposition: 'superseded' }) !==
+        renderObservationMarker(marker) ||
+      payload !== beforePayload
+    ) {
+      return 'a split must preserve the exact prior block as superseded';
+    }
+    const replacementLines = afterPage.lines.slice(markerIndex, markerIndex + 8);
+    const activeMarkers = replacementLines
+      .map(parseObservationMarker)
+      .filter(
+        (entry): entry is NonNullable<typeof entry> => entry !== null && entry.disposition === 'active',
+      );
+    if (
+      activeMarkers.length !== 2 ||
+      activeMarkers.some(
+        (entry) =>
+          entry.subject !== first.observationSubject || entry.proofCount !== first.observationProofCount,
+      )
+    ) {
+      return 'a split must produce exactly two active observations with the sealed lineage';
+    }
+    const activePayloads = [replacementLines[4]?.trim() ?? '', replacementLines[7]?.trim() ?? ''];
+    const evidenceSlugs = sources.map((entry) => entry.source);
+    const expectedEvidence = sources.map((entry) => ({
+      factId: entry.observationFactId!,
+      sourceLineHash: entry.observationLineHash!,
+      proofGroups: entry.observationProofGroups!,
+    }));
+    const patterns = activePayloads.map(
+      (entry) => /^- \*\*Observation:\*\* (.+?) Evidence: /.exec(entry)?.[1]?.trim() ?? '',
+    );
+    const activeIds = activeMarkers.map((entry) => entry.id);
+    if (
+      patterns.some((entry) => !entry) ||
+      activePayloads.some((entry) => observationPayloadIssue(entry, evidenceSlugs) !== null) ||
+      activeMarkers.some(
+        (entry) =>
+          renderObservationMarker(entry) !==
+          renderObservationMarker({
+            id: entry.id,
+            subject: first.observationSubject!,
+            disposition: 'active',
+            evidence: expectedEvidence,
+            proofCount: first.observationProofCount!,
+          }),
+      ) ||
+      new Set(activeIds).size !== 2 ||
+      activeIds.includes(targetId) ||
+      activeIds.some((id, index) => id !== observationId(first.observationSubject!, patterns[index]!))
+    ) {
+      return 'a split must produce two distinct deterministic blocks with exact sealed lineage';
+    }
+    const newline = operation.after.includes('\r\n') ? '\r\n' : '\n';
+    const replacement = [
+      `${renderObservationMarker(marker)}${newline}${payload}`,
+      observationBlock(activeMarkers[0]!, patterns[0]!, evidenceSlugs),
+      observationBlock(activeMarkers[1]!, patterns[1]!, evidenceSlugs),
+    ].join(`${newline}${newline}`);
+    const expected = replaceObservationBlock(operation.before, targetId, replacement);
+    return expected === operation.after
+      ? null
+      : 'the observation split changed bytes outside its owned block';
+  }
+  if (marker.proofCount !== first.observationProofCount || marker.disposition !== 'active') {
+    return 'the proposed observation marker does not preserve active proof lineage';
+  }
+  const pattern = /^- \*\*Observation:\*\* (.+?) Evidence: /.exec(payload)?.[1]?.trim();
+  if (!pattern) return 'the proposed observation lacks visible derived wording';
+  const expectedMarker = {
+    ...marker,
+    evidence: sources.map((entry) => ({
+      factId: entry.observationFactId!,
+      sourceLineHash: entry.observationLineHash!,
+      proofGroups: entry.observationProofGroups!,
+    })),
+  };
+  const expectedBlock = observationBlock(
+    expectedMarker,
+    pattern,
+    sources.map((entry) => entry.source),
+  );
+  const expected =
+    outcome === 'create'
+      ? insertObservationBlock(operation.before, expectedBlock)
+      : replaceObservationBlock(operation.before, targetId, expectedBlock);
+  return expected === operation.after
+    ? null
+    : 'the observation proposal changed bytes outside its owned block or section delimiter';
+}
+
+async function observationEvidenceIssue(
+  ctx: AknoContext,
+  item: MaintenanceItem,
+  phase: 'before' | 'after' = 'before',
+): Promise<string | null> {
+  if (item.kind === 'observe') {
+    const first = item.evidence[0];
+    const lifecycle = first?.observationOutcome;
+    if ((lifecycle === 'weaken' || lifecycle === 'retract') && first) {
+      const expectedDisposition = lifecycle === 'weaken' ? 'weakened' : 'retracted';
+      const observation = ctx.store.db
+        .prepare(
+          `SELECT id, source_slug, subject_entity, disposition, payload_hash, proof_count, eligible, issue
+             FROM observation_entries WHERE id = ?`,
+        )
+        .get(first.observationId) as
+        | {
+            id: string;
+            source_slug: string;
+            subject_entity: string;
+            disposition: string;
+            payload_hash: string;
+            proof_count: number;
+            eligible: number;
+            issue: string | null;
+          }
+        | undefined;
+      if (
+        !observation ||
+        observation.source_slug !== item.subject ||
+        observation.subject_entity !== first.observationSubject ||
+        observation.payload_hash !== first.observationPayloadHash ||
+        observation.proof_count !== first.observationProofCount
+      ) {
+        return 'the observation no longer matches the sealed lifecycle target.';
+      }
+      // Verification runs after re-indexing, when the requested disposition is already current.
+      if (observation.disposition === expectedDisposition) return null;
+      if (
+        observation.disposition !== 'active' ||
+        observation.eligible !== 0 ||
+        observation.issue !== first.observationQualificationIssue
+      ) {
+        return 'the observation qualification changed after its lifecycle transition was sealed.';
+      }
+      const currentEvidence = ctx.store.db
+        .prepare(
+          `SELECT fact_id, source_line_hash, proof_groups
+             FROM observation_evidence WHERE observation_id = ? ORDER BY ordinal`,
+        )
+        .all(first.observationId) as {
+        fact_id: string;
+        source_line_hash: string;
+        proof_groups: string;
+      }[];
+      if (
+        currentEvidence.length !== item.evidence.length ||
+        currentEvidence.some((entry, index) => {
+          const sealed = item.evidence[index]!;
+          return (
+            entry.fact_id !== sealed.observationFactId ||
+            entry.source_line_hash !== sealed.observationLineHash ||
+            !sameStringSet(JSON.parse(entry.proof_groups) as string[], sealed.observationProofGroups ?? [])
+          );
+        })
+      ) {
+        return 'the invalid observation lineage changed after it was sealed.';
+      }
+      const currentMarker = markerFromProjection(ctx.store, first.observationId!);
+      if (!currentMarker) return 'the observation marker is no longer projected.';
+      const survivingProofs = liveObservationProofGroups(ctx.store, currentMarker);
+      if (
+        (lifecycle === 'weaken' && survivingProofs.size === 0) ||
+        (lifecycle === 'retract' && survivingProofs.size !== 0)
+      ) {
+        return `the observation no longer qualifies for ${lifecycle}.`;
+      }
+      for (const entry of item.evidence) {
+        if (!entry.fingerprint || entry.source.startsWith('fact:')) continue;
+        const page = ctx.store.db.prepare('SELECT rel_path FROM pages WHERE slug = ?').get(entry.source) as
+          { rel_path: string } | undefined;
+        const bytes = page
+          ? await fsp.readFile(path.join(ctx.config.aknoPath, page.rel_path), 'utf8').catch(() => null)
+          : null;
+        if (bytes === null || sha256(bytes) !== entry.fingerprint) {
+          return `${entry.source} changed after the observation lifecycle transition was sealed.`;
+        }
+      }
+      return null;
+    }
+    for (const entry of item.evidence) {
+      const factId = entry.observationFactId;
+      if (!factId || !entry.observationLineHash || !entry.observationProofGroups) {
+        return 'observation evidence is missing its exact fact locator.';
+      }
+      const fact = ctx.store.db
+        .prepare(
+          `SELECT f.source_line_hash, f.valid_to, f.item_id, p.id AS page_id, p.slug, p.rel_path,
+                  p.role, p.body_hash, p.derived_hash, g.subject_entity, g.eligibility, g.traversable
+             FROM facts f JOIN pages p ON p.id = f.page_id
+             LEFT JOIN graph_fact_status g ON g.fact_id = f.id WHERE f.id = ?`,
+        )
+        .get(factId) as
+        | {
+            source_line_hash: string;
+            valid_to: string | null;
+            item_id: string | null;
+            page_id: string;
+            slug: string;
+            rel_path: string;
+            role: string;
+            body_hash: string;
+            derived_hash: string | null;
+            subject_entity: string | null;
+            eligibility: string | null;
+            traversable: number | null;
+          }
+        | undefined;
+      if (
+        !fact ||
+        fact.slug !== entry.source ||
+        fact.source_line_hash !== entry.observationLineHash ||
+        fact.valid_to !== null ||
+        fact.role !== 'knowledge' ||
+        fact.body_hash !== fact.derived_hash ||
+        fact.subject_entity !== entry.observationSubject ||
+        fact.eligibility !== 'eligible' ||
+        fact.traversable !== 1
+      ) {
+        return `${entry.source} no longer contains the sealed eligible fact.`;
+      }
+      const proofs = proofGroupsForFact(ctx.store, factId, fact.page_id, fact.item_id);
+      if (
+        proofs.size !== entry.observationProofGroups.length ||
+        entry.observationProofGroups.some((proof) => !proofs.has(proof))
+      ) {
+        return `${entry.source} no longer has the sealed independent support.`;
+      }
+      const bytes = await fsp
+        .readFile(path.join(ctx.config.aknoPath, fact.rel_path), 'utf8')
+        .catch(() => null);
+      if (bytes === null || sha256(bytes) !== entry.fingerprint) {
+        return `${entry.source} no longer matches its sealed observation evidence.`;
+      }
+    }
+    if (phase === 'after') {
+      const operation = item.operations[0];
+      if (!operation || operation.type !== 'replace') return 'the applied observation operation is missing.';
+      const appliedLifecycle = first?.observationOutcome ?? 'create';
+      const page = parsePage(operation.relPath, operation.after);
+      let expectedIds: string[] = [];
+      if (appliedLifecycle === 'split' && first?.observationTargetId) {
+        const targetIndex = observationMarkerIndexes(page.lines, first.observationTargetId)[0] ?? -1;
+        expectedIds = page.lines
+          .slice(targetIndex + 1, targetIndex + 8)
+          .map(parseObservationMarker)
+          .filter(
+            (entry): entry is NonNullable<typeof entry> => entry !== null && entry.disposition === 'active',
+          )
+          .map((entry) => entry.id);
+      } else if (first?.observationId) {
+        expectedIds = [first.observationId];
+      }
+      if (expectedIds.length !== (appliedLifecycle === 'split' ? 2 : 1)) {
+        return 'the applied observation did not retain its expected active marker identity.';
+      }
+      for (const id of expectedIds) {
+        const projected = ctx.store.db
+          .prepare(
+            `SELECT source_slug, subject_entity, disposition, eligible
+               FROM observation_entries WHERE id = ?`,
+          )
+          .get(id) as
+          { source_slug: string; subject_entity: string; disposition: string; eligible: number } | undefined;
+        if (
+          !projected ||
+          projected.source_slug !== item.subject ||
+          projected.subject_entity !== first?.observationSubject ||
+          projected.disposition !== 'active' ||
+          projected.eligible !== 1
+        ) {
+          return `the applied observation ${id} is not eligible in the rebuilt projection.`;
+        }
+      }
+    }
+    return null;
+  }
+  if (item.kind === 'reflect' && item.evidence.every((entry) => entry.reflectionObservationId)) {
+    for (const entry of item.evidence) {
+      const observation = ctx.store.db
+        .prepare(
+          `SELECT oe.source_slug, oe.payload_hash, oe.eligible, oe.disposition, p.rel_path
+             FROM observation_entries oe JOIN pages p ON p.id = oe.source_page WHERE oe.id = ?`,
+        )
+        .get(entry.reflectionObservationId) as
+        | {
+            source_slug: string;
+            payload_hash: string;
+            eligible: number;
+            disposition: string;
+            rel_path: string;
+          }
+        | undefined;
+      if (
+        !observation ||
+        observation.source_slug !== entry.source ||
+        observation.payload_hash !== entry.reflectionPayloadHash ||
+        observation.eligible !== 1 ||
+        observation.disposition !== 'active'
+      ) {
+        return `${entry.source} is no longer eligible level-two observation evidence.`;
+      }
+      const bytes = await fsp
+        .readFile(path.join(ctx.config.aknoPath, observation.rel_path), 'utf8')
+        .catch(() => null);
+      if (bytes === null || sha256(bytes) !== entry.fingerprint) {
+        return `${entry.source} no longer matches its sealed reflection evidence.`;
+      }
+    }
+    return null;
+  }
   const expectedRole = item.kind === 'reflect' ? 'inference' : 'knowledge';
   const observationRoot = ctx.config.paths.observations.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
   for (const entry of item.evidence) {
@@ -4185,7 +4686,7 @@ async function observationEvidenceIssue(ctx: AknoContext, item: MaintenanceItem)
       (entry.source === item.subject ||
         (entry.source !== observationRoot && !entry.source.startsWith(`${observationRoot}/`)))
     ) {
-      return `${entry.source} is not an independent observation-page source.`;
+      return `${entry.source} is not an independent legacy inference-page source.`;
     }
     let sourcePath: string;
     try {
@@ -4403,7 +4904,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
   if (isInferenceKind(item.kind)) {
     const issue = observationOperationIssue(ctx, item, operations);
     if (issue) return { status: 'blocked', detail: issue };
-    const evidenceIssue = await observationEvidenceIssue(ctx, item);
+    const evidenceIssue = await observationEvidenceIssue(ctx, item, 'before');
     if (evidenceIssue) return { status: 'stale', detail: evidenceIssue };
   } else if (!['managed_item', 'broken_link', 'rule_drift', 'adopt', 'contradiction'].includes(item.kind)) {
     const evidenceIssue = await curationPageEvidenceIssue(ctx, item);
@@ -4503,7 +5004,7 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     }
     if (index === 0) canonical = parsed;
     if (operation.type === 'delete') mergeSource = parsed;
-    const allowedDeclaredRole = isInferenceKind(item.kind) ? 'inference' : 'knowledge';
+    const allowedDeclaredRole = item.kind === 'reflect' ? 'inference' : 'knowledge';
     if (parsed.declaredRole && parsed.declaredRole !== allowedDeclaredRole) {
       return { status: 'blocked', detail: `${operation.relPath} is not declared as ${allowedDeclaredRole}` };
     }
@@ -4517,6 +5018,19 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
         return {
           status: 'blocked',
           detail: `${operation.relPath} no longer allows fact integration`,
+        };
+      }
+    }
+    if (item.kind === 'observe') {
+      const currentPolicy = resolvePagePolicy(
+        parsed,
+        effectiveRule(parsed.slug, ctx.config.rules),
+        ctx.config.paths.observations,
+      );
+      if (currentPolicy.role !== 'knowledge' || currentPolicy.observe !== 'integrate') {
+        return {
+          status: 'blocked',
+          detail: `${operation.relPath} no longer allows observation integration`,
         };
       }
     }

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { DreamManagement, PageRole, RememberManagement } from '@tenphi/akno-protocol';
+import type { DreamManagement, ObserveManagement, PageRole, RememberManagement } from '@tenphi/akno-protocol';
 import { parseFrontmatter, readString, readTags, type Frontmatter } from './frontmatter.ts';
 import { sha256 } from '../store/ids.ts';
 
@@ -51,7 +51,11 @@ export interface ParsedPage {
   tags: string[];
   /** Declared in frontmatter. Rules and defaults fill in when absent. */
   declaredRole: PageRole | null;
-  declaredManagement: { remember?: RememberManagement; dream?: DreamManagement };
+  declaredManagement: {
+    remember?: RememberManagement;
+    observe?: ObserveManagement;
+    dream?: DreamManagement;
+  };
   about: string[];
   aliases: string[];
   /** The whole file, unchanged. */
@@ -168,16 +172,22 @@ function readPageRole(value: unknown): PageRole | null {
     : null;
 }
 
-function readManagement(value: unknown): { remember?: RememberManagement; dream?: DreamManagement } {
+function readManagement(value: unknown): {
+  remember?: RememberManagement;
+  observe?: ObserveManagement;
+  dream?: DreamManagement;
+} {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   const record = value as Record<string, unknown>;
   const remember = record.remember === 'deny' || record.remember === 'integrate' ? record.remember : null;
+  const observe = record.observe === 'deny' || record.observe === 'integrate' ? record.observe : null;
   const dream =
     record.dream === 'none' || record.dream === 'hygiene' || record.dream === 'synthesize'
       ? record.dream
       : null;
   return {
     ...(remember ? { remember } : {}),
+    ...(observe ? { observe } : {}),
     ...(dream ? { dream } : {}),
   };
 }
@@ -312,6 +322,7 @@ export function resolveRole(
 export interface ResolvedPagePolicy {
   role: PageRole;
   remember: RememberManagement;
+  observe: ObserveManagement;
   dream: DreamManagement;
   about: string[];
   aliases: string[];
@@ -322,6 +333,7 @@ export function resolvePagePolicy(
   rule: {
     role?: PageRole;
     remember?: RememberManagement;
+    observe?: ObserveManagement;
     about?: string[];
     glob?: string;
   } | null,
@@ -333,6 +345,9 @@ export function resolvePagePolicy(
     // Searchability is not write consent. A plain Markdown page remains useful knowledge,
     // but `remember` may change it only when the page or its folder says so explicitly.
     remember: page.declaredManagement.remember ?? rule?.remember ?? 'deny',
+    // Observation placement is a separate, narrower grant. Existing remember/dream
+    // settings never acquire this authority during an upgrade.
+    observe: page.declaredManagement.observe ?? rule?.observe ?? 'deny',
     // Whole-page automatic authority must be visible on the page itself. Folder rules cannot
     // make an existing page rewritable merely because it was moved under another path.
     dream: page.declaredManagement.dream ?? 'none',

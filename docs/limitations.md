@@ -126,11 +126,15 @@ degradation behavior; `doctor` and live benchmarks test those higher-level contr
 
 ## Inference can still look authoritative
 
-Observation and reflection pages are marked derived, kept separate from authored evidence, and ranked lower.
-They are also append-only, cited, planned, and independently decided. Even so, fluent derived Markdown can look
-more certain than it is when read outside Akno.
+Observations are visibly labeled, marker-owned level-two blocks co-located on exact-subject pages; reflection
+principles remain separate level-three inference. Observation blocks carry exact leaf lineage, require
+independent proof, are ranked below direct evidence for ordinary factual questions, and become factually
+ineligible as soon as their lineage stops qualifying. Their create, reinforce, refine, weaken, retract, and
+split transitions are planned and independently decided. Even so, fluent derived Markdown can look more
+certain than it is when read outside Akno.
 
-Editors and downstream tools should preserve the role metadata and evidence links. Important decisions should
+Editors and downstream tools should preserve `akno:observation` markers and visible evidence links. A tool that
+ignores markers can display the sentence but cannot reproduce Akno's qualification. Important decisions should
 prefer authored or primary-document evidence over a derived observation.
 
 ## Not an editor, backup, or world model

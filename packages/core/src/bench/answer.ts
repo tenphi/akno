@@ -580,8 +580,9 @@ function gradeCase(
   );
   const citedSources = dedupe(
     output.citations.flatMap((citation) => {
-      const locator = citation.type === 'page' ? citation.slug : citation.document_id;
-      return identities.sourceByLocator.get(locator) ?? [];
+      if (citation.type === 'page') return identities.sourceByLocator.get(citation.slug) ?? [];
+      if (citation.type === 'document') return identities.sourceByLocator.get(citation.document_id) ?? [];
+      return citation.evidence.flatMap((leaf) => identities.sourceByLocator.get(leaf.slug) ?? []);
     }),
   );
   const relatedSources = dedupe([

@@ -853,7 +853,12 @@ function cardFromPage(page: NonNullable<Awaited<ReturnType<typeof read>>['page']
     role: page.role,
     summary: page.summary,
     score: 1,
-    lines: page.lines.filter((line) => line.text.trim().length > 0),
+    lines: page.lines.filter(
+      (line) =>
+        line.text.trim().length > 0 &&
+        !/^\s*<!--/.test(line.text) &&
+        line.observation?.status !== 'ineligible',
+    ),
     ...(page.superseded ? { superseded: page.superseded } : {}),
     ...(page.links.length > 0 ? { links: page.links } : {}),
     ...(page.documents ? { documents: page.documents } : {}),

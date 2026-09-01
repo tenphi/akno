@@ -97,15 +97,15 @@ decisions finish before accepted items apply.
 
 ## Phase summary
 
-| Phase          | Purpose                                                  | Output                                                                                                       | Default write behavior            |
-| -------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------- |
-| `conflicts`    | Classify disagreeing cross-page facts before inference   | Typed verdicts and eligibility                                                                               | Report only                       |
-| `observe`      | Infer evidence-backed patterns across authored knowledge | Append/create plans for inference pages                                                                      | Disabled until opted in           |
-| `reflect`      | Derive principles from several current observations      | Append plans for principles                                                                                  | Disabled until opted in           |
-| `curate`       | Maintain opted-in pages and Akno-owned fragments         | Managed-item, hygiene, synthesis, split, extract, merge, contradiction, link, and qualified type-drift plans | Audit plans under default profile |
-| `adopt`        | Give readable orphan documents a durable page            | Low-risk filing plans                                                                                        | Audit plans under default profile |
-| `repair`       | Preserve the legacy broken-link report surface           | Read-only exact proposals/refusals                                                                           | Disabled/report only              |
-| `housekeeping` | Report remaining structural work                         | Counts and actionable diagnostics                                                                            | Report only                       |
+| Phase          | Purpose                                                | Output                                                                                                       | Default write behavior            |
+| -------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| `conflicts`    | Classify disagreeing cross-page facts before inference | Typed verdicts and eligibility                                                                               | Report only                       |
+| `observe`      | Consolidate eligible level-one facts into patterns     | Owned-block lifecycle plans on exact-subject pages                                                           | Disabled until opted in           |
+| `reflect`      | Derive principles from eligible level-two observations | Append plans for the separate principles page                                                                | Disabled until opted in           |
+| `curate`       | Maintain opted-in pages and Akno-owned fragments       | Managed-item, hygiene, synthesis, split, extract, merge, contradiction, link, and qualified type-drift plans | Audit plans under default profile |
+| `adopt`        | Give readable orphan documents a durable page          | Low-risk filing plans                                                                                        | Audit plans under default profile |
+| `repair`       | Preserve the legacy broken-link report surface         | Read-only exact proposals/refusals                                                                           | Disabled/report only              |
+| `housekeeping` | Report remaining structural work                       | Counts and actionable diagnostics                                                                            | Report only                       |
 
 ### 1. Conflicts
 
@@ -128,18 +128,34 @@ fact-backed graph edges.
 
 ### 2. Observe
 
-Observe looks for patterns supported by at least two distinct authored knowledge pages. It writes only derived
-inference with exact evidence links. It cannot use another observation as evidence, cannot infer private-life
-claims, and rejects hedged or record-describing conclusions.
+Observe groups facts only by exact resolved subject and requires at least two independent proof groups. One
+authored page identity counts once; revisions from one retained `source_group` count once. Every locator is
+still kept for lineage even when several collapse into one proof group. Unresolved, tentative, hypothetical,
+proposed, rejected, cancelled, superseded, stale, retracted, conflict-ineligible, or circular evidence is not
+admitted.
+
+Placement resolves exactly one existing canonical entity page or one existing topical page whose `akno.about`
+names that canonical subject. The target must separately allow `akno.management.observe: integrate`. Semantic
+similarity is never placement authority, and there is no detached-page fallback. Akno creates or reuses
+`## Observed patterns`, then changes only its versioned marker-owned block; adjacent authored bytes remain in
+order and unchanged. On a mixed knowledge/source page, a newly created section stays above `<!-- source -->`.
+
+The typed lifecycle is `create`, `reinforce`, `refine`, `weaken`, `retract`, or `split`. Each outcome is sealed
+as a plan, decided separately, checked against current page bytes, fact hashes, subject identity, proof groups,
+and authority, then journalled, re-indexed, verified, and undoable. Invalid lineage is removed from factual
+recall and graph traversal immediately. If write policy cannot apply the corresponding weaken/retract marker
+update, the cycle reports it as held instead of continuing to use the observation.
 
 The phase is off by default because guardrails can reject unsafe output but cannot make a weak model insightful.
-Accepted conclusions append; they do not rewrite earlier inference.
+It cannot use another observation as same-level evidence, infer private-life claims, or accept hedged or
+record-describing conclusions.
 
 ### 3. Reflect
 
-Reflect derives reusable principles from at least three distinct current observation pages. It uses the same
-plan, decision, stale-input, append-only, re-index, and verification lifecycle as observe. It is also off by
-default because small corpora make “patterns of patterns” especially fragile.
+Reflect discovers eligible L2 markers through the index and derives reusable principles from at least three
+distinct observation ids. L3 principles remain on the configured `observations/principles` page and use the
+same plan, decision, stale-input, append-only, re-index, and verification lifecycle. It is also off by default
+because small corpora make “patterns of patterns” especially fragile.
 
 ### 4. Curate
 

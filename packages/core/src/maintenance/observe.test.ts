@@ -63,6 +63,27 @@ describe('the observe mission', () => {
     expect(result.observations[0]!.evidence).toEqual(['home/appliances', 'home/laundry']);
   });
 
+  it('refuses a split that would reuse the superseded stable id', async () => {
+    const pattern = 'Household appliances are serviced roughly every three months.';
+    const result = await runObserveMission({
+      ...base,
+      existingRecords: [{ id: 'obs_11111111', pattern }],
+      model: stubChat({
+        observations: [
+          {
+            pattern,
+            split_pattern: 'Laundry appliances follow a separate service cadence.',
+            evidence: ['home/appliances', 'home/laundry'],
+            outcome: 'split',
+            target_id: 'obs_11111111',
+          },
+        ],
+      }),
+    });
+    expect(result.observations).toEqual([]);
+    expect(result.rejected[0]?.reason).toBe('split requires two new distinct pattern identities');
+  });
+
   it('refuses an observation citing a page it was never shown', async () => {
     // An invented citation is worse than no observation: it looks checkable.
     const result = await runObserveMission({
@@ -91,6 +112,32 @@ describe('the observe mission', () => {
     });
     expect(result.observations).toEqual([]);
     expect(result.rejected[0]?.reason).toMatch(/needs 2/);
+  });
+
+  it('refuses lineage that cannot fit in one bounded marker', async () => {
+    const facts = Array.from({ length: 13 }, (_, index) => ({
+      claim: `Invented service record ${index + 1}.`,
+      slug: `service/record-${index + 1}`,
+    }));
+    const result = await runObserveMission({
+      subject: 'service cadence',
+      facts,
+      minEvidence: 2,
+      model: stubChat({
+        observations: [
+          {
+            pattern: 'Equipment servicing follows a stable recurring cadence.',
+            evidence: facts.map((fact) => fact.slug),
+            outcome: null,
+            target_id: null,
+            split_pattern: null,
+            confidence: 0.9,
+          },
+        ],
+      }),
+    });
+    expect(result.observations).toEqual([]);
+    expect(result.rejected[0]?.reason).toBe('cited more than 12 evidence facts');
   });
 
   it('refuses hedged language', async () => {
@@ -288,7 +335,7 @@ describe('the same observation twice, in two places', () => {
       otherObservations: ['Recorded periods consistently end with a positive net result overall.'],
     });
     expect(result.observations).toHaveLength(0);
-    expect(result.rejected[0]!.reason).toBe('already recorded on another observation page');
+    expect(result.rejected[0]!.reason).toBe('already recorded in another observation block');
   });
 
   it('rejects a claim the knowledge base already holds as a fact, from any subject', async () => {

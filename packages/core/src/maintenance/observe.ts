@@ -10,9 +10,9 @@ import { contentWords } from '../kb/words.ts';
  * knowledge base a bad write is recalled later **as truth**. So the guardrails are
  * enforced here in code, not asked for in the prompt:
  *
- * - **Evidence or nothing.** At least `min_evidence` distinct source pages, and every slug
- *   checked against the pages actually shown to the model. A model citing a page it was
- *   never given is the failure mode this exists for.
+ * - **Evidence or nothing.** At least `min_evidence` independent proof groups, with every exact
+ *   fact id checked against the eligible facts actually shown to the model. The caller seals all
+ *   locators and performs the correlation-aware proof count.
  * - **No hedged language, ever.** "might", "seems", "possibly" — a hedge written as prose
  *   reads as an assertion three months later, when nobody remembers it was a guess.
  * - **Never restate the facts.** A line that repeats a source line adds nothing and costs a
@@ -26,18 +26,22 @@ import { contentWords } from '../kb/words.ts';
  * - **Missions are additive.** The mission string appends emphasis to this fixed prompt and
  *   never replaces it, because every rule above lives in the fixed part.
  *
- * The caller enforces the two guards that need the knowledge base rather than the text:
- * `full` pages only, and no observation as evidence for another observation.
+ * The caller enforces the guards that need the knowledge base rather than the text: current
+ * level-one fact eligibility, exact subject identity, independent proof groups, target authority,
+ * and no observation as same-level evidence.
  */
 
 const SYSTEM = `You look for stable patterns across facts already recorded in a personal knowledge base.
 
-You are given facts grouped by subject, each tagged with the page it came from. Reply with JSON only:
+You are given facts grouped by subject. Each has an exact evidence id and its source page. Reply with JSON only:
 
 {
   "observations": [
     { "pattern": "one sentence stating a stable pattern, habit, or tendency",
-      "evidence": ["page/slug", "another/slug"],
+      "evidence": ["exact-fact-id", "another-exact-fact-id"],
+      "outcome": "create | reinforce | refine | split",
+      "target_id": "existing observation id, or null for create",
+      "split_pattern": "second sentence for split, otherwise null",
       "confidence": 0.0 }
   ]
 }
@@ -47,7 +51,7 @@ What counts as a pattern:
 - A tendency the facts agree on: how something is usually done, what is usually chosen, what keeps happening.
 
 Hard rules:
-- Every observation needs at least two DIFFERENT pages in "evidence", quoting their slugs exactly as given.
+- Every observation needs 2 to 12 independent evidence ids, quoting their ids exactly as given.
 - Never restate a fact. If your sentence is one of the facts reworded, drop it.
 - Never hedge. No "might", "seems", "possibly", "appears to", "probably". If you are not sure, leave it out.
 - Never infer about someone's health, finances, beliefs, relationships or character. Patterns about
@@ -60,8 +64,8 @@ Hard rules:
   expected answer on most nights, because the facts rarely change between one night and the next.`;
 
 /**
- * Shape only. Every rule this tier actually depends on — two distinct pages of evidence,
- * slugs that exist, no hedging, nothing about health or finances — is enforced after the
+ * Shape only. Every rule this tier actually depends on — exact evidence ids, no hedging,
+ * nothing about health or finances — is enforced after the
  * call, because those are the guards that exist precisely because a prompt could not be
  * trusted to carry them.
  */
@@ -70,6 +74,9 @@ export const OBSERVE_SCHEMA = z.object({
     z.object({
       pattern: z.string(),
       evidence: z.array(z.string()),
+      outcome: z.enum(['create', 'reinforce', 'refine', 'split']).nullable(),
+      target_id: z.string().nullable(),
+      split_pattern: z.string().nullable(),
       confidence: z.number(),
     }),
   ),
@@ -79,6 +86,9 @@ export interface ObservationCandidate {
   pattern: string;
   evidence: string[];
   confidence: number;
+  outcome?: 'create' | 'reinforce' | 'refine' | 'split';
+  targetId?: string;
+  splitPattern?: string;
 }
 
 export interface ObserveMissionResult {
@@ -135,8 +145,8 @@ const HEDGES =
 
 export interface ObserveInput {
   subject: string;
-  /** Facts as shown to the model: the claim and the page it came from. */
-  facts: { claim: string; slug: string }[];
+  /** Facts as shown to the model. `id` is exact in production; omission keeps fixture callers compatible. */
+  facts: { id?: string; claim: string; slug: string }[];
   model: ModelClient;
   mission?: string | null;
   minEvidence: number;
@@ -152,6 +162,8 @@ export interface ObserveInput {
    * and they are few enough to show.
    */
   existing?: string[];
+  /** Stable ids let the model request a bounded lifecycle transition instead of duplicating prose. */
+  existingRecords?: { id: string; pattern: string }[];
   /**
    * Every other observation already written, on any page.
    *
@@ -178,17 +190,37 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
     return { ...empty, error: input.model.unavailableReason ?? 'the model is unavailable' };
   }
 
-  const allowed = new Set(input.facts.map((fact) => fact.slug));
+  const allowed = new Map<string, string>();
+  const bySlug = new Map<string, typeof input.facts>();
+  for (const fact of input.facts) {
+    const exact = fact.id ?? fact.slug;
+    allowed.set(exact, exact);
+    const bucket = bySlug.get(fact.slug);
+    if (bucket) bucket.push(fact);
+    else bySlug.set(fact.slug, [fact]);
+  }
+  // Compatibility for models prompted by the previous release: a page slug is still
+  // accepted only when it identifies exactly one shown fact, then normalized to that id.
+  for (const [slug, facts] of bySlug) {
+    if (facts.length === 1) allowed.set(slug, facts[0]!.id ?? slug);
+  }
   // Below the floor there is nothing to observe *across*, so the call is skipped rather than
   // made and then rejected.
-  if (allowed.size < input.minEvidence) return empty;
+  if (new Set(input.facts.map((fact) => fact.id ?? fact.slug)).size < input.minEvidence) return empty;
 
   const system = input.mission ? `${SYSTEM}\n\nAdditional emphasis: ${input.mission}` : SYSTEM;
-  const listed = input.facts.map((fact) => `- [${fact.slug}] ${fact.claim}`).join('\n');
-  const known = (input.existing ?? []).slice(0, 20);
+  const listed = input.facts
+    .map((fact) => `- [${fact.id ?? fact.slug}] (${fact.slug}) ${fact.claim}`)
+    .join('\n');
+  const known = (input.existing ?? input.existingRecords?.map((entry) => entry.pattern) ?? []).slice(0, 20);
+  const knownRecords = new Map((input.existingRecords ?? []).map((entry) => [entry.id, entry.pattern]));
   const alreadyRecorded =
     known.length > 0
-      ? `\n\nAlready recorded for this subject — do not repeat or reword:\n${known.map((line) => `- ${line}`).join('\n')}`
+      ? `\n\nAlready recorded for this subject. Use its id with reinforce/refine/split when warranted; otherwise do not repeat it:\n${
+          input.existingRecords?.length
+            ? input.existingRecords.map((entry) => `- [${entry.id}] ${entry.pattern}`).join('\n')
+            : known.map((line) => `- ${line}`).join('\n')
+        }`
       : '';
 
   const result = await input.model.chat(
@@ -244,34 +276,54 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
     // catches near-identical wording — real rewrites share too few words for any threshold that
     // would not also merge genuinely different observations, which is why the prompt does the work
     // and this only backstops it.
-    if (known.some((line) => nearlyTheSame(line, pattern))) {
+    const outcome =
+      record.outcome === 'reinforce' || record.outcome === 'refine' || record.outcome === 'split'
+        ? record.outcome
+        : 'create';
+    const targetId = typeof record.target_id === 'string' ? record.target_id : undefined;
+    const targetPattern = targetId ? knownRecords.get(targetId) : undefined;
+    if ((outcome === 'create' && targetId) || (outcome !== 'create' && !targetPattern)) {
+      rejected.push({ pattern, reason: 'invalid observation lifecycle target' });
+      continue;
+    }
+    if (outcome === 'reinforce' && targetPattern && !nearlyTheSame(targetPattern, pattern)) {
+      rejected.push({ pattern, reason: 'reinforcement changed the recorded pattern' });
+      continue;
+    }
+    if (outcome === 'create' && known.some((line) => nearlyTheSame(line, pattern))) {
       rejected.push({ pattern, reason: 'already recorded for this subject' });
       continue;
     }
 
-    // The same thing said on somebody else's page. Grouping is by folder and subject, so two
-    // groups can reach one conclusion from overlapping facts and each write it to its own page —
-    // where neither looks like a duplicate, because neither page contains the other.
+    // Distinct exact subjects can still reach the same generic conclusion from overlapping facts.
+    // Keep that from becoming duplicated L2 prose merely because each subject has its own target.
     if ((input.otherObservations ?? []).some((line) => nearlyTheSame(line, pattern))) {
-      rejected.push({ pattern, reason: 'already recorded on another observation page' });
+      rejected.push({ pattern, reason: 'already recorded in another observation block' });
       continue;
     }
 
-    // Only slugs the model was actually shown. Anything else is invention, and an invented
+    // Only exact ids the model was actually shown. Anything else is invention, and an invented
     // citation is worse than no observation because it looks checkable.
     const evidence = [
       ...new Set(
         (Array.isArray(record.evidence) ? record.evidence : [])
           .filter((slug): slug is string => typeof slug === 'string')
           .map((slug) => slug.trim())
-          .filter((slug) => allowed.has(slug)),
+          .flatMap((id) => {
+            const exact = allowed.get(id);
+            return exact ? [exact] : [];
+          }),
       ),
     ];
     if (evidence.length < input.minEvidence) {
       rejected.push({
         pattern,
-        reason: `cited ${evidence.length} usable source page(s), needs ${input.minEvidence}`,
+        reason: `cited ${evidence.length} usable source page/fact item(s), needs ${input.minEvidence}`,
       });
+      continue;
+    }
+    if (evidence.length > 12) {
+      rejected.push({ pattern, reason: 'cited more than 12 evidence facts' });
       continue;
     }
 
@@ -281,7 +333,31 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
     }
 
     const confidence = typeof record.confidence === 'number' ? clamp(record.confidence) : 0.6;
-    observations.push({ pattern, evidence, confidence });
+    const splitPattern =
+      outcome === 'split' && typeof record.split_pattern === 'string'
+        ? record.split_pattern.trim().replace(/\s+/g, ' ')
+        : undefined;
+    if (outcome === 'split' && (!splitPattern || splitPattern.length < 12 || splitPattern.length > 400)) {
+      rejected.push({ pattern, reason: 'split requires a second bounded pattern' });
+      continue;
+    }
+    if (
+      outcome === 'split' &&
+      splitPattern &&
+      targetPattern &&
+      new Set([pattern, splitPattern, targetPattern].map(stablePatternKey)).size !== 3
+    ) {
+      rejected.push({ pattern, reason: 'split requires two new distinct pattern identities' });
+      continue;
+    }
+    observations.push({
+      pattern,
+      evidence,
+      confidence,
+      ...(record.outcome ? { outcome } : {}),
+      ...(targetId ? { targetId } : {}),
+      ...(splitPattern ? { splitPattern } : {}),
+    });
   }
 
   // One per subject per run, the best the model was willing to stand behind.
@@ -292,6 +368,10 @@ export async function runObserveMission(input: ObserveInput): Promise<ObserveMis
   // line instead of three, and the advice for this tier is fewer and better.
   observations.sort((a, b) => b.confidence - a.confidence);
   return { observations: observations.slice(0, 1), error: null, rejected };
+}
+
+function stablePatternKey(value: string): string {
+  return value.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
 /**
