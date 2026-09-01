@@ -63,6 +63,7 @@ const REDEPLOY_HELP = `akno redeploy [options]
   --json`;
 
 const LABEL = 'dev.akno';
+const AFTER_BUILD_ENV = 'AKNO_REDEPLOY_AFTER_BUILD';
 const DEFAULT_FAST_SOCKET_WAIT_MS = 30_000;
 const DEFAULT_MAX_SOCKET_WAIT_MS = 180_000;
 
@@ -154,6 +155,16 @@ export function redeployTarget(
   return linux && installed ? installed : current;
 }
 
+export function postBuildInvocation(
+  argv: string[],
+  entrypoint: string | undefined = process.argv[1],
+): string[] {
+  if (!entrypoint) {
+    throw new AknoError('internal', 'cannot locate the Akno CLI entrypoint after building');
+  }
+  return [entrypoint, 'redeploy', ...argv, '--no-build'];
+}
+
 export async function redeployCommand(argv: string[]): Promise<number> {
   const { values } = parse<{ build: boolean; restart: boolean; timeout?: string }>(argv, {
     build: { type: 'boolean', default: true },
@@ -172,7 +183,12 @@ export async function redeployCommand(argv: string[]): Promise<number> {
     socket: string | null;
     ready: boolean;
     note?: string;
-  } = { built: false, restarted: false, socket: null, ready: false };
+  } = {
+    built: process.env[AFTER_BUILD_ENV] === '1',
+    restarted: false,
+    socket: null,
+    ready: false,
+  };
 
   // ── Build ─────────────────────────────────────────────────────────────────
   if (values.build) {
@@ -194,6 +210,27 @@ export async function redeployCommand(argv: string[]): Promise<number> {
       return 1;
     }
     result.built = true;
+
+    // The CLI process may already have loaded @tenphi/akno-core from dist before this command
+    // starts. Building replaces those files on disk, but ESM keeps the old modules in memory.
+    // Continue in a fresh process so config resolution and the restart both use the artifacts we
+    // just built. This matters most on upgrades that change the committed config shape: otherwise
+    // the first redeploy can reject the new defaults with the previous schema and require a second
+    // invocation before it restarts anything.
+    const continuation = spawnSync(process.execPath, postBuildInvocation(argv), {
+      cwd: root,
+      stdio: 'inherit',
+      env: { ...process.env, [AFTER_BUILD_ENV]: '1' },
+    });
+    if (continuation.status === null) {
+      fail(
+        values.json,
+        result,
+        `fresh post-build process failed${buildTail(continuation.error?.message ?? null)}`,
+      );
+      return 1;
+    }
+    return continuation.status;
   }
 
   // ── Restart ───────────────────────────────────────────────────────────────

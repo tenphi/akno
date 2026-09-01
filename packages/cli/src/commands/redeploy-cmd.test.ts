@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   launchdServiceIsRunning,
+  postBuildInvocation,
   redeployPlan,
   redeployTarget,
   redeployWaitPolicy,
@@ -15,6 +16,16 @@ const plan = (over: Partial<Parameters<typeof redeployPlan>[0]> = {}) =>
   redeployPlan({ build: true, restart: true, darwin: true, linux: false, serviceInstalled: true, ...over });
 
 describe('what a redeploy decides to do', () => {
+  it('continues in a fresh CLI process after building', () => {
+    expect(postBuildInvocation(['--timeout', '7'], '/invented/akno-bin.ts')).toEqual([
+      '/invented/akno-bin.ts',
+      'redeploy',
+      '--timeout',
+      '7',
+      '--no-build',
+    ]);
+  });
+
   it('builds and restarts, given a service and a Mac', () => {
     expect(plan()).toEqual({ build: true, restart: true, skipped: null });
   });
