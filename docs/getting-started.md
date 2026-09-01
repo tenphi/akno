@@ -6,12 +6,27 @@ retain explicit metadata or rendition write opt-ins.
 
 ## Requirements
 
-- macOS;
+- macOS or Linux;
 - Node 22.18 or newer;
 - a folder containing Markdown notes, optionally with attached documents.
 
 Akno does not download or run models. Every model role is optional and points to an OpenAI-compatible endpoint
 you choose.
+
+Markdown indexing needs no additional operating-system packages. Native document extraction has optional
+platform dependencies:
+
+- macOS compiles its PDFKit/Vision helper on demand and needs the Xcode command line tools for PDF and image
+  extraction (`xcode-select --install`); `textutil` handles supported office formats.
+- Linux uses Poppler for PDF text and rasterization, Tesseract for OCR, and LibreOffice for supported office
+  formats. On Debian or Ubuntu, install all three paths with:
+
+  ```bash
+  sudo apt-get install poppler-utils tesseract-ocr libreoffice-writer
+  ```
+
+Missing tools do not disable Akno or Markdown indexing. `akno doctor` reports the available extraction backend
+and commands, and ingestion returns typed degradation for an affected document rather than hiding the gap.
 
 ## Install and configure
 
@@ -40,8 +55,9 @@ explicit `memory/**` managed rule when needed, but does not create the folder or
 admitted model-suggested page still take priority; see [Remember fallback](configuration.md#remember-fallback).
 
 It then shows the exact configuration overlay and a path-only diff before asking to write. Once the config is
-safe on disk, it separately offers to build the index, run a first recall, and install the macOS background
-service plus nightly schedule. Every follow-up explains its boundary and defaults to no. Declining one leaves
+safe on disk, it separately offers to build the index, run a first recall, and install the platform background
+service plus nightly schedule: launchd on macOS or systemd `--user` on Linux. Every follow-up explains its
+boundary and defaults to no. Declining one leaves
 an explicit command to run later; a failed follow-up never rolls back the valid config. Non-interactive setup
 always stops after the configuration write. Accepted actions stay pinned to the knowledge-base and state paths
 shown in the preview, including paths written into background-service definitions.
@@ -159,6 +175,10 @@ and model clients. Install the nightly schedule only after reading [The dream cy
 ```bash
 akno service install
 ```
+
+On macOS this manages launchd agents. On Linux it manages systemd user services and timers, so
+`systemctl --user` must be available for the account running Akno. Foreground and in-process operation remain
+available when no user service manager is present.
 
 ## A safe adoption path
 

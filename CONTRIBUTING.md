@@ -17,9 +17,11 @@ directory. If it passes, your checkout is working.
 
 Once a service is installed, `pnpm akno redeploy` is the one command that applies a change: it builds, then
 restarts `dev.akno`, then waits for the socket to come back. Both halves are needed and for different
-reasons — launchd runs the TypeScript directly, so the _service_ needs the restart and not the build, while a
-host importing `@tenphi/akno-client` reads `packages/*/dist`, so it needs the build and not the restart.
-Doing one and not the other leaves half the system on the old code, and the symptom is `unknown op`.
+reasons. The launchd or systemd service runs the CLI source but imports `@tenphi/akno-core` from `dist`, while a
+host importing `@tenphi/akno-client` also reads built package output. The build updates those artifacts; the
+restart replaces the long-lived process. Redeploy continues in a fresh CLI process after building so config
+resolution cannot retain the previous in-memory schema. Doing only one half leaves some consumer on old code,
+and the symptom may be `unknown op` or a configuration error that disappears on a second invocation.
 
 Node 22.18+ (native type stripping) and pnpm 10+. `pnpm-workspace.yaml` sets `minimumReleaseAge: 4320` (three
 days), so a brand-new release of a dependency will not resolve; that is deliberate.
@@ -41,10 +43,11 @@ A change to published behavior also carries a Changesets file. After the feature
 workflow opens or updates a separate version PR; publishing never happens from the feature branch.
 
 **macOS and Linux runtime.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin", "linux"]`; see
-[Platform](docs/operations.md#platform). Linux currently provides the package/runtime foundation, XDG paths,
-native indexing, and the socket service. Do not imply that macOS-only document extraction or launchd service
-installation works on Linux, and do not add a systemd or extractor path without its own tested scope.
-`@tenphi/akno-client` and `@tenphi/akno-protocol` remain portable.
+[Platform](docs/operations.md#platform). Linux provides XDG paths, native indexing, Poppler/Tesseract/LibreOffice
+document extraction, the socket service, systemd user-service lifecycle, scheduled timers, and syslog
+notifications. Preserve the macOS PDFKit/Vision/`textutil`, launchd, and Notification Center paths when changing
+shared contracts; each platform-specific backend needs its own fixtures. `@tenphi/akno-client` and
+`@tenphi/akno-protocol` remain portable.
 
 ## The one rule about config
 
@@ -228,6 +231,27 @@ Test it directly while iterating:
 ```bash
 swiftc -o /tmp/akno-extract packages/core/swift/extract.swift
 /tmp/akno-extract pdf some.pdf --force-ocr | python3 -m json.tool
+```
+
+## The Linux extractor
+
+`packages/core/src/ingest/linux-extractor.ts` keeps the same extraction contract while using native command-line
+tools: Poppler for PDF inspection, text, and rasterization; Tesseract for OCR; and LibreOffice for office text.
+
+- **Never interpolate a document path into a shell command.** The command runner uses executable plus argument
+  arrays so a filename cannot become syntax.
+- **Capabilities are independent.** Missing Tesseract must not hide working PDF text extraction, and missing
+  LibreOffice must not affect Markdown or PDFs. Report the exact missing tools as typed degradation.
+- **Keep page provenance.** Mixed text-layer and scanned PDFs preserve original page numbers and return partial
+  text with explicit degradation when later OCR fails or reaches its page budget.
+- **Clean every temporary directory.** Rasterized pages and isolated LibreOffice profiles are derived artifacts,
+  not state.
+
+Run the focused contract and backend suite while iterating:
+
+```bash
+pnpm exec vitest run packages/core/src/ingest/extractor-contract.test.ts \
+  packages/core/src/ingest/linux-extractor.test.ts
 ```
 
 ## Style

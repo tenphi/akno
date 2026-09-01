@@ -347,7 +347,8 @@
     //
     //   "model": { "provider": "openai", "id": "gpt-5.6" }
     "model": null,
-    // Local macOS notifications for scheduled runs. "actionable" reports only
+    // Local platform notifications for scheduled runs: Notification Center on
+    // macOS or the local system log on Linux. "actionable" reports only
     // review backlog, failed/incomplete work, persistent budget deferral, repeated
     // model degradation, or a missed cycle. "all" also confirms quiet success.
     // Page text, paths, diffs, prompts, and model responses are never included.
@@ -503,8 +504,9 @@
     // wildcards are not accepted.
     "trusted_url_origins": [],
     // Pages OCR'd before stopping. A 200-page scan need not be fully searchable to
-    // be findable, and the ingest report says how many were read. Measured on this
-    // hardware: ~0.6s per page through the Vision framework.
+    // be findable, and the ingest report says how many were read. Measured on the
+    // reference Mac: ~0.6s per page through Vision; Linux cost depends on Poppler,
+    // Tesseract, and the host.
     "max_ocr_pages": 12,
     // The second naming guard: below this, the file keeps its name, gets no page, and is
     // reported — rather than being given a confident wrong name. Renaming is the one

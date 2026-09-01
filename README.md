@@ -37,7 +37,7 @@ documents contain.
 
 ## Quick start
 
-Akno currently supports macOS and requires Node 22.18 or newer.
+Akno supports macOS and Linux and requires Node 22.18 or newer.
 
 ```bash
 npm install -g @tenphi/akno
@@ -62,8 +62,9 @@ akno init
 ```
 
 The configuration write is isolated from later actions. Guided setup then offers, with a separate confirmation
-for each, to build the rebuildable search projections, run a first recall, and install the macOS background
-service with its nightly schedule. Every offer defaults to no; non-interactive setup remains
+for each, to build the rebuildable search projections, run a first recall, and install the platform background
+service with its nightly schedule—launchd on macOS or systemd `--user` on Linux. Every offer defaults to no;
+non-interactive setup remains
 configuration-only. The equivalent commands are:
 
 ```bash
@@ -71,6 +72,11 @@ akno index
 akno doctor
 akno recall "How long is the Zephyr QX-100 warranty?"
 ```
+
+Markdown indexing needs no extra system tools. Linux document extraction uses Poppler for PDFs, Tesseract for
+OCR, and LibreOffice for supported office files; missing tools degrade only the affected extraction path and
+are reported by `akno doctor`. See [Platform support](docs/operations.md#platform) for installation details and
+the exact macOS/Linux differences.
 
 Need invented notes to try? Copy [`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples/demo-brain) and follow the
 [getting-started guide](docs/getting-started.md#try-the-demo-knowledge-base).

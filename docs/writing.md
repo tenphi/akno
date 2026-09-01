@@ -259,7 +259,7 @@ Linux, it uses Poppler for PDF text and page rasterization, Tesseract for scanne
 LibreOffice for `.doc`, `.docx`, `.odt`, and `.rtf` files. Missing native tools produce an actionable degraded
 result rather than failing ingestion. The vision model is reached only when an image has no readable text and
 needs a visual description. Each indexed document records whether its content came from original text, OCR, or
-a model description.
+a model description. [Platform support](operations.md#platform) lists the dependencies and installation example.
 
 Document text is indexed as the document, with original page numbers where possible. It is not pasted into the
 owning Markdown body. Optional text renditions let editors and command-line tools read extracted text beside the

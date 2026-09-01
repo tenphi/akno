@@ -1,6 +1,6 @@
 # Operations
 
-Akno can run for one command at a time or as a long-lived macOS service. The service is the normal agent
+Akno can run for one command at a time or as a long-lived macOS or Linux user service. The service is the normal agent
 integration: it keeps the index warm, watches the knowledge base, owns the single write handle, and exposes the
 same operation registry through several transports.
 
@@ -86,7 +86,7 @@ disables and removes any previously installed timers. The generated commands ret
 
 The scheduled command resolves `maintenance.profile` and policies at run time. Changing authority therefore
 does not require reinstalling the schedule. Re-run installation after an Akno upgrade when release notes say
-the launchd definition changed.
+the launchd or systemd definition changed.
 
 During the initial planner wave, the service holds one index revision. Watcher and explicit index passes that
 reach the shared indexer are queued, not discarded, then drained before curator decisions and apply. Filesystem
@@ -261,12 +261,13 @@ pnpm test
 pnpm akno redeploy
 ```
 
-`redeploy` builds packages, restarts the launchd service, and waits until the socket is ready. It uses a
-30-second fast readiness window and, when launchd confirms that the replacement process is still running, a
-bounded three-minute live-handoff window. `--timeout <seconds>` replaces both with an explicit hard deadline.
-Building matters:
-the running CLI imports compiled core and client packages, so restarting without a build can silently keep old
-behavior.
+`redeploy` builds packages, continues in a fresh CLI process, restarts the launchd or systemd user service, and
+waits until the replacement socket is ready. It uses a 30-second fast readiness window and, when the platform
+service manager confirms that the replacement is still running, a bounded three-minute live-handoff window.
+`--timeout <seconds>` replaces both with an explicit hard deadline. Building matters: the service imports the
+compiled core package, and hosts import compiled core or client packages, so restarting without a build can
+silently keep old behavior. The fresh process ensures the restart itself resolves config and package exports
+from the artifacts that were just built.
 
 Use `pnpm akno redeploy --no-restart` for a checkout without an installed service, or `--no-build` only when no
 compiled package changed.
@@ -286,10 +287,31 @@ untrusted collaborative-write model.
 
 ## Platform
 
-Akno's core and CLI package metadata supports macOS and Linux. Linux includes native indexing, platform-aware
-XDG config/state/runtime paths, and a manually started socket service. Its default socket is
-`$XDG_RUNTIME_DIR/akno/akno.sock`, falling back to private state when that variable is unavailable.
+Akno's core and CLI packages support macOS and Linux with Node 22.18 or newer. The protocol and client packages
+remain portable and do not carry Akno's native index dependencies. Windows is not a supported core/CLI runtime.
 
-Document extraction still deliberately uses macOS PDFKit, Vision, and `textutil`, and managed background
-installation still deliberately uses launchd. Linux document extraction and systemd units are not part of this
-runtime-foundation scope. `@tenphi/akno-client` and `@tenphi/akno-protocol` remain portable.
+| Capability               | macOS                                   | Linux                                                       |
+| ------------------------ | --------------------------------------- | ----------------------------------------------------------- |
+| Markdown indexing        | Native                                  | Native                                                      |
+| Config and private state | `~/.akno`                               | XDG config and state directories                            |
+| Default Unix socket      | `~/.akno/akno.sock`                     | `$XDG_RUNTIME_DIR/akno/akno.sock`                           |
+| PDF text                 | PDFKit                                  | Poppler (`pdfinfo`, `pdftotext`)                            |
+| PDF and image OCR        | Vision                                  | Poppler rasterization plus Tesseract                        |
+| Office text              | `textutil`                              | LibreOffice                                                 |
+| Managed user service     | launchd                                 | systemd `--user`                                            |
+| Scheduled notifications  | Notification Center through `osascript` | Local system log through `/usr/bin/logger` or `/bin/logger` |
+
+If `XDG_RUNTIME_DIR` is absent or not absolute, the Linux socket falls back to the private XDG state directory.
+The corresponding state fallback is `~/.local/state/akno`, and the config fallback is `~/.config/akno`.
+
+On Debian or Ubuntu, install the complete Linux extraction toolchain with:
+
+```bash
+sudo apt-get install poppler-utils tesseract-ocr libreoffice-writer
+```
+
+The tools are discovered independently. Missing LibreOffice affects supported office files; missing Tesseract
+affects image and scanned-PDF OCR; missing Poppler affects PDF extraction. `doctor` reports the selected backend
+and each command, while ingestion returns typed missing-dependency or partial-extraction degradation instead of
+claiming that the document was fully read. A systemd user manager is required only for `akno service`; foreground
+and in-process operation do not depend on it.

@@ -14,12 +14,17 @@ an organization where different people must be unable to read or change each oth
 
 ## Platform-specific integration
 
-The core and CLI runtime supports macOS and Linux for native indexing and the Unix-socket service. On Linux,
-configuration, state, and runtime files follow XDG defaults.
+The core and CLI runtime supports macOS and Linux for native indexing, document extraction, the Unix-socket
+service, and managed background operation. Linux configuration, state, and runtime files follow XDG defaults;
+its managed service requires a working systemd user manager.
 
-Document extraction still uses macOS PDFKit, Vision, and `textutil`, and managed background operation still
-uses launchd. Linux currently requires manual service startup and does not provide document extraction or a
-systemd unit. Windows is not a supported core/CLI runtime. The protocol and client packages remain portable.
+The extraction backends are intentionally platform-specific. macOS uses PDFKit, Vision, and `textutil`; PDF
+and image extraction needs the Xcode command line tools so Akno can compile its helper. Linux shells out with
+fixed argument vectors to Poppler, Tesseract, and LibreOffice, which are not bundled. A missing command produces
+typed degradation for the affected format or OCR path, so an indexed Markdown corpus can remain healthy while
+some attachments are unavailable or only partially extracted.
+
+Windows is not a supported core/CLI runtime. The protocol and client packages remain portable.
 
 ## Conservative entity resolution
 

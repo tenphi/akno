@@ -5,8 +5,9 @@ maintenance cycle. This is the engine behind the [`@tenphi/akno`](https://www.np
 CLI, published separately so a host can embed it in-process.
 
 The runtime supports macOS and Linux (`"os": ["darwin", "linux"]`) and carries native dependencies —
-`better-sqlite3` and `sqlite-vec`. Document extraction and managed background installation remain macOS-only. A
-host that only needs to _talk_ to a running Akno should depend on
+`better-sqlite3` and `sqlite-vec`. Document extraction uses PDFKit, Vision, and `textutil` on macOS or external
+Poppler, Tesseract, and LibreOffice tools on Linux. Missing platform tools produce typed degradation. A host
+that only needs to _talk_ to a running Akno should depend on
 [`@tenphi/akno-client`](https://www.npmjs.com/package/@tenphi/akno-client) instead, which is portable and
 has no native code.
 
