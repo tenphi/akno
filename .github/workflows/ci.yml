@@ -45,6 +45,29 @@ jobs:
       - name: Smoke — the example knowledge base still works
         run: node scripts/smoke-demo.mjs
 
+  linux-document-extraction:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install native document tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libreoffice-writer poppler-utils tesseract-ocr
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check:repository
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm smoke
+      - name: Smoke installed packages on Linux
+        run: node scripts/smoke-packages.mjs
+
   generated-release-status:
     # GitHub runs a dispatched workflow against the release PR's commit but does not include
     # that check-run in the PR rollup. A commit status makes the same result visible on the PR.

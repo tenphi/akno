@@ -179,7 +179,7 @@ export const IngestOutput = ResultEnvelope.extend({
    * same way is a false claim about provenance, which cite-or-stay-quiet exists to
    * prevent.
    */
-  text_from: z.enum(['text-layer', 'ocr', 'plain', 'textutil', 'vision', 'none']).optional(),
+  text_from: z.enum(['text-layer', 'ocr', 'plain', 'textutil', 'libreoffice', 'vision', 'none']).optional(),
   /** Set when a rename fired: the original name added nothing the content did
    *  not already say. A good name is left alone. */
   renamed_from: z.string().optional(),

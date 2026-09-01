@@ -18,7 +18,8 @@
     "zod": "catalog:"
   },
   "os": [
-    "darwin"
+    "darwin",
+    "linux"
   ],
   "engines": {
     "node": ">=22.18"

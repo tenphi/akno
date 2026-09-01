@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import type { DreamRunReceipt } from '@tenphi/akno-core';
+import { systemdPaths, systemdUnitIsActive } from './service-systemd.ts';
 
 export const DREAM_SCHEDULE_LABEL = 'dev.akno.dream';
 export const DREAM_HEALTH_LABEL = 'dev.akno.dream-health';
@@ -59,6 +60,28 @@ interface DreamScheduleProbe {
 /** Read only the launchd metadata needed for content-safe maintenance status. */
 export function inspectDreamSchedule(latestFullRun: DreamRunReceipt | null): DreamScheduleStatus {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
+  if (process.platform === 'linux') {
+    const paths = systemdPaths('dev.akno');
+    const installed = fs.existsSync(paths.dreamTimer);
+    const healthInstalled = fs.existsSync(paths.healthTimer);
+    return calculateDreamSchedule(
+      {
+        platform: process.platform,
+        installed,
+        loaded: installed ? systemdUnitIsActive(DREAM_SCHEDULE_LABEL + '.timer') : false,
+        installedAt: installed ? fs.statSync(paths.dreamTimer).mtime : null,
+        calendar: installed ? parseSystemdCalendar(fs.readFileSync(paths.dreamTimer, 'utf8')) : null,
+        now: new Date(),
+        timezone,
+        missedCycleCheck: {
+          installed: healthInstalled,
+          loaded: healthInstalled ? systemdUnitIsActive(DREAM_HEALTH_LABEL + '.timer') : false,
+          calendar: healthInstalled ? parseSystemdCalendar(fs.readFileSync(paths.healthTimer, 'utf8')) : null,
+        },
+      },
+      latestFullRun,
+    );
+  }
   if (process.platform !== 'darwin') {
     return calculateDreamSchedule(
       {
@@ -118,6 +141,15 @@ export function parseDreamCalendar(plist: string): { hour: number; minute: numbe
   return { hour, minute };
 }
 
+export function parseSystemdCalendar(unit: string): { hour: number; minute: number } | null {
+  const match = unit.match(/^OnCalendar=\*-\*-\* (\d{2}):(\d{2}):00$/m);
+  if (!match?.[1] || !match[2]) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return null;
+  return { hour, minute };
+}
+
 function plistInteger(body: string, key: string): number | null {
   const match = body.match(new RegExp(`<key>${key}</key>\\s*<integer>(\\d+)</integer>`));
   if (!match?.[1]) return null;
@@ -143,13 +175,16 @@ export function calculateDreamSchedule(
     missedCycleCheck: {
       label: DREAM_HEALTH_LABEL,
       installed: probe.missedCycleCheck?.installed ?? false,
-      loaded: probe.platform === 'darwin' ? (probe.missedCycleCheck?.loaded ?? false) : null,
+      loaded:
+        probe.platform === 'darwin' || probe.platform === 'linux'
+          ? (probe.missedCycleCheck?.loaded ?? false)
+          : null,
       hour: probe.missedCycleCheck?.calendar?.hour ?? null,
       minute: probe.missedCycleCheck?.calendar?.minute ?? null,
     },
   } as const;
 
-  if (probe.platform !== 'darwin') {
+  if (probe.platform !== 'darwin' && probe.platform !== 'linux') {
     return {
       ...base,
       loaded: null,

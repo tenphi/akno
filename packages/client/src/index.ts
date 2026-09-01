@@ -1,6 +1,4 @@
 import net from 'node:net';
-import os from 'node:os';
-import path from 'node:path';
 import {
   AknoError,
   Hello,
@@ -8,11 +6,13 @@ import {
   PROTOCOL_VERSION,
   createLineDecoder,
   encodeLine,
+  defaultPlatformPaths,
   type AknoOps,
   type Hello as HelloMessage,
   type OpInput,
   type OpName,
   type OpResult,
+  type PlatformPathOptions,
 } from '@tenphi/akno-protocol';
 
 // Hosts normally import only the transport package. Re-exporting the guards here lets them
@@ -43,7 +43,7 @@ export type {
  */
 
 export interface ConnectOptions {
-  /** Unix socket path. Defaults to `~/.akno/akno.sock`. */
+  /** Unix socket path. Defaults to Akno's platform runtime location. */
   socket?: string;
   /** `host:port` for a loopback HTTP door instead of a socket. */
   http?: string;
@@ -82,8 +82,9 @@ export interface AknoClient extends AknoOps {
   close(): Promise<void>;
 }
 
-export function defaultSocketPath(): string {
-  return process.env.AKNO_SOCKET ?? path.join(os.homedir(), '.akno', 'akno.sock');
+export function defaultSocketPath(options: PlatformPathOptions = {}): string {
+  const env = options.env ?? process.env;
+  return env.AKNO_SOCKET ?? defaultPlatformPaths({ ...options, env }).socketPath;
 }
 
 export async function connect(options: ConnectOptions = {}): Promise<AknoClient> {

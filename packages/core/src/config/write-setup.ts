@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import { defaultPlatformPaths } from '@tenphi/akno-protocol';
 import type { ConfigDoc } from './schema.ts';
 import { parseJsonc, readJsoncFile } from './jsonc.ts';
 import { findRepoRoot, resolveUserPath } from './paths.ts';
@@ -11,6 +12,8 @@ export interface SetupConfigTargetOptions {
   env?: NodeJS.ProcessEnv;
   /** Test seam; undefined discovers the checkout, while null models an installed package. */
   repoRoot?: string | null;
+  platform?: NodeJS.Platform;
+  homeDir?: string;
 }
 
 export interface SetupConfigChange {
@@ -51,9 +54,12 @@ export function setupConfigTarget(options: SetupConfigTargetOptions = {}): strin
   const repoRoot = options.repoRoot === undefined ? findRepoRoot() : options.repoRoot;
   if (repoRoot) return path.join(repoRoot, 'config', 'local.jsonc');
 
-  const stateDir = resolveUserPath(options.stateDir ?? env.AKNO_STATE_DIR ?? '~/.akno');
-  const json = path.join(stateDir, 'config.json');
-  const jsonc = path.join(stateDir, 'config.jsonc');
+  const explicitStateDir = options.stateDir ?? env.AKNO_STATE_DIR;
+  const configDir = explicitStateDir
+    ? resolveUserPath(explicitStateDir)
+    : defaultPlatformPaths({ platform: options.platform, env, homeDir: options.homeDir }).configDir;
+  const json = path.join(configDir, 'config.json');
+  const jsonc = path.join(configDir, 'config.jsonc');
   if (fs.existsSync(json)) return json;
   return fs.existsSync(jsonc) ? jsonc : json;
 }

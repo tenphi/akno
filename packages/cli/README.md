@@ -5,7 +5,8 @@ The Akno command-line interface and service.
 Akno gives agents cited reading and guarded writing operations over a Markdown knowledge base while the files
 remain authoritative and editable in any normal editor.
 
-Akno's runtime currently supports macOS and Node 22.18 or newer.
+Akno's native indexing and socket runtime supports macOS and Linux with Node 22.18 or newer. Document
+extraction and managed background installation remain macOS-only.
 
 ```bash
 npm install -g @tenphi/akno

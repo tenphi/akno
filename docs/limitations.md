@@ -12,11 +12,14 @@ for mutually untrusted collaborators.
 This works for a personal memory or a trusted household/team folder with one shared policy. It is not enough for
 an organization where different people must be unable to read or change each other's material.
 
-## macOS host
+## Platform-specific integration
 
-The core and CLI target macOS. Document extraction uses PDFKit, Vision, and `textutil`; background operation
-uses launchd. The protocol and client packages are portable, so a container or another machine can call a
-macOS-hosted service, but the full Akno runtime is not a supported Linux or Windows installation.
+The core and CLI runtime supports macOS and Linux for native indexing and the Unix-socket service. On Linux,
+configuration, state, and runtime files follow XDG defaults.
+
+Document extraction still uses macOS PDFKit, Vision, and `textutil`, and managed background operation still
+uses launchd. Linux currently requires manual service startup and does not provide document extraction or a
+systemd unit. Windows is not a supported core/CLI runtime. The protocol and client packages remain portable.
 
 ## Conservative entity resolution
 

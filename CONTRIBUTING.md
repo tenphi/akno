@@ -40,10 +40,11 @@ pnpm smoke
 A change to published behavior also carries a Changesets file. After the feature PR merges, the release
 workflow opens or updates a separate version PR; publishing never happens from the feature branch.
 
-**macOS only.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin"]`, and there is no plan to change
-that — see [Platform](docs/operations.md#platform). Do not add a Linux or Windows code path "just in case": an untested
-second watcher is a correctness claim nobody has checked. `@tenphi/akno-client` is the exception and must stay
-portable, because a Linux container talking to a macOS host over the HTTP door is a supported deployment.
+**macOS and Linux runtime.** `@tenphi/akno-core` and the CLI declare `"os": ["darwin", "linux"]`; see
+[Platform](docs/operations.md#platform). Linux currently provides the package/runtime foundation, XDG paths,
+native indexing, and the socket service. Do not imply that macOS-only document extraction or launchd service
+installation works on Linux, and do not add a systemd or extractor path without its own tested scope.
+`@tenphi/akno-client` and `@tenphi/akno-protocol` remain portable.
 
 ## The one rule about config
 

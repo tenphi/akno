@@ -4,7 +4,8 @@ The memory layer itself: config, store, indexer, models, recall, the write path,
 maintenance cycle. This is the engine behind the [`@tenphi/akno`](https://www.npmjs.com/package/@tenphi/akno)
 CLI, published separately so a host can embed it in-process.
 
-macOS only (`"os": ["darwin"]`), and it carries native dependencies — `better-sqlite3` and `sqlite-vec`. A
+The runtime supports macOS and Linux (`"os": ["darwin", "linux"]`) and carries native dependencies —
+`better-sqlite3` and `sqlite-vec`. Document extraction and managed background installation remain macOS-only. A
 host that only needs to _talk_ to a running Akno should depend on
 [`@tenphi/akno-client`](https://www.npmjs.com/package/@tenphi/akno-client) instead, which is portable and
 has no native code.

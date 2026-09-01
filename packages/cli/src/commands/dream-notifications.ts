@@ -31,10 +31,23 @@ export interface MaintenanceNotification {
   causes: MaintenanceNotificationCause[];
 }
 
-export interface NotificationDelivery {
-  status: 'sent' | 'disabled' | 'not_needed' | 'duplicate' | 'unsupported' | 'failed';
-  error?: string;
-}
+type NotificationBackend = 'macos_notification' | 'linux_syslog';
+
+export type NotificationDelivery =
+  | { status: 'sent'; backend?: NotificationBackend }
+  | { status: 'sent_unrecorded'; backend: NotificationBackend; reason: 'state_write_failed' }
+  | { status: 'disabled' | 'not_needed' | 'duplicate' }
+  | {
+      status: 'unavailable';
+      backend?: NotificationBackend;
+      reason: 'platform_unsupported' | 'backend_missing';
+    }
+  | {
+      status: 'failed';
+      backend: NotificationBackend;
+      reason: 'spawn_failed' | 'nonzero_exit';
+    }
+  | { status: 'failed'; reason: 'preparation_failed' };
 
 interface NotificationState {
   sent: string[];
@@ -143,11 +156,16 @@ export function deliverMaintenanceNotification(
   options: {
     platform?: NodeJS.Platform;
     spawn?: typeof spawnSync;
+    commandExists?: (command: string) => boolean;
   } = {},
 ): NotificationDelivery {
   if (mode === 'off') return { status: 'disabled' };
   if (!notification) return { status: 'not_needed' };
-  if ((options.platform ?? process.platform) !== 'darwin') return { status: 'unsupported' };
+  const platform = options.platform ?? process.platform;
+  if (platform !== 'darwin' && platform !== 'linux') {
+    return { status: 'unavailable', reason: 'platform_unsupported' };
+  }
+  const backend = platform === 'linux' ? 'linux_syslog' : 'macos_notification';
 
   const statePath = path.join(stateDir, 'maintenance-notifications.json');
   const state = readNotificationState(statePath);
@@ -156,30 +174,46 @@ export function deliverMaintenanceNotification(
   const spawn = options.spawn ?? spawnSync;
   let result: SpawnSyncReturns<string>;
   try {
-    result = spawn(
-      '/usr/bin/osascript',
-      [
-        '-l',
-        'JavaScript',
-        '-e',
-        'function run(argv) { const app = Application.currentApplication(); app.includeStandardAdditions = true; app.displayNotification(argv[1], { withTitle: argv[0] }); }',
-        notification.title,
-        notification.body,
-      ],
-      { encoding: 'utf8', timeout: 5_000 },
-    );
-  } catch (error) {
-    return { status: 'failed', error: safeDeliveryError(error) };
+    if (platform === 'linux') {
+      const commandExists = options.commandExists ?? fs.existsSync;
+      const command = ['/usr/bin/logger', '/bin/logger'].find(commandExists);
+      if (!command) {
+        return { status: 'unavailable', backend: 'linux_syslog', reason: 'backend_missing' };
+      }
+      result = spawn(command, ['--tag', 'akno', '--', `${notification.title}: ${notification.body}`], {
+        encoding: 'utf8',
+        timeout: 5_000,
+      });
+    } else {
+      result = spawn(
+        '/usr/bin/osascript',
+        [
+          '-l',
+          'JavaScript',
+          '-e',
+          'function run(argv) { const app = Application.currentApplication(); app.includeStandardAdditions = true; app.displayNotification(argv[1], { withTitle: argv[0] }); }',
+          notification.title,
+          notification.body,
+        ],
+        { encoding: 'utf8', timeout: 5_000 },
+      );
+    }
+  } catch {
+    return { status: 'failed', backend, reason: 'spawn_failed' };
   }
-  if (result.error || result.status !== 0) {
-    return {
-      status: 'failed',
-      error: safeDeliveryError(result.error ?? `osascript exited ${result.status}`),
-    };
+  if (result.error) {
+    return { status: 'failed', backend, reason: 'spawn_failed' };
+  }
+  if (result.status !== 0) {
+    return { status: 'failed', backend, reason: 'nonzero_exit' };
   }
 
-  rememberNotification(statePath, state, notification.fingerprint);
-  return { status: 'sent' };
+  try {
+    rememberNotification(statePath, state, notification.fingerprint);
+  } catch {
+    return { status: 'sent_unrecorded', backend, reason: 'state_write_failed' };
+  }
+  return platform === 'linux' ? { status: 'sent', backend: 'linux_syslog' } : { status: 'sent' };
 }
 
 function repeatedDegradations(run: DreamRunReceipt, history: DreamRunReceipt[]): DreamModelDegradation[] {
@@ -222,13 +256,6 @@ function rememberNotification(statePath: string, state: NotificationState, finge
   const temporary = `${statePath}.${process.pid}.tmp`;
   fs.writeFileSync(temporary, `${JSON.stringify(next, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
   fs.renameSync(temporary, statePath);
-}
-
-/** Delivery failures are operational only; never propagate script output into status or logs. */
-function safeDeliveryError(error: unknown): string {
-  if (error instanceof Error && error.name) return error.name;
-  if (typeof error === 'string' && /^osascript exited -?\d+$/.test(error)) return error;
-  return 'notification delivery failed';
 }
 
 function safeErrorCode(value: string): string {

@@ -30,6 +30,19 @@ describe('guided setup config writes', () => {
     expect(setupConfigTarget({ env: {}, repoRoot: null, stateDir })).toBe(jsonc);
   });
 
+  it('targets XDG_CONFIG_HOME for an installed Linux package', () => {
+    const xdgRoot = inventedDirectory();
+
+    expect(
+      setupConfigTarget({
+        env: { XDG_CONFIG_HOME: path.join(xdgRoot, 'config') },
+        repoRoot: null,
+        platform: 'linux',
+        homeDir: '/home/invented',
+      }),
+    ).toBe(path.join(xdgRoot, 'config', 'akno', 'config.json'));
+  });
+
   it('preserves unrelated and unknown settings while applying a path-only diff', async () => {
     const root = inventedDirectory();
     const target = path.join(root, 'config.json');

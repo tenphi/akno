@@ -39,6 +39,7 @@ export async function serveSocket(
   socketPath: string,
   options: { allow?: string[]; log?: (message: string) => void } = {},
 ): Promise<SocketServer> {
+  validateUnixSocketPath(socketPath, process.platform);
   fs.mkdirSync(path.dirname(socketPath), { recursive: true });
 
   // A socket file left behind by a crash blocks bind. The write lock is what
@@ -75,18 +76,6 @@ export async function serveSocket(
     socket.on('error', () => socket.destroy());
   });
 
-  // macOS allows 104 bytes for a socket path, including the terminator. Past that the bind
-  // *succeeds* on a silently truncated name and the chmod below fails with a bare ENOENT stack
-  // trace — which is what a deep `state_dir` produced. Said plainly and up front instead.
-  const pathBytes = Buffer.byteLength(socketPath) + 1;
-  if (pathBytes > 104) {
-    throw new AknoError(
-      'invalid',
-      `the socket path is ${pathBytes} bytes and macOS allows 104: ${socketPath}. ` +
-        'Set `server.socket` to an absolute path somewhere shorter, or move `state_dir`.',
-    );
-  }
-
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
     server.listen(socketPath, () => {
@@ -115,6 +104,27 @@ export async function serveSocket(
       fs.rmSync(socketPath, { force: true });
     },
   };
+}
+
+/** Validate sockaddr_un.sun_path before bind can truncate it or return an opaque native error. */
+export function validateUnixSocketPath(socketPath: string, platform: NodeJS.Platform): void {
+  const pathBytes = Buffer.byteLength(socketPath) + 1;
+  const platformLimit =
+    platform === 'darwin'
+      ? { bytes: 104, name: 'macOS' }
+      : platform === 'linux'
+        ? { bytes: 108, name: 'Linux' }
+        : null;
+  if (!platformLimit) {
+    throw new AknoError('invalid', `Unix socket paths are not supported on ${platform}`);
+  }
+  if (pathBytes <= platformLimit.bytes) return;
+
+  throw new AknoError(
+    'invalid',
+    `the socket path is ${pathBytes} bytes and ${platformLimit.name} allows ${platformLimit.bytes}: ${socketPath}. ` +
+      'Set `server.socket` or `AKNO_SOCKET` to an absolute path somewhere shorter.',
+  );
 }
 
 function intersect(policy: string[], restriction: string[] | undefined): string[] {

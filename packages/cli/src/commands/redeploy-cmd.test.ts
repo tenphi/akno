@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   launchdServiceIsRunning,
   redeployPlan,
+  redeployTarget,
   redeployWaitPolicy,
   socketWasReplaced,
 } from './redeploy-cmd.ts';
@@ -11,11 +12,32 @@ import {
  * whether to make them. Every row here is a way a deploy reports success without having deployed.
  */
 const plan = (over: Partial<Parameters<typeof redeployPlan>[0]> = {}) =>
-  redeployPlan({ build: true, restart: true, darwin: true, serviceInstalled: true, ...over });
+  redeployPlan({ build: true, restart: true, darwin: true, linux: false, serviceInstalled: true, ...over });
 
 describe('what a redeploy decides to do', () => {
   it('builds and restarts, given a service and a Mac', () => {
     expect(plan()).toEqual({ build: true, restart: true, skipped: null });
+  });
+
+  it('builds and restarts a Linux systemd user service', () => {
+    expect(plan({ darwin: false, linux: true })).toEqual({ build: true, restart: true, skipped: null });
+  });
+
+  it('uses the installed Linux target instead of the caller checkout config', () => {
+    const caller = {
+      aknoPath: '/invented/caller-base',
+      stateDir: '/invented/caller-state',
+      socketPath: '/invented/caller-state/akno.sock',
+      configPath: null,
+    };
+    const installed = {
+      aknoPath: '/invented/installed-base',
+      stateDir: '/invented/installed-state',
+      socketPath: '/invented/installed-state/custom.sock',
+      configPath: '/invented/config/custom.jsonc',
+    };
+    expect(redeployTarget(true, caller, installed)).toEqual(installed);
+    expect(redeployTarget(false, caller, installed)).toEqual(caller);
   });
 
   it('restarts without building when asked', () => {
@@ -26,7 +48,7 @@ describe('what a redeploy decides to do', () => {
     // Each of these is a legitimate outcome and none of them is a deploy. A caller that cannot tell
     // "restarted" from "did not restart" will go on to test the old code and trust the result.
     expect(plan({ restart: false }).skipped).toBe('asked');
-    expect(plan({ darwin: false }).skipped).toBe('not-darwin');
+    expect(plan({ darwin: false, linux: false }).skipped).toBe('unsupported');
     expect(plan({ serviceInstalled: false }).skipped).toBe('no-service');
   });
 
@@ -43,7 +65,7 @@ describe('what a redeploy decides to do', () => {
   it('does not silently drop the build when the restart cannot happen', () => {
     // The two steps are for different consumers: the build is what a host importing
     // `@tenphi/akno-client` reads, and it is worth doing even where there is no service to bounce.
-    for (const over of [{ restart: false }, { darwin: false }, { serviceInstalled: false }]) {
+    for (const over of [{ restart: false }, { darwin: false, linux: false }, { serviceInstalled: false }]) {
       expect(plan(over).build).toBe(true);
     }
   });

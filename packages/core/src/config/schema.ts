@@ -224,7 +224,7 @@ const PublicReadOperationNameDoc = z.string().refine((name) => isOpName(name) &&
 });
 
 const ServerDoc = z.object({
-  socket: z.string().optional(),
+  socket: z.string().nullable().optional(),
   http: z.string().nullable().optional(),
   mcp_allow: z.array(OperationNameDoc).optional(),
   /** Unauthenticated loopback HTTP can narrow, but never widen, the read-only policy. */
@@ -462,7 +462,7 @@ const MaintenanceDoc = z.object({
 
 export const ConfigDoc = z.object({
   akno_path: z.string().nullable().optional(),
-  state_dir: z.string().optional(),
+  state_dir: z.string().nullable().optional(),
   paths: PathsDoc.optional(),
   create_reserved_paths: z.boolean().optional(),
   write_ids: z.boolean().optional(),
