@@ -1,5 +1,25 @@
 # @tenphi/akno
 
+## 0.4.0
+
+### Minor Changes
+
+- [#32](https://github.com/tenphi/akno/pull/32) [`6cc1c8a`](https://github.com/tenphi/akno/commit/6cc1c8ac3ee8ef858539b6b316a86d74717481bc) Thanks [@alex-arzner-pro](https://github.com/alex-arzner-pro)! - Add Linux document extraction through Poppler, Tesseract, and LibreOffice with explicit provenance and actionable degradation when native tools are unavailable.
+
+- [#32](https://github.com/tenphi/akno/pull/32) [`6cc1c8a`](https://github.com/tenphi/akno/commit/6cc1c8ac3ee8ef858539b6b316a86d74717481bc) Thanks [@alex-arzner-pro](https://github.com/alex-arzner-pro)! - Add the Linux runtime foundation with XDG config, state, and socket defaults while preserving macOS paths and explicit overrides.
+
+- [#32](https://github.com/tenphi/akno/pull/32) [`6cc1c8a`](https://github.com/tenphi/akno/commit/6cc1c8ac3ee8ef858539b6b316a86d74717481bc) Thanks [@alex-arzner-pro](https://github.com/alex-arzner-pro)! - Add Linux systemd user-service lifecycle, nightly dream timers, missed-cycle health checks, and redeploy readiness.
+
+- [#32](https://github.com/tenphi/akno/pull/32) [`6cc1c8a`](https://github.com/tenphi/akno/commit/6cc1c8ac3ee8ef858539b6b316a86d74717481bc) Thanks [@alex-arzner-pro](https://github.com/alex-arzner-pro)! - Deliver scheduled maintenance notifications to the local system log on Linux and report typed delivery failures.
+
+### Patch Changes
+
+- [#39](https://github.com/tenphi/akno/pull/39) [`d4adb2f`](https://github.com/tenphi/akno/commit/d4adb2f1c413af7a5f147bf6be325ce863c4e0fc) Thanks [@tenphi](https://github.com/tenphi)! - Run the post-build redeploy phase in a fresh CLI process so service restarts use the newly built core artifacts on the first invocation.
+- Updated dependencies [[`6cc1c8a`](https://github.com/tenphi/akno/commit/6cc1c8ac3ee8ef858539b6b316a86d74717481bc), [`6cc1c8a`](https://github.com/tenphi/akno/commit/6cc1c8ac3ee8ef858539b6b316a86d74717481bc)]:
+  - @tenphi/akno-core@0.4.0
+  - @tenphi/akno-client@0.4.0
+  - @tenphi/akno-protocol@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
