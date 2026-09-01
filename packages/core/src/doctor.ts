@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { AknoContext } from './context.ts';
 import { isReserved, looksLikeLedger } from './reserved.ts';
-import { extractionCapabilities } from './ingest/extract.ts';
+import { extractionCapabilities, type ExtractionCapabilities } from './ingest/extract.ts';
 import { readOnlyExplanation } from './open.ts';
 import { ModelClient } from './models/client.ts';
 import { generativeModelIds, providerApiReport, type ProviderApiResolution } from './models/provider-api.ts';
@@ -111,7 +111,7 @@ export interface DoctorReport {
   /** Content-free resolution state for each provider's generative transport. */
   providerApis: ProviderApiResolution[];
   /** The extraction path. A missing capability must be visible, not surprising. */
-  extraction: { swift: boolean; textutil: boolean; note: string | null };
+  extraction: ExtractionCapabilities;
   reserved: { path: string; state: 'ok' | 'missing' | 'occupied'; note?: string }[];
   warnings: string[];
 }

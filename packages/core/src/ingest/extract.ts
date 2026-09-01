@@ -13,8 +13,15 @@ import {
   type DocumentExtractorBackend,
   type ExtractionProvenance,
 } from './extractor-contract.ts';
+import {
+  createLinuxDocumentExtractor,
+  createNodeLinuxCommandRunner,
+  linuxExtractionCapabilities,
+  type LinuxCommandRunner,
+} from './linux-extractor.ts';
 
 const run = promisify(execFile);
+const linuxBackend = createLinuxDocumentExtractor(createNodeLinuxCommandRunner());
 
 /**
  * **Extraction happens on arrival, always** — text layer first, OCR for scans,
@@ -42,7 +49,7 @@ export interface Extraction {
   /** Vision's mean confidence over recognised lines. Null for a text layer. */
   confidence: number | null;
   /** How the text was obtained, for `doctor` and for the ingest report. */
-  via: 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'vision' | 'none';
+  via: 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'libreoffice' | 'vision' | 'none';
   /** Set when nothing could be extracted, and why. Never thrown. */
   note: string | null;
   /**
@@ -116,13 +123,23 @@ export async function extract(options: ExtractOptions): Promise<Extraction> {
   }
 
   if (TEXTUTIL_EXTENSIONS.has(extension) || extension === '.pdf' || IMAGE_EXTENSIONS.has(extension)) {
-    const backend = selectDocumentExtractorBackend(process.platform, { macos: macosBackend });
+    const backend = selectDocumentExtractorBackend(process.platform, {
+      linux: linuxBackend,
+      macos: macosBackend,
+    });
     const result = await backend.extract(options);
 
     // Image description is model-backed rather than platform-backed. Keep it available when
     // native OCR is unsupported, while preserving the typed native-backend degradation when
     // no configured model can make the image searchable.
-    if (backend.name === 'unsupported' && IMAGE_EXTENSIONS.has(extension) && options.vision?.available) {
+    // The legacy macOS image backend already performs this fallback. Retrying it here when
+    // that request returns no description doubles latency and potentially billable work.
+    if (
+      backend.name !== 'macos-native' &&
+      !result.text &&
+      IMAGE_EXTENSIONS.has(extension) &&
+      options.vision?.available
+    ) {
       const described = await describeImage(options.absPath, options.vision);
       if (described) {
         return toLegacyExtraction({
@@ -422,16 +439,52 @@ function findSwiftSource(): string | null {
   return null;
 }
 
-/** What `doctor` reports, so a missing capability is visible rather than surprising. */
-export async function extractionCapabilities(): Promise<{
+export interface ExtractionCapabilities {
+  backend: 'macos-native' | 'linux-native' | 'unsupported';
+  libreoffice: boolean;
   swift: boolean;
   textutil: boolean;
+  pdfinfo: boolean;
+  pdftotext: boolean;
+  pdftoppm: boolean;
+  tesseract: boolean;
   note: string | null;
-}> {
+}
+
+/** What `doctor` reports, so a missing capability is visible rather than surprising. */
+export async function extractionCapabilities(
+  platform = process.platform,
+  linuxCommands: LinuxCommandRunner = createNodeLinuxCommandRunner(),
+): Promise<ExtractionCapabilities> {
+  if (platform === 'linux') {
+    const capabilities = await linuxExtractionCapabilities(linuxCommands);
+    return { swift: false, textutil: false, ...capabilities };
+  }
+
+  if (platform !== 'darwin') {
+    return {
+      backend: 'unsupported',
+      libreoffice: false,
+      swift: false,
+      textutil: false,
+      pdfinfo: false,
+      pdftotext: false,
+      pdftoppm: false,
+      tesseract: false,
+      note: `document extraction is not supported on ${platform}`,
+    };
+  }
+
   const binary = await ensureExtractor();
   return {
+    backend: 'macos-native',
+    libreoffice: false,
     swift: binary !== null,
     textutil: fs.existsSync('/usr/bin/textutil'),
+    pdfinfo: false,
+    pdftotext: false,
+    pdftoppm: false,
+    tesseract: false,
     note: binary
       ? null
       : 'PDF and image extraction is unavailable: the Swift helper could not be built. ' +

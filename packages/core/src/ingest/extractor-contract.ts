@@ -1,8 +1,19 @@
 import type { ModelClient } from '../models/client.ts';
 
-type ExtractionTextFrom = 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'vision' | 'none';
-type ExtractionBackendName = 'macos-native' | 'model-fallback' | 'unsupported';
-type ExtractionTool = 'pdfkit' | 'vision' | 'textutil' | 'filesystem' | 'vision-model' | null;
+type ExtractionTextFrom = 'text-layer' | 'ocr' | 'plain' | 'textutil' | 'libreoffice' | 'vision' | 'none';
+type ExtractionBackendName = 'macos-native' | 'linux-native' | 'model-fallback' | 'unsupported';
+type ExtractionTool =
+  | 'pdfkit'
+  | 'vision'
+  | 'textutil'
+  | 'filesystem'
+  | 'libreoffice'
+  | 'pdfinfo'
+  | 'pdftotext'
+  | 'pdftoppm'
+  | 'tesseract'
+  | 'vision-model'
+  | null;
 
 interface ExtractionSection {
   page: number;
@@ -37,8 +48,17 @@ interface PartialExtractionDegradation {
   pages_total: number;
 }
 
+interface MissingDependencyDegradation {
+  kind: 'missing-dependency';
+  message: string;
+  tools: string[];
+}
+
 type ExtractionDegradation =
-  UnsupportedPlatformDegradation | ExtractionFailedDegradation | PartialExtractionDegradation;
+  | UnsupportedPlatformDegradation
+  | ExtractionFailedDegradation
+  | PartialExtractionDegradation
+  | MissingDependencyDegradation;
 
 export interface DocumentExtractionResult {
   text: string;
@@ -63,6 +83,7 @@ export interface DocumentExtractorBackend {
 }
 
 interface AvailableBackends {
+  linux: DocumentExtractorBackend;
   macos: DocumentExtractorBackend;
 }
 
@@ -70,7 +91,9 @@ export function selectDocumentExtractorBackend(
   platform: string,
   backends: AvailableBackends,
 ): DocumentExtractorBackend {
-  return platform === 'darwin' ? backends.macos : unsupportedBackend(platform);
+  if (platform === 'darwin') return backends.macos;
+  if (platform === 'linux') return backends.linux;
+  return unsupportedBackend(platform);
 }
 
 function unsupportedBackend(platform: string): DocumentExtractorBackend {
