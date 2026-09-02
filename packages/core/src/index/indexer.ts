@@ -34,6 +34,11 @@ import { rebuildEvidenceGraph } from './graph.ts';
 import { resolveContextualEntityMentions } from './entity-resolution.ts';
 import { IndexRevisionCoordinator, type IndexRevisionBarrier } from './revision-barrier.ts';
 import { replaceTemporalEntries, TEMPORAL_PROJECTION_VERSION } from '../timeline/projection.ts';
+import {
+  OBSERVATION_PROJECTION_VERSION,
+  qualifyObservationEntries,
+  replaceObservationEntries,
+} from '../observations/projection.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -109,6 +114,8 @@ export interface IndexReport {
   eventsIndexed: number;
   temporalEntriesIndexed: number;
   temporalProjectionIssues: number;
+  observationsIndexed: number;
+  observationProjectionIssues: number;
   factsDerived: number;
   graphNodes: number;
   graphEdges: number;
@@ -214,6 +221,8 @@ export class Indexer {
       eventsIndexed: 0,
       temporalEntriesIndexed: 0,
       temporalProjectionIssues: 0,
+      observationsIndexed: 0,
+      observationProjectionIssues: 0,
       factsDerived: 0,
       graphNodes: 0,
       graphEdges: 0,
@@ -259,6 +268,14 @@ export class Indexer {
     const temporalProjectionPaths = temporalProjectionStale ? this.temporalProjectionPaths(report) : [];
     if (temporalProjectionStale) {
       for (const relPath of temporalProjectionPaths) reclassified.add(relPath);
+    }
+    const observationProjectionStale =
+      !options.only && this.#store.meta('observation_projection_version') !== OBSERVATION_PROJECTION_VERSION;
+    const observationProjectionPaths = observationProjectionStale
+      ? this.observationProjectionPaths(report)
+      : [];
+    if (observationProjectionStale) {
+      for (const relPath of observationProjectionPaths) reclassified.add(relPath);
     }
     if (!options.only) for (const relPath of this.pageFilesWithNoPage(report)) reclassified.add(relPath);
 
@@ -396,6 +413,7 @@ export class Indexer {
     let graph = rebuildEvidenceGraph(this.#store, {
       conflictModelId: this.#models.derive.modelId,
       contextualModelId,
+      observationMinEvidence: this.#config.maintenance.observe.minEvidence,
     });
     if (!options.structuralOnly && this.#config.graph.contextualResolution.enabled) {
       const contextual = await resolveContextualEntityMentions(this.#store, this.#models.derive, {
@@ -416,6 +434,7 @@ export class Indexer {
         graph = rebuildEvidenceGraph(this.#store, {
           conflictModelId: this.#models.derive.modelId,
           contextualModelId,
+          observationMinEvidence: this.#config.maintenance.observe.minEvidence,
         });
       }
     }
@@ -429,6 +448,9 @@ export class Indexer {
     report.graphFacts = graph.facts;
     report.graphFactEdges = graph.factEdges;
     report.graphNonTraversableFacts = graph.nonTraversableFacts;
+    const observations = qualifyObservationEntries(this.#store, this.#config.maintenance.observe.minEvidence);
+    report.observationsIndexed = observations.indexed;
+    report.observationProjectionIssues += observations.issues;
     progress({ phase: 'graph', done: 1, total: 1 });
 
     const projectionUpgradeComplete = temporalProjectionPaths.every(
@@ -436,6 +458,12 @@ export class Indexer {
     );
     if (temporalProjectionStale && !pageProjectionFailed && projectionUpgradeComplete) {
       this.#store.setMeta('temporal_projection_version', TEMPORAL_PROJECTION_VERSION);
+    }
+    const observationUpgradeComplete = observationProjectionPaths.every(
+      (relPath) => !present.has(relPath) || projectedPaths.has(relPath),
+    );
+    if (observationProjectionStale && !pageProjectionFailed && observationUpgradeComplete) {
+      this.#store.setMeta('observation_projection_version', OBSERVATION_PROJECTION_VERSION);
     }
 
     report.durationMs = performance.now() - started;
@@ -501,6 +529,18 @@ export class Indexer {
     if (rows.length > 0) {
       report.warnings.push(
         `the temporal projection changed: ${rows.length} page${rows.length === 1 ? '' : 's'} will be re-indexed`,
+      );
+    }
+    return rows.map((row) => row.rel_path);
+  }
+
+  private observationProjectionPaths(report: IndexReport): string[] {
+    const rows = this.#store.db.prepare("SELECT rel_path FROM files WHERE kind = 'page'").all() as {
+      rel_path: string;
+    }[];
+    if (rows.length > 0) {
+      report.warnings.push(
+        `the observation projection changed: ${rows.length} page${rows.length === 1 ? '' : 's'} will be re-indexed`,
       );
     }
     return rows.map((row) => row.rel_path);
@@ -714,6 +754,9 @@ export class Indexer {
       const temporal = replaceTemporalEntries(this.#store, pageId, page, resolved.role);
       report.temporalEntriesIndexed += temporal.indexed;
       report.temporalProjectionIssues += temporal.issues;
+      const observations = replaceObservationEntries(this.#store, pageId, page);
+      report.observationsIndexed += observations.indexed;
+      report.observationProjectionIssues += observations.issues;
       this.replaceLinks(pageId, page);
       this.recordFile(file, pageId);
     });
@@ -801,14 +844,15 @@ export class Indexer {
     this.#store.db
       .prepare(
         `INSERT INTO pages(
-           id, slug, rel_path, title, type, tags, role, remember_management, dream_management,
+           id, slug, rel_path, title, type, tags, role, remember_management, observe_management, dream_management,
            about, aliases, frontmatter, body_hash, source_fence_line, body_line, line_count,
            bytes, created_at, updated_at, indexed_at
-         ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            slug = excluded.slug, rel_path = excluded.rel_path, title = excluded.title,
            type = excluded.type, tags = excluded.tags, role = excluded.role,
            remember_management = excluded.remember_management,
+           observe_management = excluded.observe_management,
            dream_management = excluded.dream_management,
            about = excluded.about, aliases = excluded.aliases,
            frontmatter = excluded.frontmatter, body_hash = excluded.body_hash,
@@ -825,6 +869,7 @@ export class Indexer {
         JSON.stringify(page.tags),
         policy.role,
         policy.remember,
+        policy.observe,
         policy.dream,
         JSON.stringify(policy.about),
         JSON.stringify(page.aliases),

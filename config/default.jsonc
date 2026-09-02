@@ -372,9 +372,10 @@
       // allow creation. Reserved pages such as the event timeline are never valid fallbacks.
       "fallback_page": null
     },
-    // Combine repeated facts into stable patterns. Writes pages under
-    // `observations/` with `derived: true` and the evidence it used, appending
-    // only: a changed pattern gets a new dated line and nothing is deleted.
+    // Combine repeated eligible L1 facts into stable L2 patterns. A write requires
+    // one exact existing subject page with `akno.management.observe: integrate`.
+    // Akno owns only its versioned marker-plus-payload block under `## Observed patterns`;
+    // there is no detached-page fallback and surrounding authored bytes are preserved.
     //
     // Off by default from measurement, not caution. On a real 223-page knowledge
     // base with a local 3B model, one run produced 18 candidate patterns of
@@ -385,8 +386,9 @@
     "observe": {
       "enabled": false,
       "mission": null,
-      // Distinct source pages an observation needs. Two is the floor and the
-      // schema refuses less: one page agreeing with itself is not a pattern.
+      // Independent proof groups an observation needs. Two is the hard floor.
+      // Revisions from one retained source group and facts from one authored page
+      // each count once, while every exact locator remains in the lineage.
       "min_evidence": 2,
       // Subjects looked at per run, most recently touched first.
       "max_subjects": 40

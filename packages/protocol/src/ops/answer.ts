@@ -39,6 +39,24 @@ export const AnswerContextItem = z.discriminatedUnion('type', [
     pages: z.array(z.number().int().positive()).min(1).optional(),
     quote: z.string().min(1),
   }),
+  z.object({
+    evidence_id: z.string(),
+    type: z.literal('observation'),
+    observation_id: z.string(),
+    subject: z.string(),
+    text: z.string().min(1),
+    /** Complete current leaf support; this is one indivisible answer-evidence unit. */
+    evidence: z
+      .array(
+        z.object({
+          fact: z.string(),
+          slug: z.string(),
+          line: z.number().int().positive(),
+          text: z.string().min(1),
+        }),
+      )
+      .min(2),
+  }),
 ]);
 export type AnswerContextItem = z.infer<typeof AnswerContextItem>;
 
@@ -55,6 +73,14 @@ export const AnswerCitation = z.discriminatedUnion('type', [
     document_id: z.string(),
     owner_slug: z.string().optional(),
     pages: z.array(z.number().int().positive()).min(1).optional(),
+  }),
+  z.object({
+    id: z.string(),
+    type: z.literal('observation'),
+    observation_id: z.string(),
+    evidence: z
+      .array(z.object({ fact: z.string(), slug: z.string(), line: z.number().int().positive() }))
+      .min(2),
   }),
 ]);
 export type AnswerCitation = z.infer<typeof AnswerCitation>;

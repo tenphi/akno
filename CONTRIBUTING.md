@@ -161,9 +161,10 @@ Changes here need more care than the line count suggests.
 - **An inference engine's guardrails belong in code.** Every rule for `observe` is enforced after the model
   replies, not asked for in the prompt — because a real run wrote "X lives with a wife" with the prompt rule in
   place. A prompt is a suggestion, and a replaceable prompt is how every guard gets lost at once.
-- **Group observation input by folder, not by subject alone.** A small deriver writes the _attribute_ into
-  `subject`, so grouping on it joined a bag with a drum kit and a Roman church with a person's page. Given
-  unrelated facts under one heading, a model will find a pattern across them: the input was the bug.
+- **Group observation input only by resolved subject identity.** Raw model `subject` strings once joined
+  unrelated pages because a small deriver sometimes wrote an attribute there. Observation input now requires
+  the exact graph entity shared by every eligible fact, and placement must resolve to its canonical page or one
+  explicit `akno.about` topic. Folder proximity and semantic similarity are not identity evidence.
 - **Anything that writes must be reachable through the writer.** Exactly one process holds the write handle, so a
   command that opens the index directly is broken the moment a service is running. `dream`, `index` and `inbox`
   travel the socket as _commands_ — not ops, because the ten ops are the agent's memory surface — and fall back

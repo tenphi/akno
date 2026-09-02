@@ -2,8 +2,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { open, type Akno } from '../src/index.ts';
+import { insertObservationBlock, observationBlock } from '../src/observations/marker.ts';
 import { SCHEMA_VERSION } from '../src/store/migrations.ts';
 
 /**
@@ -34,6 +36,7 @@ interface StubServer {
   reply: (value: unknown) => void;
   reflection: (value: unknown) => void;
   conflict: (value: unknown) => void;
+  answer: (generation: unknown, verification: unknown) => void;
   conflictCalls: () => number;
   /** Facts the deriver returns for a page, so real facts land on real lines. */
   facts: (byslug: Record<string, DerivedFact[]>) => void;
@@ -59,6 +62,7 @@ async function startStubChat(): Promise<StubServer> {
     qualification: null,
     reason: 'The fixtures describe different appliances.',
   };
+  let answerScripted: { generation: unknown; verification: unknown } | null = null;
   let classified = 0;
   let byPage: Record<string, DerivedFact[]> = {};
   let lastObserve = '';
@@ -90,20 +94,24 @@ async function startStubChat(): Promise<StubServer> {
       }
       const answer = user.startsWith('Page: ')
         ? derive(user, byPage)
-        : system.startsWith('You classify structurally incompatible claims')
-          ? conflictScripted
-          : system.startsWith('You are the independent curator for an autonomous memory system')
-            ? {
-                outcome: 'approve',
-                reason: 'The sealed contradiction item preserves authored knowledge.',
-              }
-            : system.startsWith('A personal knowledge base holds two claims')
-              ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
-              : observeRequest &&
-                  user.startsWith('Subject: decision principles') &&
-                  reflectionScripted !== null
-                ? reflectionScripted
-                : scripted;
+        : system.startsWith('You independently verify whether drafted answer blocks')
+          ? (answerScripted?.verification ?? { verdicts: [] })
+          : system.startsWith('You answer a factual question using only supplied memory evidence')
+            ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
+            : system.startsWith('You classify structurally incompatible claims')
+              ? conflictScripted
+              : system.startsWith('You are the independent curator for an autonomous memory system')
+                ? {
+                    outcome: 'approve',
+                    reason: 'The sealed contradiction item preserves authored knowledge.',
+                  }
+                : system.startsWith('A personal knowledge base holds two claims')
+                  ? { line: 'Before 2002-02-02, the Zephyr QX-100 warranty was 1111 days.' }
+                  : observeRequest &&
+                      user.startsWith('Subject: decision principles') &&
+                      reflectionScripted !== null
+                    ? reflectionScripted
+                    : scripted;
 
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
@@ -134,6 +142,9 @@ async function startStubChat(): Promise<StubServer> {
         value && typeof value === 'object' && !Array.isArray(value) && !('qualification' in value)
           ? { ...value, qualification: null }
           : value;
+    },
+    answer: (generation, verification) => {
+      answerScripted = { generation, verification };
     },
     conflictCalls: () => classified,
     facts: (value) => {
@@ -180,6 +191,8 @@ function shares(text: string, value: string): boolean {
 }
 
 const PAGES: Record<string, string> = {
+  'topics/appliance-servicing.md':
+    '---\ntitle: Appliance servicing\nakno:\n  management:\n    observe: integrate\n---\n\n# Appliance servicing\n\nAuthored overview.\n',
   'home/appliances.md':
     '---\ntitle: Appliances\n---\n\n# Appliances\n\nThe dishwasher was repaired in March 2026.\n',
   'home/laundry.md':
@@ -264,6 +277,7 @@ async function openMem(overrides: Record<string, unknown> = {}): Promise<Akno> {
         reranker: { id: null, enabled: false },
         derive: { provider: 'stub', id: 'stub-derive' },
         expansion: { provider: 'stub', id: 'stub-derive' },
+        answer: { provider: 'stub', id: 'stub-answer', reasoning_effort: 'none' },
       },
       // Observe ships off (see config/default.jsonc); these tests are about what it does when
       // a knowledge base turns it on.
@@ -302,17 +316,86 @@ const OBSERVED = {
   ],
 };
 
+const OBSERVE_TARGET = 'topics/appliance-servicing.md';
+const REFLECTION_OBSERVATION_IDS = ['obs_reflect_1111', 'obs_reflect_2222', 'obs_reflect_3333'] as const;
+
+function observationIds(body: string): string[] {
+  return [...body.matchAll(/<!-- akno:observation (obs_[A-Za-z0-9_-]+) /g)].map((match) => match[1]!);
+}
+
+/** Seed three valid L2 observations through the same projection reflection reads. */
+async function seedIndexedReflectionObservations(
+  placement: 'target' | 'separate' | 'mixed' = 'target',
+): Promise<void> {
+  const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+  const rows = db
+    .prepare(
+      `SELECT f.id, f.source_line_hash, f.page_id, p.slug, g.subject_entity
+         FROM facts f JOIN pages p ON p.id = f.page_id
+         JOIN graph_fact_status g ON g.fact_id = f.id
+        WHERE f.valid_to IS NULL AND g.eligibility = 'eligible'
+          AND g.subject_entity = (
+            SELECT e.id FROM graph_entities e JOIN pages cp ON cp.id = e.canonical_page
+             WHERE cp.slug = 'topics/appliance-servicing'
+          )
+        ORDER BY p.slug`,
+    )
+    .all() as {
+    id: string;
+    source_line_hash: string;
+    page_id: string;
+    slug: string;
+    subject_entity: string;
+  }[];
+  db.close();
+  expect(rows).toHaveLength(3);
+
+  const patterns = [
+    'Service visits follow a repeatable household cadence.',
+    'Maintenance rotates among household appliances.',
+    'Completed service work is recorded across seasons.',
+  ];
+  for (let index = 0; index < REFLECTION_OBSERVATION_IDS.length; index++) {
+    const evidenceRows = [rows[index]!, rows[(index + 1) % rows.length]!];
+    const block = observationBlock(
+      {
+        id: REFLECTION_OBSERVATION_IDS[index]!,
+        subject: rows[0]!.subject_entity,
+        disposition: 'active',
+        evidence: evidenceRows.map((row) => ({
+          factId: row.id,
+          sourceLineHash: row.source_line_hash,
+          proofGroups: [`page:${row.page_id}`],
+        })),
+        proofCount: 2,
+      },
+      patterns[index]!,
+      evidenceRows.map((row) => row.slug),
+    );
+    if (placement === 'target' || (placement === 'mixed' && index === 0)) {
+      const target = path.join(root, OBSERVE_TARGET);
+      const inserted = insertObservationBlock(fs.readFileSync(target, 'utf8'), block);
+      if (inserted === null) throw new Error('reflection fixture target has ambiguous observation sections');
+      fs.writeFileSync(target, inserted, 'utf8');
+      continue;
+    }
+    const slug = `reflection-support-${index + 1}`;
+    fs.writeFileSync(
+      path.join(root, `topics/${slug}.md`),
+      `---\ntitle: Reflection support ${index + 1}\nakno:\n  about: [topics/appliance-servicing]\n  management:\n    observe: integrate\n---\n\n# Reflection support ${index + 1}\n\n${block}\n`,
+      'utf8',
+    );
+  }
+  await mem.index({ structuralOnly: true });
+}
+
 describe('reflect', () => {
   const PRINCIPLE = 'Recurring activities are managed through explicit structures.';
   const REFLECTED = {
     observations: [
       {
         pattern: PRINCIPLE,
-        evidence: [
-          'observations/travel-lunch',
-          'observations/banking-review-period',
-          'observations/home-servicing',
-        ],
+        evidence: [...REFLECTION_OBSERVATION_IDS],
         confidence: 0.9,
       },
     ],
@@ -323,41 +406,25 @@ describe('reflect', () => {
    * own evidence on a real knowledge base. A conclusion offered as its own support reads, later, as
    * a conclusion with support.
    */
-  async function withTwoObservations(maintenance: Record<string, unknown> = {}): Promise<Akno> {
+  async function withIndexedObservations(maintenance: Record<string, unknown> = {}): Promise<Akno> {
     await mem.close();
-    for (const [name, body] of [
-      ['travel-lunch', 'Travel itineraries treat lunch as a scheduled part of the day.'],
-      ['banking-review-period', 'Banking review periods cover the full calendar month.'],
-      // Three, not two: reflect sits a tier further from the evidence and asks for more of it.
-      ['home-servicing', 'Household appliances are serviced on a regular cadence.'],
-    ] as const) {
-      fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
-      fs.writeFileSync(
-        path.join(root, `observations/${name}.md`),
-        `---\ntitle: ${name}\nderived: true\n---\n\n- 2026-08-08 — ${body}\n`,
-        'utf8',
-      );
-    }
     mem = await openMem({
       maintenance: { observe: { enabled: true }, reflect: { enabled: true }, ...maintenance },
     });
     await mem.index({});
+    await seedIndexedReflectionObservations();
     return mem;
   }
 
   it('is told the principles it already wrote', async () => {
     // Same bug as observe's, one tier up: this appends to a single page every night from
     // observations that rarely change, so without its own previous answers it restates them.
-    await withTwoObservations();
+    await withIndexedObservations();
     server.reply({
       observations: [
         {
           pattern: 'Recurring activities are managed through explicit structures.',
-          evidence: [
-            'observations/travel-lunch',
-            'observations/banking-review-period',
-            'observations/home-servicing',
-          ],
+          evidence: [...REFLECTION_OBSERVATION_IDS],
           confidence: 0.9,
         },
       ],
@@ -375,21 +442,17 @@ describe('reflect', () => {
     // A tier above the observations has to say something they do not. Its sources here are page
     // *summaries*, so neither the observation lines nor the knowledge base's own facts are
     // otherwise compared against.
-    await withTwoObservations();
+    await withIndexedObservations();
 
     for (const pattern of [
-      'Travel itineraries treat lunch as a scheduled part of the day.',
+      'Service visits follow a repeatable household cadence.',
       'The dishwasher was repaired in March 2026.',
     ]) {
       server.reply({
         observations: [
           {
             pattern,
-            evidence: [
-              'observations/travel-lunch',
-              'observations/banking-review-period',
-              'observations/home-servicing',
-            ],
+            evidence: [...REFLECTION_OBSERVATION_IDS],
             confidence: 0.9,
           },
         ],
@@ -401,18 +464,13 @@ describe('reflect', () => {
   });
 
   it('does not read, or cite, the page it writes', async () => {
-    await withTwoObservations();
+    await withIndexedObservations();
 
     server.reply({
       observations: [
         {
           pattern: 'Recurring activities are managed through explicit structures.',
-          evidence: [
-            'observations/travel-lunch',
-            'observations/banking-review-period',
-            'observations/home-servicing',
-            'observations/principles',
-          ],
+          evidence: [...REFLECTION_OBSERVATION_IDS, 'observations/principles'],
           confidence: 0.9,
         },
       ],
@@ -432,7 +490,7 @@ describe('reflect', () => {
   });
 
   it('seals an exact reflection audit plan without writing or deciding', async () => {
-    await withTwoObservations({ profile: 'autonomous' });
+    await withIndexedObservations({ profile: 'autonomous' });
     server.reply(REFLECTED);
 
     const report = await mem.dream({ phase: 'reflect', mode: 'audit' });
@@ -450,7 +508,7 @@ describe('reflect', () => {
   });
 
   it('seals reflection for human review and applies an approved principle', async () => {
-    await withTwoObservations({ profile: 'review' });
+    await withIndexedObservations({ profile: 'review' });
     server.reply(REFLECTED);
 
     const report = await mem.dream({ phase: 'reflect' });
@@ -473,7 +531,7 @@ describe('reflect', () => {
   });
 
   it('does not resubmit an unchanged rejected principle', async () => {
-    await withTwoObservations({ profile: 'review' });
+    await withIndexedObservations({ profile: 'review' });
     server.reply(REFLECTED);
 
     const first = await mem.dream({ phase: 'reflect' });
@@ -488,14 +546,14 @@ describe('reflect', () => {
   });
 
   it('refuses an approved reflection after sealed observation evidence changes', async () => {
-    await withTwoObservations({ profile: 'review' });
+    await withIndexedObservations({ profile: 'review' });
     server.reply(REFLECTED);
 
     const report = await mem.dream({ phase: 'reflect' });
     const item = report.maintenancePlan!.items[0]!;
     fs.appendFileSync(
-      path.join(root, 'observations/travel-lunch.md'),
-      '\n- 2026-08-09 — Lunch plans now use an invented rotating schedule.\n',
+      path.join(root, OBSERVE_TARGET),
+      '\nAn invented authored note changed the sealed source page.\n',
     );
     mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'Approved before evidence changed.');
 
@@ -507,7 +565,7 @@ describe('reflect', () => {
   });
 
   it('uses a separate curator and shared budget for autonomous reflection', async () => {
-    await withTwoObservations({ profile: 'autonomous' });
+    await withIndexedObservations({ profile: 'autonomous' });
     server.reply(REFLECTED);
 
     const report = await mem.dream({ phase: 'reflect' });
@@ -526,7 +584,7 @@ describe('reflect', () => {
   });
 
   it('defers an approved autonomous reflection when its shared run budget is exhausted', async () => {
-    await withTwoObservations({ profile: 'autonomous', limits: { max_items: 0 } });
+    await withIndexedObservations({ profile: 'autonomous', limits: { max_items: 0 } });
     server.reply(REFLECTED);
 
     const report = await mem.dream({ phase: 'reflect' });
@@ -551,23 +609,6 @@ describe('the full-run planning barrier', () => {
     seedObserveTarget = false,
   ): Promise<void> {
     await mem.close();
-    fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
-    for (const [name, body] of [
-      ['travel-lunch', 'Travel itineraries treat lunch as a scheduled part of the day.'],
-      ['banking-review-period', 'Banking review periods cover the full calendar month.'],
-      ['home-servicing', 'Household appliances are serviced on a regular cadence.'],
-      ...(seedObserveTarget
-        ? ([
-            ['home-appliance-servicing', 'Household maintenance is recorded after each completed service.'],
-          ] as const)
-        : []),
-    ] as const) {
-      fs.writeFileSync(
-        path.join(root, `observations/${name}.md`),
-        `---\ntitle: ${name}\nderived: true\n---\n\n- 2026-08-08 — ${body}\n`,
-        'utf8',
-      );
-    }
     mem = await openMem({
       maintenance: {
         profile: 'autonomous',
@@ -591,6 +632,7 @@ describe('the full-run planning barrier', () => {
       },
     });
     await mem.index({});
+    await seedIndexedReflectionObservations(seedObserveTarget ? 'mixed' : 'separate');
   }
 
   it('seals every inference plan before the first curator decision or write', async () => {
@@ -601,11 +643,7 @@ describe('the full-run planning barrier', () => {
       observations: [
         {
           pattern: principle,
-          evidence: [
-            'observations/travel-lunch',
-            'observations/banking-review-period',
-            'observations/home-servicing',
-          ],
+          evidence: [...REFLECTION_OBSERVATION_IDS],
           confidence: 0.9,
         },
       ],
@@ -640,11 +678,7 @@ describe('the full-run planning barrier', () => {
       observations: [
         {
           pattern: principle,
-          evidence: [
-            'observations/travel-lunch',
-            'observations/banking-review-period',
-            'observations/home-servicing',
-          ],
+          evidence: [...REFLECTION_OBSERVATION_IDS],
           confidence: 0.9,
         },
       ],
@@ -684,11 +718,7 @@ describe('the full-run planning barrier', () => {
       observations: [
         {
           pattern: principle,
-          evidence: [
-            'observations/home-appliance-servicing',
-            'observations/travel-lunch',
-            'observations/banking-review-period',
-          ],
+          evidence: [...REFLECTION_OBSERVATION_IDS],
           confidence: 0.9,
         },
       ],
@@ -712,9 +742,7 @@ describe('the full-run planning barrier', () => {
     expect(replanned).toMatchObject({ status: 'completed' });
     expect(replanned!.items[0]).toMatchObject({ status: 'applied', statusCode: null });
     expect(report.budget.used).toMatchObject({ items: 2, filesChanged: 2 });
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
-      PATTERN,
-    );
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toContain(PATTERN);
     expect(fs.readFileSync(path.join(root, 'observations/principles.md'), 'utf8')).toContain(principle);
   });
 
@@ -726,11 +754,7 @@ describe('the full-run planning barrier', () => {
       observations: [
         {
           pattern: principle,
-          evidence: [
-            'observations/home-appliance-servicing',
-            'observations/travel-lunch',
-            'observations/banking-review-period',
-          ],
+          evidence: [...REFLECTION_OBSERVATION_IDS],
           confidence: 0.9,
         },
       ],
@@ -771,7 +795,7 @@ describe('the full-run planning barrier', () => {
       if (changed) return;
       changed = true;
       fs.appendFileSync(
-        path.join(root, 'observations/home-appliance-servicing.md'),
+        path.join(root, OBSERVE_TARGET),
         '\n- 2026-08-10 — An invented external process changed this page during planning.\n',
       );
     });
@@ -794,7 +818,7 @@ describe('the full-run planning barrier', () => {
       decision: null,
     });
     expect(observation.items[0]!.statusReason).not.toContain('observations/');
-    const afterFirst = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    const afterFirst = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     expect(afterFirst).toContain('invented external process');
     expect(afterFirst).not.toContain(PATTERN);
 
@@ -805,9 +829,7 @@ describe('the full-run planning barrier', () => {
     expect(replanned.id).not.toBe(observation.id);
     expect(replanned.items[0]).toMatchObject({ status: 'applied', statusCode: null });
     expect(server.requestKinds().slice(beforeSecond)).toEqual(['observe', 'reflect', 'curator']);
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
-      PATTERN,
-    );
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toContain(PATTERN);
   });
 
   it('rechecks sealed inference evidence before the first curator call', async () => {
@@ -837,7 +859,7 @@ describe('the full-run planning barrier', () => {
       statusCode: 'snapshot_drift',
       decision: null,
     });
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).not.toContain(PATTERN);
   });
 
   it('holds a concurrent index pass until every planner seals, then drains it before curation', async () => {
@@ -911,7 +933,7 @@ describe('the full-run planning barrier', () => {
     expect(
       (await mem.read({ slug: 'home/foreground-note' })).page?.lines.map((line) => line.text).join('\n'),
     ).toContain('invented note arrived');
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).not.toContain(PATTERN);
   });
 
   it('attributes sealed writes while reporting an unrelated concurrent edit without replacing it', async () => {
@@ -926,9 +948,7 @@ describe('the full-run planning barrier', () => {
     const report = await mem.dream({ phase: 'observe' });
 
     expect(report.maintenancePlan!.items[0]).toMatchObject({ status: 'applied' });
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
-      PATTERN,
-    );
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toContain(PATTERN);
     expect(fs.readFileSync(path.join(root, 'notes/manual.md'), 'utf8')).toContain(
       'invented external annotation',
     );
@@ -1394,26 +1414,31 @@ describe('repair', () => {
 });
 
 describe('observe', () => {
-  it('writes a page with its evidence, marked as derived', async () => {
+  it('co-locates a qualified L2 block without changing authored bytes', async () => {
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
     const report = await mem.dream({ phase: 'observe' });
 
     expect(report.observations).toHaveLength(1);
     expect(report.observations[0]!.action).toBe('created');
-    // Named after the folder as well as the subject. Grouping on the subject alone joined a
-    // bag with a drum kit on a real knowledge base, because a small deriver writes the
-    // attribute into `subject` — and one page per folder keeps those apart too.
-    expect(report.observations[0]!.slug).toBe('observations/home-appliance-servicing');
+    expect(report.observations[0]!.slug).toBe('topics/appliance-servicing');
 
-    const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
-    // `derived` and `evidence` are the two keys Akno writes on pages it authors. They
-    // are what makes an inference identifiable as one afterwards.
-    expect(page).toContain('derived: true');
-    expect(page).toContain('evidence: ["home/appliances"');
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    expect(page.startsWith(before)).toBe(true);
+    expect(page).toContain('## Observed patterns');
+    expect(page).toContain('akno:observation');
+    expect(page).toContain('v=1 level=2');
+    expect(page).toContain('- **Observation:**');
+    expect(page).toContain('Evidence: [[home/appliances]]');
     expect(page).toContain(PATTERN);
-    // Not `- **YYYY-MM-DD** |`, which is read as a timeline event anywhere it appears: an
-    // inferred pattern is not something that happened on a date.
-    expect(page).not.toMatch(/- \*\*\d{4}-\d{2}-\d{2}\*\* \|/);
+
+    const read = await mem.read({ slug: 'topics/appliance-servicing' });
+    expect(read.page?.lines.find((line) => line.text.includes(PATTERN))?.observation).toMatchObject({
+      status: 'eligible',
+      level: 2,
+      disposition: 'active',
+      proof_count: 3,
+    });
     const timeline = await mem.timeline({ limit: 50 });
     expect(
       timeline.results.some(
@@ -1422,13 +1447,109 @@ describe('observe', () => {
     ).toBe(false);
   });
 
+  it('answers from an observation as one item while citing every current leaf fact', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const [observationId] = observationIds(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8'));
+    server.answer(
+      {
+        blocks: [{ text: PATTERN, evidence_ids: ['E2'] }],
+        missing_concepts: [],
+      },
+      { verdicts: [{ block_id: 'B1', supported: true }] },
+    );
+
+    const result = await mem.answer({
+      question: 'What pattern is observed in household appliance servicing?',
+      filter: { folder: 'topics' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    const observation = result.context?.find((entry) => entry.type === 'observation');
+
+    expect(observation).toMatchObject({
+      evidence_id: 'E2',
+      type: 'observation',
+      observation_id: observationId,
+      text: expect.stringContaining(PATTERN),
+    });
+    expect(
+      observation?.type === 'observation' ? observation.evidence.map((leaf) => leaf.slug).sort() : [],
+    ).toEqual(['home/appliances', 'home/kitchen', 'home/laundry']);
+    expect(result.citations).toEqual([
+      {
+        id: 'E2',
+        type: 'observation',
+        observation_id: observationId,
+        evidence: expect.arrayContaining([
+          expect.objectContaining({ slug: 'home/appliances', fact: expect.any(String), line: 7 }),
+          expect.objectContaining({ slug: 'home/laundry', fact: expect.any(String), line: 7 }),
+          expect.objectContaining({ slug: 'home/kitchen', fact: expect.any(String), line: 7 }),
+        ]),
+      },
+    ]);
+    expect(result.answer).toContain('[home/appliances:7]');
+    expect(result.answer).toContain('[home/laundry:7]');
+    expect(result.answer).toContain('[home/kitchen:7]');
+  });
+
+  it('withholds the whole answer observation when a leaf changed before re-indexing', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const leafPath = path.join(root, 'home/appliances.md');
+    fs.writeFileSync(
+      leafPath,
+      fs.readFileSync(leafPath, 'utf8').replace('repaired in March', 'repaired in October'),
+    );
+    server.answer({ blocks: [], missing_concepts: ['current observation support'] }, { verdicts: [] });
+
+    const result = await mem.answer({
+      question: 'What pattern is observed in household appliance servicing?',
+      filter: { folder: 'topics' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+
+    expect(result.context?.some((entry) => entry.type === 'observation')).toBe(false);
+    expect(result.citations).toEqual([]);
+  });
+
+  it('projects observation lineage into the graph with leaf-source evidence', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+
+    const graph = await mem.graph({
+      slug: 'topics/appliance-servicing',
+      relations: ['canonical_record', 'has_attribute', 'derived_from'],
+      max_hops: 3,
+    });
+    const lineage = graph.edges.filter((edge) => edge.relation === 'derived_from');
+
+    expect(graph.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'observation', observation: expect.any(String) }),
+      ]),
+    );
+    expect(lineage).toHaveLength(3);
+    expect(lineage.map((edge) => edge.evidence.slug).sort()).toEqual([
+      'home/appliances',
+      'home/kitchen',
+      'home/laundry',
+    ]);
+    expect(
+      lineage.every((edge) => edge.evidence.kind === 'fact_line' && edge.evidence.line_start === 7),
+    ).toBe(true);
+  });
+
   it('is safe to re-run: the same pattern is not written twice', async () => {
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
-    const first = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    const first = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
 
     const second = await mem.dream({ phase: 'observe' });
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toBe(first);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(first);
     // Turned back by the guard, with the reason, rather than written and then reported as
     // unchanged. A repeat means the model was told what it had already recorded and said it again.
     expect(second.observations).toHaveLength(0);
@@ -1457,7 +1578,7 @@ describe('observe', () => {
   it('turns back a repeat that is only reworded', async () => {
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
-    const first = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    const first = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
 
     // One word different, which is what the exact-string check let through every night.
     server.reply({
@@ -1471,55 +1592,187 @@ describe('observe', () => {
     });
     const second = await mem.dream({ phase: 'observe' });
 
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toBe(first);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(first);
     expect(second.observations).toHaveLength(0);
     expect(second.rejected.some((entry) => entry.reason === 'already recorded for this subject')).toBe(true);
   });
 
-  it('refines by appending, and never deletes what is there', async () => {
-    // A changed pattern gets a new dated line. A curator that can delete loses things
-    // nobody watched it delete.
+  it('refines only the owned block and preserves the surrounding page', async () => {
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
+    const first = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    const [id] = observationIds(first);
+    expect(id).toBeTruthy();
 
     server.reply({
       observations: [
         {
           pattern: 'Household appliances are serviced every four months, in rotation.',
           evidence: ['home/laundry', 'home/kitchen'],
+          outcome: 'refine',
+          target_id: id,
         },
       ],
     });
     const report = await mem.dream({ phase: 'observe' });
     expect(report.observations[0]!.action).toBe('refined');
 
-    const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
-    expect(page).toContain(PATTERN);
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    expect(page).toContain(PAGES[OBSERVE_TARGET]!.trimEnd());
+    expect(page).not.toContain(PATTERN);
     expect(page).toContain('every four months');
-    expect(page.match(/^- \d{4}-\d{2}-\d{2} —/gm)).toHaveLength(2);
+    expect(observationIds(page)).toEqual([id]);
   });
 
-  it('does not append when the existing evidence declaration cannot be merged safely', async () => {
-    const relPath = 'observations/home-appliance-servicing.md';
-    const before =
-      '---\ntitle: "Home appliance servicing"\nderived: true\nevidence: home/appliances\n---\n\n' +
-      '- 2031-08-05 — Existing invented pattern. [[home/appliances]]\n';
-    fs.mkdirSync(path.join(root, 'observations'), { recursive: true });
-    fs.writeFileSync(path.join(root, relPath), before, 'utf8');
+  it('reinforces a stable observation id with newly independent evidence', async () => {
+    server.reply({
+      observations: [
+        {
+          pattern: PATTERN,
+          evidence: ['home/appliances', 'home/laundry'],
+          confidence: 0.8,
+        },
+      ],
+    });
+    await mem.dream({ phase: 'observe' });
+    const first = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    const [id] = observationIds(first);
+
+    server.reply({
+      observations: [
+        {
+          pattern: PATTERN,
+          evidence: ['home/laundry', 'home/kitchen'],
+          confidence: 0.9,
+          outcome: 'reinforce',
+          target_id: id,
+        },
+      ],
+    });
+    const report = await mem.dream({ phase: 'observe' });
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+
+    expect(report.observations[0]).toMatchObject({ action: 'reinforced', pattern: PATTERN });
+    expect(observationIds(page)).toEqual([id]);
+    expect(page).toContain('proofs=3');
+    expect(page).toContain('[[home/kitchen]]');
+  });
+
+  it('splits one owned observation while retaining its superseded lineage', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const first = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    const [id] = observationIds(first);
+
+    server.reply({
+      observations: [
+        {
+          pattern: 'Kitchen appliances follow a seasonal service cadence.',
+          split_pattern: 'Laundry appliances follow a separate service cadence.',
+          evidence: ['home/appliances', 'home/laundry', 'home/kitchen'],
+          confidence: 0.9,
+          outcome: 'split',
+          target_id: id,
+        },
+      ],
+    });
+    const report = await mem.dream({ phase: 'observe' });
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    const read = await mem.read({ slug: 'topics/appliance-servicing' });
+
+    expect(report.observations[0]).toMatchObject({ action: 'split' });
+    expect(observationIds(page)).toHaveLength(3);
+    expect(page).toContain(`${id} v=1 level=2`);
+    expect(page).toContain('disposition=superseded');
+    expect(page).toContain('Kitchen appliances follow a seasonal service cadence.');
+    expect(page).toContain('Laundry appliances follow a separate service cadence.');
+    expect(read.page?.lines.filter((line) => line.observation?.status === 'eligible')).toHaveLength(2);
+  });
+
+  it('weakens invalid lineage through a verified, reversible plan', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const active = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    server.facts({ 'home/appliances': SERVICING['home/appliances']! });
+    await mem.index({ rederive: true });
+    server.reply({ observations: [] });
+
+    const report = await mem.dream({ phase: 'observe' });
+    const weakened = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+
+    expect(report.observations[0]).toMatchObject({ action: 'weakened', pattern: PATTERN });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(weakened).toContain('disposition=weakened');
+    expect((await mem.read({ slug: 'topics/appliance-servicing' })).page?.lines).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          observation: expect.objectContaining({ status: 'ineligible', disposition: 'weakened' }),
+        }),
+      ]),
+    );
+
+    await mem.undo({ change_id: report.changeId! });
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(active);
+  });
+
+  it('retracts unsupported lineage through a verified plan', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    server.facts({});
+    await mem.index({ rederive: true });
+    server.reply({ observations: [] });
+
+    const report = await mem.dream({ phase: 'observe' });
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+
+    expect(report.observations[0]).toMatchObject({ action: 'retracted', pattern: PATTERN });
+    expect(report.maintenancePlan!.items[0]).toMatchObject({
+      status: 'applied',
+      verification: { status: 'passed' },
+    });
+    expect(page).toContain('disposition=retracted');
+  });
+
+  it('marks a reviewed weaken plan stale when its last support disappears before apply', async () => {
+    server.reply(OBSERVED);
+    await mem.dream({ phase: 'observe' });
+    const active = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+
+    await mem.close();
+    mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
+    server.facts({ 'home/appliances': SERVICING['home/appliances']! });
+    await mem.index({ rederive: true });
+    server.reply({ observations: [] });
+    const planned = await mem.dream({ phase: 'observe' });
+    const plan = mem.plan(planned.maintenancePlan!.id);
+    const item = plan.items[0]!;
+    expect(item.evidence[0]?.observationOutcome).toBe('weaken');
+
+    server.facts({});
+    await mem.index({ rederive: true });
+    mem.decidePlan(plan.id, item.id, 'approve', 'Approved while one proof remained.');
+    const applied = await mem.applyPlan(plan.id);
+
+    expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
+    expect(applied.files).toEqual([]);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(active);
+  });
+
+  it('does not write where observation integration is denied', async () => {
+    const target = path.join(root, OBSERVE_TARGET);
+    const before = fs.readFileSync(target, 'utf8').replace('observe: integrate', 'observe: deny');
+    fs.writeFileSync(target, before, 'utf8');
     await mem.index({ structuralOnly: true });
     server.reply(OBSERVED);
 
     const report = await mem.dream({ phase: 'observe' });
 
-    expect(fs.readFileSync(path.join(root, relPath), 'utf8')).toBe(before);
+    expect(fs.readFileSync(target, 'utf8')).toBe(before);
     expect(report.observations).toHaveLength(0);
-    expect(report.rejected).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          reason: 'the existing observation page has an unsupported evidence declaration',
-        }),
-      ]),
-    );
+    expect(server.requestKinds()).not.toContain('observe');
   });
 
   it('never uses a reference page as evidence', async () => {
@@ -1559,11 +1812,11 @@ describe('observe', () => {
     server.reply(OBSERVED);
     await mem.dream({ phase: 'observe' });
 
-    // The page exists and is indexed now, with a summary and a fact of its own — a derived
-    // page is still a page.
+    // Even if a deriver proposes the visible L2 payload as a fact, the owned marker boundary
+    // prevents the observation from becoming evidence for another observation.
     server.facts({
       ...SERVICING,
-      'observations/home-appliance-servicing': [
+      'topics/appliance-servicing': [
         {
           claim: PATTERN,
           subject: 'appliance servicing',
@@ -1579,19 +1832,23 @@ describe('observe', () => {
 
     const shown = server.lastObserveInput();
     expect(shown).toContain('home/appliances');
-    expect(shown).not.toContain('observations/home-appliance-servicing');
+    expect(shown).not.toContain(`[topics/appliance-servicing] ${PATTERN}`);
+    const read = await mem.read({ slug: 'topics/appliance-servicing' });
+    expect(read.page?.lines.find((line) => line.text.includes(PATTERN))?.fact).toBeUndefined();
   });
 
   it('undoes a whole run as one change', async () => {
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
     const report = await mem.dream({ phase: 'observe' });
     expect(report.changeId).toBeTruthy();
 
     await mem.undo({ change_id: report.changeId! });
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
   });
 
   it('writes nothing on a dry run', async () => {
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
     const report = await mem.dream({ phase: 'observe', dryRun: true });
     expect(report.observations[0]!.action).toBe('would-create');
@@ -1601,10 +1858,11 @@ describe('observe', () => {
       estimatedPromptTokens: null,
     });
     expect(report.changeId).toBeNull();
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
   });
 
   it('seals an exact audit plan without writing or making a decision', async () => {
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
 
     const report = await mem.dream({ phase: 'observe', mode: 'audit' });
@@ -1618,13 +1876,14 @@ describe('observe', () => {
       decision: null,
     });
     expect(mem.maintenanceDiff(report.maintenancePlan!.id)).toContain(PATTERN);
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
   });
 
   it('seals observations for human review under the review profile', async () => {
     await mem.close();
     mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
     await mem.index({});
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
 
     const report = await mem.dream({ phase: 'observe' });
@@ -1638,7 +1897,7 @@ describe('observe', () => {
       status: 'proposed',
     });
     expect(report.changeId).toBeNull();
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
     expect(mem.maintenanceStatus().authority).toMatchObject({
       profile: 'review',
       mode: 'review',
@@ -1651,15 +1910,14 @@ describe('observe', () => {
     mem.decidePlan(report.maintenancePlan!.id, item.id, 'approve', 'The invented pattern is well supported.');
     const applied = await mem.applyPlan(report.maintenancePlan!.id);
     expect(applied.plan.items[0]).toMatchObject({ status: 'applied', verification: { status: 'passed' } });
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
-      PATTERN,
-    );
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toContain(PATTERN);
   });
 
   it('does not resubmit an unchanged human-rejected observation', async () => {
     await mem.close();
     mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
     await mem.index({});
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
 
     const first = await mem.dream({ phase: 'observe' });
@@ -1670,13 +1928,14 @@ describe('observe', () => {
 
     expect(repeated.maintenancePlan).toBeNull();
     expect(repeated.observations[0]).toMatchObject({ action: 'rejected' });
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
   });
 
   it('refuses an approved observation when sealed evidence changes before apply', async () => {
     await mem.close();
     mem = await openMem({ maintenance: { profile: 'review', observe: { enabled: true } } });
     await mem.index({});
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
 
     const report = await mem.dream({ phase: 'observe' });
@@ -1688,7 +1947,7 @@ describe('observe', () => {
 
     expect(applied.plan.items[0]).toMatchObject({ status: 'stale' });
     expect(applied.files).toEqual([]);
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
   });
 
   it('uses a separate curator and verified plan apply under the autonomous profile', async () => {
@@ -1710,9 +1969,9 @@ describe('observe', () => {
       verification: { status: 'passed' },
     });
     expect(report.budget.used).toMatchObject({ items: 1, filesChanged: 1, highRiskItems: 0 });
-    expect(fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8')).toContain(
-      PATTERN,
-    );
+    const firstPage = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
+    expect(firstPage).toContain(PATTERN);
+    const [id] = observationIds(firstPage);
 
     server.reply({
       observations: [
@@ -1720,15 +1979,17 @@ describe('observe', () => {
           pattern: 'Household appliances are serviced every four months, in rotation.',
           evidence: ['home/laundry', 'home/kitchen'],
           confidence: 0.8,
+          outcome: 'refine',
+          target_id: id,
         },
       ],
     });
     const refined = await mem.dream({ phase: 'observe' });
-    const page = fs.readFileSync(path.join(root, 'observations/home-appliance-servicing.md'), 'utf8');
+    const page = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     expect(refined.observations[0]).toMatchObject({ action: 'refined' });
-    expect(page).toContain(PATTERN);
+    expect(page).not.toContain(PATTERN);
     expect(page).toContain('every four months');
-    expect(page.match(/^- \d{4}-\d{2}-\d{2} —/gm)).toHaveLength(2);
+    expect(observationIds(page)).toEqual([id]);
   });
 
   it('defers an approved autonomous observation before writing when the run budget is zero', async () => {
@@ -1741,6 +2002,7 @@ describe('observe', () => {
       },
     });
     await mem.index({});
+    const before = fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8');
     server.reply(OBSERVED);
 
     const report = await mem.dream({ phase: 'observe' });
@@ -1755,7 +2017,7 @@ describe('observe', () => {
       statusCode: 'budget_exhausted',
       decision: null,
     });
-    expect(fs.existsSync(path.join(root, 'observations/home-appliance-servicing.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, OBSERVE_TARGET), 'utf8')).toBe(before);
   });
 });
 
@@ -3421,7 +3683,7 @@ describe('the run log', () => {
 
     expect(record.applied).toHaveLength(1);
     expect(record.applied[0].phase).toBe('observe');
-    expect(record.applied[0].relPath).toMatch(/^observations\//);
+    expect(record.applied[0].relPath).toBe(OBSERVE_TARGET);
     // The lines the write added, so the record shows the text without a second lookup.
     expect(record.applied[0].added.join('\n')).toContain(PATTERN);
     expect(record.changeIds).toEqual([report.changeId]);

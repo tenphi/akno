@@ -3,6 +3,7 @@ import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
 import { aknoItemId, type ParsedPage } from '../kb/page.ts';
 import { managedMemoryFactEligible, parseManagedMemoryMarker } from '../write/managed-memory.ts';
+import { structuralObservationMarkerIndexes } from '../observations/marker.ts';
 
 /**
  * Deriving structure from text already in the knowledge base — facts,
@@ -210,11 +211,21 @@ function mineableLines(
   const fence = page.sourceFenceLine;
   let pendingItem: string | null = null;
   let pendingFactEligible = true;
+  let pendingObservation = false;
+  const observationMarkers = structuralObservationMarkerIndexes(page.lines);
   for (let i = 0; i < page.lines.length; i++) {
     const line = page.bodyLine + i;
     if (fence !== null && line >= fence) break;
     const text = page.lines[i]!.trim();
     if (text.length === 0) continue;
+    if (observationMarkers.has(i)) {
+      // Unknown versions fail closed too. The next readable line remains searchable but can
+      // never be re-imported as an authored level-one fact.
+      pendingObservation = true;
+      pendingItem = null;
+      pendingFactEligible = false;
+      continue;
+    }
     const marker = aknoItemId(text);
     if (marker) {
       pendingItem = marker;
@@ -225,6 +236,12 @@ function mineableLines(
     }
     if (/^#{1,6}\s+/.test(text) || /^<!--.*-->$/.test(text)) {
       pendingItem = null;
+      pendingFactEligible = true;
+      continue;
+    }
+    if (pendingObservation) {
+      out.push({ line, text, itemId: null, factEligible: false });
+      pendingObservation = false;
       pendingFactEligible = true;
       continue;
     }

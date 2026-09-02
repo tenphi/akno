@@ -91,6 +91,7 @@ akno:
   role: knowledge
   management:
     remember: integrate
+    observe: integrate
     dream: synthesize
   about:
     - people/ada-marlow
@@ -98,6 +99,7 @@ akno:
 ```
 
 - `remember: integrate|deny` controls whether retained claims may be placed there.
+- `observe: integrate|deny` controls whether Akno may add or update its own level-two observation blocks there.
 - `dream: none|hygiene|synthesize` controls which curation proposals may target that page.
 - `about` states which canonical entities receive evidence from the page.
 
@@ -105,10 +107,14 @@ An opt-in permits planning; it does not order a rewrite. The maintenance profile
 deterministic guards, budgets, decisions, stale-input checks, and verification still apply.
 
 Role and write authority are independent. A plain page defaults to searchable `knowledge` and
-`remember: deny`, which is useful for reference material that should participate in answers without accepting
-auto-injected facts. Akno-created memory pages explicitly declare `remember: integrate`. That same explicit
+`remember: deny` and `observe: deny`, which is useful for material that should participate in answers without
+accepting auto-injected facts or observations. Akno-created memory pages explicitly declare `remember: integrate`. That same explicit
 admission lets maintenance inspect only Akno's marker-bound fragments: it does not make authored page content
 rewritable and does not require broad `dream` authority.
+
+`observe: integrate` is separate from both of those grants. It authorizes only a versioned
+`akno:observation` marker plus its readable payload in an existing compatible section. It cannot create a page,
+inject retained facts, or edit adjacent authored prose.
 
 ## Citations, facts, and confidence
 
@@ -123,10 +129,27 @@ Superseded facts keep history and validity bounds instead of competing with the 
 analysis can prevent unresolved claims from becoming evidence-graph edges or foundations for inferred
 observations.
 
+## Memory levels
+
+Akno keeps consolidation explicit instead of letting fluent prose erase how it was learned:
+
+| Level | Meaning                                                                |
+| ----- | ---------------------------------------------------------------------- |
+| L0    | Source or document evidence                                            |
+| L1    | Authored or retained claims, decisions, preferences, plans, and events |
+| L2    | Observations consolidated from independent eligible L1 facts           |
+| L3    | Reusable principles reflected from eligible L2 observations            |
+
+An L2 marker records a stable id, exact subject entity, lifecycle disposition, every fact and source-line hash,
+and the recomputable independent proof groups. Its payload visibly starts with `Observation` and links its
+evidence. Indexing excludes malformed, stale, ambiguous, unauthorized, or under-supported blocks from factual
+recall and graph traversal without deleting the readable Markdown. The ordinary deriver cannot import an L2
+payload back as an L1 fact.
+
 ## The evidence graph
 
-Indexing projects exact page links, `akno.about`, document ownership, events, and eligible derived facts into a
-disposable graph.
+Indexing projects exact page links, `akno.about`, document ownership, events, eligible derived facts, and
+eligible observation-to-leaf lineage into a disposable graph.
 
 Each edge retains a current source hash and an exact line, frontmatter, fact, event, or document locator. Exact
 canonical slugs and declared aliases may resolve identity. Ambiguous names retain candidates but produce no

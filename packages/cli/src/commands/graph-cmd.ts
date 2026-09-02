@@ -142,6 +142,8 @@ function nodeLabel(node: GraphNodeRef): string {
       return `${node.fact}${node.slug && node.line_start ? style.grey(` [${node.slug}:${node.line_start}]`) : ''}`;
     case 'event':
       return `${node.event}${node.date ? style.grey(` [${node.date}]`) : ''}`;
+    case 'observation':
+      return `${node.observation}${node.slug && node.line_start ? style.grey(` [${node.slug}:${node.line_start}]`) : ''}`;
   }
 }
 

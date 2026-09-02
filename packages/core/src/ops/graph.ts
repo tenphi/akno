@@ -67,6 +67,9 @@ interface NodeRow {
   event_date: string | null;
   event_source: string | null;
   event_line: number | null;
+  observation_id: string | null;
+  observation_slug: string | null;
+  observation_line: number | null;
 }
 
 interface RawAmbiguity {
@@ -416,7 +419,16 @@ function traverse(
 
       for (const row of adjacent.rows) {
         const next = row.from_node === current.node ? row.to_node : row.from_node;
-        if (visited.has(next)) continue;
+        if (visited.has(next)) {
+          // Keep non-tree edges between nodes already reached by another branch. Without this,
+          // entity→fact traversal hides observation→fact lineage merely because the fact node was
+          // discovered first, even though both endpoints are in the returned subgraph.
+          if (!current.nodes.includes(next)) {
+            const edge = edgeRef(row);
+            edges.set(edge.id, edge);
+          }
+          continue;
+        }
         if (paths.length >= options.pathLimit) {
           truncated = true;
           break seedLoop;
@@ -529,7 +541,9 @@ function loadNodes(ctx: AknoContext, ids: string[]): GraphNodeRef[] {
               dp.slug AS document_owner,
               f.id AS fact_id, fp.slug AS fact_slug,
               f.line_start AS fact_line_start, f.line_end AS fact_line_end,
-              ev.id AS event_id, ev.date AS event_date, ev.source_slug AS event_source, ev.line AS event_line
+              ev.id AS event_id, ev.date AS event_date, ev.source_slug AS event_source, ev.line AS event_line,
+              oe.id AS observation_id, oe.source_slug AS observation_slug,
+              oe.payload_line AS observation_line
          FROM graph_nodes n
          LEFT JOIN pages p ON n.kind = 'page' AND p.id = n.source_id
          LEFT JOIN graph_entities ge ON n.kind = 'entity' AND ge.id = n.source_id
@@ -539,6 +553,7 @@ function loadNodes(ctx: AknoContext, ids: string[]): GraphNodeRef[] {
          LEFT JOIN facts f ON n.kind = 'fact' AND f.id = n.source_id
          LEFT JOIN pages fp ON fp.id = f.page_id
          LEFT JOIN events ev ON n.kind = 'event' AND ev.id = n.source_id
+         LEFT JOIN observation_entries oe ON n.kind = 'observation' AND oe.id = n.source_id
         WHERE n.id IN (${ids.map(() => '?').join(',')})`,
     )
     .all(...ids) as NodeRow[];
@@ -596,6 +611,15 @@ function nodeRef(ctx: AknoContext, row: NodeRow): GraphNodeRef {
         date: row.event_date!,
         slug: row.event_source!,
         ...(row.event_line ? { line_start: row.event_line, line_end: row.event_line } : {}),
+      };
+    case 'observation':
+      return {
+        id: row.id,
+        kind: row.kind,
+        observation: row.observation_id!,
+        slug: row.observation_slug!,
+        line_start: row.observation_line!,
+        line_end: row.observation_line!,
       };
   }
 }

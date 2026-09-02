@@ -116,9 +116,12 @@ function printAnswer(result: AnswerOutput): void {
     heading('Citations');
     for (const citation of result.citations) {
       if (citation.type === 'page') line(`  ${citation.slug}:${citation.lines.join(',')}`);
-      else {
+      else if (citation.type === 'document') {
         const pages = citation.pages?.length ? ` pages ${citation.pages.join(',')}` : '';
         line(`  ${citation.document_id}${pages}`);
+      } else {
+        line(`  ${citation.observation_id} (derived)`);
+        for (const leaf of citation.evidence) line(`    ${leaf.slug}:${leaf.line} (${leaf.fact})`);
       }
     }
   }
@@ -138,10 +141,14 @@ function printAnswer(result: AnswerOutput): void {
       if (item.type === 'page') {
         line(`  ${item.evidence_id} · ${item.slug} — ${item.title}`);
         for (const sourceLine of item.lines) line(`    ${sourceLine.n}: ${sourceLine.text}`);
-      } else {
+      } else if (item.type === 'document') {
         const pages = item.pages?.length ? ` pages ${item.pages.join(',')}` : '';
         line(`  ${item.evidence_id} · ${item.document_id}${pages}`);
         line(`    ${item.quote}`);
+      } else {
+        line(`  ${item.evidence_id} · ${item.observation_id} (derived)`);
+        line(`    ${item.text}`);
+        for (const leaf of item.evidence) line(`    ${leaf.slug}:${leaf.line}: ${leaf.text}`);
       }
     }
   }

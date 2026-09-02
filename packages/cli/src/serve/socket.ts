@@ -148,7 +148,9 @@ async function runCommand(akno: Akno, command: CommandName, input: unknown): Pro
     case 'dream':
       return akno.dream(options);
     case 'migrate':
-      return akno.migrateBrain({ dryRun: booleanFrom(input, 'dry_run', false) });
+      return booleanFrom(input, 'observations', false)
+        ? akno.migrateObservations({ dryRun: booleanFrom(input, 'dry_run', false) })
+        : akno.migrateBrain({ dryRun: booleanFrom(input, 'dry_run', false) });
     case 'approve': {
       const slug = (input as { slug?: unknown } | null)?.slug;
       return akno.approve(

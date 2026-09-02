@@ -907,4 +907,42 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds observation authority and projection tables to a version-thirty-six database', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-observation-projection-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 30)) legacy.exec(migration);
+    legacy.pragma('user_version = 36');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const pageColumns = store.db.pragma('table_info(pages)') as { name: string }[];
+    const observationColumns = store.db.pragma('table_info(observation_entries)') as {
+      name: string;
+    }[];
+    const issueColumns = store.db.pragma('table_info(observation_projection_issues)') as {
+      name: string;
+    }[];
+    expect(pageColumns.map((column) => column.name)).toContain('observe_management');
+    expect(observationColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'id',
+        'source_page',
+        'subject_entity',
+        'disposition',
+        'payload_hash',
+        'proof_count',
+        'eligible',
+      ]),
+    );
+    expect(issueColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['source_page', 'marker_line', 'observation_id', 'reason']),
+    );
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

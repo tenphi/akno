@@ -69,6 +69,13 @@ ineligible for a question about what is current.
 An owned marker whose current semantics cannot be parsed reports `status: "unavailable"` and
 `answer_eligible: false`; malformed or unmigrated managed memory never falls back to authored-fact behavior.
 
+An eligible level-two payload carries a separate `observation` qualification with its stable id, exact subject,
+disposition, proof count, and every current leaf fact locator. It is labeled as derived in recall. Ordinary
+factual queries rank an observation-backed card below direct evidence; pattern, habit, recurrence, and tendency
+queries may promote it. Malformed markers and blocks whose facts, hashes, proof groups, subject, or placement
+authority no longer qualify remain readable with `status: "ineligible"`, but are excluded from factual recall,
+automatic context, and graph traversal.
+
 ### Reranking also qualifies
 
 A successful reranker may remove judged-irrelevant candidates. Candidates outside its bounded window are
@@ -99,6 +106,11 @@ is shown to the answer model. If they are the only related memory, `answer` retu
 preserving the related page identities; it does not call the model or claim the topic was never discussed.
 Accepted or active plans remain non-factual, but may ground an explicitly future-oriented question. For
 time-scoped factual items, current-value questions admit only intervals that are current at the reader clock.
+
+An observation is offered to the answer model as one indivisible evidence item containing its readable L2
+sentence and every current L1 leaf line. If any leaf cannot be re-read at its sealed fact, slug, line, and hash,
+the whole observation is withheld. A final observation citation expands back to every leaf source; the L2 page
+alone is never presented as sufficient proof.
 
 Reranking is off by default for `answer` because generation and verification already select supporting
 evidence. `--rerank` opts into another sequential model call for especially noisy corpora or weaker answer

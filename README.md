@@ -16,7 +16,8 @@ citable, reversible, and independent of a chat provider.
 > structured conversations, route them automatically or to exact destinations, replay identical revisions without
 > another model call, and retract source-owned support. `timeline` now reads authored events, retained world-time
 > states/plans/deadlines, and document date evidence through one explicit clock. Source-reference intake and
-> co-located observations remain follow-up work. Defaults stay conservative: model-dependent inference is
+> evidence-backed observations are co-located as explicitly marked level-two memory on admitted canonical pages;
+> reflected principles remain a separate level-three synthesis. Defaults stay conservative: model-dependent inference is
 > opt-in, scheduled maintenance starts in audit mode, and network and persistence boundaries fail closed.
 > Releases use Changesets and tokenless npm
 > trusted publishing; CI verifies the packaged artifacts and installed first-run workflow before publication.
@@ -30,6 +31,8 @@ Ordinary retrieval gives an agent fragments. Akno gives it evidence with enough 
   broken search path.
 - `recall` finds and ranks evidence; `answer` produces a separately verified grounded response.
 - Pages, source documents, inferred observations, and ignored material have different retrieval policies.
+- Observations retain exact leaf-fact lineage, become ineligible immediately when support changes, and never
+  feed back into level-one fact derivation.
 - Writes are journalled and undoable.
 - Nightly maintenance plans exact diffs before a human or separate curator decides what may apply.
 - Orphan documents are searchable immediately; organization never blocks retrieval.
@@ -132,6 +135,10 @@ replay before another model call or write; explicit retraction removes only the 
 `akno dream` is a seven-phase maintenance cycle, not a prompt that rewrites the whole folder. It detects
 conflicts before inference, plans observations and page maintenance, files orphan documents, then reports
 remaining repair and housekeeping work.
+
+Observe writes only marker-owned blocks on an existing exact-subject page that opts into
+`akno.management.observe: integrate`. Create, reinforce, refine, weaken, retract, and split all pass through the
+same plan, decision, stale-input, journal, verification, and undo boundary.
 
 Every writable item is a durable exact proposal with sealed inputs. The configured profile determines the
 decision point:

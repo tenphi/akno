@@ -74,6 +74,11 @@ import {
   type BrainMigrationOptions,
   type BrainMigrationReport,
 } from './maintenance/brain-migration.ts';
+import {
+  migrateLegacyObservations,
+  type ObservationMigrationOptions,
+  type ObservationMigrationReport,
+} from './maintenance/observation-migration.ts';
 
 /** Host-facing watch callbacks, including the inbox result the watcher triggers. */
 export interface AknoWatchEvents extends WatcherEvents {
@@ -154,6 +159,8 @@ export interface Akno extends AknoOps {
   resumeMaintenance(scope: MaintenanceRecoveryScope): MaintenanceRecoveryStatus;
   /** Explicitly upgrade owned Markdown markers; never runs as an indexing side effect. */
   migrateBrain(options?: BrainMigrationOptions): Promise<BrainMigrationReport>;
+  /** Explicitly move unambiguous legacy observation lines onto admitted subject pages. */
+  migrateObservations(options?: ObservationMigrationOptions): Promise<ObservationMigrationReport>;
   /**
    * The user resolves a gate. Approving **completes the write**, because the
    * pending content was held with the proposal — a caller should not have to
@@ -412,6 +419,7 @@ export async function open(options: OpenOptions = {}): Promise<Akno> {
 
     doctor: (doctorOptions) => doctor(ctx, doctorOptions ?? {}),
     migrateBrain: (migrationOptions) => migrateBrain(ctx, migrationOptions ?? {}),
+    migrateObservations: (migrationOptions) => migrateLegacyObservations(ctx, migrationOptions ?? {}),
 
     rules(slug: string) {
       const match = matchRules(slug, config.rules);

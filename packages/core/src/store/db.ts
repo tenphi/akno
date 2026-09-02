@@ -28,6 +28,7 @@ import {
   MAINTENANCE_RUNS_MIGRATION_INDEX,
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
+  OBSERVATION_PROJECTION_MIGRATION_INDEX,
   RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX,
   RETAIN_RECEIPTS_MIGRATION_INDEX,
   SCHEMA_VERSION,
@@ -254,6 +255,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'temporal_entries') || !tableExists(db, 'temporal_projection_issues')) {
         db.exec(MIGRATIONS[TEMPORAL_ENTRIES_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'observation_entries')) {
+        db.exec(MIGRATIONS[OBSERVATION_PROJECTION_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

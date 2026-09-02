@@ -11,10 +11,14 @@ export type PageRole = z.infer<typeof PageRole>;
 /** Automatic write authority carried by a page's `akno` frontmatter block. */
 export const RememberManagement = z.enum(['deny', 'integrate']);
 export type RememberManagement = z.infer<typeof RememberManagement>;
+/** Narrow authority for inserting Akno-owned level-two observation blocks. */
+export const ObserveManagement = z.enum(['deny', 'integrate']);
+export type ObserveManagement = z.infer<typeof ObserveManagement>;
 export const DreamManagement = z.enum(['none', 'hygiene', 'synthesize']);
 export type DreamManagement = z.infer<typeof DreamManagement>;
 export const PageManagement = z.object({
   remember: RememberManagement.optional(),
+  observe: ObserveManagement.optional(),
   dream: DreamManagement.optional(),
 });
 export type PageManagement = z.infer<typeof PageManagement>;
@@ -256,6 +260,39 @@ export const MemoryQualification = z.discriminatedUnion('status', [
 ]);
 export type MemoryQualification = z.infer<typeof MemoryQualification>;
 
+export const ObservationDisposition = z.enum(['active', 'weakened', 'retracted', 'superseded']);
+export type ObservationDisposition = z.infer<typeof ObservationDisposition>;
+
+export const ObservationEvidence = z.object({
+  fact: z.string(),
+  slug: z.string(),
+  line: z.number().int().positive(),
+  line_hash: z.string(),
+  proof_groups: z.array(z.string()).min(1),
+});
+export type ObservationEvidence = z.infer<typeof ObservationEvidence>;
+
+/** Present only on the readable payload owned by a valid level-two marker. */
+export const ObservationQualification = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal('eligible'),
+    id: z.string(),
+    level: z.literal(2),
+    subject: z.string(),
+    disposition: ObservationDisposition,
+    proof_count: z.number().int().min(2),
+    evidence: z.array(ObservationEvidence).min(2),
+  }),
+  z.object({
+    status: z.literal('ineligible'),
+    id: z.string(),
+    level: z.literal(2),
+    disposition: ObservationDisposition,
+    reason: z.string(),
+  }),
+]);
+export type ObservationQualification = z.infer<typeof ObservationQualification>;
+
 /**
  * Every line Akno returns carries the file and line it came from. `confidence`
  * is present when a fact was derived from this line — how sure the deriver is
@@ -268,6 +305,8 @@ export const Line = z.object({
   confidence: z.number().min(0).max(1).optional(),
   /** Present when this line is the visible payload of an Akno-managed memory item. */
   memory: MemoryQualification.optional(),
+  /** Present when this line is the visible payload of a level-two observation. */
+  observation: ObservationQualification.optional(),
   /**
    * The live fact this line produced, when it produced one — the handle `forget`
    * takes to retract it.
@@ -319,10 +358,11 @@ export const GraphRelation = z.enum([
   'related_entity',
   'owns_document',
   'participates_in',
+  'derived_from',
 ]);
 export type GraphRelation = z.infer<typeof GraphRelation>;
 
-export const GraphNodeKind = z.enum(['entity', 'page', 'document', 'fact', 'event']);
+export const GraphNodeKind = z.enum(['entity', 'page', 'document', 'fact', 'event', 'observation']);
 export type GraphNodeKind = z.infer<typeof GraphNodeKind>;
 
 /** Compact identity only. Read the referenced page or document for content. */
@@ -337,6 +377,7 @@ export const GraphNodeRef = z.object({
   document: z.string().optional(),
   fact: z.string().optional(),
   event: z.string().optional(),
+  observation: z.string().optional(),
   date: z.string().optional(),
   line_start: z.number().int().positive().optional(),
   line_end: z.number().int().positive().optional(),

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { annotateLines, LINE_FACT_COLUMNS, type LineFact } from '../kb/line-facts.ts';
 import { qualifyManagedMemoryLines } from '../kb/managed-lines.ts';
+import { qualifyObservationLines } from '../observations/projection.ts';
 import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
@@ -26,6 +27,7 @@ interface PageRow {
   tags: string;
   role: PageRole;
   remember_management: 'deny' | 'integrate';
+  observe_management: 'deny' | 'integrate';
   dream_management: 'none' | 'hygiene' | 'synthesize';
   about: string;
   aliases: string;
@@ -81,7 +83,13 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
     )
     .all(row.id) as (LineFact & { claim: string })[];
 
-  const withConfidence = annotateLines(qualifyManagedMemoryLines(lines, allLines), facts);
+  const qualified = qualifyObservationLines(
+    ctx.store,
+    row.id,
+    qualifyManagedMemoryLines(lines, allLines),
+    allLines,
+  );
+  const withConfidence = annotateLines(qualified, facts);
 
   const links = ctx.store.db
     .prepare('SELECT DISTINCT to_slug, broken FROM links WHERE from_page = ?')
@@ -122,7 +130,11 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
       type: row.type,
       tags: JSON.parse(row.tags) as string[],
       role: row.role,
-      management: { remember: row.remember_management, dream: row.dream_management },
+      management: {
+        remember: row.remember_management,
+        observe: row.observe_management,
+        dream: row.dream_management,
+      },
       about: JSON.parse(row.about) as string[],
       aliases: JSON.parse(row.aliases) as string[],
       frontmatter: JSON.parse(row.frontmatter) as Record<string, unknown>,
@@ -351,7 +363,7 @@ function renditionTextFor(ctx: AknoContext, sourcePath: string): string | null {
 }
 
 const SELECT_PAGE = `SELECT id, slug, rel_path, title, type, tags, role, remember_management,
-                            dream_management, about, aliases, frontmatter, summary,
+                            observe_management, dream_management, about, aliases, frontmatter, summary,
                             keywords, source_fence_line, bytes, updated_at
                        FROM pages`;
 

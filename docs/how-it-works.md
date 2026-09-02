@@ -39,11 +39,11 @@ For each changed path, Akno:
 
 1. applies ignore and folder rules;
 2. compares metadata and content hashes to avoid unnecessary work;
-3. parses Markdown structure, frontmatter, links, stable identity, and authored events;
+3. parses Markdown structure, frontmatter, links, stable identity, authored events, and owned observation markers;
 4. extracts supported document text or OCR with source-page locators;
 5. divides searchable text into bounded chunks;
 6. optionally derives summaries, facts, dates, aliases, and embeddings;
-7. resolves exact identities and evidence edges; and
+7. resolves exact identities, observation qualification, and evidence edges; and
 8. commits the new representation atomically.
 
 Removed files are removed from the derived index. Renames preserve a stable identity when Akno can prove the
@@ -63,9 +63,9 @@ before `recall` can find a relevant page. `adopt` exists to organize it later.
 
 ### Facts and the evidence graph
 
-Derived facts keep their source locator and confidence. Graph nodes represent stable page, document, chunk,
-fact, event, and identity records; edges represent explicit relationships such as evidence, ownership, links,
-aliases, and conflict status.
+Derived facts keep their source locator and confidence. Graph nodes represent stable page, document, fact,
+event, observation, and identity records; edges represent explicit relationships such as evidence, ownership,
+links, aliases, observation lineage, and conflict status.
 
 The graph is conservative. It follows exact authored or derived evidence and configured contextual identities;
 it does not perform unrestricted entity discovery. [Limitations](limitations.md) describes that boundary.
@@ -151,6 +151,17 @@ Noncanonical items remain searchable, but graph fact mining and factual `answer`
 eligibility rule, so a report or hypothesis does not become true merely because it was retained. Managed-memory
 maintenance parses only the current v2 marker grammar; `akno migrate` is the explicit, dry-runnable and undoable
 boundary for upgrading strict legacy owned blocks.
+
+Level-two observations use their own versioned `akno:observation` grammar on existing exact-subject knowledge
+pages. The rebuildable projection stores the subject, disposition, payload hash, exact fact/source-line
+locators, and correlated proof groups. Qualification is recomputed after the fact graph on every relevant index
+pass. Unknown marker versions, invalid payload labels, stale facts, changed proof groups, ambiguous subjects,
+and revoked `observe: integrate` authority fail closed without rewriting Markdown. The fact deriver always
+skips the readable payload after an observation marker, so L2 prose cannot re-enter as L1.
+
+Reflection consumes only eligible projected L2 ids. Legacy detached observation pages are understood only by
+the explicit `akno migrate --observations` operator path; ordinary observe, recall, graph, and reflect share the
+single current marker parser and projection.
 
 Typed world time in those v2 markers also builds a disposable temporal projection. `timeline` reads that
 projection beside authored dated lines and orphan-document date evidence, then classifies every result against

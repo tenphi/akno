@@ -191,22 +191,29 @@ facts does not silently grant permission to rewrite the containing page.
 
 ## How today's change appears to tonight's dream
 
-| Change made during the day                                | What dream may do later                                                                                                                                      |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Human edits ordinary prose on a page with no dream opt-in | Use eligible current knowledge as evidence, but do not rewrite that prose                                                                                    |
-| Human edits a hygiene- or synthesis-enabled page          | Propose only transformations enabled by that page and current policy                                                                                         |
-| Agent adds a marked item to `remember: integrate` memory  | Verify marker integrity, placement, routing, conflict status, and—when retained evidence exists—wording                                                      |
-| Human edits text inside an Akno-owned marker              | Treat the saved bytes as current, then re-check the still-managed item; a stale or unsupported binding is held or planned through the ordinary decision path |
-| Human removes an Akno item marker but keeps its sentence  | Stop treating that sentence as Akno-owned; later cleanup prunes the detached private evidence record                                                         |
-| Human changes page or folder authority                    | Re-evaluate that authority before any old or new proposal can apply                                                                                          |
-| Human edits source/reference material                     | Re-index it as evidence; do not promote it to canonical facts or whole-page maintenance input without explicit policy                                        |
-| A new readable document has no owning page                | Keep it searchable immediately; the adopt phase may propose a minimal organizing page                                                                        |
-| A link target moves or disappears                         | Report the broken link and plan a repair only when exact identity and page authority make it safe                                                            |
-| Two current claims disagree                               | Classify the conflict before observation, reflection, graph inference, or synthesis uses either claim                                                        |
+| Change made during the day                                           | What dream may do later                                                                                                                                      |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Human edits ordinary prose on a page with no dream opt-in            | Use eligible current knowledge as evidence, but do not rewrite that prose                                                                                    |
+| Human edits a hygiene- or synthesis-enabled page                     | Propose only transformations enabled by that page and current policy                                                                                         |
+| Agent adds a marked item to `remember: integrate` memory             | Verify marker integrity, placement, routing, conflict status, and—when retained evidence exists—wording                                                      |
+| Eligible facts support an observation on `observe: integrate` memory | Plan one marker-owned L2 create/reinforce/refine/split; never rewrite adjacent authored prose                                                                |
+| An observation loses qualifying support                              | Exclude it from factual use immediately, then plan or hold an exact weaken/retract disposition update                                                        |
+| Human edits text inside an Akno-owned marker                         | Treat the saved bytes as current, then re-check the still-managed item; a stale or unsupported binding is held or planned through the ordinary decision path |
+| Human removes an Akno item marker but keeps its sentence             | Stop treating that sentence as Akno-owned; later cleanup prunes the detached private evidence record                                                         |
+| Human changes page or folder authority                               | Re-evaluate that authority before any old or new proposal can apply                                                                                          |
+| Human edits source/reference material                                | Re-index it as evidence; do not promote it to canonical facts or whole-page maintenance input without explicit policy                                        |
+| A new readable document has no owning page                           | Keep it searchable immediately; the adopt phase may propose a minimal organizing page                                                                        |
+| A link target moves or disappears                                    | Report the broken link and plan a repair only when exact identity and page authority make it safe                                                            |
+| Two current claims disagree                                          | Classify the conflict before observation, reflection, graph inference, or synthesis uses either claim                                                        |
 
 Removing a marker is therefore the explicit way for a human to take a retained sentence out of managed-item
 maintenance without deleting the sentence itself. Adding `remember: integrate`, by contrast, admits future
 retained items; it does not transfer ownership of the page's surrounding authored text.
+
+Observation ownership is narrower still. `observe: integrate` admits only an `akno:observation` block for the
+page's exact resolved subject. Removing that marker turns the remaining sentence into ordinary authored prose;
+changing or removing its support instead makes the projected L2 line ineligible until a planned lifecycle
+transition updates the marker.
 
 ## What the dream cycle does
 
@@ -228,9 +235,10 @@ re-index and verify exact disk/index outcomes
 retain plans, change ids, and a content-safe run receipt
 ```
 
-Conflict analysis runs before phases that infer or synthesize knowledge. Observe and reflect create derived,
-cited conclusions. Curate handles explicitly enabled page transformations and narrow owned-item maintenance.
-Adopt can organize searchable orphan documents. Housekeeping reports remaining structural work.
+Conflict analysis runs before phases that infer or synthesize knowledge. Observe creates marker-owned L2 blocks
+on admitted exact-subject pages; reflect appends derived, cited L3 principles. Curate handles explicitly enabled
+page transformations and narrow owned-item maintenance. Adopt can organize searchable orphan documents.
+Housekeeping reports remaining structural work.
 
 ### Who decides?
 

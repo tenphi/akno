@@ -89,6 +89,21 @@ import type { IndexRevisionBarrier } from '../index/revision-barrier.ts';
 import { planManagedItems, type ManagedItemReport } from './managed-items.ts';
 import { planRuleDrifts, ruleDriftPaths, type RuleDriftDraft } from './rule-drift.ts';
 import {
+  independentProofGroups,
+  insertObservationBlock,
+  observationBlock,
+  observationId,
+  observationMarkerIndexes,
+  renderObservationMarker,
+  replaceObservationBlock,
+  type ObservationEvidenceLocator,
+} from '../observations/marker.ts';
+import {
+  liveObservationProofGroups,
+  markerFromProjection,
+  proofGroupsForFact,
+} from '../observations/projection.ts';
+import {
   assertProfileAutomaticApplyAvailable,
   configWithMaintenanceRecovery,
   maintenanceRecoveryStatus,
@@ -156,7 +171,21 @@ export interface ObservationWritten {
   slug: string;
   pattern: string;
   evidence: string[];
-  action: 'created' | 'refined' | 'would-create' | 'would-refine' | 'rejected' | 'unchanged';
+  action:
+    | 'created'
+    | 'reinforced'
+    | 'refined'
+    | 'weakened'
+    | 'retracted'
+    | 'split'
+    | 'would-create'
+    | 'would-reinforce'
+    | 'would-refine'
+    | 'would-weaken'
+    | 'would-retract'
+    | 'would-split'
+    | 'rejected'
+    | 'unchanged';
 }
 
 export interface PhaseReport {
@@ -1519,11 +1548,18 @@ function adoptionReportFromPlan(entries: AdoptedDocument[], plan: MaintenancePla
 
 interface SubjectGroup {
   subject: string;
-  /** Top-level folder the facts came from, or `.` for pages at the root. */
-  folder: string;
-  /** Basename of the observations page this group writes to. */
+  subjectEntity: string;
+  targetSlug: string;
+  targetRelPath: string;
+  facts: ObservationFact[];
+}
+
+interface ObservationFact {
+  id: string;
+  claim: string;
   slug: string;
-  facts: { claim: string; slug: string }[];
+  sourceLineHash: string;
+  proofGroups: string[];
 }
 
 /**
@@ -1617,7 +1653,11 @@ async function previewObservePhase(ctx: AknoContext, report: DreamReport): Promi
 
 function asPreviewObservation(entry: ObservationWritten): ObservationWritten {
   if (entry.action === 'created') return { ...entry, action: 'would-create' };
+  if (entry.action === 'reinforced') return { ...entry, action: 'would-reinforce' };
   if (entry.action === 'refined') return { ...entry, action: 'would-refine' };
+  if (entry.action === 'weakened') return { ...entry, action: 'would-weaken' };
+  if (entry.action === 'retracted') return { ...entry, action: 'would-retract' };
+  if (entry.action === 'split') return { ...entry, action: 'would-split' };
   return entry;
 }
 
@@ -1632,32 +1672,37 @@ async function collectPreparedObservations(
   report: DreamReport,
 ): Promise<PreparedObservation[]> {
   const groups = subjectGroups(ctx, ctx.config.maintenance.observe.maxSubjects, report.conflicts);
-  if (groups.length === 0) return [];
-  const prepared: PreparedObservation[] = [];
+  const prepared: PreparedObservation[] = await staleObservationOutcomes(ctx);
+  for (const entry of prepared) {
+    if (entry.rejectionReason)
+      report.rejected.push({ pattern: entry.written.pattern, reason: entry.rejectionReason });
+  }
+  if (groups.length === 0) return prepared;
 
   // Gathered once for the whole phase, not per group: fifteen groups reading the same two things
   // fifteen times is the same answer at fifteen times the cost.
   const knownFacts = liveFactClaims(ctx, report.conflicts);
-  const observationsBySlug = await allObservations(ctx);
+  const observationsBySlug = indexedObservations(ctx);
 
   for (const group of groups) {
     const result = await runObserveMission({
-      // The folder travels with the subject so the model knows what kind of thing it is
-      // looking at: "price, in shopping" is a question; "price" on its own is a word.
-      subject: group.folder === '.' ? group.subject : `${group.subject}, in ${group.folder}`,
-      facts: group.facts,
+      // The display label comes from the canonical entity page. Group membership itself is the
+      // exact resolved entity id below, never a folder or a model-generated subject string.
+      subject: group.subject,
+      facts: group.facts.map((fact) => ({ id: fact.id, claim: fact.claim, slug: fact.slug })),
       model: ctx.models.derive,
       mission: ctx.config.maintenance.observe.mission,
       minEvidence: ctx.config.maintenance.observe.minEvidence,
       // What last night already concluded about this subject. The facts rarely change between one
       // night and the next, so without this the same insight comes back reworded every night and
       // the page accumulates paraphrases of one sentence.
-      existing: observationsBySlug.get(observationSlug(ctx, group.slug)) ?? [],
+      existing: observationsBySlug.get(group.targetSlug) ?? [],
+      existingRecords: indexedObservationRecords(ctx, group.subjectEntity, group.targetSlug),
       // Everything already observed elsewhere, plus anything written earlier in this same run —
       // two groups can reach one conclusion from overlapping facts, and each would otherwise write
       // it to its own page where neither looks like a duplicate.
       otherObservations: [...observationsBySlug].flatMap(([slug, lines]) =>
-        slug === observationSlug(ctx, group.slug) ? [] : lines,
+        slug === group.targetSlug ? [] : lines,
       ),
       knownFacts,
     });
@@ -1669,151 +1714,581 @@ async function collectPreparedObservations(
     report.rejected.push(...result.rejected);
 
     for (const observation of result.observations) {
-      const outcome = await prepareObservation(ctx, { title: group.subject, slug: group.slug }, observation);
+      const outcome = await prepareCoLocatedObservation(ctx, group, observation);
       prepared.push(outcome);
       if (outcome.rejectionReason) {
         report.rejected.push({ pattern: observation.pattern, reason: outcome.rejectionReason });
       }
       // So a later group in this same run sees it. Without this, cross-page duplicates are caught
       // only from the second night onwards — the night they are created, they both go through.
-      const slug = observationSlug(ctx, group.slug);
-      observationsBySlug.set(slug, [...(observationsBySlug.get(slug) ?? []), observation.pattern]);
+      observationsBySlug.set(group.targetSlug, [
+        ...(observationsBySlug.get(group.targetSlug) ?? []),
+        observation.pattern,
+      ]);
     }
   }
   return prepared;
 }
 
-/**
- * Live facts from knowledge, non-observation pages, grouped by **folder and subject**.
- *
- * Not by subject alone, which is what the first version did and what a real knowledge base
- * immediately exposed. A small deriver writes the *attribute* into `subject` — "price",
- * "address", "location", "opening hours" — so grouping on it joined a bag with a drum kit
- * ("Price is $79 during sales"), and a Roman church with a person's page ("Address is central
- * and near a major landmark"). Given unrelated facts under one heading, the model does what it
- * is asked and finds a pattern across them; the input was the bug.
- *
- * A folder is the coarsest thing in a knowledge base that means "these are about the same kind
- * of thing", and it is the user's own division rather than one Akno invented. Two pages in
- * `shopping/` sharing a subject are at least comparable. Ordered by how recently the pages were
- * touched, so a capped run looks at what is moving.
- */
+async function staleObservationOutcomes(ctx: AknoContext): Promise<PreparedObservation[]> {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT oe.id, oe.source_slug, oe.payload, oe.payload_hash, oe.subject_entity,
+              oe.proof_count, oe.issue, p.rel_path, p.role, p.observe_management
+         FROM observation_entries oe JOIN pages p ON p.id = oe.source_page
+        WHERE oe.eligible = 0 AND oe.disposition = 'active'
+        ORDER BY oe.source_slug, oe.marker_line`,
+    )
+    .all() as {
+    id: string;
+    source_slug: string;
+    payload: string;
+    payload_hash: string;
+    subject_entity: string;
+    proof_count: number;
+    issue: string | null;
+    rel_path: string;
+    role: string;
+    observe_management: string;
+  }[];
+  const prepared: PreparedObservation[] = [];
+  for (const row of rows) {
+    const marker = markerFromProjection(ctx.store, row.id);
+    const survivingProofs = marker ? liveObservationProofGroups(ctx.store, marker) : new Set<string>();
+    const outcome = survivingProofs.size > 0 ? 'weaken' : 'retract';
+    const action: ObservationWritten['action'] = outcome === 'weaken' ? 'weakened' : 'retracted';
+    const pattern = row.payload
+      .replace(/^- \*\*Observation:\*\*\s*/, '')
+      .replace(/\s+Evidence:\s+(?:\[\[[^\]]+\]\]\s*)+$/, '')
+      .trim();
+    const written: ObservationWritten = { slug: row.source_slug, pattern, evidence: [], action };
+    if (!marker || row.role !== 'knowledge' || row.observe_management !== 'integrate' || !row.issue) {
+      prepared.push({
+        written: { ...written, action: outcome === 'weaken' ? 'would-weaken' : 'would-retract' },
+        draft: null,
+        rejectionReason: `held ${outcome}: ${row.issue ?? 'the target no longer admits observation integration'}`,
+      });
+      continue;
+    }
+    const absPath = path.join(ctx.config.aknoPath, row.rel_path);
+    const before = await fsp.readFile(absPath, 'utf8').catch(() => null);
+    if (before === null) {
+      prepared.push({
+        written: { ...written, action: outcome === 'weaken' ? 'would-weaken' : 'would-retract' },
+        draft: null,
+        rejectionReason: `held ${outcome}: the target page is no longer readable`,
+      });
+      continue;
+    }
+    const disposition = outcome === 'weaken' ? 'weakened' : 'retracted';
+    const replacement = `${renderObservationMarker({ ...marker, disposition })}\n${row.payload}`;
+    const after = replaceObservationBlock(before, marker.id, replacement);
+    if (after === null) {
+      prepared.push({
+        written: { ...written, action: outcome === 'weaken' ? 'would-weaken' : 'would-retract' },
+        draft: null,
+        rejectionReason: `held ${outcome}: the owned block no longer matches its projection`,
+      });
+      continue;
+    }
+    const sealedEvidence: ObservationPlanDraft['evidence'] = [];
+    for (const locator of marker.evidence) {
+      const fact = ctx.store.db
+        .prepare(`SELECT p.slug, p.rel_path FROM facts f JOIN pages p ON p.id = f.page_id WHERE f.id = ?`)
+        .get(locator.factId) as { slug: string; rel_path: string } | undefined;
+      const sourceBytes = fact
+        ? await fsp.readFile(path.join(ctx.config.aknoPath, fact.rel_path), 'utf8').catch(() => null)
+        : null;
+      sealedEvidence.push({
+        slug: fact?.slug ?? `fact:${locator.factId}`,
+        contentHash: sourceBytes === null ? null : sha256(sourceBytes),
+        factId: locator.factId,
+        sourceLineHash: locator.sourceLineHash,
+        proofGroups: locator.proofGroups,
+      });
+    }
+    const inputHash = sha256(
+      JSON.stringify({
+        target: row.source_slug,
+        beforeHash: sha256(before),
+        observationId: row.id,
+        payloadHash: row.payload_hash,
+        issue: row.issue,
+        outcome,
+        evidence: sealedEvidence,
+      }),
+    );
+    prepared.push({
+      written,
+      draft: {
+        slug: row.source_slug,
+        relPath: row.rel_path,
+        inputHash,
+        before,
+        after,
+        evidence: sealedEvidence,
+        observationId: row.id,
+        observationSubject: row.subject_entity,
+        observationDisposition: disposition,
+        observationProofCount: row.proof_count,
+        observationOutcome: outcome,
+        observationTargetId: row.id,
+        observationPayloadHash: row.payload_hash,
+        observationQualificationIssue: row.issue,
+      },
+    });
+  }
+  return prepared;
+}
+
+/** Live eligible level-one facts grouped only by exact resolved subject identity. */
 function subjectGroups(
   ctx: AknoContext,
   maxSubjects: number,
   conflicts: CrossPageConflict[],
 ): SubjectGroup[] {
-  const observations = ctx.config.paths.observations;
   const ineligible = ineligibleConflictClaims(conflicts);
   const rows = ctx.store.db
     .prepare(
-      `SELECT f.subject, f.claim, f.line_start, p.slug, p.updated_at
+      `SELECT f.id, f.claim, f.line_start, f.source_line_hash, f.item_id,
+              p.id AS page_id, p.slug, p.updated_at, g.subject_entity,
+              e.canonical_page, cp.slug AS canonical_slug, cp.rel_path AS canonical_rel_path,
+              cp.observe_management AS canonical_observe
          FROM facts f JOIN pages p ON p.id = f.page_id
+         JOIN graph_fact_status g ON g.fact_id = f.id
+         JOIN graph_entities e ON e.id = g.subject_entity
+         JOIN pages cp ON cp.id = e.canonical_page
         WHERE f.valid_to IS NULL
-          AND f.subject IS NOT NULL
           AND f.confidence >= 0.5
-          -- Only canonical claims. A source page is evidence someone else wrote.
           AND p.role = 'knowledge'
           AND p.derived_hash = p.body_hash
-          -- Never self-feeding. An observation is not evidence for another observation.
-          AND p.slug != ?
-          AND p.slug NOT LIKE ?
+          AND g.eligibility = 'eligible'
+          AND g.traversable = 1
         ORDER BY p.updated_at DESC`,
     )
-    .all(observations, `${observations}/%`) as {
-    subject: string;
+    .all() as {
+    id: string;
     claim: string;
     line_start: number;
+    source_line_hash: string;
+    item_id: string | null;
+    page_id: string;
     slug: string;
     updated_at: string | null;
+    subject_entity: string;
+    canonical_page: string;
+    canonical_slug: string;
+    canonical_rel_path: string;
+    canonical_observe: string;
   }[];
 
   const groups = new Map<string, SubjectGroup>();
   for (const row of rows) {
     if (ineligible.has(claimKey(row.slug, row.line_start))) continue;
-    const subject = row.subject.toLowerCase().replace(/\s+/g, ' ').trim();
-    if (subject.length === 0) continue;
-    const folder = row.slug.includes('/') ? row.slug.slice(0, row.slug.indexOf('/')) : '.';
-    const key = `${folder}|${subject}`;
+    const target = observationTarget(ctx, row);
+    if (!target) continue;
+    const proofs = [...proofGroupsForFact(ctx.store, row.id, row.page_id, row.item_id)].sort();
+    if (proofs.length === 0) continue;
+    const key = row.subject_entity;
 
     const existing = groups.get(key);
     if (existing) {
-      if (existing.facts.length < 30) existing.facts.push({ claim: row.claim, slug: row.slug });
+      if (existing.targetSlug !== target.slug) {
+        groups.delete(key);
+        continue;
+      }
+      if (existing.facts.length < 30) {
+        existing.facts.push({
+          id: row.id,
+          claim: row.claim,
+          slug: row.slug,
+          sourceLineHash: row.source_line_hash,
+          proofGroups: proofs,
+        });
+      }
     } else {
       groups.set(key, {
-        subject: row.subject,
-        folder,
-        slug: folder === '.' ? slugify(subject) : `${slugify(folder)}-${slugify(subject)}`,
-        facts: [{ claim: row.claim, slug: row.slug }],
+        subject: target.title,
+        subjectEntity: row.subject_entity,
+        targetSlug: target.slug,
+        targetRelPath: target.relPath,
+        facts: [
+          {
+            id: row.id,
+            claim: row.claim,
+            slug: row.slug,
+            sourceLineHash: row.source_line_hash,
+            proofGroups: proofs,
+          },
+        ],
       });
     }
   }
 
   return [...groups.values()]
-    .filter((group) => new Set(group.facts.map((fact) => fact.slug)).size >= 2)
+    .filter(
+      (group) =>
+        independentProofGroups(
+          group.facts.map((fact) => ({
+            factId: fact.id,
+            sourceLineHash: fact.sourceLineHash,
+            proofGroups: fact.proofGroups,
+          })),
+        ).size >= ctx.config.maintenance.observe.minEvidence,
+    )
     .slice(0, maxSubjects);
 }
 
-/**
- * **Refine, never overwrite** — a changed pattern gets a new dated line. **Add and
- * refine, never delete** — a curator that can delete loses things nobody watched it delete.
- *
- * So the page is only ever appended to, and an observation already on it is left exactly as it
- * is. That is also what makes the phase safe to re-run: a second pass over unchanged facts
- * reports `unchanged` and writes nothing.
- */
-/** Where a subject's observations live. */
-function observationSlug(ctx: AknoContext, pageSlug: string): string {
-  return normalizeSlug(`${ctx.config.paths.observations}/${pageSlug}`);
+function observationTarget(
+  ctx: AknoContext,
+  row: {
+    canonical_page: string;
+    canonical_slug: string;
+    canonical_rel_path: string;
+    canonical_observe: string;
+  },
+): { slug: string; relPath: string; title: string } | null {
+  if (row.canonical_observe === 'integrate') {
+    const page = ctx.store.db.prepare('SELECT title FROM pages WHERE id = ?').get(row.canonical_page) as
+      { title: string } | undefined;
+    return page ? { slug: row.canonical_slug, relPath: row.canonical_rel_path, title: page.title } : null;
+  }
+  const topics = (
+    ctx.store.db
+      .prepare(
+        `SELECT slug, rel_path, title, about FROM pages
+          WHERE role = 'knowledge' AND observe_management = 'integrate' AND id != ?`,
+      )
+      .all(row.canonical_page) as { slug: string; rel_path: string; title: string; about: string }[]
+  ).filter((page) => (JSON.parse(page.about) as string[]).includes(row.canonical_slug));
+  return topics.length === 1
+    ? { slug: topics[0]!.slug, relPath: topics[0]!.rel_path, title: topics[0]!.title }
+    : null;
 }
 
-/**
- * Every observation already written, by page.
- *
- * Read from the files rather than the index because the index is a reading of the files and this
- * runs inside the same cycle that writes them.
- */
-async function allObservations(ctx: AknoContext): Promise<Map<string, string[]>> {
-  const root = path.join(ctx.config.aknoPath, ctx.config.paths.observations);
-  const bySlug = new Map<string, string[]>();
+function indexedObservations(ctx: AknoContext): Map<string, string[]> {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT source_slug, payload FROM observation_entries
+        WHERE disposition != 'retracted' ORDER BY source_slug, marker_line`,
+    )
+    .all() as { source_slug: string; payload: string }[];
+  const result = new Map<string, string[]>();
+  for (const row of rows) {
+    const pattern = row.payload
+      .replace(/^- \*\*Observation:\*\*\s*/, '')
+      .replace(/\s+Evidence:\s+(?:\[\[[^\]]+\]\]\s*)+$/, '')
+      .trim();
+    const bucket = result.get(row.source_slug);
+    if (bucket) bucket.push(pattern);
+    else result.set(row.source_slug, [pattern]);
+  }
+  return result;
+}
 
-  const entries = await fsp.readdir(root, { withFileTypes: true, recursive: true }).catch(() => []);
-  for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
-    const abs = path.join(entry.parentPath ?? root, entry.name);
-    // Skipped for the same reason `scanTree` and the watcher skip them: a dot path is
-    // sync-client or editor state, not an observation. Checked on the whole relative
-    // path rather than `entry.name`, because a recursive readdir reports a file inside
-    // `.trash/` with a perfectly ordinary basename. It also has to happen before
-    // `normalizeSlug` below, which now refuses a dot segment — an unfiltered walk would
-    // turn one stray `.backup.md` into a throw inside the nightly cycle.
+function indexedObservationRecords(
+  ctx: AknoContext,
+  subject: string,
+  slug: string,
+): { id: string; pattern: string }[] {
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT id, payload FROM observation_entries
+        WHERE subject_entity = ? AND source_slug = ? AND disposition = 'active' AND eligible = 1
+        ORDER BY marker_line`,
+    )
+    .all(subject, slug) as { id: string; payload: string }[];
+  return rows.map((row) => ({
+    id: row.id,
+    pattern: row.payload
+      .replace(/^- \*\*Observation:\*\*\s*/, '')
+      .replace(/\s+Evidence:\s+(?:\[\[[^\]]+\]\]\s*)+$/, '')
+      .trim(),
+  }));
+}
+
+async function prepareCoLocatedObservation(
+  ctx: AknoContext,
+  group: SubjectGroup,
+  observation: ObservationCandidate,
+): Promise<PreparedObservation> {
+  let selected = observation.evidence.flatMap((id) => {
+    const fact = group.facts.find((candidate) => candidate.id === id);
+    return fact ? [fact] : [];
+  });
+  const outcome = observation.outcome ?? 'create';
+  const targetMarker = observation.targetId ? markerFromProjection(ctx.store, observation.targetId) : null;
+  const targetRow = observation.targetId
+    ? (ctx.store.db
+        .prepare(
+          `SELECT source_slug, payload FROM observation_entries
+            WHERE id = ? AND subject_entity = ? AND disposition = 'active' AND eligible = 1`,
+        )
+        .get(observation.targetId, group.subjectEntity) as
+        { source_slug: string; payload: string } | undefined)
+    : undefined;
+  if (outcome !== 'create' && (!targetMarker || !targetRow || targetRow.source_slug !== group.targetSlug)) {
+    return {
+      written: {
+        slug: group.targetSlug,
+        pattern: observation.pattern,
+        evidence: [],
+        action: 'rejected',
+      },
+      draft: null,
+      rejectionReason: 'the requested observation lifecycle target is no longer active and eligible',
+    };
+  }
+  if (outcome === 'reinforce' && targetMarker) {
+    selected = await observationFactsForLocators(ctx, [
+      ...targetMarker.evidence,
+      ...selected.map((fact) => ({
+        factId: fact.id,
+        sourceLineHash: fact.sourceLineHash,
+        proofGroups: fact.proofGroups,
+      })),
+    ]);
+  }
+  if (selected.length > 12) {
+    return {
+      written: {
+        slug: group.targetSlug,
+        pattern: observation.pattern,
+        evidence: [],
+        action: 'rejected',
+      },
+      draft: null,
+      rejectionReason: 'observation lineage exceeds the 12-fact marker limit',
+    };
+  }
+  const locators: ObservationEvidenceLocator[] = selected.map((fact) => ({
+    factId: fact.id,
+    sourceLineHash: fact.sourceLineHash,
+    proofGroups: fact.proofGroups,
+  }));
+  const proofCount = independentProofGroups(locators).size;
+  const action =
+    outcome === 'reinforce'
+      ? 'reinforced'
+      : outcome === 'refine'
+        ? 'refined'
+        : outcome === 'split'
+          ? 'split'
+          : 'created';
+  const written: ObservationWritten = {
+    slug: group.targetSlug,
+    pattern: observation.pattern,
+    evidence: [...new Set(selected.map((fact) => fact.slug))],
+    action,
+  };
+  if (selected.length < 2 || proofCount < ctx.config.maintenance.observe.minEvidence) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: `evidence has ${proofCount} independent proof group(s)`,
+    };
+  }
+
+  const absPath = path.join(ctx.config.aknoPath, group.targetRelPath);
+  const before = await fsp.readFile(absPath, 'utf8').catch(() => null);
+  if (before === null) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'the admitted target page is no longer readable',
+    };
+  }
+  const existingPattern = targetRow
+    ? targetRow.payload
+        .replace(/^- \*\*Observation:\*\*\s*/, '')
+        .replace(/\s+Evidence:\s+(?:\[\[[^\]]+\]\]\s*)+$/, '')
+        .trim()
+    : null;
+  const finalPattern = outcome === 'reinforce' && existingPattern ? existingPattern : observation.pattern;
+  const marker = {
+    id: targetMarker?.id ?? observationId(group.subjectEntity, finalPattern),
+    subject: group.subjectEntity,
+    disposition: 'active' as const,
+    evidence: locators,
+    proofCount,
+  };
+  const block = observationBlock(
+    marker,
+    finalPattern,
+    selected.map((fact) => fact.slug),
+  );
+  if (outcome === 'create' && observationMarkerIndexes(before.split(/\r?\n/), marker.id, true).length > 0) {
+    return { written: { ...written, action: 'unchanged' }, draft: null };
+  }
+  let after: string | null;
+  if (outcome === 'create') {
+    after = insertObservationBlock(before, block);
+  } else if (outcome === 'split' && targetMarker && existingPattern && observation.splitPattern) {
+    const oldFacts = await observationFactsForLocators(ctx, targetMarker.evidence);
+    if (oldFacts.length !== targetMarker.evidence.length) after = null;
+    else {
+      const superseded = observationBlock(
+        { ...targetMarker, disposition: 'superseded' },
+        existingPattern,
+        oldFacts.map((fact) => fact.slug),
+      );
+      const first = {
+        ...marker,
+        id: observationId(group.subjectEntity, observation.pattern),
+      };
+      const second = {
+        ...marker,
+        id: observationId(group.subjectEntity, observation.splitPattern),
+      };
+      after = replaceObservationBlock(
+        before,
+        targetMarker.id,
+        `${superseded}\n\n${observationBlock(
+          first,
+          observation.pattern,
+          selected.map((fact) => fact.slug),
+        )}\n\n${observationBlock(
+          second,
+          observation.splitPattern,
+          selected.map((fact) => fact.slug),
+        )}`,
+      );
+    }
+  } else {
+    after = replaceObservationBlock(before, marker.id, block);
+  }
+  if (after === null) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'the owned observation block changed before its lifecycle update was sealed',
+    };
+  }
+  const sealedEvidence = await sealObservationFacts(ctx, selected);
+  if (sealedEvidence.length !== selected.length) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'exact evidence changed before the observation was sealed',
+    };
+  }
+  const inputHash = sha256(
+    JSON.stringify({
+      target: group.targetSlug,
+      beforeHash: sha256(before),
+      observation: marker,
+      evidence: sealedEvidence,
+    }),
+  );
+  return {
+    written,
+    draft: {
+      slug: group.targetSlug,
+      relPath: group.targetRelPath,
+      inputHash,
+      before,
+      after,
+      evidence: sealedEvidence,
+      observationId: marker.id,
+      observationSubject: marker.subject,
+      observationDisposition: marker.disposition,
+      observationProofCount: marker.proofCount,
+      observationOutcome: outcome,
+      ...(targetMarker ? { observationTargetId: targetMarker.id } : {}),
+    },
+  };
+}
+
+async function observationFactsForLocators(
+  ctx: AknoContext,
+  locators: ObservationEvidenceLocator[],
+): Promise<ObservationFact[]> {
+  const byFact = new Map<string, ObservationFact>();
+  for (const locator of locators) {
+    if (byFact.has(locator.factId)) continue;
+    const row = ctx.store.db
+      .prepare(
+        `SELECT f.id, f.claim, f.source_line_hash, f.item_id, f.page_id, p.slug
+           FROM facts f JOIN pages p ON p.id = f.page_id
+          WHERE f.id = ? AND f.valid_to IS NULL`,
+      )
+      .get(locator.factId) as
+      | {
+          id: string;
+          claim: string;
+          source_line_hash: string;
+          item_id: string | null;
+          page_id: string;
+          slug: string;
+        }
+      | undefined;
+    if (!row || row.source_line_hash !== locator.sourceLineHash) continue;
+    const proofGroups = [...proofGroupsForFact(ctx.store, row.id, row.page_id, row.item_id)].sort();
     if (
-      path
-        .relative(root, abs)
-        .split(path.sep)
-        .some((segment) => segment.startsWith('.'))
+      proofGroups.length !== locator.proofGroups.length ||
+      proofGroups.some((proof) => !locator.proofGroups.includes(proof))
     ) {
       continue;
     }
-    const body = await fsp.readFile(abs, 'utf8').catch(() => null);
-    if (body === null) continue;
-
-    const lines = body
-      .split('\n')
-      .filter((line) => /^- \d{4}-\d{2}-\d{2} — /.test(line))
-      .map((line) =>
-        line
-          .replace(/^- \d{4}-\d{2}-\d{2} — /, '')
-          .replace(/\s*\[\[[^\]]*\]\]/g, '')
-          .trim(),
-      )
-      .filter(Boolean);
-    if (lines.length === 0) continue;
-
-    const relative = path.relative(ctx.config.aknoPath, abs).replace(/\.md$/, '');
-    bySlug.set(normalizeSlug(relative), lines);
+    byFact.set(row.id, {
+      id: row.id,
+      claim: row.claim,
+      slug: row.slug,
+      sourceLineHash: row.source_line_hash,
+      proofGroups,
+    });
   }
-  return bySlug;
+  return [...byFact.values()];
+}
+
+async function sealObservationFacts(
+  ctx: AknoContext,
+  facts: ObservationFact[],
+): Promise<ObservationPlanDraft['evidence']> {
+  const out: ObservationPlanDraft['evidence'] = [];
+  for (const fact of facts) {
+    const row = ctx.store.db
+      .prepare(
+        `SELECT f.source_line_hash, f.valid_to, p.rel_path, p.role, p.derived_hash, p.body_hash
+           FROM facts f JOIN pages p ON p.id = f.page_id WHERE f.id = ?`,
+      )
+      .get(fact.id) as
+      | {
+          source_line_hash: string;
+          valid_to: string | null;
+          rel_path: string;
+          role: string;
+          derived_hash: string | null;
+          body_hash: string;
+        }
+      | undefined;
+    if (
+      !row ||
+      row.valid_to !== null ||
+      row.source_line_hash !== fact.sourceLineHash ||
+      row.role !== 'knowledge' ||
+      row.derived_hash !== row.body_hash
+    ) {
+      continue;
+    }
+    const content = await fsp
+      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
+      .catch(() => null);
+    if (content === null) continue;
+    out.push({
+      slug: fact.slug,
+      contentHash: sha256(content),
+      factId: fact.id,
+      sourceLineHash: fact.sourceLineHash,
+      proofGroups: fact.proofGroups,
+    });
+  }
+  return out;
+}
+
+/** The configured inference namespace remains the home of the separate L3 principles page. */
+function inferenceSlug(ctx: AknoContext, pageSlug: string): string {
+  return normalizeSlug(`${ctx.config.paths.observations}/${pageSlug}`);
 }
 
 /**
@@ -1838,101 +2313,6 @@ function liveFactClaims(ctx: AknoContext, conflicts: CrossPageConflict[] = []): 
   return rows.filter((row) => !ineligible.has(claimKey(row.slug, row.line_start))).map((row) => row.claim);
 }
 
-async function prepareObservation(
-  ctx: AknoContext,
-  page: { title: string; slug: string },
-  observation: ObservationCandidate,
-  evidenceRole: 'knowledge' | 'inference' = 'knowledge',
-): Promise<PreparedObservation> {
-  const slug = normalizeSlug(`${ctx.config.paths.observations}/${page.slug}`);
-  const relPath = `${slug}.md`;
-  const absPath = path.join(ctx.config.aknoPath, relPath);
-  const existing = await fsp.readFile(absPath, 'utf8').catch(() => null);
-
-  // A page is never evidence for itself, whichever caller got here. `reflect` reads the folder it
-  // writes into, so it found `principles` among its own sources and cited it — and a claim offered
-  // as its own support reads, later, as a claim with support.
-  const evidence = observation.evidence.filter((cited) => normalizeSlug(cited) !== slug);
-  if (evidence.length === 0) {
-    return {
-      written: { slug, pattern: observation.pattern, evidence: [], action: 'unchanged' },
-      draft: null,
-    };
-  }
-  observation = { ...observation, evidence };
-
-  if (existing !== null && existing.includes(observation.pattern)) {
-    return {
-      written: { slug, pattern: observation.pattern, evidence: observation.evidence, action: 'unchanged' },
-      draft: null,
-    };
-  }
-
-  const today = new Date().toISOString().slice(0, 10);
-  // Deliberately not `- **YYYY-MM-DD** |`, which is read as a timeline event anywhere it
-  // appears. An inferred pattern is not something that happened on a date.
-  const line = `- ${today} — ${observation.pattern} ${citation(observation.evidence)}`;
-
-  const next =
-    existing === null
-      ? newObservationPage(page.title, observation, today)
-      : appendObservation(existing, line, observation.evidence);
-
-  const written: ObservationWritten = {
-    slug,
-    pattern: observation.pattern,
-    evidence: observation.evidence,
-    action: existing === null ? 'created' : 'refined',
-  };
-  if (next === null) {
-    return {
-      written: { ...written, action: 'rejected' },
-      draft: null,
-      rejectionReason: 'the existing observation page has an unsupported evidence declaration',
-    };
-  }
-  const sealedEvidence = await observationEvidence(ctx, observation.evidence, evidenceRole);
-  if (sealedEvidence.length !== observation.evidence.length) {
-    return {
-      written: { ...written, action: 'rejected' },
-      draft: null,
-      rejectionReason: 'evidence changed or stopped being live before the observation was sealed',
-    };
-  }
-  const inputHash = sha256(
-    JSON.stringify({
-      slug,
-      beforeHash: existing === null ? null : sha256(existing),
-      pattern: observation.pattern,
-      evidence: sealedEvidence,
-    }),
-  );
-  return {
-    written,
-    draft: { slug, relPath, inputHash, before: existing, after: next, evidence: sealedEvidence },
-  };
-}
-
-async function observationEvidence(
-  ctx: AknoContext,
-  slugs: string[],
-  role: 'knowledge' | 'inference',
-): Promise<ObservationPlanDraft['evidence']> {
-  const out: ObservationPlanDraft['evidence'] = [];
-  for (const slug of slugs) {
-    const row = ctx.store.db
-      .prepare('SELECT rel_path FROM pages WHERE slug = ? AND role = ?')
-      .get(slug, role) as { rel_path: string } | undefined;
-    if (!row) continue;
-    const content = await fsp
-      .readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
-      .catch(() => null);
-    if (content === null) continue;
-    out.push({ slug, contentHash: sha256(content) });
-  }
-  return out;
-}
-
 function inferenceWasRejected(
   ctx: AknoContext,
   kind: Extract<MaintenanceItem['kind'], 'observe' | 'reflect'>,
@@ -1952,6 +2332,51 @@ function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
   const operation = item.operations[0]!;
   if (operation.type === 'move') throw new Error('an inference item cannot move a document');
   const after = operation.type === 'delete' ? operation.before : operation.after;
+  if (item.kind === 'observe') {
+    const metadata = item.evidence.find((entry) => entry.observationId);
+    const projectedId = metadata?.observationId;
+    const lines = after.split(/\r?\n/);
+    const marker = projectedId ? (observationMarkerIndexes(lines, projectedId, true)[0] ?? -1) : -1;
+    const payload = marker >= 0 ? (lines[marker + 1] ?? '') : '';
+    const pattern = /^- \*\*Observation:\*\* (.+?) Evidence: /.exec(payload)?.[1] ?? '';
+    const outcome = metadata?.observationOutcome ?? 'create';
+    const proposed: ObservationWritten['action'] =
+      outcome === 'reinforce'
+        ? 'would-reinforce'
+        : outcome === 'refine'
+          ? 'would-refine'
+          : outcome === 'split'
+            ? 'would-split'
+            : outcome === 'weaken'
+              ? 'would-weaken'
+              : outcome === 'retract'
+                ? 'would-retract'
+                : 'would-create';
+    const completed: ObservationWritten['action'] =
+      outcome === 'reinforce'
+        ? 'reinforced'
+        : outcome === 'refine'
+          ? 'refined'
+          : outcome === 'split'
+            ? 'split'
+            : outcome === 'weaken'
+              ? 'weakened'
+              : outcome === 'retract'
+                ? 'retracted'
+                : 'created';
+    const action: ObservationWritten['action'] =
+      item.status === 'applied'
+        ? completed
+        : ['rejected', 'blocked', 'stale', 'verification_failed'].includes(item.status)
+          ? 'rejected'
+          : proposed;
+    return {
+      slug: item.subject,
+      pattern,
+      evidence: [...new Set(item.evidence.map((entry) => entry.source))],
+      action,
+    };
+  }
   const lastLine = after.trimEnd().split('\n').at(-1) ?? '';
   const pattern = /^- \d{4}-\d{2}-\d{2} — (.+?)(?:\s+\[\[[^\]]+\]\])+$/.exec(lastLine)?.[1] ?? '';
   const proposed = operation.type === 'create' ? 'would-create' : 'would-refine';
@@ -1971,12 +2396,8 @@ function observationFromPlanItem(item: MaintenanceItem): ObservationWritten {
   };
 }
 
-/**
- * `derived` and `evidence` are the two keys Akno writes on `observations/` pages it
- * authors. They are what makes an inference identifiable as one after the fact — by a reader,
- * by recall's ranking, and by the guard that refuses to feed observations back in.
- */
-function newObservationPage(subject: string, observation: ObservationCandidate, today: string): string {
+/** L3 principles retain the legacy inference-page envelope; L2 observations do not use this writer. */
+function newPrinciplesPage(subject: string, observation: ObservationCandidate, today: string): string {
   const title = subject.charAt(0).toUpperCase() + subject.slice(1);
   return (
     `---\ntitle: ${serializeYamlString(title, 'title')}\nderived: true\n` +
@@ -1988,7 +2409,7 @@ function newObservationPage(subject: string, observation: ObservationCandidate, 
 }
 
 /** Appends the new line and unions the evidence, leaving every existing line alone. */
-function appendObservation(current: string, line: string, evidence: string[]): string | null {
+function appendPrinciple(current: string, line: string, evidence: string[]): string | null {
   const merged = mergeEvidence(current, evidence);
   if (merged === null) return null;
   const newline = current.includes('\r\n') ? '\r\n' : '\n';
@@ -2004,7 +2425,7 @@ function mergeEvidence(current: string, evidence: string[]): string | null {
 
   const front = match[1]!;
   // An existing key that is not one exact string sequence is user-edited or malformed. Refuse
-  // to guess around it and propagate that refusal so no unsupported observation is appended.
+  // to guess around it and propagate that refusal so no unsupported principle is appended.
   if (/^evidence:/m.test(front)) return null;
 
   // Add the owned key without round-tripping any neighboring frontmatter.
@@ -2015,16 +2436,6 @@ function mergeEvidence(current: string, evidence: string[]): string | null {
 
 function citation(evidence: string[]): string {
   return evidence.map((slug) => `[[${slug}]]`).join(' ');
-}
-
-function slugify(subject: string): string {
-  return (
-    subject
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 60) || 'pattern'
-  );
 }
 
 // ─── Reflect ────────────────────────────────────────────────────────────────
@@ -2109,26 +2520,24 @@ async function collectPreparedReflections(
   ctx: AknoContext,
   report: DreamReport,
 ): Promise<PreparedObservation[]> {
-  // The page this phase writes to is under `observations/` like everything it reads, so without
-  // excluding it the tier feeds on its own output: from the second night onwards `principles` has a
-  // summary, is selected as a source, and is cited as evidence for the principle it already
-  // contains. A conclusion that is its own evidence is not a conclusion.
-  const target = observationSlug(ctx, PRINCIPLES_SLUG);
-  const observations = await allObservations(ctx);
-  const ineligibleSources = ineligibleConflictSourceSlugs(report.conflicts);
-  const rows = (
-    ctx.store.db
-      .prepare(
-        `SELECT slug, summary, frontmatter FROM pages
-        WHERE (slug = ? OR slug LIKE ?) AND slug != ? AND summary IS NOT NULL
-        ORDER BY updated_at DESC LIMIT 40`,
-      )
-      .all(ctx.config.paths.observations, `${ctx.config.paths.observations}/%`, target) as {
-      slug: string;
-      summary: string;
-      frontmatter: string;
-    }[]
-  ).filter((row) => !frontmatterEvidence(row.frontmatter).some((slug) => ineligibleSources.has(slug)));
+  // The L3 page must not feed its own prior conclusions back into reflection. L2 input comes only
+  // from eligible projected markers, while the separate principles page remains write-only here.
+  const target = inferenceSlug(ctx, PRINCIPLES_SLUG);
+  const observations = indexedObservations(ctx);
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT oe.id, oe.source_slug AS slug, oe.payload, oe.payload_hash, p.rel_path
+         FROM observation_entries oe JOIN pages p ON p.id = oe.source_page
+        WHERE oe.eligible = 1 AND oe.disposition = 'active'
+        ORDER BY p.updated_at DESC, oe.marker_line DESC LIMIT 40`,
+    )
+    .all() as {
+    id: string;
+    slug: string;
+    payload: string;
+    payload_hash: string;
+    rel_path: string;
+  }[];
 
   if (rows.length < 2) {
     report.warnings.push('reflect had fewer than two observations to build on — nothing was written');
@@ -2137,7 +2546,7 @@ async function collectPreparedReflections(
 
   const result = await runObserveMission({
     subject: 'decision principles',
-    facts: rows.map((row) => ({ claim: row.summary, slug: row.slug })),
+    facts: rows.map((row) => ({ id: row.id, claim: row.payload, slug: row.slug })),
     model: ctx.models.derive,
     mission:
       ctx.config.maintenance.reflect.mission ??
@@ -2146,7 +2555,7 @@ async function collectPreparedReflections(
     minEvidence: Math.max(3, ctx.config.maintenance.observe.minEvidence),
     // This tier appends to one page every night from observations that rarely change, so without
     // its own previous answers it restates them — the same way `observe` did, one tier up.
-    existing: observations.get(target) ?? [],
+    existing: await recordedPrinciples(ctx),
     // A principle that is one of the observation lines verbatim is not a tier above them. Its
     // sources here are page *summaries*, so the lines themselves are not otherwise checked.
     otherObservations: [...observations].flatMap(([slug, lines]) => (slug === target ? [] : lines)),
@@ -2163,12 +2572,7 @@ async function collectPreparedReflections(
 
   const prepared: PreparedObservation[] = [];
   for (const observation of result.observations) {
-    const outcome = await prepareObservation(
-      ctx,
-      { title: 'Principles', slug: PRINCIPLES_SLUG },
-      observation,
-      'inference',
-    );
+    const outcome = await prepareIndexedReflection(ctx, observation, rows);
     prepared.push(outcome);
     if (outcome.rejectionReason) {
       report.rejected.push({ pattern: observation.pattern, reason: outcome.rejectionReason });
@@ -2177,26 +2581,100 @@ async function collectPreparedReflections(
   return prepared;
 }
 
-function ineligibleConflictSourceSlugs(conflicts: CrossPageConflict[]): Set<string> {
-  const keys = ineligibleConflictClaims(conflicts);
-  const slugs = new Set<string>();
-  for (const conflict of conflicts) {
-    for (const claim of conflict.claims) {
-      if (keys.has(claimKey(claim.slug, claim.line))) slugs.add(claim.slug);
-    }
-  }
-  return slugs;
+/** L3 is one explicit synthesis page, so read only its owned dated entries. */
+async function recordedPrinciples(ctx: AknoContext): Promise<string[]> {
+  const relPath = `${inferenceSlug(ctx, PRINCIPLES_SLUG)}.md`;
+  const body = await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8').catch(() => null);
+  if (body === null) return [];
+  return body
+    .split(/\r?\n/)
+    .filter((line) => /^- \d{4}-\d{2}-\d{2} — /.test(line))
+    .map((line) =>
+      line
+        .replace(/^- \d{4}-\d{2}-\d{2} — /, '')
+        .replace(/\s*\[\[[^\]]*\]\]/g, '')
+        .trim(),
+    )
+    .filter(Boolean);
 }
 
-function frontmatterEvidence(frontmatter: string): string[] {
-  try {
-    const value = JSON.parse(frontmatter) as { evidence?: unknown };
-    return Array.isArray(value.evidence)
-      ? value.evidence.filter((entry): entry is string => typeof entry === 'string')
-      : [];
-  } catch {
-    return [];
+async function prepareIndexedReflection(
+  ctx: AknoContext,
+  observation: ObservationCandidate,
+  rows: {
+    id: string;
+    slug: string;
+    payload: string;
+    payload_hash: string;
+    rel_path: string;
+  }[],
+): Promise<PreparedObservation> {
+  const selected = observation.evidence.flatMap((id) => {
+    const row = rows.find((candidate) => candidate.id === id);
+    return row ? [row] : [];
+  });
+  const slug = inferenceSlug(ctx, PRINCIPLES_SLUG);
+  const relPath = `${slug}.md`;
+  const absPath = path.join(ctx.config.aknoPath, relPath);
+  const before = await fsp.readFile(absPath, 'utf8').catch(() => null);
+  const evidenceSlugs = [...new Set(selected.map((entry) => entry.slug))];
+  const written: ObservationWritten = {
+    slug,
+    pattern: observation.pattern,
+    evidence: evidenceSlugs,
+    action: before === null ? 'created' : 'refined',
+  };
+  if (selected.length < Math.max(3, ctx.config.maintenance.observe.minEvidence)) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'reflection cited too few eligible level-two observations',
+    };
   }
+  if (before?.includes(observation.pattern)) {
+    return { written: { ...written, action: 'unchanged' }, draft: null };
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const line = `- ${today} — ${observation.pattern} ${citation(evidenceSlugs)}`;
+  const pageCandidate = { ...observation, evidence: evidenceSlugs };
+  const after =
+    before === null
+      ? newPrinciplesPage('Principles', pageCandidate, today)
+      : appendPrinciple(before, line, evidenceSlugs);
+  if (after === null) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'the existing principles page has an unsupported evidence declaration',
+    };
+  }
+  const evidence: ObservationPlanDraft['evidence'] = [];
+  for (const row of selected) {
+    const bytes = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
+    if (bytes === null) continue;
+    evidence.push({
+      slug: row.slug,
+      contentHash: sha256(bytes),
+      reflectionObservationId: row.id,
+      reflectionPayloadHash: row.payload_hash,
+    });
+  }
+  if (evidence.length !== selected.length) {
+    return {
+      written: { ...written, action: 'rejected' },
+      draft: null,
+      rejectionReason: 'a level-two source changed before reflection was sealed',
+    };
+  }
+  const inputHash = sha256(
+    JSON.stringify({
+      slug,
+      before: before === null ? null : sha256(before),
+      pattern: observation.pattern,
+      evidence,
+    }),
+  );
+  return { written, draft: { slug, relPath, inputHash, before, after, evidence } };
 }
 
 /** A journal entry, as the log wants it: which phase, and what the write added. */

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   AnswerInput,
   type AnswerCitation,
@@ -7,10 +9,12 @@ import {
   type AnswerOutput,
   type DegradedReason,
   type Line,
+  type ObservationEvidence,
   type RecallResult,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { type ModelClient, type ModelOutcome, type ModelUsage, parseJsonLoose } from '../models/client.ts';
+import { sha256 } from '../store/ids.ts';
 import {
   futureMemoryEligible,
   historicalMemoryEligible,
@@ -124,7 +128,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       ),
     ).values(),
   ];
-  const evidence = buildEvidence(recalled.results, input.question);
+  const evidence = buildEvidence(ctx, recalled.results, input.question);
   const base: Omit<AnswerOutput, 'status' | 'outcome' | 'degraded' | 'note'> = {
     answer: null,
     coverage: recalled.coverage ?? {},
@@ -489,7 +493,7 @@ function modelCallReceipt(model: ModelClient, outcome: ModelOutcome<unknown>): A
 }
 
 /** Assign opaque ids after retrieval so source identity and rank are never model-selectable instructions. */
-function buildEvidence(results: RecallResult[], question: string): AnswerContextItem[] {
+function buildEvidence(ctx: AknoContext, results: RecallResult[], question: string): AnswerContextItem[] {
   const out: UnlabeledEvidence[] = [];
   const seen = new Set<string>();
   const add = (key: string, item: UnlabeledEvidence): void => {
@@ -501,7 +505,7 @@ function buildEvidence(results: RecallResult[], question: string): AnswerContext
   for (const result of results) {
     if (result.type === 'page') {
       const eligibleLines = result.lines.filter(
-        (line) => answerLineEligible(line, question) && !/^\s*<!--/.test(line.text),
+        (line) => answerLineEligible(line, question) && !line.observation && !/^\s*<!--/.test(line.text),
       );
       if (eligibleLines.length > 0) {
         add(`page:${result.slug}`, {
@@ -514,6 +518,18 @@ function buildEvidence(results: RecallResult[], question: string): AnswerContext
             ...(line.confidence !== undefined ? { confidence: line.confidence } : {}),
             ...(line.memory !== undefined ? { memory: line.memory } : {}),
           })),
+        });
+      }
+      for (const line of result.lines) {
+        if (line.observation?.status !== 'eligible') continue;
+        const leaves = observationLeafEvidence(ctx, line.observation.evidence);
+        if (leaves.length !== line.observation.evidence.length) continue;
+        add(`observation:${line.observation.id}`, {
+          type: 'observation',
+          observation_id: line.observation.id,
+          subject: line.observation.subject,
+          text: line.text,
+          evidence: leaves,
         });
       }
       for (const document of result.documents ?? []) {
@@ -540,6 +556,7 @@ function buildEvidence(results: RecallResult[], question: string): AnswerContext
 }
 
 function answerLineEligible(line: Line, question: string): boolean {
+  if (line.observation) return line.observation.status === 'eligible';
   const memory = line.memory;
   if (!memory) return true;
   if (memory.status !== 'qualified') return false;
@@ -554,9 +571,14 @@ function answerLineEligible(line: Line, question: string): boolean {
 }
 
 function evidenceText(item: AnswerContextItem): string {
-  return item.type === 'page'
-    ? [`Title: ${item.title}`, ...item.lines.map((line) => `L${line.n}: ${line.text}`)].join('\n')
-    : item.quote;
+  if (item.type === 'page') {
+    return [`Title: ${item.title}`, ...item.lines.map((line) => `L${line.n}: ${line.text}`)].join('\n');
+  }
+  if (item.type === 'document') return item.quote;
+  return [
+    `Derived observation: ${item.text}`,
+    ...item.evidence.map((leaf) => `[${leaf.slug}:${leaf.line}] ${leaf.text}`),
+  ].join('\n');
 }
 
 function validateDraft(
@@ -664,20 +686,29 @@ function citedEvidence(blocks: AnswerDraft['blocks'], evidence: AnswerContextIte
 }
 
 function citationFor(item: AnswerContextItem): AnswerCitation {
-  return item.type === 'page'
-    ? {
-        id: item.evidence_id,
-        type: 'page',
-        slug: item.slug,
-        lines: item.lines.map((line) => line.n),
-      }
-    : {
-        id: item.evidence_id,
-        type: 'document',
-        document_id: item.document_id,
-        ...(item.owner_slug ? { owner_slug: item.owner_slug } : {}),
-        ...(item.pages ? { pages: item.pages } : {}),
-      };
+  if (item.type === 'page') {
+    return {
+      id: item.evidence_id,
+      type: 'page',
+      slug: item.slug,
+      lines: item.lines.map((line) => line.n),
+    };
+  }
+  if (item.type === 'document') {
+    return {
+      id: item.evidence_id,
+      type: 'document',
+      document_id: item.document_id,
+      ...(item.owner_slug ? { owner_slug: item.owner_slug } : {}),
+      ...(item.pages ? { pages: item.pages } : {}),
+    };
+  }
+  return {
+    id: item.evidence_id,
+    type: 'observation',
+    observation_id: item.observation_id,
+    evidence: item.evidence.map(({ fact, slug, line }) => ({ fact, slug, line })),
+  };
 }
 
 function renderBlock(block: AnswerDraft['blocks'][number], evidence: AnswerContextItem[]): string {
@@ -688,8 +719,41 @@ function renderBlock(block: AnswerDraft['blocks'][number], evidence: AnswerConte
 
 function citationLabel(item: AnswerContextItem): string {
   if (item.type === 'page') return `[${item.slug}:${item.lines.map((line) => line.n).join(',')}]`;
-  const pages = item.pages?.length ? `:p${item.pages.join(',')}` : '';
-  return `[${item.document_id}${pages}]`;
+  if (item.type === 'document') {
+    const pages = item.pages?.length ? `:p${item.pages.join(',')}` : '';
+    return `[${item.document_id}${pages}]`;
+  }
+  return item.evidence.map((leaf) => `[${leaf.slug}:${leaf.line}]`).join(' ');
+}
+
+function observationLeafEvidence(
+  ctx: AknoContext,
+  evidence: ObservationEvidence[],
+): { fact: string; slug: string; line: number; text: string }[] {
+  const out: { fact: string; slug: string; line: number; text: string }[] = [];
+  for (const locator of evidence) {
+    const row = ctx.store.db
+      .prepare(
+        `SELECT f.id, f.line_start, p.slug, p.rel_path
+           FROM facts f JOIN pages p ON p.id = f.page_id
+          WHERE f.id = ? AND f.valid_to IS NULL AND f.source_line_hash = ?`,
+      )
+      .get(locator.fact, locator.line_hash) as
+      { id: string; line_start: number; slug: string; rel_path: string } | undefined;
+    if (!row || row.slug !== locator.slug || row.line_start !== locator.line) continue;
+    try {
+      const sourceLines = fs
+        .readFileSync(path.join(ctx.config.aknoPath, row.rel_path), 'utf8')
+        .split(/\r?\n/);
+      const text = sourceLines[row.line_start - 1]?.trim();
+      if (text && sha256(text) === locator.line_hash) {
+        out.push({ fact: row.id, slug: row.slug, line: row.line_start, text });
+      }
+    } catch {
+      // A missing leaf makes the whole observation unavailable as answer evidence.
+    }
+  }
+  return out;
 }
 
 function estimateTokens(value: string): number {

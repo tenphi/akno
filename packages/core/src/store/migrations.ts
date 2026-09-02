@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 36;
+export const SCHEMA_VERSION = 37;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -42,6 +42,7 @@ export const RETAIN_RECEIPTS_MIGRATION_INDEX = 26;
 export const CHANGE_FILE_HASHES_MIGRATION_INDEX = 27;
 export const RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX = 28;
 export const TEMPORAL_ENTRIES_MIGRATION_INDEX = 29;
+export const OBSERVATION_PROJECTION_MIGRATION_INDEX = 30;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1050,6 +1051,54 @@ export const MIGRATIONS: string[] = [
     CHECK (line > 0),
     CHECK (reason IN ('invalid_temporal_marker', 'missing_temporal_payload'))
   );
+  `,
+  // Level-two observations remain Markdown-owned while their exact lineage and eligibility
+  // are rebuilt here. The page column is authority, not a general edit grant.
+  `
+  ALTER TABLE pages ADD COLUMN observe_management TEXT NOT NULL DEFAULT 'deny';
+
+  CREATE TABLE observation_entries (
+    id             TEXT PRIMARY KEY,
+    source_page    TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_slug    TEXT NOT NULL,
+    marker_line    INTEGER NOT NULL,
+    payload_line   INTEGER NOT NULL,
+    subject_entity TEXT NOT NULL,
+    disposition    TEXT NOT NULL,
+    payload        TEXT NOT NULL,
+    payload_hash   TEXT NOT NULL,
+    proof_count    INTEGER NOT NULL,
+    eligible       INTEGER NOT NULL DEFAULT 0,
+    issue          TEXT,
+    CHECK (marker_line > 0),
+    CHECK (payload_line > marker_line),
+    CHECK (disposition IN ('active', 'weakened', 'retracted', 'superseded')),
+    CHECK (proof_count >= 0),
+    CHECK (eligible IN (0, 1)),
+    UNIQUE(source_page, marker_line)
+  );
+  CREATE INDEX observation_entries_page ON observation_entries(source_page, payload_line);
+  CREATE INDEX observation_entries_subject ON observation_entries(subject_entity, eligible);
+
+  CREATE TABLE observation_evidence (
+    observation_id   TEXT NOT NULL REFERENCES observation_entries(id) ON DELETE CASCADE,
+    ordinal          INTEGER NOT NULL,
+    fact_id          TEXT NOT NULL,
+    source_line_hash TEXT NOT NULL,
+    proof_groups     TEXT NOT NULL,
+    PRIMARY KEY(observation_id, ordinal),
+    UNIQUE(observation_id, fact_id)
+  );
+  CREATE INDEX observation_evidence_fact ON observation_evidence(fact_id);
+
+  CREATE TABLE observation_projection_issues (
+    source_page    TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    marker_line    INTEGER NOT NULL,
+    observation_id TEXT,
+    reason         TEXT NOT NULL,
+    PRIMARY KEY(source_page, marker_line)
+  );
+  CREATE INDEX observation_projection_issues_id ON observation_projection_issues(observation_id);
   `,
 ];
 

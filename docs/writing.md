@@ -275,6 +275,20 @@ operator command. Migration rewrites strict owned blocks conservatively as attri
 or ambiguous blocks, journals the exact files, re-indexes changed paths, and can be reversed with `undo`.
 Ordinary indexing never rewrites the knowledge base.
 
+Legacy detached observation lines use a separate explicit migration mode:
+
+```bash
+akno migrate --observations --dry-run
+akno migrate --observations
+```
+
+For each dated legacy line, Akno resolves every page citation to exactly one current eligible fact, recomputes
+independent proof groups, and resolves one exact subject and one existing `observe: integrate` target. After
+rechecking both files, it adds the L2 block and removes only that legacy line; a failed verification restores
+both previous files. Ambiguous citations, mixed subjects, insufficient proof, or missing authority are held in
+place. Each migrated observation receives its own journal change and can be undone. Legacy pages are
+deliberately retained when authored prose remains; migration never deletes ambiguous or user-authored content.
+
 ## Documents and ingestion
 
 ```bash

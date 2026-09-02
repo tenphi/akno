@@ -35,6 +35,13 @@ beforeAll(async () => {
                       attribute: 'warranty selection',
                       value: 'five years',
                     },
+                    {
+                      line: 5,
+                      claim: 'The fenced example names the quiet route.',
+                      subject: 'fenced example',
+                      attribute: 'route',
+                      value: 'quiet',
+                    },
                   ],
                 }),
               },
@@ -82,4 +89,31 @@ it('keeps reports searchable but excludes them from ordinary derived facts', asy
 
   expect(derived.facts.map((fact) => fact.itemId)).toEqual(['mem_decision']);
   expect(derived.facts[0]?.claim).toBe('Ada Marlow selected the five-year warranty.');
+});
+
+it('does not give marker semantics to an authored fenced example', async () => {
+  const page = parsePage(
+    'memory/examples.md',
+    `# Examples
+
+\`\`\`md
+<!-- akno:observation obs_11111111 v=99 -->
+- The fenced example names the quiet route.
+\`\`\`
+- Ada Marlow selected the five-year warranty.
+`,
+  );
+  const model = new ModelClient({
+    role: 'derive',
+    provider: { name: 'stub', baseUrl: endpoint, apiKey: null, headers: {}, maxRetries: 0 },
+    id: 'stub',
+    enabled: true,
+    requested: true,
+    timeoutMs: 2000,
+    unavailableReason: null,
+  });
+
+  const derived = await derivePage(page, model, { summaries: true, facts: true });
+
+  expect(derived.facts.map((fact) => fact.line)).toEqual([7, 5]);
 });
