@@ -78,17 +78,20 @@ through stale-input, budget, re-index, and verification guards.
 
 ## The nightly order
 
-```text
-1. conflicts
-2. plan observe
-3. plan reflect
-4. plan curate
-5. plan adopt
-   ── decide every automatic item ──
-   ── apply in dependency order ──
-   ── one bounded dependency replan ──
-6. repair
-7. housekeeping
+```mermaid
+flowchart TD
+  accTitle: Nightly dream order
+  accDescr: The nightly cycle checks conflicts, plans each maintenance phase, decides automatic items, applies them in dependency order with at most one bounded replan, and finishes with repair and housekeeping.
+
+  conflicts["1. Conflicts"] --> observe["2. Plan observe"]
+  observe --> reflect["3. Plan reflect"]
+  reflect --> curate["4. Plan curate"]
+  curate --> adopt["5. Plan adopt"]
+  adopt --> decide["Decide every automatic item"]
+  decide --> apply["Apply in dependency order"]
+  apply --> replan["One bounded dependency replan, if needed"]
+  replan --> repair["6. Repair"]
+  repair --> housekeeping["7. Housekeeping"]
 ```
 
 Conflict analysis runs before inference so unresolved claims cannot quietly become observation evidence. In a

@@ -37,20 +37,17 @@ source locator and source hash still match the files.
 
 ## From an edit to usable memory
 
-```text
-human edit or accepted Akno write
-                │
-                ▼
-        authoritative file bytes
-                │
-                ▼
-      structural index reconciliation
-                │
-                ├── immediately searchable text, links, and page identity
-                └── optional model derivation: summaries, facts, events, aliases, embeddings
-                                      │
-                                      ▼
-                         recall / answer / graph / context
+```mermaid
+flowchart TD
+  accTitle: From an edit to usable memory
+  accDescr: A human edit or accepted Akno write changes authoritative files, structural indexing makes core content searchable, and optional model derivation enriches the result for reading interfaces.
+
+  edit["Human edit or accepted Akno write"] --> files["Authoritative file bytes"]
+  files --> index["Structural index reconciliation"]
+  index --> searchable["Immediately searchable text, links, and page identity"]
+  index --> derived["Optional model derivation: summaries, facts, events, aliases, and embeddings"]
+  searchable --> reading["Recall, answer, graph, and context"]
+  derived --> reading
 ```
 
 An Akno write performs targeted structural reconciliation before it reports success. Expensive model derivation
@@ -124,18 +121,18 @@ memory tools. A host must separately and deliberately provide access if it wants
 
 `remember` is not “append this prompt to the nearest page.” Its normal path is:
 
-```text
-raw input
-   ↓
-extract durable claims and exact supporting quotes
-   ↓
-find the strongest relevant destination
-   ↓
-is that exact page or new-page location admitted for fact injection?
-   ├── yes → write a marked Akno-owned item, journal it, and re-index
-   └── no  → try an admitted managed page or configured fallback
-                    ├── authorized → write there
-                    └── unavailable or ambiguous → hold/propose; change no page
+```mermaid
+flowchart TD
+  accTitle: Remember decision path
+  accDescr: Remember extracts durable claims and evidence, finds the strongest destination, checks write authority, and either writes to an authorized location or holds a proposal without changing a page.
+
+  input["Raw input"] --> extract["Extract durable claims and exact supporting quotes"]
+  extract --> destination["Find the strongest relevant destination"]
+  destination --> admitted{"Is that exact page or new-page location admitted for fact injection?"}
+  admitted -->|yes| write["Write to the authorized destination, journal it, and re-index"]
+  admitted -->|no| fallback{"Is an admitted managed page or configured fallback authorized?"}
+  fallback -->|yes| write
+  fallback -->|unavailable or ambiguous| hold["Hold or propose; change no page"]
 ```
 
 A successful retained item has a stable marker around the generated sentence. That marker is an ownership
@@ -226,20 +223,17 @@ transition updates the marker.
 
 A full dream is a maintenance transaction with visible stages, not an unrestricted rewrite prompt:
 
-```text
-inspect current evidence
-        ↓
-seal exact proposals and their input hashes
-        ↓
-decide each eligible item
-        ↓
-recheck current files, evidence, authority, dependencies, and budget
-        ↓
-apply accepted items in dependency order
-        ↓
-re-index and verify exact disk/index outcomes
-        ↓
-retain plans, change ids, and a content-safe run receipt
+```mermaid
+flowchart TD
+  accTitle: Dream maintenance transaction
+  accDescr: A dream inspects evidence, seals exact proposals, decides eligible items, rechecks every guard, applies accepted items, verifies disk and index outcomes, and retains content-safe records.
+
+  inspect["Inspect current evidence"] --> seal["Seal exact proposals and their input hashes"]
+  seal --> decide["Decide each eligible item"]
+  decide --> recheck["Recheck current files, evidence, authority, dependencies, and budget"]
+  recheck --> apply["Apply accepted items in dependency order"]
+  apply --> verify["Re-index and verify exact disk and index outcomes"]
+  verify --> retain["Retain plans, change ids, and a content-safe run receipt"]
 ```
 
 Conflict analysis runs before phases that infer or synthesize knowledge. Observe creates marker-owned L2 blocks

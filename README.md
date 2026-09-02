@@ -97,14 +97,16 @@ Need invented notes to try? Copy [`examples/demo-brain`](https://github.com/tenp
 
 ## The working model
 
-```text
-Markdown pages + documents
-          │
-          ├── index/watch ──> disposable search, facts, temporal entries, and evidence graph
-          │                         │
-          │                         └── recall / answer / read / timeline / context
-          │
-          └── journalled writes <── write / remember / retain / ingest / guarded dream plans
+```mermaid
+flowchart TD
+  accTitle: Akno working model
+  accDescr: Markdown pages and documents feed a disposable index for reading, while guarded write operations update the source through journalled writes.
+
+  source["Markdown pages and documents"] --> index["Index and watch"]
+  index --> state["Disposable search, facts, temporal entries, and evidence graph"]
+  state --> reading["Recall, answer, read, timeline, and context"]
+  writes["Write, remember, retain, ingest, and guarded dream plans"] --> journal["Journalled writes"]
+  journal --> source
 ```
 
 Four ideas explain most of Akno:

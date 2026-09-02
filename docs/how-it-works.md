@@ -6,21 +6,18 @@ actions, and common dream-cycle outcomes, start with [The memory lifecycle](memo
 Akno turns a folder of Markdown pages and documents into a memory interface without replacing the folder as
 the source of truth.
 
-```text
-knowledge-base files
-       │
-       ├── scan, parse, extract, derive
-       │                 │
-       │                 ▼
-       │       disposable SQLite state
-       │        search · facts · graph
-       │                 │
-       │                 ▼
-       │       recall · answer · context
-       │
-       └── guarded mutations ◀── write · remember · retain · ingest · migrate · dream
-                 │
-                 └── journal · re-index · verify
+```mermaid
+flowchart TD
+  accTitle: Akno architecture
+  accDescr: Authoritative knowledge-base files produce disposable search, fact, and graph state. Guarded commands mutate the files through a journalled, re-indexed, and verified path.
+
+  files["Knowledge-base files"] --> derive["Scan, parse, extract, and derive"]
+  derive --> state["Disposable SQLite state: search, facts, and graph"]
+  state --> reading["Recall, answer, and context"]
+  commands["Write, remember, retain, ingest, migrate, and dream"] --> mutations["Guarded mutations"]
+  mutations --> files
+  mutations --> verify["Journal, re-index, and verify"]
+  verify --> state
 ```
 
 The design has three boundaries:
@@ -74,22 +71,24 @@ it does not perform unrestricted entity discovery. [Limitations](limitations.md)
 
 `recall` is a candidate-and-ranking pipeline:
 
-```text
-question
-   ├── infer or accept semantic memory view
-   ├── qualify isolated retained-memory chunks
-   ├── lexical candidates
-   ├── semantic candidates, when embeddings are available
-   └── bounded graph candidates
-              │
-              ▼
-       rank-based fusion
-              │
-              ▼
-       optional rerank and qualification
-              │
-              ▼
-       cited evidence cards
+```mermaid
+flowchart TD
+  accTitle: Retrieval pipeline
+  accDescr: A question selects a semantic memory view, qualifies retained-memory chunks before gathering candidates, fuses candidate ranks, optionally reranks and qualifies them, and returns cited evidence cards.
+
+  question["Question"] --> memoryView["Infer or accept semantic memory view"]
+  memoryView --> eligibility["Qualify isolated retained-memory chunks"]
+  question --> lexical["Lexical candidates"]
+  question --> semantic["Semantic candidates, when embeddings are available"]
+  question --> graph["Bounded graph candidates"]
+  eligibility --> lexical
+  eligibility --> semantic
+  eligibility --> graph
+  lexical --> fusion["Rank-based fusion"]
+  semantic --> fusion
+  graph --> fusion
+  fusion --> rerank["Optional rerank and qualification"]
+  rerank --> evidence["Cited evidence cards"]
 ```
 
 The independent channels use different score units. Akno fuses their ranks; it does not compare a BM25 score
@@ -181,8 +180,18 @@ Markdown without modifying the knowledge base.
 
 Maintenance adds another boundary:
 
-```text
-inspect → seal exact plan → revise if needed → decide → recheck inputs → apply → re-index → verify
+```mermaid
+flowchart TD
+  accTitle: Maintenance boundary
+  accDescr: Maintenance inspects evidence, seals an exact plan, allows bounded revision, decides items, rechecks inputs, applies accepted changes, re-indexes, and verifies the result.
+
+  inspect["Inspect"] --> seal["Seal exact plan"]
+  seal --> revise["Revise if needed"]
+  revise --> decide["Decide"]
+  decide --> recheck["Recheck inputs"]
+  recheck --> apply["Apply"]
+  apply --> index["Re-index"]
+  index --> verify["Verify"]
 ```
 
 Planning and deciding are separate turns. In autonomous mode the curator receives the sealed proposal, not an
