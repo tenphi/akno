@@ -403,6 +403,8 @@ const MaintenanceDoc = z.object({
   retain: TierDoc.extend({
     /** Explicit catch-all page for durable claims with no ordinary writable destination. */
     fallback_page: ManagedFallbackSlug.nullable().optional(),
+    /** Grace before unneeded private source frames are securely pruned. */
+    evidence_grace_days: z.number().int().nonnegative().optional(),
   }).optional(),
   observe: TierDoc.extend({
     /** Distinct source pages an observation needs. The floor is two. */
@@ -655,7 +657,12 @@ export interface AknoConfig {
     logChanges: boolean;
     /** Local notification policy for scheduled maintenance; never includes knowledge-base content. */
     notifications: MaintenanceNotificationMode;
-    retain: { enabled: boolean; mission: string | null; fallbackPage: string | null };
+    retain: {
+      enabled: boolean;
+      mission: string | null;
+      fallbackPage: string | null;
+      evidenceGraceDays: number;
+    };
     observe: {
       enabled: boolean;
       mission: string | null;

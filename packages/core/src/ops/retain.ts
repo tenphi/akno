@@ -1,6 +1,7 @@
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
+  AknoError,
   RetainInput,
   type DegradedReason,
   type ProvidedRetainCandidate,
@@ -11,6 +12,7 @@ import {
   type RetainRetraction,
   type RetainSourceResult,
   type RetainSourceSpan,
+  type RetainSourceInput,
   type RetainUpsertSource,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
@@ -18,6 +20,8 @@ import { ModelClient } from '../models/client.ts';
 import { folderCatalog } from '../kb/folders.ts';
 import { parseFrontmatter, serializeYamlString } from '../kb/frontmatter.ts';
 import { parsePage } from '../kb/page.ts';
+import { contentWords } from '../kb/words.ts';
+import { declaringRule, effectiveRule } from '../rules/compile.ts';
 import { isReserved } from '../reserved.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
@@ -42,9 +46,10 @@ import {
   type RetainHeldCandidate,
 } from '../write/retain.ts';
 import { resolveRememberFallback } from '../write/remember-fallback.ts';
-import { reconcileRetainManagedSources } from '../write/retain-supports.ts';
+import { pruneRetainEvidence, reconcileRetainManagedSources } from '../write/retain-supports.ts';
 import { routeAutomaticCandidate } from './remember.ts';
-import { normalizeSlug } from './write.ts';
+import { read } from './read.ts';
+import { normalizeSlug, titleFromSlug } from './write.ts';
 
 interface ReceiptRow {
   source_id: string;
@@ -80,6 +85,26 @@ interface PageStage {
   after: string;
 }
 
+type InlineRetainInput = Extract<RetainSourceInput, { text: string } | { items: unknown[] }>;
+type ResolvedRetainUpsertSource = Omit<RetainUpsertSource, 'input'> & { input: InlineRetainInput };
+
+interface RetainSourceBinding {
+  kind: 'text' | 'items' | 'page' | 'document';
+  availability: 'available' | 'degraded';
+  reextractable: boolean;
+  reference?: string;
+  preservedSlug?: string;
+}
+
+interface ResolvedRetainSource {
+  source: ResolvedRetainUpsertSource;
+  requested: RetainUpsertSource;
+  sourceHash: string;
+  sourceRef: string;
+  binding: RetainSourceBinding;
+  degraded: DegradedReason[];
+}
+
 type PendingSupport = Omit<SupportRow, 'retracted_by' | 'forgotten_by'>;
 
 interface ManagedBlockLocation {
@@ -98,18 +123,25 @@ export async function retain(ctx: AknoContext, rawInput: unknown): Promise<Retai
   const results: RetainSourceResult[] = [];
   for (const source of input.sources) {
     try {
+      if (!('input' in source)) {
+        results.push(await retractSource(ctx, source, input.dry_run ?? false));
+        continue;
+      }
+      const resolved = await resolveRetainSource(ctx, source);
+      if ('result' in resolved) {
+        results.push(resolved.result);
+        continue;
+      }
       results.push(
-        'input' in source
-          ? source.retention.mode === 'extract'
-            ? await retainExtracted(ctx, source, input.dry_run ?? false)
-            : await retainCandidates(ctx, source, source.retention.candidates, {
-                dryRun: input.dry_run ?? false,
-                selection: 'provided',
-                placement: source.retention.placement,
-                initialResults: [],
-                modelUsage: { extraction: null, verification: null, placement: [] },
-              })
-          : await retractSource(ctx, source, input.dry_run ?? false),
+        source.retention.mode === 'extract'
+          ? await retainExtracted(ctx, resolved, input.dry_run ?? false)
+          : await retainCandidates(ctx, resolved, source.retention.candidates, {
+              dryRun: input.dry_run ?? false,
+              selection: 'provided',
+              placement: source.retention.placement,
+              initialResults: [],
+              modelUsage: { extraction: null, verification: null, placement: [] },
+            }),
       );
     } catch (error) {
       results.push({
@@ -135,26 +167,170 @@ export async function retain(ctx: AknoContext, rawInput: unknown): Promise<Retai
   const effective = results.filter((result) => result.outcome === 'ok').length;
   const degraded = [...new Set(results.flatMap((result) => result.degraded ?? []))];
   const allEmpty = results.length > 0 && results.every((result) => result.status === 'empty');
+  const allUnavailable = results.length > 0 && results.every((result) => result.status === 'unavailable');
   return {
-    status: degraded.length > 0 ? 'degraded' : allEmpty ? 'empty' : 'ok',
+    status: allUnavailable ? 'unavailable' : degraded.length > 0 ? 'degraded' : allEmpty ? 'empty' : 'ok',
     ...(degraded.length > 0 ? { degraded } : {}),
     outcome: incomplete && effective > 0 ? 'partial' : effective > 0 ? 'ok' : 'noop',
     sources: results,
   };
 }
 
+async function resolveRetainSource(
+  ctx: AknoContext,
+  requested: RetainUpsertSource,
+): Promise<ResolvedRetainSource | { result: RetainSourceResult }> {
+  const input = requested.input;
+  if ('text' in input || 'items' in input) {
+    const kind = 'text' in input ? 'text' : 'items';
+    return {
+      source: { ...requested, input },
+      requested,
+      sourceHash: sha256(JSON.stringify(input)),
+      sourceRef: requested.locator ?? requested.source_id,
+      binding: {
+        kind,
+        availability: 'available',
+        reextractable: requested.preserve_source !== undefined,
+        ...(requested.preserve_source
+          ? { preservedSlug: normalizeSlug(requested.preserve_source.slug) }
+          : {}),
+      },
+      degraded: [],
+    };
+  }
+
+  if ('page_slug' in input) {
+    const slug = normalizeSlug(input.page_slug);
+    const row = ctx.store.db.prepare('SELECT rel_path, role FROM pages WHERE slug = ?').get(slug) as
+      { rel_path: string; role: string } | undefined;
+    if (!row)
+      return { result: unavailableSourceResult(requested, 'page', slug, 'source page is not indexed') };
+    if (row.role !== 'source') {
+      return {
+        result: unavailableSourceResult(
+          requested,
+          'page',
+          slug,
+          'page_slug accepts only a page whose effective role is source',
+          'validation_failed',
+        ),
+      };
+    }
+    const bytes = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
+    if (bytes === null) {
+      return { result: unavailableSourceResult(requested, 'page', slug, 'source page is unreadable') };
+    }
+    const sourceText = parsePage(row.rel_path, bytes).body;
+    if (!sourceText.trim()) {
+      return { result: unavailableSourceResult(requested, 'page', slug, 'source page has no readable body') };
+    }
+    return {
+      source: { ...requested, input: { text: sourceText } },
+      requested,
+      sourceHash: sha256(bytes),
+      sourceRef: requested.locator ?? slug,
+      binding: { kind: 'page', availability: 'available', reextractable: true, reference: slug },
+      degraded: [],
+    };
+  }
+
+  try {
+    const output = await read(ctx, { document: input.document_id });
+    if (!output.document) {
+      return {
+        result: unavailableSourceResult(
+          requested,
+          'document',
+          input.document_id,
+          'document reference did not resolve to readable document state',
+        ),
+      };
+    }
+    const document = output.document;
+    if (!document.text) {
+      return {
+        result: unavailableSourceResult(
+          requested,
+          'document',
+          document.id,
+          output.note ?? 'document has no readable extraction or rendition',
+        ),
+      };
+    }
+    const degraded = output.status === 'ok' ? [] : (output.degraded ?? ['no_document_text']);
+    const documentParts = ctx.store.db
+      .prepare(
+        `SELECT rel_path, sha256 FROM documents
+          WHERE group_key = (
+            SELECT group_key FROM documents WHERE id = ?
+          ) AND renders IS NULL
+          ORDER BY part`,
+      )
+      .all(document.id) as { rel_path: string; sha256: string }[];
+    return {
+      source: { ...requested, input: { text: document.text } },
+      requested,
+      sourceHash: sha256(JSON.stringify({ id: document.id, parts: documentParts, text: document.text })),
+      sourceRef: requested.locator ?? document.rel_path,
+      binding: {
+        kind: 'document',
+        availability: output.status === 'ok' ? 'available' : 'degraded',
+        reextractable: true,
+        reference: document.id,
+      },
+      degraded,
+    };
+  } catch (error) {
+    const note = error instanceof AknoError ? error.message : `document source failed: ${String(error)}`;
+    return { result: unavailableSourceResult(requested, 'document', input.document_id, note) };
+  }
+}
+
+function unavailableSourceResult(
+  source: RetainUpsertSource,
+  kind: 'page' | 'document',
+  reference: string,
+  note: string,
+  reasonCode: RetainHoldReason = 'source_unavailable',
+): RetainSourceResult {
+  return {
+    source_id: source.source_id,
+    revision: source.revision,
+    outcome: 'held',
+    status: 'unavailable',
+    reason_code: reasonCode,
+    candidates: [],
+    source: { kind, availability: 'unavailable', reextractable: true, reference },
+    note,
+  };
+}
+
+function sourceResultBinding(binding: RetainSourceBinding): NonNullable<RetainSourceResult['source']> {
+  return {
+    kind: binding.kind,
+    availability: binding.availability,
+    reextractable: binding.reextractable,
+    ...(binding.reference ? { reference: binding.reference } : {}),
+    ...(binding.preservedSlug ? { preserved_slug: binding.preservedSlug } : {}),
+  };
+}
+
 async function retainExtracted(
   ctx: AknoContext,
-  source: RetainUpsertSource,
+  resolved: ResolvedRetainSource,
   dryRun: boolean,
 ): Promise<RetainSourceResult> {
+  const source = resolved.source;
   if (source.retention.mode !== 'extract') throw new Error('retain extract received a provided source');
-  const sourceHash = sha256(JSON.stringify(source.input));
-  const requestHash = sha256(JSON.stringify(source));
+  const sourceHash = resolved.sourceHash;
+  const requestHash = sha256(JSON.stringify(resolved.requested));
   const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
   if (replay) return replay;
   const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
   if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
+  const correctionIssue = validateCorrectionTarget(ctx, source);
+  if (correctionIssue) return correctionHoldResult(resolved, correctionIssue);
 
   const curator = retentionModel(ctx);
   const text =
@@ -169,7 +345,7 @@ async function retainExtracted(
     revision: source.revision,
   });
   if (extracted.sourceHold) {
-    return retainCandidates(ctx, source, [], {
+    return retainCandidates(ctx, resolved, [], {
       dryRun,
       selection: 'extracted',
       placement: 'automatic',
@@ -180,19 +356,21 @@ async function retainExtracted(
   }
   const initialResults = extracted.held.map(heldCandidateResult);
   if (extracted.error) {
-    return {
-      source_id: source.source_id,
-      revision: source.revision,
-      outcome: 'held',
-      status: 'degraded',
-      degraded: [extracted.degradedReason ?? 'derive_failed'],
-      candidates: initialResults,
-      model_usage: { ...extracted.modelUsage, placement: [] },
-      note: `automatic retention could not complete: ${extracted.error}`,
-    };
+    return retainCandidates(ctx, resolved, [], {
+      dryRun,
+      selection: 'extracted',
+      placement: 'automatic',
+      initialResults,
+      modelUsage: { ...extracted.modelUsage, placement: [] },
+      additionalDegraded: [extracted.degradedReason ?? 'derive_failed'],
+      sourceHold: {
+        reason_code: initialResults[0]?.reason_code ?? 'apply_failed',
+        reason: `automatic retention could not complete: ${extracted.error}`,
+      },
+    });
   }
 
-  return retainCandidates(ctx, source, extracted.candidates, {
+  return retainCandidates(ctx, resolved, extracted.candidates, {
     dryRun,
     selection: 'extracted',
     placement: 'automatic',
@@ -203,7 +381,7 @@ async function retainExtracted(
 
 async function retainCandidates(
   ctx: AknoContext,
-  source: RetainUpsertSource,
+  resolvedSource: ResolvedRetainSource,
   suppliedCandidates: readonly (ProvidedRetainCandidate | RetainCandidate)[],
   options: {
     dryRun: boolean;
@@ -216,17 +394,24 @@ async function retainCandidates(
       placement: RetainModelCallReceipt[];
     };
     sourceHold?: { reason_code: RetainHoldReason; reason: string };
+    additionalDegraded?: DegradedReason[];
+    skipAutomaticRouting?: boolean;
+    journalOp?: 'retain' | 'remember';
+    onIndexed?: (factsDerived: number) => void;
   },
 ): Promise<RetainSourceResult> {
-  const sourceHash = sha256(JSON.stringify(source.input));
-  const requestHash = sha256(JSON.stringify(source));
+  const source = resolvedSource.source;
+  const sourceHash = resolvedSource.sourceHash;
+  const requestHash = sha256(JSON.stringify(resolvedSource.requested));
   const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
   if (replay) return replay;
   const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
   if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
+  const correctionIssue = validateCorrectionTarget(ctx, source);
+  if (correctionIssue) return correctionHoldResult(resolvedSource, correctionIssue);
 
   const resolved =
-    options.placement === 'automatic'
+    options.placement === 'automatic' && !options.skipAutomaticRouting
       ? await resolveAutomaticCandidates(ctx, suppliedCandidates)
       : {
           candidates: suppliedCandidates.filter(hasDestination),
@@ -246,9 +431,90 @@ async function retainCandidates(
   );
   const proofGroup = managedMemoryFingerprint(`proof:${source.source_group ?? source.source_id}`);
   const stages = new Map<string, PageStage>();
+  const effectiveBinding: RetainSourceBinding =
+    options.sourceHold && resolvedSource.binding.preservedSlug
+      ? {
+          kind: resolvedSource.binding.kind,
+          availability: resolvedSource.binding.availability,
+          reextractable: false,
+          ...(resolvedSource.binding.reference ? { reference: resolvedSource.binding.reference } : {}),
+        }
+      : resolvedSource.binding;
+  if (effectiveBinding.preservedSlug) {
+    if (
+      candidates.some(
+        (candidate) => normalizeSlug(candidate.destination.slug) === effectiveBinding.preservedSlug,
+      )
+    ) {
+      return {
+        source_id: source.source_id,
+        revision: source.revision,
+        outcome: 'held',
+        status: 'ok',
+        reason_code: 'validation_failed',
+        candidates: [],
+        source: sourceResultBinding({
+          kind: effectiveBinding.kind,
+          availability: effectiveBinding.availability,
+          reextractable: false,
+          ...(effectiveBinding.reference ? { reference: effectiveBinding.reference } : {}),
+        }),
+        note: 'a preserved source page cannot also be a retained-memory destination',
+      };
+    }
+    const preserved = await preservedSourceStage(
+      ctx,
+      stages,
+      effectiveBinding.preservedSlug,
+      resolvedSource.requested.input,
+    );
+    if ('issue' in preserved) {
+      return {
+        source_id: source.source_id,
+        revision: source.revision,
+        outcome: 'held',
+        status: 'ok',
+        reason_code: preserved.reasonCode,
+        candidates: [],
+        source: sourceResultBinding({
+          kind: resolvedSource.binding.kind,
+          availability: resolvedSource.binding.availability,
+          reextractable: false,
+          ...(resolvedSource.binding.reference ? { reference: resolvedSource.binding.reference } : {}),
+        }),
+        note: preserved.issue,
+      };
+    }
+  }
+  const correction = source.retracts
+    ? await stageRetractions(
+        ctx,
+        source.source_id,
+        source.retracts.target_revision,
+        source.retracts.candidate_ids,
+        stages,
+      )
+    : { results: [] as RetainCandidateResult[], removed: [] as SupportRow[], valid: true };
+  if (!correction.valid) {
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      status: 'ok',
+      reason_code: 'conflict',
+      candidates: correction.results,
+      source: sourceResultBinding(effectiveBinding),
+      note: 'correction targets no longer match their owned memory blocks; nothing was changed',
+    };
+  }
   const pendingSupports: PendingSupport[] = [];
-  const candidateResults: RetainCandidateResult[] = [...options.initialResults, ...resolved.held];
-  const candidateIds = new Set(suppliedCandidates.map((candidate) => candidate.candidate_id));
+  const suppliedCandidateIds = new Set(suppliedCandidates.map((candidate) => candidate.candidate_id));
+  const candidateResults: RetainCandidateResult[] = [
+    ...correction.results.filter((result) => !suppliedCandidateIds.has(result.candidate_id)),
+    ...options.initialResults,
+    ...resolved.held,
+  ];
+  const candidateIds = suppliedCandidateIds;
   const candidateOrder = new Map(
     [
       ...options.initialResults.map((result) => result.candidate_id),
@@ -388,7 +654,7 @@ async function retainCandidates(
             outcome: 'held',
             slug,
             reason_code: 'conflict',
-            reason: 'conflict',
+            reason: conflict.existing,
           });
           continue;
         }
@@ -433,7 +699,7 @@ async function retainCandidates(
       selection: options.selection,
       evidence,
       evidence_hash: sha256(evidence),
-      source_ref: managedSourceReference(source.locator ?? source.source_id),
+      source_ref: managedSourceReference(resolvedSource.sourceRef),
       origin: sourceOrigin(candidate.attribution.source_role),
       input_hash: sourceHash,
     });
@@ -451,9 +717,47 @@ async function retainCandidates(
 
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const placementDegraded = candidateResults.some((result) => result.reason_code === 'placement_degraded');
-  const degraded: DegradedReason[] = placementDegraded
-    ? [retentionModel(ctx).available ? 'derive_failed' : 'no_derive_model']
-    : [];
+  const degraded: DegradedReason[] = [
+    ...resolvedSource.degraded,
+    ...(options.additionalDegraded ?? []),
+    ...(placementDegraded
+      ? ([retentionModel(ctx).available ? 'derive_failed' : 'no_derive_model'] as DegradedReason[])
+      : []),
+  ];
+  const acceptedCandidateIds = new Set(
+    candidateResults
+      .filter((result) => ['written', 'support_added', 'duplicate'].includes(result.outcome))
+      .map((result) => result.candidate_id),
+  );
+  const correctionAdmissionFailed =
+    source.retracts !== undefined &&
+    (suppliedCandidateIds.size === 0 ||
+      [...suppliedCandidateIds].some((candidateId) => !acceptedCandidateIds.has(candidateId)) ||
+      candidateResults.some((result) => result.outcome === 'held' || result.outcome === 'not_found'));
+  if (correctionAdmissionFailed) {
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      status: degraded.length > 0 ? 'degraded' : 'ok',
+      reason_code: 'validation_failed',
+      candidates: candidateResults.map((result) =>
+        result.outcome === 'held' || result.outcome === 'not_found'
+          ? result
+          : {
+              candidate_id: result.candidate_id,
+              outcome: 'held',
+              ...(result.memory_id ? { memory_id: result.memory_id } : {}),
+              ...(result.slug ? { slug: result.slug } : {}),
+              reason_code: 'validation_failed',
+              reason: 'not applied because the compound correction was not fully admissible',
+            },
+      ),
+      source: sourceResultBinding(effectiveBinding),
+      ...(degraded.length > 0 ? { degraded } : {}),
+      note: 'compound correction was not fully admissible; neither removal nor replacement was written',
+    };
+  }
   const preview: RetainSourceResult = {
     source_id: source.source_id,
     revision: source.revision,
@@ -465,6 +769,7 @@ async function retainCandidates(
           ? 'held'
           : 'noop',
     candidates: candidateResults,
+    source: sourceResultBinding(effectiveBinding),
     ...(options.sourceHold ? { reason_code: options.sourceHold.reason_code } : {}),
     status:
       degraded.length > 0
@@ -490,7 +795,8 @@ async function retainCandidates(
   const committed = await commitStages(
     ctx,
     changed,
-    `retained ${candidateResults.filter((item) => ['written', 'support_added'].includes(item.outcome)).length} item(s) from one source revision`,
+    `${options.journalOp === 'remember' ? 'remembered' : 'retained'} ${candidateResults.filter((item) => ['written', 'support_added'].includes(item.outcome)).length} item(s) from one source revision`,
+    options.journalOp,
   );
   const changeId = committed?.changeId ?? null;
   const result = { ...preview, ...(changeId ? { change_id: changeId } : {}) };
@@ -509,13 +815,73 @@ async function retainCandidates(
       result,
       changeId,
       supports: pendingSupports,
-      retracted: [],
+      retracted: correction.removed,
+      binding: effectiveBinding,
     });
   } catch (error) {
     await rollbackCommittedStages(ctx, committed, error);
   }
-  await reindexStages(ctx, changed);
+  options.onIndexed?.(await reindexStages(ctx, changed));
   return result;
+}
+
+/**
+ * Compatibility adapter entrypoint: remember keeps its public routing/action response, while
+ * validation, owned-block staging, source archives, journaling, receipts, and indexing execute
+ * through the same engine as keyed retain.
+ */
+export async function retainRememberCandidates(
+  ctx: AknoContext,
+  input: {
+    text: string;
+    source?: string;
+    mentionedAt?: string;
+    timezone?: string;
+    mission?: string;
+    dryRun: boolean;
+    candidates: readonly ResolvedRetainCandidate[];
+    held: readonly RetainCandidateResult[];
+    modelUsage: {
+      extraction: RetainModelCallReceipt | null;
+      verification: RetainModelCallReceipt | null;
+    };
+  },
+): Promise<{ result: RetainSourceResult; factsAdded: number }> {
+  const inputHash = sha256(input.text);
+  const sourceId = `remember:${newPrefixedId('src')}`;
+  const requested: RetainUpsertSource = {
+    source_id: sourceId,
+    revision: '1',
+    source_group: `remember:${managedMemoryFingerprint(`${input.source ?? 'remember'}:${inputHash}`)}`,
+    source_kind: 'conversation',
+    ...(input.mentionedAt ? { mentioned_at: input.mentionedAt } : {}),
+    ...(input.timezone ? { timezone: input.timezone } : {}),
+    ...(input.source ? { locator: input.source } : {}),
+    input: { text: input.text },
+    retention: { mode: 'extract', ...(input.mission ? { mission: input.mission } : {}) },
+  };
+  const resolved: ResolvedRetainSource = {
+    source: requested as ResolvedRetainUpsertSource,
+    requested,
+    sourceHash: inputHash,
+    sourceRef: input.source ?? 'remember',
+    binding: { kind: 'text', availability: 'available', reextractable: false },
+    degraded: [],
+  };
+  let factsAdded = 0;
+  const result = await retainCandidates(ctx, resolved, input.candidates, {
+    dryRun: input.dryRun,
+    selection: 'extracted',
+    placement: 'automatic',
+    skipAutomaticRouting: true,
+    journalOp: 'remember',
+    onIndexed: (factsDerived) => {
+      factsAdded = factsDerived;
+    },
+    initialResults: [...input.held],
+    modelUsage: { ...input.modelUsage, placement: [] },
+  });
+  return { result, factsAdded };
 }
 
 async function resolveAutomaticCandidates(
@@ -599,29 +965,50 @@ function heldCandidateResult(candidate: RetainHeldCandidate): RetainCandidateRes
   };
 }
 
-async function retractSource(
+function validateCorrectionTarget(ctx: AknoContext, source: ResolvedRetainUpsertSource): string | null {
+  if (!source.retracts) return null;
+  const target = ctx.store.db
+    .prepare('SELECT receipt_fingerprint FROM retain_receipts WHERE source_id = ? AND revision = ?')
+    .get(source.source_id, source.retracts.target_revision) as { receipt_fingerprint: string } | undefined;
+  if (!target) return 'correction target_revision was not retained for this source';
+  const active = new Set(
+    (
+      ctx.store.db
+        .prepare(
+          `SELECT candidate_id FROM retain_supports
+           WHERE receipt_fingerprint = ? AND retracted_by IS NULL AND forgotten_by IS NULL`,
+        )
+        .all(target.receipt_fingerprint) as { candidate_id: string }[]
+    ).map((row) => row.candidate_id),
+  );
+  const missing = source.retracts.candidate_ids.find((candidateId) => !active.has(candidateId));
+  return missing ? `correction target candidate ${missing} is not active` : null;
+}
+
+function correctionHoldResult(source: ResolvedRetainSource, note: string): RetainSourceResult {
+  return {
+    source_id: source.source.source_id,
+    revision: source.source.revision,
+    outcome: 'held',
+    status: 'ok',
+    reason_code: 'conflict',
+    candidates: [],
+    source: sourceResultBinding(source.binding),
+    note,
+  };
+}
+
+async function stageRetractions(
   ctx: AknoContext,
-  source: RetainRetraction,
-  dryRun: boolean,
-): Promise<RetainSourceResult> {
-  const sourceHash = sha256('retraction');
-  const requestHash = sha256(JSON.stringify(source));
-  const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
-  if (replay) return replay;
+  sourceId: string,
+  targetRevision: string,
+  candidateIds: readonly string[] | undefined,
+  stages: Map<string, PageStage>,
+): Promise<{ results: RetainCandidateResult[]; removed: SupportRow[]; valid: boolean }> {
   const target = ctx.store.db
     .prepare('SELECT * FROM retain_receipts WHERE source_id = ? AND revision = ?')
-    .get(source.source_id, source.retention.target_revision) as ReceiptRow | undefined;
-  if (!target) {
-    return {
-      source_id: source.source_id,
-      revision: source.revision,
-      outcome: 'held',
-      reason_code: 'source_unavailable',
-      candidates: [],
-      note: 'target_revision was not retained',
-    };
-  }
-
+    .get(sourceId, targetRevision) as ReceiptRow | undefined;
+  if (!target) return { results: [], removed: [], valid: false };
   const selected = ctx.store.db
     .prepare(
       `SELECT * FROM retain_supports
@@ -629,10 +1016,7 @@ async function retractSource(
        ORDER BY candidate_id`,
     )
     .all(target.receipt_fingerprint) as SupportRow[];
-  const wanted = source.retention.candidate_ids
-    ? new Set(source.retention.candidate_ids)
-    : new Set(selected.map((row) => row.candidate_id));
-  const stages = new Map<string, PageStage>();
+  const wanted = candidateIds ?? selected.map((row) => row.candidate_id);
   const results: RetainCandidateResult[] = [];
   const removed: SupportRow[] = [];
 
@@ -690,6 +1074,58 @@ async function retractSource(
       memory_id: support.memory_id,
       slug: support.slug,
     });
+  }
+  return {
+    results,
+    removed,
+    valid: results.length === wanted.length && results.every((result) => result.outcome === 'retracted'),
+  };
+}
+
+async function retractSource(
+  ctx: AknoContext,
+  source: RetainRetraction,
+  dryRun: boolean,
+): Promise<RetainSourceResult> {
+  const sourceHash = sha256('retraction');
+  const requestHash = sha256(JSON.stringify(source));
+  const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
+  if (replay) return replay;
+  const targetExists = ctx.store.db
+    .prepare('SELECT 1 FROM retain_receipts WHERE source_id = ? AND revision = ?')
+    .get(source.source_id, source.retention.target_revision);
+  if (!targetExists) {
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      reason_code: 'source_unavailable',
+      candidates: [],
+      note: 'target_revision was not retained',
+    };
+  }
+
+  const stages = new Map<string, PageStage>();
+  const staged = await stageRetractions(
+    ctx,
+    source.source_id,
+    source.retention.target_revision,
+    source.retention.candidate_ids,
+    stages,
+  );
+  const results = staged.results;
+  const removed = staged.removed;
+
+  if (!staged.valid) {
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      status: 'ok',
+      reason_code: 'conflict',
+      candidates: results,
+      note: 'one or more retraction targets no longer match owned memory; nothing was changed',
+    };
   }
 
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
@@ -785,7 +1221,7 @@ function sourceGroupIssue(ctx: AknoContext, sourceId: string, group: string | un
 
 function candidateIssue(
   ctx: AknoContext,
-  source: RetainUpsertSource,
+  source: ResolvedRetainUpsertSource,
   candidate: ResolvedRetainCandidate,
   candidateIds: ReadonlySet<string>,
 ): string | null {
@@ -885,7 +1321,7 @@ const RELATIVE_TIME =
   /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b/i;
 
 function structuredAttributionIssue(
-  source: RetainUpsertSource,
+  source: ResolvedRetainUpsertSource,
   candidate: ProvidedRetainCandidate,
 ): string | null {
   if (!('items' in source.input)) return null;
@@ -912,7 +1348,7 @@ function structuredAttributionIssue(
   return null;
 }
 
-function spansIssue(source: RetainUpsertSource, spans: readonly RetainSourceSpan[]): string | null {
+function spansIssue(source: ResolvedRetainUpsertSource, spans: readonly RetainSourceSpan[]): string | null {
   if ('text' in source.input) {
     for (const span of spans) {
       if (span.item_id) return 'item_id is invalid for unstructured text';
@@ -989,7 +1425,7 @@ async function pageStage(
   if (!row && (await fsp.stat(absolute).catch(() => null))) {
     return { issue: 'unindexed_page_exists' };
   }
-  const title = safeTitle(subject) || slugTitle(slug);
+  const title = managedPageTitle(subject, slug);
   const stage: PageStage = {
     slug,
     relPath,
@@ -998,6 +1434,88 @@ async function pageStage(
   };
   stages.set(slug, stage);
   return stage;
+}
+
+async function preservedSourceStage(
+  ctx: AknoContext,
+  stages: Map<string, PageStage>,
+  slug: string,
+  input: RetainSourceInput,
+): Promise<PageStage | { issue: string; reasonCode: RetainHoldReason }> {
+  if (!('text' in input || 'items' in input)) {
+    return { issue: 'only inline source input can be preserved', reasonCode: 'validation_failed' };
+  }
+  if (isReserved(slug, ctx.config)) {
+    return { issue: 'preserved source destination is reserved', reasonCode: 'no_writable_destination' };
+  }
+  const content = serializePreservedSource(slug, input);
+  const row = ctx.store.db
+    .prepare('SELECT rel_path, role, remember_management FROM pages WHERE slug = ?')
+    .get(slug) as { rel_path: string; role: string; remember_management: string } | undefined;
+  if (row && (row.role !== 'source' || row.remember_management !== 'deny')) {
+    return {
+      issue: 'preserved source destination must be source + remember: deny',
+      reasonCode: 'no_writable_destination',
+    };
+  }
+  const relPath = row?.rel_path ?? `${slug}.md`;
+  const absolute = path.join(ctx.config.aknoPath, relPath);
+  if (row) {
+    const before = await fsp.readFile(absolute, 'utf8').catch(() => null);
+    if (before === null) {
+      return { issue: 'preserved source destination is unreadable', reasonCode: 'source_unavailable' };
+    }
+    if (before !== content) {
+      return {
+        issue: 'preserved source destination already contains different bytes',
+        reasonCode: 'conflict',
+      };
+    }
+    const stage = { slug, relPath, before, after: before };
+    stages.set(slug, stage);
+    return stage;
+  }
+  if (await fsp.stat(absolute).catch(() => null)) {
+    return { issue: 'an unindexed page exists at the preserved source destination', reasonCode: 'conflict' };
+  }
+  const policy = effectiveRule(slug, ctx.config.rules);
+  const roleRule = declaringRule(slug, ctx.config.rules, 'role');
+  const rememberRule = declaringRule(slug, ctx.config.rules, 'remember');
+  if (policy.role !== 'source' || policy.remember !== 'deny' || !roleRule || !rememberRule) {
+    return {
+      issue: 'preserved source folder must explicitly declare role: source and remember: deny',
+      reasonCode: 'no_writable_destination',
+    };
+  }
+  const gate = ctx.gate.check(slug, ctx.actor);
+  if (!gate.allowed) {
+    return {
+      issue: `preserved source folder is not declared: ${gate.requiresFolder.folder}`,
+      reasonCode: 'no_writable_destination',
+    };
+  }
+  const stage = { slug, relPath, before: null, after: content };
+  stages.set(slug, stage);
+  return stage;
+}
+
+function serializePreservedSource(slug: string, input: InlineRetainInput): string {
+  const title = slugTitle(slug);
+  const body =
+    'text' in input
+      ? input.text
+      : input.items
+          .map((item) => {
+            const attributes = [
+              `id=${encodeURIComponent(item.item_id)}`,
+              ...(item.role ? [`role=${item.role}`] : []),
+              ...(item.speaker ? [`speaker=${encodeURIComponent(item.speaker)}`] : []),
+              ...(item.mentioned_at ? [`mentioned-at=${encodeURIComponent(item.mentioned_at)}`] : []),
+            ];
+            return `<!-- akno:source-item ${attributes.join(' ')} -->\n${item.text}`;
+          })
+          .join('\n\n');
+  return `---\ntitle: ${serializeYamlString(title, 'title')}\nakno:\n  role: source\n  management:\n    remember: deny\n---\n\n# ${title}\n\n## Source\n\n${body}\n`;
 }
 
 async function existingPageStage(
@@ -1076,6 +1594,7 @@ async function commitStages(
   ctx: AknoContext,
   stages: readonly PageStage[],
   summary: string,
+  op: 'retain' | 'remember' = 'retain',
 ): Promise<{ changeId: string; files: ChangeFile[] } | null> {
   if (stages.length === 0) return null;
   const files: ChangeFile[] = [];
@@ -1083,7 +1602,7 @@ async function commitStages(
     for (const stage of stages) {
       files.push(fileEntry(await writeFileAtomic(ctx.config.aknoPath, stage.relPath, stage.after)));
     }
-    const changeId = ctx.journal.record({ actor: ctx.actor, op: 'retain', summary, files });
+    const changeId = ctx.journal.record({ actor: ctx.actor, op, summary, files });
     return { changeId, files };
   } catch (error) {
     const failures: string[] = [];
@@ -1131,11 +1650,12 @@ async function rollbackCommittedStages(
   );
 }
 
-async function reindexStages(ctx: AknoContext, stages: readonly PageStage[]): Promise<void> {
-  if (stages.length === 0) return;
+async function reindexStages(ctx: AknoContext, stages: readonly PageStage[]): Promise<number> {
+  if (stages.length === 0) return 0;
   const paths = stages.map((stage) => stage.relPath);
-  await ctx.indexer.runForeground({ only: paths, modelPaths: [] });
+  const report = await ctx.indexer.runForeground({ only: paths, modelPaths: [] });
   ctx.derive.schedule(paths);
+  return report.factsDerived;
 }
 
 function persistReceipt(
@@ -1150,6 +1670,7 @@ function persistReceipt(
     changeId: string | null;
     supports: readonly PendingSupport[];
     retracted: readonly SupportRow[];
+    binding?: RetainSourceBinding;
   },
 ): void {
   const now = new Date().toISOString();
@@ -1203,11 +1724,30 @@ function persistReceipt(
     for (const support of input.retracted) {
       retract.run(input.receiptFingerprint, support.receipt_fingerprint, support.candidate_id);
     }
+    if (input.binding) {
+      ctx.store.db
+        .prepare(
+          `INSERT INTO retain_source_bindings(
+             receipt_fingerprint, input_kind, input_ref, preserved_slug,
+             availability, reextractable, created_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          input.receiptFingerprint,
+          input.binding.kind,
+          input.binding.reference ?? null,
+          input.binding.preservedSlug ?? null,
+          input.binding.availability,
+          input.binding.reextractable ? 1 : 0,
+          now,
+        );
+    }
   });
   reconcileRetainManagedSources(ctx, [
     ...input.supports.map((support) => support.memory_id),
     ...input.retracted.map((support) => support.memory_id),
   ]);
+  if (input.retracted.length > 0) pruneRetainEvidence(ctx, { apply: true });
 }
 
 function sourceEvidence(candidate: ProvidedRetainCandidate): string {
@@ -1276,6 +1816,16 @@ function newManagedPage(title: string): string {
 function slugTitle(slug: string): string {
   const name = slug.slice(slug.lastIndexOf('/') + 1).replaceAll('-', ' ');
   return name.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function managedPageTitle(subject: string, slug: string): string {
+  const cleaned = safeTitle(subject);
+  if (!cleaned) return titleFromSlug(slug);
+  const named = contentWords(slug.slice(slug.lastIndexOf('/') + 1));
+  for (const word of contentWords(cleaned)) {
+    if (named.has(word)) return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+  return titleFromSlug(slug);
 }
 
 function safeTitle(value: string): string {

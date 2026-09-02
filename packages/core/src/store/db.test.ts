@@ -988,4 +988,33 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds retain source bindings and evidence lifetime state to version thirty-eight', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-retain-source-lifetime-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 32)) legacy.exec(migration);
+    legacy.pragma('user_version = 38');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const supportColumns = store.db.pragma('table_info(retain_supports)') as { name: string }[];
+    const bindingColumns = store.db.pragma('table_info(retain_source_bindings)') as { name: string }[];
+    expect(supportColumns.map((column) => column.name)).toContain('evidence_pruned_at');
+    expect(bindingColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'receipt_fingerprint',
+        'input_kind',
+        'input_ref',
+        'preserved_slug',
+        'availability',
+        'reextractable',
+      ]),
+    );
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

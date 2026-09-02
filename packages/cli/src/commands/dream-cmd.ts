@@ -879,6 +879,14 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     ]);
   }
 
+  if (report.retainEvidencePrune && report.retainEvidencePrune.supports > 0) {
+    heading('Retain evidence lifetime');
+    kv([
+      ['private source frames pruned', report.retainEvidencePrune.supports],
+      ['private bytes removed', report.retainEvidencePrune.privateBytes],
+    ]);
+  }
+
   printAutoEstimate(report.autoEstimate, report.modelUsage);
 
   if (report.rejected.length > 0) {
@@ -1223,6 +1231,7 @@ export function safeDreamReport(report: DreamReport): Record<string, unknown> {
     maintenancePlan: report.maintenancePlan ? safeMaintenancePlan(report.maintenancePlan) : null,
     maintenancePlans: (report.maintenancePlans ?? []).map(safeMaintenancePlan),
     planPrune: report.planPrune,
+    retainEvidencePrune: report.retainEvidencePrune,
     rejectedByGuard: report.rejected.length,
     adopted: {
       total: report.adopted.length,

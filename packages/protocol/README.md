@@ -22,6 +22,16 @@ OPS.timeline.input.parse({
   timezone: 'Europe/Amsterdam',
   view: 'actionable',
 });
+OPS.retain.input.parse({
+  sources: [
+    {
+      source_id: 'manual:1111',
+      revision: '1',
+      input: { page_slug: 'sources/zephyr-manual' },
+      retention: { mode: 'extract' },
+    },
+  ],
+});
 ```
 
 Full documentation: [github.com/tenphi/akno](https://github.com/tenphi/akno#readme)

@@ -25,7 +25,10 @@ async function openMem(): Promise<Akno> {
         derive: { id: null },
         expansion: { id: null },
       },
-      folders: { 'memory/**': { role: 'knowledge', remember: 'integrate' } },
+      folders: {
+        'memory/**': { role: 'knowledge', remember: 'integrate' },
+        'sources/**': { role: 'source', remember: 'deny', ingest: 'document' },
+      },
     },
   });
 }
@@ -124,6 +127,7 @@ beforeEach(async () => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-retain-kb-'));
   stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-retain-state-'));
   fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'sources'), { recursive: true });
   fs.writeFileSync(
     path.join(root, 'memory/equipment.md'),
     '---\ntitle: Equipment\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# Equipment\n\n## Warranty\n',
@@ -485,6 +489,349 @@ describe('provided exact retain', () => {
       await mem.close();
     }
   });
+
+  it('retains from an indexed source page but refuses a canonical knowledge page as input', async () => {
+    fs.writeFileSync(
+      path.join(root, 'sources/zephyr-manual.md'),
+      '---\ntitle: Zephyr manual\nakno:\n  role: source\n  management:\n    remember: deny\n---\n\n# Zephyr manual\n\nThe Zephyr QX-100 warranty lasts five years.\n',
+      'utf8',
+    );
+    const mem = await openMem();
+    try {
+      await mem.index({ structuralOnly: true });
+      const source = upsert('manual:1111', '1', 'The Zephyr QX-100 warranty lasts five years.');
+      source.input = { page_slug: 'sources/zephyr-manual' } as never;
+      source.retention.candidates[0] = {
+        ...source.retention.candidates[0]!,
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        attribution: { source_role: 'external', source_speaker: 'Vulpine Mutual' },
+        epistemic: { basis: 'source_report' },
+        support: [{ quote: 'The Zephyr QX-100 warranty lasts five years.' }],
+        discourse_frame: [{ quote: 'The Zephyr QX-100 warranty lasts five years.' }],
+      };
+
+      const retained = await mem.retain({ sources: [source] });
+      expect(retained.sources[0]).toMatchObject({
+        outcome: 'ok',
+        source: {
+          kind: 'page',
+          availability: 'available',
+          reextractable: true,
+          reference: 'sources/zephyr-manual',
+        },
+      });
+
+      const refused = await mem.retain({
+        sources: [
+          {
+            ...source,
+            source_id: 'page:2222',
+            input: { page_slug: 'memory/equipment' },
+          },
+        ],
+      });
+      expect(refused.status).toBe('unavailable');
+      expect(refused.sources[0]).toMatchObject({
+        outcome: 'held',
+        reason_code: 'validation_failed',
+        source: { kind: 'page', availability: 'unavailable' },
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('preserves an inline source and its retained memory in one undoable change', async () => {
+    const mem = await openMem();
+    try {
+      const source = {
+        ...upsert('mail:archive-1111', '1'),
+        preserve_source: { mode: 'source_page' as const, slug: 'sources/warranty-message' },
+      };
+      const retained = await mem.retain({ sources: [source] });
+
+      expect(retained.sources[0]).toMatchObject({
+        outcome: 'ok',
+        source: { kind: 'text', reextractable: true, preserved_slug: 'sources/warranty-message' },
+      });
+      const archive = fs.readFileSync(path.join(root, 'sources/warranty-message.md'), 'utf8');
+      expect(archive).toContain('role: source');
+      expect(archive).toContain('remember: deny');
+      expect(archive).toContain('Ada Marlow selected a five-year warranty.');
+      expect(
+        mem
+          .changes()[0]
+          ?.files.map((file) => file.relPath)
+          .sort(),
+      ).toEqual(['memory/equipment.md', 'sources/warranty-message.md']);
+      const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      expect(
+        db
+          .prepare(
+            `SELECT input_kind, input_ref, preserved_slug, availability, reextractable
+               FROM retain_source_bindings`,
+          )
+          .get(),
+      ).toEqual({
+        input_kind: 'text',
+        input_ref: null,
+        preserved_slug: 'sources/warranty-message',
+        availability: 'available',
+        reextractable: 1,
+      });
+      db.close();
+
+      await mem.undo({ change_id: retained.sources[0]!.change_id! });
+      expect(fs.existsSync(path.join(root, 'sources/warranty-message.md'))).toBe(false);
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).not.toContain('akno:item');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('refuses to use one page as both a preserved source and a memory destination', async () => {
+    const mem = await openMem();
+    try {
+      const source = {
+        ...upsert('mail:archive-2222', '1'),
+        preserve_source: { mode: 'source_page' as const, slug: 'sources/warranty-message' },
+      };
+      source.retention.candidates[0] = {
+        ...source.retention.candidates[0]!,
+        destination: { slug: 'sources/warranty-message' },
+      };
+
+      const retained = await mem.retain({ sources: [source] });
+
+      expect(retained.sources[0]).toMatchObject({
+        outcome: 'held',
+        reason_code: 'validation_failed',
+      });
+      expect(fs.existsSync(path.join(root, 'sources/warranty-message.md'))).toBe(false);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('atomically replaces exact support in a corrected source revision', async () => {
+    const mem = await openMem();
+    try {
+      const original = upsert('mail:correction-1111', '1');
+      const first = await mem.retain({ sources: [original] });
+      const correctedText = 'Ada Marlow selected a seven-year warranty.';
+      const corrected = upsert('mail:correction-1111', '2', correctedText);
+      corrected.retention.candidates[0] = {
+        ...corrected.retention.candidates[0]!,
+        text: correctedText,
+        support: [{ quote: correctedText }],
+        discourse_frame: [{ quote: correctedText }],
+      };
+      const result = await mem.retain({
+        sources: [
+          {
+            ...corrected,
+            retracts: { target_revision: '1', candidate_ids: ['warranty-selection'] },
+          },
+        ],
+      });
+
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'ok',
+        candidates: [{ candidate_id: 'warranty-selection', outcome: 'written' }],
+      });
+      const body = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect(body).toContain(correctedText);
+      expect(body).not.toContain('five-year warranty');
+
+      await mem.undo({ change_id: result.sources[0]!.change_id! });
+      const restored = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect(restored).toContain('five-year warranty');
+      expect(restored).not.toContain('seven-year warranty');
+      expect((await mem.retain({ sources: [original] })).sources[0]?.outcome).toBe('replayed');
+      expect(first.sources[0]?.candidates[0]?.memory_id).toBeDefined();
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('keeps earlier support when any compound-correction replacement is held', async () => {
+    const mem = await openMem();
+    try {
+      const original = upsert('mail:correction-2222', '1');
+      await mem.retain({ sources: [original] });
+      const correctedText = 'Ada Marlow selected a seven-year warranty.';
+      const corrected = upsert('mail:correction-2222', '2', correctedText);
+      corrected.retention.candidates[0] = {
+        ...corrected.retention.candidates[0]!,
+        text: correctedText,
+        support: [{ quote: correctedText }],
+        discourse_frame: [{ quote: correctedText }],
+      };
+      corrected.retention.candidates.push({
+        ...corrected.retention.candidates[0]!,
+        candidate_id: 'missing-support',
+        text: 'Bo Winters selected a three-year warranty.',
+        support: [{ quote: 'This quote is absent from the source.' }],
+        discourse_frame: [{ quote: 'This quote is absent from the source.' }],
+      });
+
+      const result = await mem.retain({
+        sources: [
+          {
+            ...corrected,
+            retracts: { target_revision: '1', candidate_ids: ['warranty-selection'] },
+          },
+        ],
+      });
+
+      expect(result.sources[0]).toMatchObject({
+        outcome: 'held',
+        reason_code: 'validation_failed',
+      });
+      const body = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect(body).toContain('five-year warranty');
+      expect(body).not.toContain('seven-year warranty');
+      const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      expect(
+        db
+          .prepare('SELECT COUNT(*) AS count FROM retain_receipts WHERE source_id = ?')
+          .get('mail:correction-2222'),
+      ).toEqual({ count: 1 });
+      db.close();
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('reports missing document references as unavailable rather than empty', async () => {
+    const mem = await openMem();
+    try {
+      const source = upsert('document:missing-1111', '1');
+      source.input = { document_id: 'doc_missing_1111' } as never;
+      const result = await mem.retain({ sources: [source] });
+      expect(result.status).toBe('unavailable');
+      expect(result.sources[0]).toMatchObject({
+        status: 'unavailable',
+        outcome: 'held',
+        reason_code: 'source_unavailable',
+        source: { kind: 'document', availability: 'unavailable' },
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('retains from indexed document text and reports a missing original as degraded', async () => {
+    const sourceText = 'The Zephyr QX-100 warranty lasts five years.';
+    const documentPath = path.join(root, 'sources/zephyr-manual.txt');
+    fs.writeFileSync(documentPath, sourceText, 'utf8');
+    const mem = await openMem();
+    try {
+      await mem.index({ structuralOnly: true });
+      const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      const document = db
+        .prepare("SELECT id, rel_path FROM documents WHERE rel_path = 'sources/zephyr-manual.txt'")
+        .get() as { id: string; rel_path: string };
+      db.close();
+      expect(document.id).toBeTruthy();
+      fs.unlinkSync(documentPath);
+      await mem.index({ structuralOnly: true });
+      const retainedExtraction = new Database(path.join(stateDir, 'akno.db'));
+      retainedExtraction.prepare('UPDATE documents SET text = ? WHERE id = ?').run(sourceText, document.id);
+      retainedExtraction.close();
+
+      const source = upsert('document:manual-2222', '1', sourceText);
+      source.input = { document_id: document.id } as never;
+      source.retention.candidates[0] = {
+        ...source.retention.candidates[0]!,
+        text: sourceText,
+        attribution: { source_role: 'external', source_speaker: 'Vulpine Mutual' },
+        epistemic: { basis: 'source_report' },
+        support: [{ quote: sourceText }],
+        discourse_frame: [{ quote: sourceText }],
+      };
+      const retained = await mem.retain({ sources: [source] });
+
+      expect(retained.status).toBe('degraded');
+      expect(retained.sources[0]).toMatchObject({
+        outcome: 'ok',
+        status: 'degraded',
+        degraded: expect.arrayContaining(['document_source_missing']),
+        source: {
+          kind: 'document',
+          availability: 'degraded',
+          reextractable: true,
+          reference: document.id,
+        },
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('prunes inactive private evidence after its grace without touching live support', async () => {
+    const mem = await openMem();
+    try {
+      await mem.retain({ sources: [upsert('mail:evidence-1111', '1')] });
+      let db = new Database(path.join(stateDir, 'akno.db'));
+      db.prepare("UPDATE retain_receipts SET created_at = '2000-01-01T00:00:00.000Z'").run();
+      const support = db.prepare('SELECT memory_id FROM retain_supports').get() as { memory_id: string };
+      db.close();
+
+      const liveCycle = await mem.dream({ phase: 'housekeeping' });
+      expect(liveCycle.retainEvidencePrune?.supports).toBe(0);
+      db = new Database(path.join(stateDir, 'akno.db'));
+      expect(db.prepare('SELECT length(evidence) AS bytes FROM retain_supports').get()).toMatchObject({
+        bytes: expect.any(Number),
+      });
+      db.close();
+
+      await mem.retain({
+        sources: [
+          {
+            source_id: 'mail:evidence-1111',
+            revision: 'retract-1',
+            retention: { mode: 'retract', target_revision: '1', reason: 'source_deleted' },
+          },
+        ],
+      });
+      db = new Database(path.join(stateDir, 'akno.db'));
+      db.prepare("UPDATE retain_receipts SET created_at = '2000-01-01T00:00:00.000Z'").run();
+      db.prepare(
+        `INSERT INTO maintenance_plans(
+           id, created_at, updated_at, mode, phase, status, fingerprint, summary
+         ) VALUES ('plan_1111', ?, ?, 'review', 'curate', 'review', 'fp_1111', 'Invented review')`,
+      ).run('2000-01-01T00:00:00.000Z', '2000-01-01T00:00:00.000Z');
+      db.prepare(
+        `INSERT INTO maintenance_items(
+           id, plan_id, ord, kind, risk, status, subject, rationale, input_hash,
+           operations, evidence, updated_at
+         ) VALUES ('item_1111', 'plan_1111', 0, 'curate', 'low', 'proposed',
+                   'Invented subject', 'Invented rationale', 'hash_1111', ?, '[]', ?)`,
+      ).run(
+        JSON.stringify([{ op: 'replace_managed', memory_id: support.memory_id }]),
+        '2000-01-01T00:00:00.000Z',
+      );
+      db.close();
+
+      const deferred = await mem.dream({ phase: 'housekeeping' });
+      expect(deferred.retainEvidencePrune?.supports).toBe(0);
+      db = new Database(path.join(stateDir, 'akno.db'));
+      db.prepare("DELETE FROM maintenance_plans WHERE id = 'plan_1111'").run();
+      db.close();
+
+      const pruned = await mem.dream({ phase: 'housekeeping' });
+      expect(pruned.retainEvidencePrune).toMatchObject({ applied: true, supports: 1 });
+      db = new Database(path.join(stateDir, 'akno.db'));
+      expect(db.prepare('SELECT evidence, evidence_pruned_at FROM retain_supports').get()).toMatchObject({
+        evidence: '',
+        evidence_pruned_at: expect.any(String),
+      });
+      db.close();
+    } finally {
+      await mem.close();
+    }
+  });
 });
 
 describe('automatic retain', () => {
@@ -612,6 +959,7 @@ describe('automatic retain', () => {
             source_id: 'conversation:4444',
             revision: 'turn-1',
             input: { text: `Ada Marlow wrote: ${'invented context '.repeat(8_000)}` },
+            preserve_source: { mode: 'source_page', slug: 'sources/oversized-conversation' },
             retention: { mode: 'extract' },
           },
         ],
@@ -623,9 +971,11 @@ describe('automatic retain', () => {
         status: 'ok',
         reason_code: 'context_too_large',
         candidates: [],
+        source: { kind: 'text', reextractable: false },
         model_usage: { extraction: null, verification: null, placement: [] },
       });
       expect(result.sources[0]?.note).toContain('did not truncate');
+      expect(fs.existsSync(path.join(root, 'sources/oversized-conversation.md'))).toBe(false);
       expect(stub.calls()).toEqual({ extraction: 0, verification: 0, placement: 0 });
 
       const replay = await mem.retain(input);

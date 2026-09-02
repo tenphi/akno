@@ -35,6 +35,18 @@ const timeline = await akno.timeline({
 });
 const retained = timeline.results.filter(isTimelineMemory);
 
+// A stable external source can be retained replay-safely without copying stored source bytes.
+await akno.retain({
+  sources: [
+    {
+      source_id: 'manual:1111',
+      revision: '1',
+      input: { page_slug: 'sources/zephyr-manual' },
+      retention: { mode: 'extract' },
+    },
+  ],
+});
+
 // HTTP is public read-only on loopback by default. A configured bearer identity
 // grants exactly its server-owned actor and operation set.
 const remote = await connect({

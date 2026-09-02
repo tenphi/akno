@@ -137,8 +137,10 @@ See [The memory lifecycle](docs/memory-lifecycle.md) for the everyday human/agen
 
 Use `remember` for one unkeyed transcript or note when Akno should extract and route durable memory. Use
 `retain` when a host has a stable source id and revision and needs replay safety. The host may provide the full
-typed candidates or let Akno extract, independently verify, and automatically place them. Identical revisions
-replay before another model call or write; explicit retraction removes only the addressed source support. See
+typed candidates or let Akno extract, independently verify, and automatically place them from inline input,
+an indexed source page, or an indexed document. Inline input can explicitly archive a source page in the same
+atomic change; corrected revisions can replace exact earlier support. Identical revisions replay before another
+model call or write, and private exact evidence expires only after its live/workflow dependencies and grace. See
 [Writing and ingestion](docs/writing.md#retain-identified-sources) for the complete request shape.
 
 ## Autonomous maintenance

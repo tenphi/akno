@@ -82,8 +82,11 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
 - Use `remember` when Akno must decide what is durable and where it belongs.
 - Use `retain` when a host has a stable source id and revision. Extract mode interprets and independently
   verifies coherent source context before automatic placement; provided mode accepts typed candidates with
-  either exact or automatic placement. Every mode validates byte-exact source spans, preserves discourse and
-  attribution, suppresses identical revision replays, and retracts only explicitly addressed source support.
+  either exact or automatic placement. Input may be inline text/items or an indexed source page/document.
+  Inline input may explicitly archive one `source + remember: deny` page in the same source-scoped change, and
+  `retracts` can replace exact prior support atomically. Every mode validates byte-exact source spans, preserves
+  discourse and attribution, suppresses identical revision replays, and retracts only explicitly addressed
+  source support.
 - Treat `no_writable_destination` as an authorization hold, not an empty memory result: inspect the typed
   approval reason and name or admit a destination. `requires_folder` instead asks the caller to declare taxonomy.
 - `maintenance.retain.fallback_page` can provide one exact last-resort destination. It is used only after

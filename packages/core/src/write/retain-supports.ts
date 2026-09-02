@@ -67,4 +67,85 @@ export function forgetRetainSupports(ctx: AknoContext, memoryIds: Iterable<strin
     for (const memoryId of ids) retire.run(changeId, memoryId);
   });
   reconcileRetainManagedSources(ctx, ids);
+  pruneRetainEvidence(ctx, { apply: true });
+}
+
+export interface RetainEvidencePruneResult {
+  applied: boolean;
+  graceDays: number;
+  cutoff: string;
+  supports: number;
+  privateBytes: number;
+}
+
+/**
+ * Remove exact private quotes only after their support is inactive, its grace has elapsed, and
+ * no nonterminal maintenance work still names the managed item. Replay identity, hashes, source
+ * bindings, and compact candidate receipts remain durable.
+ */
+export function pruneRetainEvidence(
+  ctx: AknoContext,
+  options: { apply?: boolean; now?: Date } = {},
+): RetainEvidencePruneResult {
+  const now = options.now ?? new Date();
+  const graceDays = ctx.config.maintenance.retain.evidenceGraceDays;
+  const cutoff = new Date(now.getTime() - graceDays * 86_400_000).toISOString();
+  const dependencies = `NOT EXISTS (
+    SELECT 1
+      FROM maintenance_items item
+      JOIN maintenance_plans plan ON plan.id = item.plan_id
+     WHERE plan.status NOT IN ('completed', 'failed', 'superseded')
+       AND (
+         instr(item.operations, support.memory_id) > 0 OR
+         instr(item.evidence, support.memory_id) > 0 OR
+         EXISTS (
+           SELECT 1 FROM maintenance_item_revisions revision
+            WHERE revision.item_id = item.id
+              AND instr(revision.operations, support.memory_id) > 0
+         )
+       )
+  )`;
+  const eligible = `
+    FROM retain_supports support
+    JOIN retain_receipts receipt
+      ON receipt.receipt_fingerprint = support.receipt_fingerprint
+    LEFT JOIN retain_receipts retraction
+      ON retraction.receipt_fingerprint = support.retracted_by
+    LEFT JOIN changes forgotten
+      ON forgotten.id = support.forgotten_by
+   WHERE support.evidence_pruned_at IS NULL
+     AND length(support.evidence) > 0
+     AND (support.retracted_by IS NOT NULL OR support.forgotten_by IS NOT NULL)
+     AND coalesce(retraction.created_at, forgotten.at, receipt.created_at) <= ?
+     AND ${dependencies}`;
+  const row = ctx.store.db
+    .prepare(
+      `SELECT count(*) AS supports,
+              coalesce(sum(length(CAST(support.evidence AS BLOB))), 0) AS private_bytes
+       ${eligible}`,
+    )
+    .get(cutoff) as { supports: number; private_bytes: number };
+  const result: RetainEvidencePruneResult = {
+    applied: options.apply === true,
+    graceDays,
+    cutoff,
+    supports: row.supports,
+    privateBytes: row.private_bytes,
+  };
+  if (!options.apply || row.supports === 0 || ctx.store.readOnly) return result;
+
+  ctx.store.transaction(() => {
+    ctx.store.db
+      .prepare(
+        `UPDATE retain_supports AS support
+            SET evidence = '', evidence_pruned_at = ?
+          WHERE (support.receipt_fingerprint, support.candidate_id) IN (
+            SELECT support.receipt_fingerprint, support.candidate_id ${eligible}
+          )`,
+      )
+      .run(now.toISOString(), cutoff);
+    ctx.store.db.prepare('DELETE FROM managed_item_source_verdicts').run();
+  });
+  ctx.store.db.pragma('wal_checkpoint(TRUNCATE)');
+  return result;
 }

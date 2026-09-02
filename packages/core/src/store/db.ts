@@ -31,6 +31,7 @@ import {
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   OBSERVATION_PROJECTION_MIGRATION_INDEX,
   RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX,
+  RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX,
   RETAIN_RECEIPTS_MIGRATION_INDEX,
   SCHEMA_VERSION,
   SEMANTIC_MERGE_EMBEDDINGS_MIGRATION_INDEX,
@@ -220,6 +221,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableDefinitionIncludes(db, 'retain_receipts', "'extract_automatic'")) {
         db.exec(MIGRATIONS[RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'retain_source_bindings')) {
+        db.exec(MIGRATIONS[RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX]!);
       }
       if (!columnExists(db, 'maintenance_items', 'component_count')) {
         db.exec(MIGRATIONS[MAINTENANCE_ITEM_COMPONENT_COUNT_MIGRATION_INDEX]!);

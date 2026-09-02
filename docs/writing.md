@@ -107,8 +107,10 @@ which use `akno plan decide`.
 
 ## Retain identified sources
 
-`retain` is the host-facing path when source identity must survive retries. It accepts coherent text or ordered
-source items for extraction, caller-provided semantic candidates, and explicit source-scoped retraction:
+`retain` is the host-facing path when source identity must survive retries. It accepts coherent inline text,
+ordered source items, an indexed source-page slug, or an indexed document id. It supports extracted or
+caller-provided semantic candidates, explicit atomic correction, optional inline-source archival, and
+standalone source-scoped retraction:
 
 ```bash
 akno retain request.json
@@ -260,6 +262,57 @@ A later revision never implies deletion. Retraction names the earlier `target_re
 candidate ids. When another source still supports the same memory, Akno removes only the addressed support and
 keeps the readable item. An explicit user `forget` also retires keyed support, so replaying an old source
 revision cannot resurrect memory the user removed; undo restores both the Markdown and its support state.
+
+To retain from source bytes Akno already owns, use exactly one reference input:
+
+```json
+{ "input": { "page_slug": "sources/zephyr-manual" } }
+{ "input": { "document_id": "doc_1111" } }
+```
+
+`page_slug` accepts only a page whose effective role is `source`; feeding a canonical knowledge page back into
+retention is refused. A document with readable retained extraction remains usable with `degraded` availability
+when its original is missing. A document with no readable original, extraction, or rendition is `unavailable`,
+not an empty source. The receipt keeps only the binding and bounded evidence frames—never a second full-source
+copy.
+
+Inline input is also not archived by default. An automatic host that intentionally needs “archive and retain”
+can add:
+
+```json
+{
+  "preserve_source": {
+    "mode": "source_page",
+    "slug": "sources/warranty-message"
+  }
+}
+```
+
+The exact destination must be new (or already byte-identical) and explicitly governed by `role: source` plus
+`remember: deny`. Its deterministic readable page and every accepted memory write share one journal change. A
+source-level extraction failure writes neither; individual candidate holds remain visible while the archive and
+other accepted candidates commit together. Retraction never deletes this separately requested archive.
+
+A corrected source revision can explicitly remove earlier candidates in that same atomic apply:
+
+```json
+{
+  "revision": "2",
+  "retracts": {
+    "target_revision": "1",
+    "candidate_ids": ["warranty-selection"]
+  }
+}
+```
+
+Targets are validated before extraction spends a model call. The earlier marker/support is checked again
+against current bytes before replacement. Omission from a newer probabilistic extraction still retracts
+nothing.
+
+Private exact frames remain while support is live or nonterminal maintenance work needs the managed item.
+After retraction/forget and `maintenance.retain.evidence_grace_days` (30 by default), writable dream runs
+securely prune eligible quotes while retaining replay identity, hashes, and reextractable page/document or
+explicit archive bindings.
 
 ## Brain migration
 
