@@ -1,5 +1,18 @@
 # @tenphi/akno-client
 
+## 0.7.0
+
+### Minor Changes
+
+- [#44](https://github.com/tenphi/akno/pull/44) [`51529b4`](https://github.com/tenphi/akno/commit/51529b472bac914ecfde4b1fa15dd5fc01ce3d90) Thanks [@tenphi](https://github.com/tenphi)! - Co-locate evidence-backed level-two observations on exact-subject pages with independent proof lineage,
+  planned lifecycle transitions, level-aware recall, leaf-expanded answer citations, graph projection, indexed
+  reflection, and an explicit reversible migration for legacy detached observation lines.
+
+### Patch Changes
+
+- Updated dependencies [[`51529b4`](https://github.com/tenphi/akno/commit/51529b472bac914ecfde4b1fa15dd5fc01ce3d90)]:
+  - @tenphi/akno-protocol@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
