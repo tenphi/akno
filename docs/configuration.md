@@ -202,6 +202,7 @@ fail:
   "maintenance": {
     "retain": {
       "fallback_page": "memory/inbox",
+      "evidence_grace_days": 30,
     },
   },
 }
@@ -217,6 +218,12 @@ showing page content.
 The fallback is deliberately last in the routing order: an admitted semantic match wins first, then an admitted
 new managed page proposed by retention, then the configured fallback. Without any authorized destination,
 `remember` returns a typed hold.
+
+`evidence_grace_days` defaults to `30`. It applies only after retained support becomes inactive through exact
+retraction or user forget; active support has no age limit. Nonterminal maintenance work that still names the
+managed item also blocks pruning. A value of `0` permits immediate secure pruning once those dependencies are
+gone. This removes bounded private quotes from local state, not Markdown, replay hashes, compact receipts, or
+stored page/document bindings.
 
 Interactive `akno init` can configure this boundary without examining page content. It classifies visible
 top-level directories as managed memory, read-only knowledge, or source/reference material and can add a

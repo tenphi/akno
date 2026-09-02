@@ -426,6 +426,14 @@ describe('what remember reports as written', () => {
             input_hash: string;
           }
         | undefined;
+      const receipt = db
+        .prepare(
+          `SELECT receipt.mode, binding.input_kind
+             FROM retain_receipts receipt
+             JOIN retain_source_bindings binding
+               ON binding.receipt_fingerprint = receipt.receipt_fingerprint`,
+        )
+        .get();
       db.close();
       expect(source).toEqual({
         source_ref: 'fixture:conversation',
@@ -434,14 +442,20 @@ describe('what remember reports as written', () => {
         evidence_hash: sha256(evidence),
         input_hash: sha256(input),
       });
+      expect(receipt).toEqual({ mode: 'extract_automatic', input_kind: 'text' });
+      expect(mem.changes()[0]?.op).toBe('remember');
 
       await mem.undo({ change_id: result.change_id! });
       const afterUndo = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
       const remaining = afterUndo.prepare('SELECT COUNT(*) AS n FROM managed_item_sources').get() as {
         n: number;
       };
+      const remainingReceipts = afterUndo.prepare('SELECT COUNT(*) AS n FROM retain_receipts').get() as {
+        n: number;
+      };
       afterUndo.close();
       expect(remaining.n).toBe(0);
+      expect(remainingReceipts.n).toBe(0);
     } finally {
       await mem.close();
     }

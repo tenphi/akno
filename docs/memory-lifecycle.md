@@ -139,6 +139,12 @@ A successful retained item has a stable marker around the generated sentence. Th
 boundary: later maintenance may inspect and repair that item without acquiring authority over the human prose
 around it.
 
+Both keyed `retain` and unkeyed `remember` reach the same owned-block writer and exact evidence validator.
+Keyed sources additionally keep durable replay receipts and may point at an existing source page/document,
+atomically archive inline input when explicitly requested, or replace exact earlier support. Full inline input
+is never stored implicitly. Its bounded exact frames remain private while live memory or nonterminal
+maintenance work needs them, then become eligible for secure pruning after `evidence_grace_days`.
+
 When the marker carries typed world time, reads preserve the original precision, relation, status, timezone,
 and recurrence while computing currentness from the caller's clock. This lets a past state remain inspectable
 without being injected as a current fact, and lets an accepted plan answer a future-oriented question without

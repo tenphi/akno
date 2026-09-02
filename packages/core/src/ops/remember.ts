@@ -8,26 +8,14 @@ import {
 import type { AknoContext } from '../context.ts';
 import { ModelClient } from '../models/client.ts';
 import { runRetain, type RetainCandidate } from '../write/retain.ts';
-import { newPrefixedId, sha256 } from '../store/ids.ts';
+import { retainRememberCandidates } from './retain.ts';
+import { newPrefixedId } from '../store/ids.ts';
 import { isReserved } from '../reserved.ts';
 import { folderCatalog, type FolderCatalogEntry } from '../kb/folders.ts';
-import { parsePage } from '../kb/page.ts';
-import { serializeYamlString } from '../kb/frontmatter.ts';
-import { contentWords } from '../kb/words.ts';
-import { detectConflict } from '../write/conflict.ts';
-import { fileEntry, type ChangeFile } from '../write/journal.ts';
-import { writeFileAtomic } from '../write/atomic.ts';
-import { managedSourceReference, placeManagedItems, type ManagedItem } from '../write/placement.ts';
-import {
-  markerFromProvidedCandidate,
-  managedMemoryFingerprint,
-  renderManagedMemoryPayload,
-} from '../write/managed-memory.ts';
+import type { ChangeFile } from '../write/journal.ts';
 import { resolveRememberFallback, type RememberFallbackResolution } from '../write/remember-fallback.ts';
 import { recall } from './recall.ts';
-import { appendToLedger, titleFromSlug } from './write.ts';
-import fsp from 'node:fs/promises';
-import path from 'node:path';
+import { appendToLedger } from './write.ts';
 
 /**
  * Hand over a transcript or notes; Akno runs the retain mission with its own
@@ -192,19 +180,13 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     };
   }
 
-  // ── Place and write ─────────────────────────────────────────────────────
-  // One group per target means one placement-model call per page and one journal entry for the
-  // whole remember operation. A turn that keeps three related facts is one undoable decision.
+  // ── Resolve adapter actions; shared retain owns validation and writes ─────
   const wrote: WriteTarget[] = [];
   const approvals: ApprovalRequest[] = [];
   const foldersNeeded: FolderRequired[] = [];
-  const groups = new Map<
-    string,
-    {
-      entries: { index: number; candidate: RetainCandidate; blocked: string | null }[];
-      configuredFallback: boolean;
-    }
-  >();
+  const prepared: (RetainCandidate & { destination: { slug: string } })[] = [];
+  const preparedIndexes = new Map<string, number>();
+  const existedBefore = new Map<string, boolean>();
 
   for (const [index, entry] of routed.entries()) {
     const target = considered[index]!.slug;
@@ -241,32 +223,15 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       continue;
     }
 
-    const group = groups.get(target) ?? { entries: [], configuredFallback: false };
-    group.entries.push({ index, candidate: entry.candidate, blocked: entry.blocked });
-    if (considered[index]!.destination === 'configured_fallback') group.configuredFallback = true;
-    groups.set(target, group);
-  }
-
-  const pending: {
-    slug: string;
-    relPath: string;
-    content: string;
-    existed: boolean;
-    indexes: number[];
-    sources: ManagedSourceArchive[];
-  }[] = [];
-  for (const [slug, group] of groups) {
     const row = ctx.store.db
       .prepare('SELECT id, rel_path, role, remember_management FROM pages WHERE slug = ?')
-      .get(slug) as { id: string; rel_path: string; role: string; remember_management: string } | undefined;
+      .get(target) as { id: string; rel_path: string; role: string; remember_management: string } | undefined;
 
     if (row && (row.role !== 'knowledge' || row.remember_management !== 'integrate')) {
-      for (const entry of group.entries) {
-        considered[entry.index]!.kept = false;
-        considered[entry.index]!.slug = null;
-        considered[entry.index]!.destination = 'no_writable_destination';
-        approvals.push(proposeUnrouted(ctx, entry.candidate, [], slug, entry.blocked));
-      }
+      considered[index]!.kept = false;
+      considered[index]!.slug = null;
+      considered[index]!.destination = 'no_writable_destination';
+      approvals.push(proposeUnrouted(ctx, entry.candidate, [], target, entry.blocked));
       continue;
     }
 
@@ -277,12 +242,10 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     // nothing but whether the parent directory existed. A physical reference folder could
     // therefore receive a new managed page even though no rule admitted injection there.
     // Declining to create is the same answer the folder already gives to writing.
-    const parent = slug.slice(0, slug.lastIndexOf('/'));
-    if (!row && admittedFolder(catalog, slug) === null) {
-      for (const entry of group.entries) {
-        considered[entry.index]!.kept = false;
-        considered[entry.index]!.slug = null;
-      }
+    const parent = target.slice(0, target.lastIndexOf('/'));
+    if (!row && admittedFolder(catalog, target) === null) {
+      considered[index]!.kept = false;
+      considered[index]!.slug = null;
       foldersNeeded.push({
         folder: parent,
         nearest: catalog
@@ -292,115 +255,58 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       });
       continue;
     }
+    prepared.push({ ...entry.candidate, destination: { slug: target } });
+    preparedIndexes.set(entry.candidate.candidate_id, index);
+    existedBefore.set(target, Boolean(row));
+  }
 
-    const relPath = row?.rel_path ?? `${slug}.md`;
-    const current = row
-      ? await fsp.readFile(path.join(ctx.config.aknoPath, relPath), 'utf8')
-      : newManagedPage(
-          group.configuredFallback ? titleFromSlug(slug) : titleFor(group.entries[0]!.candidate, slug),
-        );
-    const accepted: { index: number; candidate: RetainCandidate }[] = [];
-    for (const entry of group.entries) {
-      if (row) {
-        const page = parsePage(relPath, current);
-        const conflict = detectConflict({
-          store: ctx.store,
-          pageId: row.id,
-          slug,
-          body: page.body,
-          bodyStartLine: page.bodyLine,
-          incoming: entry.candidate.text,
-        });
-        if (conflict) {
-          approvals.push({
-            proposal_id: recordConflictProposal(ctx, slug, entry.candidate, conflict.existing),
-            reason: `'${slug}' already claims something different: ${conflict.existing}. Ask which is current.`,
-            reason_code: 'conflict',
-            nearest: [slug],
-          });
-          continue;
-        }
-      }
-      accepted.push(entry);
-    }
-    if (accepted.length === 0) continue;
+  const retainedWrite = await retainRememberCandidates(ctx, {
+    text: input.text,
+    ...(input.source ? { source: input.source } : {}),
+    ...(input.mentioned_at ? { mentionedAt: input.mentioned_at } : {}),
+    ...(input.timezone ? { timezone: input.timezone } : {}),
+    ...(mission ? { mission } : {}),
+    dryRun: false,
+    candidates: prepared,
+    held: retained.held.map((candidate) => ({
+      candidate_id: candidate.candidate_id,
+      outcome: 'held' as const,
+      reason_code: candidate.reason_code,
+      reason: candidate.reason,
+    })),
+    modelUsage: retained.modelUsage,
+  });
+  const retainedResult = retainedWrite.result;
 
-    const sourceRef = managedSourceReference(input.source ?? 'remember');
-    const inputHash = sha256(input.text);
-    const acceptedIds = new Set(accepted.map(({ candidate }) => candidate.candidate_id));
-    const placeable = accepted.filter(({ candidate }) =>
-      (candidate.relations ?? []).every(
-        (relation) => !('candidate_id' in relation.target) || acceptedIds.has(relation.target.candidate_id),
-      ),
-    );
-    if (placeable.length !== accepted.length) {
-      for (const entry of accepted) {
-        if (placeable.includes(entry)) continue;
-        considered[entry.index]!.kept = false;
-        considered[entry.index]!.slug = null;
-      }
+  const changedSlugs = new Set<string>();
+  for (const result of retainedResult.candidates) {
+    const index = preparedIndexes.get(result.candidate_id);
+    if (index === undefined) continue;
+    const candidate = prepared.find((item) => item.candidate_id === result.candidate_id)!;
+    if (result.outcome === 'written' || result.outcome === 'support_added') {
+      considered[index]!.written = true;
+      if (result.slug) changedSlugs.add(result.slug);
+      continue;
     }
-    if (placeable.length === 0) continue;
-    const memoryIds = new Map(
-      placeable.map(({ candidate }) => [candidate.candidate_id, newPrefixedId('mem')]),
-    );
-    const items: ManagedItem[] = placeable.map(({ candidate }) => {
-      const id = memoryIds.get(candidate.candidate_id)!;
-      const marker = markerFromProvidedCandidate(
-        id,
-        candidate,
-        {
-          receipt: managedMemoryFingerprint(`remember:${inputHash}`),
-          candidate: managedMemoryFingerprint(`${inputHash}:${candidate.candidate_id}`),
-          proofGroup: managedMemoryFingerprint(`remember-group:${sourceRef}:${inputHash}`),
-          selection: 'extracted',
-        },
-        memoryIds,
-      );
-      return {
-        id,
-        marker,
-        text: renderManagedMemoryPayload(candidate.text, marker),
-      };
-    });
-    const placed = await placeManagedItems(current, items, curator);
-    // Placement failure is recoverable and visible in Markdown: no claim is lost, and the next
-    // curate pass has an explicit `## Unsorted` inbox to integrate.
-    pending.push({
-      slug,
-      relPath,
-      content: placed.content,
-      existed: Boolean(row),
-      indexes: placeable.map((entry) => entry.index),
-      sources: placeable.flatMap((entry, itemIndex) =>
-        entry.candidate.evidence
-          ? [
-              {
-                itemId: items[itemIndex]!.id,
-                sourceRef,
-                origin: candidateOrigin(items[itemIndex]!.marker.sourceRole),
-                evidence: entry.candidate.evidence,
-                evidenceHash: sha256(entry.candidate.evidence),
-                inputHash,
-              },
-            ]
-          : [],
-      ),
-    });
+    if (result.outcome === 'duplicate') continue;
+    considered[index]!.kept = false;
+    considered[index]!.slug = null;
+    considered[index]!.destination = 'no_writable_destination';
+    if (result.reason_code === 'conflict' && result.slug) {
+      const existing = result.reason && result.reason !== 'conflict' ? result.reason : 'an owned claim';
+      approvals.push({
+        proposal_id: recordConflictProposal(ctx, result.slug, candidate, existing),
+        reason: `'${result.slug}' already claims something different: ${existing}. Ask which is current.`,
+        reason_code: 'conflict',
+        nearest: [result.slug],
+      });
+    }
+  }
+  for (const slug of changedSlugs) {
+    wrote.push({ slug, action: existedBefore.get(slug) ? 'appended' : 'created' });
   }
 
   const files: ChangeFile[] = [];
-  const managedSources: ManagedSourceArchive[] = [];
-  for (const page of pending) {
-    const result = await writeFileAtomic(ctx.config.aknoPath, page.relPath, page.content);
-    files.push(fileEntry(result));
-    page.indexes.forEach((index) => {
-      considered[index]!.written = true;
-    });
-    wrote.push({ slug: page.slug, action: page.existed ? 'appended' : 'created' });
-    managedSources.push(...page.sources);
-  }
-
   for (const event of retained.events) {
     const ledger = await appendToLedger(ctx, event);
     if (ledger.file) files.push(ledger.file);
@@ -411,25 +317,24 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     });
   }
 
-  const changeId =
+  const eventChangeId =
     files.length > 0
       ? ctx.journal.record({
           actor: ctx.actor,
           op: 'remember',
-          summary: `remembered ${considered.filter((entry) => entry.written).length} item(s)`,
+          summary: `remembered ${retained.events.length} legacy event(s)`,
           files,
         })
       : null;
 
-  persistManagedSources(ctx, managedSources);
-
-  let added = 0;
+  let added = retainedWrite.factsAdded;
   if (files.length > 0) {
     const paths = [...new Set(files.map((file) => file.relPath))];
     const report = await ctx.indexer.runForeground({ only: paths, modelPaths: [] });
     ctx.derive.schedule(paths);
-    added = report.factsDerived;
+    added += report.factsDerived;
   }
+  const changeId = retainedResult.change_id ?? eventChangeId;
 
   // Deduplicated: three findings bound for the same new folder are one thing to do, not three.
   const folders = deduplicateRequiredFolders(foldersNeeded);
@@ -486,12 +391,6 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   };
 }
 
-function candidateOrigin(
-  role: RetainCandidate['attribution']['source_role'],
-): ManagedSourceArchive['origin'] {
-  return role === 'user' || role === 'assistant' ? role : 'unknown';
-}
-
 function fallbackResult(
   needed: boolean,
   used: boolean,
@@ -507,73 +406,6 @@ function fallbackResult(
   return {
     fallback: { slug: resolution.slug, status: 'used' },
   };
-}
-
-interface ManagedSourceArchive {
-  itemId: string;
-  sourceRef: string;
-  origin: 'user' | 'assistant' | 'unknown';
-  evidence: string;
-  evidenceHash: string;
-  inputHash: string;
-}
-
-function persistManagedSources(ctx: AknoContext, sources: readonly ManagedSourceArchive[]): void {
-  if (sources.length === 0 || ctx.store.readOnly) return;
-  const insert = ctx.store.db.prepare(
-    `INSERT OR IGNORE INTO managed_item_sources(
-       item_id, source_ref, origin, evidence, evidence_hash, input_hash, created_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  );
-  const createdAt = new Date().toISOString();
-  ctx.store.transaction(() => {
-    for (const source of sources) {
-      insert.run(
-        source.itemId,
-        source.sourceRef,
-        source.origin,
-        source.evidence,
-        source.evidenceHash,
-        source.inputHash,
-        createdAt,
-      );
-    }
-  });
-}
-
-/**
- * A title for a page being created: the subject the curator named, unless that subject is not
- * what the page is.
- *
- * `write` derives one from the slug when none is given, and a slug-derived title reads like a
- * filename ("Vulpine Claim 2026 08"). The subject is a phrase a person wrote, so it wins wherever
- * the two are about the same thing.
- *
- * They are not always about the same thing, and that is this function's whole problem. The slug
- * comes from routing, which scored ranked candidates; the subject came off one claim. A narrow
- * equipment claim can correctly open `expeditions/blackwater-bay-survey` while still being too
- * specific to name that broader page. A claim is
- * superseded in a week; the title it installed outlives it by months.
- *
- * **One shared content word is enough to keep the subject.** The question is not whether the two
- * agree closely, only whether they are about the same thing at all: `people/ada-marlow` and "Ada
- * Marlow" share both words, `vulpine-claim-2026-08` and "Vulpine claim" share two, while a broad
- * expedition slug and one equipment calibration share none. Falling back costs a plainer title, which is worth
- * paying — a slug-derived title is dull but it is never about the wrong thing.
- */
-function titleFor(candidate: RetainCandidate, slug: string): string {
-  const subject = candidate.subject.trim();
-  if (subject.length === 0) return titleFromSlug(slug);
-
-  const named = contentWords(slug.slice(slug.lastIndexOf('/') + 1));
-  for (const word of contentWords(subject)) {
-    if (named.has(word)) return subject.charAt(0).toUpperCase() + subject.slice(1);
-  }
-  return titleFromSlug(slug);
-}
-
-function newManagedPage(title: string): string {
-  return `---\ntitle: ${serializeYamlString(title, 'title')}\nakno:\n  role: knowledge\n  management:\n    remember: integrate\n---\n\n# ${title}\n`;
 }
 
 // ─── Routing ────────────────────────────────────────────────────────────────

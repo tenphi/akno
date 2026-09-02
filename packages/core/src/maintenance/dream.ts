@@ -55,6 +55,7 @@ import {
   type MaintenancePlanSummary,
   type ObservationPlanDraft,
 } from './plans.ts';
+import { pruneRetainEvidence, type RetainEvidencePruneResult } from '../write/retain-supports.ts';
 import {
   beginDreamRun,
   completeDreamRun,
@@ -244,6 +245,8 @@ export interface DreamReport {
   maintenancePlans: DreamMaintenancePlan[];
   /** Content-safe receipt for configured terminal-plan retention. */
   planPrune: MaintenancePlanPruneResult | null;
+  /** Content-safe receipt for dependency-aware private retain-frame pruning. */
+  retainEvidencePrune: RetainEvidencePruneResult | null;
   /** Cumulative apply limits and usage shared by plan-backed phases in this invocation. */
   budget: MaintenanceBudgetReceipt;
   /** Exact logical calls and provider-reported tokens for synchronous maintenance model work. */
@@ -399,6 +402,7 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
     maintenancePlan: null,
     maintenancePlans: [],
     planPrune: null,
+    retainEvidencePrune: null,
     budget: maintenanceBudgetReceipt(createMaintenanceBudget(ctx.config.maintenance.limits)),
     modelUsage: telemetry.usage(),
     degraded: telemetry.degradation(),
@@ -556,6 +560,9 @@ export async function dream(ctx: AknoContext, options: DreamOptions = {}): Promi
       verification: report.verification,
     });
     report.planPrune = pruneMaintenancePlans(cycle, {
+      apply: cycle.writable && !(options.dryRun ?? false),
+    });
+    report.retainEvidencePrune = pruneRetainEvidence(cycle, {
       apply: cycle.writable && !(options.dryRun ?? false),
     });
     if (report.planPrune.applied && report.planPrune.payloads.plans > 0) {

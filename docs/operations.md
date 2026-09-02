@@ -147,6 +147,12 @@ enforces the same policy: terminal exact operations/evidence expire before compa
 or recovery-relevant plans are retained without an age limit. This state cleanup never touches Markdown or the
 separate change journal.
 
+Writable dream runs also enforce retained-source evidence lifetime. Exact private frames from active support
+are never age-pruned. After a retraction or explicit forget, a frame becomes eligible only when the configured
+grace has elapsed and no nonterminal maintenance item names its managed memory. Cleanup securely removes the
+quote and checkpoints the local database while preserving replay hashes, compact receipts, and page/document
+source bindings. Dream output reports only counts and removed byte totals.
+
 Local notifications are off by default:
 
 ```jsonc

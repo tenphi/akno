@@ -7,8 +7,9 @@ import { resolveOps } from '../ops-handle.ts';
 const RETAIN_HELP = `akno retain <json-file | -> [options]
 
   Replay-safe retention for identified source revisions. The JSON input follows
-  the public retain schema: extract from coherent text or ordered items, provide
-  typed candidates with exact or automatic placement, or retract prior support.
+  the public retain schema: use inline text/items or an indexed source page/document,
+  extract or provide typed candidates, preserve an inline source page explicitly,
+  atomically correct prior support, or issue a standalone retraction.
 
   --dry-run       Validate and preview without brain writes or replay receipts.
   --actor <who>   user | agent.
@@ -56,6 +57,16 @@ export async function retainCommand(argv: string[]): Promise<number> {
         `  ${source.outcome}${source.reason_code ? ` · ${source.reason_code}` : ''}` +
           `${source.change_id ? ` · ${source.change_id}` : ''}`,
       );
+      if (source.source) {
+        line(
+          style.grey(
+            `  source: ${source.source.kind} · ${source.source.availability}` +
+              `${source.source.reference ? ` · ${source.source.reference}` : ''}` +
+              `${source.source.reextractable ? ' · reextractable' : ''}` +
+              `${source.source.preserved_slug ? ` · archived at ${source.source.preserved_slug}` : ''}`,
+          ),
+        );
+      }
       if (source.note) line(style.grey(`  ${source.note}`));
       for (const candidate of source.candidates) {
         line(

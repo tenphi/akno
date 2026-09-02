@@ -18,6 +18,25 @@ describe('maintenance plan retention configuration', () => {
     expect(config.maintenance.planRetention).toEqual({ payloadDays: 30, receiptDays: 180 });
   });
 
+  it('resolves and validates the retained-source evidence grace', () => {
+    const root = inventedDirectory();
+    expect(
+      loadConfig({ isolated: true, overrides: { akno_path: root } }).maintenance.retain.evidenceGraceDays,
+    ).toBe(30);
+    expect(
+      loadConfig({
+        isolated: true,
+        overrides: { akno_path: root, maintenance: { retain: { evidence_grace_days: 7 } } },
+      }).maintenance.retain.evidenceGraceDays,
+    ).toBe(7);
+    expect(() =>
+      loadConfig({
+        isolated: true,
+        overrides: { akno_path: root, maintenance: { retain: { evidence_grace_days: -1 } } },
+      }),
+    ).toThrow(/evidence_grace_days/);
+  });
+
   it('requires compact receipts to outlive exact private payloads', () => {
     const root = inventedDirectory();
 

@@ -148,11 +148,15 @@ generated sentence later without granting authority over the containing page. In
 extraction, naming, routing, file movement, page creation, and indexing.
 
 `retain` is the keyed host-facing counterpart. The caller supplies stable source identity and either complete
-typed candidates or coherent text/ordered items for Akno to interpret. Extracted candidates pass deterministic
-exact-span and discourse-frame validation plus a separate semantic-verification call. Provided candidates can
-use exact model-free placement or the same automatic routing and section-placement engine as `remember`.
-Identical source revisions replay before another model call or write; changed interpretations conflict, and
-source-scoped retraction removes only the addressed support.
+typed candidates or coherent inline text/ordered items for Akno to interpret; it may instead reference an
+indexed `source` page or document without copying that source into the request. Extracted candidates pass
+deterministic exact-span and discourse-frame validation plus a separate semantic-verification call. Provided
+candidates can use exact model-free placement or the same automatic routing and section-placement engine as
+`remember`; `remember` now adapts its legacy action response over this same validator, owned-block writer,
+receipt, and evidence engine. Identical source revisions replay before another model call or write. An inline
+source is archived only through explicit `preserve_source`, and correction/retraction changes only addressed
+support. Inactive private evidence is securely pruned after its configured grace once no live item or
+nonterminal maintenance work depends on it; hashes, replay identity, and source bindings remain.
 
 Managed payload lines keep their level-one discourse and epistemic qualification through `read` and `recall`.
 Noncanonical items remain searchable, but graph fact mining and factual `answer` evidence use the same narrow

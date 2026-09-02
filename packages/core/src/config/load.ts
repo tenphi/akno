@@ -655,6 +655,7 @@ function resolve(
         enabled: doc.maintenance?.retain?.enabled ?? true,
         mission: doc.maintenance?.retain?.mission ?? null,
         fallbackPage: doc.maintenance?.retain?.fallback_page ?? null,
+        evidenceGraceDays: doc.maintenance?.retain?.evidence_grace_days ?? 30,
       },
       observe: {
         // Off by default, from measurement rather than caution. On a real 223-page knowledge

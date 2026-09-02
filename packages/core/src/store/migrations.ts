@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 38;
+export const SCHEMA_VERSION = 39;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -44,6 +44,7 @@ export const RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX = 28;
 export const TEMPORAL_ENTRIES_MIGRATION_INDEX = 29;
 export const OBSERVATION_PROJECTION_MIGRATION_INDEX = 30;
 export const MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX = 31;
+export const RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX = 32;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1175,6 +1176,31 @@ export const MIGRATIONS: string[] = [
   ALTER TABLE graph_edges ADD COLUMN source_memory TEXT
     REFERENCES managed_memory_entries(entry_key) ON DELETE CASCADE;
   CREATE INDEX graph_edges_source_memory ON graph_edges(source_memory);
+  `,
+  // Source bindings keep referenced or explicitly archived inputs reextractable without copying
+  // their bodies into SQLite. Per-support pruning state separates durable replay identity from
+  // the bounded private quote whose useful lifetime depends on live memory and workflow state.
+  `
+  ALTER TABLE retain_supports ADD COLUMN evidence_pruned_at TEXT;
+
+  CREATE TABLE retain_source_bindings (
+    receipt_fingerprint TEXT PRIMARY KEY
+      REFERENCES retain_receipts(receipt_fingerprint) ON DELETE CASCADE,
+    input_kind          TEXT NOT NULL,
+    input_ref           TEXT,
+    preserved_slug      TEXT,
+    availability        TEXT NOT NULL DEFAULT 'available',
+    reextractable       INTEGER NOT NULL DEFAULT 0,
+    created_at          TEXT NOT NULL,
+    CHECK (input_kind IN ('text', 'items', 'page', 'document')),
+    CHECK (availability IN ('available', 'degraded', 'unavailable')),
+    CHECK (reextractable IN (0, 1)),
+    CHECK ((input_kind IN ('page', 'document') AND input_ref IS NOT NULL) OR
+           (input_kind IN ('text', 'items') AND input_ref IS NULL)),
+    CHECK (preserved_slug IS NULL OR input_kind IN ('text', 'items'))
+  );
+  CREATE INDEX retain_source_bindings_ref
+    ON retain_source_bindings(input_kind, input_ref);
   `,
 ];
 

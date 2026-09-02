@@ -353,8 +353,8 @@
     // model degradation, or a missed cycle. "all" also confirms quiet success.
     // Page text, paths, diffs, prompts, and model responses are never included.
     "notifications": "off",
-    // Retain is the `remember` op, available per-turn — the tier that needs
-    // to be fresh does not wait for a timer. `dream` does not re-run it.
+    // Retain is the shared foreground intake tier behind keyed `retain` and unkeyed
+    // `remember` — memory that needs to be fresh does not wait for a timer.
     // Write every run down — what was applied, what a guardrail refused, what was
     // skipped and why — to <state_dir>/logs/dream.jsonl, one JSON object per run.
     //
@@ -370,7 +370,10 @@
       // Optional exact page slug for durable claims that have no ordinary admitted destination.
       // The page itself must allow remember integration, or its parent folder must explicitly
       // allow creation. Reserved pages such as the event timeline are never valid fallbacks.
-      "fallback_page": null
+      "fallback_page": null,
+      // Private exact source frames are kept while live memory or maintenance work needs them.
+      // Once those dependencies are gone, this grace preserves short-term undo/recovery value.
+      "evidence_grace_days": 30
     },
     // Combine repeated eligible L1 facts into stable L2 patterns. A write requires
     // one exact existing subject page with `akno.management.observe: integrate`.

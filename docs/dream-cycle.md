@@ -436,6 +436,11 @@ eligible plan, item, and exact private-byte counts before `--apply`. Full writab
 configured boundary automatically. Active decisions and apply/verification recovery are never candidates, and
 plan pruning never changes the knowledge base or shortens change-journal undo retention.
 
+Writable dream runs also prune bounded private `retain`/`remember` source frames after their separately
+configured grace. Active support has no age limit, and any nonterminal maintenance item that still names the
+managed memory blocks pruning. This cleanup preserves Markdown, replay hashes, compact receipts, and stored
+page/document bindings; routine output contains only frame counts and removed byte totals.
+
 Use `akno rules <path>` or `dream status --explain-policy <path>` to understand why a page is ineligible,
 audit-only, waiting for a person, eligible for curator apply, or blocked.
 

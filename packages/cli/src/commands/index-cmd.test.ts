@@ -18,6 +18,7 @@ const DURABLE_TABLES = [
   'maintenance_recovery_state',
   'retain_receipts',
   'retain_supports',
+  'retain_source_bindings',
 ] as const;
 
 let root: string;
@@ -169,6 +170,15 @@ function seedDurableState(database: DatabaseSync, changeId: string): void {
                'user', 'hash_support_input', 'Invented exact support.', 'hash_evidence')`,
     )
     .run();
+  database
+    .prepare(
+      `INSERT INTO retain_source_bindings
+        (receipt_fingerprint, input_kind, input_ref, preserved_slug,
+         availability, reextractable, created_at)
+       VALUES ('receipt_vulpine', 'page', 'sources/vulpine-note', NULL,
+               'available', 1, ?)`,
+    )
+    .run(now);
 }
 
 function durableState(database: DatabaseSync): Record<string, unknown[]> {

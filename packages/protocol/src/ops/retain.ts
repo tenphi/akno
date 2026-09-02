@@ -135,6 +135,14 @@ const RetainSourceIdentity = {
   revision: z.string().min(1).max(200),
 } as const;
 
+export const RetainSourceInput = z.union([
+  z.object({ text: z.string().min(1).max(500_000) }),
+  z.object({ items: z.array(RetainSourceItem).min(1).max(500) }),
+  z.object({ page_slug: z.string().min(1).max(300) }),
+  z.object({ document_id: z.string().min(1).max(300) }),
+]);
+export type RetainSourceInput = z.infer<typeof RetainSourceInput>;
+
 export const RetainUpsertSource = z
   .object({
     ...RetainSourceIdentity,
@@ -143,10 +151,18 @@ export const RetainUpsertSource = z
     mentioned_at: z.string().datetime({ offset: true }).optional(),
     timezone: IanaTimezone.optional(),
     locator: z.string().min(1).max(1000).optional(),
-    input: z.union([
-      z.object({ text: z.string().min(1).max(500_000) }),
-      z.object({ items: z.array(RetainSourceItem).min(1).max(500) }),
-    ]),
+    input: RetainSourceInput,
+    /** Explicit atomic archival for inline sources; never implied by retain. */
+    preserve_source: z
+      .object({ mode: z.literal('source_page'), slug: z.string().min(1).max(300) })
+      .optional(),
+    /** Exact earlier support removed in the same source-scoped apply unit. */
+    retracts: z
+      .object({
+        target_revision: z.string().min(1).max(200),
+        candidate_ids: z.array(z.string().min(1).max(200)).min(1).max(50),
+      })
+      .optional(),
     retention: z.union([
       z.object({
         mode: z.literal('provided'),
@@ -188,6 +204,29 @@ export const RetainUpsertSource = z
           code: 'custom',
           path: ['input', 'items'],
           message: 'source item ids must be unique within one source revision',
+        });
+      }
+    }
+    if (source.preserve_source && !('text' in source.input || 'items' in source.input)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['preserve_source'],
+        message: 'source preservation is available only for inline text or structured items',
+      });
+    }
+    if (source.retracts) {
+      if (source.retracts.target_revision === source.revision) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['retracts', 'target_revision'],
+          message: 'a correction cannot retract its own revision',
+        });
+      }
+      if (new Set(source.retracts.candidate_ids).size !== source.retracts.candidate_ids.length) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['retracts', 'candidate_ids'],
+          message: 'correction candidate ids must be unique',
         });
       }
     }
@@ -260,6 +299,15 @@ export const RetainSourceResult = z.object({
   reason_code: RetainHoldReason.optional(),
   status: z.enum(['ok', 'empty', 'degraded', 'unavailable']).optional(),
   degraded: z.array(DegradedReason).optional(),
+  source: z
+    .object({
+      kind: z.enum(['text', 'items', 'page', 'document']),
+      availability: z.enum(['available', 'degraded', 'unavailable']),
+      reextractable: z.boolean(),
+      reference: z.string().optional(),
+      preserved_slug: z.string().optional(),
+    })
+    .optional(),
   model_usage: z
     .object({
       extraction: RetainModelCallReceipt.nullable(),

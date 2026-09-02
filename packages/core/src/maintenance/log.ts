@@ -94,6 +94,7 @@ export async function logDreamRun(
     adopted: report.adopted,
     conflicts: report.conflicts,
     housekeeping: report.housekeeping,
+    retainEvidencePrune: report.retainEvidencePrune,
     warnings: report.warnings,
   };
 

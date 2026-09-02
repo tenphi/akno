@@ -295,6 +295,7 @@ export type {
   DreamModelUsageReceipt,
 } from './maintenance/model-telemetry.ts';
 export type { SemanticMergeDiscoveryMetrics } from './maintenance/semantic-merge-discovery.ts';
+export { pruneRetainEvidence, type RetainEvidencePruneResult } from './write/retain-supports.ts';
 export type { ConflictClaim, ConflictQualification, CrossPageConflict } from './maintenance/conflicts.ts';
 export type { AdoptedDocument } from './maintenance/adopt.ts';
 export type {
