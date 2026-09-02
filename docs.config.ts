@@ -1,8 +1,11 @@
 import { defineDocsConfig } from '@tenphi/cookbook';
 
+import aknoPackage from './packages/cli/package.json' with { type: 'json' };
+
 export default defineDocsConfig({
   site: {
     title: 'Akno',
+    version: aknoPackage.version,
     description: 'A two-way memory layer for agents over a Markdown knowledge base you own.',
     url: 'https://akno.tenphi.me',
     repository: 'https://github.com/tenphi/akno',
