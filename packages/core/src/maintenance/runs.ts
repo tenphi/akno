@@ -451,6 +451,7 @@ function configurationFingerprint(ctx: AknoContext): string {
     rules: config.rules.map(({ source: _source, ...rule }) => rule),
     writeIds: config.writeIds,
     pageExtensions: config.pageExtensions,
+    conflictPathPatterns: config.index.conflictPathPatterns,
   };
   return sha256(JSON.stringify(effective));
 }

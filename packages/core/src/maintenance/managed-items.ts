@@ -379,7 +379,7 @@ export async function planManagedItems(
   const pages = ctx.store.db
     .prepare(
       `SELECT id, slug, rel_path, role, remember_management, body_hash, derived_hash
-         FROM pages ORDER BY rel_path`,
+         FROM pages WHERE role != 'ignored' ORDER BY rel_path`,
     )
     .all() as ManagedPageRow[];
   const eligible: EligibleManagedPage[] = [];

@@ -24,6 +24,10 @@ const result = await akno.call('recall', {
 Exactly one process may hold the write handle. A second `open` on the same state directory returns a
 read-only handle and says so, rather than racing a live watcher.
 
+The index boundary quarantines complete Markdown merge blocks, configured sync-conflict paths, and duplicate
+stable page identities before they can reach chunks, facts, graph state, maintenance, or automatic writes.
+Classification is derived from current files and owner configuration; Akno never rewrites a conflicting file.
+
 Full documentation: [github.com/tenphi/akno](https://github.com/tenphi/akno#readme)
 
 ## License

@@ -92,6 +92,11 @@ OCR, and LibreOffice for supported office files; missing tools degrade only the 
 are reported by `akno doctor`. See [Platform support](docs/operations.md#platform) for installation details and
 the exact macOS/Linux differences.
 
+Indexing also quarantines deterministic Markdown conflicts before parsing: complete merge blocks,
+owner-configured sync-conflict filenames, and duplicate stable page ids cannot become recall evidence or
+automatic-write targets. Akno changes no source bytes; `akno doctor --quarantine-details` shows the private
+paths needed for file-based repair.
+
 Need invented notes to try? Copy [`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples/demo-brain) and follow the
 [getting-started guide](docs/getting-started.md#try-the-demo-knowledge-base).
 

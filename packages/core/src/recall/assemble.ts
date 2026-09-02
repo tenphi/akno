@@ -232,7 +232,7 @@ export class Assembler {
     const row = this.#store.db
       .prepare(
         `SELECT id, slug, rel_path, title, type, tags, role, summary, keywords, body_line, updated_at
-           FROM pages WHERE id = ?`,
+           FROM pages WHERE id = ? AND role != 'ignored'`,
       )
       .get(pageId) as PageRow | undefined;
     return row ?? null;

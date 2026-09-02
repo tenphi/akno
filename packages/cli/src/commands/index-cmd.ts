@@ -66,6 +66,7 @@ export async function indexCommand(argv: string[]): Promise<number> {
       ['pages renamed', report.pagesRenamed > 0 ? report.pagesRenamed : '-'],
       ['pages removed', report.pagesRemoved > 0 ? report.pagesRemoved : '-'],
       ['ignored by role', report.ignored > 0 ? report.ignored : '-'],
+      ['quarantined Markdown', report.quarantine.candidates > 0 ? report.quarantine.candidates : '-'],
       ['chunks written', report.chunksWritten],
       ['chunks embedded', report.chunksEmbedded],
       ['pages summarized', report.pagesDerived],

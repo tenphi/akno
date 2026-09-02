@@ -243,7 +243,11 @@
     "hash_concurrency": 8,
     // Switch on sqlite-vec's ANN index above this many chunks. Brute force is
     // strictly better below it.
-    "ann_threshold_chunks": 20000
+    "ann_threshold_chunks": 20000,
+    // Optional owner-controlled globs for sync-client conflict copies. Matching is
+    // case-insensitive on normalized relative paths and happens before Markdown parsing.
+    // Example: ["**/* (conflicted copy *).md"]
+    "conflict_path_patterns": []
   },
 
   // ─── Evidence graph ─────────────────────────────────────────────────────

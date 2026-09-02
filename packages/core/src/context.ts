@@ -6,6 +6,7 @@ import type { Assembler } from './recall/assemble.ts';
 import type { Indexer } from './index/indexer.ts';
 import type { Journal } from './write/journal.ts';
 import type { Gate } from './write/gate.ts';
+import { quarantineSummary } from './index/page-quarantine.ts';
 
 /** The write path can queue model-backed indexing without depending on its concrete worker. */
 export interface DeriveScheduler {
@@ -71,5 +72,6 @@ export function indexDegradation(store: Store): DegradedReason[] {
   };
   if (row.total > 0 && (row.embedded ?? 0) < row.total) out.push('partial_index');
   if (store.vectors.count() === 0 && row.total > 0) out.push('no_vector_index');
+  if (quarantineSummary(store).candidates > 0) out.push('source_conflict');
   return out;
 }

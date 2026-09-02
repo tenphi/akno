@@ -12,6 +12,7 @@ import { serializeYamlString } from '../kb/frontmatter.ts';
 import { physicalFolders } from '../kb/folders.ts';
 import { newPrefixedId } from '../store/ids.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
+import { matchesConflictPath } from '../index/page-quarantine.ts';
 import type { ChangeFile } from '../write/journal.ts';
 import { recall } from './recall.ts';
 import { normalizeSlug } from './write.ts';
@@ -275,6 +276,14 @@ export async function ingestFile(
 
   // ── Store ───────────────────────────────────────────────────────────────
   const finalSlug = await uniqueSlug(ctx, pageSlug);
+  // `ingest: "file"` indexes the bytes and their text with no page at all — for a folder
+  // of media where a stub page per file would be noise, not memory.
+  const wantsPage = rule.ingest !== 'file';
+  if (wantsPage && matchesConflictPath(`${finalSlug}.md`, ctx.config.index.conflictPathPatterns)) {
+    throw new AknoError('conflict', 'the generated page matches a configured Markdown conflict path', {
+      reason: 'source_conflict',
+    });
+  }
   const stored = await storeDocument({
     ctx,
     source: file.source,
@@ -283,9 +292,6 @@ export async function ingestFile(
   });
   const files: ChangeFile[] = [stored.file];
 
-  // `ingest: "file"` indexes the bytes and their text with no page at all — for a folder
-  // of media where a stub page per file would be noise, not memory.
-  const wantsPage = rule.ingest !== 'file';
   let pageRel: string | null = null;
 
   if (wantsPage) {

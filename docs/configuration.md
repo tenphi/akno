@@ -74,6 +74,28 @@ redirects preserve the POST; `301`/`302`/`303`, loops, malformed or credential-b
 unsupported schemes fail with content-safe diagnostics. Retries and compatibility negotiation stay on the same
 origin, and a failed configured provider never causes another provider block to be tried.
 
+## Markdown conflict paths
+
+Inline merge blocks and duplicate stable page ids need no configuration. If a sync client creates recognizable
+conflict-copy filenames, declare only that deterministic shape in machine-owned configuration:
+
+```jsonc
+{
+  "index": {
+    "conflict_path_patterns": ["**/* (conflicted copy *).md", "archive/**/conflict-*.md"],
+  },
+}
+```
+
+Patterns match normalized relative paths, case-insensitively and with `/` or `\` separators treated alike.
+They cannot be absolute or traverse above the knowledge base. Page content and frontmatter cannot add or
+disable them. A matching page is quarantined before Markdown parsing, so the pattern should describe only
+actual conflict artifacts rather than a broad content folder.
+
+Routine `index` and `doctor` output exposes only conflict classes and counts. Run
+`akno doctor --no-probe --quarantine-details` locally when the source paths and known stable ids are needed to
+repair the files; conflict bodies and neighboring text are never copied into quarantine state.
+
 ## Door and network policy
 
 `server.mcp_allow` is the authoritative operation set for MCP. A stdio adapter that forwards through the

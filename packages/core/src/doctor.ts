@@ -10,6 +10,12 @@ import { probeAnswerModel, type AnswerCapabilityCheck, type AnswerCapabilityProb
 import { effectiveRule } from './rules/compile.ts';
 import { pageDeclarations } from './maintenance/path-policy.ts';
 import { resolveRememberFallback, type RememberFallbackResolution } from './write/remember-fallback.ts';
+import {
+  quarantineDetails,
+  quarantineSummary,
+  type PageQuarantineDetail,
+  type PageQuarantineSummary,
+} from './index/page-quarantine.ts';
 
 /**
  * What's present, what's degraded, and **what that costs.** The last
@@ -52,6 +58,8 @@ export interface DoctorOptions {
   probeModels?: boolean;
   /** Include folder names in an explicitly requested, content-free admission upgrade preview. */
   admissionPreview?: boolean;
+  /** Include local relative paths for explicit, private conflict inspection. */
+  quarantineDetails?: boolean;
 }
 
 export interface DoctorReport {
@@ -90,6 +98,7 @@ export interface DoctorReport {
     ignoredRules: number;
   };
   byRole: Record<string, number>;
+  quarantine: PageQuarantineSummary & { details?: PageQuarantineDetail[] };
   /** Searchability and automatic fact-injection permission are independent. */
   factInjection: {
     admittedPages: number;
@@ -124,7 +133,7 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
     (db.prepare(sql).get(...params) as { c: number }).c;
 
   const counts = {
-    pages: count('SELECT count(*) AS c FROM pages'),
+    pages: count("SELECT count(*) AS c FROM pages WHERE role != 'ignored'"),
     chunks: count('SELECT count(*) AS c FROM chunks'),
     chunksEmbedded: count('SELECT count(*) AS c FROM chunks WHERE embedded = 1'),
     facts: count('SELECT count(*) AS c FROM facts WHERE valid_to IS NULL'),
@@ -152,17 +161,23 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
   };
 
   const byRole: Record<string, number> = {};
-  for (const row of db.prepare('SELECT role, count(*) AS c FROM pages GROUP BY role').all() as {
+  for (const row of db
+    .prepare("SELECT role, count(*) AS c FROM pages WHERE role != 'ignored' GROUP BY role")
+    .all() as {
     role: string;
     c: number;
   }[]) {
     byRole[row.role] = row.c;
   }
+  const quarantine = {
+    ...quarantineSummary(ctx.store),
+    ...(options.quarantineDetails ? { details: quarantineDetails(ctx.store) } : {}),
+  };
 
   const factInjection = { admittedPages: 0, readOnlyPages: 0, implicitReadOnlyPages: 0 };
   const implicitFolders = new Map<string, number>();
   let implicitRootPages = 0;
-  for (const row of db.prepare('SELECT slug, role, frontmatter FROM pages').all() as {
+  for (const row of db.prepare("SELECT slug, role, frontmatter FROM pages WHERE role != 'ignored'").all() as {
     slug: string;
     role: string;
     frontmatter: string;
@@ -367,6 +382,13 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
   if (counts.brokenLinks > 0) {
     warnings.push(`${counts.brokenLinks} wikilinks point at pages that do not exist.`);
   }
+  if (quarantine.candidates > 0) {
+    warnings.push(
+      `${quarantine.candidates} Markdown source candidate${
+        quarantine.candidates === 1 ? ' is' : 's are'
+      } quarantined; repair the conflicting files and re-index`,
+    );
+  }
   // Only a *surprise* is a warning. `doctor` itself asks for a read-only handle so that
   // inspecting a knowledge base never takes the write lock from a running service, and
   // announcing that as a problem — naming a process that does not exist — sent the reader
@@ -425,6 +447,7 @@ export async function doctor(ctx: AknoContext, options: DoctorOptions = {}): Pro
     },
     counts,
     byRole,
+    quarantine,
     factInjection: {
       ...factInjection,
       ...(admissionPreview ? { admissionPreview } : {}),

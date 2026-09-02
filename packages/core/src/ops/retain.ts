@@ -23,6 +23,11 @@ import { parsePage } from '../kb/page.ts';
 import { contentWords } from '../kb/words.ts';
 import { declaringRule, effectiveRule } from '../rules/compile.ts';
 import { isReserved } from '../reserved.ts';
+import {
+  hasInlineMergeConflict,
+  matchesConflictPath,
+  quarantineReasonsForPath,
+} from '../index/page-quarantine.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { restoreFile, writeFileAtomic } from '../write/atomic.ts';
 import { detectConflict } from '../write/conflict.ts';
@@ -1597,6 +1602,17 @@ async function commitStages(
   op: 'retain' | 'remember' = 'retain',
 ): Promise<{ changeId: string; files: ChangeFile[] } | null> {
   if (stages.length === 0) return null;
+  for (const stage of stages) {
+    if (
+      quarantineReasonsForPath(ctx.store, stage.relPath).length > 0 ||
+      matchesConflictPath(stage.relPath, ctx.config.index.conflictPathPatterns) ||
+      hasInlineMergeConflict(stage.after)
+    ) {
+      throw new AknoError('conflict', 'retain destination is quarantined by Markdown conflict', {
+        reason: 'source_conflict',
+      });
+    }
+  }
   const files: ChangeFile[] = [];
   try {
     for (const stage of stages) {

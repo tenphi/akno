@@ -25,6 +25,7 @@ import {
 } from '../timeline/clock.ts';
 import { expandRetainedRecurrence } from '../timeline/recurrence.ts';
 import { TEMPORAL_PROJECTION_VERSION } from '../timeline/projection.ts';
+import { quarantineSummary } from '../index/page-quarantine.ts';
 
 interface TemporalEntryRow {
   memory_id: string;
@@ -55,6 +56,8 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
   const range = normalizeTimelineRange(input.since, input.until);
   const limit = input.limit ?? 100;
   const degraded = new Set<DegradedReason>();
+  const sourceConflict = quarantineSummary(ctx.store).candidates > 0;
+  if (sourceConflict) degraded.add('source_conflict');
   let recurrenceLimited = false;
   let temporalIssueCount = 0;
 
@@ -154,6 +157,7 @@ export async function timeline(ctx: AknoContext, rawInput: unknown): Promise<Tim
             recurrenceLimited,
             hasMissingDocument,
             unavailableDocumentsOnly,
+            sourceConflict,
           }),
         }
       : {}),
@@ -435,6 +439,7 @@ function timelineNote(options: {
   recurrenceLimited: boolean;
   hasMissingDocument: boolean;
   unavailableDocumentsOnly: boolean;
+  sourceConflict: boolean;
 }): string {
   const notes: string[] = [];
   if (!options.projectionAvailable)
@@ -447,6 +452,9 @@ function timelineNote(options: {
     );
   }
   if (options.recurrenceLimited) notes.push('recurrence expansion reached a configured safety bound');
+  if (options.sourceConflict) {
+    notes.push('some Markdown timeline sources are quarantined until their file conflicts are repaired');
+  }
   if (options.unavailableDocumentsOnly) {
     notes.push(
       'matching document date metadata remains, but neither originals nor readable copies are available',

@@ -1017,4 +1017,33 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds the rebuildable Markdown source-integrity projection to version thirty-nine', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-page-integrity-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 33)) legacy.exec(migration);
+    legacy.pragma('user_version = 39');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const columns = store.db.pragma('table_info(page_source_integrity)') as { name: string }[];
+    expect(columns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'rel_path',
+        'sha256',
+        'declared_page_id',
+        'known_page_id',
+        'inline_conflict',
+        'identity_complete',
+        'indexable',
+        'quarantine_reasons',
+      ]),
+    );
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

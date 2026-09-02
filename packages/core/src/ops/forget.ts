@@ -7,6 +7,7 @@ import { writeFileAtomic } from '../write/atomic.ts';
 import { newPrefixedId, sha256 } from '../store/ids.ts';
 import { deleteManagedSourceArchives, managedSourceItemIds } from '../maintenance/managed-item-sources.ts';
 import { forgetRetainSupports } from '../write/retain-supports.ts';
+import { quarantineReasonsForPath } from '../index/page-quarantine.ts';
 
 /**
  * **This is the honest version of forgetting.**
@@ -104,6 +105,15 @@ async function forgetPage(ctx: AknoContext, rawSlug: string): Promise<ForgetOutp
   const page = ctx.store.db.prepare('SELECT id, rel_path FROM pages WHERE slug = ?').get(slug) as
     { id: string; rel_path: string } | undefined;
   if (!page) throw new AknoError('not_found', `no page at ${slug}`);
+  if (quarantineReasonsForPath(ctx.store, page.rel_path).length > 0) {
+    throw new AknoError(
+      'conflict',
+      `${slug} is quarantined; repair its Markdown source before forgetting it`,
+      {
+        reason: 'source_conflict',
+      },
+    );
+  }
 
   const token = newPrefixedId('trash');
   const files: ChangeFile[] = [];

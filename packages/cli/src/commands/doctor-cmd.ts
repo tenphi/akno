@@ -12,13 +12,20 @@ const DOCTOR_HELP = `akno doctor [options]
   --refresh-api       Re-probe providers configured with api: auto, ignoring their cache.
   --admission-preview Show exact default-deny folder rules for implicit read-only pages.
                       Reads folder names, never page slugs or content, and writes nothing.
+  --quarantine-details Show private paths and stable ids for quarantined Markdown candidates.
   --json`;
 
 export async function doctorCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ probe: boolean; 'refresh-api': boolean; 'admission-preview': boolean }>(argv, {
+  const { values } = parse<{
+    probe: boolean;
+    'refresh-api': boolean;
+    'admission-preview': boolean;
+    'quarantine-details': boolean;
+  }>(argv, {
     probe: { type: 'boolean', default: true },
     'refresh-api': { type: 'boolean', default: false },
     'admission-preview': { type: 'boolean', default: false },
+    'quarantine-details': { type: 'boolean', default: false },
   });
 
   if (values.help) {
@@ -42,6 +49,7 @@ export async function doctorCommand(argv: string[]): Promise<number> {
     const report = await mem.doctor({
       probeModels: values.probe,
       admissionPreview: values['admission-preview'],
+      quarantineDetails: values['quarantine-details'],
     });
 
     if (values.json) {
@@ -93,7 +101,18 @@ export async function doctorCommand(argv: string[]): Promise<number> {
       ],
       ['links', `${report.counts.links} (${report.counts.brokenLinks} broken)`],
       ['ignored rules', report.counts.ignoredRules],
+      ['quarantined Markdown', report.quarantine.candidates > 0 ? report.quarantine.candidates : '-'],
     ]);
+
+    if (report.quarantine.details?.length) {
+      heading('Quarantined Markdown — private details');
+      for (const detail of report.quarantine.details) {
+        line(
+          `  ${detail.relPath}: ${detail.reasons.join(', ')}` +
+            (detail.stablePageId ? ` (${detail.stablePageId})` : ''),
+        );
+      }
+    }
 
     if (report.factInjection.admissionPreview) {
       renderAdmissionPreview(report.factInjection.admissionPreview);

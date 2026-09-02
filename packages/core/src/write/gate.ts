@@ -80,7 +80,9 @@ export class Gate {
     segments.pop(); // The page's own basename is not a folder.
     if (segments.length === 0) return null;
 
-    const exists = this.#store.db.prepare("SELECT 1 AS ok FROM pages WHERE slug LIKE ? || '/%' LIMIT 1");
+    const exists = this.#store.db.prepare(
+      "SELECT 1 AS ok FROM pages WHERE role != 'ignored' AND slug LIKE ? || '/%' LIMIT 1",
+    );
     for (let depth = 1; depth <= segments.length; depth++) {
       const folder = segments.slice(0, depth).join('/');
       if (exists.get(folder)) continue;
@@ -110,7 +112,9 @@ export class Gate {
 
     const out = new Set<string>();
     if (words.length > 0) {
-      const like = this.#store.db.prepare('SELECT DISTINCT slug FROM pages WHERE lower(slug) LIKE ? LIMIT 3');
+      const like = this.#store.db.prepare(
+        "SELECT DISTINCT slug FROM pages WHERE role != 'ignored' AND lower(slug) LIKE ? LIMIT 3",
+      );
       for (const word of words) {
         for (const row of like.all(`%${word}%`) as { slug: string }[]) out.add(row.slug);
       }
@@ -119,7 +123,7 @@ export class Gate {
     const folders = this.#store.db
       .prepare(
         `SELECT substr(slug, 1, instr(slug, '/') - 1) AS folder, count(*) AS n
-           FROM pages WHERE instr(slug, '/') > 0
+           FROM pages WHERE role != 'ignored' AND instr(slug, '/') > 0
           GROUP BY folder ORDER BY n DESC LIMIT 4`,
       )
       .all() as { folder: string }[];

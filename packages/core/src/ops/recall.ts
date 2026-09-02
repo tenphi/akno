@@ -33,11 +33,25 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
 
   const degraded = new Set<DegradedReason>();
   const notes: string[] = [];
+  const indexReasons = indexDegradation(ctx.store);
 
   // A knowledge base with nothing in it is `empty`, not a failure — but it must
   // not be confused with an index that could not be read.
   const chunkCount = (ctx.store.db.prepare('SELECT count(*) AS c FROM chunks').get() as { c: number }).c;
   if (chunkCount === 0) {
+    if (indexReasons.length > 0) {
+      return {
+        status: 'degraded',
+        degraded: indexReasons,
+        results: [],
+        searched: [input.query],
+        budget_used: 0,
+        mode,
+        memory_view: memoryView,
+        scores: 'relative',
+        note: 'no usable chunks are available while part of the index is degraded',
+      };
+    }
     return {
       status: 'empty',
       results: [],
@@ -223,7 +237,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     degraded.add('document_source_missing');
   }
 
-  for (const reason of indexDegradation(ctx.store)) degraded.add(reason);
+  for (const reason of indexReasons) degraded.add(reason);
   const reasons = [...degraded];
   const searched = dedupe(allQueries);
 

@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 39;
+export const SCHEMA_VERSION = 40;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -45,6 +45,7 @@ export const TEMPORAL_ENTRIES_MIGRATION_INDEX = 29;
 export const OBSERVATION_PROJECTION_MIGRATION_INDEX = 30;
 export const MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX = 31;
 export const RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX = 32;
+export const PAGE_SOURCE_INTEGRITY_MIGRATION_INDEX = 33;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1201,6 +1202,27 @@ export const MIGRATIONS: string[] = [
   );
   CREATE INDEX retain_source_bindings_ref
     ON retain_source_bindings(input_kind, input_ref);
+  `,
+  // One content-free row per Markdown source makes conflict classification reproducible without
+  // rereading every page on every watcher pass. Quarantine reasons are derived from current bytes
+  // and owner configuration; this is an index projection, not a manual conflict workflow.
+  `
+  CREATE TABLE page_source_integrity (
+    rel_path           TEXT PRIMARY KEY,
+    sha256             TEXT NOT NULL,
+    declared_page_id   TEXT,
+    known_page_id      TEXT,
+    inline_conflict    INTEGER NOT NULL DEFAULT 0,
+    identity_complete  INTEGER NOT NULL DEFAULT 1,
+    indexable          INTEGER NOT NULL DEFAULT 1,
+    quarantine_reasons TEXT NOT NULL DEFAULT '[]',
+    checked_at         TEXT NOT NULL,
+    CHECK (inline_conflict IN (0, 1)),
+    CHECK (identity_complete IN (0, 1)),
+    CHECK (indexable IN (0, 1))
+  );
+  CREATE INDEX page_source_integrity_declared_id ON page_source_integrity(declared_page_id);
+  CREATE INDEX page_source_integrity_known_id ON page_source_integrity(known_page_id);
   `,
 ];
 

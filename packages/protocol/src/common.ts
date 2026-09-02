@@ -595,6 +595,8 @@ export const DegradedReason = z.enum([
   'no_document_text',
   /** The original bytes are gone; recall is using a retained extraction or rendition. */
   'document_source_missing',
+  /** The requested Markdown source is quarantined until its deterministic conflict is repaired. */
+  'source_conflict',
   /** Recall could not read the optional structural graph candidate arm. */
   'no_graph_index',
   /** Canonical entity names are not completely available for exact seeding. */
