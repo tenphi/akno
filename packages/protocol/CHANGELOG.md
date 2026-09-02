@@ -1,5 +1,19 @@
 # @tenphi/akno-protocol
 
+## 0.8.0
+
+### Minor Changes
+
+- [#47](https://github.com/tenphi/akno/pull/47) [`d89df8c`](https://github.com/tenphi/akno/commit/d89df8c5934a056f18ae5824608dd8a953b7e07a) Thanks [@tenphi](https://github.com/tenphi)! - Add intent-aware retained-memory retrieval across recall, grounded answers, automatic context, and the evidence
+  graph. Factual, historical, planning, report, question, and discussion views now qualify isolated managed
+  memory before candidate budgeting, preserve contextual noncanonical matches without promoting them to facts,
+  and expose evidence-bound typed memory relations through the graph.
+
+  Keep every model request on its configured provider origin with explicit bounded redirect handling. Same-origin
+  307/308 redirects preserve POST bodies; cross-origin, method-rewriting, malformed, credential-bearing, looping,
+  and excessive redirects fail safely, while retries and API compatibility never fall through to another
+  provider.
+
 ## 0.7.0
 
 ### Minor Changes
