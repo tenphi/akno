@@ -1,6 +1,6 @@
 {
   "name": "@tenphi/akno-protocol",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Akno op registry and schemas \u2014 the single source of truth every door is generated from",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",

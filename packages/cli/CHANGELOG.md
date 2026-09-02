@@ -1,5 +1,21 @@
 # @tenphi/akno
 
+## 0.9.0
+
+### Minor Changes
+
+- [#49](https://github.com/tenphi/akno/pull/49) [`4425945`](https://github.com/tenphi/akno/commit/44259453e8fde2967baee21da150ef39f58b9ec4) Thanks [@tenphi](https://github.com/tenphi)! - Complete source-native retention: retain from indexed source pages and documents, optionally archive inline
+  sources atomically, replace exact earlier support in corrected revisions, and prune inactive private evidence
+  after its dependency-aware grace. `remember` now writes through the shared retention engine while preserving
+  its public compatibility response.
+
+### Patch Changes
+
+- Updated dependencies [[`4425945`](https://github.com/tenphi/akno/commit/44259453e8fde2967baee21da150ef39f58b9ec4)]:
+  - @tenphi/akno-client@0.9.0
+  - @tenphi/akno-core@0.9.0
+  - @tenphi/akno-protocol@0.9.0
+
 ## 0.8.0
 
 ### Minor Changes
