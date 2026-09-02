@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   DatePrefix,
   Depth,
+  MemoryView,
   PageRole,
   RecallMode,
   RecallQualification,
@@ -15,6 +16,8 @@ export const RecallInput = z.object({
   /** Inferred from the query when absent. Passing it explicitly always wins, and
    *  getting it wrong costs relevance, never correctness. */
   mode: RecallMode.optional(),
+  /** Semantic use of retained memory. Inferred conservatively from `query` when absent. */
+  memory_view: MemoryView.optional(),
   depth: Depth.optional(),
   limit: z.number().int().positive().max(100).optional(),
   /** Token budget for the assembled response. Whole cards are filled first. */
@@ -67,5 +70,6 @@ export const RecallOutput = ResultEnvelope.extend({
    */
   coverage: z.record(z.string(), z.boolean()).optional(),
   mode: RecallMode,
+  memory_view: MemoryView,
 });
 export type RecallOutput = z.infer<typeof RecallOutput>;

@@ -7,6 +7,11 @@ import { rebuildEvidenceGraph } from '../index/graph.ts';
 import { open } from '../open.ts';
 import { openStore } from '../store/db.ts';
 import { sha256 } from '../store/ids.ts';
+import {
+  managedMemoryBlock,
+  renderManagedMemoryPayload,
+  type ManagedMemoryMarker,
+} from '../write/managed-memory.ts';
 
 const temporary: string[] = [];
 
@@ -172,6 +177,7 @@ describe('graph operation', () => {
       include_history: true,
     });
     expect(historical.status).toBe('ok');
+    expect(historical.memory_view).toBe('history');
     expect(historical.edges).toEqual([
       expect.objectContaining({
         relation: 'related_entity',
@@ -204,7 +210,176 @@ describe('graph operation', () => {
     expect(partial.degraded).toContain('partial_graph_index');
     await memory.close();
   });
+
+  it('traverses typed retained-memory relations only through the selected semantic view', async () => {
+    const root = temporaryDirectory('akno-graph-memory-kb-');
+    const stateDir = temporaryDirectory('akno-graph-memory-state-');
+    const pageId = '01J1111111111111';
+    const subject = `ent_${sha256(`page\0${pageId}`).slice(0, 24)}`;
+    write(
+      root,
+      'people/ada-marlow.md',
+      `---\nid: ${pageId}\ntitle: Ada Marlow\ntype: person\n---\n\n# Ada Marlow\n`,
+    );
+    const factual = memoryMarker('mem_fact', subject);
+    const report = memoryMarker('mem_report', subject, {
+      sourceRole: 'external',
+      speaker: 'Bo Winters',
+      basis: 'source_report',
+      links: [
+        {
+          type: 'corrects',
+          target: 'memory:mem_fact',
+          support: 'dddddddddddd',
+        },
+      ],
+    });
+    const proposal = memoryMarker('mem_plan', subject, {
+      kind: 'plan',
+      disposition: 'proposed',
+      links: [
+        {
+          type: 'contradicts',
+          target: 'memory:mem_fact',
+          support: 'eeeeeeeeeeee',
+        },
+      ],
+    });
+    write(
+      root,
+      'memory/ada-marlow.md',
+      [
+        '# Invented memory',
+        '',
+        managedMemoryBlock(
+          factual,
+          renderManagedMemoryPayload('Ada Marlow uses the Zephyr QX-100.', factual),
+        ),
+        '',
+        managedMemoryBlock(
+          report,
+          renderManagedMemoryPayload('Bo Winters reported a different Zephyr QX-100 setting.', report),
+        ),
+        '',
+        managedMemoryBlock(
+          proposal,
+          renderManagedMemoryPayload('Ada Marlow proposed a Zephyr QX-100 inspection.', proposal),
+        ),
+        '',
+      ].join('\n'),
+    );
+
+    const memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+
+    const current = await memory.graph({ query: 'Ada Marlow', max_hops: 2 });
+    expect(current.memory_view).toBe('factual');
+    expect(current.nodes.filter((node) => node.kind === 'memory')).toEqual([
+      expect.objectContaining({ memory: 'mem_fact' }),
+    ]);
+    expect(current.edges.some((edge) => edge.relation === 'corrects')).toBe(false);
+    expect(current.edges.some((edge) => edge.relation === 'contradicts')).toBe(false);
+
+    const reports = await memory.graph({
+      query: 'Ada Marlow reports',
+      memory_view: 'reports',
+      max_hops: 2,
+    });
+    expect(reports.nodes).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'memory', memory: 'mem_report' }),
+        expect.objectContaining({ kind: 'memory', memory: 'mem_fact' }),
+      ]),
+    );
+    expect(reports.edges).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          relation: 'corrects',
+          derivation: 'memory',
+          evidence: expect.objectContaining({ memory: 'mem_report', field: 'akno:item.relation' }),
+        }),
+      ]),
+    );
+
+    const planning = await memory.graph({
+      query: 'Ada Marlow',
+      memory_view: 'planning',
+      max_hops: 2,
+    });
+    expect(planning.edges).toEqual(
+      expect.arrayContaining([expect.objectContaining({ relation: 'contradicts', derivation: 'memory' })]),
+    );
+    expect(planning.nodes).toEqual(
+      expect.arrayContaining([expect.objectContaining({ kind: 'memory', memory: 'mem_plan' })]),
+    );
+    await memory.close();
+  });
+
+  it('fails cross-page duplicate memory identities closed', async () => {
+    const root = temporaryDirectory('akno-graph-duplicate-memory-kb-');
+    const stateDir = temporaryDirectory('akno-graph-duplicate-memory-state-');
+    const pageId = '01J2222222222222';
+    const subject = `ent_${sha256(`page\0${pageId}`).slice(0, 24)}`;
+    write(
+      root,
+      'people/ada-marlow.md',
+      `---\nid: ${pageId}\ntitle: Ada Marlow\ntype: person\n---\n\n# Ada Marlow\n`,
+    );
+    const duplicate = memoryMarker('mem_duplicate', subject);
+    for (const [slug, payload] of [
+      ['memory/invented-one.md', 'Ada Marlow uses invented setting one.'],
+      ['memory/invented-two.md', 'Ada Marlow uses invented setting two.'],
+    ] as const) {
+      write(
+        root,
+        slug,
+        `# Invented duplicate memory\n\n${managedMemoryBlock(
+          duplicate,
+          renderManagedMemoryPayload(payload, duplicate),
+        )}\n`,
+      );
+    }
+
+    const memory = await openFixture(root, stateDir);
+    await memory.index({ structuralOnly: true });
+
+    const result = await memory.graph({ query: 'Ada Marlow', max_hops: 2 });
+    expect(result.status).toBe('degraded');
+    expect(result.degraded).toContain('partial_memory_index');
+    expect(result.nodes.some((node) => node.kind === 'memory')).toBe(false);
+    expect(result.edges.some((edge) => edge.derivation === 'memory')).toBe(false);
+    await memory.close();
+  });
 });
+
+function memoryMarker(
+  id: string,
+  subject: string,
+  overrides: Partial<ManagedMemoryMarker> = {},
+): ManagedMemoryMarker {
+  return {
+    id,
+    supports: [
+      {
+        receipt: 'aaaaaaaaaaaa',
+        candidate: 'bbbbbbbbbbbb',
+        proofGroup: 'cccccccccccc',
+        selection: 'provided',
+      },
+    ],
+    kind: 'claim',
+    subject,
+    sourceRole: 'user',
+    reporters: [],
+    commitment: 'asserted',
+    disposition: 'active',
+    polarity: 'affirmed',
+    basis: 'self_attested',
+    evidence: [],
+    links: [],
+    ...overrides,
+  };
+}
 
 function graphFixture(): { root: string; stateDir: string } {
   const root = temporaryDirectory('akno-graph-op-kb-');

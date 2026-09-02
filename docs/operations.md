@@ -230,6 +230,11 @@ receipts, maintenance plans, recovery state, and run receipts. `akno index --reb
 recomputes reproducible page, chunk, embedding, derivation, and graph projections in place. It is safe through
 the running service and preserves every durable record.
 
+Database schema upgrades and new read projections are automatic and never rewrite Markdown. The intent-aware
+memory upgrade adds derived semantic rows and changes chunk boundaries around managed items, so its first full
+index pass re-reads pages and refreshes affected embeddings and graph edges. `akno migrate` is not needed unless
+the release notes separately name a Markdown marker migration.
+
 Akno's trash and journal are not backups. Keep the Markdown knowledge base under normal backup or version
 control.
 

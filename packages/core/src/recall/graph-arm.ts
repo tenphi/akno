@@ -276,9 +276,15 @@ function mergePaths(paths: RecallGraphPath[], addition: RecallGraphPath): Recall
 function graphPathKey(path: RecallGraphPath): string {
   return `${path.seed.id}\0${path.target.id}\0${path.relations.join('\0')}\0${path.evidence
     .map((locator) =>
-      [locator.kind, locator.slug, locator.document, locator.event, locator.fact, locator.line_start].join(
-        '\0',
-      ),
+      [
+        locator.kind,
+        locator.slug,
+        locator.document,
+        locator.event,
+        locator.fact,
+        locator.memory,
+        locator.line_start,
+      ].join('\0'),
     )
     .join('\0')}`;
 }

@@ -32,12 +32,17 @@ Recall runs a staged pipeline:
 ```mermaid
 flowchart TD
   accTitle: Recall pipeline
-  accDescr: A query gathers candidates through several optional and independent channels, fuses their ranks, optionally reranks and qualifies them, and assembles page and document evidence under one budget.
+  accDescr: A query selects a conservative retained-memory intent, qualifies managed chunks before candidate budgets, gathers candidates through independent channels, fuses their ranks, optionally reranks and qualifies them, and assembles evidence under one budget.
 
-  query["Query"] --> expansion["Optional expansion"]
+  query["Query"] --> memoryView["Conservative retained-memory intent"]
+  memoryView --> eligibility["Semantic eligibility before candidate budgeting"]
+  query --> expansion["Optional expansion"]
   query --> lexical["Lexical candidates"]
   query --> semantic["Optional semantic candidates"]
   query --> graph["Exact entities and bounded graph candidates"]
+  eligibility --> lexical
+  eligibility --> semantic
+  eligibility --> graph
   expansion --> fusion["Rank fusion"]
   lexical --> fusion
   semantic --> fusion
@@ -56,6 +61,29 @@ Recall chooses or accepts one mode:
 | `lookup`   | A subject or phrase                            | Add synonyms and word forms                         |
 | `question` | A question whose answer uses different wording | Search the original plus a hypothetical answer form |
 | `explore`  | Broad discovery                                | Favor coverage and summaries                        |
+
+Search mode and memory view answer different questions. Mode controls how Akno searches; `memory_view`
+controls which meaning of an Akno-managed retained item is eligible for the primary result:
+
+| Memory view  | Eligible retained memory                                                      |
+| ------------ | ----------------------------------------------------------------------------- |
+| `factual`    | Narrow canonical claims, decisions, preferences, and actual events            |
+| `history`    | Rejected, cancelled, completed, superseded, or resolved records and decisions |
+| `planning`   | Active, proposed, or accepted plans and planned/scheduled items               |
+| `reports`    | Attributed `source_report` memory                                             |
+| `questions`  | Open or resolved questions                                                    |
+| `discussion` | Tentative, hypothetical, counterfactual, proposed, and rejected alternatives  |
+| `all`        | Every valid retained-memory form, still carrying its qualification            |
+
+Akno infers only high-precision cues such as “reported,” “planned,” “decision history,” “open question,” or
+“hypothetical.” An ambiguous lookup stays `factual`; an ambiguous explore request uses `all`. Pass
+`--memory-view` or `memory_view` when the host already knows the intent. The explicit value always wins.
+
+Eligibility is applied to isolated managed-memory chunks before lexical, vector, graph, and reranker candidate
+limits. Ordinary authored text and document evidence remain eligible in every view. If a relevant retained item
+exists only outside the selected view, line-level recall returns it as contextual qualified memory with a note
+instead of claiming an `empty` absence; factual answering and automatic injection still refuse to use it as a
+fact. A missing, stale, malformed, or duplicate semantic projection reports `partial_memory_index`.
 
 A result card reports role, relevance, contributing candidate arms, cited excerpts, and approximate budget.
 Question mode also reports concept coverage. A relevant page that does not cover one requested attribute is not
@@ -104,11 +132,13 @@ Unsupported blocks are withheld. A missing model produces `degraded/not_answered
 produces `empty/not_found`. If equally applicable evidence gives incompatible values without an authority rule,
 Akno abstains rather than choosing one or inventing a conflict explanation.
 
-By default, lines whose managed-memory qualification says `answer_eligible: false` are removed before evidence
-is shown to the answer model. If they are the only related memory, `answer` returns `not_answered` while
-preserving the related page identities; it does not call the model or claim the topic was never discussed.
-Accepted or active plans remain non-factual, but may ground an explicitly future-oriented question. For
-time-scoped factual items, current-value questions admit only intervals that are current at the reader clock.
+In the default `factual` view, lines whose managed-memory qualification says `answer_eligible: false` are
+removed before evidence is shown to the answer model. If they are the only related memory, `answer` returns
+`not_answered` while preserving the related page identities; it does not call the model or claim the topic was
+never discussed. An inferred or explicit non-factual view may instead answer _about_ a plan, report, historical
+decision, question, or discussion record while preserving that status. Report-only answers must keep the source
+attribution; an unattributed restatement is rejected before verification. For time-scoped factual items,
+current-value questions admit only intervals that are current at the reader clock.
 
 An observation is offered to the answer model as one indivisible evidence item containing its readable L2
 sentence and every current L1 leaf line. If any leaf cannot be re-read at its sealed fact, slug, line, and hash,
@@ -141,6 +171,7 @@ Use `list` before writing when the existing taxonomy or nearby page names matter
 akno graph --slug people/ada-marlow --hops 2
 akno graph --query "Zephyr QX-100 warranty" --relation related_entity
 akno graph --entity ent_01JEXAMPLE --direction out --history
+akno graph --query "Ada Marlow plans" --memory-view planning
 ```
 
 `graph` is not fuzzy search and does not answer questions. A slug or entity id gives an exact seed; a query
@@ -150,6 +181,11 @@ made a strongly supported select-or-abstain decision.
 Traversal is bounded to three hops and 100 returned paths, with separate fan-out limits. Reaching a bound marks
 the result degraded so a partial graph never looks like proof that no other path exists. Paths contain compact
 node and relation identities plus source locators, not copied page claims. Follow the locator with `read`.
+
+Valid level-one markers also project memory nodes and evidence-bound `corrects`, `supersedes`, `contradicts`,
+`fulfills`, `answers`, and `caused_by` edges. Graph traversal applies the same memory view as recall; duplicate
+or missing relation targets produce no edge. These rows are disposable projections of the marker and its exact
+payload, not a second memory store.
 
 ## Timeline
 
@@ -224,6 +260,10 @@ but cannot make unrelated memory relevant.
 Temporal qualification is applied before automatic activation. Current prompts cannot activate expired valid
 states; future prompts may activate asserted, active or accepted plans, while generic factual prompts cannot
 turn planned or scheduled memory into current fact.
+
+Automatic context resolves the same semantic memory view from the current prompt before activation. This lets
+an explicit planning or report request inject the qualified record while an ambiguous factual prompt continues
+to exclude it. Hosts may pass `memory_view` when their own intent router already made that choice.
 
 `empty` is a normal “inject nothing” result. The host should call the profile at most once per turn, place
 non-empty evidence inside a clearly delimited untrusted-memory section, and never persist the returned bundle as

@@ -1,6 +1,7 @@
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
+import type { MemoryView } from '@tenphi/akno-protocol';
 
 const CONTEXT_HELP = `akno context [query] [options]
 
@@ -10,6 +11,8 @@ const CONTEXT_HELP = `akno context [query] [options]
 
   --budget <n>        Hard token budget (default 20000; auto_recall 1200).
   --profile <name>    "default" or precision-first "auto_recall" (default default).
+  --memory-view <v>   factual | history | planning | reports | questions |
+                      discussion | all. Inferred conservatively by default.
   --turn <role:text>  Recent user/assistant turn for reference resolution; repeatable.
   --pin <slug,...>    Pages always included, before anything else competes.
   --days <n>          Days of timeline to include. 0 omits the section.
@@ -23,6 +26,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
     days?: string;
     structure: boolean;
     profile?: string;
+    'memory-view'?: string;
     turn?: string[];
   }>(argv, {
     budget: { type: 'string' },
@@ -30,6 +34,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
     days: { type: 'string' },
     structure: { type: 'boolean', default: true },
     profile: { type: 'string' },
+    'memory-view': { type: 'string' },
     turn: { type: 'string', multiple: true },
   });
 
@@ -44,6 +49,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
       ...(positionals.length > 0 ? { query: positionals.join(' ') } : {}),
       budget: values.budget ? Number(values.budget) : values.profile === 'auto_recall' ? 1200 : 20000,
       ...(values.profile ? { profile: values.profile as 'default' | 'auto_recall' } : {}),
+      ...(values['memory-view'] ? { memory_view: values['memory-view'] as MemoryView } : {}),
       ...(values.turn ? { conversation_context: values.turn.map(parseConversationTurn) } : {}),
       ...(values.pin ? { pinned: values.pin.split(',').map((slug) => slug.trim()) } : {}),
       ...(values.days ? { timeline_days: Number(values.days) } : {}),
@@ -59,6 +65,7 @@ export async function contextCommand(argv: string[]): Promise<number> {
       `${statusLabel(result.status)} ${style.grey(`${result.budget_used} tokens used`)}` +
         `${result.dropped ? style.yellow(`  dropped ${result.dropped.pinned} pinned, ${result.dropped.results} recall, ${result.dropped.timeline} timeline results`) : ''}`,
     );
+    if (result.memory_view) line(`  ${style.grey(`memory view: ${result.memory_view}`)}`);
     if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
     if (result.activation) {
       line(

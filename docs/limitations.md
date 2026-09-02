@@ -124,6 +124,11 @@ that one provider block can safely mix models requiring different transports. Sp
 require understanding role assignment, structured-output support, dimensions, reasoning controls, and
 degradation behavior; `doctor` and live benchmarks test those higher-level contracts.
 
+Akno treats explicit provider assignment as the owner's authorization boundary. It prevents model HTTP
+redirects, retries, and compatibility negotiation from leaving the configured origin and never chooses another
+provider after failure. It does not provide DNS-rebinding defense, provider attestation, a network sandbox, or
+per-folder egress policy; operators who need those controls must enforce them around the configured endpoint.
+
 ## Inference can still look authoritative
 
 Observations are visibly labeled, marker-owned level-two blocks co-located on exact-subject pages; reflection

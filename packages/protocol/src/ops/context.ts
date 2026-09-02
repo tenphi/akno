@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   Card,
+  MemoryView,
   PageRole,
   RecallMode,
   RecallQualification,
@@ -41,6 +42,8 @@ export const ContextInput = z
     /** Include a folder outline so the agent knows what exists. Ignored by auto-recall. */
     structure: z.boolean().optional(),
     mode: RecallMode.optional(),
+    /** Override retained-memory intent for query-backed context. */
+    memory_view: MemoryView.optional(),
     include: z.array(PageRole).optional(),
     filter: SlugFilter.optional(),
   })
@@ -86,6 +89,8 @@ export const ContextOutput = ResultEnvelope.extend({
   timeline: z.array(TimelineResult),
   structure: z.string().optional(),
   searched: z.array(z.string()),
+  /** Present when a query-backed recall path selected a retained-memory view. */
+  memory_view: MemoryView.optional(),
   coverage: z.record(z.string(), z.boolean()).optional(),
   qualification: RecallQualification.optional(),
   budget_used: z.number().int().nonnegative(),

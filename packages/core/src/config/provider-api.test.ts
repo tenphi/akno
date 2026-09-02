@@ -227,6 +227,107 @@ describe('provider generative transport', () => {
     }
   });
 
+  it('refuses a cross-origin API probe redirect without contacting the target', async () => {
+    let targetRequests = 0;
+    const target = http.createServer((request, response) => {
+      targetRequests += 1;
+      request.resume();
+      response.end(JSON.stringify({ output: [] }));
+    });
+    await new Promise<void>((resolve) => target.listen(0, '127.0.0.1', resolve));
+    const targetPort = (target.address() as { port: number }).port;
+    const provider = http.createServer((request, response) => {
+      request.resume();
+      response.writeHead(307, {
+        location: `http://127.0.0.1:${targetPort}/invented-private-destination`,
+      });
+      response.end();
+    });
+    await new Promise<void>((resolve) => provider.listen(0, '127.0.0.1', resolve));
+    const providerPort = (provider.address() as { port: number }).port;
+    const secret = 'sk-invented-fixture-key';
+
+    try {
+      const config = loadProviderConfig(
+        inventedDirectory(),
+        {
+          base_url: `http://127.0.0.1:${providerPort}/v1`,
+          api_key: { env: 'INVENTED_PROVIDER_KEY' },
+          api: 'auto',
+        },
+        { INVENTED_PROVIDER_KEY: secret },
+      );
+      const report = await resolveAutoProviderApis(config, { timeoutMs: 2_000 });
+
+      expect(report[0]).toMatchObject({ resolved: null, source: 'deferred' });
+      expect(report[0]?.error).toContain('redirected outside its configured origin');
+      expect(report[0]?.error).not.toContain(secret);
+      expect(report[0]?.error).not.toContain('invented-private-destination');
+      expect(targetRequests).toBe(0);
+    } finally {
+      provider.close();
+      provider.closeAllConnections();
+      target.close();
+      target.closeAllConnections();
+    }
+  });
+
+  it('never tries a second configured provider after the selected provider fails', async () => {
+    let selectedRequests = 0;
+    let otherRequests = 0;
+    const selected = http.createServer((request, response) => {
+      selectedRequests += 1;
+      request.resume();
+      response.writeHead(503, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ error: { message: 'invented provider unavailable' } }));
+    });
+    const other = http.createServer((request, response) => {
+      otherRequests += 1;
+      request.resume();
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ choices: [{ message: { content: 'invented fallback' } }] }));
+    });
+    await new Promise<void>((resolve) => selected.listen(0, '127.0.0.1', resolve));
+    await new Promise<void>((resolve) => other.listen(0, '127.0.0.1', resolve));
+    const selectedPort = (selected.address() as { port: number }).port;
+    const otherPort = (other.address() as { port: number }).port;
+
+    try {
+      const root = inventedDirectory();
+      const config = loadConfig({
+        isolated: true,
+        env: {},
+        overrides: {
+          akno_path: root,
+          state_dir: path.join(root, '.state'),
+          providers: {
+            selected: {
+              base_url: `http://127.0.0.1:${selectedPort}/v1`,
+              max_retries: 0,
+            },
+            other: { base_url: `http://127.0.0.1:${otherPort}/v1` },
+          },
+          models: {
+            derive: { provider: 'selected', id: 'invented-generative-model' },
+            answer: { provider: 'other', id: 'invented-other-model' },
+          },
+        },
+      });
+      const outcome = await new ModelClient(config.models.derive).chat([
+        { role: 'user', content: 'Describe the invented Zephyr QX-100.' },
+      ]);
+
+      expect(outcome).toMatchObject({ ok: false, reason: 'request_failed' });
+      expect(selectedRequests).toBe(1);
+      expect(otherRequests).toBe(0);
+    } finally {
+      selected.close();
+      selected.closeAllConnections();
+      other.close();
+      other.closeAllConnections();
+    }
+  });
+
   it('keeps the explicit no-probe open path network-free', async () => {
     let requests = 0;
     const server = http.createServer((request, response) => {

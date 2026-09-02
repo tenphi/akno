@@ -26,6 +26,7 @@ import {
   MAINTENANCE_PLAN_PAYLOAD_RETENTION_MIGRATION_INDEX,
   MAINTENANCE_PLANS_MIGRATION_INDEX,
   MAINTENANCE_RUNS_MIGRATION_INDEX,
+  MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX,
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   OBSERVATION_PROJECTION_MIGRATION_INDEX,
@@ -258,6 +259,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'observation_entries')) {
         db.exec(MIGRATIONS[OBSERVATION_PROJECTION_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'managed_memory_entries')) {
+        db.exec(MIGRATIONS[MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

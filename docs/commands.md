@@ -70,6 +70,9 @@ behind the default socket; pair `--akno-path` with that memory's `--state-dir` w
   narrows active or accepted scheduled work without hiding history from the default view.
 - Use `context --profile auto_recall` from an agent host before a substantive turn with no explicit memory
   question.
+- `recall`, `answer`, `graph`, and query-backed `context` accept
+  `--memory-view factual|history|planning|reports|questions|discussion|all`. Omit it for conservative query
+  inference; an explicit value always wins. This is independent of recall `--mode` and timeline `--view`.
 
 See [Reading memory](reading.md) for ranking, qualification, citations, and result-state details.
 

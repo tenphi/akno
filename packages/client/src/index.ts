@@ -28,6 +28,7 @@ export type {
   ClockRelation,
   DocumentCard,
   DocumentTimelineEvidence,
+  MemoryView,
   PageCard,
   RecallResult,
   RetainedTime,

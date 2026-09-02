@@ -945,4 +945,47 @@ describe('schema migration', () => {
     store.close();
     fs.rmSync(dir, { recursive: true, force: true });
   });
+
+  it('adds the rebuildable managed-memory projection and graph provenance to version thirty-seven', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-managed-memory-migration-'));
+    const dbPath = path.join(dir, 'akno.db');
+    const legacy = new Database(dbPath);
+    for (const migration of MIGRATIONS.slice(0, 31)) legacy.exec(migration);
+    legacy.pragma('user_version = 37');
+    legacy.close();
+
+    const store = openStore({ dbPath, embeddingDimensions: 8 });
+    const memoryColumns = store.db.pragma('table_info(managed_memory_entries)') as { name: string }[];
+    const relationColumns = store.db.pragma('table_info(managed_memory_relations)') as { name: string }[];
+    const issueColumns = store.db.pragma('table_info(managed_memory_projection_issues)') as {
+      name: string;
+    }[];
+    const graphColumns = store.db.pragma('table_info(graph_edges)') as { name: string }[];
+
+    expect(memoryColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        'memory_id',
+        'marker_hash',
+        'payload_hash',
+        'kind',
+        'commitment',
+        'disposition',
+        'basis',
+        'answer_eligible',
+        'temporal_status',
+      ]),
+    );
+    expect(relationColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['relation', 'target_kind', 'target_id', 'support']),
+    );
+    expect(issueColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining(['source_page', 'marker_line', 'memory_id', 'reason']),
+    );
+    expect(graphColumns.map((column) => column.name)).toContain('source_memory');
+    expect(store.db.pragma('foreign_key_check')).toEqual([]);
+    expect(store.db.pragma('user_version', { simple: true })).toBe(SCHEMA_VERSION);
+
+    store.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
 });

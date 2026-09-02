@@ -14,7 +14,9 @@ citable, reversible, and independent of a chat provider.
 > writing, document ingestion, evidence-graph retrieval, grounded answering, and autonomous maintenance at Akno's
 > single-writer service boundary. Keyed `retain` can accept typed candidates or extract them from coherent text and
 > structured conversations, route them automatically or to exact destinations, replay identical revisions without
-> another model call, and retract source-owned support. `timeline` now reads authored events, retained world-time
+> another model call, and retract source-owned support. Reads now infer a conservative semantic memory view, so
+> current facts, history, plans, attributed reports, questions, and discussion remain distinct before retrieval
+> spends its candidate budget. `timeline` reads authored events, retained world-time
 > states/plans/deadlines, and document date evidence through one explicit clock. Source-reference intake and
 > evidence-backed observations are co-located as explicitly marked level-two memory on admitted canonical pages;
 > reflected principles remain a separate level-three synthesis. Defaults stay conservative: model-dependent inference is
@@ -30,6 +32,8 @@ Ordinary retrieval gives an agent fragments. Akno gives it evidence with enough 
 - `empty`, `degraded`, and `unavailable` are different results, so “not recorded” is never inferred from a
   broken search path.
 - `recall` finds and ranks evidence; `answer` produces a separately verified grounded response.
+- Retained memory is selected by semantic use—factual, history, planning, reports, questions, or discussion—so
+  a matching proposal or report is useful without silently becoming a current fact.
 - Pages, source documents, inferred observations, and ignored material have different retrieval policies.
 - Observations retain exact leaf-fact lineage, become ineligible immediately when support changes, and never
   feed back into level-one fact derivation.
@@ -59,6 +63,10 @@ are:
 - a model-free lexical setup that sends no content to a model; or
 - a specialist/manual setup that preserves existing provider and model blocks.
 
+Choosing a provider for a model role authorizes that role to receive the inputs it needs. Requests stay on that
+provider's configured origin: Akno refuses cross-origin redirects and never silently falls back to another
+configured provider when the selected one fails.
+
 For the OpenAI setup, provide the credential through the environment. Akno stores only the variable name:
 
 ```bash
@@ -76,6 +84,7 @@ configuration-only. The equivalent commands are:
 akno index
 akno doctor
 akno recall "How long is the Zephyr QX-100 warranty?"
+akno recall "What is planned for the Zephyr QX-100?" --memory-view planning
 ```
 
 Markdown indexing needs no extra system tools. Linux document extraction uses Poppler for PDFs, Tesseract for

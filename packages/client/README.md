@@ -14,7 +14,10 @@ intact.
 import { connect, isTimelineMemory } from '@tenphi/akno-client';
 
 const akno = await connect(); // Uses the platform Akno runtime socket by default.
-const result = await akno.call('recall', { query: 'car insurance renewal' });
+const result = await akno.call('recall', {
+  query: 'What is planned for the Zephyr QX-100?',
+  memory_view: 'planning',
+});
 
 // A host may conservatively prepare evidence before its own model handles a turn.
 const context = await akno.context({

@@ -12,7 +12,7 @@
  * Upgrade code capability-checks durable tables and columns so databases created before
  * or after the compaction converge on the same schema.
  */
-export const SCHEMA_VERSION = 37;
+export const SCHEMA_VERSION = 38;
 export const MAINTENANCE_PLANS_MIGRATION_INDEX = 1;
 export const MAINTENANCE_EVIDENCE_MIGRATION_INDEX = 2;
 export const CONFLICT_VERDICTS_MIGRATION_INDEX = 3;
@@ -43,6 +43,7 @@ export const CHANGE_FILE_HASHES_MIGRATION_INDEX = 27;
 export const RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX = 28;
 export const TEMPORAL_ENTRIES_MIGRATION_INDEX = 29;
 export const OBSERVATION_PROJECTION_MIGRATION_INDEX = 30;
+export const MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX = 31;
 
 export const MIGRATIONS: string[] = [
   // ── 1. The schema as of 0.1.0 ─────────────────────────────────────────────
@@ -1099,6 +1100,81 @@ export const MIGRATIONS: string[] = [
     PRIMARY KEY(source_page, marker_line)
   );
   CREATE INDEX observation_projection_issues_id ON observation_projection_issues(observation_id);
+  `,
+  // Every v2 retained-memory marker is projected at item granularity so discourse and epistemic
+  // status can qualify retrieval before a page consumes the result budget. These rows are fully
+  // rebuildable from Markdown; receipts remain the durable replay surface.
+  `
+  CREATE TABLE managed_memory_entries (
+    entry_key        TEXT PRIMARY KEY,
+    memory_id        TEXT NOT NULL,
+    source_page      TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    source_slug      TEXT NOT NULL,
+    marker_line      INTEGER NOT NULL,
+    payload_line     INTEGER NOT NULL,
+    marker_hash      TEXT NOT NULL,
+    payload          TEXT NOT NULL,
+    payload_hash     TEXT NOT NULL,
+    level            INTEGER NOT NULL DEFAULT 1,
+    kind             TEXT NOT NULL,
+    subject          TEXT NOT NULL,
+    source_role      TEXT NOT NULL,
+    source_speaker   TEXT,
+    reporters        TEXT NOT NULL DEFAULT '[]',
+    commitment       TEXT NOT NULL,
+    disposition      TEXT NOT NULL,
+    polarity         TEXT NOT NULL,
+    basis            TEXT NOT NULL,
+    evidence         TEXT NOT NULL DEFAULT '[]',
+    answer_eligible  INTEGER NOT NULL DEFAULT 0,
+    temporal_status  TEXT,
+    temporal_relation TEXT,
+    CHECK (marker_line > 0),
+    CHECK (payload_line = marker_line + 1),
+    CHECK (level = 1),
+    CHECK (kind IN ('claim', 'decision', 'preference', 'plan', 'event', 'question')),
+    CHECK (source_role IN ('user', 'assistant', 'external', 'unknown')),
+    CHECK (commitment IN ('asserted', 'tentative', 'hypothetical', 'counterfactual', 'none')),
+    CHECK (disposition IN ('active', 'proposed', 'accepted', 'rejected', 'resolved', 'cancelled', 'completed', 'superseded')),
+    CHECK (polarity IN ('affirmed', 'negated')),
+    CHECK (basis IN ('self_attested', 'source_report', 'cited_evidence', 'system_record')),
+    CHECK (answer_eligible IN (0, 1)),
+    CHECK (temporal_status IS NULL OR temporal_status IN ('actual', 'scheduled', 'planned', 'tentative')),
+    CHECK (temporal_relation IS NULL OR temporal_relation IN ('occurred', 'valid', 'scheduled', 'due')),
+    UNIQUE(source_page, marker_line)
+  );
+  CREATE INDEX managed_memory_entries_id ON managed_memory_entries(memory_id);
+  CREATE INDEX managed_memory_entries_page ON managed_memory_entries(source_page, payload_line);
+  CREATE INDEX managed_memory_entries_semantics
+    ON managed_memory_entries(kind, commitment, disposition, basis, answer_eligible);
+
+  CREATE TABLE managed_memory_relations (
+    entry_key    TEXT NOT NULL REFERENCES managed_memory_entries(entry_key) ON DELETE CASCADE,
+    ordinal      INTEGER NOT NULL,
+    relation     TEXT NOT NULL,
+    target_kind  TEXT NOT NULL,
+    target_id    TEXT NOT NULL,
+    support      TEXT NOT NULL,
+    PRIMARY KEY(entry_key, ordinal),
+    CHECK (relation IN ('corrects', 'supersedes', 'contradicts', 'fulfills', 'answers', 'caused_by')),
+    CHECK (target_kind IN ('memory', 'fact'))
+  );
+  CREATE INDEX managed_memory_relations_target
+    ON managed_memory_relations(target_kind, target_id, relation);
+
+  CREATE TABLE managed_memory_projection_issues (
+    source_page TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+    marker_line INTEGER NOT NULL,
+    memory_id   TEXT,
+    reason      TEXT NOT NULL,
+    PRIMARY KEY(source_page, marker_line)
+  );
+  CREATE INDEX managed_memory_projection_issues_id
+    ON managed_memory_projection_issues(memory_id);
+
+  ALTER TABLE graph_edges ADD COLUMN source_memory TEXT
+    REFERENCES managed_memory_entries(entry_key) ON DELETE CASCADE;
+  CREATE INDEX graph_edges_source_memory ON graph_edges(source_memory);
   `,
 ];
 

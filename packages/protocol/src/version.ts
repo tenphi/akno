@@ -10,7 +10,9 @@
  */
 // Read/recall lines, answer evidence/citations, and graph nodes gained an observation variant.
 // An older client cannot safely exhaustively consume those existing exchanges.
-export const PROTOCOL_VERSION = 3;
+// Graph nodes and relations gained retained-memory variants. Older clients cannot safely
+// exhaustively consume those existing exchanges.
+export const PROTOCOL_VERSION = 4;
 
 /** Advertised MCP server name. The spec calls for `memory`, not `akno`. */
 export const MCP_SERVER_NAME = 'memory';

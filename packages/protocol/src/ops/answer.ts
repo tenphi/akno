@@ -1,9 +1,19 @@
 import { z } from 'zod';
-import { DatePrefix, Line, PageRole, RecallQualification, ResultEnvelope, SlugFilter } from '../common.ts';
+import {
+  DatePrefix,
+  Line,
+  MemoryView,
+  PageRole,
+  RecallQualification,
+  ResultEnvelope,
+  SlugFilter,
+} from '../common.ts';
 
 /** A direct question over the existing qualified recall pipeline. */
 export const AnswerInput = z.object({
   question: z.string().trim().min(1),
+  /** Override conservative semantic-intent inference for retained memory. */
+  memory_view: MemoryView.optional(),
   /** Maximum qualified page/document candidates considered related. */
   limit: z.number().int().positive().max(100).optional(),
   /** Internal evidence budget; answer never offers recall's full-body escape hatch. */
@@ -112,6 +122,7 @@ export const AnswerOutput = ResultEnvelope.extend({
     }),
   ),
   searched: z.array(z.string()),
+  memory_view: MemoryView,
   qualification: RecallQualification.optional(),
   budget_used: z.object({
     retrieval_tokens: z.number().int().nonnegative(),

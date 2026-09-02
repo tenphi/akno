@@ -58,6 +58,41 @@ describe('chunkPage', () => {
     const page = parsePage('a.md', '\n\n\n## Empty\n\n\n## Also empty\n\n\n');
     for (const chunk of chunkPage(page, options)) expect(chunk.text.trim().length).toBeGreaterThan(0);
   });
+
+  it('isolates each managed memory marker with its adjacent payload', () => {
+    const page = parsePage(
+      'memory.md',
+      [
+        '# Invented memory',
+        '',
+        'Authored introduction.',
+        '',
+        '<!-- akno:item mem_1111 v=2 invented -->',
+        '- Canonical Zephyr QX-100 claim.',
+        '',
+        '<!-- akno:item mem_2222 v=2 invented -->',
+        '- **Proposal:** Inspect the Zephyr QX-100.',
+        '',
+        'Authored conclusion.',
+      ].join('\n'),
+    );
+    const chunks = chunkPage(page, options);
+
+    expect(chunks.filter((chunk) => chunk.text.includes('akno:item'))).toEqual([
+      expect.objectContaining({
+        text: '<!-- akno:item mem_1111 v=2 invented -->\n- Canonical Zephyr QX-100 claim.',
+        lineStart: 5,
+        lineEnd: 6,
+      }),
+      expect.objectContaining({
+        text: '<!-- akno:item mem_2222 v=2 invented -->\n- **Proposal:** Inspect the Zephyr QX-100.',
+        lineStart: 8,
+        lineEnd: 9,
+      }),
+    ]);
+    expect(chunks.some((chunk) => chunk.text.includes('Authored introduction'))).toBe(true);
+    expect(chunks.some((chunk) => chunk.text.includes('Authored conclusion'))).toBe(true);
+  });
 });
 
 describe('applySourceFence', () => {

@@ -8,6 +8,7 @@ import type {
   Depth,
   DocumentCard,
   Line,
+  MemoryView,
   PageRole,
   RecallMode,
   RecallGraphPath,
@@ -22,6 +23,7 @@ import { effectiveRule } from '../rules/compile.ts';
 import { documentAvailability } from '../ingest/availability.ts';
 import { canSuggestDocumentAdoption } from '../ingest/adoption-eligibility.ts';
 import type { ChunkHit } from './search.ts';
+import { qualificationEligibleForView } from '../memory/intent.ts';
 
 export interface AssembleOptions {
   hits: ChunkHit[];
@@ -35,6 +37,8 @@ export interface AssembleOptions {
   concepts: string[];
   /** `include: ['source'], depth: 'full'` lifts the source quote cap. */
   include: PageRole[] | null;
+  memoryView: MemoryView;
+  memorySelection: 'eligible' | 'contextual';
 }
 
 export interface Assembled {
@@ -114,6 +118,12 @@ export class Assembler {
           : null;
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+      .filter(
+        (entry) =>
+          options.memorySelection !== 'contextual' ||
+          entry.result.lines.length > 0 ||
+          entry.result.documents?.some((document) => Boolean(document.quote?.trim())) === true,
+      )
       .filter((entry) => !options.include || options.include.includes(entry.result.role));
 
     // Orphan parts are grouped again by their durable group key. The search identity remains
@@ -330,8 +340,9 @@ export class Assembler {
             ? Number.POSITIVE_INFINITY
             : options.lineWindow;
 
-    const lines =
+    const rawLines =
       maxLines === 0 || bodyHits.length === 0 ? [] : this.readLines(page, bodyHits, maxLines, options.depth);
+    const lines = rawLines.filter((line) => memoryLineMatches(line, options));
     const facts = this.factsFor(page.id);
 
     const card: Card = {
@@ -380,7 +391,11 @@ export class Assembler {
       const lines = allLines
         .map((text, index) => ({ n: index + 1, text }))
         .filter((line) => line.text.trim().length > 0);
-      return this.qualifyObservationLines(page.id, qualifyManagedMemoryLines(lines, allLines), allLines);
+      return this.qualifyObservationLines(
+        page.id,
+        qualifyManagedMemoryLines(lines, allLines, { store: this.#store, pageId: page.id }),
+        allLines,
+      );
     }
 
     // Collect the line ranges of the matching chunks, best first.
@@ -410,7 +425,11 @@ export class Assembler {
       }
       if (out.length >= maxLines) break;
     }
-    return this.qualifyObservationLines(page.id, qualifyManagedMemoryLines(out, allLines), allLines);
+    return this.qualifyObservationLines(
+      page.id,
+      qualifyManagedMemoryLines(out, allLines, { store: this.#store, pageId: page.id }),
+      allLines,
+    );
   }
 
   private qualifyObservationLines(pageId: string, lines: Line[], allLines: string[]): Line[] {
@@ -551,6 +570,14 @@ export class Assembler {
   }
 }
 
+function memoryLineMatches(line: Line, options: AssembleOptions): boolean {
+  const memory = line.memory;
+  if (!memory) return options.memorySelection === 'eligible';
+  if (memory.status !== 'qualified') return options.memorySelection === 'contextual';
+  const eligible = qualificationEligibleForView(memory, options.memoryView);
+  return options.memorySelection === 'eligible' ? eligible : !eligible;
+}
+
 /**
  * Facts are never returned to the agent on their own. They arrive attached to
  * the page card they belong to, so a claim is always seen in its context — here,
@@ -658,7 +685,15 @@ function graphPathTokens(paths: RecallGraphPath[] | undefined): string[] {
     ...graphPath.nodes.map((node) => node.slug ?? node.label ?? node.document ?? node.id),
     graphPath.relations.join(' '),
     ...graphPath.evidence.map((locator) =>
-      [locator.slug, locator.document, locator.event, locator.fact, locator.line_start, locator.field]
+      [
+        locator.slug,
+        locator.document,
+        locator.event,
+        locator.fact,
+        locator.memory,
+        locator.line_start,
+        locator.field,
+      ]
         .filter((value) => value !== undefined)
         .join(' '),
     ),
@@ -686,6 +721,7 @@ function graphPathFields(hits: ChunkHit[]): { graph_paths?: RecallGraphPath[] } 
           locator.document,
           locator.event,
           locator.fact,
+          locator.memory,
           locator.line_start,
           locator.field,
         ]
