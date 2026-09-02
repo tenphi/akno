@@ -7,13 +7,27 @@ versus evidence, discovery versus answering, and permission versus execution.
 
 Markdown and attached documents are the source of truth. The state directory contains a derived reading:
 
-```text
-knowledge base                         state directory
-──────────────                         ───────────────
-Markdown pages          ──index──>     chunks and full-text search
-PDFs, images, files     ──index──>     extracted document text
-links and frontmatter   ──index──>     facts, events, identities, graph edges
-                                        journal, trash, plans, run receipts
+```mermaid
+flowchart LR
+  accTitle: Knowledge base and state directory
+  accDescr: Indexing derives searchable content, extracted text, facts, events, identities, and graph edges from authoritative files. Durable workflow records also live in the state directory.
+
+  subgraph knowledge["Knowledge base"]
+    pages["Markdown pages"]
+    documents["PDFs, images, and files"]
+    structure["Links and frontmatter"]
+  end
+
+  subgraph state["State directory"]
+    search["Chunks and full-text search"]
+    extracted["Extracted document text"]
+    derived["Facts, events, identities, and graph edges"]
+    workflow["Journal, trash, plans, and run receipts"]
+  end
+
+  pages -->|index| search
+  documents -->|index| extracted
+  structure -->|index| derived
 ```
 
 Deleting and rebuilding the search index must not change knowledge-base bytes. Do not delete the database when

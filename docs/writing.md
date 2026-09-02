@@ -300,20 +300,17 @@ akno ingest /path/to/scan.pdf --folder warranties
 
 Ingestion performs a guarded pipeline:
 
-```text
-extract or OCR
-    ↓
-is the content usable?
-    ↓
-name and summarize
-    ↓
-does naming clear its threshold?
-    ↓
-score eligible folders
-    ↓
-does routing clear its threshold?
-    ↓
-store, page, link, and index
+```mermaid
+flowchart TD
+  accTitle: Document ingestion pipeline
+  accDescr: Akno extracts document content, checks that it is usable, names and summarizes it, evaluates naming and routing thresholds, and then stores, links, and indexes the result.
+
+  extract["Extract or OCR"] --> usable["Is the content usable?"]
+  usable --> name["Name and summarize"]
+  name --> naming["Does naming clear its threshold?"]
+  naming --> score["Score eligible folders"]
+  score --> routing["Does routing clear its threshold?"]
+  routing --> store["Store, page, link, and index"]
 ```
 
 It refuses three risky guesses:

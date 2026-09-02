@@ -29,18 +29,21 @@ akno recall "warranty" --source document --ownership orphan
 
 Recall runs a staged pipeline:
 
-```text
-query
-  ├─ optional expansion
-  ├─ lexical candidates
-  ├─ optional semantic candidates
-  └─ exact entities + bounded graph candidates
-          ↓
-      rank fusion
-          ↓
-  optional rerank + irrelevance qualification
-          ↓
-  page/document assembly under one budget
+```mermaid
+flowchart TD
+  accTitle: Recall pipeline
+  accDescr: A query gathers candidates through several optional and independent channels, fuses their ranks, optionally reranks and qualifies them, and assembles page and document evidence under one budget.
+
+  query["Query"] --> expansion["Optional expansion"]
+  query --> lexical["Lexical candidates"]
+  query --> semantic["Optional semantic candidates"]
+  query --> graph["Exact entities and bounded graph candidates"]
+  expansion --> fusion["Rank fusion"]
+  lexical --> fusion
+  semantic --> fusion
+  graph --> fusion
+  fusion --> rerank["Optional rerank and irrelevance qualification"]
+  rerank --> assembly["Page and document assembly under one budget"]
 ```
 
 The search arms use incompatible score scales, so Akno fuses ranks instead of comparing raw BM25, cosine,
