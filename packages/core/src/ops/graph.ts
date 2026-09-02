@@ -9,10 +9,13 @@ import {
   type GraphPath,
   type GraphRelation,
   type GraphSeed,
+  type MemoryView,
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { normalizeEntityName, resolveExactEntity } from '../index/graph.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
+import { inferMemoryView } from '../memory/intent.ts';
+import { MANAGED_MEMORY_PROJECTION_VERSION } from '../memory/projection.ts';
 
 const DEFAULT_HOPS = 2;
 const DEFAULT_PATH_LIMIT = 30;
@@ -29,11 +32,12 @@ interface EdgeRow {
   source_document: string | null;
   source_event: string | null;
   source_fact: string | null;
+  source_memory: string | null;
   source_slug: string | null;
   line_start: number | null;
   line_end: number | null;
   source_field: string | null;
-  derivation: 'structural' | 'fact';
+  derivation: 'structural' | 'fact' | 'memory';
   resolution: 'exact' | 'contextual';
   confidence: number;
   valid_from: string | null;
@@ -70,6 +74,9 @@ interface NodeRow {
   observation_id: string | null;
   observation_slug: string | null;
   observation_line: number | null;
+  memory_id: string | null;
+  memory_slug: string | null;
+  memory_line: number | null;
 }
 
 interface RawAmbiguity {
@@ -86,10 +93,13 @@ interface RawAmbiguity {
  */
 export async function graph(ctx: AknoContext, rawInput: unknown): Promise<GraphOutput> {
   const input = GraphInput.parse(rawInput);
+  const memoryView =
+    input.memory_view ??
+    (input.include_history ? 'history' : input.query ? inferMemoryView(input.query, 'lookup') : 'factual');
 
   try {
     if (!tableExists(ctx, 'graph_nodes') || !tableExists(ctx, 'graph_edges')) {
-      return unavailable();
+      return unavailable(memoryView);
     }
 
     const entityIndexAvailable = tableExists(ctx, 'graph_entities') && tableExists(ctx, 'graph_entity_names');
@@ -106,12 +116,14 @@ export async function graph(ctx: AknoContext, rawInput: unknown): Promise<GraphO
         total: 0,
         truncated: false,
         reason: 'seed_not_found',
+        memory_view: memoryView,
       };
     }
 
     const degraded = new Set<DegradedReason>();
     const factStatusAvailable = tableExists(ctx, 'graph_fact_status');
     if (!factStatusAvailable || graphIsPartial(ctx)) degraded.add('partial_graph_index');
+    if (managedMemoryProjectionIsPartial(ctx)) degraded.add('partial_memory_index');
 
     const resolved = resolveSeeds(ctx, input);
     for (const reason of resolved.degraded) degraded.add(reason);
@@ -125,6 +137,7 @@ export async function graph(ctx: AknoContext, rawInput: unknown): Promise<GraphO
       pathLimit,
       includeHistory: input.include_history ?? false,
       factStatusAvailable,
+      memoryView,
     });
     if (traversed.truncated) degraded.add('graph_traversal_limited');
 
@@ -188,16 +201,17 @@ export async function graph(ctx: AknoContext, rawInput: unknown): Promise<GraphO
       ambiguities,
       total: traversed.paths.length,
       truncated,
+      memory_view: memoryView,
       ...(reason ? { reason } : {}),
     };
   } catch {
     // A database error must not collapse into an empty result: an agent is allowed to say "not recorded"
     // only after a complete read, and this operation could not complete one.
-    return unavailable();
+    return unavailable(memoryView);
   }
 }
 
-function unavailable(): GraphOutput {
+function unavailable(memoryView: MemoryView): GraphOutput {
   return {
     status: 'unavailable',
     note: 'the graph index could not be read; absence is unknown',
@@ -209,6 +223,7 @@ function unavailable(): GraphOutput {
     total: 0,
     truncated: false,
     reason: 'graph_index_unreadable',
+    memory_view: memoryView,
   };
 }
 
@@ -234,7 +249,9 @@ function graphIsPartial(ctx: AknoContext): boolean {
          (SELECT count(*) FROM graph_nodes WHERE kind = 'fact') AS graph_facts,
          (SELECT count(*) FROM pages WHERE role = 'knowledge') AS knowledge_pages,
          (SELECT count(*) FROM graph_entities) AS entities,
-         (SELECT count(*) FROM graph_nodes WHERE kind = 'entity') AS graph_entities`,
+         (SELECT count(*) FROM graph_nodes WHERE kind = 'entity') AS graph_entities,
+         (SELECT count(*) FROM managed_memory_entries) AS memories,
+         (SELECT count(*) FROM graph_nodes WHERE kind = 'memory') AS graph_memories`,
     )
     .get() as Record<string, number>;
   return (
@@ -243,8 +260,23 @@ function graphIsPartial(ctx: AknoContext): boolean {
     counts.events !== counts.graph_events ||
     counts.facts !== counts.graph_facts ||
     counts.knowledge_pages !== counts.entities ||
-    counts.entities !== counts.graph_entities
+    counts.entities !== counts.graph_entities ||
+    counts.memories !== counts.graph_memories
   );
+}
+
+function managedMemoryProjectionIsPartial(ctx: AknoContext): boolean {
+  if (ctx.store.meta('managed_memory_projection_version') !== MANAGED_MEMORY_PROJECTION_VERSION) return true;
+  const counts = ctx.store.db
+    .prepare(
+      `SELECT
+         (SELECT count(*) FROM managed_memory_projection_issues) AS issues,
+         (SELECT count(*) FROM (
+            SELECT memory_id FROM managed_memory_entries GROUP BY memory_id HAVING count(*) > 1
+          )) AS duplicate_ids`,
+    )
+    .get() as { issues: number; duplicate_ids: number };
+  return counts.issues > 0 || counts.duplicate_ids > 0;
 }
 
 function resolveSeeds(
@@ -397,6 +429,7 @@ function traverse(
     pathLimit: number;
     includeHistory: boolean;
     factStatusAvailable: boolean;
+    memoryView: MemoryView;
   },
 ): { paths: GraphPath[]; edges: GraphEdgeRef[]; nodeIds: Set<string>; truncated: boolean } {
   const paths: GraphPath[] = [];
@@ -465,6 +498,7 @@ function adjacentEdges(
     relations?: GraphRelation[];
     includeHistory: boolean;
     factStatusAvailable: boolean;
+    memoryView: MemoryView;
   },
 ): { rows: EdgeRow[]; truncated: boolean } {
   const incident =
@@ -483,22 +517,49 @@ function adjacentEdges(
     : options.factStatusAvailable
       ? ' AND (e.source_fact IS NULL OR (s.traversable = 1 AND e.valid_to IS NULL))'
       : ' AND e.source_fact IS NULL';
+  const memoryEligibility = memoryEdgeEligibility(options.memoryView, options.includeHistory);
 
   const rows = ctx.store.db
     .prepare(
       `SELECT e.id, e.from_node, e.to_node, e.relation, e.predicate, e.source_kind,
               e.source_document, e.source_event, e.source_fact, p.slug AS source_slug,
+              e.source_memory,
               e.line_start, e.line_end, e.source_field, e.derivation, e.resolution,
               e.confidence, e.valid_from, e.valid_to
          FROM graph_edges e
          LEFT JOIN pages p ON p.id = e.source_page
          ${options.factStatusAvailable ? 'LEFT JOIN graph_fact_status s ON s.fact_id = e.source_fact' : ''}
-        WHERE ${incident}${relationClause}${eligibility}
+         LEFT JOIN managed_memory_entries m ON m.entry_key = e.source_memory
+        WHERE ${incident}${relationClause}${eligibility}${memoryEligibility}
         ORDER BY e.confidence DESC, e.relation, e.id
         LIMIT ?`,
     )
     .all(...params, FAN_OUT_LIMIT + 1) as EdgeRow[];
   return { rows: rows.slice(0, FAN_OUT_LIMIT), truncated: rows.length > FAN_OUT_LIMIT };
+}
+
+function memoryEdgeEligibility(view: MemoryView, includeHistory: boolean): string {
+  if (view === 'all') return '';
+  const factual = 'm.answer_eligible = 1';
+  let selected: string;
+  if (view === 'factual') selected = factual;
+  else if (view === 'reports') selected = "m.basis = 'source_report'";
+  else if (view === 'questions') selected = "m.kind = 'question'";
+  else if (view === 'planning') {
+    selected =
+      "(m.kind = 'plan' OR m.temporal_status IN ('planned', 'scheduled')) " +
+      "AND m.disposition IN ('active', 'proposed', 'accepted')";
+  } else if (view === 'history') {
+    selected =
+      "(m.disposition IN ('rejected', 'cancelled', 'completed', 'superseded', 'resolved') " +
+      "OR (m.kind = 'decision' AND m.disposition = 'accepted'))";
+  } else {
+    selected =
+      "(m.commitment IN ('tentative', 'hypothetical', 'counterfactual') " +
+      "OR m.disposition IN ('proposed', 'rejected'))";
+  }
+  if (includeHistory) selected = `(${selected} OR ${factual})`;
+  return ` AND (e.source_memory IS NULL OR (${selected}))`;
 }
 
 function edgeRef(row: EdgeRow): GraphEdgeRef {
@@ -508,6 +569,7 @@ function edgeRef(row: EdgeRow): GraphEdgeRef {
     ...(row.source_document ? { document: row.source_document } : {}),
     ...(row.source_event ? { event: row.source_event } : {}),
     ...(row.source_fact ? { fact: row.source_fact } : {}),
+    ...(row.source_memory ? { memory: memoryIdFromEntryKey(row.source_memory) } : {}),
     ...(row.line_start ? { line_start: row.line_start } : {}),
     ...(row.line_end ? { line_end: row.line_end } : {}),
     ...(row.source_field ? { field: row.source_field } : {}),
@@ -528,6 +590,10 @@ function edgeRef(row: EdgeRow): GraphEdgeRef {
   };
 }
 
+function memoryIdFromEntryKey(entryKey: string): string {
+  return entryKey.slice(entryKey.indexOf(':') + 1);
+}
+
 function loadNodes(ctx: AknoContext, ids: string[]): GraphNodeRef[] {
   if (ids.length === 0) return [];
   const rows = ctx.store.db
@@ -542,6 +608,7 @@ function loadNodes(ctx: AknoContext, ids: string[]): GraphNodeRef[] {
               f.id AS fact_id, fp.slug AS fact_slug,
               f.line_start AS fact_line_start, f.line_end AS fact_line_end,
               ev.id AS event_id, ev.date AS event_date, ev.source_slug AS event_source, ev.line AS event_line,
+              me.memory_id, me.source_slug AS memory_slug, me.payload_line AS memory_line,
               oe.id AS observation_id, oe.source_slug AS observation_slug,
               oe.payload_line AS observation_line
          FROM graph_nodes n
@@ -553,6 +620,7 @@ function loadNodes(ctx: AknoContext, ids: string[]): GraphNodeRef[] {
          LEFT JOIN facts f ON n.kind = 'fact' AND f.id = n.source_id
          LEFT JOIN pages fp ON fp.id = f.page_id
          LEFT JOIN events ev ON n.kind = 'event' AND ev.id = n.source_id
+         LEFT JOIN managed_memory_entries me ON n.kind = 'memory' AND me.entry_key = n.source_id
          LEFT JOIN observation_entries oe ON n.kind = 'observation' AND oe.id = n.source_id
         WHERE n.id IN (${ids.map(() => '?').join(',')})`,
     )
@@ -611,6 +679,15 @@ function nodeRef(ctx: AknoContext, row: NodeRow): GraphNodeRef {
         date: row.event_date!,
         slug: row.event_source!,
         ...(row.event_line ? { line_start: row.event_line, line_end: row.event_line } : {}),
+      };
+    case 'memory':
+      return {
+        id: row.id,
+        kind: row.kind,
+        memory: row.memory_id!,
+        slug: row.memory_slug!,
+        line_start: row.memory_line!,
+        line_end: row.memory_line!,
       };
     case 'observation':
       return {

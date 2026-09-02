@@ -147,6 +147,13 @@ and recurrence while computing currentness from the caller's clock. This lets a 
 without being injected as a current fact, and lets an accepted plan answer a future-oriented question without
 becoming a factual claim.
 
+The marker's other semantics matter at read time too. Akno projects retained claims, reports, plans, decisions,
+questions, and tentative discussion into separate semantic views without moving or duplicating their Markdown.
+Generic agent recall stays factual. A prompt explicitly asking what was reported, planned, rejected, left open,
+or discussed selects that qualified form before retrieval; the returned sentence still carries its attribution,
+commitment, disposition, basis, and answer eligibility. If no in-view item matches, an out-of-view match may be
+shown as context, but it is not automatically injected or restated as true.
+
 Possible results matter:
 
 | Result                        | Meaning                                                                               |

@@ -35,6 +35,8 @@ export interface EvidenceGraphReport {
   facts: number;
   factEdges: number;
   nonTraversableFacts: number;
+  memories: number;
+  memoryEdges: number;
 }
 
 export type EntityNameSignal = 'canonical_slug' | 'alias' | 'title' | 'basename';
@@ -66,7 +68,7 @@ interface ContextualEntityResolution {
 
 type EntityResolution = ExactEntityResolution | ContextualEntityResolution;
 
-type NodeKind = 'entity' | 'page' | 'document' | 'fact' | 'event' | 'observation';
+type NodeKind = 'entity' | 'page' | 'document' | 'fact' | 'event' | 'memory' | 'observation';
 type EntityType = 'person' | 'organization' | 'place' | 'product' | 'event' | 'concept' | 'other';
 
 interface PageRow {
@@ -135,6 +137,30 @@ interface FactRow {
   valid_to: string | null;
 }
 
+interface MemoryRow {
+  entry_key: string;
+  memory_id: string;
+  source_page: string;
+  source_slug: string;
+  payload_line: number;
+  payload_hash: string;
+  kind: string;
+  subject: string;
+  commitment: string;
+  disposition: string;
+  basis: string;
+  answer_eligible: number;
+  temporal_status: string | null;
+}
+
+interface MemoryRelationRow {
+  entry_key: string;
+  relation: 'corrects' | 'supersedes' | 'contradicts' | 'fulfills' | 'answers' | 'caused_by';
+  target_kind: 'memory' | 'fact';
+  target_id: string;
+  support: string;
+}
+
 type FactEligibility =
   | 'eligible'
   | 'superseded'
@@ -194,8 +220,8 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       `INSERT OR IGNORE INTO graph_edges(
          id, from_node, to_node, relation, predicate, source_kind,
          source_page, source_document, source_event, source_fact, line_start, line_end, source_field,
-         source_hash, derivation, resolution, confidence, derivation_version, valid_from, valid_to
-       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         source_memory, source_hash, derivation, resolution, confidence, derivation_version, valid_from, valid_to
+       ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     );
 
     const pages = store.db
@@ -244,6 +270,14 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
           ORDER BY f.id`,
       )
       .all() as FactRow[];
+    const memories = store.db
+      .prepare(
+        `SELECT entry_key, memory_id, source_page, source_slug, payload_line, payload_hash,
+                kind, subject, commitment, disposition, basis, answer_eligible, temporal_status
+           FROM managed_memory_entries
+          ORDER BY entry_key`,
+      )
+      .all() as MemoryRow[];
 
     const nodeIds = new Map<string, string>();
     const addNode = (
@@ -260,6 +294,8 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
     for (const document of documents) addNode('document', document.id, document.sha256);
     for (const fact of facts) addNode('fact', fact.id, fact.source_line_hash, FACT_GRAPH_VERSION);
     for (const event of events) addNode('event', event.id, event.source_hash);
+    for (const memory of memories)
+      addNode('memory', memory.entry_key, memory.payload_hash, 'memory-relations-v1');
 
     const entities: EntityRow[] = pages
       .filter((page) => page.role === 'knowledge')
@@ -337,11 +373,12 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       sourceDocument: string | null;
       sourceEvent: string | null;
       sourceFact?: string | null;
+      sourceMemory?: string | null;
       line: number | null;
       lineEnd?: number | null;
       sourceField: string | null;
       sourceHash: string;
-      derivation?: 'structural' | 'fact';
+      derivation?: 'structural' | 'fact' | 'memory';
       confidence?: number;
       resolution?: 'exact' | 'contextual';
       version?: string;
@@ -354,6 +391,7 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         edge.sourceDocument,
         edge.sourceEvent,
         edge.sourceFact,
+        edge.sourceMemory,
         edge.line,
         edge.sourceField,
       ].join('\0');
@@ -374,6 +412,7 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         edge.line,
         edge.lineEnd ?? edge.line,
         edge.sourceField,
+        edge.sourceMemory ?? null,
         edge.sourceHash,
         edge.derivation ?? 'structural',
         edge.resolution ?? 'exact',
@@ -401,6 +440,84 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
         sourceHash: entity.sourceHash,
         version: ENTITY_RESOLUTION_VERSION,
       });
+    }
+
+    const duplicateMemoryIds = new Set(
+      (
+        store.db
+          .prepare(
+            `SELECT memory_id FROM managed_memory_entries
+              GROUP BY memory_id HAVING count(*) > 1`,
+          )
+          .all() as { memory_id: string }[]
+      ).map((row) => row.memory_id),
+    );
+    const uniqueMemoryById = new Map(
+      memories
+        .filter((memory) => !duplicateMemoryIds.has(memory.memory_id))
+        .map((memory) => [memory.memory_id, memory]),
+    );
+    const factById = new Map(facts.map((fact) => [fact.id, fact]));
+    const entityById = new Map(entities.map((entity) => [entity.id, entity]));
+    let memoryEdges = 0;
+    for (const memory of memories) {
+      // Duplicate ids have no durable relation identity. Keep their nodes countable so graph
+      // completeness can be checked, but expose no subject or relation edge for either copy.
+      if (duplicateMemoryIds.has(memory.memory_id)) continue;
+      const memoryNode = requiredNode(nodeIds, 'memory', memory.entry_key);
+      const subject = entityById.get(memory.subject);
+      if (subject) {
+        memoryEdges += addEdge({
+          from: requiredNode(nodeIds, 'entity', subject.id),
+          to: memoryNode,
+          relation: 'has_attribute',
+          predicate: `memory:${memory.kind}`,
+          sourceKind: 'page_line',
+          sourcePage: memory.source_page,
+          sourceDocument: null,
+          sourceEvent: null,
+          sourceMemory: memory.entry_key,
+          line: memory.payload_line,
+          sourceField: 'akno:item',
+          sourceHash: memory.payload_hash,
+          derivation: 'memory',
+          version: 'memory-relations-v1',
+        });
+      }
+      const relations = store.db
+        .prepare(
+          `SELECT entry_key, relation, target_kind, target_id, support
+             FROM managed_memory_relations WHERE entry_key = ? ORDER BY ordinal`,
+        )
+        .all(memory.entry_key) as MemoryRelationRow[];
+      for (const relation of relations) {
+        const target =
+          relation.target_kind === 'memory'
+            ? uniqueMemoryById.get(relation.target_id)
+            : factById.get(relation.target_id);
+        if (!target) continue;
+        const targetNode =
+          relation.target_kind === 'memory'
+            ? requiredNode(nodeIds, 'memory', (target as MemoryRow).entry_key)
+            : requiredNode(nodeIds, 'fact', (target as FactRow).id);
+        memoryEdges += addEdge({
+          from: memoryNode,
+          to: targetNode,
+          relation: relation.relation,
+          predicate: null,
+          sourceKind: 'page_line',
+          sourcePage: memory.source_page,
+          sourceDocument: null,
+          sourceEvent: null,
+          sourceFact: relation.target_kind === 'fact' ? (target as FactRow).id : null,
+          sourceMemory: memory.entry_key,
+          line: memory.payload_line,
+          sourceField: 'akno:item.relation',
+          sourceHash: relation.support,
+          derivation: 'memory',
+          version: 'memory-relations-v1',
+        });
+      }
     }
 
     let mentions = 0;
@@ -821,6 +938,8 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
       facts: facts.length,
       factEdges,
       nonTraversableFacts,
+      memories: memories.length,
+      memoryEdges,
     };
   });
 }

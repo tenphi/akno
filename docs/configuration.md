@@ -66,6 +66,14 @@ stateless and may contain private memory. A failed Responses call does not fall 
 cross-transport retry could duplicate cost and change schema behavior. Automatic one-time capability resolution
 uses only invented probe text. A real Akno request never falls through to the other transport.
 
+Configuring a provider for a model role is the owner's authorization to send that role's necessary input to
+that provider. Akno does not add per-page or per-call egress gates. It does keep the request on the exact
+configured scheme, host, and effective port: model calls and `api: auto` probes refuse cross-origin redirects
+before any authorization, custom header, or body can reach the target. Bounded same-origin `307`/`308`
+redirects preserve the POST; `301`/`302`/`303`, loops, malformed or credential-bearing destinations, and
+unsupported schemes fail with content-safe diagnostics. Retries and compatibility negotiation stay on the same
+origin, and a failed configured provider never causes another provider block to be tried.
+
 ## Door and network policy
 
 `server.mcp_allow` is the authoritative operation set for MCP. A stdio adapter that forwards through the

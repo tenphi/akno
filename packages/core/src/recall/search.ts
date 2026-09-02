@@ -270,6 +270,7 @@ function graphPathKey(path: RecallGraphPath): string {
         locator.document,
         locator.event,
         locator.fact,
+        locator.memory,
         locator.line_start,
         locator.line_end,
         locator.field,
@@ -542,7 +543,7 @@ function graphEvidenceReader(store: Store): (locator: RecallGraphPath['evidence'
   const cache = new Map<string, string>();
 
   return (locator) => {
-    const key = `${locator.kind}\0${locator.slug ?? ''}\0${locator.document ?? ''}\0${locator.line_start ?? ''}`;
+    const key = `${locator.kind}\0${locator.slug ?? ''}\0${locator.document ?? ''}\0${locator.memory ?? ''}\0${locator.line_start ?? ''}`;
     const cached = cache.get(key);
     if (cached !== undefined) return cached;
     const row = locator.slug

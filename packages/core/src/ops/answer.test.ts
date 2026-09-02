@@ -413,6 +413,125 @@ describe('grounded answer discovery surface', () => {
     expect(modelRequests).toHaveLength(0);
   });
 
+  it('answers an explicit report question only with source attribution preserved', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Bo Winters reported that the lantern warranty lasts eight years.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    writeReportMemory();
+    await memory.index({ verify: true });
+
+    const result = await memory.answer({
+      question: 'What did Bo Winters report about the lantern warranty?',
+      filter: { folder: 'reports' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+
+    expect(result.memory_view).toBe('reports');
+    expect(result.outcome).toBe('partial');
+    expect(result.answer).toContain('Bo Winters reported');
+    expect(result.context?.[0]).toMatchObject({
+      type: 'page',
+      slug: 'reports/lantern',
+      lines: [
+        expect.objectContaining({
+          memory: expect.objectContaining({ basis: 'source_report', source_speaker: 'Bo Winters' }),
+        }),
+      ],
+    });
+  });
+
+  it('rejects an unattributed answer derived only from a retained report', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The lantern warranty lasts eight years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    writeReportMemory();
+    await memory.index({ verify: true });
+
+    const result = await memory.answer({
+      question: 'What did Bo Winters report about the lantern warranty?',
+      filter: { folder: 'reports' },
+      expand: false,
+      graph: false,
+    });
+
+    expect(result.memory_view).toBe('reports');
+    expect(result.outcome).toBe('not_answered');
+    expect(result.answer).toBeNull();
+    expect(modelRequests).toHaveLength(1);
+  });
+
+  it('rejects a proposal restated as an unqualified future fact', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow will inspect the Zephyr QX-100 at Blackwater Bay.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    writePlanMemory();
+    await memory.index({ verify: true });
+
+    const result = await memory.answer({
+      question: 'What inspection plan was proposed for Ada Marlow?',
+      memory_view: 'planning',
+      filter: { folder: 'plans' },
+      expand: false,
+      graph: false,
+    });
+
+    expect(result.outcome).toBe('not_answered');
+    expect(result.answer).toBeNull();
+    expect(modelRequests).toHaveLength(1);
+  });
+
+  it('allows a proposal answer that preserves its status', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow proposed inspecting the Zephyr QX-100 at Blackwater Bay.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    writePlanMemory();
+    await memory.index({ verify: true });
+
+    const result = await memory.answer({
+      question: 'What inspection plan was proposed for Ada Marlow?',
+      memory_view: 'planning',
+      filter: { folder: 'plans' },
+      expand: false,
+      graph: false,
+    });
+
+    expect(result.answer).toContain('proposed');
+    expect(modelRequests).toHaveLength(2);
+  });
+
   it('uses the reader clock to separate expired state, factual history, and actionable future work', async () => {
     const expired = temporalMarker('mem_expired', {
       time: {
@@ -621,6 +740,32 @@ function write(relPath: string, content: string): void {
   const absolute = path.join(root, relPath);
   fs.mkdirSync(path.dirname(absolute), { recursive: true });
   fs.writeFileSync(absolute, content, 'utf8');
+}
+
+function writeReportMemory(): void {
+  write(
+    'reports/lantern.md',
+    [
+      '# Lantern report',
+      '',
+      '<!-- akno:item mem_report v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=external speaker=Bo%20Winters reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->',
+      '- **Reported by Bo Winters:** Bo Winters said the lantern warranty lasts eight years.',
+      '',
+    ].join('\n'),
+  );
+}
+
+function writePlanMemory(): void {
+  write(
+    'plans/inspection.md',
+    [
+      '# Inspection plan',
+      '',
+      '<!-- akno:item mem_plan v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=plan subject=unresolved source-role=user reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested -->',
+      '- **Proposal:** Ada Marlow proposed inspecting the Zephyr QX-100 at Blackwater Bay.',
+      '',
+    ].join('\n'),
+  );
 }
 
 function treeFingerprint(): string {

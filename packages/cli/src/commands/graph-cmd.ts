@@ -4,6 +4,7 @@ import type {
   GraphNodeRef,
   GraphOutput,
   GraphRelation,
+  MemoryView,
 } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
 import { json, line, statusLabel, style } from '../output.ts';
@@ -22,6 +23,8 @@ const GRAPH_HELP = `akno graph [seed] [options]
   --hops <n>          1 | 2 | 3 (default: 2)
   --limit <n>         Maximum paths, up to 100 (default: 30).
   --history           Include superseded fact paths. Excluded by default.
+  --memory-view <v>   factual | history | planning | reports | questions |
+                      discussion | all.
   --json              Machine-readable response.`;
 
 export async function graphCommand(argv: string[]): Promise<number> {
@@ -34,6 +37,7 @@ export async function graphCommand(argv: string[]): Promise<number> {
     hops?: string;
     limit?: string;
     history?: boolean;
+    'memory-view'?: string;
   }>(argv, {
     slug: { type: 'string' },
     entity: { type: 'string' },
@@ -43,6 +47,7 @@ export async function graphCommand(argv: string[]): Promise<number> {
     hops: { type: 'string' },
     limit: { type: 'string' },
     history: { type: 'boolean', default: false },
+    'memory-view': { type: 'string' },
   });
 
   if (values.help) {
@@ -73,6 +78,7 @@ export async function graphCommand(argv: string[]): Promise<number> {
       ...(values.hops ? { max_hops: Number(values.hops) as 1 | 2 | 3 } : {}),
       ...(values.limit ? { limit: Number(values.limit) } : {}),
       ...(values.history ? { include_history: true } : {}),
+      ...(values['memory-view'] ? { memory_view: values['memory-view'] as MemoryView } : {}),
     });
 
     if (values.json) {
@@ -89,7 +95,8 @@ export async function graphCommand(argv: string[]): Promise<number> {
 
 function printGraph(result: GraphOutput): void {
   line(
-    `${statusLabel(result.status)} ${style.grey(`${result.paths.length} path${result.paths.length === 1 ? '' : 's'}`)} ` +
+    `${statusLabel(result.status)} ${style.grey(`memory=${result.memory_view}`)} ` +
+      `${style.grey(`${result.paths.length} path${result.paths.length === 1 ? '' : 's'}`)} ` +
       `${style.grey(`${result.nodes.length} nodes, ${result.edges.length} edges`)}`,
   );
   if (result.degraded?.length) line(style.yellow(`  degraded: ${result.degraded.join(', ')}`));
@@ -142,6 +149,8 @@ function nodeLabel(node: GraphNodeRef): string {
       return `${node.fact}${node.slug && node.line_start ? style.grey(` [${node.slug}:${node.line_start}]`) : ''}`;
     case 'event':
       return `${node.event}${node.date ? style.grey(` [${node.date}]`) : ''}`;
+    case 'memory':
+      return `${node.memory}${node.slug && node.line_start ? style.grey(` [${node.slug}:${node.line_start}]`) : ''}`;
     case 'observation':
       return `${node.observation}${node.slug && node.line_start ? style.grey(` [${node.slug}:${node.line_start}]`) : ''}`;
   }
@@ -151,6 +160,7 @@ function locator(evidence: GraphEdgeRef['evidence']): string {
   const lineRange = evidence.line_start
     ? `:${evidence.line_start}${evidence.line_end && evidence.line_end !== evidence.line_start ? `-${evidence.line_end}` : ''}`
     : '';
-  const source = evidence.slug ?? evidence.document ?? evidence.event ?? evidence.fact ?? evidence.kind;
+  const source =
+    evidence.slug ?? evidence.document ?? evidence.event ?? evidence.fact ?? evidence.memory ?? evidence.kind;
   return `${source}${lineRange}${evidence.field ? `#${evidence.field}` : ''}`;
 }

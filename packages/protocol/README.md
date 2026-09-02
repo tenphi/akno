@@ -16,7 +16,7 @@ This package exists so `@tenphi/akno-client` can share schemas with `@tenphi/akn
 ```ts
 import { OPS, OP_NAMES, AknoError } from '@tenphi/akno-protocol';
 
-OPS.recall.input.parse({ query: 'car insurance renewal' });
+OPS.recall.input.parse({ query: 'What is planned?', memory_view: 'planning' });
 OPS.timeline.input.parse({
   as_of: '2031-04-12T10:00:00+02:00',
   timezone: 'Europe/Amsterdam',

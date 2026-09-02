@@ -148,10 +148,11 @@ payload back as an L1 fact.
 
 ## The evidence graph
 
-Indexing projects exact page links, `akno.about`, document ownership, events, eligible derived facts, and
-eligible observation-to-leaf lineage into a disposable graph.
+Indexing projects exact page links, `akno.about`, document ownership, events, eligible derived facts, typed
+retained-memory relations, and eligible observation-to-leaf lineage into a disposable graph.
 
-Each edge retains a current source hash and an exact line, frontmatter, fact, event, or document locator. Exact
+Each edge retains a current source hash and an exact line, frontmatter, fact, retained-memory, event, or
+document locator. Exact
 canonical slugs and declared aliases may resolve identity. Ambiguous names retain candidates but produce no
 traversable edge. Similarity alone never establishes identity.
 
@@ -160,6 +161,11 @@ the final card still cites ordinary source evidence. Optional contextual resolut
 already known exact-name candidates and must abstain unless one is clearly supported.
 
 The graph is an evidence index, not hidden memory. It can be rebuilt from current source files.
+
+The same level-one marker also builds a semantic retrieval projection. `factual`, `history`, `planning`,
+`reports`, `questions`, and `discussion` are views over retained discourse, not separate folders or copies.
+Akno applies the selected view before candidate budgeting, while every returned line keeps its complete memory
+qualification. Ordinary authored prose remains untyped and participates in every view.
 
 ## Result states
 

@@ -2,6 +2,7 @@ import {
   ContextInput,
   type Card,
   type ContextOutput,
+  type MemoryView,
   type RecallResult,
   type RecallQualification,
   type TimelineResult,
@@ -19,6 +20,7 @@ import { recall } from './recall.ts';
 import { read } from './read.ts';
 import { timeline } from './timeline.ts';
 import { list } from './list.ts';
+import { inferMemoryView, qualificationEligibleForView } from '../memory/intent.ts';
 
 /**
  * **One budget, one assembly.** `context` composes the whole pre-turn bundle
@@ -113,6 +115,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   let searched: string[] = [];
   let coverage: Record<string, boolean> | undefined;
   let qualification: RecallQualification | undefined;
+  let memoryView: MemoryView | undefined;
 
   if (input.query) {
     const pinnedSlugs = new Set(pinned.map((card) => card.slug));
@@ -120,12 +123,14 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
       query: input.query,
       budget: remaining,
       ...(input.mode ? { mode: input.mode } : {}),
+      ...(input.memory_view ? { memory_view: input.memory_view } : {}),
       ...(input.include ? { include: input.include } : {}),
       ...(input.filter ? { filter: input.filter } : {}),
     });
     searched = result.searched;
     if (result.coverage) coverage = result.coverage;
     if (result.qualification) qualification = result.qualification;
+    memoryView = result.memory_view;
     for (const reason of result.degraded ?? []) degraded.add(reason);
     // A pinned page already in the bundle must not be returned twice.
     results = result.results.filter((entry) => entry.type === 'document' || !pinnedSlugs.has(entry.slug));
@@ -160,6 +165,7 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
     timeline: recentTimeline,
     ...(structure ? { structure } : {}),
     searched,
+    ...(memoryView ? { memory_view: memoryView } : {}),
     ...(coverage ? { coverage } : {}),
     ...(qualification ? { qualification } : {}),
     budget_used: budgetUsed,
@@ -193,6 +199,7 @@ async function autoRecallContext(
   input: ParsedContextInput & { profile: 'auto_recall'; query: string },
 ): Promise<ContextOutput> {
   const budget = input.budget ?? AUTO_RECALL_DEFAULT_BUDGET;
+  const memoryView = input.memory_view ?? inferMemoryView(input.query, input.mode ?? 'lookup');
   const resolutionContext = referenceContext(input.query, input.conversation_context ?? []);
   const retrievalQuery = resolutionContext ? `${input.query}\n${resolutionContext}` : input.query;
   const recallInput = {
@@ -203,6 +210,7 @@ async function autoRecallContext(
     budget: AUTO_RECALL_CANDIDATE_BUDGET,
     expand: false,
     graph: false,
+    memory_view: memoryView,
     ...(input.include ? { include: input.include } : {}),
     ...(input.filter ? { filter: input.filter } : {}),
   };
@@ -216,12 +224,13 @@ async function autoRecallContext(
       candidates: 0,
       degraded: initial.degraded,
       note: initial.note ?? 'memory evidence could not be read',
+      memoryView,
     });
   }
 
   const degraded = new Set(initial.degraded ?? []);
   const eligibleInitial = initial.results.flatMap((result) => {
-    const eligible = temporallyEligibleResult(result, input.query);
+    const eligible = temporallyEligibleResult(result, input.query, memoryView);
     return eligible ? [eligible] : [];
   });
   const signals = eligibleInitial.map((result) => activationSignal(result, input.query, resolutionContext));
@@ -236,6 +245,7 @@ async function autoRecallContext(
       degraded,
       activationBasis: 'exact',
       qualificationRun: false,
+      memoryView,
     });
   }
   const strongSignals = signals
@@ -261,6 +271,7 @@ async function autoRecallContext(
       degraded,
       activationBasis: deterministic.some((signal) => signal.basis === 'exact') ? 'exact' : 'semantic',
       qualificationRun: false,
+      memoryView,
     });
   }
 
@@ -273,6 +284,7 @@ async function autoRecallContext(
       candidates: initial.results.length,
       degraded: [...degraded],
       note: 'no memory evidence was strong enough for automatic injection',
+      memoryView,
     });
   }
 
@@ -288,6 +300,7 @@ async function autoRecallContext(
       qualification: qualified.qualification,
       qualificationRun: true,
       note: qualified.note ?? 'memory evidence could not be read during qualification',
+      memoryView,
     });
   }
 
@@ -297,7 +310,7 @@ async function autoRecallContext(
   const qualifiedSelection = qualificationApplied
     ? qualified.results
         .flatMap((result) => {
-          const eligible = temporallyEligibleResult(result, input.query);
+          const eligible = temporallyEligibleResult(result, input.query, memoryView);
           return eligible ? [eligible] : [];
         })
         .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
@@ -328,6 +341,7 @@ async function autoRecallContext(
         : qualificationApplied
           ? 'qualification found no evidence strong enough for automatic injection'
           : 'automatic injection requires calibrated qualification for ambiguous evidence',
+      memoryView,
     });
   }
 
@@ -340,6 +354,7 @@ async function autoRecallContext(
     activationBasis: 'qualified',
     qualification: qualified.qualification,
     qualificationRun: true,
+    memoryView,
   });
 }
 
@@ -352,6 +367,7 @@ interface EmptyAutoRecallOptions {
   qualification?: RecallQualification;
   qualificationRun?: boolean;
   note: string;
+  memoryView: MemoryView;
 }
 
 function emptyAutoRecall(options: EmptyAutoRecallOptions): ContextOutput {
@@ -371,6 +387,7 @@ function emptyAutoRecall(options: EmptyAutoRecallOptions): ContextOutput {
     results: [],
     timeline: [],
     searched: options.searched,
+    memory_view: options.memoryView,
     ...(options.qualification ? { qualification: options.qualification } : {}),
     budget_used: 0,
   };
@@ -385,6 +402,7 @@ interface AssembledAutoRecallOptions {
   activationBasis: 'exact' | 'semantic' | 'qualified';
   qualification?: RecallQualification;
   qualificationRun: boolean;
+  memoryView: MemoryView;
 }
 
 function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput {
@@ -409,6 +427,7 @@ function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput
     results: fitted.results,
     timeline: [],
     searched: options.searched,
+    memory_view: options.memoryView,
     ...(options.qualification ? { qualification: options.qualification } : {}),
     budget_used: fitted.budgetUsed,
     ...(dropped > 0 ? { dropped: { pinned: 0, results: dropped, timeline: 0 } } : {}),
@@ -643,7 +662,11 @@ function resultIdentity(result: RecallResult): string {
   return result.type === 'page' ? `page:${result.slug}` : `document:${result.id}`;
 }
 
-function temporallyEligibleResult(result: RecallResult, query: string): RecallResult | null {
+function temporallyEligibleResult(
+  result: RecallResult,
+  query: string,
+  memoryView: MemoryView,
+): RecallResult | null {
   if (result.type !== 'page') return result;
   const intent = temporalQueryIntent(query);
   if (intent.current && result.superseded) return null;
@@ -652,6 +675,7 @@ function temporallyEligibleResult(result: RecallResult, query: string): RecallRe
     const memory = line.memory;
     if (!memory) return !intent.current || ordinaryCurrentEligible(line.text);
     if (memory.status !== 'qualified') return false;
+    if (memoryView !== 'factual') return qualificationEligibleForView(memory, memoryView);
     if (intent.history) return historicalMemoryEligible(memory, intent.sourceReport);
     if (intent.future) return futureMemoryEligible(memory) || canonicalMemoryEligibleNow(memory);
     if (intent.current) return memory.current_eligible;

@@ -1,4 +1,4 @@
-import type { RecallGraphPath, RecallMode, RecallResult } from '@tenphi/akno-protocol';
+import type { MemoryView, RecallGraphPath, RecallMode, RecallResult } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, statusLabel, style, truncate } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
@@ -9,6 +9,8 @@ const RECALL_HELP = `akno recall <query> [options]
 
   --mode <m>          lookup | question | explore. Inferred from the query by
                       default; passing it explicitly always wins.
+  --memory-view <v>   factual | history | planning | reports | questions |
+                      discussion | all. Inferred conservatively by default.
   --depth <d>         summary | lines | full
   --limit <n>         Maximum results.
   --budget <n>        Token budget for the whole response.
@@ -26,6 +28,7 @@ const RECALL_HELP = `akno recall <query> [options]
 export async function recallCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse<{
     mode?: string;
+    'memory-view'?: string;
     depth?: string;
     limit?: string;
     budget?: string;
@@ -39,6 +42,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
     graph: boolean;
   }>(argv, {
     mode: { type: 'string' },
+    'memory-view': { type: 'string' },
     depth: { type: 'string' },
     limit: { type: 'string' },
     budget: { type: 'string' },
@@ -72,6 +76,7 @@ export async function recallCommand(argv: string[]): Promise<number> {
     const result = await handle.ops.recall({
       query,
       ...(values.mode ? { mode: values.mode as RecallMode } : {}),
+      ...(values['memory-view'] ? { memory_view: values['memory-view'] as MemoryView } : {}),
       ...(values.depth ? { depth: values.depth as 'summary' | 'lines' | 'full' } : {}),
       ...(values.limit ? { limit: Number(values.limit) } : {}),
       ...(values.budget ? { budget: Number(values.budget) } : {}),
@@ -112,10 +117,11 @@ function printRecall(result: {
   budget_used: number;
   coverage?: Record<string, boolean>;
   mode: string;
+  memory_view: string;
   note?: string;
 }): void {
   line(
-    `${statusLabel(result.status)} ${style.grey(`mode=${result.mode}`)} ` +
+    `${statusLabel(result.status)} ${style.grey(`mode=${result.mode} memory=${result.memory_view}`)} ` +
       `${style.grey(`${result.results.length} result${result.results.length === 1 ? '' : 's'}`)} ` +
       `${style.grey(`${result.budget_used} tokens`)}`,
   );

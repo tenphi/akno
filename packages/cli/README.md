@@ -16,6 +16,7 @@ akno init
 akno index
 akno doctor
 akno recall "How long is the Zephyr QX-100 warranty?"
+akno recall "What is planned for the Zephyr QX-100?" --memory-view planning
 ```
 
 `akno init` offers the qualified OpenAI single-endpoint setup, a model-free lexical setup, or preservation of

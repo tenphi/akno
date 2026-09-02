@@ -15,7 +15,10 @@ has no native code.
 import { open } from '@tenphi/akno-core';
 
 const akno = await open({ aknoPath: '~/Notes' });
-const result = await akno.call('recall', { query: 'car insurance renewal' });
+const result = await akno.call('recall', {
+  query: 'What did Bo Winters report about the warranty?',
+  memory_view: 'reports',
+});
 ```
 
 Exactly one process may hold the write handle. A second `open` on the same state directory returns a

@@ -10,6 +10,8 @@ import { indexDegradation } from '../context.ts';
 import { expandQuery, inferMode, splitMultiPart } from '../recall/expand.ts';
 import { graphRecallCandidates } from '../recall/graph-arm.ts';
 import { fuseHits, hybridSearch, normalizeScores, rerankHits, type ChunkHit } from '../recall/search.ts';
+import { inferMemoryView } from '../memory/intent.ts';
+import { managedMemoryProjectionForView } from '../memory/projection.ts';
 
 /**
  * The retrieval op. Expand → hybrid search → rerank → assemble → fit a
@@ -23,6 +25,7 @@ import { fuseHits, hybridSearch, normalizeScores, rerankHits, type ChunkHit } fr
 export async function recall(ctx: AknoContext, rawInput: unknown): Promise<RecallOutput> {
   const input = RecallInput.parse(rawInput);
   const mode = input.mode ?? inferMode(input.query);
+  const memoryView = input.memory_view ?? inferMemoryView(input.query, mode);
   const depth = input.depth ?? (mode === 'explore' ? 'summary' : 'lines');
   const limit =
     input.limit ?? (mode === 'explore' ? ctx.config.recall.defaultLimit * 2 : ctx.config.recall.defaultLimit);
@@ -41,6 +44,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched: [input.query],
       budget_used: 0,
       mode,
+      memory_view: memoryView,
       scores: 'relative',
       note: 'the index holds no chunks yet — run `akno index`',
     };
@@ -76,102 +80,134 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
+      memory_view: memoryView,
       scores: 'relative',
       note: 'the filter matched no indexed evidence',
     };
   }
 
-  let search;
-  try {
-    search = await hybridSearch(ctx.store, ctx.models.embedding, {
+  const projection = managedMemoryProjectionForView(ctx.store, memoryView);
+  if (projection.degraded) degraded.add('partial_memory_index');
+  const eligibleChunkIds = intersectChunkIds(chunkIds, projection.eligibleChunkIds);
+  const contextualChunkIds = intersectChunkIds(chunkIds, projection.contextualChunkIds);
+  const runSearch = async (
+    allowedChunkIds: Set<number>,
+  ): Promise<{
+    hits: ChunkHit[];
+    qualification: RecallQualification | null;
+    scores: 'absolute' | 'relative';
+  }> => {
+    if (allowedChunkIds.size === 0) return { hits: [], qualification: null, scores: 'relative' };
+    const search = await hybridSearch(ctx.store, ctx.models.embedding, {
       queries: dedupe(allQueries),
       vectorTexts: dedupe(allVectorTexts),
       candidatesPerArm: ctx.config.recall.candidatesPerArm,
       prefilterAbove: ctx.config.index.annThresholdChunks,
-      ...(chunkIds ? { chunkIds } : {}),
+      chunkIds: allowedChunkIds,
     });
+    for (const reason of search.degraded) degraded.add(reason);
+    notes.push(...search.notes);
+
+    let hits: ChunkHit[] = search.hits;
+    if (input.graph ?? ctx.config.recall.graph) {
+      try {
+        const graphResult = await graphRecallCandidates(ctx, input.query, search.hits, allowedChunkIds);
+        for (const reason of graphResult.degraded) degraded.add(reason);
+        notes.push(...graphResult.notes);
+        if (graphResult.hits.length > 0) hits = fuseHits([...search.arms, graphResult.hits]);
+      } catch {
+        degraded.add('no_graph_index');
+        notes.push('the structural graph candidate arm was unavailable');
+      }
+    }
+
+    let reranked = false;
+    let qualification: RecallQualification | null = null;
+    const shouldRerank = input.rerank ?? true;
+    if (shouldRerank && hits.length > 0 && ctx.models.reranker.available) {
+      const result = await rerankHits(
+        ctx.store,
+        ctx.models.reranker,
+        input.query,
+        hits,
+        ctx.config.models.reranker.topK ?? 40,
+        ctx.config.models.reranker.maxChars ?? 800,
+        ctx.config.models.reranker.scoreOffset ?? 'auto',
+        ctx.config.models.reranker.excludeIrrelevant ?? true,
+      );
+      hits = result.hits;
+      qualification = result.qualification;
+      reranked = result.degraded === null;
+      if (result.degraded) degraded.add(result.degraded);
+      if (result.note) notes.push(result.note);
+    } else if (shouldRerank && ctx.models.reranker.requested && !ctx.models.reranker.available) {
+      degraded.add(ctx.models.reranker.degradedReason({}));
+      if (ctx.models.reranker.unavailableReason) notes.push(ctx.models.reranker.unavailableReason);
+    }
+    if (!reranked) hits = normalizeScores(hits);
+    return {
+      hits,
+      qualification,
+      scores: hits.some((hit) => hit.relevance !== undefined) ? 'absolute' : 'relative',
+    };
+  };
+
+  const assemble = (
+    hits: ChunkHit[],
+    memorySelection: 'eligible' | 'contextual',
+  ): ReturnType<AknoContext['assembler']['assemble']> =>
+    ctx.assembler.assemble({
+      hits,
+      mode,
+      depth,
+      lineWindow:
+        mode === 'question'
+          ? Math.max(2, Math.ceil(ctx.config.recall.lineWindow / 2))
+          : ctx.config.recall.lineWindow,
+      limit,
+      budget,
+      concepts: dedupe(allConcepts),
+      include: (input.include as PageRole[] | undefined) ?? null,
+      memoryView,
+      memorySelection,
+    });
+
+  let pipeline;
+  try {
+    pipeline = await runSearch(eligibleChunkIds);
   } catch (err) {
-    // The index could not be read. Say so — an agent can honestly offer to check
-    // again, which it cannot do if this returns as "nothing recorded".
     return {
       status: 'unavailable',
       results: [],
       searched: dedupe(allQueries),
       budget_used: 0,
       mode,
+      memory_view: memoryView,
       scores: 'relative',
       note: err instanceof Error ? err.message : String(err),
     };
   }
-  for (const reason of search.degraded) degraded.add(reason);
-  notes.push(...search.notes);
-
-  let hits: ChunkHit[] = search.hits;
-  if (input.graph ?? ctx.config.recall.graph) {
+  let assembled = assemble(pipeline.hits, 'eligible');
+  let contextualFallback = false;
+  if (!hasExactEvidence(assembled.results) && depth !== 'summary' && contextualChunkIds.size > 0) {
     try {
-      const graphResult = await graphRecallCandidates(ctx, input.query, search.hits, chunkIds ?? undefined);
-      for (const reason of graphResult.degraded) degraded.add(reason);
-      notes.push(...graphResult.notes);
-      if (graphResult.hits.length > 0) hits = fuseHits([...search.arms, graphResult.hits]);
-    } catch {
-      // Graph retrieval is an optional candidate arm. Its failure weakens recall, but must not erase the
-      // lexical and vector evidence that is still readable or pretend their result proves absence.
-      degraded.add('no_graph_index');
-      notes.push('the structural graph candidate arm was unavailable');
+      pipeline = await runSearch(contextualChunkIds);
+      assembled = assemble(pipeline.hits, 'contextual');
+      contextualFallback = assembled.results.length > 0;
+    } catch (err) {
+      return {
+        status: 'unavailable',
+        results: [],
+        searched: dedupe(allQueries),
+        budget_used: 0,
+        mode,
+        memory_view: memoryView,
+        scores: 'relative',
+        note: err instanceof Error ? err.message : String(err),
+      };
     }
   }
-
-  let reranked = false;
-  let qualification: RecallQualification | null = null;
-  const shouldRerank = input.rerank ?? true;
-  if (shouldRerank && hits.length > 0 && ctx.models.reranker.available) {
-    const result = await rerankHits(
-      ctx.store,
-      ctx.models.reranker,
-      input.query,
-      hits,
-      ctx.config.models.reranker.topK ?? 40,
-      ctx.config.models.reranker.maxChars ?? 800,
-      ctx.config.models.reranker.scoreOffset ?? 'auto',
-      ctx.config.models.reranker.excludeIrrelevant ?? true,
-    );
-    hits = result.hits;
-    qualification = result.qualification;
-    reranked = result.degraded === null;
-    if (result.degraded) degraded.add(result.degraded);
-    if (result.note) notes.push(result.note);
-  } else if (shouldRerank && ctx.models.reranker.requested && !ctx.models.reranker.available) {
-    // `requested` rather than `enabled`: the resolved `enabled` is already false
-    // whenever the role is unusable, so testing it here could never fire and a
-    // user who asked for a reranker would never be told they are not getting one.
-    degraded.add(ctx.models.reranker.degradedReason({}));
-    if (ctx.models.reranker.unavailableReason) notes.push(ctx.models.reranker.unavailableReason);
-  }
-
-  // Fused ranks only mean something relative to each other, so put them on a
-  // readable scale when a cross-encoder did not supply an absolute one. `relevance`
-  // survives this untouched — it is the field a caller may threshold.
-  if (!reranked) hits = normalizeScores(hits);
-  const scores: 'absolute' | 'relative' = hits.some((hit) => hit.relevance !== undefined)
-    ? 'absolute'
-    : 'relative';
-
-  const assembled = ctx.assembler.assemble({
-    hits,
-    mode,
-    depth,
-    // A lookup wants deep line windows around what matched; a question wants
-    // tight ones across more cards, because the answer is usually one line and
-    // the surrounding paragraph is budget spent on nothing.
-    lineWindow:
-      mode === 'question'
-        ? Math.max(2, Math.ceil(ctx.config.recall.lineWindow / 2))
-        : ctx.config.recall.lineWindow,
-    limit,
-    budget,
-    concepts: dedupe(allConcepts),
-    include: (input.include as PageRole[] | undefined) ?? null,
-  });
+  const { qualification, scores } = pipeline;
 
   const documentStates = assembled.results.flatMap((result) =>
     result.type === 'document'
@@ -201,6 +237,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched,
       budget_used: 0,
       mode,
+      memory_view: memoryView,
       scores,
       ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
       ...(qualification ? { qualification } : {}),
@@ -223,6 +260,7 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
       searched,
       budget_used: assembled.budgetUsed,
       mode,
+      memory_view: memoryView,
       scores,
       ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
       ...(qualification ? { qualification } : {}),
@@ -237,15 +275,36 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     searched,
     budget_used: assembled.budgetUsed,
     mode,
+    memory_view: memoryView,
     scores,
     ...(assembled.coverage ? { coverage: assembled.coverage } : {}),
     ...(qualification ? { qualification } : {}),
-    ...(hasMissingDocumentEvidence
+    ...(contextualFallback
       ? {
-          note: 'some document evidence is retained from an indexed copy or rendition because its original is missing',
+          note: `related retained memory exists, but it is not eligible for the ${memoryView} view`,
         }
-      : {}),
+      : hasMissingDocumentEvidence
+        ? {
+            note: 'some document evidence is retained from an indexed copy or rendition because its original is missing',
+          }
+        : {}),
   };
+}
+
+function hasExactEvidence(results: RecallOutput['results']): boolean {
+  return results.some((result) =>
+    result.type === 'document'
+      ? Boolean(result.quote?.trim())
+      : result.lines.length > 0 ||
+        result.documents?.some((document) => Boolean(document.quote?.trim())) === true,
+  );
+}
+
+function intersectChunkIds(left: Set<number> | null, right: Set<number>): Set<number> {
+  if (!left) return new Set(right);
+  const out = new Set<number>();
+  for (const value of left) if (right.has(value)) out.add(value);
+  return out;
 }
 
 /** Filters resolve to native chunk identities so both page and document evidence can participate. */

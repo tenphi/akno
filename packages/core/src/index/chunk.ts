@@ -37,22 +37,27 @@ interface Section {
 export function chunkPage(page: ParsedPage, options: ChunkOptions): Chunk[] {
   const chunks: Chunk[] = [];
 
-  for (const section of splitByHeading(page, 2)) {
-    if (measure(section) <= options.maxChars) {
-      chunks.push(toChunk(section));
-      continue;
-    }
+  for (const headingSection of splitByHeading(page, 2)) {
+    // An owned memory block is one semantic retrieval unit. Keeping its marker and adjacent
+    // payload together—but apart from neighbouring authored or differently qualified lines—lets
+    // recall exclude a proposal without also excluding a current fact in the same section.
+    for (const section of splitOwnedMemoryBlocks(headingSection)) {
+      if (measure(section) <= options.maxChars) {
+        chunks.push(toChunk(section));
+        continue;
+      }
 
-    // Step 2, and it is the step worth having: an oversized `##` section usually
-    // has `###` subsections, and the author put them there to say where topics
-    // start. Splitting on them instead of on blank lines keeps each chunk's
-    // breadcrumb specific — `Policy › Excess` rather than a second anonymous
-    // slice of `Policy` — which is what a reader sees on the card.
-    const subsections = splitSection(section, 3);
-    for (const subsection of subsections) {
-      if (measure(subsection) <= options.maxChars) chunks.push(toChunk(subsection));
-      // Step 3: still over the cap, so fall back to paragraph boundaries.
-      else chunks.push(...splitByParagraph(subsection, options));
+      // Step 2, and it is the step worth having: an oversized `##` section usually
+      // has `###` subsections, and the author put them there to say where topics
+      // start. Splitting on them instead of on blank lines keeps each chunk's
+      // breadcrumb specific — `Policy › Excess` rather than a second anonymous
+      // slice of `Policy` — which is what a reader sees on the card.
+      const subsections = splitSection(section, 3);
+      for (const subsection of subsections) {
+        if (measure(subsection) <= options.maxChars) chunks.push(toChunk(subsection));
+        // Step 3: still over the cap, so fall back to paragraph boundaries.
+        else chunks.push(...splitByParagraph(subsection, options));
+      }
     }
   }
 
@@ -60,6 +65,40 @@ export function chunkPage(page: ParsedPage, options: ChunkOptions): Chunk[] {
     .flatMap((chunk) => enforceCap(chunk, options))
     .filter((chunk) => chunk.text.trim().length > 0)
     .map((chunk, index) => ({ ...chunk, ord: index }));
+}
+
+const OWNED_MEMORY_MARKER = /^\s*<!--\s*akno:(?:item|observation)\b.*?-->\s*$/i;
+
+function splitOwnedMemoryBlocks(section: Section): Section[] {
+  const out: Section[] = [];
+  let current: Section = { headings: [...section.headings], lines: [], depth: section.depth };
+  const flush = (): void => {
+    if (current.lines.length === 0) return;
+    out.push(current);
+    current = { headings: [...section.headings], lines: [], depth: section.depth };
+  };
+
+  for (let index = 0; index < section.lines.length; index++) {
+    const entry = section.lines[index]!;
+    if (!OWNED_MEMORY_MARKER.test(entry.text)) {
+      current.lines.push(entry);
+      continue;
+    }
+    flush();
+    const block: Section = {
+      headings: [...section.headings],
+      lines: [entry],
+      depth: section.depth,
+    };
+    const payload = section.lines[index + 1];
+    if (payload && !OWNED_MEMORY_MARKER.test(payload.text) && !/^#{1,6}\s/.test(payload.text.trim())) {
+      block.lines.push(payload);
+      index++;
+    }
+    out.push(block);
+  }
+  flush();
+  return out;
 }
 
 /**

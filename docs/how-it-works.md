@@ -64,8 +64,8 @@ before `recall` can find a relevant page. `adopt` exists to organize it later.
 ### Facts and the evidence graph
 
 Derived facts keep their source locator and confidence. Graph nodes represent stable page, document, fact,
-event, observation, and identity records; edges represent explicit relationships such as evidence, ownership,
-links, aliases, observation lineage, and conflict status.
+event, retained-memory, observation, and identity records; edges represent explicit relationships such as
+evidence, ownership, links, aliases, typed memory relations, observation lineage, and conflict status.
 
 The graph is conservative. It follows exact authored or derived evidence and configured contextual identities;
 it does not perform unrestricted entity discovery. [Limitations](limitations.md) describes that boundary.
@@ -76,6 +76,8 @@ it does not perform unrestricted entity discovery. [Limitations](limitations.md)
 
 ```text
 question
+   ├── infer or accept semantic memory view
+   ├── qualify isolated retained-memory chunks
    ├── lexical candidates
    ├── semantic candidates, when embeddings are available
    └── bounded graph candidates
@@ -93,6 +95,13 @@ question
 The independent channels use different score units. Akno fuses their ranks; it does not compare a BM25 score
 directly with a cosine value or reranker logit. A reranker may reorder candidates, and qualification may remove
 results that are not relevant enough to return.
+
+Version-two `akno:item` markers build a rebuildable semantic projection of kind, attribution, commitment,
+disposition, epistemic basis, answer eligibility, time status, and typed relations. The chunker keeps each
+marker beside its payload but apart from neighboring items, so qualification can happen before every search
+arm's candidate limit without excluding unrelated prose on the page. The Markdown marker and adjacent readable
+payload remain authoritative. Hash mismatches, invalid markers, and duplicate ids fail closed as partial
+projection state; a complete index pass rebuilds it.
 
 `recall` keeps discovery separate from synthesis. It returns bounded page or document sections with locators,
 availability, and degradation information. The caller can inspect the evidence or pass it to its own model.
@@ -205,6 +214,12 @@ only after a definitively absent Responses route. The OpenAI preset uses the Res
 storage disabled; existing compatible providers default to Chat Completions. Both adapters preserve the same
 task-facing `chat` contract, strict schema validation, reasoning setting, usage receipt, retry policy, and typed
 degradation. Akno never retries a real failed request through the other transport.
+
+Provider selection is also the network boundary. Every model request and auto-detection probe handles redirects
+explicitly. Akno may repeat a POST only for a bounded, loop-safe same-origin `307` or `308`; it refuses
+method-rewriting `301`/`302`/`303`, malformed destinations, credentials in redirect URLs, unsupported schemes,
+and every cross-origin target before sending headers or a body there. HTTP and schema compatibility retries
+remain on the configured origin, and failure never selects another configured provider.
 
 Structured model outputs are parsed and validated before use. Retries are bounded by error type and operation
 deadline. Model text never grants itself filesystem authority.

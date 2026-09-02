@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GraphEvidenceLocator, GraphNodeRef, GraphRelation, ResultEnvelope } from '../common.ts';
+import { GraphEvidenceLocator, GraphNodeRef, GraphRelation, MemoryView, ResultEnvelope } from '../common.ts';
 
 export const GraphDirection = z.enum(['out', 'in', 'both']);
 export type GraphDirection = z.infer<typeof GraphDirection>;
@@ -16,6 +16,8 @@ export const GraphInput = z
     /** Maximum returned paths. Nodes, edges, and per-node fan-out have separate hard caps. */
     limit: z.number().int().positive().max(100).optional(),
     include_history: z.boolean().optional(),
+    /** Restrict typed retained-memory relation edges. Inferred for query seeds, factual otherwise. */
+    memory_view: MemoryView.optional(),
   })
   .refine((value) => [value.slug, value.entity, value.query].filter(Boolean).length === 1, {
     message: 'graph requires exactly one of: slug, entity, query',
@@ -29,7 +31,7 @@ export const GraphEdgeRef = z.object({
   relation: GraphRelation,
   predicate: z.string().optional(),
   confidence: z.number().min(0).max(1),
-  derivation: z.enum(['structural', 'fact']),
+  derivation: z.enum(['structural', 'fact', 'memory']),
   resolution: z.enum(['exact', 'contextual']),
   evidence: GraphEvidenceLocator,
   valid_from: z.string().optional(),
@@ -71,6 +73,7 @@ export const GraphOutput = ResultEnvelope.extend({
   total: z.number().int().nonnegative(),
   truncated: z.boolean(),
   reason: z.enum(['seed_not_found', 'no_paths', 'graph_index_unreadable']).optional(),
+  memory_view: MemoryView,
 });
 export type GraphOutput = z.infer<typeof GraphOutput>;
 

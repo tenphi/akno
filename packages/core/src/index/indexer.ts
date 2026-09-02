@@ -39,6 +39,7 @@ import {
   qualifyObservationEntries,
   replaceObservationEntries,
 } from '../observations/projection.ts';
+import { MANAGED_MEMORY_PROJECTION_VERSION, replaceManagedMemoryEntries } from '../memory/projection.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -116,6 +117,9 @@ export interface IndexReport {
   temporalProjectionIssues: number;
   observationsIndexed: number;
   observationProjectionIssues: number;
+  managedMemoriesIndexed: number;
+  managedMemoryRelationsIndexed: number;
+  managedMemoryProjectionIssues: number;
   factsDerived: number;
   graphNodes: number;
   graphEdges: number;
@@ -131,6 +135,8 @@ export interface IndexReport {
   graphFacts: number;
   graphFactEdges: number;
   graphNonTraversableFacts: number;
+  graphMemories: number;
+  graphMemoryEdges: number;
   ignored: number;
   /** Non-fatal problems worth reporting rather than throwing. `doctor` prints these. */
   warnings: string[];
@@ -223,6 +229,9 @@ export class Indexer {
       temporalProjectionIssues: 0,
       observationsIndexed: 0,
       observationProjectionIssues: 0,
+      managedMemoriesIndexed: 0,
+      managedMemoryRelationsIndexed: 0,
+      managedMemoryProjectionIssues: 0,
       factsDerived: 0,
       graphNodes: 0,
       graphEdges: 0,
@@ -238,6 +247,8 @@ export class Indexer {
       graphFacts: 0,
       graphFactEdges: 0,
       graphNonTraversableFacts: 0,
+      graphMemories: 0,
+      graphMemoryEdges: 0,
       ignored: 0,
       warnings: [],
       durationMs: 0,
@@ -276,6 +287,15 @@ export class Indexer {
       : [];
     if (observationProjectionStale) {
       for (const relPath of observationProjectionPaths) reclassified.add(relPath);
+    }
+    const managedMemoryProjectionStale =
+      !options.only &&
+      this.#store.meta('managed_memory_projection_version') !== MANAGED_MEMORY_PROJECTION_VERSION;
+    const managedMemoryProjectionPaths = managedMemoryProjectionStale
+      ? this.managedMemoryProjectionPaths(report)
+      : [];
+    if (managedMemoryProjectionStale) {
+      for (const relPath of managedMemoryProjectionPaths) reclassified.add(relPath);
     }
     if (!options.only) for (const relPath of this.pageFilesWithNoPage(report)) reclassified.add(relPath);
 
@@ -448,6 +468,8 @@ export class Indexer {
     report.graphFacts = graph.facts;
     report.graphFactEdges = graph.factEdges;
     report.graphNonTraversableFacts = graph.nonTraversableFacts;
+    report.graphMemories = graph.memories;
+    report.graphMemoryEdges = graph.memoryEdges;
     const observations = qualifyObservationEntries(this.#store, this.#config.maintenance.observe.minEvidence);
     report.observationsIndexed = observations.indexed;
     report.observationProjectionIssues += observations.issues;
@@ -464,6 +486,12 @@ export class Indexer {
     );
     if (observationProjectionStale && !pageProjectionFailed && observationUpgradeComplete) {
       this.#store.setMeta('observation_projection_version', OBSERVATION_PROJECTION_VERSION);
+    }
+    const managedMemoryUpgradeComplete = managedMemoryProjectionPaths.every(
+      (relPath) => !present.has(relPath) || projectedPaths.has(relPath),
+    );
+    if (managedMemoryProjectionStale && !pageProjectionFailed && managedMemoryUpgradeComplete) {
+      this.#store.setMeta('managed_memory_projection_version', MANAGED_MEMORY_PROJECTION_VERSION);
     }
 
     report.durationMs = performance.now() - started;
@@ -541,6 +569,18 @@ export class Indexer {
     if (rows.length > 0) {
       report.warnings.push(
         `the observation projection changed: ${rows.length} page${rows.length === 1 ? '' : 's'} will be re-indexed`,
+      );
+    }
+    return rows.map((row) => row.rel_path);
+  }
+
+  private managedMemoryProjectionPaths(report: IndexReport): string[] {
+    const rows = this.#store.db.prepare("SELECT rel_path FROM files WHERE kind = 'page'").all() as {
+      rel_path: string;
+    }[];
+    if (rows.length > 0) {
+      report.warnings.push(
+        `the retained-memory projection changed: ${rows.length} page${rows.length === 1 ? '' : 's'} will be re-indexed`,
       );
     }
     return rows.map((row) => row.rel_path);
@@ -757,6 +797,10 @@ export class Indexer {
       const observations = replaceObservationEntries(this.#store, pageId, page);
       report.observationsIndexed += observations.indexed;
       report.observationProjectionIssues += observations.issues;
+      const managedMemories = replaceManagedMemoryEntries(this.#store, pageId, page, resolved.role);
+      report.managedMemoriesIndexed += managedMemories.indexed;
+      report.managedMemoryRelationsIndexed += managedMemories.relations;
+      report.managedMemoryProjectionIssues += managedMemories.issues;
       this.replaceLinks(pageId, page);
       this.recordFile(file, pageId);
     });

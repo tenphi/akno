@@ -31,6 +31,26 @@ export type PageManagement = z.infer<typeof PageManagement>;
 export const RecallMode = z.enum(['lookup', 'question', 'explore']);
 export type RecallMode = z.infer<typeof RecallMode>;
 
+/**
+ * Which semantic form of retained memory is useful for this read.
+ *
+ * This is deliberately separate from `RecallMode`: lookup/question/explore controls how Akno
+ * searches, while this value controls whether a matching retained sentence may be used as a
+ * current fact, attributed report, plan, historical record, unresolved question, or explicitly
+ * noncanonical discussion. When omitted, the query is resolved conservatively and ordinary
+ * factual memory wins.
+ */
+export const MemoryView = z.enum([
+  'factual',
+  'history',
+  'planning',
+  'reports',
+  'questions',
+  'discussion',
+  'all',
+]);
+export type MemoryView = z.infer<typeof MemoryView>;
+
 /** How much of a page body a card carries back. */
 export const Depth = z.enum(['summary', 'lines', 'full']);
 export type Depth = z.infer<typeof Depth>;
@@ -359,10 +379,16 @@ export const GraphRelation = z.enum([
   'owns_document',
   'participates_in',
   'derived_from',
+  'corrects',
+  'supersedes',
+  'contradicts',
+  'fulfills',
+  'answers',
+  'caused_by',
 ]);
 export type GraphRelation = z.infer<typeof GraphRelation>;
 
-export const GraphNodeKind = z.enum(['entity', 'page', 'document', 'fact', 'event', 'observation']);
+export const GraphNodeKind = z.enum(['entity', 'page', 'document', 'fact', 'event', 'memory', 'observation']);
 export type GraphNodeKind = z.infer<typeof GraphNodeKind>;
 
 /** Compact identity only. Read the referenced page or document for content. */
@@ -377,6 +403,7 @@ export const GraphNodeRef = z.object({
   document: z.string().optional(),
   fact: z.string().optional(),
   event: z.string().optional(),
+  memory: z.string().optional(),
   observation: z.string().optional(),
   date: z.string().optional(),
   line_start: z.number().int().positive().optional(),
@@ -392,6 +419,7 @@ export const GraphEvidenceLocator = z.object({
   document: z.string().optional(),
   event: z.string().optional(),
   fact: z.string().optional(),
+  memory: z.string().optional(),
   line_start: z.number().int().positive().optional(),
   line_end: z.number().int().positive().optional(),
   field: z.string().optional(),
@@ -556,6 +584,8 @@ export const DegradedReason = z.enum([
   'retain_apply_failed',
   /** Retained temporal rows are absent, stale, or excluded by malformed temporal metadata. */
   'partial_temporal_index',
+  /** Retained-memory discourse projection is absent, stale, ambiguous, or malformed. */
+  'partial_memory_index',
   /** A bounded recurrence/range guard stopped timeline expansion. */
   'timeline_range_limited',
   'expansion_failed',

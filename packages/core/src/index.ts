@@ -372,6 +372,7 @@ export {
   type GraphOutput,
   type GraphPath,
   type Line,
+  type MemoryView,
   type OpName,
   type PageRole,
   type RecallMode,

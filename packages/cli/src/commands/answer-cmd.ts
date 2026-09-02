@@ -1,4 +1,4 @@
-import type { AnswerOutput, PageRole } from '@tenphi/akno-protocol';
+import type { AnswerOutput, MemoryView, PageRole } from '@tenphi/akno-protocol';
 import { openOptionsFrom, parse } from '../args.ts';
 import { heading, json, line, statusLabel, style } from '../output.ts';
 import { resolveOps } from '../ops-handle.ts';
@@ -11,6 +11,8 @@ const ANSWER_HELP = `akno answer <question> [options]
   Use recall when you need to inspect or quote the evidence itself.
 
   --limit <n>         Maximum qualified retrieval candidates.
+  --memory-view <v>   factual | history | planning | reports | questions |
+                      discussion | all. Inferred conservatively by default.
   --budget <n>        Internal retrieval evidence budget.
   --include <r,...>   Page roles to include, e.g. source.
   --folder <path>     Restrict to a folder.
@@ -31,6 +33,7 @@ const ANSWER_HELP = `akno answer <question> [options]
 export async function answerCommand(argv: string[]): Promise<number> {
   const { values, positionals } = parse<{
     limit?: string;
+    'memory-view'?: string;
     budget?: string;
     include?: string;
     folder?: string;
@@ -47,6 +50,7 @@ export async function answerCommand(argv: string[]): Promise<number> {
     'max-answer-tokens'?: string;
   }>(argv, {
     limit: { type: 'string' },
+    'memory-view': { type: 'string' },
     budget: { type: 'string' },
     include: { type: 'string' },
     folder: { type: 'string' },
@@ -79,6 +83,7 @@ export async function answerCommand(argv: string[]): Promise<number> {
   try {
     const result = await handle.ops.answer({
       question: positionals.join(' '),
+      ...(values['memory-view'] ? { memory_view: values['memory-view'] as MemoryView } : {}),
       ...(values.limit ? { limit: Number(values.limit) } : {}),
       ...(values.budget ? { retrieval_budget: Number(values.budget) } : {}),
       ...(values.include ? { include: splitList(values.include) as PageRole[] } : {}),
@@ -102,7 +107,7 @@ export async function answerCommand(argv: string[]): Promise<number> {
 
 function printAnswer(result: AnswerOutput): void {
   line(
-    `${statusLabel(result.status)} ${style.grey(`outcome=${result.outcome}`)} ` +
+    `${statusLabel(result.status)} ${style.grey(`outcome=${result.outcome} memory=${result.memory_view}`)} ` +
       style.grey(
         `${result.related_page_slugs.length} related page(s), ` +
           `${result.related_documents.length} related document(s)`,

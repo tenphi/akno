@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { DegradedReason } from '@tenphi/akno-protocol';
 import type { ReasoningEffort, ResolvedModelRole } from '../config/schema.ts';
+import { ProviderRequestError, requestConfiguredProvider } from './provider-request.ts';
 
 /**
  * Any OpenAI-compatible endpoint, per role. One local server can host all
@@ -330,17 +331,22 @@ export class ModelClient {
       let retryAfter: string | null = null;
 
       try {
-        endpointRequests += 1;
-        const response = await fetch(`${this.#role.provider.baseUrl}${endpoint}`, {
-          method: 'POST',
-          headers,
-          body: payload,
-          // `AbortSignal.timeout` is self-clearing. A hand-rolled
-          // setTimeout+AbortController leaks a pending timer on every request that
-          // resolves before its deadline, which holds the event loop open for the
-          // full timeout and turns a 40ms CLI command into a 60-second one.
-          signal: AbortSignal.timeout(remaining),
-        });
+        const requested = await requestConfiguredProvider(
+          this.#role.provider.baseUrl,
+          `${this.#role.provider.baseUrl}${endpoint}`,
+          {
+            method: 'POST',
+            headers,
+            body: payload,
+            // `AbortSignal.timeout` is self-clearing. A hand-rolled
+            // setTimeout+AbortController leaks a pending timer on every request that
+            // resolves before its deadline, which holds the event loop open for the
+            // full timeout and turns a 40ms CLI command into a 60-second one.
+            signal: AbortSignal.timeout(remaining),
+          },
+        );
+        endpointRequests += requested.requests;
+        const response = requested.response;
 
         if (response.ok) {
           return {
@@ -366,8 +372,11 @@ export class ModelClient {
           endpointRequests,
         };
       } catch (err) {
+        if (err instanceof ProviderRequestError) endpointRequests += err.requests;
         // `AbortSignal.timeout` rejects with TimeoutError, not AbortError.
-        const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError');
+        const timedOut =
+          (err instanceof ProviderRequestError && err.timedOut) ||
+          (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError'));
         /**
          * **Neither a timeout nor a transport error is retried, and both omissions are
          * deliberate.**

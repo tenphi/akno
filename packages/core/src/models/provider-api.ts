@@ -9,6 +9,7 @@ import type {
   ResolvedProvider,
 } from '../config/schema.ts';
 import { redactProviderError } from './client.ts';
+import { ProviderRequestError, requestConfiguredProvider } from './provider-request.ts';
 
 export const PROVIDER_API_CACHE_FILE = 'provider-capabilities.json';
 const PROVIDER_API_CACHE_VERSION = 1;
@@ -259,7 +260,7 @@ async function probeTransport(
   const endpoint = api === 'responses' ? '/responses' : '/chat/completions';
 
   try {
-    const response = await fetch(`${provider.baseUrl}${endpoint}`, {
+    const { response } = await requestConfiguredProvider(provider.baseUrl, `${provider.baseUrl}${endpoint}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -295,7 +296,9 @@ async function probeTransport(
       }`,
     };
   } catch (error) {
-    const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+    const timedOut =
+      (error instanceof ProviderRequestError && error.timedOut) ||
+      (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError'));
     return {
       ok: false,
       status: null,

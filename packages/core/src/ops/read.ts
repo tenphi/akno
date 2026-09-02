@@ -86,7 +86,7 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
   const qualified = qualifyObservationLines(
     ctx.store,
     row.id,
-    qualifyManagedMemoryLines(lines, allLines),
+    qualifyManagedMemoryLines(lines, allLines, { store: ctx.store, pageId: row.id }),
     allLines,
   );
   const withConfidence = annotateLines(qualified, facts);
