@@ -52,7 +52,9 @@ keeping their current folder and fallback policy untouched.
 
 For an autonomous trusted-agent setup, the fallback offer defaults to `memory/inbox`. Accepting it adds an
 explicit `memory/**` managed rule when needed, but does not create the folder or page. Normal routing and an
-admitted model-suggested page still take priority; see [Remember fallback](configuration.md#remember-fallback).
+admitted model-suggested page still take priority. The fallback is a temporary queue rather than a canonical
+home; later managed-item curation can move its items only to unambiguous existing admitted pages. See
+[Remember fallback](configuration.md#remember-fallback).
 
 It then shows the exact configuration overlay and a path-only diff before asking to write. Once the config is
 safe on disk, it separately offers to build the index, run a first recall, and install the platform background

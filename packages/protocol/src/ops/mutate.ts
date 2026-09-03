@@ -80,18 +80,19 @@ export const RememberOutput = ResultEnvelope.extend({
 export type RememberOutput = z.infer<typeof RememberOutput>;
 
 /**
- * All three forms operate on Markdown. Retracting a fact removes the
+ * All four forms operate on Markdown. Retracting a fact removes the
  * sentence that produced it — expiring a row while the sentence stays in the
  * file means the assistant "forgets" and reads it again tomorrow.
  */
 export const ForgetInput = z
   .object({
     fact: z.string().optional(),
+    memory: z.string().optional(),
     slug: z.string().optional(),
     document: z.string().optional(),
   })
-  .refine((v) => [v.fact, v.slug, v.document].filter(Boolean).length === 1, {
-    message: 'forget takes exactly one of: fact, slug, document',
+  .refine((v) => [v.fact, v.memory, v.slug, v.document].filter(Boolean).length === 1, {
+    message: 'forget takes exactly one of: fact, memory, slug, document',
   });
 export type ForgetInput = z.infer<typeof ForgetInput>;
 

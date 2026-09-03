@@ -56,13 +56,19 @@ taxonomy and explicitly admitted pages to decide whether the input should:
 - append a loose dated event; or
 - remain a proposal because routing or confidence is insufficient.
 
+Recall only nominates destinations. A separate bounded ownership decision must select one existing page or the
+retention model's proposed new page; topical or same-person similarity alone cannot authorize an append. The
+complete typed time interval, or one unambiguous year-bearing date in the retained sentence, excludes
+incompatible period-bucket pages before that decision. Exact month pages and exact or explicitly ledger-like day
+pages are buckets; a date-prefixed named event remains eligible to own related preparation and follow-up memory.
 Searchability is not write permission: an unmarked Markdown page defaults to `knowledge` for recall and to
 `remember: deny` for injection. A page or folder must explicitly set `remember: integrate`; pages Akno creates
 for retained memory carry that declaration themselves. When the strongest semantic match is read-only, Akno
 does not silently use a weaker writable page. It creates a dedicated managed page in an admitted folder when
 the retain result supplies one, uses `maintenance.retain.fallback_page` when that exact destination is configured
 and admitted, or holds the claim for a destination decision. The fallback is tried only after ordinary routing
-and managed-page creation; its config value never grants write authority. A missing fallback page may be created
+and managed-page creation; its config value never grants write authority and the page remains a temporary queue,
+not a valid canonical home during later managed-item curation. A missing fallback page may be created
 only under an exact parent-folder rule that permits it, while an existing unindexed file is never overwritten.
 
 The response makes that boundary machine-readable. Each `considered` claim reports `destination` as
@@ -90,17 +96,26 @@ complete input. The dream cycle can therefore re-check generated wording even wh
 `dream: hygiene` or `dream: synthesize` permission. A safe correction may change only that one generated payload
 line and still passes the ordinary sealed plan and curator or human decision path. Older items and new items for
 which no valid exact quote was returned remain readable but report `source_unavailable`; Akno will not guess a
-semantic correction for them. Explicitly forgetting the fact or page retires its retained quote from active
-verification; a complete maintenance scan also prunes quotes whose managed marker no longer exists.
+semantic correction for them. Explicitly forgetting the fact, managed memory, or page retires its retained
+quote from active verification; a complete maintenance scan also prunes quotes whose managed marker no longer
+exists.
 
-The dream cycle can also correct where an injected fact lives. It uses ordinary retrieval to nominate a small
+The dream cycle can also correct where any valid managed memory lives, including reports, plans, questions, and
+other items deliberately excluded from factual answers. It checks the rebuildable managed-memory projection
+rather than requiring a derived fact row, then uses ordinary retrieval to nominate a small
 set of existing writable knowledge pages, then asks a separate classifier whether the current page is clearly
 wrong. A move is accepted only to one supplied page and section. If no existing unique `##` section fits, the
-only creatable option is a short plain heading derived deterministically from the fact's current attribute; the
-classifier cannot supply its own wording. Akno moves the exact marker and sentence together, seals the change as
-a medium-risk maintenance item when it creates a section or touches two pages, and writes or undoes both pages
-atomically. It never creates a page or rewrites the fact during this operation; ambiguity becomes a held routing
-finding.
+only creatable option is a short plain heading derived deterministically from the managed item's current
+attribute, section, or kind; the classifier cannot supply its own wording. Akno moves the exact marker and
+sentence together, seals the change as a medium-risk maintenance item when it creates a section or touches two
+pages, and writes or undoes both pages atomically. It never creates a page or rewrites the fact during this
+operation. A move also removes its unique source heading when the moved block was that section's only content;
+it preserves every heading that still owns authored or managed content. Ambiguity becomes a held routing finding.
+
+The configured fallback is treated specially in this pass: an item cannot be certified as correctly placed
+there. The classifier may move it to one supplied canonical page, or the item remains a typed held finding until
+such a page exists. Curate does not invent a new page for a queued item and never moves another item into the
+fallback.
 
 Use `approve` or `decline` for held routing proposals. These are separate from maintenance-plan decisions,
 which use `akno plan decide`.
@@ -248,11 +263,14 @@ erase successful siblings. On an existing page, a named exact section must alrea
 uses the deterministic `## Unsorted` fallback. Reports, hypotheses, proposals, plans, questions, and rejected
 options stay searchable with visible status and typed line qualification but are excluded from ordinary derived
 facts and factual `answer` evidence. Automatic routing can write only to an existing admitted knowledge page, a
-new managed page under an exactly admitted folder, or the configured admitted fallback. A stronger read-only
-match blocks a weaker writable destination.
+new managed page under an exactly admitted folder, or the configured admitted fallback. Recall candidates are
+globally nominated and then qualified for page ownership; the extractor's folder suggestion is not a search
+boundary. A stronger read-only match blocks a weaker writable destination. Exact managed-memory duplicates are
+recognized across pages and attach support to the existing block instead of creating another copy.
 
-Automatic responses include content-free receipts for extraction, verification, and section-placement model
-calls. `held` candidates carry stable reason codes such as `discourse_uncertain`, `time_unresolved`,
+Automatic responses include content-free receipts for extraction, verification, destination-qualification, and
+section-placement model calls. Both routing calls use the existing `placement` receipt list for protocol
+compatibility. `held` candidates carry stable reason codes such as `discourse_uncertain`, `time_unresolved`,
 `routing_uncertain`, and `no_writable_destination`; callers should branch on those codes rather than explanatory
 prose. A source-level `apply_failed` is reported as typed degradation rather than a successful empty result.
 `--dry-run` computes the same interpretation and routing but writes no page, journal change, or replay
@@ -426,13 +444,17 @@ becoming hundreds of pages in one unattended run.
 ## Correcting and reversing changes
 
 ```bash
-akno forget --slug products/zephyr-qx-100 --match "five years"
+akno forget --fact fact_a1b2c3d4
+akno forget --memory mem_a1b2c3d4
+akno forget --slug products/zephyr-qx-100
 akno move products/zephyr-qx-100 products/zephyr-qx-100-warranty
 akno undo <change-id>
 akno undo --list
 ```
 
-- `forget` removes the exact sentence that produced a fact or moves a page/document to recoverable trash.
+- `forget --fact` removes the exact sentence that produced a derived fact. `forget --memory` removes one
+  exact sealed retained item, including reports, plans, and questions that deliberately have no fact id.
+  Page and document forms move the selected source to recoverable trash.
 - `move` relocates a page with its owned documents and reports inbound links rather than silently rewriting
   unrelated pages.
 - `undo` restores journalled bytes and survives an index rebuild because the journal is durable state, not a

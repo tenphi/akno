@@ -5,6 +5,7 @@ import type { AknoContext } from '../context.ts';
 import { parseFrontmatter } from '../kb/frontmatter.ts';
 import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
+import { retainedTemporalBoundary, type RetainedTemporalBoundary } from '../memory/temporal-destination.ts';
 import { isReserved } from '../reserved.ts';
 import { effectiveRule } from '../rules/compile.ts';
 import { sha256 } from '../store/ids.ts';
@@ -174,6 +175,7 @@ interface ManagedItemBinding {
   payloadIndex: number;
   currentHeading: string | null;
   currentHeadingUnique: boolean;
+  temporalBoundary?: RetainedTemporalBoundary;
 }
 
 interface QualifiedPlacementResult {
@@ -423,15 +425,19 @@ export async function planManagedItems(
   if (sourceScanComplete) pruneManagedSourceArchives(ctx, liveManagedSourceIds);
 
   const crossPageCollisions = crossPageItemCollisions(eligible);
-  const facts = currentManagedFacts(ctx);
+  const memories = currentManagedMemories(ctx);
   const prepared = eligible.map((candidate) => ({
     candidate,
-    inspection: withBindingFindings(ctx, candidate, facts, crossPageCollisions, options),
+    inspection: withBindingFindings(candidate, memories, crossPageCollisions, options),
   }));
+  const fallbackSlug = ctx.config.maintenance.retain.fallbackPage;
   const routingPages = new Map(
     prepared
       .filter((entry) => entry.inspection.repairs.length === 0)
-      .map(({ candidate }) => [candidate.page.slug, managedRoutingPage(candidate)]),
+      .map(({ candidate }) => [
+        candidate.page.slug,
+        managedRoutingPage(candidate, candidate.page.slug === fallbackSlug),
+      ]),
   );
   const occupiedPaths = new Set<string>();
   const suppressedRoutingSources = new Set<string>();
@@ -446,19 +452,20 @@ export async function planManagedItems(
     );
     for (const binding of inspection.bindings) {
       if (blockedLines.has(binding.markerLine)) continue;
-      const fact = facts.get(binding.id);
+      const memory = memories.get(binding.id);
       const removed = removeManagedBlock(candidate.before, binding);
-      if (!fact || !removed) continue;
+      if (!memory || !removed) continue;
       const qualified = await qualifyManagedItemRouting(
         ctx,
-        managedRoutingPage(candidate),
+        managedRoutingPage(candidate, candidate.page.slug === fallbackSlug),
         removed.content,
         {
           id: binding.id,
           payload: binding.payload,
-          subject: fact.subject,
-          attribute: fact.attribute,
+          subject: memory.routingSubject,
+          attribute: memory.attribute || binding.currentHeading || memory.kind,
           currentHeading: binding.currentHeading,
+          temporalBoundary: binding.temporalBoundary,
         },
         routingPages,
       );
@@ -503,7 +510,9 @@ export async function planManagedItems(
         destinationSlug: destination.candidate.page.slug,
         destinationHeading: qualified.decision.targetHeading!,
         createDestinationHeading: qualified.decision.createHeading,
-        destinationHeadingSource: qualified.decision.createHeading ? fact.attribute : undefined,
+        destinationHeadingSource: qualified.decision.createHeading
+          ? memory.attribute || binding.currentHeading || memory.kind
+          : undefined,
       };
       const applied = applyManagedItemTransfer(candidate.before, destination.candidate.before, transfer);
       if (!applied.ok) {
@@ -598,7 +607,7 @@ export async function planManagedItems(
     // First seal deterministic normalization on its own. Besides keeping the move verifier small,
     // this ensures semantic qualification always sees the exact canonical bytes it is judging.
     if (inspection.repairs.length === 0) {
-      const qualified = await qualifyManagedItemPlacement(ctx, candidate, inspection, facts);
+      const qualified = await qualifyManagedItemPlacement(ctx, candidate, inspection, memories);
       addPlacementMetrics(report.placement, qualified.metrics);
       const applied = applyQualifiedPlacementFindings(inspection, qualified);
       inspection = applied.inspection;
@@ -689,16 +698,17 @@ interface EligibleManagedPage {
   inspection: ManagedItemInspection;
 }
 
-interface ManagedFactRow {
+interface ManagedMemoryRow {
   item_id: string;
   page_id: string;
   line_start: number;
   source_line_hash: string;
-  subject: string;
+  routingSubject: string;
   attribute: string;
+  kind: StrictMarker['kind'];
 }
 
-function managedRoutingPage(candidate: EligibleManagedPage): ManagedRoutingPage {
+function managedRoutingPage(candidate: EligibleManagedPage, fallback: boolean): ManagedRoutingPage {
   return {
     id: candidate.row.id,
     slug: candidate.page.slug,
@@ -706,6 +716,7 @@ function managedRoutingPage(candidate: EligibleManagedPage): ManagedRoutingPage 
     bodyHash: candidate.page.bodyHash,
     body: candidate.page.body,
     headings: uniqueManagedHeadings(candidate.before),
+    fallback,
   };
 }
 
@@ -769,14 +780,32 @@ function applyRoutingFindings(
   return { ...inspection, findings };
 }
 
-function currentManagedFacts(ctx: AknoContext): Map<string, ManagedFactRow> {
+function currentManagedMemories(ctx: AknoContext): Map<string, ManagedMemoryRow> {
   const rows = ctx.store.db
     .prepare(
-      `SELECT item_id, page_id, line_start, source_line_hash, subject, attribute
-         FROM facts WHERE item_id IS NOT NULL AND valid_to IS NULL`,
+      `SELECT memory.memory_id AS item_id, memory.source_page AS page_id,
+              memory.payload_line AS line_start, memory.payload_hash AS source_line_hash,
+              COALESCE(fact.subject, entity.label, '') AS routing_subject,
+              COALESCE(fact.attribute, '') AS attribute, memory.kind
+         FROM managed_memory_entries memory
+         LEFT JOIN facts fact ON fact.item_id = memory.memory_id AND fact.valid_to IS NULL
+         LEFT JOIN graph_entities entity ON entity.id = memory.subject`,
     )
-    .all() as ManagedFactRow[];
-  return new Map(rows.map((row) => [row.item_id, row]));
+    .all() as (Omit<ManagedMemoryRow, 'routingSubject'> & { routing_subject: string })[];
+  return new Map(
+    rows.map((row) => [
+      row.item_id,
+      {
+        item_id: row.item_id,
+        page_id: row.page_id,
+        line_start: row.line_start,
+        source_line_hash: row.source_line_hash,
+        routingSubject: row.routing_subject,
+        attribute: row.attribute,
+        kind: row.kind,
+      },
+    ]),
+  );
 }
 
 function crossPageItemCollisions(pages: EligibleManagedPage[]): Set<string> {
@@ -797,9 +826,8 @@ function crossPageItemCollisions(pages: EligibleManagedPage[]): Set<string> {
 }
 
 function withBindingFindings(
-  ctx: AknoContext,
   candidate: EligibleManagedPage,
-  facts: Map<string, ManagedFactRow>,
+  memories: Map<string, ManagedMemoryRow>,
   collisions: ReadonlySet<string>,
   options: ManagedItemPlanOptions,
 ): ManagedItemInspection {
@@ -811,19 +839,15 @@ function withBindingFindings(
       extra.set(binding.markerLine, 'item_conflict');
       continue;
     }
-    if (!ctx.config.index.facts || candidate.row.derived_hash !== candidate.row.body_hash) {
-      extra.set(binding.markerLine, 'source_unavailable');
-      continue;
-    }
-    const fact = facts.get(binding.id);
-    if (!fact) {
+    const memory = memories.get(binding.id);
+    if (!memory) {
       extra.set(binding.markerLine, 'source_unavailable');
       continue;
     }
     if (
-      fact.page_id !== candidate.row.id ||
-      fact.line_start !== binding.payloadLine ||
-      fact.source_line_hash !== sha256(binding.payload.trim())
+      memory.page_id !== candidate.row.id ||
+      memory.line_start !== binding.payloadLine ||
+      memory.source_line_hash !== sha256(binding.payload.trim())
     ) {
       extra.set(binding.markerLine, 'item_conflict');
     }
@@ -845,7 +869,7 @@ async function qualifyManagedItemPlacement(
   ctx: AknoContext,
   candidate: EligibleManagedPage,
   inspection: ManagedItemInspection,
-  facts: ReadonlyMap<string, ManagedFactRow>,
+  memories: ReadonlyMap<string, ManagedMemoryRow>,
 ): Promise<QualifiedPlacementResult> {
   const metrics = emptyPlacementMetrics();
   const blockedIds = new Set(
@@ -888,7 +912,10 @@ async function qualifyManagedItemPlacement(
   const headings = uniqueManagedHeadings(candidate.before);
   const creatableHeadings = new Map(
     bindings.flatMap((binding) => {
-      const proposed = managedSectionHeading(facts.get(binding.id)?.attribute ?? '');
+      const memory = memories.get(binding.id);
+      const proposed = managedSectionHeading(
+        memory?.attribute || binding.currentHeading || memory?.kind || '',
+      );
       return proposed && !hasH2(candidate.page.body, proposed.heading)
         ? [[binding.id, proposed] as const]
         : [];
@@ -1005,7 +1032,9 @@ async function qualifyManagedItemPlacement(
         fromHeading: binding.currentHeading,
         toHeading: decision.targetHeading!,
         createHeading: decision.createHeading,
-        headingSource: decision.createHeading ? facts.get(binding.id)?.attribute : undefined,
+        headingSource: decision.createHeading
+          ? memories.get(binding.id)?.attribute || binding.currentHeading || memories.get(binding.id)?.kind
+          : undefined,
       });
     }
   }
@@ -1364,6 +1393,7 @@ function managedBinding(
   headings: Map<number, ManagedHeadingContext>,
 ): ManagedItemBinding {
   const context = headings.get(marker.markerIndex) ?? { heading: null, unique: false };
+  const temporalBoundary = retainedTemporalBoundary(marker.time, marker.payload!);
   return {
     id: marker.id,
     origin: marker.sourceRole === 'user' || marker.sourceRole === 'assistant' ? marker.sourceRole : 'unknown',
@@ -1375,6 +1405,7 @@ function managedBinding(
     currentHeading: context.heading,
     currentHeadingUnique:
       context.unique && normalizedHeading(context.heading ?? '') !== normalizedHeading('Unsorted'),
+    ...(temporalBoundary ? { temporalBoundary } : {}),
   };
 }
 
@@ -1450,7 +1481,7 @@ function normalizedHeading(value: string): string {
   return value.normalize('NFKC').trim().toLowerCase();
 }
 
-/** Move only the exact marker-through-payload bytes; every pre-existing surrounding byte survives. */
+/** Move the exact owned block and prune only a unique source heading left structurally empty. */
 export function applyManagedItemMoves(
   content: string,
   moves: readonly ManagedItemMove[],
@@ -1481,7 +1512,7 @@ export function applyManagedItemMoves(
   return { ok: true, content: current };
 }
 
-/** Move one complete owned block between existing pages, optionally adding one sealed bounded heading. */
+/** Move one owned block between pages, optionally adding or pruning one structurally bounded heading. */
 export function applyManagedItemTransfer(
   sourceContent: string,
   destinationContent: string,
@@ -1548,42 +1579,12 @@ function moveManagedBlock(
   createHeading = false,
   headingSource?: string,
 ): string | null {
-  const frontmatter = parseFrontmatter(content);
-  const prefix = content.slice(0, frontmatter.bodyOffset);
-  const body = content.slice(frontmatter.bodyOffset);
-  const spans = rawLineSpans(body);
-  const marker = spans[binding.markerIndex];
-  const payload = spans[binding.payloadIndex];
-  if (!marker || !payload || payload.contentEnd < marker.start) return null;
-  const block = body.slice(marker.start, payload.contentEnd);
-  const without = body.slice(0, marker.start) + body.slice(payload.contentEnd);
+  const removed = removeManagedBlock(content, binding);
+  if (!removed) return null;
   if (createHeading) {
-    return insertManagedBlockWithNewHeading(prefix + without, block, targetHeading, headingSource);
+    return insertManagedBlockWithNewHeading(removed.content, removed.block, targetHeading, headingSource);
   }
-  const targetKey = normalizedHeading(targetHeading);
-  const withoutSpans = rawLineSpans(without);
-  const targets = withoutSpans
-    .map((span, index) => ({
-      index,
-      span,
-      heading: /^\s{0,3}##(?:\s+(.+?)\s*|\s*)$/.exec(span.text)?.[1]?.trim(),
-    }))
-    .filter((entry) => entry.heading && normalizedHeading(entry.heading) === targetKey);
-  if (targets.length !== 1) return null;
-
-  let insertionOffset = without.length;
-  for (let index = targets[0]!.index + 1; index < withoutSpans.length; index++) {
-    if (/^\s{0,3}#{1,2}(?:\s+|$)/.test(withoutSpans[index]!.text)) {
-      insertionOffset = withoutSpans[index]!.start;
-      break;
-    }
-  }
-  const before = without.slice(0, insertionOffset);
-  const after = without.slice(insertionOffset);
-  const eol = body.includes('\r\n') ? '\r\n' : '\n';
-  const beforeGap = lineGapBefore(before, eol);
-  const afterGap = lineGapAfter(after, eol, body.endsWith(eol));
-  return prefix + before + beforeGap + block + afterGap + after;
+  return insertManagedBlock(removed.content, removed.block, targetHeading);
 }
 
 function insertManagedBlockWithNewHeading(
@@ -1618,10 +1619,45 @@ function removeManagedBlock(
   const marker = spans[binding.markerIndex];
   const payload = spans[binding.payloadIndex];
   if (!marker || !payload || payload.contentEnd < marker.start) return null;
+  const block = body.slice(marker.start, payload.contentEnd);
+  const sourceHeadingIndex = sourceHeadingForBinding(spans, binding);
+  if (sourceHeadingIndex !== null) {
+    const heading = spans[sourceHeadingIndex]!;
+    const sectionContentStart = spans[sourceHeadingIndex + 1]?.start ?? body.length;
+    const sectionEnd =
+      spans.slice(binding.payloadIndex + 1).find((span) => /^\s{0,3}#{1,2}(?:\s+|$)/.test(span.text))
+        ?.start ?? body.length;
+    const remainingSection =
+      body.slice(sectionContentStart, marker.start) + body.slice(payload.contentEnd, sectionEnd);
+    if (remainingSection.trim().length === 0) {
+      return {
+        content: prefix + body.slice(0, heading.start) + body.slice(sectionEnd),
+        block,
+      };
+    }
+  }
   return {
     content: prefix + body.slice(0, marker.start) + body.slice(payload.contentEnd),
-    block: body.slice(marker.start, payload.contentEnd),
+    block,
   };
+}
+
+/** Find only the unique H2 section that structurally owns this binding. */
+function sourceHeadingForBinding(spans: readonly RawLineSpan[], binding: ManagedItemBinding): number | null {
+  if (!binding.currentHeading) return null;
+  for (let index = binding.markerIndex - 1; index >= 0; index--) {
+    const heading = /^\s{0,3}(#{1,2})(?:\s+(.+?)\s*|\s*)$/.exec(spans[index]!.text);
+    if (!heading) continue;
+    if (heading[1] === '#') return null;
+    const key = normalizedHeading(heading[2]?.trim() ?? '');
+    if (key !== normalizedHeading(binding.currentHeading)) return null;
+    const occurrences = spans.filter((span) => {
+      const candidate = /^\s{0,3}##(?:\s+(.+?)\s*|\s*)$/.exec(span.text)?.[1]?.trim();
+      return candidate !== undefined && normalizedHeading(candidate) === key;
+    }).length;
+    return occurrences === 1 ? index : null;
+  }
+  return null;
 }
 
 function insertManagedBlock(content: string, block: string, targetHeading: string): string | null {

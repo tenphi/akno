@@ -19,7 +19,7 @@ knowledge base, and which model roles may be involved.
 | `retain <json\|->`    | Replay-safe automatic/exact retention or source-scoped retraction       | Yes or typed hold          | Maintenance/derive; recall roles for routing  |
 | `folder <path>`       | Declare a folder and its default policy                                 | Yes, `akno.jsonc`          | None                                          |
 | `approve` / `decline` | Resolve a held routing proposal                                         | Approval may write         | Depends on the held action                    |
-| `forget`              | Retract a fact or trash a page/document                                 | Yes                        | None                                          |
+| `forget`              | Remove an exact fact/memory or trash a page/document                    | Yes                        | None                                          |
 | `undo <change-id>`    | Restore exact bytes from a journalled change                            | Yes                        | None                                          |
 | `move <from> <to>`    | Move a page and its owned documents                                     | Yes                        | None                                          |
 | `ingest <path\|url>`  | Extract, name, route, store, and index                                  | Yes                        | Derive; vision when needed                    |
@@ -92,12 +92,14 @@ See [Reading memory](reading.md) for ranking, qualification, citations, and resu
   approval reason and name or admit a destination. `requires_folder` instead asks the caller to declare taxonomy.
 - `maintenance.retain.fallback_page` can provide one exact last-resort destination. It is used only after
   ordinary routing and managed-page creation fail, and only when page or folder policy independently admits it.
-  `akno doctor` reports whether the configured fallback is ready.
+  `akno doctor` reports whether the configured fallback is ready. Managed-item curation treats it as a queue and
+  never certifies an item there as correctly placed.
 - Use `ingest` for a file, folder, or URL; use `inbox` for configured drop folders.
 - URL ingest accepts only HTTP(S), resolves every address, rejects non-public destinations, pins the request to
   a validated address, and repeats the policy for redirects. `ingest.trusted_url_origins` is an exact
   scheme/host/port opt-in for a known internal service; it has no path or wildcard form.
 - Use `forget` for a deliberate retraction and `undo` when reversing a known Akno change.
+  `forget --memory <id>` addresses any sealed managed item, including one that has no derived fact.
 - Use `plan` for maintenance decisions. `approve` and `decline` are for held remember/ingest routing proposals,
   not dream-plan items.
 - Use `plan revise` when the proposed destination and transformation are right but the exact result is not.

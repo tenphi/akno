@@ -167,23 +167,33 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
 `remember: integrate` knowledge pages, even when the page has no `dream` value:
 
 - **managed item:** delete an empty marker or remove an exact payload/provenance duplicate. It also verifies
-  global id uniqueness, exact marker-to-fact line/hash binding,
+  global id uniqueness, exact marker-to-managed-memory line/hash binding,
   typed conflict participation, and section fit. A qualified classifier may select only `keep`, `move`, or
   `uncertain`; one accepted same-page move must target an existing unique `##` section, and deterministic code
-  moves the complete marker-plus-payload bytes. For items created with replayable evidence, another qualified
+  moves the complete marker-plus-payload bytes. When that was the only content under a unique source heading,
+  Akno removes the emptied heading too; any authored or remaining managed content preserves the section. For
+  items created with replayable evidence, another qualified
   pass compares the generated sentence with its exact retained source quote. It may mark it supported, hold it
   as uncertain, or propose one source-grounded payload-line correction; old or unquoted items are
-  `source_unavailable`. Malformed markers, missing current derivation, conflicting ids/facts, unavailable
+  `source_unavailable`. Reports, plans, questions, and other non-factual managed memories use the same placement
+  and routing checks even though they intentionally have no derived fact row. Malformed markers, missing current
+  projection, conflicting ids/facts, unavailable
   placement, and ambiguous placement remain typed held findings. A separate bounded routing pass can nominate
   at most three existing admitted pages and move one complete owned block only when a classifier selects one
   supplied page and section. A section is either an existing unique `##` heading or the one sanitized heading
-  derived from the item's current fact attribute. The classifier cannot return any other heading, and section
+  derived from a fact attribute when available, then the managed item's current section or kind. The classifier cannot return
+  any other heading, and section
   creation is allowed only when no existing section fits. Same-page placement has the same bounded option. A
   created section or two-page move is medium risk; no page or payload text can be invented. Other items on
   either touched page are deferred until fresh derivation rather than certified against shifted lines. Authored
   surrounding prose is outside this transformation's authority. Marker normalization is sealed first; semantic
   checks wait for those canonical
-  bytes on the next cycle rather than certifying an item they did not classify;
+  bytes on the next cycle rather than certifying an item they did not classify. A configured fallback page is a
+  queue: its items cannot receive `keep`, and move to one supplied canonical existing page or remain held; the
+  fallback is never offered as a curation destination. Canonical subject matches prevent a specific current
+  owner from oscillating to an equally broad page, while a unique strictly stronger subject match can require a
+  move out of a top-level person or company profile. Exact period buckets reject out-of-period items, but a
+  date-prefixed named event remains an event page rather than being mistaken for a calendar bucket;
 
 - **hygiene:** conservative formatting, local-language repair, and structurally safe cleanup;
 - **synthesis:** evidence-backed rewrite or reorganization;
