@@ -109,7 +109,8 @@ only creatable option is a short plain heading derived deterministically from th
 attribute, section, or kind; the classifier cannot supply its own wording. Akno moves the exact marker and
 sentence together, seals the change as a medium-risk maintenance item when it creates a section or touches two
 pages, and writes or undoes both pages atomically. It never creates a page or rewrites the fact during this
-operation; ambiguity becomes a held routing finding.
+operation. A move also removes its unique source heading when the moved block was that section's only content;
+it preserves every heading that still owns authored or managed content. Ambiguity becomes a held routing finding.
 
 The configured fallback is treated specially in this pass: an item cannot be certified as correctly placed
 there. The classifier may move it to one supplied canonical page, or the item remains a typed held finding until

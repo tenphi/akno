@@ -15,4 +15,6 @@ Managed-item curation now audits reports, plans, questions, and other non-factua
 managed-memory projection. Configured fallback pages are treated as temporary queues whose items must move to
 one unambiguous existing canonical page or remain held. Canonical subject strength prevents page oscillation and
 can require a unique narrower owner when an item sits on a broad profile. `forget --memory` removes any exact
-sealed managed item, including one without a derived fact id.
+sealed managed item, including one without a derived fact id. A managed-item move also removes a unique source
+heading when the moved block was the section's only content, preventing orphan headings without touching
+authored sections.

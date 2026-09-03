@@ -346,7 +346,9 @@ conflict that excludes the claim from inference yields `item_conflict`; a stale 
 yields `source_unavailable` rather than pretending verification passed. A fragment without one unique `##`
 section—or under the explicit `## Unsorted` fallback—starts as `misplaced_item`. Qualified semantic placement may choose only `keep`,
 `move`, or `uncertain`; an accepted move must name one existing unique `##` section in the same page, and
-deterministic code moves the complete owned block without rewriting it. `placement_uncertain` and
+deterministic code moves the complete owned block without rewriting it. If that block was the only content in
+its unique source section, the now-empty source heading is removed with it; headings that retain authored or
+managed content are preserved. `placement_uncertain` and
 `placement_unavailable` are held. Verdicts are cached by exact content and model contract without storing page
 text or headings. Cross-page routing separately retrieves at most three existing `remember: integrate`
 knowledge pages and may move one exact owned block only to a supplied page. The destination may be an existing

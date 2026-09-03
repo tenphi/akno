@@ -177,6 +177,45 @@ The Zephyr QX-100 warranty lasts 1111 days.`,
     );
   });
 
+  it('removes an emptied source heading after a same-page move', () => {
+    const before = `# Ada Marlow
+
+## Old section
+
+<!-- akno:item itm_same_page_orphan v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=preference subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+Ada Marlow prefers the Zephyr QX-100.
+
+## Preferences
+
+Authored preference context stays here.
+`;
+
+    const result = applyManagedItemMoves(before, [
+      {
+        itemId: 'itm_same_page_orphan',
+        markerLine: 5,
+        fromHeading: 'Old section',
+        toHeading: 'Preferences',
+      },
+    ]);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.content).not.toContain('## Old section');
+    expect(result.content).toContain('## Preferences\n\nAuthored preference context stays here.');
+    expect(result.content).toContain('itm_same_page_orphan');
+    expect(
+      managedItemRepairIssue(before, result.content, [
+        {
+          itemId: 'itm_same_page_orphan',
+          markerLine: 5,
+          fromHeading: 'Old section',
+          toHeading: 'Preferences',
+        },
+      ]),
+    ).toBeNull();
+  });
+
   it('moves one complete owned block between two sealed pages', () => {
     const source = `# Ada Marlow
 
@@ -248,6 +287,50 @@ The Zephyr QX-100 warranty lasts 1111 days.`,
         [transfer],
       ),
     ).toMatch(/broader/);
+  });
+
+  it('removes the unique source heading when its last managed block moves away', () => {
+    const source = `# Ada Marlow
+
+## Blackwater Bay Bar Preferences
+
+<!-- akno:item itm_orphan v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=preference subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+Ada Marlow prefers quiet bars in Blackwater Bay.
+`;
+    const destination = `# Blackwater Bay
+
+## Bars
+`;
+    const transfer = {
+      itemId: 'itm_orphan',
+      markerLine: 5,
+      fromHeading: 'Blackwater Bay Bar Preferences',
+      sourceRelPath: 'people/ada-marlow.md',
+      destinationRelPath: 'travel/blackwater-bay.md',
+      destinationSlug: 'travel/blackwater-bay',
+      destinationHeading: 'Bars',
+    };
+    const result = applyManagedItemTransfer(source, destination, transfer);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.source).toBe('# Ada Marlow\n\n');
+    expect(result.destination).toContain('## Bars\n\n<!-- akno:item itm_orphan');
+    expect(
+      managedItemOperationsIssue(
+        [
+          { relPath: transfer.sourceRelPath, before: source, after: result.source },
+          {
+            relPath: transfer.destinationRelPath,
+            before: destination,
+            after: result.destination,
+          },
+        ],
+        [],
+        [],
+        [transfer],
+      ),
+    ).toBeNull();
   });
 });
 
@@ -696,7 +779,9 @@ Warranty records for the Zephyr QX-100.
     expect(
       routingInputs.every((input) => input.candidate_pages.every((candidate) => candidate.title !== 'Inbox')),
     ).toBe(true);
-    expect(fs.readFileSync(path.join(root, 'memory/inbox.md'), 'utf8')).not.toContain('itm_fallback');
+    const emptiedInbox = fs.readFileSync(path.join(root, 'memory/inbox.md'), 'utf8');
+    expect(emptiedInbox).not.toContain('itm_fallback');
+    expect(emptiedInbox).not.toContain('## Unsorted');
     expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toContain('itm_fallback');
   });
 

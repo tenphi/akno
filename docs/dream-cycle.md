@@ -170,7 +170,9 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   global id uniqueness, exact marker-to-managed-memory line/hash binding,
   typed conflict participation, and section fit. A qualified classifier may select only `keep`, `move`, or
   `uncertain`; one accepted same-page move must target an existing unique `##` section, and deterministic code
-  moves the complete marker-plus-payload bytes. For items created with replayable evidence, another qualified
+  moves the complete marker-plus-payload bytes. When that was the only content under a unique source heading,
+  Akno removes the emptied heading too; any authored or remaining managed content preserves the section. For
+  items created with replayable evidence, another qualified
   pass compares the generated sentence with its exact retained source quote. It may mark it supported, hold it
   as uncertain, or propose one source-grounded payload-line correction; old or unquoted items are
   `source_unavailable`. Reports, plans, questions, and other non-factual managed memories use the same placement
