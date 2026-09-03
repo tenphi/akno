@@ -204,7 +204,8 @@ async function autoRecallContext(
 ): Promise<ContextOutput> {
   const budget = input.budget ?? AUTO_RECALL_DEFAULT_BUDGET;
   const memoryView = input.memory_view ?? inferMemoryView(input.query, input.mode ?? 'lookup');
-  const resolutionContext = referenceContext(input.query, input.conversation_context ?? []);
+  const reference = referenceContext(input.query, input.conversation_context ?? []);
+  const resolutionContext = reference?.text ?? null;
   const retrievalQuery = resolutionContext ? `${input.query}\n${resolutionContext}` : input.query;
   const recallInput = {
     query: retrievalQuery,
@@ -229,6 +230,7 @@ async function autoRecallContext(
       degraded: initial.degraded,
       note: initial.note ?? 'memory evidence could not be read',
       memoryView,
+      referenceResolution: reference ? 'unresolved' : 'not_needed',
     });
   }
 
@@ -237,10 +239,16 @@ async function autoRecallContext(
     const eligible = temporallyEligibleResult(result, input.query, memoryView);
     return eligible ? [eligible] : [];
   });
-  const signals = eligibleInitial.map((result) => activationSignal(result, input.query, resolutionContext));
+  const unboundSignals = eligibleInitial.map((result) =>
+    activationSignal(result, input.query, resolutionContext),
+  );
+  const referenceBinding = bindReferenceSubject(reference, unboundSignals, input.query);
+  const signals = referenceBinding.signals;
+  const referenceBlocked =
+    referenceBinding.resolution === 'ambiguous' || referenceBinding.resolution === 'unresolved';
   const mechanicalCompoundConflict = hasMechanicalCompoundConflict(signals, input.query);
   const complementary = complementaryCompoundSignals(signals, input.query);
-  if (complementary.length > 0) {
+  if (complementary.length > 0 && !referenceBlocked) {
     return assembledAutoRecall({
       budget,
       searched: [input.query],
@@ -250,6 +258,7 @@ async function autoRecallContext(
       activationBasis: 'exact',
       qualificationRun: false,
       memoryView,
+      referenceResolution: referenceBinding.resolution,
     });
   }
   const strongSignals = signals
@@ -266,7 +275,12 @@ async function autoRecallContext(
 
   const unresolvedMechanicalCompound = requestedMechanicalValueKinds(input.query).length > 1;
 
-  if (deterministic.length > 0 && !ambiguousSingularFact && !unresolvedMechanicalCompound) {
+  if (
+    deterministic.length > 0 &&
+    !ambiguousSingularFact &&
+    !unresolvedMechanicalCompound &&
+    !referenceBlocked
+  ) {
     return assembledAutoRecall({
       budget,
       searched: [input.query],
@@ -276,6 +290,7 @@ async function autoRecallContext(
       activationBasis: deterministic.some((signal) => signal.basis === 'exact') ? 'exact' : 'semantic',
       qualificationRun: false,
       memoryView,
+      referenceResolution: referenceBinding.resolution,
     });
   }
 
@@ -287,8 +302,11 @@ async function autoRecallContext(
       searched: [input.query],
       candidates: initial.results.length,
       degraded: [...degraded],
-      note: 'no memory evidence was strong enough for automatic injection',
+      note: referenceBlocked
+        ? referenceResolutionNote(referenceBinding.resolution)
+        : 'no memory evidence was strong enough for automatic injection',
       memoryView,
+      referenceResolution: referenceBinding.resolution,
     });
   }
 
@@ -305,6 +323,7 @@ async function autoRecallContext(
       qualificationRun: true,
       note: qualified.note ?? 'memory evidence could not be read during qualification',
       memoryView,
+      referenceResolution: referenceBinding.resolution,
     });
   }
 
@@ -318,17 +337,30 @@ async function autoRecallContext(
           return eligible ? [eligible] : [];
         })
         .filter((result) => (result.relevance ?? 0) >= minimumRelevance)
+        .filter(
+          (result) =>
+            referenceBinding.resolution !== 'resolved' ||
+            (activationSignal(result, input.query, resolutionContext).queryOverlap > 0 &&
+              resultMatchesSubject(
+                result,
+                input.query,
+                resolutionContext ?? '',
+                referenceBinding.subjectKey,
+              )),
+        )
         .slice(0, AUTO_RECALL_MAX_RESULTS)
     : [];
   const qualifiedComplementary = complementaryCompoundSignals(
     qualifiedSelection.map((result) => activationSignal(result, input.query, resolutionContext)),
     input.query,
   );
-  const selected = unresolvedMechanicalCompound
-    ? mechanicalCompoundConflict
-      ? []
-      : qualifiedComplementary.map((signal) => signal.result)
-    : qualifiedSelection;
+  const selected = referenceBlocked
+    ? []
+    : unresolvedMechanicalCompound
+      ? mechanicalCompoundConflict
+        ? []
+        : qualifiedComplementary.map((signal) => signal.result)
+      : qualifiedSelection;
   const qualifiedReferenceAmbiguous = asksForSingularFact(input.query) && selected.length > 1;
 
   if (selected.length === 0 || qualifiedReferenceAmbiguous) {
@@ -340,12 +372,15 @@ async function autoRecallContext(
       degraded: [...degraded],
       qualification: qualified.qualification,
       qualificationRun: true,
-      note: qualifiedReferenceAmbiguous
-        ? 'a singular fact remained ambiguous between multiple sources'
-        : qualificationApplied
-          ? 'qualification found no evidence strong enough for automatic injection'
-          : 'automatic injection requires calibrated qualification for ambiguous evidence',
+      note: referenceBlocked
+        ? referenceResolutionNote(referenceBinding.resolution)
+        : qualifiedReferenceAmbiguous
+          ? 'a singular fact remained ambiguous between multiple sources'
+          : qualificationApplied
+            ? 'qualification found no evidence strong enough for automatic injection'
+            : 'automatic injection requires calibrated qualification for ambiguous evidence',
       memoryView,
+      referenceResolution: referenceBinding.resolution,
     });
   }
 
@@ -359,6 +394,7 @@ async function autoRecallContext(
     qualification: qualified.qualification,
     qualificationRun: true,
     memoryView,
+    referenceResolution: referenceBinding.resolution,
   });
 }
 
@@ -372,6 +408,7 @@ interface EmptyAutoRecallOptions {
   qualificationRun?: boolean;
   note: string;
   memoryView: MemoryView;
+  referenceResolution: ReferenceResolution;
 }
 
 function emptyAutoRecall(options: EmptyAutoRecallOptions): ContextOutput {
@@ -386,6 +423,7 @@ function emptyAutoRecall(options: EmptyAutoRecallOptions): ContextOutput {
       candidates: options.candidates,
       selected: 0,
       qualification_run: options.qualificationRun ?? false,
+      reference_resolution: options.referenceResolution,
     },
     pinned: [],
     results: [],
@@ -407,6 +445,7 @@ interface AssembledAutoRecallOptions {
   qualification?: RecallQualification;
   qualificationRun: boolean;
   memoryView: MemoryView;
+  referenceResolution: ReferenceResolution;
 }
 
 function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput {
@@ -426,6 +465,7 @@ function assembledAutoRecall(options: AssembledAutoRecallOptions): ContextOutput
       candidates: options.candidates,
       selected: fitted.results.length,
       qualification_run: options.qualificationRun,
+      reference_resolution: options.referenceResolution,
     },
     pinned: [],
     results: fitted.results,
@@ -444,9 +484,21 @@ interface ActivationSignal {
   strength: number;
   strong: boolean;
   plausible: boolean;
+  queryOverlap: number;
 }
 
 type MechanicalValueKind = 'money' | 'date' | 'duration';
+type ReferenceResolution = NonNullable<ContextOutput['activation']>['reference_resolution'];
+
+interface ReferenceRequest {
+  text: string | null;
+}
+
+interface ReferenceBinding {
+  resolution: ReferenceResolution;
+  signals: ActivationSignal[];
+  subjectKey?: string[];
+}
 
 /**
  * A compound answer may legitimately live on separate pages. Admit that set without lowering the global
@@ -501,17 +553,7 @@ function activationSignal(
   const contextTokens = meaningfulTokens(resolutionContext ?? '');
   const overlap = overlapRatio(queryTokens, evidence);
   const contextOverlap = overlapRatio(contextTokens, evidence);
-  const identities =
-    result.type === 'page'
-      ? [result.title, result.slug.split('/').at(-1)?.replaceAll('-', ' ') ?? '']
-      : [
-          result.label,
-          result.path
-            .split('/')
-            .at(-1)
-            ?.replace(/\.[^.]+$/, '')
-            .replaceAll('-', ' ') ?? '',
-        ];
+  const identities = resultIdentities(result);
   const promptHaystack = normalize(`${query} ${resolutionContext ?? ''}`);
   const matchedIdentityTokens = identities.flatMap((identity) => {
     const normalized = normalize(identity);
@@ -565,40 +607,180 @@ function activationSignal(
     strength: exact ? 2 + Math.max(overlap, contextOverlap) : semantic + overlap,
     strong,
     plausible,
+    queryOverlap: overlap,
   };
 }
 
-/** The recent turns are not a second query. They are admitted only when the current prompt has a local
- * reference to resolve, and even then only the last 1,000 characters are allowed into retrieval. */
+/** The recent turns are not a second query. They are admitted only when the current prompt has an explicit
+ * local reference or is a short question fragment with an omitted subject. */
 function referenceContext(
   query: string,
   turns: NonNullable<ParsedContextInput['conversation_context']>,
-): string | null {
-  if (turns.length === 0 || !hasLocalReference(query)) return null;
+): ReferenceRequest | null {
+  if (!hasLocalReference(query) && !hasEllipticalSubject(query)) return null;
   const recent = turns
     .slice(-2)
     .map((turn) => turn.content.trim())
     .filter(Boolean)
     .join('\n');
-  if (!recent) return null;
-  return recent.slice(-1000);
+  return { text: recent ? recent.slice(-1000) : null };
 }
 
 function hasLocalReference(query: string): boolean {
   return (
-    /\b(it|its|that|this|they|them|those|these|one|other|former|latter|same)\b/i.test(query) ||
-    /\b(what|how) about\b/i.test(query)
+    /\b(it|its|his|her|hers|their|theirs|that|this|they|them|those|these|one|other|former|latter|same)\b/i.test(
+      query,
+    ) || /\b(what|how) about\b/i.test(query)
   );
 }
 
+/** “Current credential code?” is locally referential even without a pronoun: the field is present but the
+ * owner is omitted. Keep this deliberately narrow to short question fragments; complete questions and
+ * imperatives must not silently inherit the preceding topic. */
+function hasEllipticalSubject(query: string): boolean {
+  if (!/\?\s*$/u.test(query)) return false;
+  const normalized = normalize(query);
+  if (
+    /\b(what|who|whose|where|when|why|how|which|do|does|did|is|are|was|were|can|could|would|should|will)\b/u.test(
+      normalized,
+    )
+  ) {
+    return false;
+  }
+  const tokens = meaningfulTokens(query);
+  return tokens.length > 0 && tokens.length <= 8;
+}
+
+/** Bind a local reference to identities exposed by the bounded candidate set. Qualification may judge whether
+ * a candidate supports a field, but it cannot decide which conversational subject an ambiguous pronoun or
+ * ellipsis meant. */
+function bindReferenceSubject(
+  reference: ReferenceRequest | null,
+  signals: ActivationSignal[],
+  query: string,
+): ReferenceBinding {
+  if (!reference) return { resolution: 'not_needed', signals };
+
+  const explicitlyNamed = signals.filter((signal) => resultIdentityNamedInQuery(signal.result, query));
+  if (explicitlyNamed.length > 0) {
+    return { resolution: 'not_needed', signals: explicitlyNamed };
+  }
+
+  if (!reference.text) return { resolution: 'unresolved', signals };
+  const querySupportingSignals = signals.filter((signal) => signal.queryOverlap > 0);
+  const keys = uniqueSubjectKeys(
+    querySupportingSignals.flatMap((signal) => matchingSubjectKeys(signal.result, query, reference.text!)),
+  );
+  if (keys.length === 0) return { resolution: 'unresolved', signals };
+  if (keys.length > 1) return { resolution: 'ambiguous', signals };
+
+  const subjectKey = keys[0]!;
+  return {
+    resolution: 'resolved',
+    signals: querySupportingSignals.filter((signal) =>
+      resultMatchesSubject(signal.result, query, reference.text!, subjectKey),
+    ),
+    subjectKey,
+  };
+}
+
+const SUBJECT_IDENTITY_NOISE = new Set([
+  'detail',
+  'document',
+  'entry',
+  'file',
+  'information',
+  'note',
+  'page',
+  'profile',
+  'record',
+]);
+
+function resultIdentityNamedInQuery(result: RecallResult, query: string): boolean {
+  const queryTokens = new Set(meaningfulTokens(query));
+  return resultIdentities(result).some((identity) => {
+    const tokens = meaningfulTokens(identity).filter((token) => !SUBJECT_IDENTITY_NOISE.has(token));
+    // A one-token basename such as `credential.md` describes a field, not who owns it.
+    return tokens.length >= 2 && tokens.every((token) => queryTokens.has(token));
+  });
+}
+
+function matchingSubjectKeys(result: RecallResult, query: string, conversationText: string): string[][] {
+  const queryTokens = new Set(meaningfulTokens(query));
+  const contextTokens = meaningfulTokenSequence(conversationText);
+  return collapseSubjectKeys(
+    resultIdentities(result).flatMap((identity) => {
+      const residual = meaningfulTokens(identity).filter(
+        (token) => !queryTokens.has(token) && !SUBJECT_IDENTITY_NOISE.has(token),
+      );
+      return residual.length > 0 && containsTokenSequence(contextTokens, residual) ? [residual] : [];
+    }),
+  );
+}
+
+function resultMatchesSubject(
+  result: RecallResult,
+  query: string,
+  conversationText: string,
+  subjectKey: string[] | undefined,
+): boolean {
+  if (!subjectKey) return false;
+  return matchingSubjectKeys(result, query, conversationText).some((key) =>
+    relatedSubjectKeys(key, subjectKey),
+  );
+}
+
+function collapseSubjectKeys(keys: string[][]): string[][] {
+  const unique = uniqueSubjectKeys(keys);
+  return unique.filter(
+    (key) =>
+      !unique.some((other) => other.length > key.length && key.every((token) => other.includes(token))),
+  );
+}
+
+function uniqueSubjectKeys(keys: string[][]): string[][] {
+  return [
+    ...new Map(
+      keys.map((key) => {
+        const normalized = [...new Set(key)].sort();
+        return [normalized.join('\u0000'), normalized] as const;
+      }),
+    ).values(),
+  ];
+}
+
+function relatedSubjectKeys(left: string[], right: string[]): boolean {
+  return left.every((token) => right.includes(token)) || right.every((token) => left.includes(token));
+}
+
+function resultIdentities(result: RecallResult): string[] {
+  return result.type === 'page'
+    ? [result.title, result.slug.split('/').at(-1)?.replaceAll('-', ' ') ?? '']
+    : [
+        result.label,
+        result.path
+          .split('/')
+          .at(-1)
+          ?.replace(/\.[^.]+$/, '')
+          .replaceAll('-', ' ') ?? '',
+      ];
+}
+
+function referenceResolutionNote(resolution: ReferenceResolution): string {
+  return resolution === 'ambiguous'
+    ? 'recent conversation identified multiple candidate subjects for the local reference'
+    : 'the local reference could not be bound to one candidate subject';
+}
+
 function hasSingularReference(query: string): boolean {
-  return /\b(it|its|that|this|one|other|former|latter|same)\b/i.test(query);
+  return /\b(it|its|his|her|hers|that|this|one|other|former|latter|same)\b/i.test(query);
 }
 
 function asksForSingularFact(query: string): boolean {
   if (/\b(and|both|compare|list)\b/i.test(query) || /\bwhat are\b/i.test(query)) return false;
   return (
     hasSingularReference(query) ||
+    hasEllipticalSubject(query) ||
     /\bwhat (?:is|was)\b/i.test(query) ||
     /\bwhen (?:does|did|is|was)\b/i.test(query) ||
     /\bhow (?:long|often|much|many)\b/i.test(query) ||
@@ -707,6 +889,9 @@ const AUTO_RECALL_STOPWORDS = new Set([
   'for',
   'from',
   'have',
+  'her',
+  'hers',
+  'his',
   'how',
   'into',
   'its',
@@ -722,6 +907,7 @@ const AUTO_RECALL_STOPWORDS = new Set([
   'that',
   'the',
   'their',
+  'theirs',
   'them',
   'there',
   'these',
@@ -741,14 +927,18 @@ const AUTO_RECALL_STOPWORDS = new Set([
 ]);
 
 function meaningfulTokens(text: string): string[] {
-  return [
-    ...new Set(
-      normalize(text)
-        .split(' ')
-        .filter((token) => token.length > 2 && !AUTO_RECALL_STOPWORDS.has(token))
-        .map(autoRecallRoot),
-    ),
-  ];
+  return [...new Set(meaningfulTokenSequence(text))];
+}
+
+function meaningfulTokenSequence(text: string): string[] {
+  return normalize(text)
+    .split(' ')
+    .filter((token) => token.length > 2 && !AUTO_RECALL_STOPWORDS.has(token))
+    .map(autoRecallRoot);
+}
+
+function containsTokenSequence(haystack: string[], needle: string[]): boolean {
+  return haystack.some((_, start) => needle.every((token, offset) => haystack[start + offset] === token));
 }
 
 function normalize(text: string): string {

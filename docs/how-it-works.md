@@ -137,8 +137,9 @@ This typed state is part of the result, not inferred from an exception string.
 ### Context for an agent turn
 
 `context` assembles a complete pre-turn bundle against one output budget. Its `auto_recall` profile is for a
-host that has the user's current prompt but no explicit memory question. It selects a small, diverse set of
-useful evidence and may include an answer only when the prompt contains a sufficiently answerable memory need.
+host that has the user's current prompt but no explicit memory question. It selects a small, precision-first set
+of exact evidence and never generates an answer. Bounded recent turns may resolve a pronoun, possessive, or
+omitted subject only when they bind to one candidate identity; ambiguous follow-ups return no evidence.
 
 See [Reading memory](reading.md) for operation-level behavior.
 

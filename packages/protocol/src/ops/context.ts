@@ -31,7 +31,7 @@ export const ContextInput = z
     query: z.string().min(1).optional(),
     /** `auto_recall` is a conservative evidence-only host injection, not an answer operation. */
     profile: ContextProfile.optional(),
-    /** Bounded recent turns used only to resolve a local reference in `query`. */
+    /** Bounded recent turns used only to resolve a local reference or omitted subject in `query`. */
     conversation_context: z.array(ConversationTurn).max(6).optional(),
     /** Defaults to 20,000 for the broad profile and 1,200 for auto-recall. */
     budget: z.number().int().positive().optional(),
@@ -75,6 +75,8 @@ export const AutoRecallActivation = z.object({
   candidates: z.number().int().nonnegative(),
   selected: z.number().int().nonnegative(),
   qualification_run: z.boolean(),
+  /** Whether bounded recent conversation was needed and could identify one candidate subject. */
+  reference_resolution: z.enum(['not_needed', 'resolved', 'ambiguous', 'unresolved']).default('not_needed'),
 });
 export type AutoRecallActivation = z.infer<typeof AutoRecallActivation>;
 

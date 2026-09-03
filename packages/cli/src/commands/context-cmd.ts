@@ -72,7 +72,8 @@ export async function contextCommand(argv: string[]): Promise<number> {
         `  ${style.grey('auto-recall')} ${result.activation.activated ? style.green('activated') : style.grey('empty')} ` +
           style.grey(
             `(${result.activation.basis}; ${result.activation.selected}/${result.activation.candidates} selected` +
-              `${result.activation.qualification_run ? '; qualified' : ''})`,
+              `${result.activation.qualification_run ? '; qualified' : ''}` +
+              `${result.activation.reference_resolution !== 'not_needed' ? `; reference ${result.activation.reference_resolution}` : ''})`,
           ),
       );
     }

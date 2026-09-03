@@ -20,11 +20,15 @@ const result = await akno.call('recall', {
 });
 
 // A host may conservatively prepare evidence before its own model handles a turn.
+const recentTurns = [{ role: 'user' as const, content: 'We were discussing the Zephyr QX-100 warranty.' }];
 const context = await akno.context({
   profile: 'auto_recall',
-  query: 'When does the Zephyr QX-100 warranty end?',
+  query: 'When does it end?',
+  conversation_context: recentTurns,
   budget: 1200,
 });
+// `ambiguous` and `unresolved` references deliberately carry no automatic evidence.
+const referenceResolution = context.activation?.reference_resolution;
 
 // One explicit clock covers authored events, retained world time, and document evidence.
 const timeline = await akno.timeline({
