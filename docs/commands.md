@@ -69,7 +69,8 @@ behind the default socket; pair `--akno-path` with that memory's `--state-dir` w
 - Use `timeline` when time is the primary filter. Its clock is explicit in the result; `--view actionable`
   narrows active or accepted scheduled work without hiding history from the default view.
 - Use `context --profile auto_recall` from an agent host before a substantive turn with no explicit memory
-  question.
+  question. Its activation receipt reports whether a local reference was resolved, ambiguous, or unresolved;
+  the latter two inject no evidence.
 - `recall`, `answer`, `graph`, and query-backed `context` accept
   `--memory-view factual|history|planning|reports|questions|discussion|all`. Omit it for conservative query
   inference; an explicit value always wins. This is independent of recall `--mode` and timeline `--view`.

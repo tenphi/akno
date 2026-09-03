@@ -24,8 +24,9 @@ describe('auto-recall benchmark', () => {
       passed: true,
       split: 'development',
       corpus: {
-        cases: 14,
-        sources: 12,
+        version: 'auto-recall-development-v2',
+        cases: 15,
+        sources: 14,
         categories: 9,
         fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/u),
         frozen: false,

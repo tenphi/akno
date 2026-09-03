@@ -261,8 +261,14 @@ outlines, and generated summaries. Exact page lines and document quotations keep
 
 A strong exact or semantic match can activate directly; borderline candidates need qualification. Exact
 evidence excludes semantic near-duplicates. Attribute questions require evidence for the attribute, not merely
-the entity name. Conflicting values cause abstention. Recent conversation can resolve a narrow local reference
-but cannot make unrelated memory relevant.
+the entity name. Conflicting values cause abstention. Recent conversation can resolve a narrow local reference,
+including a possessive or short question fragment with an omitted subject, but cannot make unrelated memory
+relevant. Akno binds that reference to exactly one candidate identity before qualification; a qualifier may
+judge support for the requested field but cannot choose the conversational subject.
+
+The content-free activation receipt reports `reference_resolution` as `not_needed`, `resolved`, `ambiguous`, or
+`unresolved`. The latter two return no automatic evidence. This lets a host distinguish ordinary low relevance
+from a follow-up that needs a clearer subject without logging the conversation or resolved identity.
 
 Temporal qualification is applied before automatic activation. Current prompts cannot activate expired valid
 states; future prompts may activate asserted, active or accepted plans, while generic factual prompts cannot

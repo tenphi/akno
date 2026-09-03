@@ -129,8 +129,8 @@ export const OPS = {
       'The whole pre-turn bundle against one budget: pinned pages, recent timeline, a structure outline, and ' +
       "this turn's recall. Normally called by the host before the model sees the turn, not by the agent. " +
       '`profile: "auto_recall"` instead returns only a small, precision-first evidence bundle for automatic ' +
-      'host injection. It may return empty normally, uses recent conversation only to resolve local references, ' +
-      'and conditionally qualifies ambiguous candidates rather than paying for reranking on every turn.',
+      'host injection. It may return empty normally, uses recent conversation only to resolve local references ' +
+      'and omitted subjects, binds them before qualification, and conditionally qualifies ambiguous evidence.',
   }),
   graph: op({
     name: 'graph',
