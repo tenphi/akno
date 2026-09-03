@@ -1,0 +1,123 @@
+name: Bug report
+description: Report reproducible behavior that is incorrect, unsafe, or unexpectedly degraded.
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Akno.
+
+        Akno is commonly connected to a private knowledge base. This issue will be public: do not paste real notes, names, addresses, account identifiers, personal filenames or paths, document text, or actual financial details. Rebuild the smallest reproduction with invented content while preserving the structure that triggers the bug.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Choose the closest subsystem. Mention a second area in the summary if needed.
+      options:
+        - Indexing or file watching
+        - Recall, read, answer, or context
+        - Retain, remember, write, move, forget, or undo
+        - Timeline, observations, or dream cycle
+        - Documents, extraction, or OCR
+        - Service lifecycle, CLI, or configuration
+        - Client or protocol
+        - Documentation or another area
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the incorrect behavior and its user-visible consequence. Focus on the problem rather than a proposed implementation.
+      placeholder: A scoped recall reports an empty result even though the relevant invented page is indexed, so the caller may treat an incomplete read as absence.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Akno version or commit
+      description: Run `akno --version`, or provide the commit SHA when testing a checkout.
+      placeholder: x.y.z or commit SHA
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Linux
+        - Other or unsupported
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Runtime and installation
+      description: Include OS version and architecture, Node version, installation method, and whether this ran through the service or directly in the CLI/library.
+      placeholder: |
+        OS and architecture:
+        Node:
+        Installed from npm or source:
+        Invocation path (service, CLI, core, or client):
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction with invented data
+      description: Give exact commands or API calls and the smallest invented file/config shape needed to reproduce the behavior. Preserve formatting details such as frontmatter, fences, markers, or filenames when they matter.
+      placeholder: |
+        1. Create an invented page containing …
+        2. Run …
+        3. Observe …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: State the result, source-file effect, and typed status you expected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the exact error or typed `status`, `outcome`, and `degraded` values when available, after replacing private values.
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Optional. Relevant output from `akno doctor`, `akno config`, or an operation's `--json` response is useful, but inspect it first. Secret redaction does not remove personal paths, page identities, retrieved text, or every provider detail.
+      render: shell
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add a regression range, frequency, workaround, or other information that changes how the bug should be understood.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Public report checklist
+      options:
+        - label: I searched existing open and closed issues for the same behavior.
+          required: true
+        - label: I reproduced this on the latest release or current `main`, or explained above why I could not.
+          required: true
+        - label: I replaced all private knowledge-base content and machine-specific personal data with invented values.
+          required: true

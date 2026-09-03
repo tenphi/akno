@@ -1,0 +1,118 @@
+name: Feature or improvement
+description: Propose a user-visible capability or a meaningful improvement to existing behavior.
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the user problem and observable outcome. A useful Akno proposal also says what evidence is authoritative, what may be written automatically, and how incomplete or unavailable state should be represented.
+
+        This issue will be public. Use invented people, organizations, notes, filenames, values, and scenarios; do not paste content from a real knowledge base.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Product area
+      options:
+        - Indexing and source integrity
+        - Retrieval, context, and grounded answers
+        - Retention and memory lifecycle
+        - Timeline and temporal reasoning
+        - Observations and curation
+        - Knowledge-base writes and maintenance
+        - Documents and extraction
+        - Service, CLI, and configuration
+        - Client, protocol, or integrations
+        - Documentation or another area
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: What is difficult, unsafe, misleading, or impossible today? Describe the workflow and consequence without assuming a particular implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Explain what the user or connected agent should be able to do and what observable behavior would make the problem meaningfully solved.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Concrete example with invented data
+      description: Walk through one representative input, operation, and result. Include the important page/config structure, but invent every value.
+      placeholder: |
+        Given …
+        When …
+        Then …
+    validations:
+      required: true
+
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Correctness and authority boundaries
+      description: Describe what is authoritative, what Akno may read or write automatically, how provenance is preserved, and when the result should be `empty`, `degraded`, `unavailable`, held, or refused. State which source bytes or durable records must remain unchanged.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data_effect
+    attributes:
+      label: Expected data effect
+      description: Choose the highest-impact behavior the proposal may require.
+      options:
+        - Read-only behavior; no new stored state
+        - Rebuildable index or retrieval state only
+        - Durable internal state, but no knowledge-base writes
+        - Explicit user-requested knowledge-base writes
+        - Automatic knowledge-base writes
+        - Model or provider egress changes
+        - Not sure yet
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and non-goals
+      description: Identify the smallest useful release boundary and adjacent work that should remain separate.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List observable conditions that would demonstrate the feature works, degrades honestly, preserves source ownership, and survives restart or rebuild where relevant.
+      placeholder: |
+        - …
+        - …
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional. Describe current workarounds or materially different approaches and why they do not solve the user problem.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Public proposal checklist
+      options:
+        - label: I searched existing open and closed issues for overlapping scope.
+          required: true
+        - label: I described the user-facing behavior rather than only an implementation idea.
+          required: true
+        - label: I used invented examples and included no private knowledge-base or machine-specific personal data.
+          required: true

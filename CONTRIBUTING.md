@@ -318,9 +318,15 @@ test is to paste in the page that just failed.
 
 ## Reporting a bug
 
-`akno doctor` and `akno config` (both redact secrets) are the two most useful things to paste. If it is a
-retrieval problem, `akno recall "<query>" --json` includes `searched`, `degraded` and `coverage`, which
-usually says what happened.
+Use the [issue chooser](https://github.com/tenphi/akno/issues/new/choose) for a structured bug report or feature
+proposal. `akno doctor` and `akno config` both redact credential fields and are useful diagnostics; inspect
+their output before posting because personal paths, page identities, model details, and other machine-specific
+values are not necessarily secrets. For retrieval problems, `akno recall "<invented query>" --json` includes
+`searched`, `degraded`, and `coverage`.
+
+GitHub issues are public. Never paste a real note, document excerpt, filename, person, address, account detail,
+or actual amount. Preserve the failing structure in a minimal reproduction and replace its content with the
+invented vocabulary from [AGENTS.md](AGENTS.md).
 
 ## License
 

@@ -28,8 +28,8 @@
     "release": "changeset publish",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "format": "prettier --write \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset/*.md\" \".github/workflows/*.yml\"",
-    "format:check": "prettier --check \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset/*.md\" \".github/workflows/*.yml\"",
+    "format": "prettier --write \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset\" \".github/**/*.yml\"",
     "bench": "node packages/cli/src/bin.ts bench",
     "knip": "knip"
   },
