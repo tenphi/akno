@@ -46,6 +46,15 @@ export default defineDocsConfig({
   },
   theme: {
     brand: { from: '#6554c0' },
+    styles: {
+      MarkdownTable: {
+        Table: {
+          display: 'block',
+          maxInlineSize: '100%',
+          overflowX: 'auto',
+        },
+      },
+    },
   },
   build: {
     strict: true,
