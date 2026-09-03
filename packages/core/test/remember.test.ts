@@ -24,6 +24,14 @@ interface StubCandidate {
   origin?: 'user' | 'assistant';
   evidence?: string | null;
   frame?: string | null;
+  time?: {
+    start: string;
+    precision: 'day' | 'month';
+    relation: 'occurred';
+    status: 'actual';
+    mentioned_at: string;
+    timezone: string;
+  };
 }
 
 interface StubServer {
@@ -32,6 +40,13 @@ interface StubServer {
   lastSystem: () => string;
   forget: () => void;
   respondWith: (candidates: StubCandidate[]) => void;
+  decideOwnershipWith: (decider: (input: StubOwnershipInput) => unknown) => void;
+}
+
+interface StubOwnershipInput {
+  memory: { text: string; subject: string; kind: string; time: Record<string, unknown> | null };
+  existing_pages: { id: string; title: string; headings: string[]; excerpt: string }[];
+  proposed_page: { slug: string; title: string } | null;
 }
 
 let server: StubServer;
@@ -66,6 +81,21 @@ async function startStubChat(): Promise<typeof server> {
   let candidates: StubCandidate[] = [
     { text: 'The rent is 1111 EUR per month.', subject: 'apartment rent', kind: 'claim' },
   ];
+  let ownershipDecider = (payload: StubOwnershipInput): unknown => {
+    const memoryText = payload.memory.text;
+    const exactFixtureOwner = payload.existing_pages.find(
+      (page) =>
+        (memoryText.includes('Vulpine Lodge') && page.excerpt.includes('Vulpine Lodge')) ||
+        (memoryText.includes('meal box') && page.excerpt.includes('meal supplier')),
+    );
+    const selected =
+      exactFixtureOwner ?? (memoryText.includes('meal box') ? undefined : payload.existing_pages[0]);
+    return selected
+      ? { outcome: 'existing', target_id: selected.id }
+      : payload.proposed_page
+        ? { outcome: 'proposed', target_id: null }
+        : { outcome: 'uncertain', target_id: null };
+  };
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
@@ -127,6 +157,21 @@ async function startStubChat(): Promise<typeof server> {
         );
         return;
       }
+      if (requestSystem.startsWith('You select the canonical home for one retained memory')) {
+        const payload = JSON.parse(sourceText) as StubOwnershipInput;
+        response.end(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify(ownershipDecider(payload)),
+                },
+              },
+            ],
+          }),
+        );
+        return;
+      }
       system = requestSystem;
       const grounded = candidates.map((candidate) => ({
         ...candidate,
@@ -169,6 +214,9 @@ async function startStubChat(): Promise<typeof server> {
     },
     respondWith: (next) => {
       candidates = next;
+    },
+    decideOwnershipWith: (decider) => {
+      ownershipDecider = decider;
     },
   };
 }
@@ -644,7 +692,7 @@ describe('routing a claim whose attribute its page does not yet state', () => {
     try {
       await mem.index({});
       const result = await mem.remember({ text: 'The Vulpine Lodge pool is open until 22:00.' });
-      // The claim pass found `trips/blackwater-bay` on its own; the subject pass never had to run.
+      // The claim pass found `trips/blackwater-bay`; ownership then confirms the page's purpose.
       expect(result.wrote?.[0]?.slug).toBe('trips/blackwater-bay');
     } finally {
       await mem.close();
@@ -765,6 +813,220 @@ describe('routing when the best-ranked page is not the best-judged one', () => {
       expect(result.wrote?.[0]?.slug).toBe('household/subscriptions');
       // The leader is still a candidate — it just no longer decides for everyone behind it.
       expect(result.wrote?.some((target) => target.slug === 'household/concerts')).toBeFalsy();
+    } finally {
+      await mem.close();
+    }
+  });
+});
+
+describe('canonical destination qualification', () => {
+  it('can select the owning page outside the extractor-suggested folder', async () => {
+    fs.mkdirSync(path.join(root, 'people'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'people/ada-marlow.md'),
+      '# Ada Marlow\n\nGeneral biographical notes.\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(root, 'equipment/zephyr-qx-100.md'),
+      '# Zephyr QX-100\n\n## Warranty\n\nWarranty and service records for the Zephyr QX-100.\n',
+      'utf8',
+    );
+    server.respondWith([
+      {
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        subject: 'Zephyr QX-100 warranty',
+        page: 'people/ada-marlow/warranty',
+        kind: 'claim',
+      },
+    ]);
+    server.decideOwnershipWith((input) => {
+      const target = input.existing_pages.find((page) => page.title === 'Zephyr QX-100');
+      return target
+        ? { outcome: 'existing', target_id: target.id }
+        : { outcome: 'uncertain', target_id: null };
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
+      expect(result.wrote?.[0]?.slug).toBe('equipment/zephyr-qx-100');
+      expect(fs.existsSync(path.join(root, 'people/ada-marlow/warranty.md'))).toBe(false);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('lets page ownership reject a high-similarity existing page in favor of a proposed page', async () => {
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    const existingPath = path.join(root, 'household/zephyr-notes.md');
+    fs.writeFileSync(
+      existingPath,
+      '# Household notes\n\nZephyr Zephyr Zephyr warranty reminders for a concert prop.\n',
+      'utf8',
+    );
+    const before = fs.readFileSync(existingPath, 'utf8');
+    server.respondWith([
+      {
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        subject: 'Zephyr QX-100 warranty',
+        page: 'equipment/zephyr-qx-100',
+        kind: 'claim',
+      },
+    ]);
+    server.decideOwnershipWith(() => ({ outcome: 'proposed', target_id: null }));
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
+      expect(result.wrote?.[0]).toMatchObject({ slug: 'equipment/zephyr-qx-100', action: 'created' });
+      expect(fs.readFileSync(existingPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('never offers a typed May event to an April-scoped page', async () => {
+    fs.mkdirSync(path.join(root, 'records'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'records/2031-04.md'),
+      '# April 2031\n\nZephyr QX-100 service payment records.\n',
+      'utf8',
+    );
+    const text = 'On May 3, 2031, the Zephyr QX-100 service payment was recorded.';
+    const mentionedAt = '2031-05-03T12:00:00Z';
+    server.respondWith([
+      {
+        text,
+        subject: 'Zephyr QX-100 service payment',
+        page: 'records/2031-05',
+        kind: 'event',
+        time: {
+          start: '2031-05-03',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: mentionedAt,
+          timezone: 'UTC',
+        },
+      },
+    ]);
+    let classifierCalls = 0;
+    server.decideOwnershipWith((input) => {
+      classifierCalls += 1;
+      expect(input.existing_pages.map((page) => page.title)).not.toContain('April 2031');
+      return { outcome: 'proposed', target_id: null };
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text, mentioned_at: mentionedAt, timezone: 'UTC' });
+      expect(result.wrote?.[0]?.slug).toBe('records/2031-05');
+      expect(classifierCalls).toBe(1);
+      expect(fs.readFileSync(path.join(root, 'records/2031-04.md'), 'utf8')).not.toContain('akno:item');
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('does not create a proposed period page that excludes the typed memory time', async () => {
+    fs.mkdirSync(path.join(root, 'records'), { recursive: true });
+    const text = 'On May 3, 2031, the Zephyr QX-100 service payment was recorded.';
+    const mentionedAt = '2031-05-03T12:00:00Z';
+    server.respondWith([
+      {
+        text,
+        subject: 'Zephyr QX-100 service payment',
+        page: 'records/2031-04',
+        kind: 'event',
+        time: {
+          start: '2031-05-03',
+          precision: 'day',
+          relation: 'occurred',
+          status: 'actual',
+          mentioned_at: mentionedAt,
+          timezone: 'UTC',
+        },
+      },
+    ]);
+    let classifierCalls = 0;
+    server.decideOwnershipWith(() => {
+      classifierCalls += 1;
+      return { outcome: 'proposed', target_id: null };
+    });
+    const mem = await openMem();
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text, mentioned_at: mentionedAt, timezone: 'UTC' });
+      expect(result.wrote).toBeUndefined();
+      expect(result.considered?.[0]).toMatchObject({
+        kept: false,
+        slug: null,
+        destination: 'no_writable_destination',
+      });
+      expect(classifierCalls).toBe(0);
+      expect(fs.existsSync(path.join(root, 'records/2031-04.md'))).toBe(false);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('binds an unambiguous supplied subject to its canonical entity', async () => {
+    fs.mkdirSync(path.join(root, 'people'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'people/ada-marlow.md'),
+      '---\ntitle: Ada Marlow\ntype: person\n---\n\n# Ada Marlow\n\n## Preferences\n',
+      'utf8',
+    );
+    const text = 'Ada Marlow prefers a five-year equipment warranty.';
+    server.respondWith([
+      {
+        text,
+        subject: "Ada Marlow's warranty preferences",
+        page: 'people/ada-marlow',
+        kind: 'preference',
+      },
+    ]);
+    const mem = await openMem();
+    try {
+      await mem.index({ structuralOnly: true });
+      const db = new Database(path.join(stateDir, 'akno.db'), { readonly: true });
+      const entity = db
+        .prepare(
+          `SELECT entity.id FROM graph_entities entity
+            JOIN pages page ON page.id = entity.canonical_page
+           WHERE page.slug = 'people/ada-marlow'`,
+        )
+        .get() as { id: string };
+      db.close();
+      const result = await mem.remember({ text });
+      expect(result.wrote?.[0]?.slug).toBe('people/ada-marlow');
+      expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toContain(
+        `subject=${entity.id}`,
+      );
     } finally {
       await mem.close();
     }

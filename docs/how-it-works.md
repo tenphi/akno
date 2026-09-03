@@ -149,13 +149,18 @@ All mutations go through the process that owns the write handle. They are journa
 index reconciliation, and return a change id for `undo`.
 
 An exact `write` is validated against folder rules and the current page. `remember` has more work to do: it
-extracts durable claims from raw material, ranks relevant pages, checks an independent fact-injection admission,
-and either performs a bounded write or returns a proposal. A plain knowledge page is searchable but read-only;
+extracts durable claims from raw material, uses claim and subject recall to nominate relevant pages, asks a
+separate bounded classifier which page's durable purpose owns the memory, checks fact-injection admission, and
+either performs a bounded write or returns a proposal. Similarity nominates candidates; it does not authorize
+an append. A plain knowledge page is searchable but read-only;
 only explicit page or folder `remember: integrate` metadata admits injection. If the strongest match is
 read-only, a weaker writable result cannot win merely because Akno may edit it. A new explicitly managed page or
 a configured exact fallback can receive the claim only when its own page or parent-folder rule admits the write;
-otherwise a typed `no_writable_destination` hold is safer. The routing order is an admitted semantic match, an
-admitted new managed page proposed by retention, the configured fallback, and finally a hold. Per-claim
+otherwise a typed `no_writable_destination` hold is safer. The complete typed memory interval—or one
+unambiguous year-bearing date already present in the retained sentence—removes incompatible period-bucket
+candidates before page ownership is judged. Exact month pages and exact or explicitly ledger-like day pages are
+buckets; a date-prefixed named trip or event is not. The routing order is a qualified existing owner, a qualified new
+managed page proposed by retention, the configured fallback, and finally a hold. Per-claim
 destination classes distinguish existing admitted pages, new managed pages, configured fallback use, and the
 absence of an authorized home without requiring a host to parse prose. Each new managed sentence may also retain
 one validated exact input quote
@@ -173,6 +178,11 @@ receipt, and evidence engine. Identical source revisions replay before another m
 source is archived only through explicit `preserve_source`, and correction/retraction changes only addressed
 support. Inactive private evidence is securely pruned after its configured grace once no live item or
 nonterminal maintenance work depends on it; hashes, replay identity, and source bindings remain.
+
+When supplied subject text resolves unambiguously to an existing canonical entity, `remember` and `retain`
+write that entity id into the managed marker. An ambiguous subject stays explicitly unresolved. Exact managed
+duplicates are detected across admitted pages, so a second source adds support to the existing owned item
+instead of creating the same memory under a newly suggested destination.
 
 Managed payload lines keep their level-one discourse and epistemic qualification through `read` and `recall`.
 Noncanonical items remain searchable, but graph fact mining and factual `answer` evidence use the same narrow

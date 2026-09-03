@@ -437,11 +437,19 @@ export function managedMemoryBlock(marker: ManagedMemoryMarker, payload: string)
 }
 
 export function sameManagedMemorySemantics(left: ManagedMemoryMarker, right: ManagedMemoryMarker): boolean {
-  return managedMemorySemanticKey(left) === managedMemorySemanticKey(right);
+  if (left.subject !== right.subject && left.subject !== 'unresolved' && right.subject !== 'unresolved') {
+    return false;
+  }
+  return managedMemorySemanticKey(left, true) === managedMemorySemanticKey(right, true);
 }
 
-function managedMemorySemanticKey(marker: ManagedMemoryMarker): string {
-  return JSON.stringify({ ...marker, id: undefined, supports: undefined });
+function managedMemorySemanticKey(marker: ManagedMemoryMarker, omitSubject = false): string {
+  return JSON.stringify({
+    ...marker,
+    id: undefined,
+    supports: undefined,
+    ...(omitSubject ? { subject: undefined } : {}),
+  });
 }
 
 function durableEvidenceKey(

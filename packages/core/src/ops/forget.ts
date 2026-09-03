@@ -17,11 +17,12 @@ import { quarantineReasonsForPath } from '../index/page-quarantine.ts';
  * reads it again tomorrow — which is worse than not forgetting, because now the
  * two disagree.
  *
- * All three forms are journalled and stay `undo`-able for the retention window.
+ * All four forms are journalled and stay `undo`-able for the retention window.
  */
 export async function forget(ctx: AknoContext, rawInput: unknown): Promise<ForgetOutput> {
   const input = ForgetInput.parse(rawInput);
   if (input.fact) return forgetFact(ctx, input.fact);
+  if (input.memory) return forgetMemory(ctx, input.memory);
   if (input.slug) return forgetPage(ctx, input.slug);
   return forgetDocument(ctx, input.document!);
 }
@@ -95,6 +96,85 @@ async function forgetFact(ctx: AknoContext, factId: string): Promise<ForgetOutpu
     change_id: changeId,
     removed_from: `${fact.slug}:${fact.line_start}`,
     removed: target,
+  };
+}
+
+// ─── A managed memory ──────────────────────────────────────────────────────
+
+async function forgetMemory(ctx: AknoContext, memoryId: string): Promise<ForgetOutput> {
+  const matches = ctx.store.db
+    .prepare(
+      `SELECT memory.memory_id, memory.marker_line, memory.payload_line, memory.marker_hash,
+              memory.payload_hash, page.slug, page.rel_path
+         FROM managed_memory_entries memory
+         JOIN pages page ON page.id = memory.source_page
+        WHERE memory.memory_id = ?`,
+    )
+    .all(memoryId) as {
+    memory_id: string;
+    marker_line: number;
+    payload_line: number;
+    marker_hash: string;
+    payload_hash: string;
+    slug: string;
+    rel_path: string;
+  }[];
+  if (matches.length === 0) {
+    throw new AknoError('not_found', `no managed memory with id ${memoryId}`);
+  }
+  if (matches.length !== 1) {
+    throw new AknoError('conflict', `managed memory id ${memoryId} is not unique`, {
+      hint: 'run managed-item curation and resolve the duplicate id before forgetting it',
+    });
+  }
+  const memory = matches[0]!;
+  if (quarantineReasonsForPath(ctx.store, memory.rel_path).length > 0) {
+    throw new AknoError(
+      'conflict',
+      `${memory.slug} is quarantined; repair its Markdown source before forgetting from it`,
+      { reason: 'source_conflict' },
+    );
+  }
+
+  const content = await fsp.readFile(path.join(ctx.config.aknoPath, memory.rel_path), 'utf8');
+  const lines = content.split('\n');
+  const marker = lines[memory.marker_line - 1];
+  const payload = lines[memory.payload_line - 1];
+  if (
+    memory.payload_line !== memory.marker_line + 1 ||
+    marker === undefined ||
+    payload === undefined ||
+    sha256(marker.trim()) !== memory.marker_hash ||
+    sha256(payload.trim()) !== memory.payload_hash
+  ) {
+    throw new AknoError(
+      'conflict',
+      `${memory.slug}:${memory.marker_line} changed since the managed memory was indexed — re-index and retry`,
+    );
+  }
+
+  lines.splice(memory.marker_line - 1, 2);
+  const result = await writeFileAtomic(ctx.config.aknoPath, memory.rel_path, lines.join('\n'));
+  const changeId = ctx.journal.record({
+    actor: ctx.actor,
+    op: 'forget',
+    summary: `removed managed memory ${memoryId} from ${memory.slug}:${memory.marker_line}`,
+    files: [fileEntry(result)],
+  });
+  forgetRetainSupports(ctx, [memoryId], changeId);
+  deleteManagedSourceArchives(ctx, [memoryId]);
+  await ctx.indexer.runForeground({
+    only: [memory.rel_path],
+    modelPaths: [],
+    reindexUnchanged: true,
+  });
+  ctx.derive.schedule([memory.rel_path]);
+
+  return {
+    status: 'ok',
+    change_id: changeId,
+    removed_from: `${memory.slug}:${memory.marker_line}`,
+    removed: `${marker}\n${payload}`,
   };
 }
 

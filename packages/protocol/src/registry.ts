@@ -206,7 +206,7 @@ export const OPS = {
     output: ForgetOutput,
     implemented: true,
     description:
-      'Retract a fact by removing the sentence that produced it, delete a page to trash, or drop a document. ' +
+      'Retract a fact, remove one exact managed-memory block, delete a page to trash, or drop a document. ' +
       'Always journalled and always reversible with undo for the retention window.',
   }),
   undo: op({

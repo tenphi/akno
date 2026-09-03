@@ -3,11 +3,12 @@ import { heading, json, kv, line, statusLabel, style, truncate } from '../output
 import { printWriteOutcome } from './write-cmd.ts';
 import { resolveOps, runMaintenance } from '../ops-handle.ts';
 
-const FORGET_HELP = `akno forget <--fact <id> | --slug <slug> | --document <id>>
+const FORGET_HELP = `akno forget <--fact <id> | --memory <id> | --slug <slug> | --document <id>>
 
-  Retract a fact by removing the sentence that produced it, or move a page or a
-  document to trash. Always journalled, always reversible with undo for the
-  retention window.
+  Retract a fact, remove one exact sealed managed-memory block, or move a page
+  or document to trash. Always journalled, always reversible with undo for the
+  retention window. --memory also works for reports, plans, and other retained
+  items that deliberately have no fact id.
 
   Removing a fact removes a line from a file. Expiring a row while the sentence
   stays would mean forgetting it today and reading it again tomorrow.
@@ -16,14 +17,24 @@ const FORGET_HELP = `akno forget <--fact <id> | --slug <slug> | --document <id>>
   --json`;
 
 export async function forgetCommand(argv: string[]): Promise<number> {
-  const { values } = parse<{ fact?: string; slug?: string; document?: string; actor?: string }>(argv, {
+  const { values } = parse<{
+    fact?: string;
+    memory?: string;
+    slug?: string;
+    document?: string;
+    actor?: string;
+  }>(argv, {
     fact: { type: 'string' },
+    memory: { type: 'string' },
     slug: { type: 'string' },
     document: { type: 'string' },
     actor: { type: 'string' },
   });
 
-  if (values.help || [values.fact, values.slug, values.document].filter(Boolean).length !== 1) {
+  if (
+    values.help ||
+    [values.fact, values.memory, values.slug, values.document].filter(Boolean).length !== 1
+  ) {
     line(FORGET_HELP);
     return values.help ? 0 : 1;
   }
@@ -35,6 +46,7 @@ export async function forgetCommand(argv: string[]): Promise<number> {
   try {
     const result = await handle.ops.forget({
       ...(values.fact ? { fact: values.fact } : {}),
+      ...(values.memory ? { memory: values.memory } : {}),
       ...(values.slug ? { slug: values.slug } : {}),
       ...(values.document ? { document: values.document } : {}),
     });

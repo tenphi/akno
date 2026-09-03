@@ -124,11 +124,13 @@ memory tools. A host must separately and deliberately provide access if it wants
 ```mermaid
 flowchart TD
   accTitle: Remember decision path
-  accDescr: Remember extracts durable claims and evidence, finds the strongest destination, checks write authority, and either writes to an authorized location or holds a proposal without changing a page.
+  accDescr: Remember extracts durable claims and evidence, nominates destinations, qualifies canonical ownership, checks write authority, and either writes to an authorized location or holds a proposal without changing a page.
 
   input["Raw input"] --> extract["Extract durable claims and exact supporting quotes"]
-  extract --> destination["Find the strongest relevant destination"]
-  destination --> admitted{"Is that exact page or new-page location admitted for fact injection?"}
+  extract --> destination["Nominate pages with claim and subject recall"]
+  destination --> ownership{"Does one page own this memory, or is the proposed page safer?"}
+  ownership --> admitted{"Is that exact page or new-page location admitted for fact injection?"}
+  ownership -->|uncertain| fallback
   admitted -->|yes| write["Write to the authorized destination, journal it, and re-index"]
   admitted -->|no| fallback{"Is an admitted managed page or configured fallback authorized?"}
   fallback -->|yes| write

@@ -52,6 +52,7 @@ import {
 } from '../write/retain.ts';
 import { resolveRememberFallback } from '../write/remember-fallback.ts';
 import { pruneRetainEvidence, reconcileRetainManagedSources } from '../write/retain-supports.ts';
+import { resolveRetainedSubject } from '../memory/subject-resolution.ts';
 import { routeAutomaticCandidate } from './remember.ts';
 import { read } from './read.ts';
 import { normalizeSlug, titleFromSlug } from './write.ts';
@@ -88,6 +89,7 @@ interface PageStage {
   relPath: string;
   before: string | null;
   after: string;
+  managedDestination: boolean;
 }
 
 type InlineRetainInput = Extract<RetainSourceInput, { text: string } | { items: unknown[] }>;
@@ -415,12 +417,17 @@ async function retainCandidates(
   const correctionIssue = validateCorrectionTarget(ctx, source);
   if (correctionIssue) return correctionHoldResult(resolvedSource, correctionIssue);
 
+  const subjectResolvedCandidates = suppliedCandidates.map((candidate) => {
+    const subjectRef = resolveRetainedSubject(ctx.store, candidate);
+    return subjectRef ? { ...candidate, subject_ref: subjectRef } : candidate;
+  });
   const resolved =
     options.placement === 'automatic' && !options.skipAutomaticRouting
-      ? await resolveAutomaticCandidates(ctx, suppliedCandidates)
+      ? await resolveAutomaticCandidates(ctx, subjectResolvedCandidates)
       : {
-          candidates: suppliedCandidates.filter(hasDestination),
-          held: suppliedCandidates
+          candidates: subjectResolvedCandidates.filter(hasDestination),
+          routingReceipts: [] as RetainModelCallReceipt[],
+          held: subjectResolvedCandidates
             .filter((candidate) => !candidate.destination)
             .map((candidate) => ({
               candidate_id: candidate.candidate_id,
@@ -429,6 +436,7 @@ async function retainCandidates(
               reason: 'provided exact candidates require a destination',
             })),
         };
+  options.modelUsage.placement.push(...resolved.routingReceipts);
   const candidates = resolved.candidates;
 
   const receiptFingerprint = managedMemoryFingerprint(
@@ -565,19 +573,6 @@ async function retainCandidates(
       continue;
     }
 
-    const slug = normalizeSlug(candidate.destination.slug);
-    const stage = await pageStage(ctx, stages, slug, candidate.subject);
-    if ('issue' in stage) {
-      candidateResults.push({
-        candidate_id: candidate.candidate_id,
-        outcome: 'held',
-        slug,
-        reason_code: stage.issue.includes('unreadable') ? 'source_unavailable' : 'no_writable_destination',
-        reason: stage.issue,
-      });
-      continue;
-    }
-
     const candidateFingerprint = managedMemoryFingerprint({
       source: source.source_id,
       revision: source.revision,
@@ -593,6 +588,20 @@ async function retainCandidates(
     const proposedId = newPrefixedId('mem');
     const marker = markerFromProvidedCandidate(proposedId, candidate, support, candidateMemoryIds);
     const payload = renderManagedMemoryPayload(candidate.text, marker);
+    let slug = normalizeSlug(candidate.destination.slug);
+    const duplicateSlug = await globalManagedDuplicateSlug(ctx, stages, marker, payload, slug);
+    if (duplicateSlug) slug = duplicateSlug;
+    const stage = await pageStage(ctx, stages, slug, candidate.subject);
+    if ('issue' in stage) {
+      candidateResults.push({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        slug,
+        reason_code: stage.issue.includes('unreadable') ? 'source_unavailable' : 'no_writable_destination',
+        reason: stage.issue,
+      });
+      continue;
+    }
     const duplicate = managedBlocks(stage.after).find(
       (block) => block.payload === payload && sameManagedMemorySemantics(block.marker, marker),
     );
@@ -618,6 +627,12 @@ async function retainCandidates(
         continue;
       } else {
         duplicate.marker.supports.push(support);
+        // Older managed memories commonly predate deterministic subject resolution. Exact payload
+        // and semantic equality let new independent support strengthen that one marker in place;
+        // two different resolved subjects still never compare equal.
+        if (duplicate.marker.subject === 'unresolved' && marker.subject !== 'unresolved') {
+          duplicate.marker.subject = marker.subject;
+        }
         stage.after = replaceLine(
           stage.after,
           duplicate.markerIndex,
@@ -826,7 +841,10 @@ async function retainCandidates(
   } catch (error) {
     await rollbackCommittedStages(ctx, committed, error);
   }
-  options.onIndexed?.(await reindexStages(ctx, changed));
+  // Reindexing is required even when the caller does not ask for the derived-fact count.
+  // Keeping the await inside optional-call arguments skipped the entire index pass for `retain`.
+  const factsDerived = await reindexStages(ctx, changed);
+  options.onIndexed?.(factsDerived);
   return result;
 }
 
@@ -892,11 +910,17 @@ export async function retainRememberCandidates(
 async function resolveAutomaticCandidates(
   ctx: AknoContext,
   candidates: readonly (ProvidedRetainCandidate | RetainCandidate)[],
-): Promise<{ candidates: ResolvedRetainCandidate[]; held: RetainCandidateResult[] }> {
+): Promise<{
+  candidates: ResolvedRetainCandidate[];
+  held: RetainCandidateResult[];
+  routingReceipts: RetainModelCallReceipt[];
+}> {
   const resolved: ResolvedRetainCandidate[] = [];
   const held: RetainCandidateResult[] = [];
+  const routingReceipts: RetainModelCallReceipt[] = [];
   const catalog = folderCatalog(ctx.config, ctx.store);
   const fallback = await resolveRememberFallback(ctx, catalog);
+  const curator = retentionModel(ctx);
 
   for (const candidate of candidates) {
     const suggested = candidate.destination?.slug;
@@ -906,10 +930,17 @@ async function resolveAutomaticCandidates(
         ...candidate,
         ...(suggested ? { page: suggested } : {}),
       } as RetainCandidate,
-      { constrainToSuggestedFolder: suggested !== undefined },
+      { constrainToSuggestedFolder: false, model: curator },
     );
+    if (routed.modelOutcome) routingReceipts.push(modelCallReceipt(curator, routed.modelOutcome));
     let slug = routed.slug;
-    if (!slug && suggested && !pageExists(ctx, suggested) && admittedAutomaticSlug(catalog, suggested)) {
+    if (
+      !slug &&
+      routed.suggestedNew &&
+      suggested &&
+      !pageExists(ctx, suggested) &&
+      admittedAutomaticSlug(catalog, suggested)
+    ) {
       slug = suggested;
     }
     if (!slug && fallback && fallback.status !== 'unavailable') slug = fallback.slug;
@@ -933,13 +964,57 @@ async function resolveAutomaticCandidates(
     }
     resolved.push({ ...candidate, destination: { slug } });
   }
-  return { candidates: resolved, held };
+  return { candidates: resolved, held, routingReceipts };
 }
 
 function hasDestination(
   candidate: ProvidedRetainCandidate | RetainCandidate,
 ): candidate is ResolvedRetainCandidate {
   return candidate.destination !== undefined;
+}
+
+async function globalManagedDuplicateSlug(
+  ctx: AknoContext,
+  stages: ReadonlyMap<string, PageStage>,
+  marker: ManagedMemoryMarker,
+  payload: string,
+  excludedSlug: string,
+): Promise<string | null> {
+  for (const [slug, stage] of stages) {
+    if (
+      stage.managedDestination &&
+      slug !== excludedSlug &&
+      managedBlocks(stage.after).some(
+        (block) => block.payload === payload && sameManagedMemorySemantics(block.marker, marker),
+      )
+    ) {
+      return slug;
+    }
+  }
+  const rows = ctx.store.db
+    .prepare(
+      `SELECT DISTINCT memory.source_slug AS slug, page.rel_path
+         FROM managed_memory_entries memory
+         JOIN pages page ON page.id = memory.source_page
+        WHERE memory.payload_hash = ? AND memory.source_slug != ?
+          AND page.role = 'knowledge' AND page.remember_management = 'integrate'
+        ORDER BY memory.source_slug`,
+    )
+    .all(sha256(payload.trim()), excludedSlug) as { slug: string; rel_path: string }[];
+  for (const row of rows) {
+    const content =
+      stages.get(row.slug)?.after ??
+      (await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null));
+    if (
+      content &&
+      managedBlocks(content).some(
+        (block) => block.payload === payload && sameManagedMemorySemantics(block.marker, marker),
+      )
+    ) {
+      return row.slug;
+    }
+  }
+  return null;
 }
 
 function pageExists(ctx: AknoContext, slug: string): boolean {
@@ -1436,6 +1511,7 @@ async function pageStage(
     relPath,
     before,
     after: before ?? newManagedPage(title),
+    managedDestination: true,
   };
   stages.set(slug, stage);
   return stage;
@@ -1476,7 +1552,7 @@ async function preservedSourceStage(
         reasonCode: 'conflict',
       };
     }
-    const stage = { slug, relPath, before, after: before };
+    const stage = { slug, relPath, before, after: before, managedDestination: false };
     stages.set(slug, stage);
     return stage;
   }
@@ -1499,7 +1575,7 @@ async function preservedSourceStage(
       reasonCode: 'no_writable_destination',
     };
   }
-  const stage = { slug, relPath, before: null, after: content };
+  const stage = { slug, relPath, before: null, after: content, managedDestination: false };
   stages.set(slug, stage);
   return stage;
 }
@@ -1535,7 +1611,7 @@ async function existingPageStage(
   if (!row) return { issue: 'owned page is unavailable' };
   const before = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
   if (before === null) return { issue: 'owned page is unreadable' };
-  const stage = { slug, relPath: row.rel_path, before, after: before };
+  const stage = { slug, relPath: row.rel_path, before, after: before, managedDestination: true };
   stages.set(slug, stage);
   return stage;
 }
@@ -1669,7 +1745,10 @@ async function rollbackCommittedStages(
 async function reindexStages(ctx: AknoContext, stages: readonly PageStage[]): Promise<number> {
   if (stages.length === 0) return 0;
   const paths = stages.map((stage) => stage.relPath);
-  const report = await ctx.indexer.runForeground({ only: paths, modelPaths: [] });
+  // These exact paths were just atomically replaced. Force their rebuildable projections now;
+  // coarse or preserved filesystem timestamps must not leave the next retain call reading stale
+  // managed-memory state before the watcher notices the bytes.
+  const report = await ctx.indexer.runForeground({ only: paths, modelPaths: [], reindexUnchanged: true });
   ctx.derive.schedule(paths);
   return report.factsDerived;
 }

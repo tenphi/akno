@@ -276,11 +276,15 @@ describe('managed items in the dream cycle', () => {
       current_heading: string | null;
     };
     current_page_without_item: { title: string; headings: string[]; markdown_excerpt: string };
+    current_canonical_subject_match: number;
+    required_destination_target: string | null;
+    required_destination_reason: 'canonical_subject' | 'temporal_scope' | null;
     candidate_pages: {
       id: string;
       title: string;
       headings: string[];
       creatable_h2_heading: string | null;
+      canonical_subject_match: number;
     }[];
   }) => unknown;
   let routingInputs: Parameters<typeof routingDecider>[0][];
@@ -458,6 +462,7 @@ This sentence is not managed by Akno.
         },
         maintenance: {
           profile: 'autonomous',
+          retain: { fallback_page: 'memory/inbox' },
           policies: {
             observe: 'off',
             reflect: 'off',
@@ -497,7 +502,7 @@ This sentence is not managed by Akno.
       eligiblePages: 1,
       inspectedMarkers: 3,
       plannedPages: 1,
-      findings: { empty_marker: 1, duplicate_item: 1, source_unavailable: 1 },
+      findings: { empty_marker: 1, duplicate_item: 1, placement_unavailable: 1 },
       outcomes: { planned: 2, held: 1, valid: 0, suppressed: 0 },
     });
     expect(report.maintenancePlan?.items).toEqual([
@@ -533,8 +538,8 @@ akno:
 
 ## Records
 
-<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
-The Zephyr QX-100 warranty lasts 1111 days.
+<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=plan subject=unresolved source-role=user reports=0 commitment=asserted disposition=accepted polarity=affirmed basis=source_report -->
+- **Reported by the user · Plan:** Ada Marlow plans to renew the Zephyr QX-100 warranty.
 
 Authored profile context stays here.
 `;
@@ -567,7 +572,12 @@ Ada Marlow prefers the Zephyr QX-100.
       '# Zephyr QX-100 reference\n\n## Warranty\n\nZephyr QX-100 warranty reference material.\n',
     );
     await mem.index({ reindexUnchanged: true });
-    archiveSource('itm_route', 'fixture:route', 'user', 'The Zephyr QX-100 warranty lasts 1111 days.');
+    archiveSource(
+      'itm_route',
+      'fixture:route',
+      'user',
+      'Ada Marlow plans to renew the Zephyr QX-100 warranty.',
+    );
     archiveSource('itm_existing', 'fixture:existing', 'user', 'Ada Marlow prefers the Zephyr QX-100.');
     routingDecider = (input) => {
       const target = input.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100');
@@ -579,7 +589,6 @@ Ada Marlow prefers the Zephyr QX-100.
     const report = await mem.dream({ phase: 'curate' });
     const sourceAfter = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
     const destinationAfter = fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8');
-
     expect(report.managedItems).toMatchObject({
       plannedPages: 1,
       findings: { misrouted_item: 1, routing_deferred: 1, valid: 0 },
@@ -601,8 +610,8 @@ Ada Marlow prefers the Zephyr QX-100.
 
 Authored warranty context stays here.
 
-<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
-The Zephyr QX-100 warranty lasts 1111 days.
+<!-- akno:item itm_route v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=plan subject=unresolved source-role=user reports=0 commitment=asserted disposition=accepted polarity=affirmed basis=source_report -->
+- **Reported by the user · Plan:** Ada Marlow plans to renew the Zephyr QX-100 warranty.
 
 ## Preferences`,
     );
@@ -626,10 +635,437 @@ The Zephyr QX-100 warranty lasts 1111 days.
       routingInputs.find((input) => input.item.id === 'itm_route')!.current_page_without_item
         .markdown_excerpt,
     ).not.toContain('itm_route');
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_route')!;
+    expect(routingInput.required_destination_target).toBe(
+      routingInput.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100')?.id,
+    );
+    expect(routingInput.required_destination_reason).toBe('canonical_subject');
 
     await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(source);
     expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
+  });
+
+  it('treats the configured fallback as a queue and routes its item to a canonical page', async () => {
+    const inbox = `---
+title: Inbox
+akno:
+  management:
+    remember: integrate
+---
+
+# Inbox
+
+## Unsorted
+
+<!-- akno:item itm_fallback v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`;
+    const equipment = `---
+title: Zephyr QX-100
+akno:
+  management:
+    remember: integrate
+---
+
+# Zephyr QX-100
+
+## Warranty
+
+Warranty records for the Zephyr QX-100.
+`;
+    fs.mkdirSync(path.join(root, 'memory'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'memory/inbox.md'), inbox);
+    fs.writeFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), equipment);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_fallback', 'fixture:fallback', 'user', 'The Zephyr QX-100 warranty lasts 1111 days.');
+    routingDecider = (input) => {
+      const target = input.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100');
+      return target
+        ? { outcome: 'move', target_id: target.id, heading: 'Warranty', heading_mode: 'existing' }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.managedItems).toMatchObject({
+      findings: { misrouted_item: 1 },
+      routing: { moved: 1 },
+    });
+    expect(
+      routingInputs.every((input) => input.candidate_pages.every((candidate) => candidate.title !== 'Inbox')),
+    ).toBe(true);
+    expect(fs.readFileSync(path.join(root, 'memory/inbox.md'), 'utf8')).not.toContain('itm_fallback');
+    expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toContain('itm_fallback');
+  });
+
+  it('does not keep an explicitly dated May item on an April-scoped page', async () => {
+    const april = `---
+title: April 2031
+akno:
+  management:
+    remember: integrate
+---
+
+# April 2031
+
+## Records
+
+<!-- akno:item itm_may v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=event subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+- On May 3, 2031, the Zephyr QX-100 service payment was recorded.
+`;
+    const may = `---
+title: May 2031
+akno:
+  management:
+    remember: integrate
+---
+
+# May 2031
+
+## Records
+
+May 2031 service records.
+`;
+    fs.mkdirSync(path.join(root, 'records'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'records/2031-04.md'), april);
+    fs.writeFileSync(path.join(root, 'records/2031-05.md'), may);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_may',
+      'fixture:may',
+      'user',
+      'On May 3, 2031, the Zephyr QX-100 service payment was recorded.',
+    );
+    routingDecider = (input) => {
+      const target = input.candidate_pages.find((candidate) => candidate.title === 'May 2031');
+      return target
+        ? { outcome: 'move', target_id: target.id, heading: 'Records', heading_mode: 'existing' }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate' });
+
+    expect(report.managedItems).toMatchObject({
+      findings: { misrouted_item: 1 },
+      routing: { moved: 1 },
+    });
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_may')!;
+    expect(routingInput.required_destination_target).toBe(
+      routingInput.candidate_pages.find((candidate) => candidate.title === 'May 2031')?.id,
+    );
+    expect(routingInput.required_destination_reason).toBe('temporal_scope');
+    expect(fs.readFileSync(path.join(root, 'records/2031-04.md'), 'utf8')).not.toContain('itm_may');
+    expect(fs.readFileSync(path.join(root, 'records/2031-05.md'), 'utf8')).toContain('itm_may');
+  });
+
+  it('does not pull a dated item out of an unscoped canonical subject page', async () => {
+    const dispute = `---
+title: Zephyr service dispute
+akno:
+  management:
+    remember: integrate
+---
+
+# Zephyr service dispute
+
+## Refund
+
+<!-- akno:item itm_dated_subject v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=event subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+- On May 3, 2031, the Zephyr service dispute refund was recorded.
+`;
+    const may = `---
+title: May 2031
+akno:
+  management:
+    remember: integrate
+---
+
+# May 2031
+
+## Records
+
+May 2031 Zephyr service payment records.
+`;
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'records'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), '# Ada Marlow\n\nNo managed items.\n');
+    fs.writeFileSync(path.join(root, 'household/zephyr-dispute.md'), dispute);
+    fs.writeFileSync(path.join(root, 'records/2031-05.md'), may);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_dated_subject',
+      'fixture:dated-subject',
+      'user',
+      'On May 3, 2031, the Zephyr service dispute refund was recorded.',
+    );
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_dated_subject')!;
+    expect(routingInput.required_destination_target).toBeNull();
+    expect(report.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { valid: 1, misrouted_item: 0 },
+      routing: { kept: 1, moved: 0 },
+    });
+    expect(fs.readFileSync(path.join(root, 'household/zephyr-dispute.md'), 'utf8')).toBe(dispute);
+  });
+
+  it('keeps a stronger current canonical subject match instead of oscillating to a broad page', async () => {
+    const equipment = `---
+title: Zephyr QX-100
+akno:
+  management:
+    remember: integrate
+---
+
+# Zephyr QX-100
+
+## Warranty
+
+<!-- akno:item itm_owner_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+Ada Marlow selected the Zephyr QX-100 warranty.
+`;
+    const person = `---
+title: Ada Marlow
+akno:
+  management:
+    remember: integrate
+---
+
+# Ada Marlow
+
+## Preferences
+
+Ada Marlow's general preferences.
+`;
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), person);
+    fs.writeFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), equipment);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_owner_guard',
+      'fixture:owner',
+      'user',
+      'Ada Marlow selected the Zephyr QX-100 warranty.',
+    );
+    routingDecider = (input) => {
+      const broad = input.candidate_pages.find((candidate) => candidate.title === 'Ada Marlow');
+      return broad
+        ? { outcome: 'move', target_id: broad.id, heading: 'Preferences', heading_mode: 'existing' }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_owner_guard')!;
+    const broad = routingInput.candidate_pages.find((candidate) => candidate.title === 'Ada Marlow')!;
+    expect(routingInput.current_canonical_subject_match).toBeGreaterThan(broad.canonical_subject_match);
+    expect(report.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { valid: 1, misrouted_item: 0 },
+      routing: { kept: 1, moved: 0 },
+    });
+    expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(equipment);
+  });
+
+  it('recognizes singular and plural words when guarding a specific current owner', async () => {
+    const specific = `---
+title: Vulpine deliveries
+akno:
+  management:
+    remember: integrate
+---
+
+# Vulpine deliveries
+
+## Orders
+
+<!-- akno:item itm_plural_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+The Vulpine order was confirmed for delivery to Blackwater Bay.
+`;
+    const broad = `---
+title: Deliveries
+akno:
+  management:
+    remember: integrate
+---
+
+# Deliveries
+
+## Orders
+
+General household deliveries.
+`;
+    fs.mkdirSync(path.join(root, 'household/events'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), '# Ada Marlow\n\nNo managed items.\n');
+    fs.writeFileSync(path.join(root, 'household/events/vulpine-deliveries.md'), specific);
+    fs.writeFileSync(path.join(root, 'household/deliveries.md'), broad);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_plural_guard',
+      'fixture:plural',
+      'user',
+      'The Vulpine order was confirmed for delivery to Blackwater Bay.',
+    );
+    routingDecider = (input) => {
+      const target = input.candidate_pages.find((candidate) => candidate.title === 'Deliveries');
+      return target
+        ? { outcome: 'move', target_id: target.id, heading: 'Orders', heading_mode: 'existing' }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_plural_guard')!;
+    const broadCandidate = routingInput.candidate_pages.find(
+      (candidate) => candidate.title === 'Deliveries',
+    )!;
+    expect(routingInput.current_canonical_subject_match).toBeGreaterThan(
+      broadCandidate.canonical_subject_match,
+    );
+    expect(report.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { valid: 1, misrouted_item: 0 },
+      routing: { kept: 1, moved: 0 },
+    });
+    expect(fs.readFileSync(path.join(root, 'household/events/vulpine-deliveries.md'), 'utf8')).toBe(specific);
+  });
+
+  it('does not let a calendar path and repeated basename outweigh the current owner', async () => {
+    const current = `---
+title: Vulpine chargeback
+akno:
+  management:
+    remember: integrate
+---
+
+# Vulpine chargeback
+
+## Reversal
+
+<!-- akno:item itm_path_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+In May 2031, the Vulpine transaction was reversed and returned to the household account.
+`;
+    const document = `---
+title: Vulpine dispute email history 2031-05
+akno:
+  management:
+    remember: integrate
+---
+
+# Vulpine dispute email history 2031-05
+
+## Dispute resolution
+
+Imported correspondence.
+`;
+    fs.mkdirSync(path.join(root, 'household/zephyr-dispute'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), '# Ada Marlow\n\nNo managed items.\n');
+    fs.writeFileSync(path.join(root, 'household/zephyr-dispute/chargeback-vulpine.md'), current);
+    fs.writeFileSync(
+      path.join(root, 'household/zephyr-dispute/dispute-vulpine-email-history-2031-05.md'),
+      document,
+    );
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_path_guard',
+      'fixture:path-guard',
+      'user',
+      'In May 2031, the Vulpine transaction was reversed and returned to the household account.',
+    );
+    routingDecider = (input) => {
+      const target = input.candidate_pages.find((candidate) =>
+        candidate.title.startsWith('Vulpine dispute email history'),
+      );
+      return target
+        ? {
+            outcome: 'move',
+            target_id: target.id,
+            heading: 'Dispute resolution',
+            heading_mode: 'existing',
+          }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_path_guard')!;
+    const target = routingInput.candidate_pages.find((candidate) =>
+      candidate.title.startsWith('Vulpine dispute email history'),
+    )!;
+    expect(routingInput.current_canonical_subject_match).toBe(target.canonical_subject_match);
+    expect(report.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { valid: 1, misrouted_item: 0 },
+      routing: { kept: 1, moved: 0 },
+    });
+    expect(fs.readFileSync(path.join(root, 'household/zephyr-dispute/chargeback-vulpine.md'), 'utf8')).toBe(
+      current,
+    );
+  });
+
+  it('normalizes a short plural when comparing related canonical pages', async () => {
+    const current = `---
+title: Blackwater Bay cocktail bars
+akno:
+  management:
+    remember: integrate
+---
+
+# Blackwater Bay cocktail bars
+
+## Alternatives
+
+<!-- akno:item itm_short_plural_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=preference subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+The preferred bar for the Blackwater Bay trip is open on Fridays.
+`;
+    const trip = `---
+title: Blackwater Bay trip
+akno:
+  management:
+    remember: integrate
+---
+
+# Blackwater Bay trip
+
+## Plans
+
+General itinerary.
+`;
+    fs.mkdirSync(path.join(root, 'travel'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), '# Ada Marlow\n\nNo managed items.\n');
+    fs.writeFileSync(path.join(root, 'travel/blackwater-bay-bars.md'), current);
+    fs.writeFileSync(path.join(root, 'travel/blackwater-bay-trip.md'), trip);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource(
+      'itm_short_plural_guard',
+      'fixture:short-plural',
+      'user',
+      'The preferred bar for the Blackwater Bay trip is open on Fridays.',
+    );
+    routingDecider = (input) => {
+      const target = input.candidate_pages.find((candidate) => candidate.title === 'Blackwater Bay trip');
+      return target
+        ? { outcome: 'move', target_id: target.id, heading: 'Plans', heading_mode: 'existing' }
+        : { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_short_plural_guard')!;
+    const target = routingInput.candidate_pages.find(
+      (candidate) => candidate.title === 'Blackwater Bay trip',
+    )!;
+    expect(routingInput.current_canonical_subject_match).toBe(target.canonical_subject_match);
+    expect(report.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { valid: 1, misrouted_item: 0 },
+      routing: { kept: 1, moved: 0 },
+    });
+    expect(fs.readFileSync(path.join(root, 'travel/blackwater-bay-bars.md'), 'utf8')).toBe(current);
   });
 
   it('creates one bounded section while routing to an existing admitted page', async () => {
@@ -642,7 +1078,7 @@ akno:
 
 # Ada Marlow
 
-## Records
+## Zephyr QX-100 Warranty
 
 <!-- akno:item itm_route_section v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
 The Zephyr QX-100 warranty lasts 1111 days.
@@ -687,6 +1123,11 @@ This page holds Zephyr QX-100 equipment and warranty documentation.
       moved: 1,
       sectionsCreated: 1,
     });
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_route_section')!;
+    expect(routingInput.required_destination_target).toBe(
+      routingInput.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100')?.id,
+    );
+    expect(routingInput.required_destination_reason).toBe('canonical_subject');
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(source);
     expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
 
@@ -718,6 +1159,62 @@ The Zephyr QX-100 warranty lasts 1111 days.`,
 
     await mem.undo({ change_id: report.maintenancePlan!.items[0]!.changeId! });
     expect(fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8')).toBe(source);
+    expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
+  });
+
+  it('does not certify the current page when its section names one candidate canonical subject', async () => {
+    const source = `---
+title: Household notes
+akno:
+  management:
+    remember: integrate
+---
+
+# Household notes
+
+## Zephyr QX-100 Warranty
+
+<!-- akno:item itm_scope_guard v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=asserted disposition=active polarity=affirmed basis=self_attested -->
+The Zephyr QX-100 warranty lasts 1111 days.
+`;
+    const destination = `---
+title: Zephyr QX-100
+akno:
+  management:
+    remember: integrate
+---
+
+# Zephyr QX-100
+
+## Warranty
+
+Warranty records for the Zephyr QX-100.
+`;
+    fs.mkdirSync(path.join(root, 'household'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'people/ada-marlow.md'), '# Ada Marlow\n\nNo managed items.\n');
+    fs.writeFileSync(path.join(root, 'household/notes.md'), source);
+    fs.writeFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), destination);
+    await mem.index({ reindexUnchanged: true });
+    archiveSource('itm_scope_guard', 'fixture:scope', 'user', 'The Zephyr QX-100 warranty lasts 1111 days.');
+    routingDecider = () => {
+      return { outcome: 'keep', target_id: null, heading: null, heading_mode: null };
+    };
+
+    const report = await mem.dream({ phase: 'curate', dryRun: true });
+
+    expect(report.managedItems).toMatchObject({
+      plannedPages: 0,
+      findings: { routing_uncertain: 1, valid: 0 },
+      outcomes: { planned: 0, held: 1, valid: 0 },
+      routing: { kept: 0, moved: 0, uncertain: 1 },
+    });
+    const routingInput = routingInputs.find((input) => input.item.id === 'itm_scope_guard')!;
+    expect(routingInput.required_destination_target).toBe(
+      routingInput.candidate_pages.find((candidate) => candidate.title === 'Zephyr QX-100')?.id,
+    );
+    expect(routingInput.required_destination_reason).toBe('canonical_subject');
+    expect(fs.readFileSync(path.join(root, 'household/notes.md'), 'utf8')).toBe(source);
     expect(fs.readFileSync(path.join(root, 'equipment/zephyr-qx-100.md'), 'utf8')).toBe(destination);
   });
 

@@ -237,9 +237,11 @@ paths, read-only pages, and existing Markdown files that are absent from the ind
 overwritten. `akno doctor` reports the configured page as `existing page`, `new page`, or `unavailable` without
 showing page content.
 
-The fallback is deliberately last in the routing order: an admitted semantic match wins first, then an admitted
-new managed page proposed by retention, then the configured fallback. Without any authorized destination,
-`remember` returns a typed hold.
+The fallback is deliberately last in the routing order: a separately qualified existing owner wins first, then
+a qualified new managed page proposed by retention, then the configured fallback. Similarity only nominates
+existing candidates. Without any authorized destination, `remember` returns a typed hold. During later
+managed-item curation the fallback is a queue, not a canonical home: an item moves to one unambiguous supplied
+existing page or remains held.
 
 `evidence_grace_days` defaults to `30`. It applies only after retained support becomes inactive through exact
 retraction or user forget; active support has no age limit. Nonterminal maintenance work that still names the
@@ -337,22 +339,29 @@ code such as `document_unavailable`, `document_destination_occupied`, `reference
 `about_unrewritable`, `reference_backlink`, or `location_dependent_reference`. Ordinary JSON output
 retains only aggregate disposition counts; page-specific codes and reasons require `--private-details`.
 
-Canonical fragments are also checked against the current derived fact row: item id, page identity, payload
-line, and exact source-line hash must agree. Reusing an id on two pages or participating in a typed fact
-conflict that excludes the claim from inference yields `item_conflict`; disabled, stale, or missing fact derivation yields `source_unavailable`
-rather than pretending verification passed. A fragment without one unique `##` section—or under the explicit
-`## Unsorted` fallback—starts as `misplaced_item`. Qualified semantic placement may choose only `keep`,
+Canonical fragments are checked against the current rebuildable managed-memory projection: item id, page
+identity, payload line, and exact payload hash must agree. This also covers reports, plans, questions, and other
+items deliberately excluded from derived facts. Reusing an id on two pages or participating in a typed fact
+conflict that excludes the claim from inference yields `item_conflict`; a stale or missing memory projection
+yields `source_unavailable` rather than pretending verification passed. A fragment without one unique `##`
+section—or under the explicit `## Unsorted` fallback—starts as `misplaced_item`. Qualified semantic placement may choose only `keep`,
 `move`, or `uncertain`; an accepted move must name one existing unique `##` section in the same page, and
 deterministic code moves the complete owned block without rewriting it. `placement_uncertain` and
 `placement_unavailable` are held. Verdicts are cached by exact content and model contract without storing page
 text or headings. Cross-page routing separately retrieves at most three existing `remember: integrate`
 knowledge pages and may move one exact owned block only to a supplied page. The destination may be an existing
-unique `##` section or the one plain heading deterministically derived from the current fact attribute. The
+unique `##` section or the one plain heading deterministically derived from a fact attribute when available,
+then the managed item's current section or kind. The
 classifier cannot invent another label; creating the supplied heading is permitted only when no existing
 section fits. Same-page placement uses the same rule. The operation is medium risk when it creates a section or
 touches two pages, and it cannot create a page or replacement text. When the same page first needs deterministic
 marker normalization, semantic placement is reported unavailable for that run and resumes against the canonical
-bytes on the next cycle.
+bytes on the next cycle. The configured retain fallback is a queue: curation never accepts `keep` there, and
+moves an item only to one unambiguous supplied canonical page; the fallback itself is never a curation
+destination. Exact `YYYY-MM` buckets and exact or explicitly ledger-like `YYYY-MM-DD` pages reject memories
+outside their period. A date-prefixed named event or trip is not a period bucket and may coherently own related
+preparation or follow-up memories outside the event dates.
+
 Shareable JSON and durable run receipts keep only aggregate counts. Use `akno dream --private-details` during a
 live run to see the exact `slug:line` for repairable or held findings.
 

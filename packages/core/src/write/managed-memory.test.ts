@@ -5,6 +5,7 @@ import {
   parseManagedMemoryMarker,
   renderManagedMemoryMarker,
   renderManagedMemoryPayload,
+  sameManagedMemorySemantics,
 } from './managed-memory.ts';
 
 const candidate = {
@@ -124,5 +125,18 @@ describe('managed memory v2 marker', () => {
     expect(managedMemoryPayloadIssue(reported, '- The warranty may last five years.')).toBe(
       'missing visible semantic status',
     );
+  });
+
+  it('lets a resolved subject strengthen legacy unresolved memory without merging distinct subjects', () => {
+    const unresolved = markerFromProvidedCandidate('mem_1111', candidate, {
+      receipt: 'aaaaaaaaaaaa',
+      candidate: 'bbbbbbbbbbbb',
+      proofGroup: 'cccccccccccc',
+      selection: 'provided',
+    });
+    const resolved = { ...unresolved, subject: 'ent_aaaa' };
+
+    expect(sameManagedMemorySemantics(unresolved, resolved)).toBe(true);
+    expect(sameManagedMemorySemantics(resolved, { ...resolved, subject: 'ent_bbbb' })).toBe(false);
   });
 });

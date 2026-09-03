@@ -56,7 +56,9 @@ akno init
 Guided setup asks for the notes folder, model strategy, and maintenance authority. It also classifies visible
 top-level folders as managed memory, searchable read-only knowledge, or source/reference material. For a trusted
 agent it offers a guarded `memory/inbox` fallback; the fallback is configuration only and no page is created by
-setup. Existing installations leave folder policy unchanged unless you explicitly review it. The model choices
+setup. It is a temporary capture queue rather than a canonical home: managed-item curation can later move an
+owned item to one unambiguous existing admitted page. Existing installations leave folder policy unchanged
+unless you explicitly review it. The model choices
 are:
 
 - the benchmark-qualified OpenAI minimum: `text-embedding-3-small` plus `gpt-5.6-luna` through one endpoint;
