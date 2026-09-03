@@ -1,5 +1,13 @@
 # @tenphi/akno-protocol
 
+## 0.10.0
+
+### Minor Changes
+
+- [#51](https://github.com/tenphi/akno/pull/51) [`494fdb0`](https://github.com/tenphi/akno/commit/494fdb069f623ae29f1fb88b9aacf08eec1fc8bb) Thanks [@tenphi](https://github.com/tenphi)! - Quarantine deterministic Markdown conflicts before indexing. Complete merge blocks, owner-configured
+  sync-conflict paths, and duplicate stable page ids remain outside recall, derivation, graph, maintenance, and
+  automatic writes until file repair clears the typed conflict state.
+
 ## 0.9.0
 
 ### Minor Changes
