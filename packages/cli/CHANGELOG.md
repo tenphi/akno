@@ -1,5 +1,17 @@
 # @tenphi/akno
 
+## 0.10.1
+
+### Patch Changes
+
+- [#54](https://github.com/tenphi/akno/pull/54) [`1e84050`](https://github.com/tenphi/akno/commit/1e84050cb50bf90326fd755aab92efd56fb4e7dc) Thanks [@tenphi](https://github.com/tenphi)! - Bind auto-recall pronouns, possessives, and omitted-subject question fragments to one identity from bounded
+  recent conversation. Ambiguous or unresolved references now abstain with a typed resolution receipt, and model
+  qualification cannot substitute a different conversational subject.
+- Updated dependencies [[`1e84050`](https://github.com/tenphi/akno/commit/1e84050cb50bf90326fd755aab92efd56fb4e7dc)]:
+  - @tenphi/akno-protocol@0.10.1
+  - @tenphi/akno-core@0.10.1
+  - @tenphi/akno-client@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes
