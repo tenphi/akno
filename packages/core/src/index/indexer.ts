@@ -40,6 +40,16 @@ import {
   replaceObservationEntries,
 } from '../observations/projection.ts';
 import { MANAGED_MEMORY_PROJECTION_VERSION, replaceManagedMemoryEntries } from '../memory/projection.ts';
+import {
+  hasInlineMergeConflict,
+  matchesConflictPath,
+  PAGE_SOURCE_INTEGRITY_VERSION,
+  emptyPageQuarantineSummary,
+  quarantineSummary,
+  type PageConflictReason,
+  type PageQuarantineSummary,
+  type PageSourceIntegrityRow,
+} from './page-quarantine.ts';
 
 export interface IndexOptions {
   /** Hash every file instead of trusting mtime+size. The correctness path. */
@@ -138,6 +148,8 @@ export interface IndexReport {
   graphMemories: number;
   graphMemoryEdges: number;
   ignored: number;
+  /** Current content-safe Markdown conflict state, not only candidates changed in this pass. */
+  quarantine: PageQuarantineSummary;
   /** Non-fatal problems worth reporting rather than throwing. `doctor` prints these. */
   warnings: string[];
   durationMs: number;
@@ -250,6 +262,7 @@ export class Indexer {
       graphMemories: 0,
       graphMemoryEdges: 0,
       ignored: 0,
+      quarantine: emptyPageQuarantineSummary(),
       warnings: [],
       durationMs: 0,
     };
@@ -262,7 +275,13 @@ export class Indexer {
       pageExtensions: this.#config.pageExtensions,
       maxPageBytes: this.#config.maxPageBytes,
     });
-    const files = options.only ? scanned.filter((file) => options.only!.includes(file.relPath)) : scanned;
+    const integrityBefore = this.pageSourceIntegrity();
+    // The first pass after upgrading seeds the content-free identity cache. Doing that once is
+    // what preserves the stat-only watcher fast path on every later pass.
+    const integrityBootstrap =
+      this.#store.meta('page_source_integrity_version') !== PAGE_SOURCE_INTEGRITY_VERSION;
+    const effectiveOnly = integrityBootstrap ? undefined : options.only;
+    const files = effectiveOnly ? scanned.filter((file) => effectiveOnly.includes(file.relPath)) : scanned;
     report.scanned = files.length;
 
     const known = this.knownFiles();
@@ -273,15 +292,15 @@ export class Indexer {
     // searchable and asserted as facts — the config silently doing nothing, which is
     // exactly the failure Akno exists to avoid. A `--only` pass sees a fraction of the
     // tree and is not the place to conclude anything about the rest of it.
-    const reclassified = options.only ? new Set<string>() : this.reclassify(report);
+    const reclassified = effectiveOnly ? new Set<string>() : this.reclassify(report);
     const temporalProjectionStale =
-      !options.only && this.#store.meta('temporal_projection_version') !== TEMPORAL_PROJECTION_VERSION;
+      !effectiveOnly && this.#store.meta('temporal_projection_version') !== TEMPORAL_PROJECTION_VERSION;
     const temporalProjectionPaths = temporalProjectionStale ? this.temporalProjectionPaths(report) : [];
     if (temporalProjectionStale) {
       for (const relPath of temporalProjectionPaths) reclassified.add(relPath);
     }
     const observationProjectionStale =
-      !options.only && this.#store.meta('observation_projection_version') !== OBSERVATION_PROJECTION_VERSION;
+      !effectiveOnly && this.#store.meta('observation_projection_version') !== OBSERVATION_PROJECTION_VERSION;
     const observationProjectionPaths = observationProjectionStale
       ? this.observationProjectionPaths(report)
       : [];
@@ -289,7 +308,7 @@ export class Indexer {
       for (const relPath of observationProjectionPaths) reclassified.add(relPath);
     }
     const managedMemoryProjectionStale =
-      !options.only &&
+      !effectiveOnly &&
       this.#store.meta('managed_memory_projection_version') !== MANAGED_MEMORY_PROJECTION_VERSION;
     const managedMemoryProjectionPaths = managedMemoryProjectionStale
       ? this.managedMemoryProjectionPaths(report)
@@ -297,7 +316,7 @@ export class Indexer {
     if (managedMemoryProjectionStale) {
       for (const relPath of managedMemoryProjectionPaths) reclassified.add(relPath);
     }
-    if (!options.only) for (const relPath of this.pageFilesWithNoPage(report)) reclassified.add(relPath);
+    if (!effectiveOnly) for (const relPath of this.pageFilesWithNoPage(report)) reclassified.add(relPath);
 
     // ── Stat fast path ─────────────────────────────────────────────────────
     // mtime is a fast path, not a correctness guarantee — sync clients and
@@ -306,8 +325,20 @@ export class Indexer {
     const changed: ScannedFile[] = [];
     for (const file of files) {
       const prior = known.get(file.relPath);
+      const integrity = integrityBefore.get(file.relPath);
       const moved = !prior || prior.size !== file.size || prior.mtime_ns !== file.mtimeNs;
-      if (options.verify || moved || options.reindexUnchanged || reclassified.has(file.relPath)) {
+      const identityIncomplete =
+        file.kind === 'page' &&
+        integrity?.identity_complete === 0 &&
+        !matchesConflictPath(file.relPath, this.#config.index.conflictPathPatterns);
+      if (
+        options.verify ||
+        moved ||
+        options.reindexUnchanged ||
+        reclassified.has(file.relPath) ||
+        (file.kind === 'page' && !file.dataless && !integrity) ||
+        identityIncomplete
+      ) {
         changed.push(file);
       } else {
         file.sha256 = prior.sha256;
@@ -327,6 +358,23 @@ export class Indexer {
     });
     report.hashed = changed.filter((f) => f.sha256).length;
 
+    await this.refreshPageSourceIntegrity(
+      changed.filter((file) => file.kind === 'page'),
+      reclassified,
+    );
+    const integrity = this.reconcilePageSourceIntegrity(scanned, effectiveOnly);
+    if (scanned.every((file) => file.kind !== 'page' || file.dataless || integrity.rows.has(file.relPath))) {
+      this.#store.setMeta('page_source_integrity_version', PAGE_SOURCE_INTEGRITY_VERSION);
+    }
+    report.quarantine = integrity.summary;
+    if (integrity.summary.candidates > 0) {
+      report.warnings.push(
+        `${integrity.summary.candidates} Markdown source candidate${
+          integrity.summary.candidates === 1 ? ' is' : 's are'
+        } quarantined; run \`akno doctor --quarantine-details\` for private paths`,
+      );
+    }
+
     // A hash that matches what we recorded means mtime lied — nothing to do.
     const needsIndex = changed.filter((file) => {
       if (!file.sha256) return false;
@@ -343,6 +391,16 @@ export class Indexer {
       }
       return true;
     });
+    const neededPaths = new Set(needsIndex.map((file) => file.relPath));
+    for (const relPath of integrity.changedPaths) {
+      if (neededPaths.has(relPath)) continue;
+      const file = scanned.find((candidate) => candidate.relPath === relPath);
+      const row = integrity.rows.get(relPath);
+      if (!file || !row) continue;
+      file.sha256 = row.sha256;
+      needsIndex.push(file);
+      neededPaths.add(relPath);
+    }
 
     // ── Deletions and renames ──────────────────────────────────────────────
     //
@@ -357,7 +415,7 @@ export class Indexer {
     // be deleted. Twenty-seven notes moved in Obsidian lost their ids that way, and with them
     // every fact, link and journal entry hanging off them.
     const present = new Set(files.map((file) => file.relPath));
-    const inScope = options.only ? new Set(options.only) : null;
+    const inScope = effectiveOnly ? new Set(effectiveOnly) : null;
     const vanished = [...known.values()].filter(
       (row) => !present.has(row.rel_path) && (!inScope || inScope.has(row.rel_path)),
     );
@@ -367,10 +425,16 @@ export class Indexer {
     // declined, or lowering the threshold does nothing at all. Same problem as a rule
     // change, same shape of fix.
     this.reconsiderRenditions(report);
-    if (!options.only) this.reconcileRenditionClaims(report);
+    if (!effectiveOnly) this.reconcileRenditionClaims(report);
 
     // ── Pages ──────────────────────────────────────────────────────────────
-    const pageFiles = needsIndex.filter((file) => file.kind === 'page');
+    const quarantinedFiles = needsIndex.filter(
+      (file) => file.kind === 'page' && (integrity.reasons.get(file.relPath)?.length ?? 0) > 0,
+    );
+    for (const file of quarantinedFiles) this.quarantinePage(file);
+    const pageFiles = needsIndex.filter(
+      (file) => file.kind === 'page' && (integrity.reasons.get(file.relPath)?.length ?? 0) === 0,
+    );
     progress({ phase: 'pages', done: 0, total: pageFiles.length });
     let pageIndex = 0;
     let pageProjectionFailed = false;
@@ -409,7 +473,12 @@ export class Indexer {
     // The indexer follows the write; that does not mean it catches up on
     // everything else first.
     if (!options.structuralOnly) {
-      const scoped = options.modelPaths ?? options.only;
+      // A scoped watcher event can change another page's quarantine state (the other half of a
+      // duplicate-id collision). That collateral page was structurally re-indexed above and must
+      // enter the same model scope when the caller did not deliberately supply a narrower one.
+      const scoped =
+        options.modelPaths ??
+        (options.only ? [...new Set([...options.only, ...integrity.changedPaths])] : undefined);
       const scope = scoped ? this.#pageIdsFor(scoped) : null;
       const rebuild = options.rebuild ?? false;
       // Before embedding, so the chunks it produces are embedded in the same pass rather
@@ -647,6 +716,168 @@ export class Indexer {
     return new Map(rows.map((row) => [row.rel_path, row]));
   }
 
+  private pageSourceIntegrity(): Map<string, PageSourceIntegrityRow> {
+    const rows = this.#store.db
+      .prepare('SELECT * FROM page_source_integrity')
+      .all() as PageSourceIntegrityRow[];
+    return new Map(rows.map((row) => [row.rel_path, row]));
+  }
+
+  /** Refresh only bytes the stat/hash path already proved changed (plus the one-time bootstrap). */
+  private async refreshPageSourceIntegrity(files: ScannedFile[], force: ReadonlySet<string>): Promise<void> {
+    const previous = this.pageSourceIntegrity();
+    for (const file of files) {
+      if (!file.sha256 || file.dataless) continue;
+      const prior = previous.get(file.relPath);
+      const pathBlocked = matchesConflictPath(file.relPath, this.#config.index.conflictPathPatterns);
+      if (
+        !force.has(file.relPath) &&
+        prior?.sha256 === file.sha256 &&
+        (prior.identity_complete === 1 || pathBlocked)
+      ) {
+        continue;
+      }
+
+      const page = this.#store.db.prepare('SELECT id FROM pages WHERE rel_path = ?').get(file.relPath) as
+        { id: string } | undefined;
+      const indexedFile = this.#store.db
+        .prepare('SELECT page_id FROM files WHERE rel_path = ?')
+        .get(file.relPath) as { page_id: string | null } | undefined;
+      const knownPageId = page?.id ?? indexedFile?.page_id ?? prior?.known_page_id ?? null;
+      const slug = file.relPath.replace(/\.(md|markdown)$/i, '');
+      const ownerRule = effectiveRule(slug, this.#config.rules);
+      const ownerIgnored = ownerRule.role === 'ignored';
+      let declaredPageId: string | null = prior?.declared_page_id ?? null;
+      let inlineConflict = 0;
+      let identityComplete = 1;
+      let indexable = ownerIgnored ? 0 : (prior?.indexable ?? 1);
+
+      if (pathBlocked) {
+        // A configured path signal wins before Markdown parsing. Preserve a previously known
+        // identity, but make a later config repair parse these same bytes once.
+        identityComplete = 0;
+      } else {
+        const content = await fsp.readFile(file.absPath, 'utf8').catch(() => null);
+        if (content === null) continue;
+        inlineConflict = hasInlineMergeConflict(content) ? 1 : 0;
+        if (inlineConflict) {
+          declaredPageId = null;
+          indexable = ownerIgnored ? 0 : 1;
+        } else {
+          try {
+            const parsed = parsePage(file.relPath, content);
+            declaredPageId = parsed.frontmatterId;
+            indexable =
+              resolvePagePolicy(
+                parsed,
+                { ...ownerRule, glob: ownerRule.glob },
+                this.#config.paths.observations,
+              ).role === 'ignored'
+                ? 0
+                : 1;
+          } catch {
+            // Parsing remains the indexer's typed per-page warning path. Integrity classification
+            // must not turn one malformed non-conflict page into a failed whole-tree pass.
+            declaredPageId = null;
+            indexable = ownerIgnored ? 0 : 1;
+          }
+        }
+      }
+
+      this.#store.db
+        .prepare(
+          `INSERT INTO page_source_integrity(
+             rel_path, sha256, declared_page_id, known_page_id, inline_conflict,
+             identity_complete, indexable, quarantine_reasons, checked_at
+           ) VALUES(?, ?, ?, ?, ?, ?, ?, '[]', ?)
+           ON CONFLICT(rel_path) DO UPDATE SET
+             sha256 = excluded.sha256,
+             declared_page_id = excluded.declared_page_id,
+             known_page_id = COALESCE(excluded.known_page_id, page_source_integrity.known_page_id),
+             inline_conflict = excluded.inline_conflict,
+             identity_complete = excluded.identity_complete,
+             indexable = excluded.indexable,
+             checked_at = excluded.checked_at`,
+        )
+        .run(
+          file.relPath,
+          file.sha256,
+          declaredPageId,
+          knownPageId,
+          inlineConflict,
+          identityComplete,
+          indexable,
+          nowIso(),
+        );
+    }
+  }
+
+  private reconcilePageSourceIntegrity(
+    scanned: ScannedFile[],
+    only: string[] | undefined,
+  ): {
+    rows: Map<string, PageSourceIntegrityRow>;
+    reasons: Map<string, PageConflictReason[]>;
+    changedPaths: Set<string>;
+    summary: PageQuarantineSummary;
+  } {
+    const presentPages = new Set(scanned.filter((file) => file.kind === 'page').map((file) => file.relPath));
+    if (only) {
+      const remove = this.#store.db.prepare('DELETE FROM page_source_integrity WHERE rel_path = ?');
+      for (const relPath of only) if (!presentPages.has(relPath)) remove.run(relPath);
+    } else {
+      const knownPaths = this.#store.db.prepare('SELECT rel_path FROM page_source_integrity').all() as {
+        rel_path: string;
+      }[];
+      const remove = this.#store.db.prepare('DELETE FROM page_source_integrity WHERE rel_path = ?');
+      for (const row of knownPaths) if (!presentPages.has(row.rel_path)) remove.run(row.rel_path);
+    }
+
+    const rows = this.pageSourceIntegrity();
+    const reasons = new Map<string, PageConflictReason[]>();
+    const identities = new Map<string, PageSourceIntegrityRow[]>();
+    for (const row of rows.values()) {
+      const own: PageConflictReason[] = [];
+      if (row.indexable === 0) {
+        reasons.set(row.rel_path, own);
+        continue;
+      }
+      if (row.inline_conflict === 1) own.push('inline_merge_conflict');
+      if (matchesConflictPath(row.rel_path, this.#config.index.conflictPathPatterns)) {
+        own.push('sync_conflict_path');
+      }
+      reasons.set(row.rel_path, own);
+      const identity = row.declared_page_id ?? row.known_page_id;
+      if (!identity) continue;
+      const candidates = identities.get(identity) ?? [];
+      candidates.push(row);
+      identities.set(identity, candidates);
+    }
+    for (const candidates of identities.values()) {
+      if (candidates.length < 2) continue;
+      const reason: PageConflictReason =
+        new Set(candidates.map((candidate) => candidate.sha256)).size === 1
+          ? 'duplicate_page_id_same_bytes'
+          : 'duplicate_page_id_different_bytes';
+      for (const candidate of candidates) reasons.get(candidate.rel_path)!.push(reason);
+    }
+
+    const changedPaths = new Set<string>();
+    const update = this.#store.db.prepare(
+      'UPDATE page_source_integrity SET quarantine_reasons = ?, checked_at = ? WHERE rel_path = ?',
+    );
+    for (const [relPath, candidateReasons] of reasons) {
+      const serialized = JSON.stringify(candidateReasons);
+      const row = rows.get(relPath)!;
+      if (serialized === row.quarantine_reasons) continue;
+      update.run(serialized, nowIso(), relPath);
+      row.quarantine_reasons = serialized;
+      changedPaths.add(relPath);
+    }
+
+    return { rows, reasons, changedPaths, summary: quarantineSummary(this.#store) };
+  }
+
   private touchFile(file: ScannedFile): void {
     this.#store.db
       .prepare('UPDATE files SET mtime_ns = ?, size = ?, indexed_at = ? WHERE rel_path = ?')
@@ -663,6 +894,36 @@ export class Indexer {
            kind = excluded.kind, page_id = excluded.page_id, indexed_at = excluded.indexed_at`,
       )
       .run(file.relPath, file.size, file.mtimeNs, file.sha256 ?? '', file.kind, pageId, nowIso());
+  }
+
+  private quarantinePage(file: ScannedFile): void {
+    const pageId = this.pageIdForPath(file.relPath);
+    this.#store.transaction(() => {
+      if (pageId) {
+        this.deleteChunkRows(BODY_CHUNKS_FOR_PAGE, pageId);
+        this.#store.db.prepare('DELETE FROM events WHERE source_page = ?').run(pageId);
+        this.#store.db.prepare('DELETE FROM temporal_entries WHERE source_page = ?').run(pageId);
+        this.#store.db.prepare('DELETE FROM temporal_projection_issues WHERE source_page = ?').run(pageId);
+        this.#store.db.prepare('DELETE FROM observation_entries WHERE source_page = ?').run(pageId);
+        this.#store.db.prepare('DELETE FROM observation_projection_issues WHERE source_page = ?').run(pageId);
+        this.#store.db.prepare('DELETE FROM managed_memory_entries WHERE source_page = ?').run(pageId);
+        this.#store.db
+          .prepare('DELETE FROM managed_memory_projection_issues WHERE source_page = ?')
+          .run(pageId);
+        this.#store.db.prepare('DELETE FROM links WHERE from_page = ?').run(pageId);
+        this.#store.db.prepare('DELETE FROM facts WHERE page_id = ?').run(pageId);
+        this.#store.db
+          .prepare(
+            `UPDATE pages SET
+               role = 'ignored', remember_management = 'deny', observe_management = 'deny',
+               dream_management = 'none', summary = NULL, keywords = NULL, derived_hash = NULL,
+               curate_input_hash = NULL, curate_status = NULL
+             WHERE id = ?`,
+          )
+          .run(pageId);
+      }
+      this.recordFile(file, pageId);
+    });
   }
 
   // ─── Rename following ─────────────────────────────────────────────────────
@@ -769,11 +1030,27 @@ export class Indexer {
       const existing = this.pageIdForPath(file.relPath);
       if (existing) this.removePage(existing);
       this.recordFile(file, null);
+      this.#store.db
+        .prepare(
+          `UPDATE page_source_integrity
+              SET declared_page_id = ?, known_page_id = COALESCE(known_page_id, ?),
+                  inline_conflict = 0, identity_complete = 1, indexable = 0,
+                  quarantine_reasons = '[]', checked_at = ?
+            WHERE rel_path = ?`,
+        )
+        .run(page.frontmatterId, existing, nowIso(), file.relPath);
       report.ignored++;
       return true;
     }
 
     const pageId = this.resolvePageId(page, file);
+    const priorPageId = this.pageIdForPath(file.relPath);
+    const priorDocuments =
+      priorPageId && priorPageId !== pageId
+        ? (this.#store.db.prepare('SELECT id FROM documents WHERE page_id = ?').all(priorPageId) as {
+            id: string;
+          }[])
+        : [];
     const chunks = applySourceFence(
       chunkPage(page, {
         targetChars: this.#config.index.chunkTargetChars,
@@ -788,7 +1065,21 @@ export class Indexer {
       resolved.role === 'source' ? chunks.map((chunk) => ({ ...chunk, kind: 'source' as const })) : chunks;
 
     this.#store.transaction(() => {
+      if (priorPageId && priorPageId !== pageId) {
+        this.deleteChunkRows(BODY_CHUNKS_FOR_PAGE, priorPageId);
+        this.#store.db
+          .prepare('UPDATE chunks SET page_id = NULL WHERE page_id = ? AND document_id IS NOT NULL')
+          .run(priorPageId);
+        this.#store.db.prepare('UPDATE documents SET page_id = NULL WHERE page_id = ?').run(priorPageId);
+        this.#store.db.prepare('DELETE FROM pages WHERE id = ?').run(priorPageId);
+      }
       this.upsertPage(pageId, page, resolved, file);
+      const reattachDocument = this.#store.db.prepare('UPDATE documents SET page_id = ? WHERE id = ?');
+      const reattachChunks = this.#store.db.prepare('UPDATE chunks SET page_id = ? WHERE document_id = ?');
+      for (const document of priorDocuments) {
+        reattachDocument.run(pageId, document.id);
+        reattachChunks.run(pageId, document.id);
+      }
       this.replaceChunks(pageId, effectiveChunks);
       this.replaceEvents(pageId, page);
       const temporal = replaceTemporalEntries(this.#store, pageId, page, resolved.role);
@@ -803,6 +1094,14 @@ export class Indexer {
       report.managedMemoryProjectionIssues += managedMemories.issues;
       this.replaceLinks(pageId, page);
       this.recordFile(file, pageId);
+      this.#store.db
+        .prepare(
+          `UPDATE page_source_integrity
+              SET declared_page_id = ?, known_page_id = ?, inline_conflict = 0,
+                  identity_complete = 1, indexable = 1, quarantine_reasons = '[]', checked_at = ?
+            WHERE rel_path = ?`,
+        )
+        .run(page.frontmatterId, pageId, nowIso(), file.relPath);
     });
 
     report.pagesIndexed++;
@@ -876,6 +1175,14 @@ export class Indexer {
         { ...file, size: Number(stat.size), mtimeNs: String(stat.mtimeNs), sha256: sha256(updated) },
         pageId,
       );
+      this.#store.db
+        .prepare(
+          `UPDATE page_source_integrity
+              SET sha256 = ?, declared_page_id = ?, known_page_id = ?, identity_complete = 1,
+                  indexable = 1, quarantine_reasons = '[]', checked_at = ?
+            WHERE rel_path = ?`,
+        )
+        .run(sha256(updated), pageId, pageId, nowIso(), file.relPath);
     } catch (err) {
       report.warnings.push(`could not write id into ${file.relPath}: ${errorMessage(err)}`);
     }
@@ -999,7 +1306,7 @@ export class Indexer {
     const insert = this.#store.db.prepare(
       'INSERT INTO links(from_page, to_slug, to_page, kind, line, broken) VALUES(?, ?, ?, ?, ?, ?)',
     );
-    const findPage = this.#store.db.prepare('SELECT id FROM pages WHERE slug = ?');
+    const findPage = this.#store.db.prepare("SELECT id FROM pages WHERE slug = ? AND role != 'ignored'");
     for (const link of page.links) {
       if (link.kind === 'embed') {
         // A file embed is not a page reference and can never be a broken one.
@@ -1019,8 +1326,10 @@ export class Indexer {
   private resolveLinks(): void {
     this.#store.db.exec(`
       UPDATE links SET
-        to_page = (SELECT id FROM pages WHERE pages.slug = links.to_slug),
-        broken  = CASE WHEN EXISTS (SELECT 1 FROM pages WHERE pages.slug = links.to_slug) THEN 0 ELSE 1 END
+        to_page = (SELECT id FROM pages WHERE pages.slug = links.to_slug AND pages.role != 'ignored'),
+        broken  = CASE WHEN EXISTS (
+          SELECT 1 FROM pages WHERE pages.slug = links.to_slug AND pages.role != 'ignored'
+        ) THEN 0 ELSE 1 END
       WHERE kind != 'embed'
     `);
   }

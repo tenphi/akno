@@ -34,6 +34,9 @@ OPS.retain.input.parse({
 });
 ```
 
+Exact reads preserve the absence boundary: a deterministically conflicted Markdown source returns
+`status: "degraded"` with `source_conflict` and no body, rather than appearing current or empty.
+
 Full documentation: [github.com/tenphi/akno](https://github.com/tenphi/akno#readme)
 
 ## License

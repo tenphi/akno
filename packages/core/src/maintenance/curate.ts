@@ -1736,7 +1736,7 @@ function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id) AS outbound,
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?) AS backlink
         FROM pages p JOIN files indexed_file ON indexed_file.rel_path = p.rel_path
-        WHERE p.id != ? AND (
+        WHERE p.id != ? AND p.role != 'ignored' AND (
           EXISTS (SELECT 1 FROM links l WHERE l.from_page = p.id AND l.to_page = ?)
           OR EXISTS (SELECT 1 FROM links l WHERE l.from_page = ? AND l.to_page = p.id)
           OR p.about LIKE ?

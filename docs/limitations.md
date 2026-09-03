@@ -58,6 +58,11 @@ Typed `empty`, `degraded`, and `unavailable` states make that boundary visible, 
 it. `answer` verifies support against retrieved evidence; it does not independently verify the evidence against
 outside reality.
 
+Canonical Markdown with a complete merge-conflict block, an owner-declared sync-conflict path, or a duplicate
+stable page id is quarantined before it can become current evidence. Akno does not recognize arbitrary sync
+artifacts, choose a duplicate winner, or merge the files; deterministic filename shapes must be configured and
+resolution remains an ordinary file edit/removal followed by indexing.
+
 ## Model quality remains a boundary
 
 Deterministic guards can reject malformed, unsupported, stale, over-budget, or unauthorized model output. They

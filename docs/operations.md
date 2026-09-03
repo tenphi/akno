@@ -176,6 +176,7 @@ Run these before changing configuration or deleting state:
 akno doctor
 akno doctor --no-probe
 akno doctor --no-probe --admission-preview
+akno doctor --no-probe --quarantine-details
 akno doctor --refresh-api
 akno config
 akno rules
@@ -190,6 +191,8 @@ akno service status
 - page, chunk, fact, event, document, and broken-link counts;
 - admitted, explicit read-only, and implicit read-only fact-injection counts; the opt-in admission preview adds
   top-level folder globs and authority-preserving `remember: deny` patches without page identities or content;
+- content-safe Markdown quarantine counts by reason; `--quarantine-details` explicitly adds private relative
+  paths and known stable ids, but never source bodies;
 - storage-only lookup latency;
 - model-role availability, schema probes, latency, and the cost of each missing role;
 - extraction support; and
@@ -198,6 +201,8 @@ akno service status
 Probe failures are operational evidence, not a reason to erase the index. Use `--no-probe` for an immediate
 configuration-and-index report without network model calls. `--refresh-api` ignores cached `api: auto`
 selections and repeats only the invented transport probes; it cannot be combined with `--no-probe`.
+Repairing the source files and running `akno index` is the complete Markdown-quarantine resolution path; there
+is no second conflict workflow to approve or synchronize.
 
 `config` shows every loaded source and the resolved configuration. API keys, authorization headers, passwords,
 tokens, and similarly named future secret fields are redacted recursively. `rules` explains effective path and

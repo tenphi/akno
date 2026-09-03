@@ -5,6 +5,7 @@ import type { AknoContext } from '../context.ts';
 import { ATTACHMENT_NAME } from '../kb/page.ts';
 import { recordOwnWrite, writeFileAtomic } from '../write/atomic.ts';
 import type { ChangeFile } from '../write/journal.ts';
+import { matchesConflictPath, quarantineReasonsForPath } from '../index/page-quarantine.ts';
 import { normalizeSlug } from './write.ts';
 
 /**
@@ -33,6 +34,11 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   const page = ctx.store.db.prepare('SELECT id, rel_path FROM pages WHERE slug = ?').get(from) as
     { id: string; rel_path: string } | undefined;
   if (!page) throw new AknoError('not_found', `no page at ${from}`);
+  if (quarantineReasonsForPath(ctx.store, page.rel_path).length > 0) {
+    throw new AknoError('conflict', `${from} is quarantined; repair its Markdown source before moving it`, {
+      reason: 'source_conflict',
+    });
+  }
 
   if (ctx.store.db.prepare('SELECT 1 FROM pages WHERE slug = ?').get(to)) {
     throw new AknoError('invalid', `${to} already exists — move it or pick another slug`);
@@ -55,6 +61,11 @@ export async function move(ctx: AknoContext, rawInput: unknown): Promise<MoveOut
   const files: ChangeFile[] = [];
   const moved: string[] = [];
   const toRelPath = `${to}.md`;
+  if (matchesConflictPath(toRelPath, ctx.config.index.conflictPathPatterns)) {
+    throw new AknoError('conflict', `${to} matches a configured Markdown conflict path`, {
+      reason: 'source_conflict',
+    });
+  }
 
   // ── Attachments first ───────────────────────────────────────────────────
   // Content-addressed names are derived from the page basename, so a move

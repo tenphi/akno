@@ -89,6 +89,10 @@ A result card reports role, relevance, contributing candidate arms, cited excerp
 Question mode also reports concept coverage. A relevant page that does not cover one requested attribute is not
 evidence for that part of the answer.
 
+While any canonical Markdown source is quarantined, recall carries `source_conflict` as typed degradation even
+when other evidence is still usable. An empty result therefore cannot be mistaken for proof that the
+conflicted source contained nothing relevant.
+
 When a returned line is an Akno-managed level-one memory, it also carries `memory` qualification: kind,
 attribution, commitment, disposition, polarity, epistemic basis, and `answer_eligible`. Reports, hypotheses,
 counterfactuals, proposals, rejected decisions, plans, and questions remain searchable and readable with that
@@ -162,6 +166,9 @@ akno list --kind pages --folder products
 
 `read` does no ranking. It can return a source page in full even though ordinary recall quotes it narrowly. A
 document read reports whether the original, an indexed extraction, or only identity metadata is available.
+An exact page whose Markdown source is quarantined returns `status: degraded` with
+`degraded: ["source_conflict"]` and no page body. Repair the conflicting files and re-index; do not interpret
+that response as an empty or absent memory.
 
 Use `list` before writing when the existing taxonomy or nearby page names matter.
 

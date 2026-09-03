@@ -23,6 +23,9 @@ akno recall "What is planned for the Zephyr QX-100?" --memory-view planning
 manually configured specialist roles. Model roles degrade independently, so `doctor` explains both availability
 and the consequence of a missing role.
 
+`akno doctor` reports content-safe Markdown quarantine counts. Add `--quarantine-details` only in a private
+local terminal to see the relative paths and stable ids needed for file-based repair.
+
 ## Main operations
 
 ```text

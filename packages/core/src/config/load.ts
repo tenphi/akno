@@ -569,6 +569,7 @@ function resolve(
       facts: doc.index?.facts ?? true,
       hashConcurrency: doc.index?.hash_concurrency ?? 8,
       annThresholdChunks: doc.index?.ann_threshold_chunks ?? 20_000,
+      conflictPathPatterns: doc.index?.conflict_path_patterns ?? [],
     },
     recall: {
       defaultBudget: doc.recall?.default_budget ?? 8000,

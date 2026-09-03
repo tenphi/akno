@@ -34,9 +34,10 @@ response to filesystem events.
 
 For each changed path, Akno:
 
-1. applies ignore and folder rules;
+1. applies ignore rules and classifies deterministic Markdown conflicts;
 2. compares metadata and content hashes to avoid unnecessary work;
-3. parses Markdown structure, frontmatter, links, stable identity, authored events, and owned observation markers;
+3. parses safe Markdown structure, frontmatter, links, stable identity, authored events, and owned observation
+   markers;
 4. extracts supported document text or OCR with source-page locators;
 5. divides searchable text into bounded chunks;
 6. optionally derives summaries, facts, dates, aliases, and embeddings;
@@ -48,6 +49,20 @@ move. A complete rebuild produces the same public behavior without needing the p
 
 By default, indexing changes no knowledge-base files. Options such as `write_ids` and
 `ingest.text_rendition` can create explicitly requested files, but they are off until enabled.
+
+### Conflicted Markdown
+
+Before parsing a canonical page, Akno quarantines a complete `<<<<<<<` / `=======` / `>>>>>>>` merge block,
+an owner-configured sync-conflict path, or multiple live files claiming one stable page id. Properly closed
+fenced code examples are literal documentation and do not trigger the marker detector; an unclosed fence is
+treated conservatively.
+
+Quarantine is derived index state, not a review queue. Akno keeps bounded hashes and a known stable identity,
+but removes the page's chunks, facts, events, memory projections, and graph contribution; exact `read` returns
+typed `source_conflict`, recall remains explicitly degraded while any candidate is held, and automatic writers
+cannot target the page. It never edits, deletes, renames, or merges either source file. Repair or remove the
+conflicting file state and run `akno index`; the same watcher, verified sweep, restart, and rebuild path clears
+quarantine deterministically.
 
 ### Pages and documents
 

@@ -6,6 +6,11 @@ import { qualifyObservationLines } from '../observations/projection.ts';
 import { AknoError, ReadInput, type PageRole, type ReadOutput } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
+import {
+  quarantineReasonsForPath,
+  quarantineReasonsForSlug,
+  quarantineReasonsForStablePageId,
+} from '../index/page-quarantine.ts';
 
 /**
  * `read({slug})` returns the full body of a `source` page every time.
@@ -47,11 +52,19 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
   ) as PageRow | undefined;
 
   if (!row) {
+    const reasons = input.slug
+      ? quarantineReasonsForSlug(ctx.store, input.slug, ctx.config.pageExtensions)
+      : quarantineReasonsForStablePageId(ctx.store, input.id!);
+    if (reasons.length > 0) return quarantinedPageRead();
     throw new AknoError('not_found', `no page at ${input.slug ?? input.id}`, {
       // A near-miss list turns "not found" into something the caller can act on
       // instead of guessing again.
       nearest: nearestSlugs(ctx, input.slug ?? ''),
     });
+  }
+
+  if (quarantineReasonsForPath(ctx.store, row.rel_path).length > 0) {
+    return quarantinedPageRead();
   }
 
   let content: string;
@@ -163,6 +176,14 @@ function readPage(ctx: AknoContext, input: ReturnType<typeof ReadInput.parse>): 
       ...(row.updated_at ? { updated: row.updated_at.slice(0, 10) } : {}),
       bytes: row.bytes,
     },
+  };
+}
+
+function quarantinedPageRead(): ReadOutput {
+  return {
+    status: 'degraded',
+    degraded: ['source_conflict'],
+    note: 'this page source is quarantined; repair the conflicting file state and re-index it',
   };
 }
 
@@ -372,7 +393,7 @@ function nearestSlugs(ctx: AknoContext, slug: string): string[] {
   if (slug.length === 0) return [];
   const leaf = slug.split('/').pop() ?? slug;
   const rows = ctx.store.db
-    .prepare('SELECT slug FROM pages WHERE slug LIKE ? OR slug LIKE ? LIMIT 5')
+    .prepare("SELECT slug FROM pages WHERE role != 'ignored' AND (slug LIKE ? OR slug LIKE ?) LIMIT 5")
     .all(`%${leaf}%`, `${slug}%`) as { slug: string }[];
   return rows.map((row) => row.slug);
 }

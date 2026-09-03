@@ -19,6 +19,11 @@ import { fileEntry, type ChangeFile } from '../write/journal.ts';
 import { writeFileAtomic } from '../write/atomic.ts';
 import { ledgerSlug } from '../reserved.ts';
 import type { Extraction } from '../ingest/extract.ts';
+import {
+  hasInlineMergeConflict,
+  matchesConflictPath,
+  quarantineReasonsForPath,
+} from '../index/page-quarantine.ts';
 
 /**
  * Create, append, patch or replace a page — and the only thing that
@@ -60,6 +65,16 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
 
   const existing = ctx.store.db.prepare('SELECT id, rel_path FROM pages WHERE slug = ?').get(slug) as
     { id: string; rel_path: string } | undefined;
+  const relPath = existing?.rel_path ?? `${slug}.md`;
+  if (
+    quarantineReasonsForPath(ctx.store, relPath).length > 0 ||
+    matchesConflictPath(relPath, ctx.config.index.conflictPathPatterns)
+  ) {
+    throw new AknoError('conflict', `'${slug}' is a quarantined Markdown destination`, {
+      reason: 'source_conflict',
+    });
+  }
+  if (input.event) assertLedgerWritable(ctx);
 
   // ── Gate ────────────────────────────────────────────────────────────────
   if (!existing) {
@@ -77,7 +92,6 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     }
   }
 
-  const relPath = existing?.rel_path ?? `${slug}.md`;
   const absPath = path.join(ctx.config.aknoPath, relPath);
   const before = existing ? await fsp.readFile(absPath, 'utf8') : null;
 
@@ -86,6 +100,12 @@ export async function write(ctx: AknoContext, rawInput: unknown): Promise<WriteO
     before === null
       ? { content: composeNewPage(input, slug, edit), firstChangedLine: null }
       : applyEdit(before, edit);
+
+  if (hasInlineMergeConflict(edited.content)) {
+    throw new AknoError('conflict', `'${slug}' would contain a Markdown conflict block`, {
+      reason: 'source_conflict',
+    });
+  }
 
   if (edited.content === before) {
     return { status: 'ok', outcome: 'noop', note: 'the page already reads exactly that way' };
@@ -334,6 +354,7 @@ async function writeEventOnly(
   event: { date: string; summary: string },
   dryRun: boolean,
 ): Promise<WriteOutput> {
+  assertLedgerWritable(ctx);
   if (dryRun) {
     return {
       status: 'ok',
@@ -383,6 +404,7 @@ export async function appendToLedger(
   event: { date: string; summary: string; slug?: string },
 ): Promise<{ file: ChangeFile | null; line: number }> {
   const relPath = ctx.config.paths.timeline;
+  assertMarkdownDestinationWritable(ctx, relPath, 'the timeline');
   const absPath = path.join(ctx.config.aknoPath, relPath);
 
   let current: string;
@@ -401,6 +423,21 @@ export async function appendToLedger(
 
   const result = await writeFileAtomic(ctx.config.aknoPath, relPath, inserted.content);
   return { file: fileEntry(result), line: inserted.line };
+}
+
+function assertLedgerWritable(ctx: AknoContext): void {
+  assertMarkdownDestinationWritable(ctx, ctx.config.paths.timeline, 'the timeline');
+}
+
+function assertMarkdownDestinationWritable(ctx: AknoContext, relPath: string, label: string): void {
+  if (
+    quarantineReasonsForPath(ctx.store, relPath).length > 0 ||
+    matchesConflictPath(relPath, ctx.config.index.conflictPathPatterns)
+  ) {
+    throw new AknoError('conflict', `${label} is quarantined by Markdown conflict`, {
+      reason: 'source_conflict',
+    });
+  }
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

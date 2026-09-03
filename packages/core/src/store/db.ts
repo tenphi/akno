@@ -30,6 +30,7 @@ import {
   MIGRATIONS,
   ORPHAN_DOCUMENT_CHUNKS_MIGRATION_INDEX,
   OBSERVATION_PROJECTION_MIGRATION_INDEX,
+  PAGE_SOURCE_INTEGRITY_MIGRATION_INDEX,
   RETAIN_AUTOMATIC_MODES_MIGRATION_INDEX,
   RETAIN_SOURCE_LIFETIME_MIGRATION_INDEX,
   RETAIN_RECEIPTS_MIGRATION_INDEX,
@@ -266,6 +267,9 @@ function migrate(db: Database.Database): void {
       }
       if (!tableExists(db, 'managed_memory_entries')) {
         db.exec(MIGRATIONS[MANAGED_MEMORY_PROJECTION_MIGRATION_INDEX]!);
+      }
+      if (!tableExists(db, 'page_source_integrity')) {
+        db.exec(MIGRATIONS[PAGE_SOURCE_INTEGRITY_MIGRATION_INDEX]!);
       }
     }
     if (current < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);

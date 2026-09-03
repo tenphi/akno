@@ -234,14 +234,19 @@ export function rebuildEvidenceGraph(store: Store, options: EvidenceGraphOptions
                   p.body_hash
                 ) AS source_hash
            FROM pages p
+          WHERE p.role != 'ignored'
           ORDER BY p.id`,
       )
       .all() as PageRow[];
     const documents = store.db
       .prepare(
-        `SELECT id, page_id, sha256 FROM documents
-          WHERE renders IS NULL
-          ORDER BY id`,
+        `SELECT d.id,
+                CASE WHEN p.role != 'ignored' THEN d.page_id ELSE NULL END AS page_id,
+                d.sha256
+           FROM documents d
+           LEFT JOIN pages p ON p.id = d.page_id
+          WHERE d.renders IS NULL
+          ORDER BY d.id`,
       )
       .all() as DocumentRow[];
     const events = store.db

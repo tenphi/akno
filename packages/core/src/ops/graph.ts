@@ -16,6 +16,11 @@ import { normalizeEntityName, resolveExactEntity } from '../index/graph.ts';
 import { documentAvailability, type AvailabilityPart } from '../ingest/availability.ts';
 import { inferMemoryView } from '../memory/intent.ts';
 import { MANAGED_MEMORY_PROJECTION_VERSION } from '../memory/projection.ts';
+import {
+  quarantineReasonsForPath,
+  quarantineReasonsForSlug,
+  quarantineSummary,
+} from '../index/page-quarantine.ts';
 
 const DEFAULT_HOPS = 2;
 const DEFAULT_PATH_LIMIT = 30;
@@ -121,6 +126,7 @@ export async function graph(ctx: AknoContext, rawInput: unknown): Promise<GraphO
     }
 
     const degraded = new Set<DegradedReason>();
+    if (quarantineSummary(ctx.store).candidates > 0) degraded.add('source_conflict');
     const factStatusAvailable = tableExists(ctx, 'graph_fact_status');
     if (!factStatusAvailable || graphIsPartial(ctx)) degraded.add('partial_graph_index');
     if (managedMemoryProjectionIsPartial(ctx)) degraded.add('partial_memory_index');
@@ -238,7 +244,7 @@ function graphIsPartial(ctx: AknoContext): boolean {
   const counts = ctx.store.db
     .prepare(
       `SELECT
-         (SELECT count(*) FROM pages) AS pages,
+         (SELECT count(*) FROM pages WHERE role != 'ignored') AS pages,
          (SELECT count(*) FROM graph_nodes WHERE kind = 'page') AS graph_pages,
          (SELECT count(*) FROM documents WHERE renders IS NULL) AS documents,
          (SELECT count(*) FROM graph_nodes WHERE kind = 'document') AS graph_documents,
@@ -292,9 +298,15 @@ function resolveSlugSeed(
   ctx: AknoContext,
   slug: string,
 ): { seeds: GraphSeed[]; ambiguities: RawAmbiguity[]; degraded: DegradedReason[] } {
-  const page = ctx.store.db.prepare('SELECT id, role FROM pages WHERE slug = ?').get(slug) as
-    { id: string; role: string } | undefined;
+  if (quarantineReasonsForSlug(ctx.store, slug, ctx.config.pageExtensions).length > 0) {
+    return { seeds: [], ambiguities: [], degraded: ['source_conflict'] };
+  }
+  const page = ctx.store.db.prepare('SELECT id, role, rel_path FROM pages WHERE slug = ?').get(slug) as
+    { id: string; role: string; rel_path: string } | undefined;
   if (!page) return { seeds: [], ambiguities: [], degraded: [] };
+  if (quarantineReasonsForPath(ctx.store, page.rel_path).length > 0) {
+    return { seeds: [], ambiguities: [], degraded: ['source_conflict'] };
+  }
 
   const node = graphNode(ctx, 'page', page.id);
   return {

@@ -38,6 +38,11 @@ import type { ContradictionDraft } from './contradictions.ts';
 import { replaceLinkTarget, type BrokenLinkDraft, type LinkIdentitySignal } from './link-repairs.ts';
 import { preservesAuthoredTokens, preservesValues } from './repair.ts';
 import {
+  hasInlineMergeConflict,
+  matchesConflictPath,
+  quarantineReasonsForPath,
+} from '../index/page-quarantine.ts';
+import {
   activeDreamRuns,
   getDreamRun,
   latestDreamRun,
@@ -4816,6 +4821,19 @@ async function preflightItem(ctx: AknoContext, item: MaintenanceItem): Promise<P
     operations = supportedOperations(item);
   } catch (err) {
     return { status: 'blocked', detail: errorMessage(err) };
+  }
+  for (const operation of operations) {
+    const sourcePaths = operation.type === 'create' ? [] : [operation.relPath];
+    if (sourcePaths.some((relPath) => quarantineReasonsForPath(ctx.store, relPath).length > 0)) {
+      return { status: 'blocked', detail: 'a sealed maintenance source is quarantined by Markdown conflict' };
+    }
+    const outputPath = operation.type === 'move' ? operation.toRelPath : operation.relPath;
+    if (matchesConflictPath(outputPath, ctx.config.index.conflictPathPatterns)) {
+      return { status: 'blocked', detail: 'a sealed maintenance destination matches a conflict path' };
+    }
+    if ('after' in operation && hasInlineMergeConflict(operation.after)) {
+      return { status: 'blocked', detail: 'a sealed maintenance output contains a Markdown conflict block' };
+    }
   }
   const creates = operations.filter((operation) => operation.type === 'create').length;
   const deletes = operations.filter((operation) => operation.type === 'delete').length;

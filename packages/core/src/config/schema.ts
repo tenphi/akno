@@ -178,7 +178,25 @@ const IndexDoc = z.object({
   facts: z.boolean().optional(),
   hash_concurrency: z.number().int().positive().optional(),
   ann_threshold_chunks: z.number().int().positive().optional(),
+  /** Owner-declared sync-client conflict-copy paths. File content cannot change this list. */
+  conflict_path_patterns: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .max(500)
+        .refine(safeConflictPathPattern, 'must be a relative knowledge-base glob without parent traversal'),
+    )
+    .max(100)
+    .optional(),
 });
+
+function safeConflictPathPattern(value: string): boolean {
+  const normalized = value.replaceAll('\\', '/');
+  if (normalized.startsWith('/') || /^[A-Za-z]:\//.test(normalized)) return false;
+  return !normalized.split('/').some((segment) => segment === '..');
+}
 
 const RecallDoc = z.object({
   default_budget: z.number().int().positive().optional(),
@@ -593,6 +611,7 @@ export interface AknoConfig {
     facts: boolean;
     hashConcurrency: number;
     annThresholdChunks: number;
+    conflictPathPatterns: string[];
   };
   recall: {
     defaultBudget: number;

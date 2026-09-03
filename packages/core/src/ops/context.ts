@@ -52,7 +52,11 @@ export async function context(ctx: AknoContext, rawInput: unknown): Promise<Cont
   for (const slug of input.pinned ?? []) {
     try {
       const result = await read(ctx, { slug });
-      if (!result.page) continue;
+      for (const reason of result.degraded ?? []) degraded.add(reason);
+      if (!result.page) {
+        droppedPinned++;
+        continue;
+      }
       const card = cardFromPage(result.page);
       const cost = estimateTokens(card);
       if (cost > remaining) {

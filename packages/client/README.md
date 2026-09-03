@@ -35,6 +35,11 @@ const timeline = await akno.timeline({
 });
 const retained = timeline.results.filter(isTimelineMemory);
 
+const exact = await akno.read({ slug: 'products/zephyr-qx-100' });
+if (exact.status === 'degraded' && exact.degraded?.includes('source_conflict')) {
+  // Repair the Markdown conflict and re-index before treating this page as current evidence.
+}
+
 // A stable external source can be retained replay-safely without copying stored source bytes.
 await akno.retain({
   sources: [
