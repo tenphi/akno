@@ -75,7 +75,7 @@ akno service uninstall
 | Unit / label            | Behavior                                                                   |
 | ----------------------- | -------------------------------------------------------------------------- |
 | `dev.akno`              | KeepAlive service for the index, watcher, models, socket, and write handle |
-| `dev.akno.dream`        | One nightly `akno dream --scheduled` pass; default 03:00 local time        |
+| `dev.akno.dream`        | One due nightly pass; default 03:00 local time, with missed-login catch-up |
 | `dev.akno.dream-health` | Checks for a missed cycle after a two-hour grace window                    |
 
 On macOS these are launchd agents. On Linux they are systemd user service/timer units under
@@ -87,6 +87,12 @@ disables and removes any previously installed timers. The generated commands ret
 The scheduled command resolves `maintenance.profile` and policies at run time. Changing authority therefore
 does not require reinstalling the schedule. Re-run installation after an Akno upgrade when release notes say
 the launchd or systemd definition changed.
+
+On macOS the dream agent runs both at its calendar time and when launchd loads it. The internal
+`--scheduled --if-due` guard starts work only when the current expected window has no full-cycle receipt, so a
+login or reboot after 03:00 catches up without duplicating an on-time, running, or already-failed attempt. Linux
+systemd timers use `Persistent=true` for the equivalent catch-up. This is one nightly window, not a retry queue:
+a recorded failed attempt remains visible for review and is not silently rerun.
 
 During the initial planner wave, the service holds one index revision. Watcher and explicit index passes that
 reach the shared indexer are queued, not discarded, then drained before curator decisions and apply. Filesystem
@@ -116,7 +122,7 @@ unrelated concurrent add, edit, or removal is preserved but fails certification 
 `unattributed_file_change`; paths never enter the run receipt. Inspect exact private planned changes only with
 `akno plan diff <plan-id>`.
 
-Schedule health uses the latest non-dry-run full cycle. A later `--dry-run` remains visible in run history but
+Schedule health and launch-time catch-up use the latest non-dry-run full cycle. A later `--dry-run` remains visible in run history but
 cannot replace a healthy nightly result with a diagnostic failure. Use `--mode audit` when you want a durable,
 realistic no-write maintenance cycle that does count as a full attempt.
 

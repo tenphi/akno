@@ -354,7 +354,9 @@ text or headings. Cross-page routing separately retrieves at most three existing
 knowledge pages and may move one exact owned block only to a supplied page. The destination may be an existing
 unique `##` section or the one plain heading deterministically derived from a fact attribute when available,
 then the managed item's current section or kind. The
-classifier cannot invent another label; creating the supplied heading is permitted only when no existing
+classifier sees page identity and effective folder `description`; a second semantic pass independently confirms
+that the proposed page and section own the item. Applied transfer history can nominate a previous owner but
+repeating an earlier directed move is held to stop oscillation. The classifier cannot invent another label; creating the supplied heading is permitted only when no existing
 section fits. Same-page placement uses the same rule. The operation is medium risk when it creates a section or
 touches two pages, and it cannot create a page or replacement text. When the same page first needs deterministic
 marker normalization, semantic placement is reported unavailable for that run and resumes against the canonical
@@ -363,6 +365,10 @@ moves an item only to one unambiguous supplied canonical page; the fallback itse
 destination. Exact `YYYY-MM` buckets and exact or explicitly ledger-like `YYYY-MM-DD` pages reject memories
 outside their period. A date-prefixed named event or trip is not a period bucket and may coherently own related
 preparation or follow-up memories outside the event dates.
+
+A cross-page move may empty the configured retain fallback queue. It may not reduce any other page to only
+frontmatter and headings; that becomes the typed `source_vacated` hold. Existing heading-only pages are reported
+as `empty_knowledge_page` for inspection rather than deleted.
 
 Shareable JSON and durable run receipts keep only aggregate counts. Use `akno dream --private-details` during a
 live run to see the exact `slug:line` for repairable or held findings.

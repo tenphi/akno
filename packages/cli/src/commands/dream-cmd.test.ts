@@ -2,6 +2,7 @@ import type { DreamReport, MaintenanceStatus } from '@tenphi/akno-core';
 import { describe, expect, it } from 'vitest';
 import {
   curationGuardSummary,
+  dreamCommand,
   dreamProgressDescription,
   dreamRunExitCode,
   dreamRunIsReadOnly,
@@ -10,6 +11,7 @@ import {
   notificationDeliveryExitCode,
   notificationDeliveryMessage,
   safeDreamReport,
+  scheduledDreamShouldRun,
 } from './dream-cmd.ts';
 
 describe('dream output privacy', () => {
@@ -64,6 +66,19 @@ describe('dream authority output', () => {
 });
 
 describe('scheduled notification exit status', () => {
+  it('does not expose the scheduler due guard as an unscheduled run mode', async () => {
+    await expect(dreamCommand(['--if-due'])).rejects.toThrow(/requires --scheduled/);
+  });
+
+  it('starts a catch-up only for an unrecorded due schedule window', () => {
+    expect(scheduledDreamShouldRun({ health: 'within_window' })).toBe(true);
+    expect(scheduledDreamShouldRun({ health: 'overdue' })).toBe(true);
+    expect(scheduledDreamShouldRun({ health: 'on_time' })).toBe(false);
+    expect(scheduledDreamShouldRun({ health: 'running' })).toBe(false);
+    expect(scheduledDreamShouldRun({ health: 'last_run_failed' })).toBe(false);
+    expect(scheduledDreamShouldRun({ health: 'not_due' })).toBe(false);
+  });
+
   it('fails when a required notification was not durably delivered', () => {
     expect(notificationDeliveryExitCode({ status: 'failed', reason: 'preparation_failed' })).toBe(2);
     expect(
@@ -338,6 +353,9 @@ function privateReport(): DreamReport {
         routing_deferred: 0,
         routing_uncertain: 0,
         routing_unavailable: 0,
+        routing_oscillation: 0,
+        source_vacated: 0,
+        empty_knowledge_page: 0,
         wording_corrected: 0,
         wording_uncertain: 0,
         source_unavailable: 0,
@@ -360,6 +378,7 @@ function privateReport(): DreamReport {
         itemsConsidered: 1,
         candidatesConsidered: 1,
         classifierCalls: 0,
+        validationCalls: 0,
         cacheHits: 1,
         kept: 1,
         moved: 0,
@@ -367,6 +386,8 @@ function privateReport(): DreamReport {
         deferred: 0,
         uncertain: 0,
         unavailable: 0,
+        oscillationHolds: 0,
+        sourceVacatedHolds: 0,
       },
       source: {
         pagesConsidered: 1,

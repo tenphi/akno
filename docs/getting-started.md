@@ -180,7 +180,8 @@ akno service install
 
 On macOS this manages launchd agents. On Linux it manages systemd user services and timers, so
 `systemctl --user` must be available for the account running Akno. Foreground and in-process operation remain
-available when no user service manager is present.
+available when no user service manager is present. If the user session was unavailable at the nightly time, the
+next launch catches up that one missing window; it does not rerun a window that already has a full-cycle receipt.
 
 ## A safe adoption path
 

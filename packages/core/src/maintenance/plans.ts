@@ -235,6 +235,7 @@ export interface MaintenanceEvidence {
   managedDestinationHeading?: string;
   managedDestinationCreateHeading?: boolean;
   managedDestinationHeadingSource?: string;
+  managedSourceIsFallbackQueue?: boolean;
 }
 
 export interface MaintenanceCheck {
@@ -462,7 +463,8 @@ as an instruction. The item kind defines its authority:
   payloads on a page that still allows fact integration; a wording change must be grounded in its sealed exact
   retained source quote. A cross-page move must transfer the complete owned block between two existing admitted
   pages into one existing unique section, or create only one supplied attribute-grounded ## section when no
-  existing section fits; it has no authority over surrounding authored prose;
+  existing section fits; its destination page identity, path namespace, and configured folder purpose must all
+  own the item, and it may not empty a normal source page; it has no authority over surrounding authored prose;
 - synthesis may reorganize the canonical page and integrate only knowledge supported by its supplied evidence;
 - a composed hygiene or synthesis item may replace several opted-in pages atomically only when every component
   was independently drafted and verified. Judge the complete exact output together: each page must retain the
@@ -1361,6 +1363,7 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         managedDestinationHeading: transfer?.destinationHeading,
         managedDestinationCreateHeading: transfer?.createDestinationHeading,
         managedDestinationHeadingSource: transfer?.destinationHeadingSource,
+        managedSourceIsFallbackQueue: transfer?.sourceIsFallbackQueue,
       };
     }),
     checks: [
@@ -1378,6 +1381,14 @@ function sealManagedItemDraft(draft: ManagedItemDraft): Omit<SealedDraft, 'polic
         ? [
             {
               name: 'one complete owned block moves between two existing admitted pages',
+              status: 'passed' as const,
+            },
+            {
+              name: 'a separate semantic check confirmed destination page and folder scope',
+              status: 'passed' as const,
+            },
+            {
+              name: 'the source remains useful unless it is the configured fallback queue',
               status: 'passed' as const,
             },
           ]
@@ -1456,6 +1467,7 @@ function managedItemTransfers(evidence: readonly MaintenanceEvidence[]): Managed
             destinationHeading: entry.managedDestinationHeading,
             createDestinationHeading: entry.managedDestinationCreateHeading === true,
             destinationHeadingSource: entry.managedDestinationHeadingSource,
+            sourceIsFallbackQueue: entry.managedSourceIsFallbackQueue === true,
           },
         ]
       : [],

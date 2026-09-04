@@ -180,7 +180,10 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   projection, conflicting ids/facts, unavailable
   placement, and ambiguous placement remain typed held findings. A separate bounded routing pass can nominate
   at most three existing admitted pages and move one complete owned block only when a classifier selects one
-  supplied page and section. A section is either an existing unique `##` heading or the one sanitized heading
+  supplied page and section. Candidate profiles include the page slug, type, `akno.about`, path namespace, and
+  configured folder purpose as well as title, headings, and bounded body context. A separately prompted semantic
+  check must then confirm that exact destination and section; an incidental name match is insufficient. A section
+  is either an existing unique `##` heading or the one sanitized heading
   derived from a fact attribute when available, then the managed item's current section or kind. The classifier cannot return
   any other heading, and section
   creation is allowed only when no existing section fits. Same-page placement has the same bounded option. A
@@ -191,7 +194,10 @@ Curate has two authority boundaries. Whole-page transformations consider only pa
   bytes on the next cycle rather than certifying an item they did not classify. A configured fallback page is a
   queue: its items cannot receive `keep`, and move to one supplied canonical existing page or remain held; the
   fallback is never offered as a curation destination. Canonical subject matches prevent a specific current
-  owner from oscillating to an equally broad page, while a unique strictly stronger subject match can require a
+  owner from oscillating to an equally broad page, while applied transfer history nominates a previous owner that
+  recall may miss and blocks repetition of an already-applied directed move. Moving the last knowledge out of a
+  normal page is held as `source_vacated`; only the configured fallback queue may be emptied automatically. Empty
+  heading-only knowledge pages are reported as `empty_knowledge_page` and are never deleted implicitly. A unique strictly stronger subject match can require a
   move out of a top-level person or company profile. Exact period buckets reject out-of-period items, but a
   date-prefixed named event remains an event page rather than being mistaken for a calendar bucket;
 

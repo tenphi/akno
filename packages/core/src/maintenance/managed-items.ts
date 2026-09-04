@@ -7,7 +7,7 @@ import { parsePage, resolvePagePolicy } from '../kb/page.ts';
 import { parseJsonLoose } from '../models/client.ts';
 import { retainedTemporalBoundary, type RetainedTemporalBoundary } from '../memory/temporal-destination.ts';
 import { isReserved } from '../reserved.ts';
-import { effectiveRule } from '../rules/compile.ts';
+import { declaringRule, effectiveRule } from '../rules/compile.ts';
 import { sha256 } from '../store/ids.ts';
 import { parseManagedMemoryMarker, type ManagedMemoryMarker } from '../write/managed-memory.ts';
 import {
@@ -24,6 +24,8 @@ import {
   hasH2,
   managedSectionHeading,
   qualifyManagedItemRouting,
+  qualifyManagedRoutingDestination,
+  repeatsManagedRoutingEdge,
   type ManagedRoutingMetrics,
   type ManagedRoutingPage,
 } from './managed-item-routing.ts';
@@ -40,6 +42,9 @@ const MANAGED_ITEM_FINDING_CODES = [
   'routing_deferred',
   'routing_uncertain',
   'routing_unavailable',
+  'routing_oscillation',
+  'source_vacated',
+  'empty_knowledge_page',
   'wording_corrected',
   'wording_uncertain',
   'source_unavailable',
@@ -104,6 +109,8 @@ export interface ManagedItemTransfer {
   destinationHeading: string;
   createDestinationHeading?: boolean;
   destinationHeadingSource?: string;
+  /** Only the configured fallback queue may be emptied by an automatic transfer. */
+  sourceIsFallbackQueue?: boolean;
 }
 
 interface ManagedItemPlacementMetrics {
@@ -306,6 +313,13 @@ export function inspectManagedItems(content: string): ManagedItemInspection {
   return { after, inspectedMarkers, findings, repairs, bindings };
 }
 
+/** A frontmatter-and-heading skeleton has no knowledge of its own to preserve as a standalone page. */
+function isEmptyKnowledgePageShell(content: string): boolean {
+  const frontmatter = parseFrontmatter(content);
+  const body = content.slice(frontmatter.bodyOffset).replace(/<!--[^]*?-->/g, '');
+  return body.split(/\r?\n/).every((line) => line.trim() === '' || /^\s{0,3}#{1,6}(?:\s+.*)?$/.test(line));
+}
+
 /** The sealed replacement must be exactly the structural repair and qualified exact-block move it declares. */
 export function managedItemRepairIssue(
   before: string,
@@ -369,6 +383,9 @@ export function managedItemOperationsIssue(
   if (!applied.ok || applied.source !== source.after || applied.destination !== destination.after) {
     return 'the managed-item output is broader than its exact cross-page transfer';
   }
+  if (!transfer.sourceIsFallbackQueue && isEmptyKnowledgePageShell(applied.source)) {
+    return 'a cross-page managed-item move may not vacate a normal knowledge page';
+  }
   return null;
 }
 
@@ -420,6 +437,14 @@ export async function planManagedItems(
     report.eligiblePages += 1;
     const inspection = inspectManagedItems(before);
     report.inspectedMarkers += inspection.inspectedMarkers;
+    if (inspection.inspectedMarkers === 0 && isEmptyKnowledgePageShell(before)) {
+      addFinding(
+        report,
+        { code: 'empty_knowledge_page', line: page.bodyLine, outcome: 'held' },
+        'held',
+        page.slug,
+      );
+    }
     eligible.push({ row, before, page, inspection });
   }
   if (sourceScanComplete) pruneManagedSourceArchives(ctx, liveManagedSourceIds);
@@ -436,7 +461,7 @@ export async function planManagedItems(
       .filter((entry) => entry.inspection.repairs.length === 0)
       .map(({ candidate }) => [
         candidate.page.slug,
-        managedRoutingPage(candidate, candidate.page.slug === fallbackSlug),
+        managedRoutingPage(ctx, candidate, candidate.page.slug === fallbackSlug),
       ]),
   );
   const occupiedPaths = new Set<string>();
@@ -455,18 +480,20 @@ export async function planManagedItems(
       const memory = memories.get(binding.id);
       const removed = removeManagedBlock(candidate.before, binding);
       if (!memory || !removed) continue;
+      const routingSource = managedRoutingPage(ctx, candidate, candidate.page.slug === fallbackSlug);
+      const routingItem = {
+        id: binding.id,
+        payload: binding.payload,
+        subject: memory.routingSubject,
+        attribute: memory.attribute || binding.currentHeading || memory.kind,
+        currentHeading: binding.currentHeading,
+        temporalBoundary: binding.temporalBoundary,
+      };
       const qualified = await qualifyManagedItemRouting(
         ctx,
-        managedRoutingPage(candidate, candidate.page.slug === fallbackSlug),
+        routingSource,
         removed.content,
-        {
-          id: binding.id,
-          payload: binding.payload,
-          subject: memory.routingSubject,
-          attribute: memory.attribute || binding.currentHeading || memory.kind,
-          currentHeading: binding.currentHeading,
-          temporalBoundary: binding.temporalBoundary,
-        },
+        routingItem,
         routingPages,
       );
       addRoutingMetrics(report.routing, qualified.metrics);
@@ -490,7 +517,7 @@ export async function planManagedItems(
         destination.inspection.repairs.length > 0 ||
         occupiedPaths.has(destination.candidate.row.rel_path)
       ) {
-        report.routing.moved -= 1;
+        retractRoutingMove(report.routing, qualified.decision.createHeading === true);
         report.routing.unavailable += 1;
         setRoutingFinding(
           routingFindings,
@@ -513,16 +540,71 @@ export async function planManagedItems(
         destinationHeadingSource: qualified.decision.createHeading
           ? memory.attribute || binding.currentHeading || memory.kind
           : undefined,
+        sourceIsFallbackQueue: candidate.page.slug === fallbackSlug,
       };
       const applied = applyManagedItemTransfer(candidate.before, destination.candidate.before, transfer);
       if (!applied.ok) {
-        report.routing.moved -= 1;
+        retractRoutingMove(report.routing, qualified.decision.createHeading === true);
         report.routing.unavailable += 1;
         setRoutingFinding(
           routingFindings,
           candidate.row.rel_path,
           binding.markerLine,
           'routing_unavailable',
+          'held',
+        );
+        continue;
+      }
+      if (
+        repeatsManagedRoutingEdge(
+          qualified.history,
+          candidate.row.rel_path,
+          destination.candidate.row.rel_path,
+        )
+      ) {
+        retractRoutingMove(report.routing, qualified.decision.createHeading === true);
+        report.routing.oscillationHolds += 1;
+        setRoutingFinding(
+          routingFindings,
+          candidate.row.rel_path,
+          binding.markerLine,
+          'routing_oscillation',
+          'held',
+        );
+        continue;
+      }
+      if (!transfer.sourceIsFallbackQueue && isEmptyKnowledgePageShell(applied.source)) {
+        retractRoutingMove(report.routing, qualified.decision.createHeading === true);
+        report.routing.sourceVacatedHolds += 1;
+        setRoutingFinding(
+          routingFindings,
+          candidate.row.rel_path,
+          binding.markerLine,
+          'source_vacated',
+          'held',
+        );
+        continue;
+      }
+      report.routing.classifierCalls += 1;
+      report.routing.validationCalls += 1;
+      const destinationValidation = await qualifyManagedRoutingDestination(
+        ctx,
+        routingSource,
+        removed.content,
+        routingItem,
+        managedRoutingPage(ctx, destination.candidate, destination.candidate.page.slug === fallbackSlug),
+        transfer.destinationHeading,
+        qualified.history,
+      );
+      if (destinationValidation !== 'accept') {
+        retractRoutingMove(report.routing, qualified.decision.createHeading === true);
+        if (destinationValidation === 'unavailable') report.routing.unavailable += 1;
+        else report.routing.uncertain += 1;
+        setRoutingFinding(
+          routingFindings,
+          candidate.row.rel_path,
+          binding.markerLine,
+          destinationValidation === 'unavailable' ? 'routing_unavailable' : 'routing_uncertain',
           'held',
         );
         continue;
@@ -708,11 +790,24 @@ interface ManagedMemoryRow {
   kind: StrictMarker['kind'];
 }
 
-function managedRoutingPage(candidate: EligibleManagedPage, fallback: boolean): ManagedRoutingPage {
+function managedRoutingPage(
+  ctx: AknoContext,
+  candidate: EligibleManagedPage,
+  fallback: boolean,
+): ManagedRoutingPage {
+  const rule = effectiveRule(candidate.page.slug, ctx.config.rules);
+  const purposeRule = declaringRule(candidate.page.slug, ctx.config.rules, 'description');
   return {
     id: candidate.row.id,
     slug: candidate.page.slug,
+    relPath: candidate.row.rel_path,
     title: candidate.page.title,
+    type: candidate.page.type ?? rule.type ?? null,
+    about: [...new Set([...candidate.page.about, ...(rule.about ?? [])])],
+    folderPath:
+      path.posix.dirname(candidate.page.slug) === '.' ? '' : path.posix.dirname(candidate.page.slug),
+    folderRule: purposeRule?.glob ?? null,
+    folderPurpose: rule.description ?? null,
     bodyHash: candidate.page.bodyHash,
     body: candidate.page.body,
     headings: uniqueManagedHeadings(candidate.before),
@@ -726,7 +821,12 @@ function setRoutingFinding(
   line: number,
   code: Extract<
     ManagedItemFindingCode,
-    'misrouted_item' | 'routing_deferred' | 'routing_uncertain' | 'routing_unavailable'
+    | 'misrouted_item'
+    | 'routing_deferred'
+    | 'routing_uncertain'
+    | 'routing_unavailable'
+    | 'routing_oscillation'
+    | 'source_vacated'
   >,
   outcome: ManagedItemFinding['outcome'],
 ): void {
@@ -880,6 +980,8 @@ async function qualifyManagedItemPlacement(
           'source_unavailable',
           'routing_uncertain',
           'routing_unavailable',
+          'routing_oscillation',
+          'source_vacated',
           'misrouted_item',
           'routing_deferred',
         ].includes(finding.code),
@@ -1131,6 +1233,8 @@ async function qualifyManagedItemSourceBindings(
           'source_unavailable',
           'routing_uncertain',
           'routing_unavailable',
+          'routing_oscillation',
+          'source_vacated',
           'misrouted_item',
           'routing_deferred',
         ].includes(finding.code),
@@ -1838,6 +1942,11 @@ function addRoutingMetrics(target: ManagedRoutingMetrics, addition: ManagedRouti
   for (const key of Object.keys(target) as (keyof ManagedRoutingMetrics)[]) {
     target[key] += addition[key];
   }
+}
+
+function retractRoutingMove(metrics: ManagedRoutingMetrics, createdHeading: boolean): void {
+  metrics.moved = Math.max(0, metrics.moved - 1);
+  if (createdHeading) metrics.sectionsCreated = Math.max(0, metrics.sectionsCreated - 1);
 }
 
 function addSourceMetrics(target: ManagedSourceMetrics, addition: ManagedSourceMetrics): void {
