@@ -10,6 +10,16 @@ export default defineDocsConfig({
     url: 'https://akno.tenphi.me',
     repository: 'https://github.com/tenphi/akno',
   },
+  head: [
+    {
+      tag: 'script',
+      attrs: {
+        defer: true,
+        src: 'https://umami.tenphi.me/script.js',
+        'data-website-id': 'fb522f6e-9997-4a27-a4fc-a8492a0fa0c0',
+      },
+    },
+  ],
   content: {
     sources: [
       { file: 'README.md', route: '/' },
