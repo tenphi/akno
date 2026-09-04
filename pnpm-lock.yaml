@@ -21,8 +21,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       '@tenphi/cookbook':
-        specifier: 0.9.5
-        version: 0.9.5(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)
+        specifier: 0.11.0
+        version: 0.11.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
@@ -1640,29 +1640,29 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tenphi/cookbook@0.9.5':
-    resolution: {integrity: sha512-SgLxWieOf4+RbVcALSkX1V1VLy/jw+359KxA/bPzheJzFM1pL5lp/3AkcxrvFqZL4U59fOxDKzkblT410mtCzg==}
+  '@tenphi/cookbook@0.11.0':
+    resolution: {integrity: sha512-k9OQLsB/mK1Fvz1v7XOtpqnDescsZA12+aXVWdkRHs01TxHsVzKTiB0AVrmciiqoMyj3Q3wJ527kycceGSUF9w==}
     engines: {node: '>=22.14'}
     hasBin: true
     peerDependencies:
       astro: ^7.2.9
 
-  '@tenphi/docs@0.9.5':
-    resolution: {integrity: sha512-xo82la609NSFAAe/93aDo6Wj7Limw2+HabXMR6PtQe370kCU9QUDj7ydn5xNGHP2kNA+NpAQ4vDq+h3g1m3uBA==}
+  '@tenphi/docs@0.11.0':
+    resolution: {integrity: sha512-2FFBVmv019jfvaiukRZm9FxZvKtsi2XFeg3W6PISZR1R+6QdDLf7bCbrXUGgqn7tLYHWhUmiGPQYoS9NQTVdxw==}
     engines: {node: '>=22.14'}
 
   '@tenphi/glaze@2.0.0':
     resolution: {integrity: sha512-entP+7nsScY87maev/rA6HS/qQy3YwHeywAsWTT9LGhovMp3/cj/Zb1jctlc37FWLim+mkYMwTGOk7ZfJBLLWg==}
     engines: {node: '>=20'}
 
-  '@tenphi/starlight@0.9.5':
-    resolution: {integrity: sha512-45ixf66EmyP8X0MAnxvoc+NpTNqO0f+jvyEwMeU72a6QEgE3GN3Pk4ALVojW9XpZZDh430Q3LBIj8UcZqikSvQ==}
+  '@tenphi/starlight@0.11.0':
+    resolution: {integrity: sha512-V90ijmeg5+EDkZca4fHe9cJhHHy68rIdK9Mj2Y00jmQUjYn7Cjc7nMP/4cXm2twGSP0tqlPegqaC8UNjCz3JDw==}
     engines: {node: '>=22.14'}
     peerDependencies:
       astro: ^7.2.9
 
-  '@tenphi/tasty@3.6.0':
-    resolution: {integrity: sha512-fHRNHkzQS+Jj1/bdk0qqAXUH2f2UkWqPW1rMijo3xLN7I7ckhtuNIjlKe4123kAugCM6EiO8x1jWMrhKdAIrWA==}
+  '@tenphi/tasty@3.8.0':
+    resolution: {integrity: sha512-aGMZrTafFjbPq1N63KD2yW1xPd3vluLXQ8feaqQE3Ewpokd1mgt8CO2XaxJqTeWH7vmcsRVEA9LnlkLm5ic/Xg==}
     engines: {node: '>=20'}
     peerDependencies:
       '@babel/core': ^7.24.0
@@ -4704,8 +4704,7 @@ snapshots:
     dependencies:
       hono: 4.12.34
 
-  '@img/colour@1.1.0':
-    optional: true
+  '@img/colour@1.1.0': {}
 
   '@img/sharp-darwin-arm64@0.35.4':
     optionalDependencies:
@@ -5387,10 +5386,10 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tenphi/cookbook@0.9.5(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)':
+  '@tenphi/cookbook@0.11.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)':
     dependencies:
-      '@tenphi/docs': 0.9.5
-      '@tenphi/starlight': 0.9.5(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(jiti@2.7.0)(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)
+      '@tenphi/docs': 0.11.0
+      '@tenphi/starlight': 0.11.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(jiti@2.7.0)(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)
       astro: 7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0)
       jiti: 2.7.0
     transitivePeerDependencies:
@@ -5412,7 +5411,7 @@ snapshots:
       - typescript
       - yaml
 
-  '@tenphi/docs@0.9.5':
+  '@tenphi/docs@0.11.0':
     dependencies:
       '@tenphi/glaze': 2.0.0
       github-slugger: 2.0.0
@@ -5430,20 +5429,21 @@ snapshots:
 
   '@tenphi/glaze@2.0.0': {}
 
-  '@tenphi/starlight@0.9.5(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(jiti@2.7.0)(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)':
+  '@tenphi/starlight@0.11.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(jiti@2.7.0)(lightningcss@1.33.0)(typescript@5.9.3)(yaml@2.9.0)':
     dependencies:
       '@astrojs/markdown-remark': 7.2.4
       '@astrojs/react': 5.0.7(@types/node@22.20.1)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(jiti@2.7.0)(lightningcss@1.33.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tsx@4.23.5)(yaml@2.9.0)
       '@astrojs/starlight': 0.41.10(@astrojs/markdown-remark@7.2.4)(astro@7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0))(typescript@5.9.3)
       '@fontsource-variable/jetbrains-mono': 5.3.0
       '@fontsource-variable/onest': 5.3.1
-      '@tenphi/docs': 0.9.5
+      '@tenphi/docs': 0.11.0
       '@tenphi/glaze': 2.0.0
-      '@tenphi/tasty': 3.6.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.2.8)
+      '@tenphi/tasty': 3.8.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.2.8)
       astro: 7.2.9(@astrojs/markdown-remark@7.2.4)(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.3)(@types/node@22.20.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.0)
       beautiful-mermaid: 1.1.3
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
+      sharp: 0.35.4(@types/node@22.20.1)
       tsx: 4.23.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -5465,7 +5465,7 @@ snapshots:
       - typescript
       - yaml
 
-  '@tenphi/tasty@3.6.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.2.8)':
+  '@tenphi/tasty@3.8.0(@babel/core@7.29.7)(@babel/helper-plugin-utils@7.29.7)(@babel/types@7.29.8)(jiti@2.7.0)(react@19.2.8)':
     dependencies:
       csstype: 3.2.3
     optionalDependencies:
@@ -8005,7 +8005,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.4
       '@img/sharp-win32-x64': 0.35.4
       '@types/node': 22.20.1
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
