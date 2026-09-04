@@ -80,7 +80,8 @@ The configuration write is isolated from later actions. Guided setup then offers
 for each, to build the rebuildable search projections, run a first recall, and install the platform background
 service with its nightly schedule—launchd on macOS or systemd `--user` on Linux. Every offer defaults to no;
 non-interactive setup remains
-configuration-only. The equivalent commands are:
+configuration-only. A missed nightly window catches up when the user service next loads, without rerunning a
+window that already has a receipt. The equivalent commands are:
 
 ```bash
 akno index

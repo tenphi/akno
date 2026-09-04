@@ -73,6 +73,7 @@ akno dream notify --schedule-health
                    Include page names, source excerpts, URLs and other private content in
                    terminal or JSON output. Default output is safe to retain and share.
   --scheduled       Mark a full run as scheduler-owned and deliver configured local notifications.
+  --if-due          With --scheduled, exit without a cycle when this schedule window already has a receipt.
   --schedule-health Check the expected nightly window and notify once if it was missed.
   --run <run_id>   Show one durable, content-safe run receipt.
   --last <n>       Show the newest 1–100 run receipts.
@@ -97,6 +98,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     'dry-run': boolean;
     'private-details': boolean;
     scheduled: boolean;
+    'if-due': boolean;
     'schedule-health': boolean;
     profile: boolean;
     transform?: string;
@@ -110,6 +112,7 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     'dry-run': { type: 'boolean', default: false },
     'private-details': { type: 'boolean', default: false },
     scheduled: { type: 'boolean', default: false },
+    'if-due': { type: 'boolean', default: false },
     'schedule-health': { type: 'boolean', default: false },
     profile: { type: 'boolean', default: false },
     transform: { type: 'string' },
@@ -135,7 +138,8 @@ export async function dreamCommand(argv: string[]): Promise<number> {
       values['explain-policy'] !== undefined ||
       values['dry-run'] ||
       values['private-details'] ||
-      values['schedule-health']
+      values['schedule-health'] ||
+      values['if-due']
     ) {
       throw new AknoError('invalid', 'dream resume cannot be combined with run or status options');
     }
@@ -168,7 +172,8 @@ export async function dreamCommand(argv: string[]): Promise<number> {
       values.pending ||
       values['explain-policy'] !== undefined ||
       values['dry-run'] ||
-      values['private-details']
+      values['private-details'] ||
+      values['if-due']
     ) {
       throw new AknoError('invalid', 'dream notify --schedule-health cannot be combined with run options');
     }
@@ -176,6 +181,9 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   }
 
   if (positionals[0] === 'status' && positionals.length === 1) {
+    if (values['if-due']) {
+      throw new AknoError('invalid', '--if-due is only valid for a scheduled full cycle');
+    }
     if (values['explain-policy'] !== undefined) {
       if (values.run !== undefined || values.last !== undefined || values.pending) {
         throw new AknoError('invalid', 'choose only one of --run, --last, --pending, or --explain-policy');
@@ -213,6 +221,18 @@ export async function dreamCommand(argv: string[]): Promise<number> {
   const mode = values.mode ? parseMode(values.mode) : undefined;
   if (values.scheduled && (phase || mode || values['dry-run'] || values['private-details'])) {
     throw new AknoError('invalid', '--scheduled is only valid for the plain configured full cycle');
+  }
+  if (values['if-due'] && !values.scheduled) {
+    throw new AknoError('invalid', '--if-due requires --scheduled');
+  }
+  if (values['if-due']) {
+    const status = await loadMaintenanceStatus(values);
+    const schedule = inspectDreamSchedule(status.latestFullRun);
+    if (!scheduledDreamShouldRun(schedule)) {
+      if (values.json) json({ outcome: 'not_due', schedule });
+      else line(style.grey(`nightly cycle not started: ${scheduleHealthLabel(schedule.health)}`));
+      return 0;
+    }
   }
   const input = {
     ...(phase ? { phase } : {}),
@@ -257,6 +277,10 @@ export async function dreamCommand(argv: string[]): Promise<number> {
     return dreamRunExitCode(report.run);
   }
   return printDream(report, values['private-details']);
+}
+
+export function scheduledDreamShouldRun(schedule: Pick<DreamScheduleStatus, 'health'>): boolean {
+  return schedule.health === 'within_window' || schedule.health === 'overdue';
 }
 
 function parseMaintenanceTransform(value: string): MaintenanceTransform {
@@ -785,9 +809,12 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
     }
   }
 
-  if (report.managedItems.inspectedMarkers > 0) {
-    heading(`${report.managedItems.inspectedMarkers} managed fragment(s) inspected`);
+  const hasManagedFindings = Object.values(report.managedItems.findings).some((count) => count > 0);
+  if (report.managedItems.inspectedMarkers > 0 || hasManagedFindings) {
+    heading('Managed knowledge-page audit');
     kv([
+      ['fragments inspected', report.managedItems.inspectedMarkers],
+      ['empty page shells', report.managedItems.findings.empty_knowledge_page],
       ['valid', report.managedItems.outcomes.valid],
       ['repairable', report.managedItems.outcomes.planned],
       ['held', report.managedItems.outcomes.held],
@@ -802,12 +829,15 @@ function printDream(report: DreamReport, privateDetails: boolean): number {
       ['placement unavailable', report.managedItems.placement.unavailable],
       ['routing candidates', report.managedItems.routing.candidatesConsidered],
       ['routing calls', report.managedItems.routing.classifierCalls],
+      ['destination validations', report.managedItems.routing.validationCalls],
       ['routing cache hits', report.managedItems.routing.cacheHits],
       ['cross-page moved', report.managedItems.routing.moved],
       ['routing sections created', report.managedItems.routing.sectionsCreated],
       ['routing deferred', report.managedItems.routing.deferred],
       ['routing uncertain', report.managedItems.routing.uncertain],
       ['routing unavailable', report.managedItems.routing.unavailable],
+      ['routing oscillation holds', report.managedItems.routing.oscillationHolds],
+      ['source-vacated holds', report.managedItems.routing.sourceVacatedHolds],
       ['source calls', report.managedItems.source.classifierCalls],
       ['source cache hits', report.managedItems.source.cacheHits],
       ['source supported', report.managedItems.source.supported],

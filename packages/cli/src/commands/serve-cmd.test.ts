@@ -26,20 +26,24 @@ describe('launchd service definitions', () => {
     expect(resolvedServiceConfigPath(undefined, '/invented/checkout', '/invented/home')).toBeNull();
   });
 
-  it('marks the nightly cycle as scheduled without baking in maintenance authority', () => {
+  it('catches up at launch only when the scheduled window is due', () => {
     const rendered = plist({
       label: 'dev.akno.dream',
       node: '/invented/bin/node',
       script: '/invented/bin/akno',
-      args: ['dream', '--scheduled'],
+      args: ['dream', '--scheduled', '--if-due'],
       logDir: '/invented/state/logs',
+      runAtLoad: true,
       calendarHour: 3,
     });
 
     expect(rendered).toContain('<string>dream</string>');
     expect(rendered).toContain('<string>--scheduled</string>');
+    expect(rendered).toContain('<string>--if-due</string>');
     expect(rendered).not.toContain('<string>auto</string>');
     expect(rendered).toContain('<key>Minute</key><integer>0</integer>');
+    expect(rendered).toContain('<key>RunAtLoad</key><true/>');
+    expect(rendered).toContain('<key>StartCalendarInterval</key>');
   });
 
   it('can schedule the missed-cycle health check after the grace boundary', () => {
@@ -57,6 +61,7 @@ describe('launchd service definitions', () => {
     expect(rendered).toContain('<string>--schedule-health</string>');
     expect(rendered).toContain('<key>Hour</key><integer>5</integer>');
     expect(rendered).toContain('<key>Minute</key><integer>5</integer>');
+    expect(rendered).not.toContain('<key>RunAtLoad</key>');
   });
 });
 

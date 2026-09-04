@@ -365,10 +365,11 @@ export async function serviceCommand(argv: string[]): Promise<number> {
         node: process.execPath,
         script: binary,
         // Keep authority unqualified: `dream` resolves the current named profile every night.
-        // The marker enables local notification delivery; it does not change dream behaviour.
-        args: ['dream', '--scheduled', ...targetArgs],
+        // Scheduler markers enable notification delivery and receipt-based due checks, not authority.
+        args: ['dream', '--scheduled', '--if-due', ...targetArgs],
         logDir: config.logDir,
         logName: 'dream',
+        runAtLoad: true,
         calendarHour: hour,
       }),
       'utf8',
@@ -470,7 +471,7 @@ async function linuxServiceCommand(
       config.socketPath,
       ...(values.http ? ['--http', values.http] : []),
     ],
-    dreamArgs: ['dream', '--scheduled', ...targetArgs],
+    dreamArgs: ['dream', '--scheduled', '--if-due', ...targetArgs],
     healthArgs: ['dream', 'notify', '--schedule-health', ...targetArgs],
     dreamHour: hour,
     dream: values.dream,
@@ -529,6 +530,8 @@ export interface PlistOptions {
   logName?: string;
   /** The service: restarted whenever it stops. */
   keepAlive?: boolean;
+  /** Run once when launchd loads the agent, in addition to any calendar interval. */
+  runAtLoad?: boolean;
   /** The nightly cycle: run once a day at this hour. */
   calendarHour?: number;
   calendarMinute?: number;
@@ -541,10 +544,14 @@ export function plist(options: PlistOptions): string {
   const programArgs = [node, script, ...args]
     .map((arg) => `    <string>${escapeXml(arg)}</string>`)
     .join('\n');
-  const schedule =
-    options.calendarHour === undefined
-      ? `  <key>RunAtLoad</key><true/>\n  <key>KeepAlive</key>${options.keepAlive ? '<true/>' : '<false/>'}`
-      : `  <key>StartCalendarInterval</key>\n  <dict><key>Hour</key><integer>${options.calendarHour}</integer><key>Minute</key><integer>${options.calendarMinute ?? 0}</integer></dict>`;
+  const schedule = [
+    ...(options.calendarHour === undefined || options.runAtLoad ? ['  <key>RunAtLoad</key><true/>'] : []),
+    ...(options.calendarHour === undefined
+      ? [`  <key>KeepAlive</key>${options.keepAlive ? '<true/>' : '<false/>'}`]
+      : [
+          `  <key>StartCalendarInterval</key>\n  <dict><key>Hour</key><integer>${options.calendarHour}</integer><key>Minute</key><integer>${options.calendarMinute ?? 0}</integer></dict>`,
+        ]),
+  ].join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
