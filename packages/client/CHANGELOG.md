@@ -1,5 +1,17 @@
 # @tenphi/akno-client
 
+## 0.12.0
+
+### Minor Changes
+
+- [#59](https://github.com/tenphi/akno/pull/59) [`c2ac2d1`](https://github.com/tenphi/akno/commit/c2ac2d1988d9f6e8ccaa956e89624015110f47aa) Thanks [@tenphi](https://github.com/tenphi)! - Keep managed facts inside the correct page and folder scope, hold oscillating or page-vacating moves, report
+  empty knowledge-page shells, and catch up one missed nightly maintenance window when the user service loads.
+
+### Patch Changes
+
+- Updated dependencies [[`c2ac2d1`](https://github.com/tenphi/akno/commit/c2ac2d1988d9f6e8ccaa956e89624015110f47aa)]:
+  - @tenphi/akno-protocol@0.12.0
+
 ## 0.11.0
 
 ### Minor Changes
