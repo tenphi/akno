@@ -5,6 +5,11 @@ packages:
 # A compromised release is usually yanked well inside that window.
 minimumReleaseAge: 4320
 
+# First-party @tenphi packages are published from repositories we control, so
+# the yank window that motivates minimumReleaseAge does not apply to them.
+minimumReleaseAgeExclude:
+  - '@tenphi/*'
+
 # One declared version per shared dependency. Three packages depend on zod, and a
 # monorepo where two of them resolve different majors produces schemas that look
 # interchangeable and are not.
