@@ -2,44 +2,43 @@
 
 Akno is a memory layer for agents built on a Markdown knowledge base you own.
 
-It lets an agent search, answer from, and deliberately update the same files you edit in Obsidian, vim, or any
-other editor. The files remain the source of truth. Search projections in Akno's SQLite database are
-rebuildable in place; the same database also holds durable undo, plan, receipt, and recovery state, so deleting
-it is not a safe way to refresh search.
+An agent can search, answer from, and deliberately update the same files you edit in Obsidian, vim, or any
+other editor. Markdown remains the source of truth. Akno adds rebuildable search projections plus durable undo,
+plan, receipt, and recovery state in SQLite.
 
-Akno is useful when an agent needs continuity across conversations but its memory must remain inspectable,
-citable, reversible, and independent of a chat provider.
+Akno is for personal agents that need continuity across conversations without turning memory into an opaque
+chat-provider feature. Its memory stays inspectable, citable, reversible, and portable.
 
-> **Status:** active development and used on a real personal knowledge base. The current source ships reading,
-> writing, document ingestion, evidence-graph retrieval, grounded answering, and autonomous maintenance at Akno's
-> single-writer service boundary. Keyed `retain` can accept typed candidates or extract them from coherent text and
-> structured conversations, route them automatically or to exact destinations, replay identical revisions without
-> another model call, and retract source-owned support. Reads now infer a conservative semantic memory view, so
-> current facts, history, plans, attributed reports, questions, and discussion remain distinct before retrieval
-> spends its candidate budget. `timeline` reads authored events, retained world-time
-> states/plans/deadlines, and document date evidence through one explicit clock. Source-reference intake and
-> evidence-backed observations are co-located as explicitly marked level-two memory on admitted canonical pages;
-> reflected principles remain a separate level-three synthesis. Defaults stay conservative: model-dependent inference is
-> opt-in, scheduled maintenance starts in audit mode, and network and persistence boundaries fail closed.
-> Releases use Changesets and tokenless npm
-> trusted publishing; CI verifies the packaged artifacts and installed first-run workflow before publication.
+> **Status:** Akno is in active pre-1.0 development and is used on a real personal knowledge base. The core
+> reading, writing, ingestion, and maintenance workflows described below are implemented today; interfaces may
+> still change between minor releases.
 
-## Why use it?
+## What works today
 
-Ordinary retrieval gives an agent fragments. Akno gives it evidence with enough structure to act responsibly:
+| Area            | Current behavior                                                                                                                 | Important boundary                                                                                                       |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Retrieval       | Hybrid `recall`, full-page `read`, graph traversal, bounded agent `context`, and verified `answer`                               | Results cite page lines or document pages; `empty`, `degraded`, and `unavailable` remain distinct                        |
+| Memory capture  | Exact `write`, conversational `remember`, and replay-safe keyed `retain` with automatic extraction and routing                   | Writes are journalled and undoable; retained support can be corrected or retracted by source revision                    |
+| Semantic memory | Current facts, history, plans, attributed reports, questions, and discussion are distinguished during retrieval                  | A proposal or reported claim is useful context without silently becoming a current fact                                  |
+| Time            | `timeline` combines authored events, retained facts, plans, deadlines, and document dates against an explicit clock              | Past, present, and future remain queryable without flattening every date into the same kind of fact                      |
+| Documents       | Files can be indexed as evidence, searched immediately, and later adopted into canonical pages                                   | Searchable source material is not automatically promoted to canonical knowledge                                          |
+| Derived memory  | Evidence-backed observations are co-located on admitted subject pages; reflected principles form a separate level                | Observations keep exact leaf-fact lineage and become ineligible when their support changes                               |
+| Maintenance     | The seven-phase `dream` cycle detects conflicts, proposes exact repairs, organizes managed facts, and performs bounded synthesis | Scheduled maintenance defaults to audit; review and autonomous modes still use sealed plans and independent verification |
+| Runtime         | A single-writer service watches the knowledge base on macOS or Linux, with nightly launchd/systemd scheduling                    | Akno assumes one owner or one trusted shared owner; it is not a multi-tenant permission system                           |
 
-- Every returned claim has a page line or document-page citation.
-- `empty`, `degraded`, and `unavailable` are different results, so “not recorded” is never inferred from a
-  broken search path.
-- `recall` finds and ranks evidence; `answer` produces a separately verified grounded response.
-- Retained memory is selected by semantic use—factual, history, planning, reports, questions, or discussion—so
-  a matching proposal or report is useful without silently becoming a current fact.
-- Pages, source documents, inferred observations, and ignored material have different retrieval policies.
-- Observations retain exact leaf-fact lineage, become ineligible immediately when support changes, and never
-  feed back into level-one fact derivation.
-- Writes are journalled and undoable.
-- Nightly maintenance plans exact diffs before a human or separate curator decides what may apply.
-- Orphan documents are searchable immediately; organization never blocks retrieval.
+## Why Akno
+
+- **Files stay authoritative.** Indexing leaves the set and bytes of source files unchanged by default.
+- **Answers stay grounded.** Retrieval returns evidence locators, and generated answers are verified separately
+  against the evidence they cite.
+- **Absence stays honest.** A clean miss is different from a failed model, unavailable document extractor, or
+  degraded ranking path.
+- **Evidence is not automatically belief.** Pages, source documents, observations, and ignored material have
+  different roles and retrieval policies.
+- **Writes are bounded.** Mutations are journalled; maintenance plans exact diffs before a human or separate
+  curator decides what may apply.
+- **Organization never blocks retrieval.** An orphan document is searchable before Akno finds or creates its
+  canonical home.
 
 Akno does not replace your editor, backup system, or judgment. It only knows what the indexed files and
 documents contain.
@@ -53,35 +52,19 @@ npm install -g @tenphi/akno
 akno init
 ```
 
-Guided setup asks for the notes folder, model strategy, and maintenance authority. It also classifies visible
-top-level folders as managed memory, searchable read-only knowledge, or source/reference material. For a trusted
-agent it offers a guarded `memory/inbox` fallback; the fallback is configuration only and no page is created by
-setup. It is a temporary capture queue rather than a canonical home: managed-item curation can later move an
-owned item to one unambiguous existing admitted page. Existing installations leave folder policy unchanged
-unless you explicitly review it. The model choices
-are:
+Guided setup asks for the notes folder, model strategy, folder roles, and maintenance authority. It can configure
+the benchmark-qualified OpenAI preset, a model-free lexical setup, or preserve an existing specialist setup.
+Every optional follow-up—indexing, a first recall, and background-service installation—requires its own
+confirmation.
 
-- the benchmark-qualified OpenAI minimum: `text-embedding-3-small` plus `gpt-5.6-luna` through one endpoint;
-- a model-free lexical setup that sends no content to a model; or
-- a specialist/manual setup that preserves existing provider and model blocks.
-
-Choosing a provider for a model role authorizes that role to receive the inputs it needs. Requests stay on that
-provider's configured origin: Akno refuses cross-origin redirects and never silently falls back to another
-configured provider when the selected one fails.
-
-For the OpenAI setup, provide the credential through the environment. Akno stores only the variable name:
+For the OpenAI preset, provide the credential through the environment. Akno stores only the variable name:
 
 ```bash
 export AKNO_OPENAI_API_KEY="..."
 akno init
 ```
 
-The configuration write is isolated from later actions. Guided setup then offers, with a separate confirmation
-for each, to build the rebuildable search projections, run a first recall, and install the platform background
-service with its nightly schedule—launchd on macOS or systemd `--user` on Linux. Every offer defaults to no;
-non-interactive setup remains
-configuration-only. A missed nightly window catches up when the user service next loads, without rerunning a
-window that already has a receipt. The equivalent commands are:
+Then index and inspect the knowledge base:
 
 ```bash
 akno index
@@ -90,115 +73,98 @@ akno recall "How long is the Zephyr QX-100 warranty?"
 akno recall "What is planned for the Zephyr QX-100?" --memory-view planning
 ```
 
-Markdown indexing needs no extra system tools. Linux document extraction uses Poppler for PDFs, Tesseract for
-OCR, and LibreOffice for supported office files; missing tools degrade only the affected extraction path and
-are reported by `akno doctor`. See [Platform support](docs/operations.md#platform) for installation details and
-the exact macOS/Linux differences.
+Markdown indexing needs no extra system tools. Document extraction uses native macOS frameworks; on Linux,
+PDF, OCR, and office-file support use Poppler, Tesseract, and LibreOffice respectively. Missing tools degrade
+only the affected extraction path and are reported by `akno doctor`.
 
-Indexing also quarantines deterministic Markdown conflicts before parsing: complete merge blocks,
-owner-configured sync-conflict filenames, and duplicate stable page ids cannot become recall evidence or
-automatic-write targets. Akno changes no source bytes; `akno doctor --quarantine-details` shows the private
-paths needed for file-based repair.
+Akno keeps requests on the selected model provider's configured origin: redirects cannot cross origins, and a
+failed provider is never silently replaced by another configured provider.
 
-Need invented notes to try? Copy [`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples/demo-brain) and follow the
+Want an invented knowledge base to try? Copy
+[`examples/demo-brain`](https://github.com/tenphi/akno/tree/main/examples/demo-brain) and follow the
 [getting-started guide](docs/getting-started.md#try-the-demo-knowledge-base).
 
-## The working model
+## How it fits together
 
 ```mermaid
 flowchart TD
   accTitle: Akno working model
-  accDescr: Markdown pages and documents feed a disposable index for reading, while guarded write operations update the source through journalled writes.
+  accDescr: Markdown pages and documents feed a rebuildable index for reading, while guarded write operations update the source through journalled writes.
 
   source["Markdown pages and documents"] --> index["Index and watch"]
-  index --> state["Disposable search, facts, temporal entries, and evidence graph"]
-  state --> reading["Recall, answer, read, timeline, and context"]
-  writes["Write, remember, retain, ingest, and guarded dream plans"] --> journal["Journalled writes"]
+  index --> state["Rebuildable search, facts, time, and evidence graph"]
+  state --> reading["Recall, answer, read, timeline, graph, and context"]
+  writes["Write, remember, retain, ingest, and dream plans"] --> journal["Journalled writes"]
   journal --> source
 ```
 
-Four ideas explain most of Akno:
+The database is partly rebuildable, not disposable: search projections can be recreated from Markdown, while
+the same database also owns undo history, maintenance plans, receipts, and recovery state.
 
-1. **Files are authoritative.** Indexing reads the knowledge base and writes nothing there by default.
-2. **Evidence and knowledge differ.** A contract or transcript can be searchable without becoming a fact Akno
-   treats as canonical.
-3. **Discovery and synthesis differ.** Use `recall` to inspect relevant evidence and `answer` when you want a
-   direct, verified response.
-4. **Autonomy is policy.** `audit`, `review`, and `autonomous` select who decides a sealed maintenance proposal;
-   they do not bypass page opt-ins, folder rules, limits, or verification.
+Indexing quarantines deterministic Markdown conflicts before parsing. Complete merge blocks,
+owner-configured conflict filenames, and duplicate stable page ids cannot become recall evidence or automatic
+write targets. Akno does not alter those files; `akno doctor --quarantine-details` identifies what needs manual
+repair.
 
-See [The memory lifecycle](docs/memory-lifecycle.md) for the everyday human/agent workflow and
-[How Akno works](docs/how-it-works.md) for the implementation data flow.
+## Everyday commands
 
-## Main commands
+| Goal                               | Commands                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Find and inspect memory            | `recall`, `answer`, `read`, `list`, `timeline`, `graph`, `context`                               |
+| Capture, correct, or remove memory | `write`, `remember`, `retain`, `forget`, `undo`, `move`, `folder`                                |
+| Bring in source material           | `ingest`, `inbox`, `adopt`                                                                       |
+| Maintain the knowledge base        | `dream`, `plan`, `approve`, `decline`                                                            |
+| Set up and operate Akno            | `init`, `index`, `migrate`, `serve`, `service`, `doctor`, `rules`, `config`, `bench`, `redeploy` |
 
-| Intent                      | Commands                                                                                         |
-| --------------------------- | ------------------------------------------------------------------------------------------------ |
-| Find or inspect memory      | `recall`, `answer`, `read`, `list`, `timeline`, `graph`, `context`                               |
-| Capture or correct memory   | `write`, `remember`, `retain`, `forget`, `undo`, `move`, `folder`                                |
-| Bring in documents          | `ingest`, `inbox`, `adopt`                                                                       |
-| Maintain the knowledge base | `dream`, `plan`, `approve`, `decline`                                                            |
-| Operate Akno                | `init`, `index`, `migrate`, `serve`, `service`, `doctor`, `rules`, `config`, `bench`, `redeploy` |
+Use `remember` for one unkeyed transcript or note that Akno should extract and route. Use `retain` when the host
+has a stable source id and revision: identical revisions replay without another model call, while corrected
+revisions replace their exact earlier support. Use `ingest` to make a file searchable as source material without
+asserting that everything in it is canonical memory.
 
 `akno --help` and `akno <command> --help` describe the installed interface. The
-[command reference](docs/commands.md) explains which operation to choose and whether it writes.
-
-Use `remember` for one unkeyed transcript or note when Akno should extract and route durable memory. Use
-`retain` when a host has a stable source id and revision and needs replay safety. The host may provide the full
-typed candidates or let Akno extract, independently verify, and automatically place them from inline input,
-an indexed source page, or an indexed document. Inline input can explicitly archive a source page in the same
-atomic change; corrected revisions can replace exact earlier support. Identical revisions replay before another
-model call or write, and private exact evidence expires only after its live/workflow dependencies and grace. See
-[Writing and ingestion](docs/writing.md#retain-identified-sources) for the complete request shape.
+[command reference](docs/commands.md) covers write behavior and model requirements; [Writing and
+ingestion](docs/writing.md) explains how to choose among the write operations.
 
 ## Autonomous maintenance
 
 `akno dream` is a seven-phase maintenance cycle, not a prompt that rewrites the whole folder. It detects
-conflicts before inference, plans observations and page maintenance, files orphan documents, then reports
+conflicts before inference, plans observations and page maintenance, files orphan documents, and reports
 remaining repair and housekeeping work.
 
-Observe writes only marker-owned blocks on an existing exact-subject page that opts into
-`akno.management.observe: integrate`. Create, reinforce, refine, weaken, retract, and split all pass through the
-same plan, decision, stale-input, journal, verification, and undo boundary.
+Every writable item is a durable exact proposal with sealed inputs. The configured profile determines who
+makes the decision:
 
-Every writable item is a durable exact proposal with sealed inputs. The configured profile determines the
-decision point:
+| Profile      | Behavior                                                                     |
+| ------------ | ---------------------------------------------------------------------------- |
+| `audit`      | Produce inspectable plans and apply nothing. This is the default.            |
+| `review`     | Wait for explicit human decisions.                                           |
+| `autonomous` | Ask a separate curator and apply only accepted, still-valid, budgeted items. |
 
-| Profile      | Behavior                                                                          |
-| ------------ | --------------------------------------------------------------------------------- |
-| `audit`      | Produce inspectable plans; apply nothing. This is the default.                    |
-| `review`     | Wait for explicit human decisions.                                                |
-| `autonomous` | Ask a separate curator turn and apply only accepted, still-valid, budgeted items. |
-
-Start by inspecting one audit run:
+Start with an audit:
 
 ```bash
 akno dream --mode audit
 akno dream status --pending
 ```
 
-Read [The dream cycle](docs/dream-cycle.md) before enabling scheduled writes.
+Background scheduling uses launchd on macOS and systemd user services on Linux. A missed nightly window catches
+up when the service next loads, without rerunning a window that already has a receipt. Read [The dream
+cycle](docs/dream-cycle.md) before enabling scheduled writes.
 
 ## Documentation
 
-The guides are also published at [akno.tenphi.me](https://akno.tenphi.me/).
+The guides are published at [akno.tenphi.me](https://akno.tenphi.me/) and live in [`docs/`](docs/README.md).
 
-| Guide                                        | Use it for                                                            |
-| -------------------------------------------- | --------------------------------------------------------------------- |
-| [Getting started](docs/getting-started.md)   | Installation, guided setup, the demo, and a safe adoption path        |
-| [Memory lifecycle](docs/memory-lifecycle.md) | Human edits, agent writes, dream outcomes, and concurrent changes     |
-| [Core concepts](docs/concepts.md)            | Pages, documents, roles, rules, evidence, identity, and result states |
-| [Configuration](docs/configuration.md)       | Config layers, secrets, models, profiles, and knowledge-base rules    |
-| [Reading memory](docs/reading.md)            | Recall, grounded answers, graph, timeline, and automatic context      |
-| [Writing and ingestion](docs/writing.md)     | Exact writes, retain/remember, migration, documents, and reversal     |
-| [The dream cycle](docs/dream-cycle.md)       | Phases, plans, policies, budgets, decisions, and verification         |
-| [How Akno works](docs/how-it-works.md)       | Architecture, indexing, retrieval, writes, and service boundaries     |
-| [Operations](docs/operations.md)             | Service installation, diagnostics, recovery, privacy, and platform    |
-| [Benchmarks](docs/benchmarks.md)             | Quality gates, latency evidence, and the qualified OpenAI preset      |
-| [Limitations](docs/limitations.md)           | Current capability boundaries and intentionally unsupported cases     |
-| [Command reference](docs/commands.md)        | Complete command-purpose/write/model map                              |
-
-The [`docs/` index](docs/README.md) groups these by common user journeys.
+| If you want to…                           | Start with                                                                                                      |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Install Akno or try the demo              | [Getting started](docs/getting-started.md)                                                                      |
+| Understand the everyday memory workflow   | [Memory lifecycle](docs/memory-lifecycle.md) and [Core concepts](docs/concepts.md)                              |
+| Read or supply agent context              | [Reading memory](docs/reading.md)                                                                               |
+| Write memory or ingest documents          | [Writing and ingestion](docs/writing.md)                                                                        |
+| Configure autonomous maintenance          | [The dream cycle](docs/dream-cycle.md) and [Configuration](docs/configuration.md)                               |
+| Deploy, diagnose, or recover Akno         | [Operations](docs/operations.md)                                                                                |
+| Understand the implementation             | [How Akno works](docs/how-it-works.md)                                                                          |
+| Check commands, benchmarks, or boundaries | [Command reference](docs/commands.md), [Benchmarks](docs/benchmarks.md), and [Limitations](docs/limitations.md) |
 
 ## Development
 
