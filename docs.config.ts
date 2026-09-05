@@ -22,12 +22,13 @@ export default defineDocsConfig({
   ],
   content: {
     sources: [
-      { file: 'README.md', route: '/' },
+      { file: 'docs/index.md', route: '/' },
+      { file: 'README.md', route: '/overview' },
       { file: 'docs/README.md', route: '/documentation' },
       {
         glob: 'docs/**/*.md',
         base: 'docs',
-        exclude: ['docs/README.md'],
+        exclude: ['docs/README.md', 'docs/index.md'],
         navigation: false,
       },
     ],
@@ -38,7 +39,7 @@ export default defineDocsConfig({
       '/',
       {
         label: 'Start here',
-        items: ['/getting-started', '/memory-lifecycle', '/concepts'],
+        items: ['/overview', '/getting-started', '/memory-lifecycle', '/concepts'],
       },
       {
         label: 'Workflows',
