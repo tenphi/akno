@@ -172,6 +172,11 @@ describe('grounded answer discovery surface', () => {
       },
     ]);
     expect(modelRequests).toHaveLength(2);
+    const verifierMessages = modelRequests[1]!.messages as { content: string }[];
+    expect(JSON.parse(verifierMessages.at(-1)!.content)).toMatchObject({
+      question: expect.any(String),
+      memory_view: 'factual',
+    });
     expect(result.model_usage).toEqual({
       generation: {
         model: 'invented-answer-model',
@@ -255,6 +260,20 @@ describe('grounded answer discovery surface', () => {
   });
 
   it.each([
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported what Bo Winters said about a five-year silverpine warranty, but has not verified his words.',
+      'Ассистент сообщил со слов Bo Winters о гарантии silverpine на пять лет, но не проверял его слова; сообщение предварительное.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized alternative where a silverpine warranty would have lasted seven years.',
+      'Ada Marlow described a counterfactual seven-year silverpine warranty, not as an actual event.',
+      true,
+    ],
     [
       'hypothetical',
       'self_attested',
@@ -365,7 +384,7 @@ describe('grounded answer discovery surface', () => {
     async (commitment, basis, source, text, accepted) => {
       write(
         'products/zephyr-qx-100.md',
-        `# Zephyr QX-100\n\n<!-- akno:item mem_compound v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=${basis === 'source_report' ? 'assistant' : 'user'} ${basis === 'source_report' ? 'speaker=assistant ' : ''}reports=0 commitment=${commitment} disposition=active polarity=affirmed basis=${basis} -->\n- **${basis === 'source_report' ? 'Reported by assistant · ' : ''}${commitment === 'tentative' ? 'Tentative' : 'Hypothetical'}:** ${source}\n`,
+        `# Zephyr QX-100\n\n<!-- akno:item mem_compound v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=${basis === 'source_report' ? 'assistant' : 'user'} ${basis === 'source_report' ? 'speaker=assistant ' : ''}reports=0 commitment=${commitment} disposition=active polarity=affirmed basis=${basis} -->\n- **${basis === 'source_report' ? 'Reported by assistant · ' : ''}${commitment === 'tentative' ? 'Tentative' : commitment === 'counterfactual' ? 'Counterfactual' : 'Hypothetical'}:** ${source}\n`,
       );
       await memory.index({ verify: true });
       await useAnswerModel({
@@ -439,6 +458,38 @@ describe('grounded answer discovery surface', () => {
     expect(result.answer).toBeNull();
     expect(result.validation?.rejection_counts).toEqual({ protected_value: 1 });
     expect(modelRequests).toHaveLength(1);
+  });
+
+  it('translates an undetermined open question without denying its embedded predicate', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_undetermined v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=question subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** Ada Marlow left open whether the silverpine warranty covers sensor repair; the answer remains to be determined.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow оставила открытым вопрос о ремонте датчика по гарантии silverpine; ответ пока не определён.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What open silverpine warranty question remains?',
+      memory_view: 'questions',
+      expand: false,
+      graph: false,
+    });
+    expect(result.reason_code).toBe('answered');
+    const messages = modelRequests[1]!.messages as { content: string }[];
+    expect(JSON.parse(messages.at(-1)!.content)).toMatchObject({
+      question: 'What open silverpine warranty question remains?',
+      memory_view: 'questions',
+    });
   });
 
   it.each(['unknown', 'unestablished', 'unverified', 'not confirmed'])(

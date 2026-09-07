@@ -80,15 +80,15 @@ cases must be assessed separately from model quality.
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,
-Russian and mixed sources; exposed corpora remain available unchanged. V5 keeps the exposed development inputs
+Russian and mixed sources; exposed corpora remain available unchanged. V6 keeps the exposed development inputs
 and introduces a fresh held-out set, reviewed before execution by a separate model. Earlier corpora remain
 diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v5 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v5 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v6 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v6 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -118,18 +118,24 @@ Old receipts may lack the new optional fields. These fields contain no source te
 
 Answer guards accept bounded English/Russian qualification forms while checking combined semantics: a
 reported tentative claim must retain both attribution and uncertainty, and fictional examples must remain
-fictional. The complete answer still passes a separate semantic verifier. Exact source frames may contain a
+fictional. The complete answer still passes a separate semantic verifier, which receives the original question
+and effective memory view to interpret short answers without treating the question's premises as evidence.
+Exact source frames may contain a
 narrower support quotation; they must remain byte-exact, uniquely located, and in the same source item.
 Several adjacent frame quotations may cover one support quotation; only whitespace may bridge them.
 Missing words, including negations, remain a hold. A proposal with explicitly unknown temporal precision,
 tentative time status and no date boundaries or recurrence may retain an unresolved source-relative time.
-It is never actionable or eligible for a bounded date query. Invented resolved dates still fail validation.
+Its readable sentence must identify the unknown source clock; bare “tomorrow” is insufficient even with unknown
+structured precision. It is never actionable or eligible for a bounded date query. Invented resolved dates still fail validation.
 
 When an entire extracted batch fails validation, retention permits one structural repair using the complete
 original source and validation issues. Every repaired candidate passes the same validation and semantic
 verification. Already admitted candidates are not replaced, and semantic verifier rejections are not retried.
 Generated nonfactual prose must keep its named outer source speaker; source metadata alone cannot satisfy
-this readable attribution check. Repair cannot replace legacy event extraction. The optional
+this readable attribution check. Named inner reporters require a bounded explicit reporting relation in the
+original frame; a name merely appearing as a fictional participant is insufficient. Semantic verification still
+checks the full quotation scope. Explicit exclusion wording with affirmative polarity is held before verification.
+Repair cannot replace legacy event extraction. The optional
 `model_usage.repair` receipt reports the extra call and replays with the original result.
 
 Reports under `bench-results/` contain diagnostics and generated text from the invented corpus for review.

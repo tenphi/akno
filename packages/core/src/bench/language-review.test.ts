@@ -12,6 +12,23 @@ type Report = Awaited<ReturnType<typeof runLanguageBench>>;
 
 /** Synthetic judgments exercise the gate's accounting and integrity, never model quality. */
 function fixture() {
+  const evidence = {
+    text: 'An invented qualified memory record.',
+    qualification: {
+      status: 'qualified',
+      id: 'mem_1111',
+      level: 1,
+      kind: 'claim',
+      subject: 'unresolved',
+      source_role: 'user',
+      commitment: 'hypothetical',
+      disposition: 'active',
+      polarity: 'affirmed',
+      basis: 'self_attested',
+      answer_eligible: false,
+      current_eligible: false,
+    },
+  };
   const reviewer = {
     kind: 'model',
     id: 'invented-reviewer',
@@ -31,6 +48,7 @@ function fixture() {
     })),
   };
   const reports = (['development', 'held-out'] as const).map((split) => ({
+    schemaVersion: 'language-benchmark-v2',
     corpusFingerprint: fingerprint,
     corpusVersion: 'language-discourse-v3',
     runs: 2,
@@ -51,7 +69,7 @@ function fixture() {
         run,
         expectedHold: entry.hold ?? false,
         retainedItems: entry.hold ? 0 : 1,
-        reviewKnowledge: entry.hold ? [] : [{ text: 'An invented qualified memory record.' }],
+        reviewKnowledge: entry.hold ? [] : [evidence],
         availabilityFailure: false,
         bytesStable: true,
         ordinaryCorrect: true,
@@ -62,7 +80,7 @@ function fixture() {
               requestedAnswerLanguage,
               explicitView,
               retainedEvidence: entry.hold ? 0 : 1,
-              reviewRetrieval: entry.hold ? [] : [{ text: 'An invented qualified memory record.' }],
+              reviewRetrieval: entry.hold ? [] : [evidence],
               reviewAnswer: entry.hold ? null : 'An invented qualified answer.',
             })),
           ),
@@ -102,6 +120,46 @@ function fixture() {
 }
 
 describe('independently adjudicated language gate', () => {
+  it.each([
+    { reviewRetrieval: 'x', retainedEvidence: 1 },
+    { reviewRetrieval: {}, retainedEvidence: undefined },
+    { reviewRetrieval: [] },
+    { reviewRetrieval: [{ text: 'An invented record without qualification.' }], retainedEvidence: 1 },
+  ])('rejects malformed raw retrieval evidence: %s', (value) => {
+    const { reports, inputs } = fixture();
+    Object.assign(reports[0]!.cases[0]!.queries[0]!, { retainedEvidence: undefined }, value);
+    expect(() => languageReviewPacket(JSON.parse(JSON.stringify(reports)), inputs)).toThrow(
+      'review evidence',
+    );
+  });
+
+  it('rejects malformed retained knowledge before exposing it to a reviewer', () => {
+    const { reports, inputs } = fixture();
+    Object.assign(reports[0]!.cases[0]!, { reviewKnowledge: 'x', retainedItems: 1 });
+    expect(() => languageReviewPacket(reports, inputs)).toThrow('review evidence');
+  });
+
+  it.each([undefined, '', '  ', false, 11, {}])(
+    'rejects missing or malformed raw answer output: %s',
+    (value) => {
+      const { reports, inputs, outputs } = fixture();
+      const query = reports[0]!.cases[0]!.queries[0]!;
+      Object.assign(query, { reviewAnswer: value });
+      const rawReports = JSON.parse(JSON.stringify(reports));
+      expect(() => languageReviewPacket(rawReports, inputs)).toThrow('answer review evidence');
+      expect(() => adjudicateLanguageGate(rawReports, inputs, outputs)).toThrow('answer review evidence');
+    },
+  );
+
+  it('rejects unknown report versions and missing availability observations', () => {
+    const { reports, inputs } = fixture();
+    Object.assign(reports[0]!, { schemaVersion: 'unknown' });
+    expect(() => languageReviewPacket(reports, inputs)).toThrow('report schema');
+    Object.assign(reports[0]!, { schemaVersion: 'language-benchmark-v2' });
+    Object.assign(reports[0]!.cases[0]!, { availabilityFailure: undefined });
+    expect(() => languageReviewPacket(reports, inputs)).toThrow('availability observation');
+  });
+
   it('accepts complete reviewed coverage with separately counted justified abstentions', () => {
     const { reports, inputs, outputs } = fixture();
     const gate = adjudicateLanguageGate(reports, inputs, outputs);

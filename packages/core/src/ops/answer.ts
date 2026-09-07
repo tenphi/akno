@@ -26,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v13';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v5';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v14';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v6';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -103,6 +103,8 @@ evidence that directly supports the whole block. Answer covered parts of a compo
 parts in missing_concepts. If the evidence does not answer anything, return no blocks. Do not write citation markers,
 file titles, storage identifiers, or line numbers in block text; Akno renders validated citations itself.
 Speaker names needed for attribution belong in the answer text.
+Translate descriptive vocabulary into the requested answer language. Do not add parenthetical
+source-language glosses for ordinary words such as calendar frequencies; preserve exact names and identifiers.
 
 When supplied evidence gives incompatible values and does not establish which is authoritative, do not choose
 or summarize the conflicting values in an answer block. Return no blocks and list the unresolved identity or
@@ -121,6 +123,10 @@ is supported. Meaning-preserving translation between English and Russian is allo
 not a contradiction. Do not require a translated answer to repeat an original phrase verbatim, except names
 and protected values. Typed qualifications and readable evidence together establish the record's status.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
+Use the supplied question and memory_view only to interpret what the answer addresses, including yes/no
+responses and requests to describe competing hypotheses. The question is not evidence for its premises
+and cannot supply missing facts. A faithful list of incompatible hypotheses answers a discussion question
+without claiming either hypothesis is true.
 
 Judge every block separately using only the cited_evidence nested inside that block. Evidence attached to a
 different block cannot support it. Set supported to true only when the whole answer_text is directly entailed,
@@ -319,7 +325,15 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
 
   const checked = validateDraft(parsed.data, evidence);
   const verified =
-    checked.blocks.length > 0 ? await verifyDraftSupport(ctx.models.answer, checked.blocks, evidence) : null;
+    checked.blocks.length > 0
+      ? await verifyDraftSupport(
+          ctx.models.answer,
+          checked.blocks,
+          evidence,
+          input.question,
+          recalled.memory_view,
+        )
+      : null;
   const validation: NonNullable<AnswerOutput['validation']> = {
     generated_blocks: parsed.data.blocks.length,
     passed_guards: checked.blocks.length,
@@ -430,6 +444,8 @@ async function verifyDraftSupport(
   model: ModelClient,
   blocks: AnswerDraft['blocks'],
   evidence: AnswerContextItem[],
+  question: string,
+  memoryView: MemoryView = 'factual',
 ): Promise<
   | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
   | { ok: false; note: string; outcome: ModelOutcome<string> }
@@ -443,6 +459,8 @@ async function verifyDraftSupport(
       {
         role: 'user',
         content: JSON.stringify({
+          question,
+          memory_view: memoryView,
           blocks: blocks.map((block, index) => ({
             block_id: blockIds[index],
             answer_text: block.text,
@@ -526,7 +544,12 @@ export async function probeAnswerModel(model: ModelClient): Promise<AnswerCapabi
     };
   }
 
-  const verified = await verifyDraftSupport(model, checked.blocks, evidence);
+  const verified = await verifyDraftSupport(
+    model,
+    checked.blocks,
+    evidence,
+    'How long is the Zephyr QX-100 warranty?',
+  );
   const verificationBase = capabilityCheck(verified.outcome);
   if (!verified.ok) {
     return {
@@ -933,7 +956,7 @@ function qualificationPolarityText(text: string, support: string): string {
     .replace(/\bnot (?=(?:(?:as )?(?:an? )?)?(?:assertion|claim|statement)\b)/giu, '')
     .replace(/не (?=(?:(?:был[аои]? )?установлен\p{L}* как (?:факт|верн))|утверждени)/giu, '');
   if (
-    /\b(unverified|unconfirmed|unestablished|unknown|tentative|hypothes[ie]s)\b|\bnot (?:verified|confirmed|established|known)\b|неподтвержд|неизвестн|гипотез|предполож/iu.test(
+    /\b(unverified|unconfirmed|unestablished|unknown|tentative|hypothes[ie]s|open question|unanswered|undetermined|remains to be determined)\b|\bnot (?:verified|confirmed|established|known)\b|неподтвержд|неизвестн|гипотез|предполож/iu.test(
       support,
     )
   ) {
@@ -943,10 +966,16 @@ function qualificationPolarityText(text: string, support: string): string {
         '',
       )
       .replace(
-        /не (?=(?:был[аои]? )?(?:проверен|подтвержд[её]н|подтверд|имел[аои]? подтверждени|установлен|устанавлива|известен|известна))/giu,
+        /не (?=(?:был[аои]? )?(?:проверен|проверял|проверил|подтвержд[её]н|подтверд|имел[аои]? подтверждени|установлен|устанавлива|определ[её]н|известен|известна))/giu,
         '',
       )
       .replace(/подтверждения (?:этому )?нет/giu, 'подтверждение отсутствует');
+  }
+  if (/\b(counterfactual|unrealized alternative)\b|контрфактическ/iu.test(support)) {
+    polarityText = polarityText.replace(
+      /\bnot as (?:an? )?(?:actual|real) (?:event|occurrence|fact)\b/giu,
+      '',
+    );
   }
   if (/\b(fictional|invented example|imaginary example)\b|вымышлен/iu.test(support)) {
     // Explicit fiction entails unreality of the example. It does not license a new denial

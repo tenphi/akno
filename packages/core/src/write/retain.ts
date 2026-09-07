@@ -23,7 +23,7 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v6';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v7';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v2';
 
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
@@ -51,10 +51,13 @@ Rules:
 - An invented or fictional example containing a proposition remains hypothetical or an attributed report, even if the readable sentence explains that it is fictional. It must not get ordinary factual eligibility.
 - Classify the embedded proposition's commitment, not the certainty that someone discussed it: a sentence
   stating that a fictional example was discussed still needs hypothetical commitment for that example.
-- polarity describes the main proposition: use negated for a denied property (for example, a warranty does not cover damage), even when the speaker confidently asserts that denial. Use affirmed for a positive property; uncertainty and rejection belong in discourse, not polarity.
+- polarity describes the main proposition: use negated for a denied property (for example, a warranty does not cover or excludes damage), even when the speaker confidently asserts that denial. Use affirmed for a positive property; uncertainty and rejection belong in discourse, not polarity.
 - Attribution names who established the proposition. Selection by this model does not change attribution.
 - For a nonfactual record, include the original named source speaker in its readable sentence as well as
   attribution metadata. Preserve the outer recorder and any inner named speaker as distinct people.
+- The attribution chain contains actual reporters of a claim. Do not add a fictional participant as an
+  external reporter merely because that person appears inside an example, and do not repeat the outer source
+  in the chain. A real quoted speaker and a character described in fiction have different roles.
 - Assistant, external, and unknown assertions use source_report unless they cite independently supplied
   durable evidence. They do not certify themselves.
 - Never invent a date. Resolve relative time only from the supplied reference clock. An unanchored proposal
@@ -491,7 +494,7 @@ function formatFolderCatalog(folders: FolderCatalogEntry[]): string {
 
 const SPECULATIVE =
   /\b(should be considered|should probably|might want|could be worth|worth considering|at some point|look into|maybe|perhaps|probably|possibly|considering whether|thinking about|not sure|tbd|to be decided)\b/i;
-const COPULA = /\b(is|are|was|were|has|have|had|will|would|does|do|did|can|may|must|should)\b/i;
+const COPULA = /\b(is|are|was|were|has|have|had|will|would|does|do|did|can|may|must|should)(?:n['’]t)?\b/i;
 const VERB_SHAPED = /\b\w{3,}(?:s|ed|es)\b/i;
 const UNSAFE_DISCOURSE =
   /\b(suppose|assuming|hypothetical|counterfactual|if|invented example|fictional example|not a real|for illustration|might|maybe|perhaps|merely proposed|was proposed|were proposed|was rejected|were rejected|did not choose|not decided)\b|предполож|допустим|если бы|если|гипотез|возможно|вероятно|отклон|не решил|не принято|вымышлен|только пример/iu;
@@ -563,7 +566,9 @@ export function cleanCandidateBatch(
 
     if (
       record.polarity === 'affirmed' &&
-      /\b(?:does not|doesn't|do not|don't) (?:cover|include|apply|permit|allow|belong|require)\b/iu.test(text)
+      /\b(?:does not|doesn't|do not|don't) (?:cover|include|apply|permit|allow|belong|require)\b|(?<!never )(?<!not )(?<!n't )\bexclud(?:e|es|ed|ing)\b|(?<!не )(?<![\p{L}])исключа(?:ет|ют|л|ла|ло|ли)(?![\p{L}])/iu.test(
+        text,
+      )
     ) {
       held.push({
         candidate_id: provisionalId,
@@ -582,6 +587,16 @@ export function cleanCandidateBatch(
       continue;
     }
     const attribution = cleanAttribution(record, spans.support, options);
+    if (
+      attribution.chain?.some(({ speaker }) => !hasExplicitReporter(speaker, sourceEvidence(spans.frame)))
+    ) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason: 'an attribution-chain speaker lacks an explicit reporting relation in the source frame',
+      });
+      continue;
+    }
     const epistemic = cleanEpistemic(record.epistemic, attribution.source_role, kind);
     const speaker = attribution.source_speaker;
     const assistantLabel =
@@ -625,6 +640,21 @@ export function cleanCandidateBatch(
         reason_code: 'time_unresolved',
         reason:
           'relative calendar language has no exact source mention time and IANA timezone and was not resolved',
+      });
+      continue;
+    }
+    if (
+      RELATIVE_TIME.test(sourceEvidence(spans.frame)) &&
+      explicitlyUnknownTime(time) &&
+      !/\b(source-relative|undated (?:source|record|conversation)|relative to (?:the )?(?:source|record))\b|недатирован|относительно (?:даты )?источник/iu.test(
+        text,
+      )
+    ) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'time_unresolved',
+        reason:
+          'an unknown source-relative time must name its source-relative or undated clock in readable prose; bare tomorrow could mean processing time',
       });
       continue;
     }
@@ -832,6 +862,18 @@ function validExactSpan(
     return itemId === undefined && occurrences(options.sourceText, quote) === 1;
   }
   return itemId === undefined;
+}
+
+function hasExplicitReporter(speaker: string, frame: string): boolean {
+  const name = speaker.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // A name alone may be a fictional participant. This bounded structural check precedes the
+  // semantic verifier, which must still establish quotation scope and entailment of the claim.
+  const reporting =
+    '(?:said|says|wrote|writes|reported|reports|stated|states|told|asked|asks|claimed|claims|described|describes|noted|notes|suggested|suggests|сообщил[аи]?|сказал[аи]?|написал[аи]?|отметил[аи]?|утвержда(?:ет|ют|л[аи]?)|рассказал[аи]?|спросил[аи]?|предложил[аи]?)';
+  return new RegExp(
+    `(?<![\\p{L}\\p{N}])(?:${name}\\s*(?::|(?:[\\p{L}]+\\s+){0,2}${reporting}(?![\\p{L}]))|${reporting}\\s+${name}(?![\\p{L}\\p{N}])|(?:according to|по словам)\\s+${name}(?![\\p{L}\\p{N}]))`,
+    'iu',
+  ).test(frame.normalize('NFKC'));
 }
 
 function cleanAttribution(

@@ -5,6 +5,63 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cross-language retention boundary', () => {
+  it.each([
+    ['For discussion, Bo Winters imagines a fictional Zephyr QX-100 warranty.', false],
+    ['Для обсуждения Bo Winters представляет вымышленную гарантию Zephyr QX-100.', false],
+    ['Bo Winters said the Zephyr QX-100 warranty might last five years.', true],
+    ['Bo Winters сообщил, что гарантия Zephyr QX-100 может действовать пять лет.', true],
+    ['According to Bo Winters, the Zephyr QX-100 warranty might last five years.', true],
+  ])('requires a reporting relation for an inner speaker: %s', (source, valid) => {
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: 'Ada Marlow recorded a tentative Zephyr QX-100 warranty claim involving Bo Winters.',
+          subject: 'Zephyr QX-100',
+          attribution: { source_role: 'user', chain: [{ speaker: 'Bo Winters', role: 'external' }] },
+          discourse: { commitment: 'tentative', disposition: 'active' },
+          epistemic: { basis: 'source_report' },
+          support: [{ item_id: 'turn-1111', quote: source }],
+          discourse_frame: [{ item_id: 'turn-1111', quote: source }],
+        },
+      ],
+      { sourceItems: [{ item_id: 'turn-1111', role: 'user', speaker: 'Ada Marlow', text: source }] },
+    );
+    expect(result.candidates).toHaveLength(valid ? 1 : 0);
+    if (!valid) expect(result.held[0]?.reason).toContain('explicit reporting relation');
+  });
+
+  it.each([
+    ['The Zephyr QX-100 warranties exclude damage.', false],
+    ['The Zephyr QX-100 warranty excluded damage.', false],
+    ['The Zephyr QX-100 warranty is excluding damage.', false],
+    ['The Zephyr QX-100 warranties exclude ущерб; гарантии исключают ущерб.', false],
+    ['The Zephyr QX-100 warranty applies; гарантии исключали ущерб.', false],
+    ['The Zephyr QX-100 warranty does not exclude damage.', true],
+    ["The Zephyr QX-100 warranty doesn't exclude damage.", true],
+    ['The Zephyr QX-100 warranty never excluded damage.', true],
+    ['The Zephyr QX-100 warranty applies; гарантии не исключают ущерб.', true],
+  ])('checks exclusion polarity without reversing immediate negation: %s', (text, valid) => {
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text,
+          subject: 'Zephyr QX-100',
+          attribution: { source_role: 'user' },
+          discourse: { commitment: 'asserted', disposition: 'active' },
+          epistemic: { basis: 'self_attested' },
+          polarity: 'affirmed',
+          support: [{ quote: text }],
+          discourse_frame: [{ quote: text }],
+        },
+      ],
+      { sourceText: text },
+    );
+    expect(result.candidates).toHaveLength(valid ? 1 : 0);
+    if (!valid) expect(result.held[0]?.reason).toContain('polarity affirmed');
+  });
+
   it.each([false, true])(
     'preserves the outer named source in generated nonfactual prose (named=%s)',
     (named) => {
@@ -137,6 +194,31 @@ describe('cross-language retention boundary', () => {
     },
   );
 
+  it('holds a bare relative date even when its structured precision is unknown', () => {
+    const source = 'I propose reviewing the Zephyr QX-100 warranty tomorrow.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'plan',
+          text: 'Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow.',
+          subject: 'Zephyr QX-100',
+          attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+          discourse: { commitment: 'tentative', disposition: 'proposed' },
+          epistemic: { basis: 'self_attested' },
+          support: [{ quote: source }],
+          discourse_frame: [{ quote: source }],
+          time: { precision: 'unknown', status: 'tentative', relation: 'scheduled' },
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]).toMatchObject({
+      reason_code: 'time_unresolved',
+      reason: expect.stringContaining('readable prose'),
+    });
+  });
+
   it.each(['unknown', 'day'] as const)(
     'keeps an undated proposal but rejects an invented resolved date (%s)',
     (precision) => {
@@ -225,6 +307,10 @@ describe('cross-language retention boundary', () => {
   });
 
   it.each([
+    [
+      'The Zephyr QX-100 warranty excludes spilled-liquid damage.',
+      'The Zephyr QX-100 warranty excludes spilled-liquid damage.',
+    ],
     [
       'This is a fictional example: the Zephyr QX-100 warranty lasts five years.',
       'The Zephyr QX-100 warranty lasts five years.',

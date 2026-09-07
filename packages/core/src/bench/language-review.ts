@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { MemoryQualification } from '@tenphi/akno-protocol';
 import { sha256 } from '../store/ids.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
+import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
 import { ANSWER_PROMPT_VERSION, ANSWER_VERIFIER_PROMPT_VERSION } from '../ops/answer.ts';
@@ -10,6 +12,20 @@ import { MEMORY_VIEW_VERSION } from '../memory/intent.ts';
 import type { runLanguageBench } from './language.ts';
 
 type Report = Awaited<ReturnType<typeof runLanguageBench>>;
+const ReviewEvidence = z.object({
+  text: z.string().trim().min(1),
+  qualification: MemoryQualification.refine((value) => value.status === 'qualified'),
+});
+const ReviewMaterial = z.object({
+  retainedItems: z.number().int().nonnegative(),
+  reviewKnowledge: z.array(ReviewEvidence),
+  queries: z.array(
+    z.object({
+      retainedEvidence: z.number().int().nonnegative(),
+      reviewRetrieval: z.array(ReviewEvidence),
+    }),
+  ),
+});
 const Reviewer = z.object({
   kind: z.enum(['human', 'model']),
   id: z.string().min(1),
@@ -65,7 +81,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
         ? LANGUAGE_CORPUS_V4
         : corpusVersion === 'language-discourse-v5'
           ? LANGUAGE_CORPUS_V5
-          : null;
+          : corpusVersion === 'language-discourse-v6'
+            ? LANGUAGE_CORPUS_V6
+            : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -78,9 +96,10 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
     throw new Error('both splits required');
   const first = reports[0]!;
   for (const report of reports) {
+    if (report.schemaVersion !== 'language-benchmark-v2') throw new Error('unexpected report schema');
     if (report.corpusFingerprint !== fingerprint || report.corpusVersion !== corpusVersion)
       throw new Error('unexpected corpus');
-    if (report.runs < 2 || report.runs !== first.runs)
+    if (!Number.isInteger(report.runs) || report.runs < 2 || report.runs > 5 || report.runs !== first.runs)
       throw new Error('at least two complete equal run sets required');
     if (JSON.stringify(contract(report)) !== JSON.stringify(contract(first)))
       throw new Error('runtime contracts differ');
@@ -101,6 +120,19 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
       ),
     );
     for (const entry of report.cases) {
+      // Reports arrive from JSON, not a typed caller. Missing output must not become a
+      // present answer through undefined !== null and inflate independently reviewed coverage.
+      if (
+        entry.queries.some(
+          (query) =>
+            query.reviewAnswer !== null &&
+            (typeof query.reviewAnswer !== 'string' || query.reviewAnswer.trim().length === 0),
+        )
+      )
+        throw new Error('missing or invalid answer review evidence');
+      if (typeof entry.availabilityFailure !== 'boolean') throw new Error('missing availability observation');
+      if (!ReviewMaterial.safeParse(entry).success)
+        throw new Error('missing or malformed retained/retrieval review evidence');
       const source = expected.find((candidate) => candidate.id === entry.id)!;
       if (entry.expectedHold !== (source.hold ?? false)) throw new Error('altered hold expectation');
       exactIds(entry.queries.map(queryKey), matrixKeys());
