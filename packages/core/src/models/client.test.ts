@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ModelClient,
   backoffMs,
@@ -318,8 +318,9 @@ describe('Responses API transport', () => {
   }
 
   async function exchange(
-    response: ServedResponse,
+    response: ServedResponse | ((request: number) => ServedResponse),
     run: (client: ModelClient) => Promise<unknown>,
+    roleOverrides: Partial<ResolvedModelRole> = {},
   ): Promise<{ result: unknown; paths: string[]; bodies: Record<string, unknown>[] }> {
     const paths: string[] = [];
     const bodies: Record<string, unknown>[] = [];
@@ -329,10 +330,11 @@ describe('Responses API transport', () => {
       request.on('end', () => {
         paths.push(request.url ?? '');
         bodies.push(JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>);
-        reply.writeHead(response.status ?? 200, { 'content-type': 'application/json' });
+        const served = typeof response === 'function' ? response(bodies.length) : response;
+        reply.writeHead(served.status ?? 200, { 'content-type': 'application/json' });
         reply.end(
           JSON.stringify(
-            response.body ?? {
+            served.body ?? {
               output: [
                 {
                   type: 'message',
@@ -371,6 +373,7 @@ describe('Responses API transport', () => {
         maxOutputTokens: 500,
         reasoningEffort: 'none',
         unavailableReason: null,
+        ...roleOverrides,
       });
       return { result: await run(client), paths, bodies };
     } finally {
@@ -458,6 +461,117 @@ describe('Responses API transport', () => {
     expect(paths).toEqual(['/v1/responses']);
     expect(result).toMatchObject({ ok: false, reason: 'request_failed', endpointRequests: 1 });
   });
+
+  it('recovers reasoning-only token exhaustion once and accounts for both attempts', async () => {
+    const { result, bodies, paths } = await exchange(
+      (attempt) =>
+        attempt === 1
+          ? {
+              body: {
+                status: 'incomplete',
+                incomplete_details: { reason: 'max_output_tokens' },
+                output: [{ type: 'reasoning' }],
+                usage: {
+                  input_tokens: 111,
+                  output_tokens: 480,
+                  total_tokens: 591,
+                  output_tokens_details: { reasoning_tokens: 480 },
+                },
+              },
+            }
+          : {},
+      (client) =>
+        client.chat([{ role: 'user', content: 'Verify the invented warranty claim.' }], { maxTokens: 480 }),
+      { maxOutputTokens: undefined },
+    );
+    expect(bodies.map((body) => body.max_output_tokens)).toEqual([480, 4096]);
+    expect(paths).toEqual(['/v1/responses', '/v1/responses']);
+    expect(bodies[1]).toEqual({ ...bodies[0], max_output_tokens: 4096 });
+    expect(result).toMatchObject({
+      ok: true,
+      endpointRequests: 2,
+      usage: {
+        inputTokens: 222,
+        outputTokens: 502,
+        totalTokens: 724,
+        reasoningOutputTokens: 487,
+      },
+    });
+  });
+
+  it('keeps retries bounded and rejects parseable but incomplete output', async () => {
+    const { result, bodies } = await exchange(
+      {
+        body: {
+          status: 'incomplete',
+          incomplete_details: { reason: 'max_output_tokens' },
+          output_text: '{"verdicts":[]}',
+        },
+      },
+      (client) => client.chat([{ role: 'user', content: 'Invented request.' }], { maxTokens: 480 }),
+      { maxOutputTokens: 700 },
+    );
+    expect(bodies.map((body) => body.max_output_tokens)).toEqual([480, 700]);
+    expect(result).toMatchObject({
+      ok: false,
+      value: null,
+      endpointRequests: 2,
+      error: 'Responses API exhausted its output token budget before completing the response',
+    });
+  });
+
+  it('spends only the remaining caller deadline on output-budget recovery', async () => {
+    const deadlines = vi.spyOn(AbortSignal, 'timeout');
+    try {
+      const { result } = await exchange(
+        (attempt) =>
+          attempt === 1
+            ? { body: { status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' } } }
+            : {},
+        (client) =>
+          client.chat([{ role: 'user', content: 'Invented request.' }], { maxTokens: 480, timeoutMs: 1000 }),
+        { maxOutputTokens: undefined },
+      );
+      expect(result).toMatchObject({ ok: true, endpointRequests: 2 });
+      expect(deadlines.mock.calls).toHaveLength(2);
+      expect(deadlines.mock.calls[1]![0]).toBeLessThan(deadlines.mock.calls[0]![0]);
+    } finally {
+      deadlines.mockRestore();
+    }
+  });
+
+  it('does not raise an explicit role cap to recover token exhaustion', async () => {
+    const { result, bodies } = await exchange(
+      {
+        body: {
+          status: 'incomplete',
+          incomplete_details: { reason: 'max_output_tokens' },
+          output: [{ type: 'reasoning' }],
+        },
+      },
+      (client) => client.chat([{ role: 'user', content: 'Invented request.' }], { maxTokens: 500 }),
+    );
+    expect(bodies).toHaveLength(1);
+    expect(result).toMatchObject({ ok: false, endpointRequests: 1 });
+  });
+
+  it.each(['incomplete', 'failed'])(
+    'does not retry or accept partial text from a %s response for other reasons',
+    async (status) => {
+      const { result, bodies } = await exchange(
+        {
+          body: {
+            status,
+            incomplete_details: { reason: 'content_filter' },
+            output_text: '{"verdicts":[]}',
+          },
+        },
+        (client) => client.chat([{ role: 'user', content: 'Invented request.' }]),
+      );
+      expect(bodies).toHaveLength(1);
+      expect(result).toMatchObject({ ok: false, value: null, endpointRequests: 1 });
+    },
+  );
 
   it('fails closed when a successful Responses envelope has no output text', async () => {
     const { result } = await exchange({ body: { output: [{ type: 'reasoning' }] } }, (client) =>

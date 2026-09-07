@@ -617,18 +617,58 @@ export class ModelClient {
     if (options.temperature !== undefined) body.temperature = options.temperature;
     if (wantsJson) body.text = { format: responsesTextFormat(jsonSchema) };
 
-    const result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs);
-    const endpointRequests = result.endpointRequests ?? 0;
+    let result = await this.post<ResponsesApiResponse>('/responses', body, options.timeoutMs);
+    let endpointRequests = result.endpointRequests ?? 0;
+    let usage = result.value ? reportedModelUsage(result.value.usage) : null;
+    const initialLimit = body.max_output_tokens as number;
+    const retryLimit = Math.min(this.#role.maxOutputTokens ?? 16_384, Math.max(4_096, initialLimit * 2));
+    const retryTimeoutMs =
+      options.timeoutMs === undefined
+        ? undefined
+        : Math.floor(options.timeoutMs - (performance.now() - started));
+    // Reasoning shares the output budget. A short verdict can exhaust its allowance before
+    // producing any text. Retry that explicit condition once, respecting the role's hard cap.
+    if (
+      result.ok &&
+      result.value?.status === 'incomplete' &&
+      result.value.incomplete_details?.reason === 'max_output_tokens' &&
+      retryLimit > initialLimit &&
+      (retryTimeoutMs === undefined || retryTimeoutMs > 0)
+    ) {
+      result = await this.post<ResponsesApiResponse>(
+        '/responses',
+        { ...body, max_output_tokens: retryLimit },
+        retryTimeoutMs,
+      );
+      endpointRequests += result.endpointRequests ?? 0;
+      usage = sumModelUsage(usage, result.value ? reportedModelUsage(result.value.usage) : null);
+    }
     if (!result.ok || !result.value) {
       return this.observeChat({
         ...result,
         value: null,
         latencyMs: performance.now() - started,
         endpointRequests,
+        ...(usage ? { usage } : {}),
+      });
+    }
+    // Partial structured text can still parse. A stopped response is not a completed verdict.
+    if (result.value.status && result.value.status !== 'completed') {
+      const detail = result.value.incomplete_details?.reason;
+      return this.observeChat({
+        ok: false,
+        value: null,
+        reason: 'bad_response',
+        error:
+          detail === 'max_output_tokens'
+            ? 'Responses API exhausted its output token budget before completing the response'
+            : 'Responses API did not complete the response',
+        latencyMs: performance.now() - started,
+        endpointRequests,
+        ...(usage ? { usage } : {}),
       });
     }
 
-    const usage = reportedModelUsage(result.value.usage);
     const content = responseOutputText(result.value);
     if (content === null) {
       return this.observeChat({
@@ -743,6 +783,8 @@ interface ChatCompletionResponse {
 }
 
 interface ResponsesApiResponse {
+  status?: string;
+  incomplete_details?: { reason?: string } | null;
   /** Present in some compatible raw responses and as an SDK convenience. */
   output_text?: unknown;
   output?: {
@@ -783,6 +825,23 @@ function reportedModelUsage(usage: ProviderUsage | undefined): ModelUsage | null
     totalTokens,
     ...(cachedInputTokens === null ? {} : { cachedInputTokens }),
     ...(reasoningOutputTokens === null ? {} : { reasoningOutputTokens }),
+  };
+}
+
+/** Count both paid attempts; unknown counts stay unknown rather than understating usage. */
+function sumModelUsage(first: ModelUsage | null, second: ModelUsage | null): ModelUsage | null {
+  if (!first && !second) return null;
+  const sum = (key: keyof ModelUsage): number | null => {
+    const a = first?.[key];
+    const b = second?.[key];
+    return typeof a === 'number' && typeof b === 'number' ? a + b : null;
+  };
+  return {
+    inputTokens: sum('inputTokens'),
+    outputTokens: sum('outputTokens'),
+    totalTokens: sum('totalTokens'),
+    cachedInputTokens: sum('cachedInputTokens'),
+    reasoningOutputTokens: sum('reasoningOutputTokens'),
   };
 }
 
