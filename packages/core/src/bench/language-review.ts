@@ -4,6 +4,7 @@ import { sha256 } from '../store/ids.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
 import { LANGUAGE_CORPUS_V7 } from './language-corpus-v7.ts';
 import { LANGUAGE_CORPUS_V8 } from './language-corpus-v8.ts';
+import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -89,7 +90,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
               ? LANGUAGE_CORPUS_V7
               : corpusVersion === 'language-discourse-v8'
                 ? LANGUAGE_CORPUS_V8
-                : null;
+                : corpusVersion === 'language-discourse-v9'
+                  ? LANGUAGE_CORPUS_V9
+                  : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');

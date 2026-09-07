@@ -14,4 +14,6 @@ Accept adjacent exact frame quotations without stitching over omitted words, pre
 
 Share qualification definitions between extraction and verification, provide field-specific source-time repair guidance, and accept supported uncertainty paraphrases without admitting new predicate denials. Recognize unresolved question records independently from answers to their embedded questions.
 
+Keep nested reports outside self-attested knowledge, distinguish duration properties from calendar schedules, and require readable unknown-time records to preserve their missing source date. Accept bounded recorded-report attribution and explicit unestablished wording while preserving semantic verification.
+
 Give answer verification the original question and memory view, preserve source-relative clocks in readable prose, and hold inconsistent exclusion polarity or unsupported reporter chains before semantic verification.

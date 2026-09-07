@@ -23,8 +23,8 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v9';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v3';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v11';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v5';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -32,9 +32,24 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   A denied property such as excluded damage has negated polarity. Confidence in a denial does not make it affirmed.
 - An unresolved question can be remembered as a question without answering its embedded proposition.
   An unaccepted proposal remains proposed unless the source actually rejects it.
-- An unanchored nonfactual time reference uses an explicit time object with unknown precision, tentative
-  status, and null start, until, recurrence and mentioned_at. mentioned_at is a supplied source timestamp,
-  never a relative word such as tomorrow. Preserve the source-relative meaning in readable prose.
+- A direct user assertion, including a denial, uses self_attested unless it relays another source.
+  This records the user's assertion, not independent verification. Nested reports and assistant, external
+  or unknown assertions remain source_report, even when the outer recorder is a user.
+- Durations, frequencies and ordinal coverage terms that describe a property or hypothetical condition
+  stay in prose with time=null; they do not establish a calendar event. An established calendar schedule
+  preserves its cadence in prose and a scheduled time envelope. Structured recurrence requires a supported
+  start; otherwise keep unknown precision with null boundaries and recurrence. Do not invent an event clock
+  for a duration.
+- An unanchored deictic event reference, such as tomorrow in an undated proposal, uses an explicit time
+  object with unknown precision, tentative status, and null start, until, recurrence and mentioned_at.
+  Use scheduled/due for a proposal or valid for uncertain validity; occurred only permits actual status.
+  mentioned_at is a supplied source timestamp, never a relative word. Readable prose must explicitly
+  preserve BOTH the source-relative meaning and the unknown reference date.
+- caused_by requires explicit causation in the source. An unrealized alternative following a decision
+  is not caused by that decision merely because the two are discussed together. Prefer no relation to an
+  inferred one. A counterfactual remains active unless the source explicitly supersedes it; rejecting its
+  antecedent is what makes it counterfactual, not superseded. Represent explicit rejection or cancellation
+  in a separate correctly typed decision or plan record when the source supports that record.
 - A source author's fictional participant is not an additional real-world reporter. The original author
   may self-attest the hypothetical record without independently establishing its embedded proposition.`;
 
@@ -612,7 +627,12 @@ export function cleanCandidateBatch(
       });
       continue;
     }
-    const epistemic = cleanEpistemic(record.epistemic, attribution.source_role, kind);
+    const epistemic = cleanEpistemic(
+      record.epistemic,
+      attribution.source_role,
+      kind,
+      Boolean(attribution.chain?.length),
+    );
     const speaker = attribution.source_speaker;
     const assistantLabel =
       attribution.source_role === 'assistant' && /^(?:the )?assistant$|^ассистент$/iu.test(speaker ?? '');
@@ -675,15 +695,13 @@ export function cleanCandidateBatch(
     if (
       RELATIVE_TIME.test(sourceEvidence(spans.frame)) &&
       explicitlyUnknownTime(time) &&
-      !/\b(source-relative|undated (?:source|record|conversation)|relative to (?:the )?(?:source|record))\b|недатирован|относительно (?:даты )?источник/iu.test(
-        text,
-      )
+      !readableUnknownSourceClock(text)
     ) {
       held.push({
         candidate_id: provisionalId,
         reason_code: 'time_unresolved',
         reason:
-          'an unknown source-relative time must name its source-relative or undated clock in readable prose; bare tomorrow could mean processing time',
+          'an unknown source-relative time must explicitly name both its source-relative clock and unknown reference date in readable prose; bare tomorrow could mean processing time',
       });
       continue;
     }
@@ -997,13 +1015,28 @@ function cleanEpistemic(
   value: unknown,
   sourceRole: RetainSourceRole,
   kind: RetainCandidate['kind'],
+  hasReporters: boolean,
 ): RetainCandidate['epistemic'] {
   const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
   const proposed = record?.basis;
-  if (sourceRole !== 'user') return { basis: 'source_report' };
+  // A user can attest their own claim, but recording another speaker does not establish that claim.
+  if (sourceRole !== 'user' || hasReporters) return { basis: 'source_report' };
   if (proposed === 'self_attested') return { basis: 'self_attested' };
   if (proposed === 'source_report') return { basis: 'source_report' };
   return { basis: ['decision', 'preference', 'plan'].includes(kind) ? 'self_attested' : 'source_report' };
+}
+
+function readableUnknownSourceClock(text: string): boolean {
+  if (/\bundated (?:source|record|conversation)\b|недатирован\p{L}* (?:источник|запис|разговор)/iu.test(text))
+    return true;
+  // Source-relative alone leaves a reader unable to tell whether the reference date is recoverable.
+  return (
+    /\b(source-relative|relative to (?:the )?(?:source|record)|(?:source|record)(?:['’]s)? (?:reference )?(?:date|clock|timestamp))\b|относительно (?:даты )?источник|дат[аы] источника/iu.test(
+      text,
+    ) &&
+    /\b(unknown|unspecified|unavailable|not (?:provided|recorded|known))\b|неизвест|не указан/iu.test(text) &&
+    /\b(date|clock|timestamp)\b|дат[аыуе]|отсч[её]т/iu.test(text)
+  );
 }
 
 function sourceMentionTimes(

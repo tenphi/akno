@@ -26,7 +26,7 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v16';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v17';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v7';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -839,7 +839,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   // An unrelated factual citation cannot establish the proposition inside a report.
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
-    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects)\b|согласно|по словам|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
+    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|record(?:ed|s)? (?:an? )?(?:(?:unverified|unconfirmed|tentative) )?report|reportedly (?:said|told|reported|stated))\b|согласно|по словам|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
   if (
@@ -920,7 +920,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
 }
 
 function tentativeLanguage(text: string): boolean {
-  return /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен/iu.test(
+  return /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
     text,
   );
 }

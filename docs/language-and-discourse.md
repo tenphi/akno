@@ -41,8 +41,12 @@ outcome before checking current configuration, with no additional translation or
 
 Extraction and verification share definitions for proposition polarity, unresolved questions, unaccepted
 proposals, fictional participants and source-relative time. A positive property inside a hypothetical scenario
-has affirmed polarity while its commitment remains hypothetical. Unanchored relative wording stays in an
-explicit unknown, tentative time envelope; `mentioned_at` must come from a supplied source timestamp.
+has affirmed polarity while its commitment remains hypothetical. Nested reports retain `source_report`
+basis even when the outer recorder is a user. Unanchored calendar references such as “tomorrow” stay in an
+explicit unknown, tentative time envelope; readable prose names both the source clock and its unknown date.
+`mentioned_at` must come from a supplied source timestamp. Durations and hypothetical coverage intervals
+remain prose; an established schedule retains its cadence and time envelope, with structured recurrence
+only when its start is supported.
 One recorded structural repair can address field-specific validation failures before semantic verification.
 It cannot retry a semantic rejection or remove the unresolved time envelope to admit the same claim.
 
@@ -87,15 +91,15 @@ cases must be assessed separately from model quality.
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,
-Russian and mixed sources; exposed corpora remain available unchanged. V8 keeps the exposed development inputs
+Russian and mixed sources; exposed corpora remain available unchanged. V9 keeps the exposed development inputs
 and introduces a fresh held-out set, reviewed before execution by a separate model. Earlier corpora remain
 diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v8 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v8 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v9 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v9 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -189,6 +193,29 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v16 diagnostic
+
+The v8 corpus ran twice per split with GPT-5.6 Luna and separate GPT-5.6 Sol input/output review.
+Its original-contract gate at commit `ac562f8` **failed**. Development answered all 80 combinations, but one
+retained proposal omitted the unknown source date in readable prose. Both held-out repetitions lost the
+requested counterfactual proposition while retaining a decision from the same source.
+
+| Split / repetition | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------------ | ---------------- | ------------------- | ------------------------ |
+| Development / 1    | 5/5              | 16/20               | 40/40                    |
+| Development / 2    | 5/5              | 20/20               | 40/40                    |
+| Held-out / 1       | 4/5              | 16/20               | 22/40                    |
+| Held-out / 2       | 4/5              | 16/20               | 26/40                    |
+
+All 16 read-only abstentions were justified; 32 writable-case null answers were coverage failures. The review
+found one qualification error and no accepted language errors or unsafe factual promotions. Source bytes
+were unchanged and no model availability failure occurred. These inputs became exposed diagnostic evidence.
+
+The [original gate](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v16/gate.json)
+and its [reports and independent reviews](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v16)
+are preserved alongside a separate built-package counterfactual answer probe. That probe checks deployment;
+its two successful answers do not replace the failed complete evaluation.
 
 ## Independently reviewed v14 baseline
 

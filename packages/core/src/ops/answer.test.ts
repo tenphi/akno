@@ -261,6 +261,50 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      'The assistant recorded an unverified report from Bo Winters about silverpine inspection coverage.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      'Bo Winters reportedly told the assistant about silverpine inspection coverage, which remains unverified.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      'The assistant has a file. An unverified report exists. The silverpine warranty covers inspection.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty requires inspection.',
+      'Ada Marlow stated that the silverpine inspection requirement remains unestablished.',
+      true,
+    ],
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty requires inspection.',
+      'Ada Marlow сообщила, что требование проверки silverpine пока не установлено.',
+      true,
+    ],
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty requires inspection.',
+      'Ada Marlow stated that the silverpine warranty does not require inspection, but this remains unestablished.',
+      false,
+      'protected_value',
+    ],
+    [
       'hypothetical',
       'self_attested',
       'Ada Marlow hypothetically assumes that the silverpine warranty requires inspection.',

@@ -12,12 +12,22 @@ import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V7 } from './language-corpus-v7.ts';
 import { LANGUAGE_CORPUS_V8 } from './language-corpus-v8.ts';
+import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('frozen language/discourse evaluation', () => {
+  it('freezes the ninth corpus before execution without changing development inputs', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V9))).toBe(
+      'f33b705195c80a7509f2da683e3d4972f3b754b273f9f27214f1332eca8eb24c',
+    );
+    expect(LANGUAGE_CORPUS_V9.filter((entry) => entry.split === 'development')).toEqual(
+      LANGUAGE_CORPUS_V3.filter((entry) => entry.split === 'development'),
+    );
+  });
+
   it('freezes the eighth corpus before execution without changing development inputs', () => {
     expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V8))).toBe(
       'e2345553c93d5962321fb752cc8cc18434b9e0023fdf283d2709868a6f18c68a',

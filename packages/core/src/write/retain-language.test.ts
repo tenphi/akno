@@ -5,6 +5,76 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cross-language retention boundary', () => {
+  it.each([false, true])('keeps a direct user denial distinct from a nested report (nested=%s)', (nested) => {
+    const source = nested
+      ? 'Bo Winters said the Zephyr QX-100 warranty does not cover inspection.'
+      : 'The Zephyr QX-100 warranty does not cover inspection.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: nested ? `Ada Marlow recorded that ${source}` : source,
+          attribution: {
+            source_role: 'user',
+            source_speaker: 'Ada Marlow',
+            chain: nested ? [{ speaker: 'Bo Winters', role: 'external' }] : [],
+          },
+          discourse: { commitment: 'asserted', disposition: 'active' },
+          epistemic: { basis: 'self_attested' },
+          polarity: 'negated',
+          support: [{ item_id: 'turn-1111', quote: source }],
+          discourse_frame: [{ item_id: 'turn-1111', quote: source }],
+          time: null,
+        },
+      ],
+      { sourceItems: [{ item_id: 'turn-1111', role: 'user', speaker: 'Ada Marlow', text: source }] },
+    );
+    expect(result.held).toEqual([]);
+    expect(result.candidates[0]?.epistemic.basis).toBe(nested ? 'source_report' : 'self_attested');
+  });
+
+  it.each(['property', 'unanchored', 'anchored'] as const)(
+    'distinguishes coverage duration from established schedules (%s)',
+    (mode) => {
+      const schedule = mode !== 'property';
+      const source =
+        mode === 'anchored'
+          ? 'Zephyr QX-100 inspection is scheduled every six months starting on 2031-04-11.'
+          : mode === 'unanchored'
+            ? 'Zephyr QX-100 inspection is scheduled every six months, but the start date is unknown.'
+            : 'Hypothetically, the Zephyr QX-100 warranty covers inspection during year six.';
+      const time =
+        mode === 'anchored'
+          ? {
+              precision: 'day',
+              status: 'scheduled',
+              relation: 'scheduled',
+              start: '2031-04-11',
+              recurrence: { frequency: 'monthly', interval: 6 },
+            }
+          : mode === 'unanchored'
+            ? { precision: 'unknown', status: 'scheduled', relation: 'scheduled' }
+            : null;
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: schedule ? 'event' : 'claim',
+            text: source,
+            attribution: { source_role: 'user' },
+            discourse: { commitment: schedule ? 'asserted' : 'hypothetical', disposition: 'active' },
+            epistemic: { basis: 'self_attested' },
+            support: [{ quote: source }],
+            discourse_frame: [{ quote: source }],
+            time,
+          },
+        ],
+        { sourceText: source },
+      );
+      expect(result.held).toEqual([]);
+      expect(result.candidates[0]?.time).toEqual(time ?? undefined);
+    },
+  );
+
   it.each([false, true])(
     'explains an invalid mention timestamp without discarding unknown time (repair=%s)',
     async (repair) => {
@@ -263,13 +333,27 @@ describe('cross-language retention boundary', () => {
     },
   );
 
-  it('holds a bare relative date even when its structured precision is unknown', () => {
+  it.each([
+    ['Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow.', false],
+    [
+      'Ada Marlow proposed reviewing the Zephyr QX-100 warranty at a source-relative time described as tomorrow.',
+      false,
+    ],
+    [
+      "Ada Marlow proposed reviewing the Zephyr QX-100 warranty at the source's tomorrow, but the source reference date is unknown.",
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the source, whose reference date is unknown.',
+      true,
+    ],
+  ] as const)('requires both source-relative meaning and an unknown date: %s', (text, accepted) => {
     const source = 'I propose reviewing the Zephyr QX-100 warranty tomorrow.';
     const result = cleanCandidateBatch(
       [
         {
           kind: 'plan',
-          text: 'Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow.',
+          text,
           subject: 'Zephyr QX-100',
           attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
           discourse: { commitment: 'tentative', disposition: 'proposed' },
@@ -281,11 +365,12 @@ describe('cross-language retention boundary', () => {
       ],
       { sourceText: source },
     );
-    expect(result.candidates).toEqual([]);
-    expect(result.held[0]).toMatchObject({
-      reason_code: 'time_unresolved',
-      reason: expect.stringContaining('readable prose'),
-    });
+    expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+    if (!accepted)
+      expect(result.held[0]).toMatchObject({
+        reason_code: 'time_unresolved',
+        reason: expect.stringContaining('readable prose'),
+      });
   });
 
   it.each(['unknown', 'day'] as const)(
