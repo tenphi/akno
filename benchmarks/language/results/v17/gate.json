@@ -1,0 +1,172 @@
+{
+  "schemaVersion": "language-quality-gate-v1",
+  "independentlyReviewed": true,
+  "adjudicationKind": "model",
+  "reviewer": "gpt-5.6-sol",
+  "releaseEligible": true,
+  "scope": "Frozen invented English/Russian corpus; independent model adjudication is fallible and is not human validation or a general reliability guarantee.",
+  "packetFingerprint": "76a058d18aaa583c874e38031931230ca4d9e139027e1d5f670c486e3d3e61ca",
+  "inputReviewFingerprint": "9005147ef8c1725c04a6ed09cac04683f370894abe015ee26a9eb21891fdc2e7",
+  "outputReviewFingerprint": "43452ce4a7e8a35d9458bdca59b9372c073ec9135770039d4659398fc3d3a416",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.8,
+    "availabilityFailureRate": 0.05
+  },
+  "failures": [],
+  "groups": [
+    {
+      "split": "development",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 5,
+          "denominator": 5,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 38,
+          "denominator": 40,
+          "rate": 0.95
+        },
+        "justifiedAbstentions": 0,
+        "expectedSafeHolds": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 5,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "development",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 5,
+          "denominator": 5,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 38,
+          "denominator": 40,
+          "rate": 0.95
+        },
+        "justifiedAbstentions": 0,
+        "expectedSafeHolds": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 5,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 1,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 5,
+          "denominator": 5,
+          "rate": 1
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 34,
+          "denominator": 40,
+          "rate": 0.85
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 6,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    },
+    {
+      "split": "held-out",
+      "run": 2,
+      "metrics": {
+        "usefulRetentionCoverage": {
+          "numerator": 4,
+          "denominator": 5,
+          "rate": 0.8
+        },
+        "qualifiedRetrievalCoverage": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1
+        },
+        "usefulQualifiedAnswerCoverage": {
+          "numerator": 33,
+          "denominator": 40,
+          "rate": 0.825
+        },
+        "justifiedAbstentions": 8,
+        "expectedSafeHolds": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsafeFactualPromotion": 0,
+        "acceptedLanguageViolations": 0,
+        "translationQualificationErrors": 0,
+        "sourceByteChanges": 0,
+        "availabilityFailureRate": {
+          "numerator": 0,
+          "denominator": 6,
+          "rate": 0
+        },
+        "ordinaryProseFailures": 0
+      }
+    }
+  ]
+}

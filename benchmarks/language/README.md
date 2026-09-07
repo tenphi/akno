@@ -5,6 +5,14 @@ retention and answer model is evaluated separately from an independent reviewer 
 `independentlyReviewed: false` and `releaseEligible: false`; the separate computed gate binds the reports to
 both reviews and is the authority for the reviewed result.
 
+The [v17 gate](results/v17/gate.json) passes for the v9 corpus and frozen runtime at `bb78edf`, using
+GPT-5.6 Luna for retention/answers and GPT-5.6 Sol for independent review. Useful retention was 19/20,
+qualified retrieval 80/80, and useful qualified answers 143/160 across the two repetitions per split.
+Every split/run met its thresholds. No accepted language/qualification/promotion errors or source-byte
+changes were found. The complete reports and review receipts are in [results/v17](results/v17).
+Seventeen unjustified null answers and one incomplete retention remain recorded coverage losses;
+all 16 read-only abstentions were justified. The built-package probe is separate deployment evidence.
+
 The input review was completed without outputs. Output review receives the frozen sources, their approved
 expectations, saved knowledge, retrieved passages and answers, without runtime verifier verdicts or aggregate scores. It judges
 useful retention, relevant qualified retrieval, qualified answers, justified abstentions, language, attribution and factual promotion.

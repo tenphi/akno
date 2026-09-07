@@ -194,6 +194,41 @@ inference remain separate roadmap work.
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
 
+## Independently reviewed v17 result
+
+The v9 corpus **passes the declared gate** for the frozen runtime at `bb78edf`. GPT-5.6 Luna remained the
+retention/answer model; GPT-5.6 Sol independently approved the inputs before execution and graded the blind
+output packet. Each split ran twice with all eight query/answer/view combinations per case. The runtime used
+`answer-generation-v17` / `answer-verifier-v7`, `retain-extraction-language-v11` /
+`retain-verifier-language-v5`, `memory-view-v3` and `prose-v1`.
+
+| Split / repetition | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------------ | ---------------- | ------------------- | ------------------------ |
+| Development / 1    | 5/5              | 20/20               | 38/40                    |
+| Development / 2    | 5/5              | 20/20               | 38/40                    |
+| Held-out / 1       | 5/5              | 20/20               | 34/40                    |
+| Held-out / 2       | 4/5              | 20/20               | 33/40                    |
+
+The reviewer found no accepted language errors, lost qualifications or unsafe factual promotions. All 16
+read-only abstentions were justified; source bytes were unchanged, all ordinary-prose checks passed and
+there were no model availability failures. The 17 writable-case null answers remain usefulness misses.
+One retained counterfactual preserved the unrealized repair proposition but omitted the explicit decision
+to decline the warranty, so that case counts as incomplete retention. Both losses remain in the denominators;
+the minimum retention and answer coverage in a split/run were 80% and 82.5%, respectively.
+
+The [computed gate](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v17/gate.json),
+[development report](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v17/development.json),
+[held-out report](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v17/held-out.json),
+[input review](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v17/input-review.json) and
+[output review](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v17/output-review.json)
+preserve the complete result. A separate
+[built-package time probe](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v17/built-undated.json)
+retained an explicitly undated proposal, produced eight answers and replayed without changing source bytes
+after rebuilding and restarting the service. It is deployment evidence, outside the gate totals.
+
+This is fallible independent model review of a finite invented English/Russian corpus. It does not establish
+universal language support, arbitrary implicit discourse understanding or longitudinal memory reliability.
+
 ## Independently reviewed v16 diagnostic
 
 The v8 corpus ran twice per split with GPT-5.6 Luna and separate GPT-5.6 Sol input/output review.
