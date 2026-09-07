@@ -109,3 +109,38 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Initial live baseline
+
+The initial diagnostic run used `language-discourse-v1` (fingerprint
+`69752a7525357e462aea76b251f531a33862279b0a87900eeb182bed6d1db458`), English knowledge,
+`retain-extraction-language-v1` / `retain-verifier-language-v1`, `answer-generation-v5` /
+`answer-verifier-v3`, and `prose-v1`. Retention/answer used `gpt-5.6-luna`, embeddings used
+`text-embedding-qwen3-embedding-0.6b`, and expansion used `llama-3.2-3b-instruct`.
+
+| Diagnostic metric                                       | Development   | Exposed held-out |
+| ------------------------------------------------------- | ------------- | ---------------- |
+| Useful cases with retained knowledge                    | 6/8           | 4/6              |
+| False holds among useful cases                          | 2/8           | 2/6              |
+| Expected safe holds                                     | No such cases | 2/2              |
+| Retained cases retrieved with qualification             | 6/6           | 4/4              |
+| Retained cases matching typed expectations              | 6/6           | 4/4              |
+| Ordinary prose qualification matches                    | 8/8           | 8/8              |
+| Source-byte changes                                     | 0/8           | 0/8              |
+| Noncanonical eligibility warning flags                  | 0/6           | 0/6              |
+| Cases with language-policy rejection                    | 0/8           | 0/8              |
+| Cases with model availability degradation               | 1/8           | 0/8              |
+| Queries producing an answer, before independent grading | 13/32         | 12/32            |
+| Queries reporting `answer_failed`                       | 8/32          | 16/32            |
+
+Useful retention is below the declared 80% threshold in both splits. Three useful cases were held because
+routing found no writable destination; the counterfactual case was held for uncertain discourse semantics.
+The development availability degradation came from query expansion. The `answer_failed` counts arose after
+retention left no exact answer evidence in the queried folder; they are distinct from model availability.
+Some retained reports, tentative claims and fictional examples were retrieved but did not yield accepted answers.
+
+These counts describe behavior, not independently graded answer correctness. Zero eligibility flags or language
+rejections does not establish zero accepted semantic/language errors. Those error rates remain unassessed, and
+this baseline **does not pass the live quality gate**. The implementation supplies conservative controls and
+reviewable diagnostics; routing coverage, qualified answer usefulness and independent quality adjudication
+still need work. The original frozen answer benchmarks also retain their visible coverage failures described above.
