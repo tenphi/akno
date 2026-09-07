@@ -356,7 +356,8 @@ async function verifyCandidates(
         }),
       },
     ],
-    { schema, maxTokens: Math.min(2_400, 300 + candidates.length * 180) },
+    // The allowance includes hidden reasoning, even for a single yes/no verdict.
+    { schema, maxTokens: 3_200 },
   );
   const receipt = modelCallReceipt(model, outcome);
   if (!outcome.ok || !outcome.value) {
