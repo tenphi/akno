@@ -1,5 +1,13 @@
 # @tenphi/akno-core
 
+## 0.12.1
+
+### Patch Changes
+
+- [#68](https://github.com/tenphi/akno/pull/68) [`1bc0b09`](https://github.com/tenphi/akno/commit/1bc0b09629251ba0cd8decc9d40516f3d3f81510) Thanks [@tenphi](https://github.com/tenphi)! - Give automatic-retention verification enough output budget for reasoning and its verdict. Retry Responses token exhaustion once within the configured role limit, include both attempts in usage, and reject incomplete responses even when their partial text parses.
+- Updated dependencies []:
+  - @tenphi/akno-protocol@0.12.1
+
 ## 0.12.0
 
 ### Minor Changes
