@@ -107,7 +107,41 @@ export const AnswerModelCallReceipt = z.object({
 });
 export type AnswerModelCallReceipt = z.infer<typeof AnswerModelCallReceipt>;
 
+export const AnswerReason = z.enum([
+  'no_results',
+  'evidence_unavailable',
+  'retrieval_incomplete',
+  'no_eligible_evidence',
+  'generation_unavailable',
+  'generation_failed',
+  'invalid_draft',
+  'empty_draft',
+  'draft_rejected',
+  'verification_unavailable',
+  'verification_rejected',
+  'answered',
+]);
+export const AnswerRejectionReason = z.enum([
+  'citation',
+  'protected_value',
+  'attribution',
+  'discourse',
+  'semantic_support',
+]);
+export type AnswerRejectionReason = z.infer<typeof AnswerRejectionReason>;
+
 export const AnswerOutput = ResultEnvelope.extend({
+  /** Content-free decision diagnostics; compatible with receipts from older servers. */
+  reason_code: AnswerReason.optional(),
+  validation: z
+    .object({
+      generated_blocks: z.number().int().nonnegative(),
+      passed_guards: z.number().int().nonnegative(),
+      verified_blocks: z.number().int().nonnegative().nullable(),
+      rejection_counts: z.partialRecord(AnswerRejectionReason, z.number().int().nonnegative()),
+    })
+    .optional(),
+
   answer_language: z.enum(['en', 'ru']).nullable().optional(),
   outcome: z.enum(['complete', 'partial', 'not_found', 'not_answered']),
   answer: z.string().nullable(),

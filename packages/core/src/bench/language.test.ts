@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RetainInput } from '@tenphi/akno-protocol';
 import { loadConfig } from '../config/load.ts';
 import { sha256 } from '../store/ids.ts';
+import { LANGUAGE_CORPUS_V2 } from './language-corpus-v2.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
@@ -32,6 +33,14 @@ describe('frozen language/discourse evaluation', () => {
     }
   });
 
+  it('freezes the fresh expectations separately from the exposed corpus', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V2))).toBe(
+      '9be572567928a10c4002d811a4f882424aa9d2a4bbea56067768f6383779f5a7',
+    );
+    expect(LANGUAGE_CORPUS_V2.filter((entry) => entry.admission === 'read-only')).toHaveLength(1);
+    expect(LANGUAGE_CORPUS_V2.every((entry) => entry.reviewExpectation.length > 0)).toBe(true);
+  });
+
   it('does not count unavailable models as correct rejections or successful retention', async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-language-test-config-'));
     const fetch = vi.fn(() => {
@@ -56,7 +65,7 @@ describe('frozen language/discourse evaluation', () => {
           },
         },
       });
-      const report = await runLanguageBench(config, { split: 'development' });
+      const report = await runLanguageBench(config, { split: 'development', corpus: 'v1' });
       expect(report.metrics.availabilityFailures).toEqual({ numerator: 8, denominator: 8, rate: 1 });
       expect(report.metrics.usefulRetentionCoverage).toEqual({ numerator: 0, denominator: 0, rate: null });
       expect(report.metrics.noncanonicalEligibilityFlags).toEqual({
@@ -69,6 +78,30 @@ describe('frozen language/discourse evaluation', () => {
       expect(report.metrics.acceptedLanguageViolations.rate).toBeNull();
       expect(report.releaseEligible).toBe(false);
       expect(fetch).not.toHaveBeenCalled();
+      const repeated = await runLanguageBench(config, {
+        split: 'development',
+        corpus: 'v2',
+        runs: 2,
+        caseIds: ['v2-dev-belief'],
+      });
+      expect(repeated.selectedCaseIds).toEqual(['v2-dev-belief']);
+      expect(repeated.cases.map((entry) => entry.run)).toEqual([1, 2]);
+      expect(repeated.cases.every((entry) => entry.queries.length === 8)).toBe(true);
+      const combinations = repeated.cases[0]!.queries.map(
+        (query) => `${query.queryLanguage}/${query.requestedAnswerLanguage}/${query.explicitView}`,
+      );
+      expect(new Set(combinations).size).toBe(8);
+      expect(repeated.metrics.producedAnswersOverRetained).toEqual({
+        numerator: 0,
+        denominator: 0,
+        rate: null,
+      });
+      expect(repeated.metrics.independentlyJustifiedAbstentions.rate).toBeNull();
+      expect(repeated.metrics.falseHolds.rate).toBeNull();
+      await expect(runLanguageBench(config, { split: 'development', runs: 0 })).rejects.toThrow('runs');
+      await expect(runLanguageBench(config, { split: 'development', caseIds: ['missing'] })).rejects.toThrow(
+        'unknown case',
+      );
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

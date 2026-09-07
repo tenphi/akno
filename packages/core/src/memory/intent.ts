@@ -31,7 +31,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'questions';
   }
   if (
-    /\b(hypothetical|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|ideas? considered|discussed options?)\b/i.test(
+    /\b(hypothetical|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses|fictional (?:[a-z-]+ ){0,3}examples?)\b/i.test(
       query,
     )
   ) {

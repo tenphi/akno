@@ -283,7 +283,22 @@ export const RetainModelCallReceipt = z.object({
 });
 export type RetainModelCallReceipt = z.infer<typeof RetainModelCallReceipt>;
 
+export const RetainRoutingReason = z.enum([
+  'existing_selected',
+  'new_selected',
+  'read_only_match',
+  'no_admitted_destination',
+  'ownership_uncertain',
+  'model_unavailable',
+  'model_failed',
+  'invalid_model_response',
+]);
+export type RetainRoutingReason = z.infer<typeof RetainRoutingReason>;
+
 export const RetainCandidateResult = z.object({
+  hold_stage: z.enum(['validation', 'verification', 'placement', 'apply']).optional(),
+  routing_reason: RetainRoutingReason.optional(),
+
   candidate_id: z.string(),
   outcome: z.enum(['written', 'duplicate', 'support_added', 'retracted', 'held', 'not_found']),
   memory_id: z.string().optional(),

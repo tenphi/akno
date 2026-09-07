@@ -5,6 +5,56 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cross-language retention boundary', () => {
+  it('accepts exact proposition support contained in a larger original counterfactual frame', () => {
+    const quote = 'Если бы гарантия Zephyr QX-100 действовала десять лет, замена была бы покрыта.';
+    const source = quote + ' Но эта гарантия не была выбрана.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: 'Counterfactually, a ten-year Zephyr QX-100 warranty would have covered replacement.',
+          subject: 'Zephyr QX-100',
+          attribution: { source_role: 'user' },
+          discourse: { commitment: 'counterfactual', disposition: 'active' },
+          epistemic: { basis: 'self_attested' },
+          polarity: 'affirmed',
+          support: [{ quote }],
+          discourse_frame: [{ quote: source }],
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.held).toEqual([]);
+    expect(result.candidates[0]?.support).toEqual([{ quote }]);
+    expect(result.candidates[0]?.discourse_frame).toEqual([{ quote: source }]);
+  });
+
+  it('does not borrow a matching discourse frame from another source turn', () => {
+    const quote = 'The Zephyr QX-100 warranty might last five years.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: quote,
+          subject: 'Zephyr QX-100',
+          attribution: { source_role: 'user' },
+          discourse: { commitment: 'tentative', disposition: 'active' },
+          epistemic: { basis: 'self_attested' },
+          support: [{ item_id: 'turn-1111', quote }],
+          discourse_frame: [{ item_id: 'turn-2222', quote: quote + ' This is unconfirmed.' }],
+        },
+      ],
+      {
+        sourceItems: [
+          { item_id: 'turn-1111', role: 'user', text: quote },
+          { item_id: 'turn-2222', role: 'user', text: quote + ' This is unconfirmed.' },
+        ],
+      },
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+  });
+
   it.each([
     [
       'This is a fictional example: the Zephyr QX-100 warranty lasts five years.',

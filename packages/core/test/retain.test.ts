@@ -181,6 +181,21 @@ function upsert(sourceId: string, revision: string, text = 'Ada Marlow selected 
   };
 }
 
+it('keeps exact provided evidence model-free when its deciding frame contains a narrower support span', async () => {
+  const mem = await openMem();
+  try {
+    const request = upsert('invented:contained-frame', 'rev-1111');
+    request.input.text += ' This choice was explicitly accepted.';
+    request.retention.candidates[0]!.discourse_frame = [{ quote: request.input.text }];
+    const result = await mem.retain({ sources: [request] });
+    expect(result.sources[0]?.candidates[0]?.outcome).toBe('written');
+    expect(result.sources[0]?.model_usage).toBeUndefined();
+    expect((await mem.retain({ sources: [request] })).sources[0]?.outcome).toBe('replayed');
+  } finally {
+    await mem.close();
+  }
+});
+
 describe('provided exact retain', () => {
   it('holds relative time unless the source supplies the exact clock and timezone', async () => {
     const mem = await openMem();
@@ -1022,7 +1037,7 @@ describe('automatic retain', () => {
       const result = await mem.retain(input);
       expect(result.sources[0]).toMatchObject({
         outcome: 'held',
-        candidates: [{ outcome: 'held', reason_code: 'discourse_uncertain' }],
+        candidates: [{ outcome: 'held', reason_code: 'discourse_uncertain', hold_stage: 'verification' }],
       });
       expect(fs.existsSync(path.join(root, 'memory/warranty-decisions.md'))).toBe(false);
       const calls = stub.calls();
@@ -1050,6 +1065,50 @@ describe('automatic retain', () => {
         candidates: [{ outcome: 'written', slug: 'memory/warranty-decisions' }],
       });
       expect(stub.calls()).toEqual({ extraction: 0, verification: 0, routing: 1, placement: 1 });
+    } finally {
+      await mem.close();
+      await stub.close();
+    }
+  });
+
+  it('distinguishes unavailable placement from a policy hold and replays its diagnostics', async () => {
+    const mem = await openMem();
+    try {
+      const source = upsert('conversation:5555', '1');
+      source.retention.placement = 'automatic';
+      const first = await mem.retain({ sources: [source] });
+      expect(first.sources[0]).toMatchObject({
+        status: 'degraded',
+        degraded: ['no_derive_model'],
+        candidates: [{ outcome: 'held', hold_stage: 'placement', routing_reason: 'model_unavailable' }],
+      });
+      const replay = await mem.retain({ sources: [source] });
+      expect(replay.sources[0]).toMatchObject({
+        outcome: 'replayed',
+        candidates: first.sources[0]!.candidates,
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it('holds a read-only destination without calling the placement model or changing its bytes', async () => {
+    const file = path.join(root, 'memory/equipment.md');
+    const before = fs.readFileSync(file, 'utf8').replace('remember: integrate', 'remember: deny');
+    fs.writeFileSync(file, before);
+    const stub = await startAutomaticRetainStub();
+    const mem = await openAutomaticMem(stub.url);
+    try {
+      await mem.index({ structuralOnly: true });
+      const source = upsert('conversation:6666', '1');
+      source.retention.placement = 'automatic';
+      const result = await mem.retain({ sources: [source] });
+      expect(result.sources[0]).toMatchObject({
+        status: 'ok',
+        candidates: [{ outcome: 'held', hold_stage: 'placement', routing_reason: 'no_admitted_destination' }],
+      });
+      expect(stub.calls()).toEqual({ extraction: 0, verification: 0, routing: 0, placement: 0 });
+      expect(fs.readFileSync(file, 'utf8')).toBe(before);
     } finally {
       await mem.close();
       await stub.close();

@@ -8,21 +8,34 @@ import { open, type Akno } from '../open.ts';
 import { sha256 } from '../store/ids.ts';
 import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
 import { ANSWER_PROMPT_VERSION, ANSWER_VERIFIER_PROMPT_VERSION } from '../ops/answer.ts';
+import { LANGUAGE_CORPUS_V2, type LanguageCaseV2 } from './language-corpus-v2.ts';
 import { LANGUAGE_CORPUS, LANGUAGE_CORPUS_VERSION, type LanguageCase } from './language-corpus.ts';
 
 export interface LanguageBenchOptions {
   split: LanguageCase['split'];
+  corpus?: 'v1' | 'v2';
+  runs?: number;
+  caseIds?: string[];
   onProgress?: (id: string, done: number, total: number) => void;
 }
 
 /** Runs only invented inputs. Provider permissions/settings come from the caller's configured roles. */
 export async function runLanguageBench(config: AknoConfig, options: LanguageBenchOptions) {
-  const cases = LANGUAGE_CORPUS.filter((entry) => entry.split === options.split);
+  const corpus = options.corpus ?? 'v2';
+  const runs = options.runs ?? 1;
+  if (!Number.isInteger(runs) || runs < 1 || runs > 5) throw new Error('runs must be between 1 and 5');
+  const entries = corpus === 'v1' ? LANGUAGE_CORPUS : LANGUAGE_CORPUS_V2;
+  const split = entries.filter((entry) => entry.split === options.split);
+  if (options.caseIds?.some((id) => !split.some((entry) => entry.id === id)))
+    throw new Error('unknown case id in selected split');
+  const cases = split.filter((entry) => !options.caseIds || options.caseIds.includes(entry.id));
+  if (!cases.length) throw new Error('no cases selected');
   const results: Awaited<ReturnType<typeof runCase>>[] = [];
-  for (const entry of cases) {
-    results.push(await runCase(config, entry));
-    options.onProgress?.(entry.id, results.length, cases.length);
-  }
+  for (let run = 1; run <= runs; run++)
+    for (const entry of cases) {
+      results.push(await runCase(config, entry, corpus, run));
+      options.onProgress?.(`${entry.id} run ${run}`, results.length, cases.length * runs);
+    }
   const available = results.filter((result) => !result.retentionAvailabilityFailure);
   const useful = available.filter((result) => !result.expectedHold);
   const written = useful.filter((result) => result.retainedItems > 0);
@@ -32,10 +45,17 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
     rate: denominator ? numerator / denominator : null,
   });
   return {
-    schemaVersion: 'language-benchmark-v1',
+    schemaVersion: 'language-benchmark-v2',
     createdAt: new Date().toISOString(),
-    corpusVersion: LANGUAGE_CORPUS_VERSION,
-    corpusFingerprint: sha256(JSON.stringify(LANGUAGE_CORPUS)),
+    corpusVersion: corpus === 'v1' ? LANGUAGE_CORPUS_VERSION : 'language-discourse-v2',
+    corpusFingerprint: sha256(JSON.stringify(entries)),
+    selectedCaseIds: cases.map((entry) => entry.id),
+    runs,
+    setup:
+      corpus === 'v1'
+        ? 'legacy-read-only-source-before-retain'
+        : 'separate-writable-fidelity-and-read-only-admission',
+    queryMatrix: ['query_language', 'answer_language', 'explicit_view'],
     split: options.split,
     knowledgeLanguage: 'en',
     proseProjectionVersion: PROSE_PROJECTION_VERSION,
@@ -70,13 +90,37 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
       answerOperationFailures: rate(
         results
           .flatMap((result) => result.queries)
-          .filter((query) => query.answerDegraded.includes('answer_failed')).length,
+          .filter((query) =>
+            [
+              'generation_unavailable',
+              'generation_failed',
+              'invalid_draft',
+              'verification_unavailable',
+            ].includes(query.answerReason ?? ''),
+          ).length,
         results.flatMap((result) => result.queries).length,
       ),
       producedAnswers: rate(
         results.flatMap((result) => result.queries).filter((query) => query.reviewAnswer !== null).length,
         results.flatMap((result) => result.queries).length,
       ),
+      producedAnswersOverRetained: rate(
+        written.flatMap((result) => result.queries).filter((query) => query.reviewAnswer !== null).length,
+        written.flatMap((result) => result.queries).length,
+      ),
+      answerReasons: counts(results.flatMap((result) => result.queries).map((query) => query.answerReason)),
+      routingReasons: counts(
+        results.flatMap(
+          (result) => result.retention?.candidates?.map((candidate) => candidate.routingReason) ?? [],
+        ),
+      ),
+      holdStages: counts(
+        results.flatMap(
+          (result) => result.retention?.candidates?.map((candidate) => candidate.holdStage) ?? [],
+        ),
+      ),
+      independentlyJudgedQualifiedAnswers: { numerator: null, denominator: 0, rate: null },
+      independentlyJustifiedAbstentions: { numerator: null, denominator: 0, rate: null },
       languagePolicyRejections: rate(
         results.filter((result) => result.languageRejected).length,
         results.length,
@@ -89,7 +133,14 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
         available.filter((result) => result.nonfactualExpected).length,
       ),
       usefulRetentionCoverage: rate(written.length, useful.length),
-      falseHolds: rate(useful.filter((result) => result.retainedItems === 0).length, useful.length),
+      expectedRetentionMisses: rate(
+        useful.filter((result) => result.retainedItems === 0).length,
+        useful.length,
+      ),
+      falseHolds:
+        corpus === 'v1'
+          ? rate(useful.filter((result) => result.retainedItems === 0).length, useful.length)
+          : { numerator: null, denominator: 0, rate: null },
       expectedSafeHolds: rate(
         available.filter((result) => result.expectedHold && result.retainedItems === 0).length,
         available.filter((result) => result.expectedHold).length,
@@ -103,7 +154,10 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
         results.filter((result) => result.ordinaryCorrect).length,
         results.length,
       ),
-      sourceByteChanges: rate(results.filter((result) => !result.bytesStable).length, results.length),
+      sourceByteChanges: rate(
+        results.filter((result) => result.bytesStable === false).length,
+        results.filter((result) => result.bytesStable !== null).length,
+      ),
     },
     byLanguage: Object.fromEntries(
       ['en', 'ru', 'mixed'].map((language) => [
@@ -111,12 +165,13 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
         results.filter((result) => result.language === language).length,
       ]),
     ),
-    byScenario: Object.fromEntries(results.map((result) => [result.scenario, 1])),
+    byScenario: counts(results.map((result) => result.scenario)),
     cases: results,
   };
 }
 
-async function runCase(config: AknoConfig, entry: LanguageCase) {
+async function runCase(config: AknoConfig, entry: LanguageCase, corpus: 'v1' | 'v2', run: number) {
+  const v2 = corpus === 'v2' ? (entry as LanguageCaseV2) : null;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-language-eval-kb-'));
   const state = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-language-eval-state-'));
   let memory: Akno | null = null;
@@ -124,10 +179,13 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
   fs.mkdirSync(path.join(root, 'memory'));
   fs.mkdirSync(path.join(root, 'authored'));
   fs.writeFileSync(path.join(root, 'memory/equipment.md'), '# Zephyr QX-100\n');
-  fs.writeFileSync(path.join(root, 'authored/passage.md'), ordinary);
+  if (!v2) fs.writeFileSync(path.join(root, 'authored/passage.md'), ordinary);
   const nonfactualExpected = entry.view !== 'factual';
   const base = {
     id: entry.id,
+    run,
+    admission: v2?.admission ?? 'legacy-mixed',
+    reviewExpectation: v2?.reviewExpectation ?? null,
     language: entry.language,
     scenario: entry.scenario,
     expectedHold: entry.hold ?? false,
@@ -135,6 +193,7 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
   };
   try {
     const { env, overrides } = benchConfig(config);
+    if (v2?.admission === 'read-only') overrides.folders = { '**': { role: 'knowledge', remember: 'deny' } };
     memory = await open({ aknoPath: root, stateDir: state, isolated: true, actor: 'user', env, overrides });
     await memory.index({});
     const input = {
@@ -151,7 +210,9 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
         },
       ],
     };
+    const beforeRetention = snapshot(root);
     const retained = await memory.retain(input);
+    const admissionBytesStable = v2?.admission !== 'read-only' || beforeRetention === snapshot(root);
     const slugs = [
       ...new Set(
         retained.sources.flatMap((source) =>
@@ -159,6 +220,8 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
         ),
       ),
     ];
+    // Ordinary authored text must not compete for placement in the writable-fidelity experiment.
+    if (v2) fs.writeFileSync(path.join(root, 'authored/passage.md'), ordinary);
     const beforeRebuild = snapshot(root);
     await memory.close();
     memory = await open({ aknoPath: root, stateDir: state, isolated: true, actor: 'user', env, overrides });
@@ -171,7 +234,7 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
     );
     const queries = [];
     for (const queryLanguage of ['en', 'ru'] as const) {
-      const query = queryFor(entry.view, queryLanguage);
+      const query = v2?.queries[queryLanguage] ?? queryFor(entry.view, queryLanguage);
       for (const explicit of [false, true]) {
         const view = explicit ? { memory_view: entry.view } : {};
         const recalled = await memory.recall({
@@ -188,33 +251,40 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
           filter: { folder: 'memory' },
           ...view,
         });
-        const answer = await memory.answer({
-          question: query,
-          answer_language: explicit ? 'ru' : 'en',
-          filter: { folder: 'memory' },
-          expand: true,
-          graph: false,
-          include_context: true,
-          ...view,
-        });
-        queries.push({
-          queryLanguage,
-          explicitView: explicit,
-          requestedAnswerLanguage: explicit ? 'ru' : 'en',
-          inferredView: recalled.memory_view,
-          recallStatus: recalled.status,
-          recallDegraded: recalled.degraded ?? [],
-          retainedEvidence: recalled.results.flatMap((result) =>
-            result.type === 'page' ? result.lines.filter((line) => line.memory?.status === 'qualified') : [],
-          ).length,
-          contextStatus: context.status,
-          contextDegraded: context.degraded ?? [],
-          contextActivated: context.activation?.activated ?? false,
-          answerOutcome: answer.outcome,
-          answerDegraded: answer.degraded ?? [],
-          answerModelUsage: answer.model_usage,
-          reviewAnswer: answer.answer,
-        });
+        for (const answerLanguage of ['en', 'ru'] as const) {
+          const answer = await memory.answer({
+            question: query,
+            answer_language: answerLanguage,
+            filter: { folder: 'memory' },
+            expand: true,
+            graph: false,
+            include_context: true,
+            ...view,
+          });
+          queries.push({
+            queryLanguage,
+            explicitView: explicit,
+            requestedAnswerLanguage: answerLanguage,
+            inferredView: recalled.memory_view,
+            recallStatus: recalled.status,
+            recallDegraded: recalled.degraded ?? [],
+            retainedEvidence: recalled.results.flatMap((result) =>
+              result.type === 'page'
+                ? result.lines.filter((line) => line.memory?.status === 'qualified')
+                : [],
+            ).length,
+            contextStatus: context.status,
+            contextDegraded: context.degraded ?? [],
+            contextActivated: context.activation?.activated ?? false,
+            contextActivation: context.activation ?? null,
+            answerOutcome: answer.outcome,
+            answerReason: answer.reason_code ?? null,
+            answerValidation: answer.validation ?? null,
+            answerDegraded: answer.degraded ?? [],
+            answerModelUsage: answer.model_usage,
+            reviewAnswer: answer.answer,
+          });
+        }
       }
     }
     const ordinaryRead = await memory.read({ slug: 'authored/passage' });
@@ -263,6 +333,7 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
             'retain_verification_failed',
             'language_check_failed',
             'no_answer_model',
+            'answer_failed',
             'answer_verification_failed',
             'expansion_failed',
             'embedding_failed',
@@ -277,6 +348,8 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
         candidates: source?.candidates.map((candidate) => ({
           outcome: candidate.outcome,
           reason: candidate.reason_code ?? null,
+          holdStage: candidate.hold_stage ?? null,
+          routingReason: candidate.routing_reason ?? null,
         })),
         usage: source?.model_usage ?? null,
         degraded: retained.degraded ?? [],
@@ -290,6 +363,7 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
         q.length > 0 && q.every((qualification) => qualification.answer_eligible === entry.ordinaryFactual),
       ordinaryInspection: { status: ordinaryInspection.status, results: ordinaryInspection.results.length },
       bytesStable:
+        admissionBytesStable &&
         beforeRebuild === snapshot(root) &&
         fs.readFileSync(path.join(root, 'authored/passage.md'), 'utf8') === ordinary,
       replayOutcome: replay.sources[0]?.outcome,
@@ -308,7 +382,7 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
       noncanonicalEligibilityFlag: false,
       semanticsMatch: false,
       ordinaryCorrect: false,
-      bytesStable: fs.readFileSync(path.join(root, 'authored/passage.md'), 'utf8') === ordinary,
+      bytesStable: null,
       replayOutcome: null,
       queries: [],
       reviewKnowledge: [],
@@ -319,6 +393,12 @@ async function runCase(config: AknoConfig, entry: LanguageCase) {
     fs.rmSync(root, { recursive: true, force: true });
     fs.rmSync(state, { recursive: true, force: true });
   }
+}
+
+function counts(values: (string | null | undefined)[]): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const value of values) if (value) result[value] = (result[value] ?? 0) + 1;
+  return result;
 }
 
 function matchesExpectation(

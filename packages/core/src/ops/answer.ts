@@ -8,6 +8,7 @@ import {
   type AnswerContextItem,
   type AnswerModelCallReceipt,
   type AnswerOutput,
+  type AnswerRejectionReason,
   type DegradedReason,
   type Line,
   type MemoryView,
@@ -25,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v5';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v3';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v6';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v4';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -81,12 +82,15 @@ Keep person, organization and product names in their exact original spelling; do
 Preserve identity, negation, dates, times, amounts, units, scope, and current-versus-superseded state exactly.
 Ordinary prose carries a bounded prose qualification and exact frame. Preserve its report, hypothetical,
 planning, historical, or unresolved status; the frame is source context, not independent factual evidence.
-Retained memory carries typed commitment, disposition, attribution, epistemic basis, and memory level. Preserve
+Retained memory carries typed commitment, disposition, attribution, and epistemic basis. Preserve
 those semantics in the complete answer block. The requested memory_view selects the kind of record being
 asked about: discussion, reports, plans, history and questions are answerable as qualified records.
 A hypothesis can answer what was hypothesized without establishing its embedded proposition as fact. A report must remain explicitly attributed to its source; a plan,
 proposal, hypothesis, counterfactual, rejection, or open question must be described as that discourse record and
-never rewritten as the embedded proposition being independently true.
+never rewritten as the embedded proposition being independently true. Preserve all qualifications together:
+a tentative assistant report must remain both tentative and attributed to the assistant. A fictional example
+must remain explicitly fictional, even if its commitment is also hypothetical. Use ordinary language to describe
+these records; internal qualification fields are not facts about the person or product.
 
 Return structured answer blocks. Every substantive block must cite one or more supplied evidence_ids. Cite only
 evidence that directly supports the whole block. Answer covered parts of a compound question and list the missing
@@ -106,7 +110,8 @@ different block cannot support it. Set supported to true only when the whole ans
 including identity, negation, dates, amounts, units, scope, and current-versus-superseded state. A partially
 supported, merely plausible, contradicted, or ambiguous block is unsupported. Do not repair or rewrite the
 answer. A retained report is supported only when attribution scopes over the whole claim, and noncanonical memory
-is supported only when its status remains explicit. Return exactly one verdict for every supplied block_id.`;
+is supported only when all its qualifications remain explicit together. Attribution alone does not preserve
+tentativeness, and calling a fictional example an unconfirmed hypothesis does not preserve its fictional scope. Return exactly one verdict for every supplied block_id.`;
 
 /**
  * Direct answering composes over recall; it never owns a second search path.
@@ -169,6 +174,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       status: 'empty',
       outcome: 'not_found',
       ...base,
+      reason_code: 'no_results',
       note: recalled.note ?? 'qualified recall completed and found no supporting memory',
     };
   }
@@ -177,6 +183,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       status: 'unavailable',
       outcome: 'not_answered',
       ...base,
+      reason_code: 'evidence_unavailable',
       note: recalled.note ?? 'memory evidence could not be read, so no grounded answer is possible',
     };
   }
@@ -186,6 +193,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       outcome: 'not_answered',
       ...base,
       ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
+      reason_code: 'retrieval_incomplete',
       note: recalled.note ?? 'recall was incomplete and found no trustworthy answer evidence',
     };
   }
@@ -207,6 +215,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
         outcome: 'not_answered',
         ...base,
         ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
+        reason_code: 'no_eligible_evidence',
         note: 'related memory was found, but its world-time interval is not current at this clock',
       };
     }
@@ -223,14 +232,16 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
         outcome: 'not_answered',
         ...base,
         ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
+        reason_code: 'no_eligible_evidence',
         note: 'related memory was found, but it was explicitly noncanonical and cannot ground a factual answer',
       };
     }
     return {
-      status: 'degraded',
-      degraded: dedupeReasons([...(recalled.degraded ?? []), 'answer_failed']),
+      status: recalled.status,
+      ...(recalled.degraded ? { degraded: recalled.degraded } : {}),
       outcome: 'not_answered',
       ...base,
+      reason_code: 'no_eligible_evidence',
       note: 'related memory was found, but it contained no exact lines or document quotes to ground an answer',
     };
   }
@@ -240,6 +251,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       degraded: dedupeReasons([...(recalled.degraded ?? []), 'no_answer_model']),
       outcome: 'not_answered',
       ...base,
+      reason_code: 'generation_unavailable',
       note: 'related memory was found, but no answer model is configured; use recall to inspect the evidence',
     };
   }
@@ -272,6 +284,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       degraded: dedupeReasons([...(recalled.degraded ?? []), ctx.models.answer.degradedReason(generated)]),
       outcome: 'not_answered',
       ...attemptedBase,
+      reason_code: 'generation_failed',
       note: generated.error ?? 'the answer model did not return a grounded draft',
     };
   }
@@ -282,6 +295,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       degraded: dedupeReasons([...(recalled.degraded ?? []), 'answer_failed']),
       outcome: 'not_answered',
       ...attemptedBase,
+      reason_code: 'invalid_draft',
       note: 'the answer model returned an invalid structured draft',
     };
   }
@@ -289,27 +303,36 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   const checked = validateDraft(parsed.data, evidence);
   const verified =
     checked.blocks.length > 0 ? await verifyDraftSupport(ctx.models.answer, checked.blocks, evidence) : null;
+  const validation: NonNullable<AnswerOutput['validation']> = {
+    generated_blocks: parsed.data.blocks.length,
+    passed_guards: checked.blocks.length,
+    verified_blocks: verified?.ok ? verified.blocks.length : null,
+    rejection_counts: { ...checked.rejectionCounts },
+  };
+  const validatedBase = { ...attemptedBase, validation };
   const verifiedBase = verified
     ? {
-        ...attemptedBase,
+        ...validatedBase,
         model_usage: {
           ...attemptedBase.model_usage,
           verification: modelCallReceipt(ctx.models.answer, verified.outcome),
         },
       }
-    : attemptedBase;
+    : validatedBase;
   if (verified && !verified.ok) {
     return {
       status: 'degraded',
       degraded: dedupeReasons([...(recalled.degraded ?? []), 'answer_verification_failed']),
       outcome: 'not_answered',
       ...verifiedBase,
+      reason_code: 'verification_unavailable',
       note: verified.note,
     };
   }
 
   const verifiedBlocks = verified?.blocks ?? checked.blocks;
   const supportRejected = checked.blocks.length - verifiedBlocks.length;
+  if (supportRejected > 0) validation.rejection_counts.semantic_support = supportRejected;
   const citations = citedEvidence(verifiedBlocks, evidence).map(citationFor);
   const rendered = verifiedBlocks.map((block) => renderBlock(block, evidence)).join('\n\n');
   const missing = dedupeStrings([
@@ -334,6 +357,11 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
       ...(reasons.length > 0 ? { degraded: reasons } : {}),
       outcome: 'not_answered',
       ...generatedBase,
+      reason_code: guardFailed
+        ? 'draft_rejected'
+        : supportRejected > 0
+          ? 'verification_rejected'
+          : 'empty_draft',
       ...(guardFailed || supportRejected > 0
         ? {
             note: guardFailed
@@ -352,6 +380,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     ...(reasons.length > 0 ? { degraded: reasons } : {}),
     outcome: reasons.length > 0 || missing.length > 0 || withheld ? 'partial' : 'complete',
     ...generatedBase,
+    reason_code: 'answered',
     ...(missing.length > 0
       ? { note: `memory evidence did not cover: ${missing.join(', ')}` }
       : withheld
@@ -641,7 +670,7 @@ function evidenceText(item: AnswerContextItem): string {
         (line) =>
           `L${line.n}: ${line.text}` +
           (line.memory
-            ? `\nMemory qualification: ${JSON.stringify(Object.fromEntries(Object.entries(line.memory).filter(([key]) => !['id', 'answer_eligible', 'current_eligible'].includes(key))))}`
+            ? `\nMemory qualification: ${JSON.stringify(Object.fromEntries(Object.entries(line.memory).filter(([key]) => ['kind', 'source_role', 'source_speaker', 'commitment', 'disposition', 'polarity', 'basis', 'temporal'].includes(key))))}`
             : '') +
           (line.prose && !line.prose.answer_eligible
             ? `\nUntrusted discourse qualification: ${JSON.stringify({ status: line.prose.status, view: line.prose.view, reason: line.prose.reason, frame: line.prose.frame })}`
@@ -659,16 +688,25 @@ function evidenceText(item: AnswerContextItem): string {
 function validateDraft(
   draft: AnswerDraft,
   evidence: AnswerContextItem[],
-): { blocks: AnswerDraft['blocks']; rejected: number } {
+): {
+  blocks: AnswerDraft['blocks'];
+  rejected: number;
+  rejectionCounts: Partial<Record<AnswerRejectionReason, number>>;
+} {
   const byId = new Map(evidence.map((item) => [item.evidence_id, item]));
   const blocks: AnswerDraft['blocks'] = [];
   let rejected = 0;
+  const rejectionCounts: Partial<Record<AnswerRejectionReason, number>> = {};
+  const reject = (reason: AnswerRejectionReason): void => {
+    rejected++;
+    rejectionCounts[reason] = (rejectionCounts[reason] ?? 0) + 1;
+  };
 
   for (const block of draft.blocks) {
     const uniqueIds = new Set(block.evidence_ids);
     const sources = block.evidence_ids.map((id) => byId.get(id));
     if (uniqueIds.size !== block.evidence_ids.length || sources.some((source) => !source)) {
-      rejected++;
+      reject('citation');
       continue;
     }
     // Projection hashes, ids and line numbers describe evidence; they cannot support a claimed value.
@@ -681,25 +719,40 @@ function validateDraft(
           : evidenceText(source!),
       )
       .join('\n');
-    if (!protectedValuesSupported(block.text, support)) {
-      rejected++;
+    if (
+      !protectedValuesSupported(
+        block.text,
+        support,
+        sources.some(
+          (source) =>
+            source?.type === 'page' &&
+            source.lines.some(
+              (line) => line.memory?.answer_eligible === false || line.prose?.answer_eligible === false,
+            ),
+        ),
+      )
+    ) {
+      reject('protected_value');
       continue;
     }
     if (!attributedReportsSupported(block.text, sources as AnswerContextItem[])) {
-      rejected++;
+      reject('attribution');
       continue;
     }
     if (!proseStatusSupported(block.text, sources as AnswerContextItem[])) {
-      rejected++;
+      reject('discourse');
       continue;
     }
-    if (!noncanonicalMemoryStatusSupported(block.text, sources as AnswerContextItem[])) {
-      rejected++;
+    if (
+      !noncanonicalMemoryStatusSupported(block.text, sources as AnswerContextItem[]) ||
+      !fictionalScopeSupported(block.text, support)
+    ) {
+      reject('discourse');
       continue;
     }
     blocks.push({ text: block.text.trim(), evidence_ids: block.evidence_ids });
   }
-  return { blocks, rejected };
+  return { blocks, rejected, rejectionCounts };
 }
 
 function proseStatusSupported(text: string, sources: AnswerContextItem[]): boolean {
@@ -745,16 +798,21 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   if (hasIndependentSupport) return true;
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
-    /\b(according to|reported|reports|said|says|stated|states|claimed|claims)\b|согласно|по словам|сообщ|сказал|утвержда/iu.test(
+    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described)\b|согласно|по словам|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н/iu.test(
       answerText,
     );
   if (!attributionVerb) return false;
   return reportLines.every((line) => {
     if (line.memory?.status !== 'qualified') return false;
     const speaker = line.memory.source_speaker?.trim();
-    return speaker
-      ? normalized.includes(normalizeComparable(speaker))
-      : line.memory.source_role !== 'assistant' || /\bassistant\b|ассистент/iu.test(answerText);
+    // Some retained records spell the assistant role into source_speaker. It is a translatable
+    // role label, while an actual named speaker must still occur in its original spelling.
+    if (
+      line.memory.source_role === 'assistant' &&
+      (!speaker || /^(?:the )?assistant$|^ассистент$/iu.test(speaker))
+    )
+      return /\bassistant\b|ассистент/iu.test(answerText);
+    return !speaker || normalized.includes(normalizeComparable(speaker));
   });
 }
 
@@ -779,38 +837,58 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
   return lines.every((line) => {
     const memory = line.memory;
     if (memory?.status !== 'qualified') return false;
-    if (memory.basis === 'source_report') return true; // Attribution has the stricter check above.
+    // Dimensions are cumulative: accepting attribution or disposition alone can launder a tentative report.
+    const required: boolean[] = [];
+    if (memory.basis === 'source_report') required.push(true); // Attribution is checked separately.
     if (memory.kind === 'question') {
-      return memory.disposition === 'resolved'
-        ? /\b(resolved|answered|closed)\b|решен|решён|отвечен|закрыт/iu.test(answerText)
-        : /\b(open question|question|unresolved|unanswered)\b|вопрос|не решен|не решён|без ответа/iu.test(
-            answerText,
-          );
+      required.push(
+        memory.disposition === 'resolved'
+          ? /\b(resolved|answered|closed)\b|решен|решён|отвечен|закрыт/iu.test(answerText)
+          : /\b(open question|question|unresolved|unanswered)\b|вопрос|не решен|не решён|без ответа/iu.test(
+              answerText,
+            ),
+      );
     }
-    if (memory.disposition === 'proposed') return /\b(proposal|proposed)\b|предлож/iu.test(answerText);
-    if (memory.disposition === 'rejected')
-      return /\b(rejected|declined|not accepted)\b|отклон|не принят/iu.test(answerText);
-    if (memory.disposition === 'cancelled') return /\b(cancelled|canceled)\b|отмен/iu.test(answerText);
-    if (memory.disposition === 'completed')
-      return /\b(completed|finished|done)\b|заверш|выполн/iu.test(answerText);
-    if (memory.disposition === 'superseded')
-      return /\b(superseded|replaced|former)\b|замен|прежн/iu.test(answerText);
-    if (memory.commitment === 'tentative')
-      return /\b(tentative|possibly|uncertain)\b|предполож|возможно|не уверен|неопредел/iu.test(answerText);
+    const dispositionPatterns: Partial<Record<typeof memory.disposition, RegExp>> = {
+      proposed: /\b(proposal|proposed)\b|предлож/iu,
+      rejected: /\b(rejected|declined|not accepted)\b|отклон|не принят/iu,
+      cancelled: /\b(cancelled|canceled)\b|отмен/iu,
+      completed: /\b(completed|finished|done)\b|заверш|выполн/iu,
+      superseded: /\b(superseded|replaced|former)\b|замен|прежн/iu,
+    };
+    const disposition = dispositionPatterns[memory.disposition];
+    if (disposition) required.push(disposition.test(answerText));
+    if (memory.commitment === 'tentative') required.push(tentativeLanguage(answerText));
     if (memory.commitment === 'hypothetical')
-      return /\b(hypothetical|scenario|what if)\b|гипотез|гипотет|сценари|что если/iu.test(answerText);
-    if (memory.commitment === 'counterfactual') {
-      return /\b(counterfactual|would have|had .* then)\b|контрфактическ|если бы/iu.test(answerText);
-    }
+      required.push(
+        /\b(hypothetical(?:ly)?|hypothes[ie]s|scenario|what if|fictional|invented example)\b|гипотез|гипотет|сценари|что если|вымышлен/iu.test(
+          answerText,
+        ),
+      );
+    if (memory.commitment === 'counterfactual')
+      required.push(/\b(counterfactual|would have|had .* then)\b|контрфактическ|если бы/iu.test(answerText));
     if (memory.temporal?.time.status === 'scheduled')
-      return /\b(scheduled|due|plan|planned)\b|заплан|назнач|план/iu.test(answerText);
+      required.push(/\b(scheduled|due|plan|planned)\b|заплан|назнач|план/iu.test(answerText));
     if (memory.temporal?.time.status === 'planned')
-      return /\b(plan|planned|planning)\b|план/iu.test(answerText);
-    if (memory.temporal?.time.status === 'tentative')
-      return /\b(tentative|possibly|uncertain)\b|предполож|возможно|не уверен|неопредел/iu.test(answerText);
-    if (memory.kind === 'plan') return /\b(plan|planned|planning|scheduled)\b|план|назнач/iu.test(answerText);
-    return false;
+      required.push(/\b(plan|planned|planning)\b|план/iu.test(answerText));
+    if (memory.temporal?.time.status === 'tentative') required.push(tentativeLanguage(answerText));
+    if (memory.kind === 'plan')
+      required.push(
+        /\b(plan|planned|planning|scheduled|proposal|proposed)\b|план|назнач|предлож/iu.test(answerText),
+      );
+    return required.length > 0 && required.every(Boolean);
   });
+}
+
+function tentativeLanguage(text: string): boolean {
+  return /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|may|might)\b|предполож|возмож|неопредел|неподтвержд|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен/iu.test(
+    text,
+  );
+}
+
+function fictionalScopeSupported(text: string, support: string): boolean {
+  const fictional = /\b(fictional|invented example|imaginary example)\b|вымышлен/iu;
+  return !fictional.test(support) || fictional.test(text);
 }
 
 /**
@@ -818,13 +896,24 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
  * and introduced negation cannot survive unless they occur in the cited source. This rejects exact-value
  * failures cheaply and predictably before Akno pays for semantic supportedness judgment.
  */
-function protectedValuesSupported(answerText: string, supportText: string): boolean {
+function protectedValuesSupported(answerText: string, supportText: string, qualified = false): boolean {
   const support = normalizeComparable(supportText);
   for (const token of digitBearingTokens(answerText)) {
     if (!protectedTokenSupported(token, support)) return false;
   }
-  const answerNegated = containsNegation(answerText);
-  if (answerNegated && !containsNegation(supportText)) return false;
+  // "Unverified" can translate as "не проверен". Qualification can also explicitly say "not an
+  // established fact" without denying the embedded proposition. Only strip these bounded metaclaims;
+  // the complete, unmodified block still has to preserve every qualification and pass the verifier.
+  const polarityText = qualified
+    ? answerText.replace(
+        /\bnot (?:an? )?(?:established|confirmed) fact\b|не (?:установленный|подтвержд[её]нный) факт/giu,
+        '',
+      )
+    : answerText;
+  const answerNegated = containsNegation(polarityText);
+  const sourceNegated =
+    containsNegation(supportText) || /\b(unverified|unconfirmed)\b|неподтвержд/iu.test(supportText);
+  if (answerNegated && !sourceNegated) return false;
   return true;
 }
 

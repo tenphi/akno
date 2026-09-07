@@ -3,6 +3,7 @@ import {
   type ApprovalRequest,
   type FolderRequired,
   type RememberOutput,
+  type RetainRoutingReason,
   type WriteTarget,
 } from '@tenphi/akno-protocol';
 import fsp from 'node:fs/promises';
@@ -421,6 +422,7 @@ function fallbackResult(
 // ─── Routing ────────────────────────────────────────────────────────────────
 
 export interface AutomaticRouteDecision {
+  reason: RetainRoutingReason;
   slug: string | null;
   score: number;
   nearest: string[];
@@ -561,9 +563,13 @@ async function qualifyAutomaticOwnership(
     pageAcceptsTemporalBoundary(profile.slug, temporalBoundary),
   );
 
-  if ((profiles.length === 0 && !proposed) || !model.available) {
-    return { ...routed, slug: null, suggestedNew: false, modelOutcome: null };
-  }
+  const hold = (
+    reason: RetainRoutingReason,
+    modelOutcome: ModelOutcome<string> | null = null,
+  ): AutomaticRouteDecision => ({ ...routed, slug: null, suggestedNew: false, modelOutcome, reason });
+  if (profiles.length === 0 && !proposed)
+    return hold(routed.blocked ? 'read_only_match' : 'no_admitted_destination');
+  if (!model.available) return hold('model_unavailable');
 
   const outcome = await model.chat(
     [
@@ -592,32 +598,38 @@ async function qualifyAutomaticOwnership(
     { schema: OWNERSHIP_SCHEMA, maxTokens: 220 },
   );
   if (!outcome.ok || !outcome.value) {
-    return { ...routed, slug: null, suggestedNew: false, modelOutcome: outcome };
+    return hold('model_failed', outcome);
   }
   const parsed = OWNERSHIP_SCHEMA.safeParse(parseJsonLoose<unknown>(outcome.value));
   if (!parsed.success) {
     model.reportInvalidResponse();
-    return { ...routed, slug: null, suggestedNew: false, modelOutcome: outcome };
+    return hold('invalid_model_response', outcome);
   }
   if (
     (parsed.data.outcome === 'existing' && parsed.data.target_id === null) ||
     (parsed.data.outcome !== 'existing' && parsed.data.target_id !== null)
   ) {
     model.reportInvalidResponse();
-    return { ...routed, slug: null, suggestedNew: false, modelOutcome: outcome };
+    return hold('invalid_model_response', outcome);
   }
   if (parsed.data.outcome === 'proposed') {
     return parsed.data.target_id === null && proposed
-      ? { ...routed, slug: null, suggestedNew: true, modelOutcome: outcome }
-      : { ...routed, slug: null, suggestedNew: false, modelOutcome: outcome };
+      ? { ...routed, slug: null, suggestedNew: true, modelOutcome: outcome, reason: 'new_selected' }
+      : hold('invalid_model_response', outcome);
   }
   if (parsed.data.outcome === 'uncertain') {
-    return { ...routed, slug: null, suggestedNew: false, modelOutcome: outcome };
+    return hold(routed.blocked ? 'read_only_match' : 'ownership_uncertain', outcome);
   }
   const selected = profiles.find((profile) => profile.token === parsed.data.target_id);
   return selected
-    ? { ...routed, slug: selected.slug, suggestedNew: false, modelOutcome: outcome }
-    : { ...routed, slug: null, suggestedNew: false, modelOutcome: outcome };
+    ? {
+        ...routed,
+        slug: selected.slug,
+        suggestedNew: false,
+        modelOutcome: outcome,
+        reason: 'existing_selected',
+      }
+    : hold('invalid_model_response', outcome);
 }
 
 async function ownershipProfiles(ctx: AknoContext, slugs: readonly string[]): Promise<OwnershipProfile[]> {

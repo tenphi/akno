@@ -9,16 +9,27 @@ const { values } = parseArgs({
     live: { type: 'boolean' },
     split: { type: 'string', default: 'development' },
     output: { type: 'string' },
+    corpus: { type: 'string', default: 'v2' },
+    runs: { type: 'string', default: '1' },
+    case: { type: 'string', multiple: true },
   },
 });
-if (!values.live || !['development', 'held-out'].includes(values.split)) {
+if (
+  !values.live ||
+  !['development', 'held-out'].includes(values.split) ||
+  !['v1', 'v2'].includes(values.corpus) ||
+  !/^[1-5]$/.test(values.runs)
+) {
   console.error(
-    'Usage: pnpm bench:language --live --split development|held-out [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
+    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2] [--runs 1..5] [--case ID] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
   );
   process.exitCode = 2;
 } else {
   const report = await runLanguageBench(loadConfig(), {
     split: values.split,
+    corpus: values.corpus,
+    runs: Number(values.runs),
+    caseIds: values.case,
     onProgress: (id, done, total) => console.error(`${done}/${total}: ${id}`),
   });
   const output = values.output ?? `bench-results/language-${values.split}.json`;

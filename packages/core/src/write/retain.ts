@@ -1,3 +1,4 @@
+import { spanCoveredByFrame } from './retained-spans.ts';
 import {
   ProvidedRetainCandidate as ProvidedRetainCandidateSchema,
   RetainedTime as RetainedTimeSchema,
@@ -153,6 +154,7 @@ export type RetainCandidate = ProvidedRetainCandidate & {
 };
 
 export interface RetainHeldCandidate {
+  hold_stage?: 'validation' | 'verification';
   candidate_id: string;
   reason_code: RetainHoldReason;
   reason: string;
@@ -258,7 +260,7 @@ export async function runRetain(
     };
   }
 
-  const cleaned = cleanCandidateBatch(parsed.candidates, {
+  const cleanedBatch = cleanCandidateBatch(parsed.candidates, {
     folders: (options.folders ?? []).filter((folder) => folder.creatable).map((folder) => folder.path),
     pages: (options.folders ?? []).flatMap((folder) => folder.admittedPages),
     ...(options.sourceItems ? { sourceItems: options.sourceItems } : { sourceText: text }),
@@ -267,6 +269,11 @@ export async function runRetain(
     ...(options.mentionedAt ? { mentionedAt: options.mentionedAt } : {}),
     ...(options.timezone ? { timezone: options.timezone } : {}),
   });
+
+  const cleaned = {
+    ...cleanedBatch,
+    held: cleanedBatch.held.map((item) => ({ ...item, hold_stage: 'validation' as const })),
+  };
 
   if (cleaned.candidates.length === 0) {
     return {
@@ -288,6 +295,7 @@ export async function runRetain(
           candidate_id: candidate.candidate_id,
           reason_code: 'discourse_uncertain' as const,
           reason: 'independent semantic verification was unavailable or invalid',
+          hold_stage: 'verification' as const,
         })),
       ],
       events: [],
@@ -304,6 +312,7 @@ export async function runRetain(
       candidate_id: candidate.candidate_id,
       reason_code: verified.reasons.get(candidate.candidate_id) ?? ('discourse_uncertain' as const),
       reason: 'the independent semantic verifier did not confirm the complete retained representation',
+      hold_stage: 'verification' as const,
     }));
 
   return {
@@ -476,8 +485,7 @@ export function cleanCandidateBatch(
       held.push({ candidate_id: provisionalId, reason_code: spans.reasonCode, reason: spans.issue });
       continue;
     }
-    const frameKeys = new Set(spans.frame.map(spanKey));
-    if (spans.support.some((span) => !frameKeys.has(spanKey(span)))) {
+    if (spans.support.some((span) => !spanCoveredByFrame(span, spans.frame))) {
       held.push({
         candidate_id: provisionalId,
         reason_code: 'discourse_uncertain',
@@ -608,10 +616,9 @@ export function cleanCandidateBatch(
     if ('issue' in cleanedRelations) {
       invalidRelations.set(candidate.candidate_id, cleanedRelations.issue);
     } else {
-      const frameKeys = new Set(candidate.discourse_frame.map(spanKey));
       if (
         cleanedRelations.relations.some((relation) =>
-          relation.support.some((span) => !frameKeys.has(spanKey(span))),
+          relation.support.some((span) => !spanCoveredByFrame(span, candidate.discourse_frame)),
         )
       ) {
         invalidRelations.set(

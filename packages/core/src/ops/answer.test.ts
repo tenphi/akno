@@ -77,6 +77,7 @@ describe('grounded answer discovery surface', () => {
       related_documents: [],
       budget_used: { evidence_tokens: 0, answer_tokens: 0 },
       model_usage: { generation: null, verification: null },
+      reason_code: 'generation_unavailable',
     });
     expect(result.degraded).toContain('no_answer_model');
     expect(result.degraded).not.toContain('no_reranker');
@@ -96,6 +97,7 @@ describe('grounded answer discovery surface', () => {
     expect(result).toMatchObject({
       status: 'empty',
       outcome: 'not_found',
+      reason_code: 'no_results',
       answer: null,
       related_page_slugs: [],
       related_documents: [],
@@ -248,6 +250,103 @@ describe('grounded answer discovery surface', () => {
     expect(user.evidence[0].excerpt).toContain('hypothetical');
     expect(user.evidence[0].excerpt).not.toContain('answer_eligible');
     expect(user.evidence[0].excerpt).not.toContain('current_eligible');
+    expect(user.evidence[0].excerpt).not.toContain('unresolved');
+    expect(user.evidence[0].excerpt).not.toContain('level');
+  });
+
+  it.each([
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty may last six years, but she is not confident.',
+      'Ada Marlow tentatively believed that the silverpine warranty may last six years, but she was not confident.',
+      true,
+    ],
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty may last six years, but she is not confident.',
+      'Ada Marlow предположила, что гарантия silverpine может длиться шесть лет; она не была в этом уверена.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported that the silverpine warranty lasts five years, but this is an unverified answer.',
+      'Ассистент предположительно сообщил, что гарантия silverpine длится пять лет; этот ответ не проверен.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported that the silverpine warranty lasts five years, but this is an unverified answer.',
+      'The assistant reported that the silverpine warranty lasts five years.',
+      false,
+    ],
+    [
+      'hypothetical',
+      'source_report',
+      'The assistant described an invented example where the silverpine warranty lasts eleven years.',
+      'The assistant described a hypothetical silverpine warranty lasting eleven years.',
+      false,
+    ],
+    [
+      'hypothetical',
+      'source_report',
+      'The assistant described an invented example where the silverpine warranty lasts eleven years.',
+      'В вымышленном примере, приведённом ассистентом, гарантия silverpine длится одиннадцать лет.',
+      true,
+    ],
+  ] as const)(
+    'preserves compound qualifications across languages: %s %s %s',
+    async (commitment, basis, source, text, accepted) => {
+      write(
+        'products/zephyr-qx-100.md',
+        `# Zephyr QX-100\n\n<!-- akno:item mem_compound v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=${basis === 'source_report' ? 'assistant' : 'user'} ${basis === 'source_report' ? 'speaker=assistant ' : ''}reports=0 commitment=${commitment} disposition=active polarity=affirmed basis=${basis} -->\n- **${basis === 'source_report' ? 'Reported by assistant · ' : ''}${commitment === 'tentative' ? 'Tentative' : 'Hypothetical'}:** ${source}\n`,
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      });
+      const result = await memory.answer({
+        question: 'What was discussed about the silverpine warranty?',
+        memory_view: 'all',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(result.reason_code).toBe(accepted ? 'answered' : 'draft_rejected');
+      expect(result.validation).toMatchObject({
+        generated_blocks: 1,
+        passed_guards: accepted ? 1 : 0,
+        verified_blocks: accepted ? 1 : null,
+      });
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+      AnswerOutput.parse(result);
+    },
+  );
+
+  it('still rejects negation introduced into an affirmative source', async () => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'Гарантия silverpine не действует пять лет.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What is the silverpine warranty?',
+      expand: false,
+      graph: false,
+    });
+    expect(result).toMatchObject({
+      answer: null,
+      reason_code: 'draft_rejected',
+      validation: { rejection_counts: { protected_value: 1 } },
+    });
+    expect(modelRequests).toHaveLength(1);
   });
 
   it('removes a block whose invented exact value does not occur in its citation', async () => {
@@ -305,6 +404,13 @@ describe('grounded answer discovery surface', () => {
     expect(result.degraded).not.toContain('answer_failed');
     expect(result.degraded).not.toContain('answer_verification_failed');
     expect(result.answer).not.toContain('shipping');
+    expect(result.reason_code).toBe('answered');
+    expect(result.validation).toEqual({
+      generated_blocks: 2,
+      passed_guards: 2,
+      verified_blocks: 1,
+      rejection_counts: { semantic_support: 1 },
+    });
     expect(result.citations).toEqual([
       { id: 'E1', type: 'page', slug: 'products/zephyr-qx-100', lines: [3] },
     ]);
