@@ -26,7 +26,7 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v14';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v15';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v6';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -871,7 +871,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
       required.push(
         memory.disposition === 'resolved'
           ? /\b(resolved|answered|closed)\b|решен|решён|отвечен|закрыт/iu.test(answerText)
-          : /\b(open question|question|unresolved|unanswered|left open whether|remains open whether)\b|вопрос|не решен|не решён|без ответа/iu.test(
+          : /\b(open question|question|unresolved|unanswered|(?:left|remains) open(?: and undetermined)? whether)\b|вопрос|не решен|не решён|без ответа/iu.test(
               answerText,
             ),
       );
@@ -893,7 +893,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
     if (memory.commitment === 'tentative') required.push(tentative);
     if (memory.commitment === 'hypothetical')
       required.push(
-        /\b(hypothetical(?:ly)?|hypothes[ie]s|scenario|what if|fictional|invented example)\b|гипотез|гипотет|сценари|что если|вымышлен/iu.test(
+        /\b(hypothetical(?:ly)?|hypothes[ie]s|assum(?:e|ed|ing|ptions?)|scenario|what if|fictional|invented example)\b|гипотез|гипотет|предполож|сценари|что если|вымышлен/iu.test(
           answerText,
         ),
       );
@@ -966,7 +966,7 @@ function qualificationPolarityText(text: string, support: string): string {
         '',
       )
       .replace(
-        /не (?=(?:был[аои]? )?(?:проверен|проверял|проверил|подтвержд[её]н|подтверд|имел[аои]? подтверждени|установлен|устанавлива|определ[её]н|известен|известна))/giu,
+        /не (?=(?:был[аои]? )?(?:проверен|проверял|проверил|подтвержд[её]н|подтверд|признан\p{L}* установлен|имел[аои]? подтверждени|установлен|устанавлива|определ[её]н|известен|известна))/giu,
         '',
       )
       .replace(/подтверждения (?:этому )?нет/giu, 'подтверждение отсутствует');
@@ -976,12 +976,38 @@ function qualificationPolarityText(text: string, support: string): string {
       /\bnot as (?:an? )?(?:actual|real) (?:event|occurrence|fact)\b/giu,
       '',
     );
+    if (
+      /\b(unrealized|unselected|rather than)\b|нереализован|не выбран/iu.test(support) &&
+      /\b(chose|chosen|selected|selection)\b|выбра/iu.test(support)
+    ) {
+      // An unrealized choice can be described as unselected. Only remove negation of that
+      // selection/realization status; a new denial of coverage or another predicate remains.
+      polarityText = polarityText
+        .replace(
+          /\b(?:did )?not (?=(?:choose|select) (?:this |that |the )?(?:coverage|option|alternative|extension|scenario)\b)/giu,
+          '',
+        )
+        .replace(
+          /\bnot (?=(?:the )?(?:coverage|option|alternative|extension|scenario) (?:\p{L}+\s+){0,3}(?:selected|chosen|chose)\b)/giu,
+          '',
+        )
+        .replace(
+          /\bnot (?=(?:the )?(?:selected|chosen) (?:coverage|option|alternative|extension|scenario)\b)/giu,
+          '',
+        )
+        .replace(/не (?=(?:был[аои]? )?(?:фактически )?выбран\p{L}*)/giu, '')
+        .replace(
+          /не (?=(?:был[аои]? )?(?:фактическим )?покрытием, которое (?:он[аи]?|они) выбрал\p{L}*)/giu,
+          '',
+        )
+        .replace(/(?<=сценарий )не (?=(?:был )?реализован\p{L}*)/giu, '');
+    }
   }
   if (/\b(fictional|invented example|imaginary example)\b|вымышлен/iu.test(support)) {
     // Explicit fiction entails unreality of the example. It does not license a new denial
     // of its embedded predicate; other negations still reach the floor and full verifier.
     polarityText = polarityText.replace(
-      /\bnot (?:an? )?(?:real|actual)\b|не (?:реальн\p{L}*|настоящ\p{L}*)/giu,
+      /\bnot (?:to be )?(?:an? )?(?:real|actual)\b|не (?:является )?(?:реальн\p{L}*|настоящ\p{L}*)/giu,
       '',
     );
   }

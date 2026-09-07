@@ -23,7 +23,7 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v7';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v8';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v2';
 
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
@@ -871,7 +871,7 @@ function hasExplicitReporter(speaker: string, frame: string): boolean {
   const reporting =
     '(?:said|says|wrote|writes|reported|reports|stated|states|told|asked|asks|claimed|claims|described|describes|noted|notes|suggested|suggests|сообщил[аи]?|сказал[аи]?|написал[аи]?|отметил[аи]?|утвержда(?:ет|ют|л[аи]?)|рассказал[аи]?|спросил[аи]?|предложил[аи]?)';
   return new RegExp(
-    `(?<![\\p{L}\\p{N}])(?:${name}\\s*(?::|(?:[\\p{L}]+\\s+){0,2}${reporting}(?![\\p{L}]))|${reporting}\\s+${name}(?![\\p{L}\\p{N}])|(?:according to|по словам)\\s+${name}(?![\\p{L}\\p{N}]))`,
+    `(?<![\\p{L}\\p{N}])(?:${name}\\s*(?::|(?:[\\p{L}]+\\s+){0,2}${reporting}(?![\\p{L}]))|${reporting}\\s+${name}(?![\\p{L}\\p{N}])|(?:according to|по словам|со слов)\\s+${name}(?![\\p{L}\\p{N}]))`,
     'iu',
   ).test(frame.normalize('NFKC'));
 }

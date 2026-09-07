@@ -11,6 +11,7 @@ describe('cross-language retention boundary', () => {
     ['Bo Winters said the Zephyr QX-100 warranty might last five years.', true],
     ['Bo Winters сообщил, что гарантия Zephyr QX-100 может действовать пять лет.', true],
     ['According to Bo Winters, the Zephyr QX-100 warranty might last five years.', true],
+    ['Со слов Bo Winters, гарантия Zephyr QX-100 может действовать пять лет.', true],
   ])('requires a reporting relation for an inner speaker: %s', (source, valid) => {
     const result = cleanCandidateBatch(
       [

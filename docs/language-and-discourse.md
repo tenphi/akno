@@ -80,15 +80,15 @@ cases must be assessed separately from model quality.
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,
-Russian and mixed sources; exposed corpora remain available unchanged. V6 keeps the exposed development inputs
+Russian and mixed sources; exposed corpora remain available unchanged. V7 keeps the exposed development inputs
 and introduces a fresh held-out set, reviewed before execution by a separate model. Earlier corpora remain
 diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v6 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v6 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v7 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v7 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -182,6 +182,31 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v14 baseline
+
+The v6 corpus was run twice per split with GPT-5.6 Luna for retention/answers and GPT-5.6 Sol for separate
+input/output adjudication. Inputs were approved before execution; the output packet hid runtime verdicts
+and aggregate scores. The gate used the original runtime contracts from commit `ebc5814`.
+
+| Split / repetition | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------------ | ---------------- | ------------------- | ------------------------ |
+| Development / 1    | 5/5              | 20/20               | 39/40                    |
+| Development / 2    | 5/5              | 20/20               | 33/40                    |
+| Held-out / 1       | 5/5              | 20/20               | 29/40                    |
+| Held-out / 2       | 5/5              | 20/20               | 33/40                    |
+
+Both read-only holds and all 16 associated abstentions were justified. The reviewer found no accepted language,
+qualification or factual-promotion errors; source bytes stayed unchanged and model availability had no failures.
+Nevertheless, **this baseline failed**: the first held-out run missed the 80% useful-answer threshold. Its 26
+unjustified null answers across both splits remain coverage failures. The v6 split became exposed diagnostic
+evidence after this review and informed later guard fixes.
+
+The [computed gate](../benchmarks/language/results/v14-baseline/gate.json),
+[development report](../benchmarks/language/results/v14-baseline/development.json),
+[held-out report](../benchmarks/language/results/v14-baseline/held-out.json),
+[input review](../benchmarks/language/results/v14-baseline/input-review.json) and
+[output review](../benchmarks/language/results/v14-baseline/output-review.json) are preserved unchanged.
 
 ## Initial live baseline
 

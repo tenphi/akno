@@ -261,6 +261,84 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow discussed the unestablished assumption that the silverpine warranty requires inspection.',
+      'For discussion, Ada Marlow was assuming the silverpine warranty requires inspection.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow discussed the unestablished assumption that the silverpine warranty requires inspection.',
+      'Ada Marlow discussed assumptions about the silverpine warranty requiring inspection.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized counterfactual: had she chosen the silverpine warranty extension, repairs in year seven would have been covered rather than the selected coverage.',
+      'Ada Marlow described the unrealized counterfactual where repairs in year seven would have been covered. This was not the coverage she selected.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized counterfactual: had she chosen the silverpine warranty extension, repairs in year seven would have been covered rather than the selected coverage.',
+      'Ada Marlow описала нереализованный контрфактический сценарий с ремонтом на седьмом году. Это не было покрытием, которое она выбрала.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized counterfactual: had she chosen the silverpine warranty extension, repairs in year seven would have been covered rather than the selected coverage.',
+      'Ada Marlow described the unrealized counterfactual of silverpine repairs in year seven. She did not select that coverage.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized counterfactual: had she chosen the silverpine warranty extension, repairs in year seven would have been covered rather than the selected coverage.',
+      'Ada Marlow описала контрфактический сценарий silverpine с ремонтом на седьмом году. Этот сценарий не был реализован, расширенная гарантия не была выбрана.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized counterfactual: had she chosen the silverpine warranty extension, repairs in year seven would have been covered rather than the selected coverage.',
+      'Ada Marlow described the unrealized counterfactual where repairs in year seven would not have been covered. This was not the coverage she selected.',
+      false,
+      'protected_value',
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow discussed two unestablished hypotheses about the silverpine warranty: annual and biennial inspections.',
+      'Ada Marlow обсуждала две гипотезы silverpine; ни одна не была признана установленной.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow discussed a fictional silverpine warranty lasting twenty years.',
+      'Ada Marlow discussed a fictional twenty-year silverpine warranty, explicitly stated not to be a real warranty.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow discussed a fictional silverpine warranty lasting twenty years.',
+      'Ada Marlow обсуждала вымышленную гарантию silverpine на двадцать лет; она не является реальной гарантией.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow assumed for discussion that the silverpine warranty requires seasonal inspection; this is unestablished.',
+      'Ada Marlow предположила для обсуждения, что гарантия silverpine требует сезонной проверки; это не установлено как фактическое обязательство.',
+      true,
+    ],
+    [
       'tentative',
       'source_report',
       'The assistant reported what Bo Winters said about a five-year silverpine warranty, but has not verified his words.',
@@ -381,7 +459,7 @@ describe('grounded answer discovery surface', () => {
     ],
   ] as const)(
     'preserves compound qualifications across languages: %s %s %s',
-    async (commitment, basis, source, text, accepted) => {
+    async (commitment, basis, source, text, accepted, rejectionReason = 'discourse') => {
       write(
         'products/zephyr-qx-100.md',
         `# Zephyr QX-100\n\n<!-- akno:item mem_compound v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=${basis === 'source_report' ? 'assistant' : 'user'} ${basis === 'source_report' ? 'speaker=assistant ' : ''}reports=0 commitment=${commitment} disposition=active polarity=affirmed basis=${basis} -->\n- **${basis === 'source_report' ? 'Reported by assistant · ' : ''}${commitment === 'tentative' ? 'Tentative' : commitment === 'counterfactual' ? 'Counterfactual' : 'Hypothetical'}:** ${source}\n`,
@@ -405,7 +483,7 @@ describe('grounded answer discovery surface', () => {
         passed_guards: accepted ? 1 : 0,
         verified_blocks: accepted ? 1 : null,
       });
-      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ [rejectionReason]: 1 });
       AnswerOutput.parse(result);
     },
   );
@@ -460,7 +538,10 @@ describe('grounded answer discovery surface', () => {
     expect(modelRequests).toHaveLength(1);
   });
 
-  it('translates an undetermined open question without denying its embedded predicate', async () => {
+  it.each([
+    'Ada Marlow оставила открытым вопрос о ремонте датчика по гарантии silverpine; ответ пока не определён.',
+    'Ada Marlow recorded that it remains open and undetermined whether the silverpine warranty covers sensor repair.',
+  ])('preserves an undetermined open question without denying its predicate: %s', async (text) => {
     write(
       'products/zephyr-qx-100.md',
       '# Zephyr QX-100\n\n<!-- akno:item mem_undetermined v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=question subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** Ada Marlow left open whether the silverpine warranty covers sensor repair; the answer remains to be determined.\n',
@@ -470,7 +551,7 @@ describe('grounded answer discovery surface', () => {
       generation: {
         blocks: [
           {
-            text: 'Ada Marlow оставила открытым вопрос о ремонте датчика по гарантии silverpine; ответ пока не определён.',
+            text,
             evidence_ids: ['E1'],
           },
         ],
