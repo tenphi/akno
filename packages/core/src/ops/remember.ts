@@ -662,6 +662,8 @@ async function scoreDestinations(
   const result = await recall(ctx, {
     query,
     mode: 'lookup',
+    // Destination relevance includes historical and qualified context, without granting fact eligibility.
+    memory_view: 'all',
     limit: 5,
     // Summaries only: routing is a decision about *which page*, and line windows
     // are budget spent on text nobody reads here.

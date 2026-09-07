@@ -1,3 +1,4 @@
+import { proseQualifications, hasNonfactualProse } from '../kb/prose.ts';
 import { z } from 'zod';
 import { parseJsonLoose, type ModelClient } from '../models/client.ts';
 import { sha256 } from '../store/ids.ts';
@@ -100,9 +101,11 @@ export async function derivePage(
   // words, and a fact extractor asserting things from a contract or an email is
   // the failure page classes exist to prevent.
   const mineable = mineableLines(page);
-  if (mineable.length === 0) return empty;
+  const factual = mineable.filter((entry) => entry.factEligible);
+  if (factual.length === 0) return empty;
 
-  const numbered = mineable.map(({ line, text }) => `${line}: ${text}`).join('\n');
+  // Disqualified text must not seed an inferred fact on a different, otherwise eligible line.
+  const numbered = factual.map(({ line, text }) => `${line}: ${text}`).join('\n');
   const result = await model.chat(
     [
       { role: 'system', content: SYSTEM },
@@ -152,7 +155,7 @@ export async function derivePage(
       return { ...empty, error: result.error ?? 'derivation returned unparseable JSON' };
     }
     return {
-      summary: options.summaries ? cleanSummary(retried.summary) : null,
+      summary: options.summaries && !hasNonfactualProse(page.content) ? cleanSummary(retried.summary) : null,
       keywords: options.summaries ? cleanKeywords(retried.keywords) : [],
       facts: [],
       error: null,
@@ -173,7 +176,7 @@ export async function derivePage(
   );
 
   return {
-    summary: options.summaries ? cleanSummary(parsed.summary) : null,
+    summary: options.summaries && !hasNonfactualProse(page.content) ? cleanSummary(parsed.summary) : null,
     keywords: options.summaries ? cleanKeywords(parsed.keywords) : [],
     facts: options.facts ? cleanFacts(parsed.facts, byLine) : [],
     error: null,
@@ -208,6 +211,7 @@ function mineableLines(
   page: ParsedPage,
 ): { line: number; text: string; itemId: string | null; factEligible: boolean }[] {
   const out: { line: number; text: string; itemId: string | null; factEligible: boolean }[] = [];
+  const prose = proseQualifications(page.content.split('\n'));
   const fence = page.sourceFenceLine;
   let pendingItem: string | null = null;
   let pendingFactEligible = true;
@@ -245,7 +249,13 @@ function mineableLines(
       pendingFactEligible = true;
       continue;
     }
-    out.push({ line, text, itemId: pendingItem, factEligible: pendingFactEligible });
+    out.push({
+      line,
+      text,
+      itemId: pendingItem,
+      factEligible:
+        pendingFactEligible && (pendingItem !== null || prose.get(line)?.answer_eligible !== false),
+    });
     pendingItem = null;
     pendingFactEligible = true;
   }

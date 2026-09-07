@@ -412,6 +412,28 @@ async function retainCandidates(
   const requestHash = sha256(JSON.stringify(resolvedSource.requested));
   const replay = replayResult(ctx, source.source_id, source.revision, requestHash, sourceHash);
   if (replay) return replay;
+  if (
+    options.selection === 'provided' &&
+    ctx.config.knowledgeLanguage &&
+    source.retention.mode === 'provided' &&
+    source.retention.knowledge_language !== ctx.config.knowledgeLanguage
+  ) {
+    const reasonCode = source.retention.knowledge_language ? 'language_mismatch' : 'language_policy_required';
+    return {
+      source_id: source.source_id,
+      revision: source.revision,
+      outcome: 'held',
+      status: 'ok',
+      knowledge_language: ctx.config.knowledgeLanguage,
+      reason_code: reasonCode,
+      candidates: suppliedCandidates.map((candidate) => ({
+        candidate_id: candidate.candidate_id,
+        outcome: 'held',
+        reason_code: reasonCode,
+      })),
+      note: 'Provided candidates require the caller to attest knowledge_language: en. Text is never translated or semantically verified in exact mode; no replay receipt was created.',
+    };
+  }
   const groupIssue = sourceGroupIssue(ctx, source.source_id, source.source_group);
   if (groupIssue) return conflictResult(source.source_id, source.revision, groupIssue);
   const correctionIssue = validateCorrectionTarget(ctx, source);
@@ -779,6 +801,7 @@ async function retainCandidates(
     };
   }
   const preview: RetainSourceResult = {
+    knowledge_language: ctx.config.knowledgeLanguage,
     source_id: source.source_id,
     revision: source.revision,
     outcome: options.sourceHold
@@ -1210,6 +1233,7 @@ async function retractSource(
 
   const changed = [...stages.values()].filter((stage) => stage.before !== stage.after);
   const preview: RetainSourceResult = {
+    knowledge_language: ctx.config.knowledgeLanguage,
     source_id: source.source_id,
     revision: source.revision,
     outcome: changed.length > 0 ? 'ok' : results.some((item) => item.outcome === 'held') ? 'held' : 'noop',
@@ -1398,7 +1422,7 @@ function candidateIssueReasonCode(issue: string): RetainHoldReason {
 }
 
 const RELATIVE_TIME =
-  /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b/i;
+  /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
 
 function structuredAttributionIssue(
   source: ResolvedRetainUpsertSource,

@@ -1,3 +1,10 @@
+import {
+  generatedProse,
+  languageInstruction,
+  LANGUAGE_CHECK_SCHEMA,
+  LANGUAGE_CHECK_SYSTEM,
+  type OutputLanguage,
+} from './language.ts';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { DegradedReason } from '@tenphi/akno-protocol';
@@ -20,7 +27,13 @@ import { ProviderRequestError, requestConfiguredProvider } from './provider-requ
  * layer that silently stops working the moment a message is reworded, on exactly
  * the path whose job is to report degradation honestly.
  */
-export type ModelFailure = 'unavailable' | 'timeout' | 'request_failed' | 'bad_response';
+export type ModelFailure =
+  | 'unavailable'
+  | 'timeout'
+  | 'request_failed'
+  | 'bad_response'
+  | 'language_mismatch'
+  | 'language_check_failed';
 
 export interface ModelOutcome<T> {
   ok: boolean;
@@ -65,7 +78,7 @@ interface ModelSemanticFailureObservation {
   event: 'semantic_failure';
   role: ResolvedModelRole['role'];
   modelId: string | null;
-  failure: 'bad_response';
+  failure: 'bad_response' | 'language_mismatch' | 'language_check_failed';
   degradedReason: DegradedReason;
 }
 
@@ -79,6 +92,8 @@ export interface ChatMessage {
 }
 
 export interface ChatOptions {
+  /** Null explicitly preserves source language for exact extraction/transcription. */
+  outputLanguage?: OutputLanguage | null;
   json?: boolean;
   /**
    * The shape the prompt asks for, as a zod schema, sent so the endpoint can constrain
@@ -190,13 +205,15 @@ export class ModelClient {
    * Reclassify the preceding successful call when its content cannot satisfy the caller's
    * contract. No response text or validation detail crosses this telemetry boundary.
    */
-  reportInvalidResponse(): void {
+  reportInvalidResponse(
+    failure: 'bad_response' | 'language_mismatch' | 'language_check_failed' = 'bad_response',
+  ): void {
     this.emitObservation({
       event: 'semantic_failure',
       role: this.#role.role,
       modelId: this.#role.id,
-      failure: 'bad_response',
-      degradedReason: this.degradedReason({ reason: 'bad_response' }),
+      failure,
+      degradedReason: this.degradedReason({ reason: failure }),
     });
   }
 
@@ -222,6 +239,10 @@ export class ModelClient {
 
   get modelId(): string | null {
     return this.#role.id;
+  }
+
+  get knowledgeLanguage(): 'en' | null {
+    return this.#role.knowledgeLanguage ?? null;
   }
 
   get role(): ResolvedModelRole['role'] {
@@ -484,6 +505,69 @@ export class ModelClient {
   }
 
   async chat(messages: ChatMessage[], options: ChatOptions = {}): Promise<ModelOutcome<string>> {
+    const language = options.outputLanguage === undefined ? this.knowledgeLanguage : options.outputLanguage;
+    if (!language) return this.chatTransport(messages, options);
+    const started = performance.now();
+    const result = await this.chatTransport(
+      [{ role: 'system', content: languageInstruction(language) }, ...messages],
+      options,
+    );
+    if (!result.ok || result.value === null) return result;
+    const excerpts = generatedProse(parseJsonLoose<unknown>(result.value) ?? result.value);
+    if (excerpts.length === 0) return result;
+    const remaining =
+      options.timeoutMs === undefined
+        ? undefined
+        : Math.floor(options.timeoutMs - (performance.now() - started));
+    if (excerpts.join('').length > 24000 || (remaining !== undefined && remaining <= 0)) {
+      this.reportInvalidResponse('language_check_failed');
+      return {
+        ...result,
+        ok: false,
+        value: null,
+        reason: 'language_check_failed',
+        error: 'generated prose could not fit the bounded language check',
+      };
+    }
+    const check = await this.chatTransport(
+      [
+        { role: 'system', content: LANGUAGE_CHECK_SYSTEM },
+        { role: 'user', content: JSON.stringify({ language, excerpts }) },
+      ],
+      {
+        schema: LANGUAGE_CHECK_SCHEMA,
+        maxTokens: 1024,
+        ...(remaining === undefined ? {} : { timeoutMs: remaining }),
+      },
+    );
+    const verdict = check.ok
+      ? LANGUAGE_CHECK_SCHEMA.safeParse(parseJsonLoose<unknown>(check.value ?? ''))
+      : null;
+    const combined = {
+      ...result,
+      latencyMs: performance.now() - started,
+      endpointRequests: (result.endpointRequests ?? 0) + (check.endpointRequests ?? 0),
+      usage: sumModelUsage(result.usage ?? null, check.usage ?? null) ?? undefined,
+    };
+    if (!verdict?.success || !verdict.data.compliant) {
+      this.reportInvalidResponse(verdict?.success ? 'language_mismatch' : 'language_check_failed');
+      return {
+        ...combined,
+        ok: false,
+        value: null,
+        reason: verdict?.success ? 'language_mismatch' : 'language_check_failed',
+        error: verdict?.success
+          ? 'generated prose did not satisfy the requested output language'
+          : 'generated prose language verification was unavailable or invalid',
+      };
+    }
+    return combined;
+  }
+
+  private async chatTransport(
+    messages: ChatMessage[],
+    options: ChatOptions = {},
+  ): Promise<ModelOutcome<string>> {
     const chatStarted = performance.now();
     const wantsJson = options.json || options.schema !== undefined;
     // Built once: `z.toJSONSchema` is cheap but this sits on the recall path, and a
@@ -1005,6 +1089,7 @@ function tokenCeiling(perCall: number | undefined, perRole: number | undefined):
 }
 
 function degradedReasonFor(role: ResolvedModelRole['role'], failure: ModelFailure): DegradedReason {
+  if (failure === 'language_mismatch' || failure === 'language_check_failed') return failure;
   const unconfigured = failure === 'unavailable';
   switch (role) {
     case 'embedding':

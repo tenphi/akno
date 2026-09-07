@@ -1,5 +1,10 @@
 # Reading memory
 
+Ordinary Markdown excerpts carry a derived `prose` qualification. Hypothetical headings, quotes and speaker
+turns cannot become unqualified factual evidence merely because an excerpt omits its heading. English/Russian
+view inference and independent answer-language requests are described in
+[knowledge language and discourse](language-and-discourse.md).
+
 Akno separates evidence discovery, direct answering, exact reads, relationship inspection, time-based lookup,
 and automatic host context. The split keeps fast or inspectable operations from silently becoming generative.
 

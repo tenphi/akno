@@ -525,6 +525,7 @@ function resolve(
   if (kbRules) sources.push(kbRulesPath);
 
   const config: AknoConfig = {
+    knowledgeLanguage: doc.knowledge_language ?? null,
     aknoPath,
     stateDir,
     dbPath: path.join(stateDir, 'akno.db'),
@@ -711,5 +712,8 @@ function resolve(
     sources,
   };
   applyCachedProviderApiResolutions(config);
+  for (const role of [...Object.values(config.models), config.maintenance.model]) {
+    if (role) role.knowledgeLanguage = config.knowledgeLanguage;
+  }
   return config;
 }

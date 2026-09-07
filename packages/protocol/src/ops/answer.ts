@@ -11,6 +11,7 @@ import {
 
 /** A direct question over the existing qualified recall pipeline. */
 export const AnswerInput = z.object({
+  answer_language: z.enum(['en', 'ru']).optional(),
   question: z.string().trim().min(1),
   /** Override conservative semantic-intent inference for retained memory. */
   memory_view: MemoryView.optional(),
@@ -107,6 +108,7 @@ export const AnswerModelCallReceipt = z.object({
 export type AnswerModelCallReceipt = z.infer<typeof AnswerModelCallReceipt>;
 
 export const AnswerOutput = ResultEnvelope.extend({
+  answer_language: z.enum(['en', 'ru']).nullable().optional(),
   outcome: z.enum(['complete', 'partial', 'not_found', 'not_answered']),
   answer: z.string().nullable(),
   coverage: z.record(z.string(), z.boolean()),

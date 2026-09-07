@@ -166,6 +166,8 @@ export const RetainUpsertSource = z
     retention: z.union([
       z.object({
         mode: z.literal('provided'),
+        /** Caller attestation for exact prose; Akno never translates provided candidates. */
+        knowledge_language: z.enum(['en', 'ru']).optional(),
         placement: z.enum(['exact', 'automatic']),
         candidates: z.array(ProvidedRetainCandidate).min(1).max(50),
       }),
@@ -266,6 +268,8 @@ export const RetainHoldReason = z.enum([
   'placement_degraded',
   'apply_failed',
   'validation_failed',
+  'language_policy_required',
+  'language_mismatch',
 ]);
 export type RetainHoldReason = z.infer<typeof RetainHoldReason>;
 
@@ -290,6 +294,8 @@ export const RetainCandidateResult = z.object({
 export type RetainCandidateResult = z.infer<typeof RetainCandidateResult>;
 
 export const RetainSourceResult = z.object({
+  /** Policy at original processing time; replay preserves this receipt. */
+  knowledge_language: z.literal('en').nullable().optional(),
   source_id: z.string(),
   revision: z.string(),
   outcome: z.enum(['ok', 'replayed', 'noop', 'held', 'revision_conflict']),

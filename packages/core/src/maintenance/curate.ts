@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import { hasNonfactualProse } from '../kb/prose.ts';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
@@ -36,6 +38,7 @@ export interface CuratedPage {
   slug: string;
   mode: 'hygiene' | 'synthesize';
   action: 'would-update' | 'updated' | 'unchanged' | 'rejected';
+  reason_code?: 'prose_discourse_held';
   splits: string[];
   extractions: string[];
   merges: string[];
@@ -498,6 +501,19 @@ export async function curatePages(
     const before = await fsp.readFile(path.join(ctx.config.aknoPath, row.rel_path), 'utf8').catch(() => null);
     if (before === null) {
       result.warnings.push(`${row.slug}: could not read page`);
+      continue;
+    }
+    if (hasNonfactualProse(before)) {
+      result.pages.push({
+        slug: row.slug,
+        mode: row.dream_management as 'hygiene' | 'synthesize',
+        action: 'rejected',
+        reason_code: 'prose_discourse_held',
+        splits: [],
+        extractions: [],
+        merges: [],
+        issues: ['Whole-page rewriting is held because this page contains qualified discourse.'],
+      });
       continue;
     }
     const fm = parseFrontmatter(before);
@@ -1228,6 +1244,8 @@ async function inspectMergeCandidate(
     { relPath: candidate.duplicate.rel_path, content: duplicateBefore },
   );
   if (inverseIssue) issues.push(inverseIssue);
+  if (hasNonfactualProse(canonicalBefore) || hasNonfactualProse(duplicateBefore))
+    issues.push('Merging is held because a source contains qualified discourse.');
   if (Buffer.byteLength(canonical.body) + Buffer.byteLength(duplicate.body) > 80_000) {
     issues.push('merge inputs exceed the 80000-byte lossless planning limit');
   }
@@ -1758,21 +1776,30 @@ function evidenceFor(ctx: AknoContext, page: PageRow): EvidencePage[] {
       WHERE source_page = ? AND target_slug = ?
       ORDER BY date DESC, line LIMIT 50`,
   );
-  return rows.map((row) => {
-    const relationship = pageRelationship(row, page.slug);
-    const allFacts = facts.all(row.id) as EvidenceFact[];
-    return {
-      ...row,
-      relationship,
-      events: events.all(row.id, page.slug) as { date: string; summary: string }[],
-      facts:
-        relationship === 'about'
-          ? allFacts
-          : relationship === 'backlink'
-            ? allFacts.filter((fact) => factMentionsPage(fact, page))
-            : [],
-    };
-  });
+  return rows
+    .filter((row) => {
+      // A neighboring summary may have been derived before its qualifier was edited.
+      try {
+        return !hasNonfactualProse(fs.readFileSync(path.join(ctx.config.aknoPath, row.rel_path), 'utf8'));
+      } catch {
+        return false;
+      }
+    })
+    .map((row) => {
+      const relationship = pageRelationship(row, page.slug);
+      const allFacts = facts.all(row.id) as EvidenceFact[];
+      return {
+        ...row,
+        relationship,
+        events: events.all(row.id, page.slug) as { date: string; summary: string }[],
+        facts:
+          relationship === 'about'
+            ? allFacts
+            : relationship === 'backlink'
+              ? allFacts.filter((fact) => factMentionsPage(fact, page))
+              : [],
+      };
+    });
 }
 
 /** Ended events wake only for evidence that explicitly contributes to or records the event. */

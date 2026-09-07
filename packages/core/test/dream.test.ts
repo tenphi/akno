@@ -96,7 +96,7 @@ async function startStubChat(): Promise<StubServer> {
         ? derive(user, byPage)
         : system.startsWith('You independently verify whether drafted answer blocks')
           ? (answerScripted?.verification ?? { verdicts: [] })
-          : system.startsWith('You answer a factual question using only supplied memory evidence')
+          : system.startsWith('You answer a question using only supplied memory evidence')
             ? (answerScripted?.generation ?? { blocks: [], missing_concepts: [] })
             : system.startsWith('You classify structurally incompatible claims')
               ? conflictScripted

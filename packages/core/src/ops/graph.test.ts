@@ -149,6 +149,12 @@ describe('graph operation', () => {
       id: string;
     };
     store.db.prepare('UPDATE pages SET derived_hash = body_hash WHERE id = ?').run(page.id);
+    store.db
+      .prepare(
+        `INSERT OR IGNORE INTO prose_entries(source_page, line, view, eligible, source_hash)
+      SELECT ?, 11, 'factual', 1, sha256 FROM files WHERE page_id = ? AND kind = 'page' LIMIT 1`,
+      )
+      .run(page.id, page.id);
     const claim = 'Ada Marlow previously worked with Vulpine Mutual.';
     store.db
       .prepare(

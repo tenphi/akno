@@ -80,6 +80,20 @@ afterEach(async () => {
 });
 
 describe('curate', () => {
+  it('holds whole-page rewriting of ordinary qualified discourse before any model call', async () => {
+    const target = path.join(root, 'people/ada-marlow.md');
+    const before =
+      fs.readFileSync(target, 'utf8') +
+      '\n## Hypothetical warranty\nThe Zephyr QX-100 warranty lasts five years.\n';
+    fs.writeFileSync(target, before);
+    await mem.index({ structuralOnly: true, verify: true });
+    const report = await mem.dream({ phase: 'curate' });
+    expect(report.curated).toMatchObject([
+      { slug: 'people/ada-marlow', action: 'rejected', reason_code: 'prose_discourse_held' },
+    ]);
+    expect(server.curatorCalls()).toBe(0);
+    expect(fs.readFileSync(target, 'utf8')).toBe(before);
+  });
   it('uses a draft and verifier but keeps scheduled writes in preview mode', async () => {
     const before = fs.readFileSync(path.join(root, 'people/ada-marlow.md'), 'utf8');
     const report = await mem.dream({ phase: 'curate' });
@@ -2576,7 +2590,7 @@ function seedGraphSubjectFacts(databasePath: string, slug: string, count = 2): v
       claim: 'Ada Marlow calibrates the Zephyr QX-100 at Blackwater Bay.',
       attribute: 'equipment',
       value: 'Zephyr QX-100',
-      line: 11,
+      line: 10,
       hash: 'invented-equipment-line-hash',
     },
     {
@@ -2584,7 +2598,7 @@ function seedGraphSubjectFacts(databasePath: string, slug: string, count = 2): v
       claim: 'Ada Marlow records a five-year warranty.',
       attribute: 'warranty',
       value: 'five years',
-      line: 12,
+      line: 11,
       hash: 'invented-warranty-line-hash',
     },
   ];

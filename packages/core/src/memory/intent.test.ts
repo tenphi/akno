@@ -17,6 +17,12 @@ describe('memory-view inference', () => {
     ['Show the decision history for the contract.', 'history'],
     ['What is the planned inspection schedule?', 'planning'],
     ['How long is the warranty?', 'factual'],
+    ['Что сообщил Bo Winters о гарантии?', 'reports'],
+    ['Какие открытые вопросы остались?', 'questions'],
+    ['Какие гипотезы обсуждались о гарантии?', 'discussion'],
+    ['Какие решения отклонены?', 'history'],
+    ['Какие планы связаны с осмотром?', 'planning'],
+    ['Каков срок гарантии?', 'factual'],
   ] as const)('infers %s as %s', (query, view) => {
     expect(inferMemoryView(query)).toBe(view);
   });

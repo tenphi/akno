@@ -22,6 +22,11 @@
   // Null uses ~/.akno on macOS or $XDG_STATE_HOME/akno on Linux.
   "state_dir": null,
 
+  // Main language for NEW generated knowledge. null preserves legacy generation behavior;
+  // "en" requests English and adds a bounded language-validation call for generated prose.
+  // Changing this never translates existing files or reprocesses recorded source revisions.
+  "knowledge_language": null,
+
   // ─── Reserved paths ───────────────────────────────────────────────────────
   // Remappable so a collision with something you already have is resolvable.
   // Relative to akno_path.

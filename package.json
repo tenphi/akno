@@ -31,7 +31,8 @@
     "format": "prettier --write \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset\" \".github/**/*.yml\"",
     "format:check": "prettier --check \"packages/**/*.ts\" \"packages/*/README.md\" \"*.{json,md,ts}\" \"docs/*.md\" \"examples/*.md\" \"config/*.jsonc\" \"scripts/*.mjs\" \".changeset\" \".github/**/*.yml\"",
     "bench": "node packages/cli/src/bin.ts bench",
-    "knip": "knip"
+    "knip": "knip",
+    "bench:language": "node scripts/bench-language.mjs"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",

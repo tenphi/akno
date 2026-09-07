@@ -18,6 +18,8 @@ export interface MemorySemantics {
  * than broadening into reports or imagined alternatives merely because those words rank well.
  */
 export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): MemoryView {
+  const russian = russianMemoryView(query);
+  if (russian) return russian;
   if (/\b(report|reported|reports|said|says|according to|told|claimed|claims)\b/i.test(query)) {
     return 'reports';
   }
@@ -93,4 +95,25 @@ export function qualificationEligibleForView(memory: QualifiedMemory, view: Memo
     },
     view,
   );
+}
+
+function russianMemoryView(query: string): MemoryView | null {
+  if (
+    /(?:^|[^\p{L}])(?:сообщил|сообщила|сообщает|сказал|сказала|по словам|согласно|утверждает)(?=$|[^\p{L}])/iu.test(
+      query,
+    )
+  )
+    return 'reports';
+  if (/вопрос\p{L}* (?:остал|открыт|не реш)|нереш[её]нн\p{L}* вопрос|открыт\p{L}* вопрос/iu.test(query))
+    return 'questions';
+  if (/гипотез|гипотетическ|контрфактическ|что если|предположим|сценари|альтернатив|обсуждал/iu.test(query))
+    return 'discussion';
+  if (/истори|раньше|прежде|отклон|отмен|заверш|замен|было решено/iu.test(query)) return 'history';
+  if (
+    /план|расписани|предстоят|предстоящ|крайний срок|срок\p{L}* (?:оплаты|подачи|выполнения|осмотра)|дедлайн|просроч/iu.test(
+      query,
+    )
+  )
+    return 'planning';
+  return null;
 }

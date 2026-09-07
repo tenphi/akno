@@ -122,6 +122,11 @@ which use `akno plan decide`.
 
 ## Retain identified sources
 
+When `knowledge_language: "en"` is configured, provided retention must declare
+`retention.knowledge_language: "en"`. This is the caller's attestation; exact supplied prose is never
+translated or semantically verified. Automatic extraction follows the configured policy while preserving
+original-language support quotes. See [knowledge language and discourse](language-and-discourse.md).
+
 `retain` is the host-facing path when source identity must survive retries. It accepts coherent inline text,
 ordered source items, an indexed source-page slug, or an indexed document id. It supports extracted or
 caller-provided semantic candidates, explicit atomic correction, optional inline-source archival, and

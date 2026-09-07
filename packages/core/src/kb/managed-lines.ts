@@ -1,3 +1,4 @@
+import { qualifyProseLines } from './prose.ts';
 import type { Line, MemoryQualification } from '@tenphi/akno-protocol';
 import { aknoItemId } from './page.ts';
 import {
@@ -22,33 +23,36 @@ export function qualifyManagedMemoryLines<T extends Line>(
   options: { asOf?: string; timezone?: string; store?: Store; pageId?: string } = {},
 ): T[] {
   const clock = resolveTimelineClock(options.asOf, options.timezone);
-  return lines.map((line) => {
-    const markerLine = fileLines[line.n - 2];
-    if (markerLine === undefined) return line;
-    const markerId = aknoItemId(markerLine);
-    if (!markerId) return line;
-    const marker = parseManagedMemoryMarker(markerLine);
-    const projectionCurrent =
-      marker && options.store && options.pageId
-        ? managedMemoryProjectionCurrent(
-            options.store,
-            options.pageId,
-            line.n - 1,
-            line.n,
-            marker.id,
-            markerLine,
-            line.text,
-          )
-        : true;
-    return {
-      ...line,
-      memory: marker
-        ? projectionCurrent
-          ? qualificationFor(marker, clock)
-          : { status: 'unavailable', id: marker.id, answer_eligible: false }
-        : { status: 'unavailable', id: markerId, answer_eligible: false },
-    };
-  });
+  return qualifyProseLines(
+    lines.map((line) => {
+      const markerLine = fileLines[line.n - 2];
+      if (markerLine === undefined) return line;
+      const markerId = aknoItemId(markerLine);
+      if (!markerId) return line;
+      const marker = parseManagedMemoryMarker(markerLine);
+      const projectionCurrent =
+        marker && options.store && options.pageId
+          ? managedMemoryProjectionCurrent(
+              options.store,
+              options.pageId,
+              line.n - 1,
+              line.n,
+              marker.id,
+              markerLine,
+              line.text,
+            )
+          : true;
+      return {
+        ...line,
+        memory: marker
+          ? projectionCurrent
+            ? qualificationFor(marker, clock)
+            : { status: 'unavailable', id: marker.id, answer_eligible: false }
+          : { status: 'unavailable', id: markerId, answer_eligible: false },
+      };
+    }),
+    fileLines,
+  );
 }
 
 function managedMemoryProjectionCurrent(

@@ -203,6 +203,14 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
   }
   let assembled = assemble(pipeline.hits, 'eligible');
   let contextualFallback = false;
+  // Read current scope even when an editor changed a qualifier since chunk classification.
+  if (!hasExactEvidence(assembled.results) && depth !== 'summary') {
+    const liveContextual = assemble(pipeline.hits, 'contextual');
+    if (hasExactEvidence(liveContextual.results)) {
+      assembled = liveContextual;
+      contextualFallback = true;
+    }
+  }
   if (!hasExactEvidence(assembled.results) && depth !== 'summary' && contextualChunkIds.size > 0) {
     try {
       pipeline = await runSearch(contextualChunkIds);
@@ -237,6 +245,12 @@ export async function recall(ctx: AknoContext, rawInput: unknown): Promise<Recal
     degraded.add('document_source_missing');
   }
 
+  if (
+    assembled.results.some(
+      (result) => result.type === 'page' && result.lines.some((line) => line.prose?.status === 'unresolved'),
+    )
+  )
+    degraded.add('prose_discourse_unresolved');
   for (const reason of indexReasons) degraded.add(reason);
   const reasons = [...degraded];
   const searched = dedupe(allQueries);

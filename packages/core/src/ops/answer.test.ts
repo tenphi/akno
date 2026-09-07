@@ -23,10 +23,7 @@ beforeEach(async () => {
   modelRequests = [];
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-kb-'));
   stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-state-'));
-  write(
-    'products/zephyr-qx-100.md',
-    '# Zephyr QX-100\n\nThe silverpine warranty marker says the warranty lasts five years.\n',
-  );
+  write('products/zephyr-qx-100.md', '# Zephyr QX-100\n\nThe silverpine warranty lasts five years.\n');
   write(
     'inbox/copperfin-record.txt',
     'The copperfin orphan marker belongs to an invented standalone record.\n',
@@ -163,7 +160,13 @@ describe('grounded answer discovery surface', () => {
         type: 'page',
         slug: 'products/zephyr-qx-100',
         title: 'Zephyr QX-100',
-        lines: [{ n: 3, text: 'The silverpine warranty marker says the warranty lasts five years.' }],
+        lines: [
+          {
+            n: 3,
+            text: 'The silverpine warranty lasts five years.',
+            prose: expect.objectContaining({ status: 'qualified', view: 'factual', answer_eligible: true }),
+          },
+        ],
       },
     ]);
     expect(modelRequests).toHaveLength(2);
@@ -186,6 +189,65 @@ describe('grounded answer discovery surface', () => {
     expect(JSON.stringify(modelRequests)).not.toContain('products/zephyr-qx-100');
     expect(treeFingerprint()).toBe(before);
     expect(memory.changes()).toEqual([]);
+  });
+
+  it.each([
+    ['Hypothetically, the silverpine warranty lasts five years.', true],
+    ['Предположительно, гарантия silverpine действует пять лет.', true],
+    ['The silverpine warranty lasts five years.', false],
+  ])('preserves ordinary heading scope in generated answers: %s', async (text, accepted) => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n## Hypothetical warranty\nThe silverpine warranty lasts five years.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What hypothetical silverpine warranty was discussed?',
+      memory_view: 'discussion',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+      include_context: true,
+    });
+    expect(result.answer !== null).toBe(accepted);
+    if (accepted) {
+      expect(result.citations[0]).toMatchObject({ lines: [1, 3, 4] });
+      expect(JSON.stringify(modelRequests)).toContain('Hypothetical warranty');
+    } else {
+      expect(result.model_usage.verification).toBeNull();
+    }
+  });
+
+  it('describes a managed hypothesis to the model without an unrelated factual eligibility veto', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_hypothesis v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->\n- **Hypothetical:** The silverpine warranty could last five years.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The hypothetical silverpine warranty lasts five years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What hypothetical silverpine warranty was discussed?',
+      memory_view: 'discussion',
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toContain('hypothetical');
+    const messages = modelRequests[0]!.messages as { content: string }[];
+    const user = JSON.parse(messages.at(-1)!.content);
+    expect(user.memory_view).toBe('discussion');
+    expect(user.evidence[0].excerpt).toContain('hypothetical');
+    expect(user.evidence[0].excerpt).not.toContain('answer_eligible');
+    expect(user.evidence[0].excerpt).not.toContain('current_eligible');
   });
 
   it('removes a block whose invented exact value does not occur in its citation', async () => {
@@ -251,7 +313,7 @@ describe('grounded answer discovery surface', () => {
   it('accepts an explicit exclusion as support for equivalent negative wording', async () => {
     write(
       'coverage/cormorant-exclusions.md',
-      '# Cormorant exclusions\n\nThe cormorant marker says coverage excludes volcanic-ash damage.\n',
+      '# Cormorant exclusions\n\nThe cormorant coverage excludes volcanic-ash damage.\n',
     );
     await memory.index({ verify: true });
     await useAnswerModel({
