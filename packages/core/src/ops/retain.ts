@@ -1,4 +1,6 @@
+import { dependencyOrder } from '../write/retained-relations.ts';
 import { spanCoveredByFrame } from '../write/retained-spans.ts';
+import { explicitlyUnknownTime } from '../write/retained-time.ts';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import {
@@ -398,6 +400,7 @@ async function retainCandidates(
     initialResults: RetainCandidateResult[];
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
+      repair?: RetainModelCallReceipt;
       verification: RetainModelCallReceipt | null;
       placement: RetainModelCallReceipt[];
     };
@@ -900,6 +903,7 @@ export async function retainRememberCandidates(
     held: readonly RetainCandidateResult[];
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
+      repair?: RetainModelCallReceipt;
       verification: RetainModelCallReceipt | null;
     };
   },
@@ -1373,13 +1377,27 @@ function candidateIssue(
   if (supportIssue) return `support: ${supportIssue}`;
   const frameIssue = spansIssue(source, candidate.discourse_frame);
   if (frameIssue) return `discourse_frame: ${frameIssue}`;
-  if (candidate.support.some((span) => !spanCoveredByFrame(span, candidate.discourse_frame))) {
+  if (
+    candidate.support.some(
+      (span) =>
+        !spanCoveredByFrame(
+          span,
+          candidate.discourse_frame,
+          'text' in source.input
+            ? source.input.text
+            : source.input.items.find((item) => item.item_id === span.item_id)?.text,
+        ),
+    )
+  ) {
     return 'discourse_frame must contain every support span';
   }
   const attributionIssue = structuredAttributionIssue(source, candidate);
   if (attributionIssue) return attributionIssue;
   if (sourceEvidence(candidate).length > 1200) return 'discourse frame exceeds the evidence limit';
-  if (RELATIVE_TIME.test(sourceEvidence(candidate))) {
+  const qualifiedUnknownTime =
+    explicitlyUnknownTime(candidate.time) &&
+    (candidate.discourse.commitment !== 'asserted' || candidate.discourse.disposition === 'proposed');
+  if (RELATIVE_TIME.test(sourceEvidence(candidate)) && !qualifiedUnknownTime) {
     const sourceItems = 'items' in source.input ? source.input.items : [];
     const supportedMentionTimes = new Set([
       ...(source.mentioned_at ? [source.mentioned_at] : []),
@@ -1895,43 +1913,6 @@ function sourceEvidence(candidate: ProvidedRetainCandidate): string {
 
 function sourceOrigin(role: ProvidedRetainCandidate['attribution']['source_role']): PendingSupport['origin'] {
   return role === 'user' || role === 'assistant' ? role : 'unknown';
-}
-
-function dependencyOrder<T extends ProvidedRetainCandidate>(
-  candidates: readonly T[],
-): {
-  candidates: T[];
-  blocked: Set<string>;
-} {
-  const byId = new Map(candidates.map((candidate) => [candidate.candidate_id, candidate]));
-  const ordered: T[] = [];
-  const blocked = new Set<string>();
-  const visited = new Set<string>();
-  const visiting: string[] = [];
-
-  const visit = (candidate: T): boolean => {
-    if (visited.has(candidate.candidate_id)) return !blocked.has(candidate.candidate_id);
-    const cycleAt = visiting.indexOf(candidate.candidate_id);
-    if (cycleAt >= 0) {
-      for (const id of visiting.slice(cycleAt)) blocked.add(id);
-      return false;
-    }
-    visiting.push(candidate.candidate_id);
-    let ready = true;
-    for (const relation of candidate.relations ?? []) {
-      if (!('candidate_id' in relation.target)) continue;
-      const target = byId.get(relation.target.candidate_id);
-      if (!target || !visit(target)) ready = false;
-    }
-    visiting.pop();
-    visited.add(candidate.candidate_id);
-    if (!ready) blocked.add(candidate.candidate_id);
-    else ordered.push(candidate);
-    return ready;
-  };
-
-  for (const candidate of candidates) visit(candidate);
-  return { candidates: ordered, blocked };
 }
 
 function occurrences(text: string, needle: string): number {

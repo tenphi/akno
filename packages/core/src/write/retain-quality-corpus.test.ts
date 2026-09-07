@@ -39,10 +39,34 @@ const clean = (sourceText: string, candidates: CandidateRecord[], options: Candi
   });
 
 /**
- * Frozen invented discourse corpus for the deterministic boundary after model extraction.
+ * Frozen invented source passages for the deterministic boundary after model extraction.
+ * Candidate representations follow the current extraction contract.
  * These cases are intentionally about scope and structure, never personal fixture content.
  */
 describe('automatic retain discourse quality corpus', () => {
+  it('detects reciprocal dependencies before verification so one bounded repair can preserve the hypotheses', () => {
+    const source = 'Consider two unestablished hypotheses: Zephyr QX-100 service is annual or biennial.';
+    const values = ['annual', 'biennial'].map((interval, index) =>
+      candidate(`Ada Marlow hypothesized that Zephyr QX-100 service is ${interval}.`, source, source, {
+        discourse: { commitment: 'hypothetical', disposition: 'active' },
+        relations: [
+          { type: 'contradicts', target_candidate: 1 - index, support: [{ quote: source, item_id: null }] },
+        ],
+      }),
+    );
+    const cyclic = clean(source, values);
+    expect(cyclic.candidates).toEqual([]);
+    expect(cyclic.held).toHaveLength(2);
+    expect(cyclic.held.every((entry) => entry.reason.includes('cycle'))).toBe(true);
+    values[1]!.relations = [];
+    const repaired = clean(source, values);
+    expect(repaired.held).toEqual([]);
+    expect(repaired.candidates).toHaveLength(2);
+    expect(repaired.candidates[0]?.relations?.[0]?.target).toEqual({
+      candidate_id: repaired.candidates[1]?.candidate_id,
+    });
+  });
+
   it('preserves nested reporting as a report with its speaker chain', () => {
     const source = 'Ada Marlow wrote, “Bo Winters said, ‘The Zephyr QX-100 warranty lasts five years.’”';
     const result = clean(source, [
@@ -76,14 +100,14 @@ describe('automatic retain discourse quality corpus', () => {
     {
       name: 'hypothesis',
       source: 'Ada Marlow said, “Suppose the Zephyr QX-100 warranty lasts ten years.”',
-      text: 'Hypothetically, the Zephyr QX-100 warranty lasts ten years.',
+      text: 'Ada Marlow hypothesized that the Zephyr QX-100 warranty lasts ten years.',
       support: 'the Zephyr QX-100 warranty lasts ten years',
       commitment: 'hypothetical',
     },
     {
       name: 'counterfactual',
       source: 'If Ada Marlow had selected the silver plan, the warranty would last two years.',
-      text: 'Counterfactually, the Zephyr QX-100 warranty would last two years.',
+      text: 'In Ada Marlow’s counterfactual, the Zephyr QX-100 warranty would last two years.',
       support: 'the warranty would last two years',
       commitment: 'counterfactual',
     },
@@ -147,7 +171,7 @@ describe('automatic retain discourse quality corpus', () => {
     const correction = 'Ada Marlow corrected herself: the Zephyr QX-100 warranty lasts seven years.';
     const source = `${first} ${correction}`;
     const result = clean(source, [
-      candidate('The warranty was previously stated to last five years.', first, first, {
+      candidate('Ada Marlow previously stated that the warranty lasts five years.', first, first, {
         discourse: { commitment: 'asserted', disposition: 'superseded' },
       }),
       candidate('The Zephyr QX-100 warranty lasts seven years.', correction, correction, {
@@ -180,7 +204,7 @@ describe('automatic retain discourse quality corpus', () => {
     const source = 'Ada Marlow said, “Maybe the Zephyr QX-100 warranty lasts six years.”';
     const result = clean(source, [
       candidate(
-        'Maybe the Zephyr QX-100 warranty lasts six years.',
+        'Ada Marlow tentatively believes the Zephyr QX-100 warranty lasts six years.',
         'Maybe the Zephyr QX-100 warranty lasts six years.',
         source,
         { discourse: { commitment: 'tentative', disposition: 'active' } },
@@ -231,6 +255,7 @@ describe('automatic retain discourse quality corpus', () => {
           epistemic: { basis: 'self_attested' },
         }),
         withItem(items[1].text, 'turn-2', {
+          text: 'Bo Winters reported that the Zephyr QX-100 warranty lasts five years.',
           attribution: { source_role: 'user', source_speaker: 'Wrong Speaker', chain: [] },
           epistemic: { basis: 'self_attested' },
         }),

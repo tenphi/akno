@@ -256,6 +256,55 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'hypothetical',
+      'self_attested',
+      'The hypothesis that the Zephyr QX-100 warranty lasts seven years is unestablished.',
+      'The hypothetical warranty for Zephyr QX-100: seven years. The evidence does not establish whether it is correct.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant suspects that the silverpine warranty lasts five years, but has no confirmation.',
+      'Ассистент предположил, что гарантия silverpine длится пять лет, но подтверждения этому нет.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant suspects that the silverpine warranty lasts five years, but has no confirmation.',
+      'Ассистент предположил, но не подтвердил, что гарантия silverpine длится пять лет.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'The hypothesis that the silverpine warranty lasts seven years is unestablished.',
+      'Гипотеза о гарантии silverpine на семь лет не установлена как факт.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'The hypothetical silverpine warranty lasts seven years.',
+      'The hypothetical silverpine warranty lasts seven years; this is not an assertion about actual coverage.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'The hypothetical silverpine warranty lasts seven years.',
+      'Гипотеза о гарантии silverpine на семь лет — не утверждение о фактическом покрытии.',
+      true,
+    ],
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty lasts six years.',
+      'Ada Marlow высказала предварительное мнение, что гарантия silverpine длится шесть лет.',
+      true,
+    ],
+    [
       'tentative',
       'self_attested',
       'Ada Marlow tentatively believes that the silverpine warranty may last six years, but she is not confident.',
@@ -295,6 +344,20 @@ describe('grounded answer discovery surface', () => {
       'source_report',
       'The assistant described an invented example where the silverpine warranty lasts eleven years.',
       'В вымышленном примере, приведённом ассистентом, гарантия silverpine длится одиннадцать лет.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'source_report',
+      'The assistant described a fictional silverpine warranty lasting eleven years.',
+      'The assistant described a fictional silverpine warranty lasting eleven years; this is not a real warranty record.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'source_report',
+      'The assistant described a fictional silverpine warranty lasting eleven years.',
+      'Ассистент описал вымышленную гарантию silverpine на одиннадцать лет; это не реальная гарантия.',
       true,
     ],
   ] as const)(
@@ -348,6 +411,95 @@ describe('grounded answer discovery surface', () => {
     });
     expect(modelRequests).toHaveLength(1);
   });
+
+  it('does not license a new predicate negation just because its source is fictional', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_fiction v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user reports=0 commitment=hypothetical disposition=active polarity=affirmed basis=self_attested -->\n- **Hypothetical:** A fictional silverpine warranty covers sensor repair.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'In this fictional scenario, the silverpine warranty does not cover sensor repair.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What fictional silverpine coverage was discussed?',
+      memory_view: 'discussion',
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toBeNull();
+    expect(result.validation?.rejection_counts).toEqual({ protected_value: 1 });
+    expect(modelRequests).toHaveLength(1);
+  });
+
+  it.each(['unknown', 'unestablished', 'unverified', 'not confirmed'])(
+    'does not treat epistemic uncertainty as predicate negation: %s',
+    async (uncertainty) => {
+      write(
+        'products/zephyr-qx-100.md',
+        `# Zephyr QX-100\n\n<!-- akno:item mem_question v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=question subject=unresolved source-role=user reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** The open question is whether the silverpine warranty covers sensor repair; the answer is ${uncertainty}.\n`,
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: 'The open question tentatively suggests that the silverpine warranty does not cover sensor repair.',
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      });
+      const result = await memory.answer({
+        question: 'What open silverpine warranty question remains?',
+        memory_view: 'questions',
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).toBeNull();
+      expect(result.validation?.rejection_counts).toEqual({ protected_value: 1 });
+      expect(modelRequests).toHaveLength(1);
+    },
+  );
+
+  it.each([
+    ['The silverpine warranty covers sensor repair.', 'attribution'],
+    ['Ada Marlow reported that the silverpine warranty covers sensor repair.', 'discourse'],
+  ])(
+    'keeps qualification guards when a citation includes unrelated factual text: %s',
+    async (text, rejection) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\nThe silverpine warranty document has a green cover.\n<!-- akno:item mem_mixed v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by Ada Marlow · Tentative:** Ada Marlow reported that the silverpine warranty might cover sensor repair.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1', 'E2'] }], missing_concepts: [] },
+        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine warranty document and sensor repair details are recorded?',
+        memory_view: 'all',
+        expand: false,
+        graph: false,
+      });
+      expect(JSON.stringify(modelRequests)).toContain('green cover');
+      expect(result.answer).toBeNull();
+      expect(result.validation?.rejection_counts).toEqual({ [rejection]: 1 });
+      expect(modelRequests).toHaveLength(1);
+    },
+  );
 
   it('removes a block whose invented exact value does not occur in its citation', async () => {
     await useAnswerModel({

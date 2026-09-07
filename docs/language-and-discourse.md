@@ -79,14 +79,16 @@ cases must be assessed separately from model quality.
 
 ## Evaluation
 
-The frozen `language-discourse-v2` corpus separates development and held-out cases with invented English,
-Russian and mixed sources; the exposed v1 corpus remains available unchanged. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
+The frozen language/discourse corpora separate development and held-out cases with invented English,
+Russian and mixed sources; exposed corpora remain available unchanged. V5 keeps the exposed development inputs
+and introduces a fresh held-out set, reviewed before execution by a separate model. Earlier corpora remain
+diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v2 --runs 2
-pnpm bench:language --live --split held-out --corpus v2 --runs 2
+pnpm bench:language --live --split development --corpus v5 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v5 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -118,13 +120,54 @@ Answer guards accept bounded English/Russian qualification forms while checking 
 reported tentative claim must retain both attribution and uncertainty, and fictional examples must remain
 fictional. The complete answer still passes a separate semantic verifier. Exact source frames may contain a
 narrower support quotation; they must remain byte-exact, uniquely located, and in the same source item.
+Several adjacent frame quotations may cover one support quotation; only whitespace may bridge them.
+Missing words, including negations, remain a hold. A proposal with explicitly unknown temporal precision,
+tentative time status and no date boundaries or recurrence may retain an unresolved source-relative time.
+It is never actionable or eligible for a bounded date query. Invented resolved dates still fail validation.
+
+When an entire extracted batch fails validation, retention permits one structural repair using the complete
+original source and validation issues. Every repaired candidate passes the same validation and semantic
+verification. Already admitted candidates are not replaced, and semantic verifier rejections are not retried.
+Generated nonfactual prose must keep its named outer source speaker; source metadata alone cannot satisfy
+this readable attribution check. Repair cannot replace legacy event extraction. The optional
+`model_usage.repair` receipt reports the extra call and replays with the original result.
 
 Reports under `bench-results/` contain diagnostics and generated text from the invented corpus for review.
-Inspect `reviewKnowledge` and `reviewAnswer` against frozen sources when adjudicating translation, attribution,
+Inspect `reviewKnowledge`, per-query `reviewRetrieval` and `reviewAnswer` against frozen sources when adjudicating translation, attribution,
 polarity and useful answers. Produced answers are reported both over all requests and over retained cases;
 independently judged useful answers and justified abstentions remain separate, unassessed metrics. Accepted language-error, translation-error and unsafe-promotion rates stay **unassessed** until that
 review: another model's agreement is not ground truth. Reports declare thresholds and remain ineligible as
 release evidence without independent adjudication. Preserve prior reports for comparisons.
+
+`scripts/review-language.mjs` exports a blind output-review packet after the corpus expectations have been
+independently approved. It includes exact per-query retrieved passages for relevance and qualification review,
+and excludes runtime verifier verdicts and aggregate scores. Pass the completed output
+review back to compute the gate:
+
+```bash
+node scripts/review-language.mjs \
+  --report bench-results/language-development.json \
+  --report bench-results/language-held-out.json \
+  --input-review bench-results/language-input-review.json \
+  --output bench-results/language-review-packet.json
+
+node scripts/review-language.mjs \
+  --report bench-results/language-development.json \
+  --report bench-results/language-held-out.json \
+  --input-review bench-results/language-input-review.json \
+  --output-review bench-results/language-output-review.json \
+  --output bench-results/language-gate.json
+```
+
+The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
+current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
+at least 80% independently judged useful retention, independently relevant qualified retrieval and useful qualified answers, with at
+most 5% availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
+source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
+duplicate judgments and abstention-only output cannot pass. Abstentions remain separately adjudicated.
+Retrieval is judged once per query-language/view pair; duplicated evidence in the two answer-language rows
+must receive the same judgment and cannot increase its weight. Model adjudication is labeled as such and must use a model different from the runtime retention/answer model;
+it is fallible review of a finite invented corpus, not human validation or a longitudinal reliability guarantee.
 
 Older frozen answer corpora are unchanged. Some expect factual answers from a record that “says” a claim;
 the stricter report boundary abstains on those cases. Their benchmark gates expose the coverage loss instead
@@ -157,7 +200,7 @@ The initial diagnostic run used `language-discourse-v1` (fingerprint
 | Queries producing an answer, before independent grading | 13/32         | 12/32            |
 | Queries reporting `answer_failed`                       | 8/32          | 16/32            |
 
-Useful retention is below the declared 80% threshold in both splits. Three useful cases were held because
+In this initial baseline, useful retention was below the declared 80% threshold in both splits. Three useful cases were held because
 routing found no writable destination in the legacy mixed-permission setup; the counterfactual case was held for uncertain discourse semantics.
 The development availability degradation came from query expansion. The `answer_failed` counts arose after
 retention left no exact answer evidence in the queried folder; they are distinct from model availability.
@@ -167,7 +210,7 @@ These counts describe behavior, not independently graded answer correctness. Zer
 rejections does not establish zero accepted semantic/language errors. Those error rates remain unassessed, and
 this baseline **does not pass the live quality gate**. The implementation supplies conservative controls and
 reviewable diagnostics; routing coverage, qualified answer usefulness and independent quality adjudication
-still need work. The original frozen answer benchmarks also retain their visible coverage failures described above.
+needed further work. The original frozen answer benchmarks also retain their visible coverage failures described above.
 
 ## Repeated v2 diagnostics
 
@@ -215,6 +258,6 @@ The repeated run predates the final attribution fixes: preserving explicitly att
 form and translating the assistant role when extraction stores `source_speaker: "assistant"`. Actual named
 speakers still keep their spelling. Focused built-package probes cover those final fixes; the table is retained
 as diagnostic evidence, not relabeled as a measurement of the final guard. Verifier disagreements and
-qualified-answer coverage remain visible. Held-out retention remains below the declared target and accepted
-semantic/language errors remain unassessed, so **the live quality gate is still not passed**. This held-out
-split is now exposed and cannot serve as an unseen release test after these fixes.
+qualified-answer coverage remain visible. This v2 diagnostic did not meet the live quality gate: retention
+was below target and accepted semantic/language errors were unassessed. Its held-out split is now exposed
+and cannot serve as an unseen release test after these fixes.

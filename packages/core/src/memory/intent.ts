@@ -1,6 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
+export const MEMORY_VIEW_VERSION = 'memory-view-v2';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -24,14 +25,14 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'reports';
   }
   if (
-    /\b(open question|open questions|unresolved question|unresolved questions|what remains (?:open|unanswered)|questions? remain)\b/i.test(
+    /\b(open (?:[a-z-]+ ){0,3}questions?|unresolved questions?|what remains (?:open|unanswered)|questions? remain)\b/i.test(
       query,
     )
   ) {
     return 'questions';
   }
   if (
-    /\b(hypothetical|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses|fictional (?:[a-z-]+ ){0,3}examples?)\b/i.test(
+    /\b(hypothetical|hypotheses|hypothesis|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses|fictional (?:[a-z-]+ ){0,3}examples?)\b/i.test(
       query,
     )
   ) {
@@ -45,7 +46,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'history';
   }
   if (
-    /\b(plan|plans|planned|planning|schedule|scheduled|upcoming|due|overdue|deadline|next action|next actions)\b/i.test(
+    /\b(plan|plans|planned|planning|proposal|proposed|schedule|scheduled|upcoming|due|overdue|deadline|next action|next actions)\b/i.test(
       query,
     )
   ) {
@@ -108,9 +109,12 @@ function russianMemoryView(query: string): MemoryView | null {
     return 'questions';
   if (/гипотез|гипотетическ|контрфактическ|что если|предположим|сценари|альтернатив|обсуждал/iu.test(query))
     return 'discussion';
-  if (/истори|раньше|прежде|отклон|отмен|заверш|замен|было решено/iu.test(query)) return 'history';
+  // The noun "replacement" asks about coverage too; only an explicit completed replacement
+  // denotes history. A stem match used to hide factual coverage from Russian questions.
+  if (/истори|раньше|прежде|отклон|отмен|заверш|был[аои]? замен|замен[её]н|было решено/iu.test(query))
+    return 'history';
   if (
-    /план|расписани|предстоят|предстоящ|крайний срок|срок\p{L}* (?:оплаты|подачи|выполнения|осмотра)|дедлайн|просроч/iu.test(
+    /план|предложил|предложили|предложен|расписани|предстоят|предстоящ|крайний срок|срок\p{L}* (?:оплаты|подачи|выполнения|осмотра)|дедлайн|просроч/iu.test(
       query,
     )
   )

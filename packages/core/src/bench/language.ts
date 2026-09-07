@@ -9,11 +9,16 @@ import { sha256 } from '../store/ids.ts';
 import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
 import { ANSWER_PROMPT_VERSION, ANSWER_VERIFIER_PROMPT_VERSION } from '../ops/answer.ts';
 import { LANGUAGE_CORPUS_V2, type LanguageCaseV2 } from './language-corpus-v2.ts';
+import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
+import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
+import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
+import { LANGUAGE_GATE_THRESHOLDS } from './language-review.ts';
+import { MEMORY_VIEW_VERSION } from '../memory/intent.ts';
 import { LANGUAGE_CORPUS, LANGUAGE_CORPUS_VERSION, type LanguageCase } from './language-corpus.ts';
 
 export interface LanguageBenchOptions {
   split: LanguageCase['split'];
-  corpus?: 'v1' | 'v2';
+  corpus?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5';
   runs?: number;
   caseIds?: string[];
   onProgress?: (id: string, done: number, total: number) => void;
@@ -24,7 +29,16 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
   const corpus = options.corpus ?? 'v2';
   const runs = options.runs ?? 1;
   if (!Number.isInteger(runs) || runs < 1 || runs > 5) throw new Error('runs must be between 1 and 5');
-  const entries = corpus === 'v1' ? LANGUAGE_CORPUS : LANGUAGE_CORPUS_V2;
+  const entries =
+    corpus === 'v1'
+      ? LANGUAGE_CORPUS
+      : corpus === 'v2'
+        ? LANGUAGE_CORPUS_V2
+        : corpus === 'v3'
+          ? LANGUAGE_CORPUS_V3
+          : corpus === 'v4'
+            ? LANGUAGE_CORPUS_V4
+            : LANGUAGE_CORPUS_V5;
   const split = entries.filter((entry) => entry.split === options.split);
   if (options.caseIds?.some((id) => !split.some((entry) => entry.id === id)))
     throw new Error('unknown case id in selected split');
@@ -47,7 +61,7 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
   return {
     schemaVersion: 'language-benchmark-v2',
     createdAt: new Date().toISOString(),
-    corpusVersion: corpus === 'v1' ? LANGUAGE_CORPUS_VERSION : 'language-discourse-v2',
+    corpusVersion: corpus === 'v1' ? LANGUAGE_CORPUS_VERSION : `language-discourse-${corpus}`,
     corpusFingerprint: sha256(JSON.stringify(entries)),
     selectedCaseIds: cases.map((entry) => entry.id),
     runs,
@@ -59,6 +73,7 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
     split: options.split,
     knowledgeLanguage: 'en',
     proseProjectionVersion: PROSE_PROJECTION_VERSION,
+    memoryViewVersion: MEMORY_VIEW_VERSION,
     answerPromptVersion: ANSWER_PROMPT_VERSION,
     answerVerifierVersion: ANSWER_VERIFIER_PROMPT_VERSION,
     retentionPromptVersion: RETAIN_PROMPT_VERSION,
@@ -74,14 +89,7 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
     releaseEligible: false,
     adjudication:
       'pending: inspect review material; verifier agreement and typed expectations are not independent truth labels',
-    thresholds: {
-      unsafeFactualPromotion: 0,
-      acceptedLanguageViolations: 0,
-      sourceByteChanges: 0,
-      usefulRetentionCoverage: 0.8,
-      qualifiedRetrievalCoverage: 0.8,
-      availabilityFailureRate: 0.05,
-    },
+    thresholds: LANGUAGE_GATE_THRESHOLDS,
     metrics: {
       availabilityFailures: rate(
         results.filter((result) => result.availabilityFailure).length,
@@ -170,8 +178,13 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
   };
 }
 
-async function runCase(config: AknoConfig, entry: LanguageCase, corpus: 'v1' | 'v2', run: number) {
-  const v2 = corpus === 'v2' ? (entry as LanguageCaseV2) : null;
+async function runCase(
+  config: AknoConfig,
+  entry: LanguageCase,
+  corpus: 'v1' | 'v2' | 'v3' | 'v4' | 'v5',
+  run: number,
+) {
+  const v2 = corpus !== 'v1' ? (entry as LanguageCaseV2) : null;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-language-eval-kb-'));
   const state = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-language-eval-state-'));
   let memory: Akno | null = null;
@@ -273,6 +286,15 @@ async function runCase(config: AknoConfig, entry: LanguageCase, corpus: 'v1' | '
                 ? result.lines.filter((line) => line.memory?.status === 'qualified')
                 : [],
             ).length,
+            reviewRetrieval: recalled.results.flatMap((result) =>
+              result.type === 'page'
+                ? result.lines.flatMap((line) =>
+                    line.memory?.status === 'qualified'
+                      ? [{ text: line.text, qualification: line.memory }]
+                      : [],
+                  )
+                : [],
+            ),
             contextStatus: context.status,
             contextDegraded: context.degraded ?? [],
             contextActivated: context.activation?.activated ?? false,

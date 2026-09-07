@@ -332,6 +332,7 @@ export const RetainSourceResult = z.object({
   model_usage: z
     .object({
       extraction: RetainModelCallReceipt.nullable(),
+      repair: RetainModelCallReceipt.optional(),
       verification: RetainModelCallReceipt.nullable(),
       placement: z.array(RetainModelCallReceipt),
     })

@@ -6,12 +6,39 @@ import { RetainInput } from '@tenphi/akno-protocol';
 import { loadConfig } from '../config/load.ts';
 import { sha256 } from '../store/ids.ts';
 import { LANGUAGE_CORPUS_V2 } from './language-corpus-v2.ts';
+import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
+import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
+import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('frozen language/discourse evaluation', () => {
+  it('freezes the independently reviewed third corpus before execution', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V3))).toBe(
+      '998c1595ef5ea3a6c9072de5e995218ef8a1d9ba837740d213556d8a401a7dba',
+    );
+  });
+
+  it('keeps the fourth corpus frozen without changing exposed development inputs', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V4))).toBe(
+      '3760e270deae388defdc1c4e530454a21c0ed4d5f0ec262677966ffa7fafb6d4',
+    );
+    expect(LANGUAGE_CORPUS_V4.filter((entry) => entry.split === 'development')).toEqual(
+      LANGUAGE_CORPUS_V3.filter((entry) => entry.split === 'development'),
+    );
+  });
+
+  it('freezes the fifth corpus before its independent review and execution', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V5))).toBe(
+      'c90df0f553d1e93852fed016bb40f19368e40454e09a00d4a0c81883ea3543b2',
+    );
+    expect(LANGUAGE_CORPUS_V5.filter((entry) => entry.split === 'development')).toEqual(
+      LANGUAGE_CORPUS_V3.filter((entry) => entry.split === 'development'),
+    );
+  });
+
   it('freezes both splits and keeps every invented source within the protocol input envelope', () => {
     expect(sha256(JSON.stringify(LANGUAGE_CORPUS))).toBe(
       '69752a7525357e462aea76b251f531a33862279b0a87900eeb182bed6d1db458',

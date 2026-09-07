@@ -5,6 +5,175 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cross-language retention boundary', () => {
+  it.each([false, true])(
+    'preserves the outer named source in generated nonfactual prose (named=%s)',
+    (named) => {
+      const source = 'Bo Winters described a fictional Zephyr QX-100 warranty.';
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: 'claim',
+            text: (named ? 'Ada Marlow recorded that ' : '') + source,
+            subject: 'Zephyr QX-100',
+            attribution: { source_role: 'user' },
+            discourse: { commitment: 'hypothetical', disposition: 'active' },
+            epistemic: { basis: 'source_report' },
+            support: [{ item_id: 'turn-1111', quote: source }],
+            discourse_frame: [{ item_id: 'turn-1111', quote: source }],
+          },
+        ],
+        { sourceItems: [{ item_id: 'turn-1111', role: 'user', speaker: 'Ada Marlow', text: source }] },
+      );
+      expect(result.candidates).toHaveLength(named ? 1 : 0);
+      if (!named) expect(result.held[0]?.reason).toContain('outer source speaker');
+    },
+  );
+
+  it.each(['accepted', 'still-invalid', 'unsupported', 'unavailable', 'duplicate-verdict'] as const)(
+    'bounds structural repair and keeps semantic verification authoritative (%s)',
+    async (outcome) => {
+      const source = 'Suppose the Zephyr QX-100 warranty lasted seven years. This is an assumption.';
+      const good = {
+        kind: 'claim',
+        text: 'Hypothetically, the Zephyr QX-100 warranty lasts seven years.',
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user' },
+        discourse: { commitment: 'hypothetical', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      const bad = { ...good, discourse_frame: [{ quote: 'This is an assumption.' }] };
+      const events = [{ date: '2031-04-11', summary: 'Ada Marlow completed an invented inspection.' }];
+      let calls = 0;
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        calls++;
+        if (calls === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [bad], events }), latencyMs: 11 };
+        if (calls === 2) {
+          const payload = JSON.parse(messages.at(-1)!.content);
+          expect(payload.source.text).toBe(source);
+          expect(payload.validation_issues[0].reason_code).toBe('discourse_uncertain');
+          if (outcome === 'unavailable')
+            return { ok: false, value: null, error: 'invented provider failure', latencyMs: 22 };
+          return {
+            ok: true,
+            value: JSON.stringify({
+              candidates: [outcome === 'still-invalid' ? bad : good],
+              events: [{ date: '2031-05-22', summary: 'An unsupported replacement event.' }],
+            }),
+            latencyMs: 22,
+          };
+        }
+        expect(calls).toBe(3);
+        const payload = JSON.parse(messages.at(-1)!.content);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates
+              .flatMap((candidate: { candidate_id: string }) => ({
+                candidate_id: candidate.candidate_id,
+                supported: outcome === 'accepted',
+                reason_code: outcome === 'accepted' ? null : 'discourse_uncertain',
+              }))
+              .flatMap((verdict: { candidate_id: string; supported: boolean; reason_code: string | null }) =>
+                outcome === 'duplicate-verdict'
+                  ? [verdict, { ...verdict, supported: true, reason_code: null }]
+                  : [verdict],
+              ),
+          }),
+          latencyMs: 33,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-repair-model',
+        chat,
+        degradedReason: () => 'derive_failed',
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(result.candidates).toHaveLength(outcome === 'accepted' ? 1 : 0);
+      expect(result.modelUsage.repair?.latency_ms).toBe(22);
+      if (outcome === 'accepted') expect(result.events).toEqual(events);
+      expect(chat).toHaveBeenCalledTimes(
+        ['accepted', 'unsupported', 'duplicate-verdict'].includes(outcome) ? 3 : 2,
+      );
+      if (outcome === 'unsupported') expect(result.held[0]?.hold_stage).toBe('verification');
+      if (outcome === 'unavailable') expect(result.degradedReason).toBe('derive_failed');
+      if (outcome === 'duplicate-verdict') expect(result.degradedReason).toBe('retain_verification_failed');
+    },
+  );
+
+  it.each([false, true])(
+    'covers adjacent frame sentences without losing original bytes (omission=%s)',
+    (omit) => {
+      const parts = [
+        'Suppose the Zephyr QX-100 warranty lasted seven years.',
+        'This is not established.',
+        'Repair would be covered in year six.',
+      ];
+      const source = parts.join(' ');
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: 'claim',
+            text: 'Hypothetically, a seven-year Zephyr QX-100 warranty would cover repair in year six.',
+            subject: 'Zephyr QX-100',
+            attribution: { source_role: 'user' },
+            discourse: { commitment: 'hypothetical', disposition: 'active' },
+            epistemic: { basis: 'self_attested' },
+            support: [{ item_id: 'turn-1111', quote: source }],
+            discourse_frame: parts
+              .filter((_, index) => !omit || index !== 1)
+              .map((quote) => ({ item_id: 'turn-1111', quote })),
+          },
+        ],
+        { sourceItems: [{ item_id: 'turn-1111', role: 'user', text: source }] },
+      );
+      expect(result.candidates).toHaveLength(omit ? 0 : 1);
+      if (omit) expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+      else expect(result.candidates[0]?.support[0]?.quote).toBe(source);
+    },
+  );
+
+  it.each(['unknown', 'day'] as const)(
+    'keeps an undated proposal but rejects an invented resolved date (%s)',
+    (precision) => {
+      const source =
+        'I propose checking the Zephyr QX-100 warranty next month. No inspection is accepted or scheduled.';
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: 'plan',
+            text: 'Ada Marlow proposed checking the Zephyr QX-100 warranty the month after the undated source; the proposal is unaccepted and its calendar date unknown.',
+            subject: 'Zephyr QX-100',
+            attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+            discourse: { commitment: 'tentative', disposition: 'proposed' },
+            epistemic: { basis: 'self_attested' },
+            support: [{ quote: source }],
+            discourse_frame: [{ quote: source }],
+            time: {
+              precision,
+              status: 'tentative',
+              relation: 'scheduled',
+              ...(precision === 'day' ? { start: '2031-04-11' } : {}),
+            },
+          },
+        ],
+        { sourceText: source },
+      );
+      expect(result.candidates).toHaveLength(precision === 'unknown' ? 1 : 0);
+      if (precision === 'day') expect(result.held[0]?.reason_code).toBe('time_unresolved');
+      else
+        expect(result.candidates[0]?.time).toEqual({
+          precision: 'unknown',
+          status: 'tentative',
+          relation: 'scheduled',
+        });
+    },
+  );
+
   it('accepts exact proposition support contained in a larger original counterfactual frame', () => {
     const quote = 'Если бы гарантия Zephyr QX-100 действовала десять лет, замена была бы покрыта.';
     const source = quote + ' Но эта гарантия не была выбрана.';

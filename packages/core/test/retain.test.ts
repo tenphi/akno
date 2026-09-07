@@ -197,6 +197,54 @@ it('keeps exact provided evidence model-free when its deciding frame contains a 
 });
 
 describe('provided exact retain', () => {
+  it('replays an undated proposal with split exact frames without scheduling it', async () => {
+    const mem = await openMem();
+    try {
+      const parts = [
+        'Ada Marlow proposes a Zephyr QX-100 inspection tomorrow.',
+        'The proposal is not accepted or scheduled.',
+      ];
+      const text = parts.join(' ');
+      const request = {
+        ...upsert('invented:unknown-time', 'rev-1111'),
+        input: { text },
+        retention: {
+          mode: 'provided' as const,
+          placement: 'exact' as const,
+          candidates: [
+            {
+              ...upsert('invented:unknown-time', 'rev-1111').retention.candidates[0]!,
+              kind: 'plan' as const,
+              text: 'Ada Marlow proposed an unaccepted Zephyr QX-100 inspection for the day after the undated source; its calendar date is unknown.',
+              discourse: { commitment: 'tentative' as const, disposition: 'proposed' as const },
+              support: [{ quote: text }],
+              discourse_frame: parts.map((quote) => ({ quote })),
+              time: {
+                precision: 'unknown' as const,
+                relation: 'scheduled' as const,
+                status: 'tentative' as const,
+              },
+            },
+          ],
+        },
+      };
+      const result = await mem.retain({ sources: [request] });
+      expect(result.sources[0]?.candidates[0]?.outcome).toBe('written');
+      expect(result.sources[0]?.model_usage).toBeUndefined();
+      const before = fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8');
+      expect((await mem.retain({ sources: [request] })).sources[0]?.outcome).toBe('replayed');
+      expect(fs.readFileSync(path.join(root, 'memory/equipment.md'), 'utf8')).toBe(before);
+      const read = await mem.read({ slug: 'memory/equipment' });
+      const memory = read.page?.lines.find((line) => line.memory?.status === 'qualified')?.memory;
+      expect(memory).toMatchObject({
+        answer_eligible: false,
+        temporal: { time: { precision: 'unknown' }, actionable: false },
+      });
+    } finally {
+      await mem.close();
+    }
+  });
+
   it('holds relative time unless the source supplies the exact clock and timezone', async () => {
     const mem = await openMem();
     try {
