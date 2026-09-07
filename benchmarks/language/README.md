@@ -19,11 +19,11 @@ Run the production path against isolated invented knowledge bases with:
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v7 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v7 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v8 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v8 --runs 2 --output bench-results/language-held-out.json
 ```
 
-The frozen v7 development inputs were exposed during earlier diagnostic runs. Its held-out inputs were
+The frozen v8 development inputs were exposed during earlier diagnostic runs. Its held-out inputs were
 reviewed before their first execution. Once inspected to tune runtime behavior, a held-out set becomes
 diagnostic evidence; freezing its bytes does not make it unseen again. Preserve earlier reports instead of
 overwriting them or relabeling their results.

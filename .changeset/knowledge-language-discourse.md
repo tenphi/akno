@@ -12,4 +12,6 @@ Expose content-free answer rejection counts and retention hold stages, distingui
 
 Accept adjacent exact frame quotations without stitching over omitted words, preserve explicitly undated proposals outside actionable schedules, and permit one recorded structural extraction repair before semantic verification. Improve English/Russian query intent and preserve named provenance across nonfactual answers. Add fingerprinted independent-review packets and a computed quality gate that requires useful retention, retrieval and answers in every split and run.
 
+Share qualification definitions between extraction and verification, provide field-specific source-time repair guidance, and accept supported uncertainty paraphrases without admitting new predicate denials. Recognize unresolved question records independently from answers to their embedded questions.
+
 Give answer verification the original question and memory view, preserve source-relative clocks in readable prose, and hold inconsistent exclusion polarity or unsupported reporter chains before semantic verification.

@@ -26,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v15';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v6';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v16';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v7';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -103,6 +103,9 @@ evidence that directly supports the whole block. Answer covered parts of a compo
 parts in missing_concepts. If the evidence does not answer anything, return no blocks. Do not write citation markers,
 file titles, storage identifiers, or line numbers in block text; Akno renders validated citations itself.
 Speaker names needed for attribution belong in the answer text.
+Use explicit status wording for each cited nonfactual record: hypothetical, counterfactual, unverified report,
+open question, proposed or rejected (or their requested-language equivalents). Preserve an actual rejection
+when citing that decision; merely saying an option was not selected does not describe the rejection itself.
 Translate descriptive vocabulary into the requested answer language. Do not add parenthetical
 source-language glosses for ordinary words such as calendar frequencies; preserve exact names and identifiers.
 
@@ -127,6 +130,10 @@ Use the supplied question and memory_view only to interpret what the answer addr
 responses and requests to describe competing hypotheses. The question is not evidence for its premises
 and cannot supply missing facts. A faithful list of incompatible hypotheses answers a discussion question
 without claiming either hypothesis is true.
+For a question record, describing which question remains unanswered is a useful supported answer to a
+question about the record. Do not require evidence that answers the embedded open question. For ordinary
+asserted user knowledge, a faithful denial or exclusion can answer a factual query; source attribution does
+not turn the negative proposition into an unsupported assertion.
 
 Judge every block separately using only the cited_evidence nested inside that block. Evidence attached to a
 different block cannot support it. Set supported to true only when the whole answer_text is directly entailed,
@@ -893,7 +900,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
     if (memory.commitment === 'tentative') required.push(tentative);
     if (memory.commitment === 'hypothetical')
       required.push(
-        /\b(hypothetical(?:ly)?|hypothes[ie]s|assum(?:e|ed|ing|ptions?)|scenario|what if|fictional|invented example)\b|гипотез|гипотет|предполож|сценари|что если|вымышлен/iu.test(
+        /\b(hypothetical(?:ly)?|hypothes[ie]s|assum(?:e[sd]?|ing|ptions?)|scenario|what if|fictional|invented example)\b|гипотез|гипотет|предполож|сценари|что если|вымышлен/iu.test(
           answerText,
         ),
       );
@@ -956,17 +963,17 @@ function qualificationPolarityText(text: string, support: string): string {
     .replace(/\bnot (?=(?:(?:as )?(?:an? )?)?(?:assertion|claim|statement)\b)/giu, '')
     .replace(/не (?=(?:(?:был[аои]? )?установлен\p{L}* как (?:факт|верн))|утверждени)/giu, '');
   if (
-    /\b(unverified|unconfirmed|unestablished|unknown|tentative|hypothes[ie]s|open question|unanswered|undetermined|remains to be determined)\b|\bnot (?:verified|confirmed|established|known)\b|неподтвержд|неизвестн|гипотез|предполож/iu.test(
+    /\b(unverified|unconfirmed|unestablished|unknown|tentative|hypothetical(?:ly)?|hypothes[ie]s|assum(?:e[sd]?|ing|ptions?)|open question|unanswered|undetermined|remains to be determined)\b|\bnot (?:verified|confirmed|established|known)\b|неподтвержд|неизвестн|гипотез|предполож/iu.test(
       support,
     )
   ) {
     polarityText = polarityText
       .replace(
-        /\bnot (?=(?:been )?(?:verif(?:y|ied)|confirm(?:ed)?|establish(?:ed)?|known)\b)|\b(?:no|without) (?=confirmation\b)/giu,
+        /\bnot (?=(?:as )?(?:an? )?(?:been )?(?:verif(?:y|ied)|confirm(?:ed)?|establish(?:ed)?|known)\b)|\b(?:no|without) (?=confirmation\b)/giu,
         '',
       )
       .replace(
-        /не (?=(?:был[аои]? )?(?:проверен|проверял|проверил|подтвержд[её]н|подтверд|признан\p{L}* установлен|имел[аои]? подтверждени|установлен|устанавлива|определ[её]н|известен|известна))/giu,
+        /не (?=(?:как )?(?:был[аои]? )?(?:проверен|проверял|проверил|подтвержд[её]н|подтверд|признан\p{L}* установлен|имел[аои]? подтверждени|установлен|устанавлива|определ[её]н|известен|известна))|без (?=подтверждения|установления)/giu,
         '',
       )
       .replace(/подтверждения (?:этому )?нет/giu, 'подтверждение отсутствует');

@@ -5,6 +5,74 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cross-language retention boundary', () => {
+  it.each([false, true])(
+    'explains an invalid mention timestamp without discarding unknown time (repair=%s)',
+    async (repair) => {
+      const source =
+        'I propose inspecting the Zephyr QX-100 warranty tomorrow; this is not accepted or scheduled.';
+      const candidate = {
+        text: 'Ada Marlow proposed inspecting the Zephyr QX-100 warranty tomorrow relative to the source, whose reference date is unknown; it remains unaccepted and unscheduled.',
+        kind: 'plan',
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'tentative', disposition: 'proposed' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'affirmed',
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+        time: { precision: 'unknown', status: 'tentative', relation: 'scheduled', mentioned_at: 'tomorrow' },
+      };
+      let calls = 0;
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        calls++;
+        if (calls === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (calls === 2) {
+          expect(payload.validation_issues[0]).toMatchObject({
+            reason_code: 'time_unresolved',
+            reason: expect.stringContaining('time.mentioned_at'),
+          });
+          expect(payload.validation_issues[0].reason).toContain('Keep the unknown temporal envelope');
+          return {
+            ok: true,
+            value: JSON.stringify({
+              candidates: [{ ...candidate, time: repair ? { ...candidate.time, mentioned_at: null } : null }],
+            }),
+            latencyMs: 22,
+          };
+        }
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              supported: true,
+              reason_code: null,
+            })),
+          }),
+          latencyMs: 33,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-time-repair',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(result.candidates).toHaveLength(repair ? 1 : 0);
+      expect(chat).toHaveBeenCalledTimes(repair ? 3 : 2);
+      if (repair)
+        expect(result.candidates[0]?.time).toEqual({
+          precision: 'unknown',
+          status: 'tentative',
+          relation: 'scheduled',
+        });
+    },
+  );
+
   it.each([
     ['For discussion, Bo Winters imagines a fictional Zephyr QX-100 warranty.', false],
     ['Для обсуждения Bo Winters представляет вымышленную гарантию Zephyr QX-100.', false],

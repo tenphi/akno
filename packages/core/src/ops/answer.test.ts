@@ -263,6 +263,42 @@ describe('grounded answer discovery surface', () => {
     [
       'hypothetical',
       'self_attested',
+      'Ada Marlow hypothetically assumes that the silverpine warranty requires inspection.',
+      'Ada Marlow discussed the hypothetical inspection requirement, not as an established obligation.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow hypothetically assumes that the silverpine warranty requires inspection.',
+      'Ada Marlow discussed the hypothetical inspection requirement, not a confirmed obligation.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow hypothetically assumes that the silverpine warranty requires inspection.',
+      'Ada Marlow высказала гипотезу о проверке silverpine без установления этого как факта, а не как установленное требование.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified belief that the silverpine warranty covers inspection.',
+      'Ассистент сообщил предварительное мнение о проверке silverpine, пока без подтверждения.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow hypothetically assumes that the silverpine warranty requires inspection.',
+      'Ada Marlow discussed a hypothetical warranty that does not require inspection; this was not an established obligation.',
+      false,
+      'protected_value',
+    ],
+    [
+      'hypothetical',
+      'self_attested',
       'Ada Marlow discussed the unestablished assumption that the silverpine warranty requires inspection.',
       'For discussion, Ada Marlow was assuming the silverpine warranty requires inspection.',
       true,
@@ -604,6 +640,40 @@ describe('grounded answer discovery surface', () => {
       expect(modelRequests).toHaveLength(1);
     },
   );
+
+  it.each(['assume', 'assumes', 'assuming'])('preserves an unlabeled assumption using %s', async (word) => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n## Discussion\n' +
+        (word === 'assume'
+          ? 'For discussion, Ada Marlow asks us to assume'
+          : word === 'assuming'
+            ? 'Ada Marlow is assuming'
+            : 'Ada Marlow assumes') +
+        ' for discussion that the silverpine warranty requires inspection.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow discussed a hypothetical silverpine inspection requirement, not an established obligation.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What was assumed about the silverpine warranty?',
+      memory_view: 'discussion',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.reason_code, JSON.stringify(result)).toBe('answered');
+  });
 
   it.each([
     ['The silverpine warranty covers sensor repair.', 'attribution'],

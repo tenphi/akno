@@ -39,6 +39,13 @@ or imply semantic verification. Exact `write` operations and authored text remai
 New retain receipts record `knowledge_language`. An existing source revision replays its recorded policy and
 outcome before checking current configuration, with no additional translation or write.
 
+Extraction and verification share definitions for proposition polarity, unresolved questions, unaccepted
+proposals, fictional participants and source-relative time. A positive property inside a hypothetical scenario
+has affirmed polarity while its commitment remains hypothetical. Unanchored relative wording stays in an
+explicit unknown, tentative time envelope; `mentioned_at` must come from a supplied source timestamp.
+One recorded structural repair can address field-specific validation failures before semantic verification.
+It cannot retry a semantic rejection or remove the unresolved time envelope to admit the same claim.
+
 ## Ordinary Markdown
 
 A versioned deterministic scanner qualifies ordinary Markdown without adding markers or changing its bytes.
@@ -80,15 +87,15 @@ cases must be assessed separately from model quality.
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,
-Russian and mixed sources; exposed corpora remain available unchanged. V7 keeps the exposed development inputs
+Russian and mixed sources; exposed corpora remain available unchanged. V8 keeps the exposed development inputs
 and introduces a fresh held-out set, reviewed before execution by a separate model. Earlier corpora remain
 diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v7 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v7 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v8 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v8 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -202,11 +209,11 @@ Nevertheless, **this baseline failed**: the first held-out run missed the 80% us
 unjustified null answers across both splits remain coverage failures. The v6 split became exposed diagnostic
 evidence after this review and informed later guard fixes.
 
-The [computed gate](../benchmarks/language/results/v14-baseline/gate.json),
-[development report](../benchmarks/language/results/v14-baseline/development.json),
-[held-out report](../benchmarks/language/results/v14-baseline/held-out.json),
-[input review](../benchmarks/language/results/v14-baseline/input-review.json) and
-[output review](../benchmarks/language/results/v14-baseline/output-review.json) are preserved unchanged.
+The [computed gate](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v14-baseline/gate.json),
+[development report](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v14-baseline/development.json),
+[held-out report](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v14-baseline/held-out.json),
+[input review](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v14-baseline/input-review.json) and
+[output review](https://github.com/tenphi/akno/blob/main/benchmarks/language/results/v14-baseline/output-review.json) are preserved unchanged.
 
 ## Initial live baseline
 

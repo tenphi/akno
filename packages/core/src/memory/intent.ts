@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v2';
+export const MEMORY_VIEW_VERSION = 'memory-view-v3';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -25,7 +25,7 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'reports';
   }
   if (
-    /\b(open (?:[a-z-]+ ){0,3}questions?|unresolved questions?|what remains (?:open|unanswered)|questions? remain)\b/i.test(
+    /\b((?:open|unresolved|unanswered) (?:[a-z-]+ ){0,3}questions?|what remains (?:open|unanswered)|questions? remain)\b/i.test(
       query,
     )
   ) {
