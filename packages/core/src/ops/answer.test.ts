@@ -273,7 +273,7 @@ describe('grounded answer discovery surface', () => {
       'tentative',
       'source_report',
       'The assistant reported that the silverpine warranty lasts five years, but this is an unverified answer.',
-      'Ассистент предположительно сообщил, что гарантия silverpine длится пять лет; этот ответ не проверен.',
+      'Ассистент предположил, что гарантия silverpine длится пять лет; этот ответ не проверен.',
       true,
     ],
     [

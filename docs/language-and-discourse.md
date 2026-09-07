@@ -211,7 +211,7 @@ candidate count, qualification pass and reference resolution. This run disables 
 cases requiring calibrated qualification cannot activate through that path. That result does not establish
 a language-specific auto-recall recall rate, and no injection/permission gate was relaxed to improve it.
 
-The repeated run predates the final Russian attribution fixes: accepting “приведённая” as an attribution
+The repeated run predates the final attribution fixes: preserving explicitly attributed beliefs and assumptions, accepting “приведённая” as an attribution
 form and translating the assistant role when extraction stores `source_speaker: "assistant"`. Actual named
 speakers still keep their spelling. Focused built-package probes cover those final fixes; the table is retained
 as diagnostic evidence, not relabeled as a measurement of the final guard. Verifier disagreements and

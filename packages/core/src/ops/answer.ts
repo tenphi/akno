@@ -798,7 +798,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   if (hasIndependentSupport) return true;
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
-    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described)\b|согласно|по словам|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н/iu.test(
+    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects)\b|согласно|по словам|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
   if (!attributionVerb) return false;
