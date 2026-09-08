@@ -1363,6 +1363,65 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
+  it.each(['assistant', 'Assistant Meridian'])(
+    'projects generic display labels without changing source names or verifier evidence: %s',
+    async (speaker) => {
+      write(
+        'products/zephyr-qx-100.md',
+        `# Zephyr QX-100\n\n<!-- akno:item mem_display v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=assistant speaker=${encodeURIComponent(speaker)} reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by ${speaker} · Tentative:** ${speaker} reported an unverified silverpine inspection requirement for Zephyr QX-100.\n`,
+      );
+      await memory.index({ verify: true });
+      const label = speaker === 'assistant' ? 'ассистента' : speaker;
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: `Предварительный неподтверждённый отчёт ${label} касается проверки Zephyr QX-100.`,
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine report did the assistant give?',
+        answer_language: 'ru',
+        memory_view: 'reports',
+        include_context: true,
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).not.toBeNull();
+      const userInput = (request: Record<string, unknown>) =>
+        JSON.parse(
+          (request.messages as Array<{ role: string; content: string }>).find(
+            (message) => message.role === 'user',
+          )!.content,
+        );
+      const generation = userInput(modelRequests[0]!);
+      const excerpt = generation.evidence[0].excerpt as string;
+      const qualification = JSON.parse(excerpt.match(/Memory qualification: (.+)/u)![1]!);
+      expect(qualification.source_role).toBe('assistant');
+      if (speaker === 'assistant') {
+        expect(qualification).not.toHaveProperty('source_speaker');
+        expect(qualification.source_label).toBe('ассистент');
+      } else {
+        expect(qualification.source_speaker).toBe(speaker);
+        expect(qualification).not.toHaveProperty('source_label');
+      }
+      expect(excerpt).toContain(`${speaker} reported an unverified`);
+      const language = userInput(modelRequests[1]!);
+      expect(language.supplied_references).toContainEqual({ kind: 'title', text: 'Zephyr QX-100' });
+      expect(language.supplied_references).not.toContainEqual({ kind: 'name', text: 'assistant' });
+      if (speaker !== 'assistant')
+        expect(language.supplied_references).toContainEqual({ kind: 'name', text: speaker });
+      expect(JSON.stringify(userInput(modelRequests[2]!))).toContain(`"source_speaker":"${speaker}"`);
+      expect(JSON.stringify(result.context)).toContain(`"source_speaker":"${speaker}"`);
+    },
+  );
+
   it('keeps internal user-provenance labels in verification and public evidence, outside generation', async () => {
     write(
       'products/zephyr-qx-100.md',

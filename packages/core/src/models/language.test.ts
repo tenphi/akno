@@ -44,6 +44,40 @@ function responses(values: unknown[]) {
 }
 
 describe('explicit generation language', () => {
+  it('supplies only source reference hints used in prose without removing that prose from the check', async () => {
+    const output = { text: 'Ada Marlow отклонила предложение для Zephyr QX-100.' };
+    const requests = responses([output, { compliant: false }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe the record.' }], {
+      outputLanguage: 'ru',
+      languageReferences: [
+        { kind: 'name', text: 'Ada Marlow' },
+        { kind: 'identifier', text: 'Zephyr QX-100' },
+        { kind: 'title', text: 'Unused heading' },
+      ],
+    });
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).toEqual({
+      language: 'ru',
+      excerpts: [output.text],
+      supplied_references: [
+        { kind: 'name', text: 'Ada Marlow' },
+        { kind: 'identifier', text: 'Zephyr QX-100' },
+      ],
+    });
+    // References are hints to the same first-pass check, not permission to override its verdict.
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_mismatch' });
+    expect(requests).toHaveLength(2);
+  });
+
+  it('counts exact reference hints against the language check character budget', async () => {
+    const text = 'q'.repeat(13000);
+    const requests = responses([{ text }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe the record.' }], {
+      languageReferences: [{ kind: 'title', text }],
+    });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+    expect(requests).toHaveLength(1);
+  });
+
   it('supports only an explicit English knowledge target or the legacy unset policy', () => {
     expect(ConfigDoc.safeParse({ knowledge_language: 'en' }).success).toBe(true);
     expect(ConfigDoc.safeParse({ knowledge_language: null }).success).toBe(true);

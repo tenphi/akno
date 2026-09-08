@@ -3,6 +3,7 @@ import {
   languageInstruction,
   LANGUAGE_CHECK_SCHEMA,
   LANGUAGE_CHECK_SYSTEM,
+  type LanguageReference,
   type OutputLanguage,
 } from './language.ts';
 import { createHash } from 'node:crypto';
@@ -96,6 +97,8 @@ export interface ChatOptions {
   outputLanguage?: OutputLanguage | null;
   /** Add schema-specific generated prose; never suppress the shared prose-field check. */
   additionalLanguageProse?: (value: unknown) => string[];
+  /** Source-backed exact references for the language check; never generated exemption claims. */
+  languageReferences?: LanguageReference[];
   json?: boolean;
   /**
    * The shape the prompt asks for, as a zod schema, sent so the endpoint can constrain
@@ -537,7 +540,15 @@ export class ModelClient {
       options.timeoutMs === undefined
         ? undefined
         : Math.floor(options.timeoutMs - (performance.now() - started));
-    if (excerpts.join('').length > 24000 || (remaining !== undefined && remaining <= 0)) {
+    const references = (options.languageReferences ?? []).filter((reference) =>
+      excerpts.some((excerpt) => excerpt.includes(reference.text)),
+    );
+    if (
+      excerpts.join('').length + references.reduce((size, reference) => size + reference.text.length, 0) >
+        24000 ||
+      references.length > 64 ||
+      (remaining !== undefined && remaining <= 0)
+    ) {
       this.reportInvalidResponse('language_check_failed');
       return {
         ...result,
@@ -550,7 +561,14 @@ export class ModelClient {
     const check = await this.chatTransport(
       [
         { role: 'system', content: LANGUAGE_CHECK_SYSTEM },
-        { role: 'user', content: JSON.stringify({ language, excerpts }) },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            language,
+            excerpts,
+            ...(references.length ? { supplied_references: references } : {}),
+          }),
+        },
       ],
       {
         schema: LANGUAGE_CHECK_SCHEMA,

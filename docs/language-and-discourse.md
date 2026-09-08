@@ -23,6 +23,8 @@ Generic role labels such as “assistant” are translated when used as descript
 speakers keep their exact spelling. A bounded answer guard checks known generic assistant reporting labels
 against the effective answer language, while preserving exact source quotations and code. The shared model
 language check still covers the rest of the prose.
+Answer generation presents a generic assistant as a localized role label; verification and public evidence
+retain the original source metadata. A named speaker is never replaced by that display label.
 Curator revisions check newly generated complete Markdown through a schema-specific selector. Exact original
 lines are exempt, including transfers between authorized paths; each original occurrence can exempt only
 one final occurrence. Changed bytes and extra copies are checked. Existing proposed after-states are never
@@ -35,10 +37,14 @@ Changing the setting does not translate existing pages, rename identities or fol
 Generation receives an explicit language instruction. A separate bounded call checks generated prose fields
 without translating them. A mismatch returns `language_mismatch`; an invalid/unavailable check or oversized
 output returns `language_check_failed`. Neither exposes fallback generated prose for a write. The check permits
-at most 24,000 generated characters, shares an explicit caller latency deadline, and adds one model request
+at most 24,000 generated and reference-hint characters, shares an explicit caller latency deadline, and adds one model request
 when prose is generated. Classifier-only JSON needs no language call. Receipts aggregate both calls' usage.
 This verdict is fallible and verifies neither truth nor translation entailment; retention and answers retain
 their separate semantic verifier.
+Answers supply a bounded list of exact source-backed name and title hints to the language check. Hints must
+occur in the generated excerpts to be sent; the surrounding prose is still checked, and no hint overrides a
+negative verdict. Minor grammar errors are distinguished from a change of language. These hints are data,
+not instructions or evidence of truth.
 
 Provided retention remains exact and model-free. With English configured, callers must attest supplied prose
 with `retention.knowledge_language: "en"`. Missing attestation returns `language_policy_required`; a different
@@ -59,6 +65,9 @@ remain prose; an established schedule retains its cadence and time envelope, wit
 only when its start is supported.
 One recorded structural repair can address field-specific validation failures before semantic verification.
 It cannot retry a semantic rejection or remove the unresolved time envelope to admit the same claim.
+The extraction schema places prose after exact support, discourse frame, attribution and time so the model
+can formulate each independently retrievable sentence with its qualifications already specified. Output
+ordering is a generation aid; incomplete or unsupported sentences still fail the same verification.
 
 ## Ordinary Markdown
 

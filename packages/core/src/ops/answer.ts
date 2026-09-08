@@ -17,7 +17,7 @@ import {
 } from '@tenphi/akno-protocol';
 import type { AknoContext } from '../context.ts';
 import { type ModelClient, type ModelOutcome, type ModelUsage, parseJsonLoose } from '../models/client.ts';
-import type { OutputLanguage } from '../models/language.ts';
+import type { LanguageReference, OutputLanguage } from '../models/language.ts';
 import { sha256 } from '../store/ids.ts';
 import {
   futureMemoryEligible,
@@ -38,7 +38,7 @@ import {
   semanticVerdictFields,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v30';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v31';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v18';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -93,6 +93,7 @@ Use the requested output_language for generated prose, regardless of question or
 Keep person, organization and product names in their exact original spelling; do not transliterate names.
 Generic source roles such as assistant and user are descriptive prose: translate them into the requested
 language even when source_speaker repeats the role. They are not proper names or schema values in answer text.
+When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
 Preserve identity, negation, dates, times, amounts, units, scope, and current-versus-superseded state exactly.
 Ordinary prose carries a bounded prose qualification and exact frame. Preserve its report, hypothetical,
 planning, historical, or unresolved status; the frame is source context, not independent factual evidence.
@@ -390,6 +391,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     {
       schema: liveDraftSchema,
       ...(answerLanguage ? { outputLanguage: answerLanguage } : {}),
+      ...(answerLanguage ? { languageReferences: answerLanguageReferences(ctx, evidence) } : {}),
       maxTokens: input.max_answer_tokens ?? 1_024,
     },
   );
@@ -539,7 +541,7 @@ function answerMessages(
         ...(outputLanguage ? { output_language: outputLanguage } : {}),
         evidence: evidence.map((item) => ({
           evidence_id: item.evidence_id,
-          excerpt: evidenceText(item, true),
+          excerpt: evidenceText(item, true, outputLanguage),
         })),
       }),
     },
@@ -862,7 +864,11 @@ function answerLineEligible(line: Line, question: string, memoryView: MemoryView
   return intent.future && futureMemoryEligible(memory);
 }
 
-function evidenceText(item: AnswerContextItem, forGeneration = false): string {
+function evidenceText(
+  item: AnswerContextItem,
+  forGeneration = false,
+  outputLanguage?: OutputLanguage | null,
+): string {
   if (item.type === 'page') {
     return [
       `Title: ${item.title}`,
@@ -870,7 +876,7 @@ function evidenceText(item: AnswerContextItem, forGeneration = false): string {
         (line) =>
           `L${line.n}: ${line.text}` +
           (line.memory
-            ? `\nMemory qualification: ${JSON.stringify(Object.fromEntries(Object.entries(line.memory).filter(([key, value]) => ['kind', 'source_role', 'source_speaker', 'commitment', 'disposition', 'polarity', 'basis', 'temporal'].includes(key) && !(forGeneration && key === 'basis' && value === 'self_attested'))))}`
+            ? `\nMemory qualification: ${JSON.stringify(memoryModelFields(line.memory, forGeneration, outputLanguage))}`
             : '') +
           (line.prose && !line.prose.answer_eligible
             ? `\nUntrusted discourse qualification: ${JSON.stringify({ status: line.prose.status, view: line.prose.view, reason: line.prose.reason, frame: line.prose.frame })}`
@@ -883,6 +889,74 @@ function evidenceText(item: AnswerContextItem, forGeneration = false): string {
     `Derived observation: ${item.text}`,
     ...item.evidence.map((leaf) => `[${leaf.slug}:${leaf.line}] ${leaf.text}`),
   ].join('\n');
+}
+
+function genericAssistantSpeaker(role: string, speaker?: string): boolean {
+  return (
+    role === 'assistant' && (!speaker?.trim() || /^(?:the )?assistant$|^ассистент$/iu.test(speaker.trim()))
+  );
+}
+
+function memoryModelFields(
+  memory: NonNullable<Line['memory']>,
+  forGeneration: boolean,
+  outputLanguage?: OutputLanguage | null,
+): Record<string, unknown> {
+  const fields = Object.fromEntries(
+    Object.entries(memory).filter(
+      ([key, value]) =>
+        [
+          'kind',
+          'source_role',
+          'source_speaker',
+          'commitment',
+          'disposition',
+          'polarity',
+          'basis',
+          'temporal',
+        ].includes(key) && !(forGeneration && key === 'basis' && value === 'self_attested'),
+    ),
+  );
+  // A schema role repeated as a speaker looks like a proper name to generation. Verification and
+  // public evidence retain the original metadata; only the display wording is localized here.
+  if (
+    forGeneration &&
+    memory.status === 'qualified' &&
+    genericAssistantSpeaker(memory.source_role, memory.source_speaker)
+  ) {
+    delete fields.source_speaker;
+    if (outputLanguage) fields.source_label = outputLanguage === 'ru' ? 'ассистент' : 'assistant';
+  }
+  return fields;
+}
+
+function answerLanguageReferences(ctx: AknoContext, evidence: AnswerContextItem[]): LanguageReference[] {
+  const references: LanguageReference[] = [];
+  const subjects = new Set<string>();
+  const support = evidence.map((item) => evidenceText(item)).join('\n');
+  for (const item of evidence) {
+    if (item.type !== 'page') continue;
+    references.push({ kind: 'title', text: item.title });
+    for (const line of item.lines) {
+      const memory = line.memory;
+      if (memory?.status !== 'qualified') continue;
+      subjects.add(memory.subject);
+      const speaker = memory.source_speaker?.trim();
+      if (speaker && !/^(?:(?:the )?(?:assistant|user)|ассистент|пользователь)$/iu.test(speaker))
+        references.push({ kind: 'name', text: speaker });
+    }
+  }
+  const label = ctx.store.db.prepare('SELECT label FROM graph_entities WHERE id = ?');
+  for (const subject of subjects) {
+    const row = label.get(subject) as { label: string } | undefined;
+    // An indexed identity is only a spelling hint if that exact label occurs in the current evidence.
+    if (row && support.includes(row.label)) references.push({ kind: 'name', text: row.label });
+  }
+  return [
+    ...new Map(
+      references.filter((reference) => reference.text.trim()).map((reference) => [reference.text, reference]),
+    ).values(),
+  ];
 }
 
 function validateDraft(
@@ -1015,9 +1089,7 @@ function genericReporterLanguageSupported(
       source.lines.some(
         (line) =>
           line.memory?.status === 'qualified' &&
-          line.memory.source_role === 'assistant' &&
-          (!line.memory.source_speaker?.trim() ||
-            /^(?:the )?assistant$|^ассистент$/iu.test(line.memory.source_speaker.trim())),
+          genericAssistantSpeaker(line.memory.source_role, line.memory.source_speaker),
       ),
   );
   if (!hasGenericAssistant) return true;
@@ -1071,20 +1143,15 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   return reportLines.every((line) => {
     if (line.memory?.status !== 'qualified') return false;
     const speaker = line.memory.source_speaker?.trim();
-    const sourceLabel =
-      line.memory.source_role === 'assistant' &&
-      (!speaker || /^(?:the )?assistant$|^ассистент$/iu.test(speaker))
-        ? '(?:assistant|ассистент(?:а|ом|у)?)'
-        : speaker?.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const sourceLabel = genericAssistantSpeaker(line.memory.source_role, speaker)
+      ? '(?:assistant|ассистент(?:а|ом|у)?)'
+      : speaker?.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     if (line.memory.basis === 'source_report' && !sourceLabel && !attributionVerb) return false;
     if (line.memory.basis === 'source_report' && sourceLabel && !hasBoundReporter(answerText, sourceLabel))
       return false;
     // Some retained records spell the assistant role into source_speaker. It is a translatable
     // role label, while an actual named speaker must still occur in its original spelling.
-    if (
-      line.memory.source_role === 'assistant' &&
-      (!speaker || /^(?:the )?assistant$|^ассистент$/iu.test(speaker))
-    )
+    if (genericAssistantSpeaker(line.memory.source_role, speaker))
       return /\bassistant\b|ассистент/iu.test(answerText);
     return !speaker || normalized.includes(normalizeComparable(speaker));
   });

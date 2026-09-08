@@ -53,3 +53,5 @@ Require a concise source/candidate comparison and concrete dimension-specific mi
 Bound each first-pass semantic verification call to two retained candidates or one answer block so required comparisons fit ordinary model output ceilings. Preserve original ids, source/relation context and citation scope, sum actual usage, and never resubmit a rejected record for a verdict; it may remain source-checked relation context.
 
 Translate generic attribution roles as prose while preserving actual names and source-exact quotations. Add a bounded typed answer-language rejection for foreign generic assistant reporting labels, and describe attributed open questions using neutral record provenance without inventing a recording action.
+
+Supply source-backed exact reference hints to the bounded language check without exempting surrounding prose or overriding its verdict. Separate generic assistant display labels from named speakers during answer generation, while preserving original verifier/public evidence. Order retention support and qualifications before generated prose so each first-pass sentence can include its complete discourse frame.

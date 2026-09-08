@@ -31,7 +31,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v24';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v25';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v16';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -121,6 +121,10 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
 
 Reply with JSON only. Every candidate must contain all fields in the supplied schema.
+For each candidate, select its complete source-supported unit, exact support and deciding discourse frame,
+then establish attribution, modality and time before writing text last. Compose that text from the completed
+frame as one independently retrievable record. A report's embedded proposition, outer reporter and explicit
+verification limits belong in that same record; do not leave its deciding qualification only in a sibling.
 
 ${QUALIFICATION_CONTRACT}
 
@@ -241,7 +245,6 @@ export const RETAIN_SCHEMA = z.object({
   candidates: z
     .array(
       z.object({
-        text: z.string(),
         subject: z.string(),
         page: z.string().nullable(),
         kind: z.enum(['claim', 'decision', 'preference', 'plan', 'event', 'question']),
@@ -284,6 +287,8 @@ export const RETAIN_SCHEMA = z.object({
           )
           .max(8),
         time: ModelTime.nullable(),
+        // Constrained decoding should establish the evidence and qualifications before phrasing prose.
+        text: z.string(),
       }),
     )
     .max(50),
