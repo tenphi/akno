@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "language-input-review-v1",
+  "corpusFingerprint": "bbd6def51d25ea19f7fd273a95174e321b9789914ce288091e56d10e98a64866",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true,
+    "reviewedWithoutOutputs": true
+  },
+  "cases": [
+    {
+      "id": "v17-held-report",
+      "approved": true,
+      "reason": "The source supports Ada as recorder, Bo as the unverified inner reporter, permission to send the device for hinge-resistance measurement rather than replacement, Ada's lack of inspection or confirmation, and no arranged shipment. The EN/RU questions equivalently ask for that qualified report."
+    },
+    {
+      "id": "v17-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly presents Ada's monthly temperature-sensor rule and missed-check consequence as a hypothetical premise, while denying known actual requirements or an actual miss. Both questions faithfully target the hypothetical rule."
+    },
+    {
+      "id": "v17-held-counterfactual",
+      "approved": true,
+      "reason": "The source entails both Ada's actual rejection and nonpurchase and the unrealized sixth-year control-button coverage conditional on buying the extension. The bilingual questions accurately focus on the counterfactual alternative."
+    },
+    {
+      "id": "v17-held-question",
+      "approved": true,
+      "reason": "Ada records an unanswered question about post-repair return delivery and explicitly establishes neither inclusion nor exclusion. The questions in both languages ask for the open question rather than its unknown answer."
+    },
+    {
+      "id": "v17-held-exclusion",
+      "approved": true,
+      "reason": "The mixed source directly asserts the narrow protective-cover replacement exclusion and expressly leaves display-cable repair unsettled. Both questions ask only about the excluded action and component, and the expectation properly preserves attributed rather than independently verified status."
+    },
+    {
+      "id": "v17-held-assistant",
+      "approved": true,
+      "reason": "The assistant's Russian statement supports a tentative, unverified twice-yearly indicator-check interpretation and says the contract was not examined. The EN/RU questions are equivalent and retain assistant attribution."
+    },
+    {
+      "id": "v17-held-fiction",
+      "approved": true,
+      "reason": "The source clearly makes Ada the proposer of a fictional scenario in which Vulpine Mutual promises fictional Bo free handle replacement during the first three ownership months. The expectation and bilingual questions preserve fiction, roles, product, benefit, and duration without implying a real agreement."
+    },
+    {
+      "id": "v17-held-rejected",
+      "approved": true,
+      "reason": "The source supports the declined workshop-shipment offer for power-switch inspection, Ada's absence of a sending plan, and no booked collection. The focused bilingual questions fairly ask which offer was declined, while the full-retention expectation retains all coupled facts."
+    },
+    {
+      "id": "v17-held-undated",
+      "approved": true,
+      "reason": "The mixed source expressly presents an unaccepted transfer-terms review proposal with no meeting and defines next month relative to an undated original note, leaving the calendar month unknowable. Both queries and the timing expectation faithfully preserve this clock."
+    },
+    {
+      "id": "v17-held-alternatives",
+      "approved": true,
+      "reason": "The Russian source supports two competing tentative causes, damaged cable and overheated controller, with no evidence or selected cause. Both questions target the competing hypotheses, and permitting tentative or hypothetical commitment is semantically fair."
+    },
+    {
+      "id": "v17-held-admission",
+      "approved": true,
+      "reason": "The invented seventy-seven-month warranty assertion is answerable in either language, while the read-only setup justifies retaining no saved evidence and abstaining without changing source bytes."
+    },
+    {
+      "id": "v18-held-report",
+      "approved": true,
+      "reason": "The source supports Ada as recorder, Bo as the unverified inner reporter, permission to send the device to a technician for dial calibration rather than replacement, lack of inspected terms or confirmation, and Ada's separate statement that she gave no collection instruction. The bilingual questions faithfully target the qualified report, and the expectation does not turn permission into an arrangement."
+    },
+    {
+      "id": "v18-held-hypothesis",
+      "approved": true,
+      "reason": "The Russian source expressly poses Ada's weekly pressure-valve check as a hypothetical rule and states the conditional missed-check consequence, unknown actual requirements, and no actual missed check. The EN/RU questions are equivalent and answerable as a qualified hypothetical record."
+    },
+    {
+      "id": "v18-held-counterfactual",
+      "approved": true,
+      "reason": "The source entails Ada's actual rejection and nonpurchase of the extension plus unrealized seventh-year charging-port repair coverage conditional on purchase. The bilingual questions accurately focus on this counterfactual and do not imply current coverage."
+    },
+    {
+      "id": "v18-held-question",
+      "approved": true,
+      "reason": "Ada records an unanswered preventive filter-cleaning coverage question and explicitly establishes neither inclusion nor exclusion. The EN/RU questions equivalently request the open question, and the expectation introduces no unsupported answer or booking."
+    },
+    {
+      "id": "v18-held-exclusion",
+      "approved": true,
+      "reason": "The mixed source directly asserts the narrow exclusion of replacing cracked support feet and explicitly leaves motor-housing repair unsettled. The bilingual questions ask only about that exclusion, and the expectation correctly prevents scope broadening while retaining source attribution."
+    },
+    {
+      "id": "v18-held-assistant",
+      "approved": true,
+      "reason": "The assistant's Russian text supports a tentative monthly hinge-lubrication interpretation, no contract inspection, and no confirmation. Both questions faithfully ask for the assistant's preliminary report, and the expectation keeps it nonfactual."
+    },
+    {
+      "id": "v18-held-fiction",
+      "approved": true,
+      "reason": "The source unambiguously makes Ada the author of fiction in which Vulpine Mutual promises fictional Bo free cable replacement during the first six ownership weeks, while denying a real agreement. The bilingual questions and expectation preserve the roles, fictional status, benefit, and relative duration."
+    },
+    {
+      "id": "v18-held-rejected",
+      "approved": true,
+      "reason": "The source supports Ada's rejection of sending the device to a service centre for thermostat measurement, no plan under the offer, and no booked handover. The bilingual questions fairly focus on the declined offer, while full retention requires the associated negative lifecycle facts."
+    },
+    {
+      "id": "v18-held-undated",
+      "approved": true,
+      "reason": "The source supports an unaccepted warranty-exceptions review proposal with no meeting and defines next week relative to an original record whose date and calendar week are unknown. Both queries and the expectation preserve the source-relative clock and prohibit processing-time resolution."
+    },
+    {
+      "id": "v18-held-alternatives",
+      "approved": true,
+      "reason": "The Russian source supports two competing tentative explanations, a loosely inserted internal connector and a faulty temperature probe, with no evidence and no selected cause. The EN/RU questions are equivalent, and the expectation faithfully retains both alternatives and their shared uncertainty."
+    },
+    {
+      "id": "v18-held-admission",
+      "approved": true,
+      "reason": "The invented eighty-eight-month warranty assertion is directly answerable in either language, while the read-only admission setup justifies no saved evidence and answer abstention without changing source bytes."
+    }
+  ],
+  "summary": "All 22 frozen v18 expectations are source-supported and fair. The English and Russian questions are semantically equivalent within each case, the writable cases require useful qualified retention without hidden claims, and the two read-only cases correctly require a hold and justify abstention when no evidence is saved."
+}

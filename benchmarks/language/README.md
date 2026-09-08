@@ -1,3 +1,5 @@
+The [V36 exposed probes](results/v36/README.md) yielded 23/32 useful selected answers and 13/16 useful built-package answers, with no accepted errors. Corrected selected retention/retrieval are 2/4 and 24/32: the separately retained denial is missing and the rejected offer lost its rejecting actor. Twelve writable nulls remain. The [preserved amendment](v36-trial-amendment.md) defers fresh execution; no full V36 trial started and v18 held-out inputs remain unexecuted.
+
 # Language and discourse evaluation
 
 These artifacts contain only the invented English/Russian corpus and its generated outputs. The runtime
