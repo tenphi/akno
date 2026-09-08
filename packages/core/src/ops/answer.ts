@@ -30,9 +30,15 @@ import {
   hasUnknownReferenceClock,
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
+import {
+  SEMANTIC_COMPARISON_CONTRACT,
+  aggregateSemanticOutcomes,
+  semanticVerdictConsistent,
+  semanticVerdictFields,
+} from '../models/semantic-verdict.ts';
 
 export const ANSWER_PROMPT_VERSION = 'answer-generation-v29';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v17';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v18';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -54,9 +60,7 @@ function answerVerificationSchema(blockId: z.ZodType<string>, count: number) {
       .array(
         z.object({
           block_id: blockId,
-          proposition_supported: z.boolean(),
-          action_arguments_preserved: z.boolean(),
-          qualification_scope_preserved: z.boolean(),
+          ...semanticVerdictFields,
         }),
       )
       .length(count),
@@ -208,7 +212,7 @@ These examples clarify entailment; still reject changed scope, missing qualifica
 Judge every block separately using only the cited_evidence nested inside that block. Evidence attached to a
 different block cannot support it. Set proposition_supported to true only when the whole answer_text is directly entailed,
 including identity, negation, dates, amounts, units, scope, and current-versus-superseded state. A partially
-supported, merely plausible, contradicted, or ambiguous block is unsupported. Do not repair or rewrite the
+supported, merely plausible, contradicted, or ambiguity-resolving unsupported block must be rejected. Do not repair or rewrite the
 answer. A retained report is supported only when attribution scopes over the whole claim, and noncanonical memory
 is supported only when all its qualifications remain explicit together. Attribution alone does not preserve
 tentativeness, and calling a fictional example an unconfirmed hypothesis does not preserve its fictional scope. Return exactly one verdict for every supplied block_id with THREE independent booleans:
@@ -224,7 +228,9 @@ tentativeness, and calling a fictional example an unconfirmed hypothesis does no
 - qualification_scope_preserved: all required attribution, commitment, disposition, epistemic uncertainty,
   source-relative time and fictional/conditional scope remain attached to their corresponding proposition.
 All three must be true for a block to pass; do not infer any dimension from the others. These checks apply
-to same-language paraphrases as well as translations. Do not repair or retry an unsupported block.`;
+to same-language paraphrases as well as translations. Do not repair or retry an unsupported block.
+
+${SEMANTIC_COMPARISON_CONTRACT}`;
 
 /**
  * Direct answering composes over recall; it never owns a second search path.
@@ -543,7 +549,31 @@ async function verifyDraftSupport(
   | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
   | { ok: false; note: string; outcome: ModelOutcome<string> }
 > {
-  const blockIds = blocks.map((_, index) => `B${index + 1}`);
+  const outcomes: ModelOutcome<string>[] = [];
+  const supported: AnswerDraft['blocks'] = [];
+  // One block per first-pass call keeps its audit within the default answer-role output ceiling.
+  // A rejected block is never submitted again; other blocks keep their original ids and citations.
+  for (const [index, block] of blocks.entries()) {
+    const checked = await verifyDraftBatch(model, [block], evidence, question, memoryView, index);
+    outcomes.push(checked.outcome);
+    if (!checked.ok) return { ...checked, outcome: aggregateSemanticOutcomes(outcomes) };
+    supported.push(...checked.blocks);
+  }
+  return { ok: true, blocks: supported, outcome: aggregateSemanticOutcomes(outcomes) };
+}
+
+async function verifyDraftBatch(
+  model: ModelClient,
+  blocks: AnswerDraft['blocks'],
+  evidence: AnswerContextItem[],
+  question: string,
+  memoryView: MemoryView,
+  offset: number,
+): Promise<
+  | { ok: true; blocks: AnswerDraft['blocks']; outcome: ModelOutcome<string> }
+  | { ok: false; note: string; outcome: ModelOutcome<string> }
+> {
+  const blockIds = blocks.map((_, index) => `B${offset + index + 1}`);
   const byEvidenceId = new Map(evidence.map((item) => [item.evidence_id, item]));
   const liveSchema = answerVerificationSchema(z.enum(blockIds as [string, ...string[]]), blocks.length);
   const result = await model.chat(
@@ -587,7 +617,7 @@ async function verifyDraftSupport(
         }),
       },
     ],
-    { schema: liveSchema, maxTokens: 1_024 },
+    { schema: liveSchema, maxTokens: 1_024 + blocks.length * 1_200 },
   );
   if (!result.ok || result.value === null) {
     return {
@@ -599,6 +629,7 @@ async function verifyDraftSupport(
   const parsed = liveSchema.safeParse(parseJsonLoose<unknown>(result.value));
   if (
     !parsed.success ||
+    !parsed.data.verdicts.every(semanticVerdictConsistent) ||
     new Set(parsed.data.verdicts.map((verdict) => verdict.block_id)).size !== blocks.length
   ) {
     return {

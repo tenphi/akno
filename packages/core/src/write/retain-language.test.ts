@@ -1,3 +1,4 @@
+import { semanticAudit } from '../../test/semantic-audit.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
@@ -141,6 +142,7 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
               candidate_id: c.candidate_id,
+              ...semanticAudit(outcome === 'accepted', true, true),
               proposition_supported: outcome === 'accepted',
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -336,6 +338,7 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
               candidate_id: c.candidate_id,
+              ...semanticAudit(outcome === 'verified', true, true),
               proposition_supported: outcome === 'verified',
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -408,6 +411,7 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }, i: number) => ({
               candidate_id: c.candidate_id,
+              ...semanticAudit(i === 0 ? supported : true, true, true),
               proposition_supported: i === 0 ? supported : true,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -796,6 +800,7 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
               candidate_id: c.candidate_id,
+              ...semanticAudit(supported, true, true),
               proposition_supported: supported,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -847,6 +852,7 @@ describe('cross-language retention boundary', () => {
             verdicts: [
               {
                 candidate_id: payload.candidates[0].candidate_id,
+                ...semanticAudit(!answersItself, true, true),
                 proposition_supported: !answersItself,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -957,6 +963,7 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
               candidate_id: c.candidate_id,
+              ...semanticAudit(true, true, true),
               proposition_supported: true,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -1108,6 +1115,7 @@ describe('cross-language retention boundary', () => {
             verdicts: payload.candidates
               .flatMap((candidate: { candidate_id: string }) => ({
                 candidate_id: candidate.candidate_id,
+                ...semanticAudit(outcome === 'accepted', true, true),
                 proposition_supported: outcome === 'accepted',
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -1126,6 +1134,7 @@ describe('cross-language retention boundary', () => {
                         verdict,
                         {
                           ...verdict,
+                          ...semanticAudit(true, true, true),
                           proposition_supported: true,
                           action_arguments_preserved: true,
                           qualification_scope_preserved: true,
@@ -1416,6 +1425,7 @@ describe('cross-language retention boundary', () => {
               ? {
                   verdicts: user.candidates.map((candidate: { candidate_id: string }) => ({
                     candidate_id: candidate.candidate_id,
+                    ...semanticAudit(true, true, true),
                     proposition_supported: true,
                     action_arguments_preserved: true,
                     qualification_scope_preserved: true,

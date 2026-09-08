@@ -47,3 +47,7 @@ Separate a recorder's lack of verification from the inner speaker's commitment, 
 Keep adjacent direct assertions with their own source instead of extending a nested speaker's report across unrelated clauses. Accept bounded unverified report modifiers and select answer citations whose separate discourse statuses are actually preserved by the answer.
 
 Hold generated leading negative claims with an incompatible affirmed polarity, and keep their repairs subject to full source verification. Preserve each candidate's own material qualifiers and admit bounded lowercase reporting adverbs without consuming another source's capitalized name.
+
+Require a concise source/candidate comparison and concrete dimension-specific mismatches before semantic verdicts. Keep all three checks mandatory, reject contradictory verdicts, and preserve each repaired position’s original proposition through verification without semantic retries. Detect duplicate repair collapse and recognize bounded measured-from source-relative clocks.
+
+Bound each first-pass semantic verification call to two retained candidates or one answer block so required comparisons fit ordinary model output ceilings. Preserve original ids, source/relation context and citation scope, sum actual usage, and never resubmit a rejected record for a verdict; it may remain source-checked relation context.

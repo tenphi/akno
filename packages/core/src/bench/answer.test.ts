@@ -1,3 +1,4 @@
+import { semanticAudit } from '../../test/semantic-audit.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AknoConfig, ResolvedModelRole } from '../config/schema.ts';
 import { markAnswerBenchPersisted, runAnswerBench } from './answer.ts';
@@ -35,7 +36,7 @@ describe('grounded-answer benchmark', () => {
       answerModel: {
         available: true,
         generationPromptVersion: 'answer-generation-v29',
-        verifierPromptVersion: 'answer-verifier-v17',
+        verifierPromptVersion: 'answer-verifier-v18',
       },
       metrics: {
         executionRate: 1,
@@ -196,6 +197,7 @@ function inventedProvider(options: { alternateHeldOutAmbiguity?: boolean } = {})
       ? {
           verdicts: (user.blocks ?? []).map((block) => ({
             block_id: block.block_id,
+            ...semanticAudit(true, true, true),
             proposition_supported: true,
             action_arguments_preserved: true,
             qualification_scope_preserved: true,

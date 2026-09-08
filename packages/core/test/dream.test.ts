@@ -1,3 +1,4 @@
+import { semanticAudit } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -1460,6 +1461,7 @@ describe('observe', () => {
         verdicts: [
           {
             block_id: 'B1',
+            ...semanticAudit(true, true, true),
             proposition_supported: true,
             action_arguments_preserved: true,
             qualification_scope_preserved: true,

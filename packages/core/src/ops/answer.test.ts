@@ -1,3 +1,4 @@
+import { semanticAudit } from '../../test/semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -1340,6 +1341,40 @@ describe('grounded answer discovery surface', () => {
     expect(modelRequests).toHaveLength(2);
   });
 
+  it('verifies a maximum answer batch once per block and sums all call usage', async () => {
+    const seen: string[] = [];
+    await useAnswerModel({
+      generation: {
+        blocks: Array.from({ length: 12 }, () => ({
+          text: 'The warranty lasts five years.',
+          evidence_ids: ['E1'],
+        })),
+        missing_concepts: [],
+      },
+      verification: (body: { messages: { content: string }[] }) => {
+        const { blocks } = JSON.parse(body.messages.at(-1)!.content);
+        expect(blocks).toHaveLength(1);
+        const id = blocks[0].block_id;
+        seen.push(id);
+        return { verdicts: [verdict(id, id !== 'B1')] };
+      },
+    });
+    const result = await memory.answer({
+      question: 'What does the silverpine warranty marker say?',
+      expand: false,
+      graph: false,
+    });
+    expect(seen).toEqual(Array.from({ length: 12 }, (_, index) => `B${index + 1}`));
+    expect(modelRequests).toHaveLength(13);
+    expect(result.validation).toMatchObject({ generated_blocks: 12, verified_blocks: 11 });
+    expect(result.model_usage?.verification).toMatchObject({
+      input_tokens: 222 * 12,
+      output_tokens: 33 * 12,
+      total_tokens: 255 * 12,
+    });
+    expect(result.degraded).not.toContain('answer_verification_failed');
+  });
+
   it('withholds semantically unsupported prose without reporting verification failure', async () => {
     await useAnswerModel({
       generation: {
@@ -1349,8 +1384,13 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: {
-        verdicts: [verdict('B1', true), verdict('B2', false)],
+      verification: (body: { messages: { content: string }[] }) => {
+        const { blocks } = JSON.parse(body.messages.at(-1)!.content);
+        return {
+          verdicts: blocks.map((block: { block_id: string }) =>
+            verdict(block.block_id, block.block_id === 'B1'),
+          ),
+        };
       },
     });
     const result = await memory.answer({
@@ -1416,6 +1456,9 @@ describe('grounded answer discovery surface', () => {
     verdict('B1', true, true, false),
     { block_id: 'B1', proposition_supported: true, qualification_scope_preserved: true },
     { block_id: 'B1', supported: true },
+    { ...verdict('B1', true), comparison: undefined },
+    { ...verdict('B1', false), mismatches: [] },
+    { ...verdict('B1', true), mismatches: semanticAudit(false).mismatches },
   ])('never accepts a negative or missing verification dimension: %j', async (decision) => {
     await useAnswerModel({
       generation: {
@@ -2047,7 +2090,13 @@ function verdict(
   action_arguments_preserved = true,
   qualification_scope_preserved = true,
 ) {
-  return { block_id, proposition_supported, action_arguments_preserved, qualification_scope_preserved };
+  return {
+    block_id,
+    ...semanticAudit(proposition_supported, action_arguments_preserved, qualification_scope_preserved),
+    proposition_supported,
+    action_arguments_preserved,
+    qualification_scope_preserved,
+  };
 }
 
 async function useAnswerModel(script: {
@@ -2064,7 +2113,8 @@ async function useAnswerModel(script: {
       modelRequests.push(body);
       const system = String((body.messages as Array<{ content?: unknown }> | undefined)?.[0]?.content ?? '');
       const verifying = system.includes('independently verify');
-      const content = verifying ? script.verification : script.generation;
+      const configured = verifying ? script.verification : script.generation;
+      const content = typeof configured === 'function' ? configured(body) : configured;
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
         JSON.stringify({

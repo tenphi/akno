@@ -1,3 +1,4 @@
+import { semanticAudit } from '../../test/semantic-audit.ts';
 import { describe, expect, it, vi } from 'vitest';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
 import type { ModelClient } from '../models/client.ts';
@@ -19,31 +20,116 @@ const dimensions = {
 };
 
 describe('retention semantic verification dimensions', () => {
-  it.each(['pass', ...Object.keys(dimensions), 'missing', 'legacy', 'duplicate', 'wrong-id'])(
-    'requires every dimension and an exact verdict set without semantic repair: %s',
-    async (mode) => {
+  it.each([
+    'pass',
+    ...Object.keys(dimensions),
+    'missing',
+    'legacy',
+    'duplicate',
+    'wrong-id',
+    'missing-comparison',
+    'false-without-mismatch',
+    'true-with-mismatch',
+    'accepted-with-hold-reason',
+    'duplicate-mismatch',
+  ])('requires every dimension and an exact verdict set without semantic repair: %s', async (mode) => {
+    const chat = vi.fn(async (messages: { content: string }[]) => {
+      if (chat.mock.calls.length === 1)
+        return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+      const payload = JSON.parse(messages.at(-1)!.content);
+      expect(payload.source.text).toBe(source);
+      expect(payload.candidates[0].text).toBe(candidate.text);
+      const verdict: Record<string, unknown> = {
+        candidate_id: payload.candidates[0].candidate_id,
+        ...semanticAudit(
+          mode !== 'proposition_supported',
+          mode !== 'action_arguments_preserved',
+          mode !== 'qualification_scope_preserved',
+        ),
+        ...dimensions,
+        reason_code: null,
+      };
+      if (mode in dimensions) verdict[mode] = false;
+      if (mode === 'missing') delete verdict.action_arguments_preserved;
+      if (mode === 'legacy') {
+        for (const key of Object.keys(dimensions)) delete verdict[key];
+        verdict.supported = true;
+      }
+      if (mode === 'wrong-id') verdict.candidate_id = 'invented-other-candidate';
+      if (mode === 'missing-comparison') delete verdict.comparison;
+      if (mode === 'false-without-mismatch') verdict.proposition_supported = false;
+      if (mode === 'true-with-mismatch') verdict.mismatches = semanticAudit(false).mismatches;
+      if (mode === 'accepted-with-hold-reason') verdict.reason_code = 'source_unavailable';
+      if (mode === 'duplicate-mismatch') {
+        verdict.proposition_supported = false;
+        verdict.mismatches = [...semanticAudit(false).mismatches, ...semanticAudit(false).mismatches];
+      }
+      return {
+        ok: true,
+        value: JSON.stringify({ verdicts: mode === 'duplicate' ? [verdict, verdict] : [verdict] }),
+        latencyMs: 22,
+      };
+    });
+    const model = {
+      available: true,
+      chat,
+      modelId: 'invented-verifier',
+      reportInvalidResponse: vi.fn(),
+    } as unknown as ModelClient;
+    const result = await runRetain(source, model);
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect(result.modelUsage.repair).toBeUndefined();
+    expect(result.candidates).toHaveLength(mode === 'pass' ? 1 : 0);
+    if (mode in dimensions) expect(result.held[0]?.hold_stage).toBe('verification');
+    if (
+      [
+        'missing',
+        'legacy',
+        'duplicate',
+        'wrong-id',
+        'missing-comparison',
+        'false-without-mismatch',
+        'true-with-mismatch',
+        'accepted-with-hold-reason',
+        'duplicate-mismatch',
+      ].includes(mode)
+    )
+      expect(result.degradedReason).toBe('retain_verification_failed');
+  });
+});
+
+describe('bounded first-pass retention verification', () => {
+  it.each([true, false])(
+    'checks all fifty candidates once and preserves usage availability (%s)',
+    async (usageKnown) => {
+      const records = Array.from({ length: 50 }, (_, index) => {
+        const text = `Ada Marlow states that the silverpine inspection marker is code-${index}.`;
+        return {
+          ...candidate,
+          text,
+          subject: 'silverpine',
+          support: [{ quote: text }],
+          discourse_frame: [{ quote: text }],
+        };
+      });
+      const completeSource = records.map((record) => record.text).join(' ');
+      const seen: string[] = [];
       const chat = vi.fn(async (messages: { content: string }[]) => {
         if (chat.mock.calls.length === 1)
-          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+          return { ok: true, value: JSON.stringify({ candidates: records }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
-        expect(payload.source.text).toBe(source);
-        expect(payload.candidates[0].text).toBe(candidate.text);
-        const verdict: Record<string, unknown> = {
-          candidate_id: payload.candidates[0].candidate_id,
-          ...dimensions,
-          reason_code: null,
-        };
-        if (mode in dimensions) verdict[mode] = false;
-        if (mode === 'missing') delete verdict.action_arguments_preserved;
-        if (mode === 'legacy') {
-          for (const key of Object.keys(dimensions)) delete verdict[key];
-          verdict.supported = true;
-        }
-        if (mode === 'wrong-id') verdict.candidate_id = 'invented-other-candidate';
+        expect(payload.source.text).toBe(completeSource);
+        expect(payload.candidates).toHaveLength(2);
+        expect(payload.related_candidates).toHaveLength(48);
+        const verdicts = payload.candidates.map((record: { candidate_id: string }) => {
+          seen.push(record.candidate_id);
+          return { candidate_id: record.candidate_id, ...semanticAudit(), ...dimensions, reason_code: null };
+        });
         return {
           ok: true,
-          value: JSON.stringify({ verdicts: mode === 'duplicate' ? [verdict, verdict] : [verdict] }),
+          value: JSON.stringify({ verdicts }),
           latencyMs: 22,
+          ...(usageKnown ? { usage: { inputTokens: 111, outputTokens: 22, totalTokens: 133 } } : {}),
         };
       });
       const model = {
@@ -52,15 +138,73 @@ describe('retention semantic verification dimensions', () => {
         modelId: 'invented-verifier',
         reportInvalidResponse: vi.fn(),
       } as unknown as ModelClient;
-      const result = await runRetain(source, model);
-      expect(chat).toHaveBeenCalledTimes(2);
-      expect(result.modelUsage.repair).toBeUndefined();
-      expect(result.candidates).toHaveLength(mode === 'pass' ? 1 : 0);
-      if (mode in dimensions) expect(result.held[0]?.hold_stage).toBe('verification');
-      if (['missing', 'legacy', 'duplicate', 'wrong-id'].includes(mode))
-        expect(result.degradedReason).toBe('retain_verification_failed');
+      const result = await runRetain(completeSource, model);
+      expect(result.candidates).toHaveLength(50);
+      expect(chat).toHaveBeenCalledTimes(26);
+      expect(seen).toHaveLength(50);
+      expect(new Set(seen).size).toBe(50);
+      expect(result.modelUsage.verification).toMatchObject({
+        latency_ms: 22 * 25,
+        input_tokens: usageKnown ? 111 * 25 : null,
+        output_tokens: usageKnown ? 22 * 25 : null,
+        total_tokens: usageKnown ? 133 * 25 : null,
+      });
     },
   );
+
+  it('holds cross-batch and transitive dependents of a semantically rejected target', async () => {
+    const texts = [
+      'The silverpine inspection conclusion supersedes the earlier recommendation.',
+      'The silverpine inspection recommendation supersedes the initial proposal.',
+      'The silverpine initial proposal calls for an inspection.',
+    ];
+    const completeSource = texts.join(' ');
+    const records = texts.map((text, index) => ({
+      ...candidate,
+      text,
+      subject: 'silverpine',
+      support: [{ quote: text }],
+      discourse_frame: [{ quote: completeSource }],
+      relations:
+        index < 2 ? [{ type: 'supersedes', target_candidate: index + 1, support: [{ quote: text }] }] : [],
+    }));
+    const checkedIds: string[] = [];
+    const chat = vi.fn(async (messages: { content: string }[]) => {
+      if (chat.mock.calls.length === 1)
+        return { ok: true, value: JSON.stringify({ candidates: records }), latencyMs: 11 };
+      const payload = JSON.parse(messages.at(-1)!.content);
+      return {
+        ok: true,
+        latencyMs: 22,
+        value: JSON.stringify({
+          verdicts: payload.candidates.map((record: { candidate_id: string; text: string }) => {
+            checkedIds.push(record.candidate_id);
+            const supported = record.text !== texts[2];
+            return {
+              candidate_id: record.candidate_id,
+              ...semanticAudit(supported),
+              ...dimensions,
+              proposition_supported: supported,
+              reason_code: supported ? null : 'discourse_uncertain',
+            };
+          }),
+        }),
+      };
+    });
+    const model = {
+      available: true,
+      chat,
+      modelId: 'invented-verifier',
+      reportInvalidResponse: vi.fn(),
+    } as unknown as ModelClient;
+    const result = await runRetain(completeSource, model);
+    expect(chat).toHaveBeenCalledTimes(3);
+    expect(checkedIds).toHaveLength(3);
+    expect(result.candidates).toEqual([]);
+    expect(result.held).toHaveLength(3);
+    expect(result.held.every((held) => held.hold_stage === 'verification')).toBe(true);
+    expect(result.degradedReason).toBeNull();
+  });
 });
 
 const report = 'Bo Winters сказал, что осмотр silverpine включён. Я, Ada Marlow, только передаю его слова.';

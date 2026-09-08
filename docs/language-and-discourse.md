@@ -82,7 +82,13 @@ preserve nonfactual status and citation context. Retention and answer verificati
 proposition support, action arguments, and qualification scope. Every dimension must pass. An action's
 object, purpose, instrument, destination and modifier attachment must survive paraphrase or translation;
 a component named only as the subject of an inspection cannot silently become the object being transported.
-Missing dimensions fail closed. Each stage uses one semantic verification call, with no retry after rejection. Retention verifies against the complete original source, including process identity and word sense; a fluent English paraphrase cannot certify its own meaning. Generated attribution normalization keeps the structured outer recorder and explicitly supported inner reporters, holds contradictory roles or chain overflow, and never truncates a chain. Unknown source clocks require both a readable source anchor and unknown date. Answers cannot infer what the whole original source omitted from a retrieved subset.
+Each verdict now includes a bounded comparison of source meaning, candidate meaning, action arguments
+and qualification scope, followed by one concrete mismatch for each failed dimension. Missing comparisons,
+contradictory mismatch/boolean pairs and accepted retention verdicts carrying hold reasons fail closed.
+Comparison notes are audit material, never evidence or an acceptance override. Preserved source ambiguity
+is legitimate; selecting an unsupported reading or losing material ambiguity is not. Retention compares at most two disjoint candidates per call; answers compare one block per call. This keeps required audit prose within the ordinary provider-role output ceiling, which remains authoritative. Usage and latency receipts sum the calls and preserve unavailable usage as unknown.
+
+Missing dimensions fail closed. Each candidate or block is submitted once during the semantic verification pass, with no retry after rejection. Disjoint batches retain the full original source or their own cited evidence; related candidates supply relation context only. Final retention applies dependency closure: a relation whose internal target was withheld also withholds its source record and all transitive dependents. A malformed or unavailable verification batch withholds the operation; a semantic rejection does not prevent checking other batches. Retention verifies against the complete original source, including process identity and word sense; a fluent English paraphrase cannot certify its own meaning. Generated attribution normalization keeps the structured outer recorder and explicitly supported inner reporters, holds contradictory roles or chain overflow, and never truncates a chain. Unknown source clocks require both a readable source anchor and unknown date. Answers cannot infer what the whole original source omitted from a retrieved subset.
 CLI excerpts show qualification labels and scope line references;
 `--json` exposes the exact frame.
 
@@ -182,7 +188,7 @@ is established; they do not gain ordinary factual eligibility from the certainty
 When extracted candidates fail structural validation, retention permits one repair transaction using the
 complete original source and validation issues. Repairs target only failed original candidate positions;
 relations continue to use original indices. Every repaired candidate passes the same validation and semantic
-verification. The complete records, relations and order of already admitted candidates must remain identical.
+verification. The complete records, relations and order of already admitted candidates must remain identical. Each returned repair position must survive as a candidate or an explicit hold; silent duplicate collapse invalidates the transaction. Verification receives the original position’s candidate as a repair obligation, checks its source-supported core proposition, and cannot accept a sibling substitution merely because that different proposition is also true. The original candidate is not evidence.
 An invalid or unavailable repair preserves those admitted candidates for verification and reports typed
 degradation, including through remember previews and replay. Semantic verifier rejections are not retried.
 Structural repair guidance identifies the exact allowed commitment and disposition for the candidate kind.

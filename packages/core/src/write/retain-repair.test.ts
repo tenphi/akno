@@ -1,3 +1,4 @@
+import { semanticAudit } from '../../test/semantic-audit.ts';
 import { describe, expect, it, vi } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
@@ -57,6 +58,7 @@ function modelFor(extracted: unknown[], repair: unknown, verify = true) {
       value: JSON.stringify({
         verdicts: payload.candidates.map((c: { candidate_id: string; text: string }) => ({
           candidate_id: c.candidate_id,
+          ...semanticAudit(verify || c.text === minor, true, true),
           proposition_supported: verify || c.text === minor,
           action_arguments_preserved: true,
           qualification_scope_preserved: true,
@@ -93,6 +95,15 @@ describe('one transactional structural repair', () => {
       expect(chat).toHaveBeenCalledTimes(3);
       const request = JSON.parse(chat.mock.calls[1]![0].at(-1)!.content);
       expect(request.admitted_positions).toEqual([1]);
+      const verificationRequest = JSON.parse(chat.mock.calls[2]![0].at(-1)!.content);
+      expect(verificationRequest.repair_obligations).toEqual([
+        {
+          candidate_id: verificationRequest.candidates.find(
+            (candidate: { text: string }) => candidate.text === fixed.text,
+          ).candidate_id,
+          original: bad,
+        },
+      ]);
       expect(
         request.validation_issues.map((entry: { candidate_index: number }) => entry.candidate_index),
       ).toEqual([0]);
@@ -153,6 +164,22 @@ describe('one transactional structural repair', () => {
     expect(result.held).toEqual([]);
     expect(chat).toHaveBeenCalledTimes(3);
     expect(JSON.parse(chat.mock.calls[1]![0].at(-1)!.content).admitted_positions).toEqual([]);
+  });
+
+  it('rejects two failed positions repaired into one duplicate proposition', async () => {
+    const brokenMinor = { ...good, text: 'Shipment unarranged.' };
+    const { model, chat } = modelFor([bad, brokenMinor], {
+      repairs: [
+        { candidate_index: 0, candidate: fixed },
+        { candidate_index: 1, candidate: fixed },
+      ],
+    });
+    const result = await runRetain(source, model);
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect(result.candidates).toEqual([]);
+    expect(result.held).toHaveLength(2);
+    expect(result.degradedReason).toBe('derive_failed');
+    expect(result.error).toContain('lost an original position');
   });
 
   it.each([1, 0, 2])('keeps original relation indices after a repair (target=%s)', async (target) => {

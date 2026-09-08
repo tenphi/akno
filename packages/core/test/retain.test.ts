@@ -1,3 +1,4 @@
+import { semanticAudit } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -62,6 +63,7 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
         content = {
           verdicts: (payload.candidates ?? []).map((item) => ({
             candidate_id: item.candidate_id,
+            ...semanticAudit(verificationSupported, true, true),
             proposition_supported: verificationSupported,
             action_arguments_preserved: true,
             qualification_scope_preserved: true,
