@@ -19,6 +19,10 @@ policy in `context.knowledge_language` and remain responsible for their own fina
 The shared model client applies the policy to retained prose, semantic labels, summaries, observation patterns,
 reflection principles, curation bodies, rewritten history lines, corrected managed-memory sentences, and new titles. Exact original support/discourse-frame quotations,
 names, identifiers, code, paths, existing title references, and destination headings keep their original form.
+Generic role labels such as “assistant” are translated when used as descriptive attribution; actual named
+speakers keep their exact spelling. A bounded answer guard checks known generic assistant reporting labels
+against the effective answer language, while preserving exact source quotations and code. The shared model
+language check still covers the rest of the prose.
 Curator revisions check newly generated complete Markdown through a schema-specific selector. Exact original
 lines are exempt, including transfers between authorized paths; each original occurrence can exempt only
 one final occurrence. Changed bytes and extra copies are checked. Existing proposed after-states are never
@@ -139,7 +143,7 @@ false holds were legitimate refusals to substitute a weaker writable page. The o
 folder admission and configured fallback behavior are preserved.
 
 Answer diagnostics expose `reason_code` and `validation`: generated blocks, blocks passing deterministic
-guards, independently verified blocks, and rejection counts for citations, protected values, attribution,
+guards, independently verified blocks, and rejection counts for language, citations, protected values, attribution,
 discourse and semantic support. `verified_blocks: null` means verification did not complete; it is not a failed
 semantic verdict. No eligible evidence is an abstention, without a fabricated `answer_failed` degradation.
 Retain candidates expose `hold_stage` and `routing_reason` for validation, verifier and placement decisions.

@@ -122,6 +122,7 @@ export const AnswerReason = z.enum([
   'answered',
 ]);
 export const AnswerRejectionReason = z.enum([
+  'language',
   'citation',
   'protected_value',
   'attribution',

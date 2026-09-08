@@ -51,3 +51,5 @@ Hold generated leading negative claims with an incompatible affirmed polarity, a
 Require a concise source/candidate comparison and concrete dimension-specific mismatches before semantic verdicts. Keep all three checks mandatory, reject contradictory verdicts, and preserve each repaired position’s original proposition through verification without semantic retries. Detect duplicate repair collapse and recognize bounded measured-from source-relative clocks.
 
 Bound each first-pass semantic verification call to two retained candidates or one answer block so required comparisons fit ordinary model output ceilings. Preserve original ids, source/relation context and citation scope, sum actual usage, and never resubmit a rejected record for a verdict; it may remain source-checked relation context.
+
+Translate generic attribution roles as prose while preserving actual names and source-exact quotations. Add a bounded typed answer-language rejection for foreign generic assistant reporting labels, and describe attributed open questions using neutral record provenance without inventing a recording action.

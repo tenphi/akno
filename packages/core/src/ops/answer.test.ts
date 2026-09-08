@@ -1078,6 +1078,118 @@ describe('grounded answer discovery surface', () => {
   });
 
   it.each([
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт assistant касается проверки silverpine.',
+      accepted: false,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента касается проверки silverpine.',
+      accepted: true,
+    },
+    {
+      language: 'en',
+      text: 'According to ассистент, the silverpine inspection requirement is unverified.',
+      accepted: false,
+    },
+    {
+      language: 'en',
+      text: 'According to the assistant, the silverpine inspection requirement is unverified.',
+      accepted: true,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт Assistant Meridian касается проверки silverpine.',
+      speaker: 'Assistant Meridian',
+      accepted: true,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента содержит точную цитату «assistant reported a silverpine requirement».',
+      accepted: true,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента содержит точный код `assistant reported a silverpine requirement`.',
+      accepted: true,
+    },
+    {
+      language: 'ru',
+      text: 'По словам «assistant», требование проверки silverpine остаётся неподтверждённым.',
+      accepted: false,
+    },
+    {
+      language: 'ru',
+      text: 'По словам `assistant`, требование проверки silverpine остаётся неподтверждённым.',
+      accepted: false,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента содержит точный термин `assistant`.',
+      accepted: true,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента содержит идентификатор assistant_helper.',
+      accepted: true,
+    },
+    {
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента содержит цитату «assistant reported an invented shipment».',
+      accepted: false,
+    },
+    {
+      text: 'Предварительный неподтверждённый отчёт assistant касается проверки silverpine.',
+      accepted: true,
+    },
+    {
+      knowledgeLanguage: 'en',
+      text: 'According to ассистент, the silverpine inspection requirement is unverified.',
+      accepted: false,
+    },
+    {
+      knowledgeLanguage: 'en',
+      language: 'ru',
+      text: 'Предварительный неподтверждённый отчёт ассистента касается проверки silverpine.',
+      accepted: true,
+    },
+  ] as const)(
+    'enforces localized generic attribution while preserving exact references: $text',
+    async (entry) => {
+      const speaker = 'speaker' in entry ? entry.speaker : 'assistant';
+      write(
+        'products/zephyr-qx-100.md',
+        `# Zephyr QX-100\n\n<!-- akno:item mem_role_language v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=assistant speaker=${encodeURIComponent(speaker)} reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by ${speaker} · Tentative:** ${speaker} gave an unverified silverpine inspection report containing the exact phrase "assistant reported a silverpine requirement" and identifier assistant_helper.\n`,
+      );
+      await memory.index({ verify: true });
+      // Deliberately approve the model language check: this regression covers the independent floor.
+      await useAnswerModel({
+        generation: { blocks: [{ text: entry.text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true)] },
+        ...('knowledgeLanguage' in entry ? { knowledgeLanguage: entry.knowledgeLanguage } : {}),
+      });
+      const language = 'language' in entry ? entry.language : undefined;
+      const result = await memory.answer({
+        question: 'What silverpine report did the assistant give?',
+        ...(language ? { answer_language: language } : {}),
+        memory_view: 'reports',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(entry.accepted);
+      const verifications = modelRequests.filter((body) =>
+        (body.messages as Array<{ role: string; content: string }>).some(
+          (message) => message.role === 'system' && message.content.includes('independently verify'),
+        ),
+      );
+      expect(verifications).toHaveLength(entry.accepted ? 1 : 0);
+      if (!entry.accepted) expect(result.validation?.rejection_counts).toEqual({ language: 1 });
+    },
+  );
+
+  it.each([
     [
       'The assistant relayed an unverified report that Bo Winters declined the silverpine offer.',
       'The assistant recorded that Bo Winters rejected the silverpine offer; the report remains unverified.',
@@ -2103,6 +2215,7 @@ async function useAnswerModel(script: {
   generation: unknown;
   verification: unknown;
   reportUsage?: boolean;
+  knowledgeLanguage?: 'en';
 }): Promise<void> {
   await memory.close();
   modelServer = http.createServer((request, response) => {
@@ -2111,9 +2224,16 @@ async function useAnswerModel(script: {
     request.on('end', () => {
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
       modelRequests.push(body);
-      const system = String((body.messages as Array<{ content?: unknown }> | undefined)?.[0]?.content ?? '');
+      const system = (body.messages as Array<{ role: string; content: string }>)
+        .filter((message) => message.role === 'system')
+        .map((message) => message.content)
+        .join('\n');
       const verifying = system.includes('independently verify');
-      const configured = verifying ? script.verification : script.generation;
+      const configured = system.startsWith('Check the language of generated prose')
+        ? { compliant: true }
+        : verifying
+          ? script.verification
+          : script.generation;
       const content = typeof configured === 'function' ? configured(body) : configured;
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
@@ -2139,6 +2259,7 @@ async function useAnswerModel(script: {
     overrides: {
       akno_path: root,
       state_dir: stateDir,
+      knowledge_language: script.knowledgeLanguage ?? null,
       providers: { stub: { base_url: `http://127.0.0.1:${port}/v1`, max_retries: 0 } },
       models: {
         embedding: { id: null },
