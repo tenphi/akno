@@ -49,6 +49,12 @@ generic assistant role in Russian and withheld five faithful question answers. N
 began; the [pre-execution amendment](v32-trial-amendment.md) preserves this failure and explains why the
 exposed defects are addressed before using the still-unexecuted, independently approved v18 held-out inputs.
 
+The [V33 probes](results/v33) yielded 17/32 useful selected answers with 3/4 useful retained sets and
+24/32 useful retrievals, and 14/16 built-package answers with complete retention/retrieval. All nonnull
+answers were source-entailing, qualified and language compliant. The open-question probe improved, but
+false language holds and loss of a substantive nested report leave coverage inadequate. The
+[pre-execution amendment](v33-trial-amendment.md) preserves these failed probes; no fresh full V33 trial began.
+
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
 development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets and nine
