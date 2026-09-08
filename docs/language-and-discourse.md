@@ -78,7 +78,12 @@ scope; nested headings retain it.
 Fact extraction never receives disqualified lines. Structural indexing removes old derived facts and timeline
 events on those lines before deferred model work. Factual graph edges require an eligible passage projection.
 Recall, context and answers retain qualification and count frames against evidence budgets. Answers must
-preserve nonfactual status and citation context. CLI excerpts show qualification labels and scope line references;
+preserve nonfactual status and citation context. Answer verification returns three independent dimensions:
+proposition support, action arguments, and qualification scope. Every dimension must pass. An action's
+object, purpose, instrument, destination and modifier attachment must survive paraphrase or translation;
+a component named only as the subject of an inspection cannot silently become the object being transported.
+Missing dimensions fail closed. This remains one semantic verification call, with no retry after rejection.
+CLI excerpts show qualification labels and scope line references;
 `--json` exposes the exact frame.
 
 Whole-page summaries are suppressed when ordinary prose includes a nonfactual passage. Whole-page curation,

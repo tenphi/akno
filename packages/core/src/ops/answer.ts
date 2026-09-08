@@ -31,8 +31,8 @@ import {
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v23';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v13';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v24';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v14';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -54,7 +54,9 @@ function answerVerificationSchema(blockId: z.ZodType<string>, count: number) {
       .array(
         z.object({
           block_id: blockId,
-          supported: z.boolean(),
+          proposition_supported: z.boolean(),
+          action_arguments_preserved: z.boolean(),
+          qualification_scope_preserved: z.boolean(),
         }),
       )
       .length(count),
@@ -121,7 +123,10 @@ open question, proposed or rejected (or their requested-language equivalents). P
 when citing that decision; merely saying an option was not selected does not describe the rejection itself.
 Translate descriptive vocabulary into the requested answer language. Preserve the action's sense and
 object: collecting a device is not collecting data; inspecting a component is not replacing it. Do not add
-an object that the evidence leaves unspecified. Do not add parenthetical
+an object that the evidence leaves unspecified. Preserve grammatical roles and attachment: in "transport
+for valve inspection", the valve belongs to the inspection purpose; this does not say the valve itself is
+transported. Translate the same action, agent, object, purpose, instrument and destination without moving
+one into another role. "Sampling for casing analysis" likewise does not establish sampling the casing. Do not add parenthetical
 source-language glosses for ordinary words such as calendar frequencies; preserve exact names and identifiers.
 
 When supplied evidence gives incompatible values and does not establish which is authoritative, do not choose
@@ -178,12 +183,25 @@ Examples of supported question interpretation (when the corresponding evidence i
 These examples clarify entailment; still reject changed scope, missing qualifications or uncited premises.
 
 Judge every block separately using only the cited_evidence nested inside that block. Evidence attached to a
-different block cannot support it. Set supported to true only when the whole answer_text is directly entailed,
+different block cannot support it. Set proposition_supported to true only when the whole answer_text is directly entailed,
 including identity, negation, dates, amounts, units, scope, and current-versus-superseded state. A partially
 supported, merely plausible, contradicted, or ambiguous block is unsupported. Do not repair or rewrite the
 answer. A retained report is supported only when attribution scopes over the whole claim, and noncanonical memory
 is supported only when all its qualifications remain explicit together. Attribution alone does not preserve
-tentativeness, and calling a fictional example an unconfirmed hypothesis does not preserve its fictional scope. Return exactly one verdict for every supplied block_id.`;
+tentativeness, and calling a fictional example an unconfirmed hypothesis does not preserve its fictional scope. Return exactly one verdict for every supplied block_id with THREE independent booleans:
+- proposition_supported: every stated proposition follows from the cited evidence, including identity,
+  polarity, quantities, dates and scope. Plausibility or shared topic is insufficient.
+- action_arguments_preserved: action identity and its agent, object/patient/theme, purpose, instrument,
+  destination, result and modifier attachment keep their source roles. A noun occurring somewhere in the
+  evidence does not support assigning it a new role. In "transport for valve inspection", valve modifies
+  the inspection purpose, not the transport object. "Перевозка для проверки клапана" preserves that
+  relationship; "перевозка клапана" adds an unsupported object. "Sampling for casing analysis" likewise
+  does not establish sampling the casing. Keep an unspecified role unspecified unless the cited context
+  establishes it. If the block describes no action, this dimension is true only when no role was invented.
+- qualification_scope_preserved: all required attribution, commitment, disposition, epistemic uncertainty,
+  source-relative time and fictional/conditional scope remain attached to their corresponding proposition.
+All three must be true for a block to pass; do not infer any dimension from the others. These checks apply
+to same-language paraphrases as well as translations. Do not repair or retry an unsupported block.`;
 
 /**
  * Direct answering composes over recall; it never owns a second search path.
@@ -565,7 +583,14 @@ async function verifyDraftSupport(
   }
 
   const supported = new Set(
-    parsed.data.verdicts.filter((verdict) => verdict.supported).map((verdict) => verdict.block_id),
+    parsed.data.verdicts
+      .filter(
+        (verdict) =>
+          verdict.proposition_supported &&
+          verdict.action_arguments_preserved &&
+          verdict.qualification_scope_preserved,
+      )
+      .map((verdict) => verdict.block_id),
   );
   return {
     ok: true,

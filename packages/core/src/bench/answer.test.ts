@@ -34,8 +34,8 @@ describe('grounded-answer benchmark', () => {
       embedding: { available: true, totalChunks: 15, embeddedChunks: 15 },
       answerModel: {
         available: true,
-        generationPromptVersion: 'answer-generation-v23',
-        verifierPromptVersion: 'answer-verifier-v13',
+        generationPromptVersion: 'answer-generation-v24',
+        verifierPromptVersion: 'answer-verifier-v14',
       },
       metrics: {
         executionRate: 1,
@@ -193,7 +193,9 @@ function inventedProvider(options: { alternateHeldOutAmbiguity?: boolean } = {})
       ? {
           verdicts: (user.blocks ?? []).map((block) => ({
             block_id: block.block_id,
-            supported: true,
+            proposition_supported: true,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
           })),
         }
       : generation(

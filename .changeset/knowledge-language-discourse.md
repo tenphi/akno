@@ -31,3 +31,5 @@ Preserve the original-source anchor and unknown calendar clock in answers to und
 Recognize bounded English/Russian queries about qualified reports, declined offers and competing or unrealized alternatives without broadening factual eligibility. Preserve explicit independent-verification uncertainty and clarify actual-outcome/counterfactual retention. Keep action sense and object through translation, and preserve the failed v22 evaluation alongside fresh v15 inputs.
 
 Enforce the configured knowledge language for history rewrites, corrected managed-memory sentences and newly generated curator revision prose. Preserve exact authored text during authorized moves, while checking modified or duplicated additions and holding revisions on language-check failure before persistence.
+
+Require independent proposition, action-argument and qualification-scope verdicts before accepting generated answers. Preserve object/purpose and modifier attachment through translation; missing or negative verification dimensions withhold the affected answer block without retry.

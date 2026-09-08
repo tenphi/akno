@@ -1456,7 +1456,16 @@ describe('observe', () => {
         blocks: [{ text: PATTERN, evidence_ids: ['E2'] }],
         missing_concepts: [],
       },
-      { verdicts: [{ block_id: 'B1', supported: true }] },
+      {
+        verdicts: [
+          {
+            block_id: 'B1',
+            proposition_supported: true,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
+          },
+        ],
+      },
     );
 
     const result = await mem.answer({

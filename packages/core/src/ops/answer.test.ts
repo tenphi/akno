@@ -140,7 +140,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The warranty lasts 5 years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const before = treeFingerprint();
     const result = await memory.answer({
@@ -210,7 +210,7 @@ describe('grounded answer discovery surface', () => {
     await memory.index({ verify: true });
     await useAnswerModel({
       generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What hypothetical silverpine warranty was discussed?',
@@ -240,7 +240,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The hypothetical silverpine warranty lasts five years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What hypothetical silverpine warranty was discussed?',
@@ -766,7 +766,7 @@ describe('grounded answer discovery surface', () => {
       await memory.index({ verify: true });
       await useAnswerModel({
         generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-        verification: { verdicts: [{ block_id: 'B1', supported: rejectionReason !== 'semantic_support' }] },
+        verification: { verdicts: [verdict('B1', rejectionReason !== 'semantic_support')] },
       });
       const result = await memory.answer({
         question: 'What was discussed about the silverpine warranty?',
@@ -799,7 +799,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'Гарантия silverpine не действует пять лет.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What is the silverpine warranty?',
@@ -830,7 +830,7 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What fictional silverpine coverage was discussed?',
@@ -862,7 +862,7 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What open silverpine warranty question remains?',
@@ -896,7 +896,7 @@ describe('grounded answer discovery surface', () => {
           ],
           missing_concepts: [],
         },
-        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+        verification: { verdicts: [verdict('B1', true)] },
       });
       const result = await memory.answer({
         question: 'What open silverpine warranty question remains?',
@@ -932,7 +932,7 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What was assumed about the silverpine warranty?',
@@ -957,7 +957,7 @@ describe('grounded answer discovery surface', () => {
       await memory.index({ verify: true });
       await useAnswerModel({
         generation: { blocks: [{ text, evidence_ids: ['E1', 'E2'] }], missing_concepts: [] },
-        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+        verification: { verdicts: [verdict('B1', true)] },
       });
       const result = await memory.answer({
         question: 'What silverpine warranty document and sensor repair details are recorded?',
@@ -978,7 +978,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The warranty lasts 8 years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What does the silverpine warranty marker say?',
@@ -1006,10 +1006,7 @@ describe('grounded answer discovery surface', () => {
         missing_concepts: [],
       },
       verification: {
-        verdicts: [
-          { block_id: 'B1', supported: true },
-          { block_id: 'B2', supported: false },
-        ],
+        verdicts: [verdict('B1', true), verdict('B2', false)],
       },
     });
     const result = await memory.answer({
@@ -1039,6 +1036,59 @@ describe('grounded answer discovery surface', () => {
     ]);
   });
 
+  it.each([
+    ['Silverpine terms allow transport for valve inspection.', true],
+    ['Silverpine terms allow transport of the valve.', false],
+    ['Условия silverpine допускают перевозку для проверки клапана.', true],
+    ['Условия silverpine допускают перевозку клапана.', false],
+    ['Silverpine terms allow data collection for valve inspection.', false],
+  ] as const)(
+    'requires action-role verification independently of topic and qualification: %s',
+    async (text, rolesPreserved) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\nSilverpine terms allow transport for valve inspection.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true, rolesPreserved, true)] },
+      });
+      const result = await memory.answer({
+        question: 'What do the silverpine terms allow?',
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code).toBe(rolesPreserved ? 'answered' : 'verification_rejected');
+      expect(modelRequests).toHaveLength(2);
+      if (!rolesPreserved) {
+        expect(result.answer).toBeNull();
+        expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
+      }
+    },
+  );
+
+  it.each([
+    verdict('B1', true, true, false),
+    { block_id: 'B1', proposition_supported: true, qualification_scope_preserved: true },
+    { block_id: 'B1', supported: true },
+  ])('never accepts a negative or missing verification dimension: %j', async (decision) => {
+    await useAnswerModel({
+      generation: {
+        blocks: [{ text: 'The warranty lasts five years.', evidence_ids: ['E1'] }],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [decision] },
+    });
+    const result = await memory.answer({
+      question: 'How long is the silverpine warranty?',
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toBeNull();
+    expect(modelRequests).toHaveLength(2);
+  });
+
   it('accepts an explicit exclusion as support for equivalent negative wording', async () => {
     write(
       'coverage/cormorant-exclusions.md',
@@ -1050,7 +1100,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'Coverage does not include volcanic-ash damage.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'Does the cormorant coverage include volcanic-ash damage?',
@@ -1095,7 +1145,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The warranty lasts five years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
 
     const report = await memory.doctor();
@@ -1125,7 +1175,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The warranty lasts five years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
       reportUsage: false,
     });
 
@@ -1153,7 +1203,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The lantern warranty lasts eight years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     write(
       'reports/lantern.md',
@@ -1215,7 +1265,7 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     writeReportMemory();
     await memory.index({ verify: true });
@@ -1248,7 +1298,7 @@ describe('grounded answer discovery surface', () => {
         blocks: [{ text: 'The lantern warranty lasts eight years.', evidence_ids: ['E1'] }],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     writeReportMemory();
     await memory.index({ verify: true });
@@ -1277,7 +1327,7 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     writePlanMemory();
     await memory.index({ verify: true });
@@ -1306,7 +1356,7 @@ describe('grounded answer discovery surface', () => {
         ],
         missing_concepts: [],
       },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     writePlanMemory();
     await memory.index({ verify: true });
@@ -1362,7 +1412,7 @@ describe('grounded answer discovery surface', () => {
       await memory.index({ verify: true });
       await useAnswerModel({
         generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+        verification: { verdicts: [verdict('B1', true)] },
       });
       const result = await memory.answer({
         question: 'What is recorded in the silverpine valve inspection history?',
@@ -1431,7 +1481,7 @@ describe('grounded answer discovery surface', () => {
     await memory.index({ verify: true });
     await useAnswerModel({
       generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      verification: { verdicts: [verdict('B1', true)] },
     });
     const result = await memory.answer({
       question: 'What silverpine estimate review was proposed?',
@@ -1479,7 +1529,7 @@ describe('grounded answer discovery surface', () => {
         : 'Ada Marlow proposed reviewing the silverpine estimate next week relative to the undated original note.';
       await useAnswerModel({
         generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-        verification: { verdicts: [{ block_id: 'B1', supported }] },
+        verification: { verdicts: [verdict('B1', supported)] },
       });
       const result = await memory.answer({
         question: 'What silverpine estimate review was proposed?',
@@ -1645,6 +1695,15 @@ function temporalMarker(
     links: [],
     ...overrides,
   };
+}
+
+function verdict(
+  block_id: string,
+  proposition_supported: boolean,
+  action_arguments_preserved = true,
+  qualification_scope_preserved = true,
+) {
+  return { block_id, proposition_supported, action_arguments_preserved, qualification_scope_preserved };
 }
 
 async function useAnswerModel(script: {
