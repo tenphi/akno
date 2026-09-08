@@ -37,7 +37,7 @@ import {
  * the two public operations from gradually learning different meanings for the same source.
  */
 export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v37';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v27';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v28';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -767,21 +767,19 @@ async function verifyCandidateBatch(
   ]);
   const verdictShapes = candidates.map((candidate) => {
     const audit = frameAudits.get(candidate.candidate_id);
-    return z.object({
-      candidate_id: z.literal(candidate.candidate_id),
+    return z.strictObject({
+      candidate_id: z.enum([candidate.candidate_id]),
       ...(audit ? { span_audit: audit.schema } : {}),
       ...semanticVerdictFields,
       reason_code: reason.nullable(),
     });
   });
-  const schema = z.object({
-    verdicts: z.array(
-      z.discriminatedUnion(
-        'candidate_id',
-        verdictShapes as [(typeof verdictShapes)[number], ...(typeof verdictShapes)[number][]],
-      ),
-    ),
-  });
+  // Zod's discriminator emits oneOf, outside the strict endpoint subset. Distinct required
+  // single-value ID enums make anyOf equally exclusive using the previously supported ID encoding.
+  // A single verdict needs no union.
+  const verdictSchema =
+    verdictShapes.length === 1 ? verdictShapes[0]! : z.union([verdictShapes[0]!, verdictShapes[1]!]);
+  const schema = z.object({ verdicts: z.array(verdictSchema) });
   const outcome = await model.chat(
     [
       { role: 'system', content: VERIFY_SYSTEM },
