@@ -1076,6 +1076,38 @@ describe('grounded answer discovery surface', () => {
     if (!explicit) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
   });
 
+  it('keeps internal user-provenance labels in verification and public evidence, outside generation', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_direct v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=active polarity=negated basis=self_attested -->\n- Ada Marlow states that the silverpine warranty excludes paint damage.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow states that the silverpine warranty excludes paint damage.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'Does the silverpine warranty cover paint damage?',
+      include_context: true,
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).not.toBeNull();
+    expect(JSON.stringify(modelRequests[0])).not.toContain('self_attested');
+    expect(JSON.stringify(modelRequests[0])).toContain('source_speaker');
+    expect(JSON.stringify(modelRequests[1])).toContain('self_attested');
+    expect(JSON.stringify(result.context)).toContain('self_attested');
+  });
+
   it('removes a block whose invented exact value does not occur in its citation', async () => {
     await useAnswerModel({
       generation: {

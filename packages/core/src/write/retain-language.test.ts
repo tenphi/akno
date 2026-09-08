@@ -4,6 +4,10 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
+const repairBatch = (candidates: unknown[]) => ({
+  repairs: candidates.map((candidate, candidate_index) => ({ candidate_index, candidate })),
+});
+
 describe('cross-language retention boundary', () => {
   it.each([true, false])(
     'completes generated frames while keeping semantic verification authoritative (%s)',
@@ -112,6 +116,7 @@ describe('cross-language retention boundary', () => {
       if (chat.mock.calls.length === 2) {
         const payload = JSON.parse(messages.at(-1)!.content);
         expect(payload.validation_issues[0].reason_code).toBe('discourse_uncertain');
+        return { ok: true, value: JSON.stringify(repairBatch([candidate])), latencyMs: 11 };
       }
       return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
     });
@@ -408,7 +413,7 @@ describe('cross-language retention boundary', () => {
           expect(payload.source.text).toBe(source);
           return {
             ok: true,
-            value: JSON.stringify({ candidates: [supported ? corrected : invented] }),
+            value: JSON.stringify(repairBatch([supported ? corrected : invented])),
             latencyMs: 11,
           };
         }
@@ -566,9 +571,11 @@ describe('cross-language retention boundary', () => {
           expect(payload.validation_issues[0].reason).toContain('Keep the unknown temporal envelope');
           return {
             ok: true,
-            value: JSON.stringify({
-              candidates: [{ ...candidate, time: repair ? { ...candidate.time, mentioned_at: null } : null }],
-            }),
+            value: JSON.stringify(
+              repairBatch([
+                { ...candidate, time: repair ? { ...candidate.time, mentioned_at: null } : null },
+              ]),
+            ),
             latencyMs: 22,
           };
         }
@@ -716,10 +723,7 @@ describe('cross-language retention boundary', () => {
             return { ok: false, value: null, error: 'invented provider failure', latencyMs: 22 };
           return {
             ok: true,
-            value: JSON.stringify({
-              candidates: [outcome === 'still-invalid' ? bad : good],
-              events: [{ date: '2031-05-22', summary: 'An unsupported replacement event.' }],
-            }),
+            value: JSON.stringify(repairBatch([outcome === 'still-invalid' ? bad : good])),
             latencyMs: 22,
           };
         }

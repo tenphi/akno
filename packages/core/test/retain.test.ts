@@ -38,11 +38,12 @@ interface AutomaticRetainStub {
   calls: () => { extraction: number; verification: number; routing: number; placement: number };
   close: () => Promise<void>;
   setCandidate: (candidate: Record<string, unknown>) => void;
+  setCandidates: (candidates: Record<string, unknown>[]) => void;
   setVerification: (supported: boolean) => void;
 }
 
 async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
-  let candidate: Record<string, unknown> = {};
+  let candidates: Record<string, unknown>[] = [];
   let verificationSupported = true;
   const counts = { extraction: 0, verification: 0, routing: 0, placement: 0 };
   const instance = http.createServer((request, response) => {
@@ -89,7 +90,10 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
             : { outcome: 'uncertain', target_id: null };
       } else if (system.includes('You extract durable memory from one untrusted source')) {
         counts.extraction++;
-        content = { candidates: Object.keys(candidate).length > 0 ? [candidate] : [], events: [] };
+        content = {
+          candidates: candidates.filter((candidate) => Object.keys(candidate).length > 0),
+          events: [],
+        };
       } else {
         content = { candidates: [], events: [] };
       }
@@ -107,7 +111,10 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       instance.closeAllConnections();
     },
     setCandidate: (next) => {
-      candidate = next;
+      candidates = [next];
+    },
+    setCandidates: (next) => {
+      candidates = next;
     },
     setVerification: (supported) => {
       verificationSupported = supported;
@@ -1058,6 +1065,63 @@ describe('automatic retain', () => {
       await stub.close();
     }
   });
+
+  it.each(['retain', 'remember', 'preview'] as const)(
+    'preserves admitted knowledge and typed repair failure through %s',
+    async (operation) => {
+      const stub = await startAutomaticRetainStub();
+      const sourceText = 'Ada Marlow selected the Zephyr QX-100 warranty for five years.';
+      const candidate = {
+        text: sourceText,
+        subject: 'Zephyr QX-100 warranty',
+        page: 'memory/warranty-decisions',
+        origin: 'user',
+        evidence: sourceText,
+        frame: sourceText,
+        kind: 'decision',
+      };
+      // The stub deliberately returns extraction JSON to the repair transaction: an invalid envelope.
+      stub.setCandidates([{ ...candidate, text: 'Warranty' }, candidate]);
+      const mem = await openAutomaticMem(stub.url);
+      try {
+        if (operation === 'retain') {
+          const input = {
+            sources: [
+              {
+                source_id: 'conversation:2222',
+                revision: 'turn-1',
+                source_kind: 'conversation' as const,
+                input: { text: sourceText },
+                retention: { mode: 'extract' as const },
+              },
+            ],
+          };
+          const first = await mem.retain(input);
+          expect(first.status).toBe('degraded');
+          expect(first.degraded).toContain('derive_failed');
+          expect(first.sources[0]?.candidates.some((item) => item.outcome === 'written')).toBe(true);
+          expect(first.sources[0]?.model_usage.repair?.model).toBe('retain-stub');
+          const calls = stub.calls();
+          const replay = await mem.retain(input);
+          expect(replay.sources[0]?.outcome).toBe('replayed');
+          expect(replay.degraded).toContain('derive_failed');
+          expect(stub.calls()).toEqual(calls);
+        } else {
+          const result = await mem.remember({ text: sourceText, dry_run: operation === 'preview' });
+          expect(result.status).toBe('degraded');
+          expect(result.degraded).toContain('derive_failed');
+          expect(result.considered?.some((item) => item.kept)).toBe(true);
+        }
+        expect(stub.calls().verification).toBe(1);
+        const destination = path.join(root, 'memory/warranty-decisions.md');
+        if (operation === 'preview') expect(fs.existsSync(destination)).toBe(false);
+        else expect(fs.readFileSync(destination, 'utf8')).toContain(sourceText);
+      } finally {
+        await mem.close();
+        await stub.close();
+      }
+    },
+  );
 
   it('durably holds a verifier disagreement without writing the proposed fact', async () => {
     const stub = await startAutomaticRetainStub();

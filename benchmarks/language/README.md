@@ -65,7 +65,7 @@ all 16 read-only abstentions were justified. The built-package probe is separate
 
 The input review was completed without outputs. Output review receives the frozen sources, their approved
 expectations, saved knowledge, retrieved passages and answers, without runtime verifier verdicts or aggregate scores. It judges
-useful retention, relevant qualified retrieval, qualified answers, justified abstentions, language, attribution and factual promotion. V13 through V15 also judge retained and answered content against the original source, scored separately from qualification.
+useful retention, relevant qualified retrieval, qualified answers, justified abstentions, language, attribution and factual promotion. V13 through V16 also judge retained and answered content against the original source, scored separately from qualification.
 Null answers never count as useful answers. Review is fallible model adjudication of a finite corpus.
 
 The gate requires both complete splits with at least two runs and all eight query/answer/view combinations.
@@ -77,8 +77,8 @@ Run the production path against isolated invented knowledge bases with:
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v15 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v15 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v16 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v16 --runs 2 --output bench-results/language-held-out.json
 ```
 
 The v10 development split contains all ten writable scenarios from the now-exposed v9 corpus. Its ten fresh

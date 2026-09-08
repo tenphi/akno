@@ -96,9 +96,13 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
     };
   }
 
+  const retentionStatus = retained.degradedReason
+    ? { status: 'degraded' as const, degraded: [retained.degradedReason] }
+    : { status: 'ok' as const };
+
   if (retained.candidates.length === 0 && retained.events.length === 0) {
     return {
-      status: 'ok',
+      ...retentionStatus,
       outcome: 'noop',
       considered: [],
       note: 'nothing in that text was worth keeping — no durable claim, decision or preference',
@@ -175,7 +179,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       return unroutedReasonCode(entry.nearest, refused, entry.blocked) === 'no_writable_destination';
     });
     return {
-      status: 'ok',
+      ...retentionStatus,
       outcome:
         folders.length > 0
           ? 'requires_folder'
@@ -286,6 +290,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
       reason: candidate.reason,
     })),
     modelUsage: retained.modelUsage,
+    additionalDegraded: retained.degradedReason ? [retained.degradedReason] : [],
   });
   const retainedResult = retainedWrite.result;
 
@@ -378,7 +383,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
 
   if (wrote.length === 0) {
     return {
-      status: 'ok',
+      ...retentionStatus,
       outcome: outcome ?? 'noop',
       considered,
       ...(approvals.length > 0 ? { approvals } : {}),
@@ -389,7 +394,7 @@ export async function remember(ctx: AknoContext, rawInput: unknown): Promise<Rem
   }
 
   return {
-    status: 'ok',
+    ...retentionStatus,
     outcome: outcome ?? 'ok',
     ...(changeId ? { change_id: changeId } : {}),
     wrote,

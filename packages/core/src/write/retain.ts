@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import { spanCoveredByFrame } from './retained-spans.ts';
 import { explicitlyUnknownTime } from './retained-time.ts';
 import { hasSourceRelativeAnchor, hasUnknownReferenceClock } from '../timeline/source-clock.ts';
@@ -24,7 +25,7 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v18';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v19';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v11';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -377,21 +378,36 @@ export async function runRetain(
     ...(options.mentionedAt ? { mentionedAt: options.mentionedAt } : {}),
     ...(options.timezone ? { timezone: options.timezone } : {}),
   };
-  let cleanedBatch = cleanCandidateBatch(
+  let cleanedBatch = cleanCandidateBatchWithPositions(
     completeGeneratedFrames(parsed.candidates, cleaningOptions),
     cleaningOptions,
   );
   const repairUsage: { repair?: RetainModelCallReceipt } = {};
-  // One structural repair can recover a malformed representation. It never overrides a semantic
-  // rejection, replaces already admitted candidates, or loops until a model agrees.
-  if (cleanedBatch.candidates.length === 0 && cleanedBatch.held.length > 0) {
+  let repairDegraded: DegradedReason | null = null;
+  let repairError: string | null = null;
+  // One transaction repairs only failed original positions, before semantic verification.
+  // A minor surviving record must not prevent repairing the deciding report or hypothesis.
+  if (cleanedBatch.held.length > 0 && Array.isArray(parsed.candidates)) {
+    const failedPositions = [
+      ...new Set(cleanedBatch.held.map((held) => cleanedBatch.positions.get(held.candidate_id)!)),
+    ];
+    const repairSchema = z.object({
+      repairs: z
+        .array(
+          z.object({
+            candidate_index: z.literal(failedPositions as [number, ...number[]]),
+            candidate: RETAIN_SCHEMA.shape.candidates.element,
+          }),
+        )
+        .max(failedPositions.length),
+    });
     const repair = await model.chat(
       [
         {
           role: 'system',
           content:
             system +
-            '\nRepair the rejected representation once using the original source and validation issues. Correct only supported semantics or structure; do not omit qualifiers to satisfy a check. Return an empty list if no safe repair exists.',
+            '\nRepair the rejected representation once using the original source and validation issues. Return only repairs for allowed candidate_index positions. Admitted positions are immutable. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a position if no safe repair exists. Do not return events or new positions.',
         },
         {
           role: 'user',
@@ -401,33 +417,66 @@ export async function runRetain(
               ? { mentioned_at: options.mentionedAt, timezone: options.timezone ?? null }
               : null,
             rejected_candidates: parsed.candidates,
-            validation_issues: cleanedBatch.held,
+            admitted_positions: cleanedBatch.candidates.map((candidate) =>
+              cleanedBatch.positions.get(candidate.candidate_id),
+            ),
+            validation_issues: cleanedBatch.held.map((held) => ({
+              ...held,
+              candidate_index: cleanedBatch.positions.get(held.candidate_id),
+            })),
           }),
         },
       ],
-      { schema: RETAIN_SCHEMA, maxTokens: 3_200 },
+      { schema: repairSchema, maxTokens: 3_200 },
     );
     repairUsage.repair = modelCallReceipt(model, repair);
-    const repaired =
-      repair.ok && repair.value
-        ? parseJsonLoose<{ candidates?: unknown; events?: unknown }>(repair.value)
-        : null;
-    if (!repaired) {
-      return {
-        ...empty,
-        held: cleanedBatch.held.map((item) => ({ ...item, hold_stage: 'validation' as const })),
-        error: repair.error ?? 'retain repair returned unparseable JSON',
-        degradedReason: model.degradedReason(repair) ?? 'derive_failed',
-        modelUsage: { extraction: extractionReceipt, ...repairUsage, verification: null },
-      };
-    }
-    const repairedBatch = cleanCandidateBatch(
-      completeGeneratedFrames(repaired.candidates, cleaningOptions),
-      cleaningOptions,
-    );
-    if (repairedBatch.candidates.length > 0) {
-      // Candidate repair has no authority over the separate legacy event extraction.
-      cleanedBatch = repairedBatch;
+    // Candidate fields still go through the same cleaner as extraction. Parse the transaction
+    // envelope here; a provider's constrained-decoding declaration is not trusted validation.
+    const transactionSchema = z
+      .object({
+        repairs: z
+          .array(
+            z.object({
+              candidate_index: z.literal(failedPositions as [number, ...number[]]),
+              candidate: z.record(z.string(), z.unknown()),
+            }),
+          )
+          .max(failedPositions.length),
+      })
+      .strict();
+    const transaction =
+      repair.ok && repair.value ? transactionSchema.safeParse(parseJsonLoose<unknown>(repair.value)) : null;
+    if (
+      !transaction?.success ||
+      new Set(transaction.data.repairs.map((entry) => entry.candidate_index)).size !==
+        transaction.data.repairs.length
+    ) {
+      if (repair.ok) model.reportInvalidResponse();
+      repairError = repair.error ?? 'retain repair returned an invalid position transaction';
+      repairDegraded = repair.ok ? 'derive_failed' : model.degradedReason(repair);
+    } else {
+      const vector = structuredClone(parsed.candidates);
+      for (const entry of transaction.data.repairs) vector[entry.candidate_index] = entry.candidate;
+      const repairedBatch = cleanCandidateBatchWithPositions(
+        completeGeneratedFrames(vector, cleaningOptions),
+        cleaningOptions,
+      );
+      const immutable = cleanedBatch.candidates.map((candidate) => ({
+        position: cleanedBatch.positions.get(candidate.candidate_id),
+        candidate,
+      }));
+      const immutablePositions = new Set(immutable.map((entry) => entry.position));
+      const after = repairedBatch.candidates
+        .filter((candidate) => immutablePositions.has(repairedBatch.positions.get(candidate.candidate_id)))
+        .map((candidate) => ({ position: repairedBatch.positions.get(candidate.candidate_id), candidate }));
+      // IDs omit relation fields. Deep equality and original positions also detect dedupe,
+      // cap and dependency changes that could silently replace an already admitted candidate.
+      if (isDeepStrictEqual(immutable, after)) cleanedBatch = repairedBatch;
+      else {
+        model.reportInvalidResponse();
+        repairError = 'retain repair changed an immutable admitted candidate';
+        repairDegraded = 'derive_failed';
+      }
     }
   }
 
@@ -440,6 +489,8 @@ export async function runRetain(
     return {
       ...empty,
       held: cleaned.held,
+      error: repairError,
+      degradedReason: repairDegraded,
       events: cleanEvents(parsed.events),
       modelUsage: { extraction: extractionReceipt, ...repairUsage, verification: null },
     };
@@ -482,7 +533,7 @@ export async function runRetain(
     events: cleanEvents(parsed.events),
     error: null,
     sourceHold: null,
-    degradedReason: null,
+    degradedReason: repairDegraded,
     modelUsage: { extraction: extractionReceipt, ...repairUsage, verification: verified.receipt },
   };
 }
@@ -661,7 +712,16 @@ export function cleanCandidateBatch(
   value: unknown,
   options: CandidateCleaningOptions,
 ): { candidates: RetainCandidate[]; held: RetainHeldCandidate[] } {
-  if (!Array.isArray(value)) return { candidates: [], held: [] };
+  const { candidates, held } = cleanCandidateBatchWithPositions(value, options);
+  return { candidates, held };
+}
+
+function cleanCandidateBatchWithPositions(
+  value: unknown,
+  options: CandidateCleaningOptions,
+): { candidates: RetainCandidate[]; held: RetainHeldCandidate[]; positions: Map<string, number> } {
+  const positions = new Map<string, number>();
+  if (!Array.isArray(value)) return { candidates: [], held: [], positions };
   const candidates: RetainCandidate[] = [];
   const held: RetainHeldCandidate[] = [];
   const seen = new Set<string>();
@@ -673,6 +733,7 @@ export function cleanCandidateBatch(
     const record = entry as Record<string, unknown>;
     const text = typeof record.text === 'string' ? record.text.trim().replace(/\s+/g, ' ') : '';
     const provisionalId = candidateId(options, index, text || 'invalid');
+    positions.set(provisionalId, index);
     if (text.split(/\s+/).length < 4 || text.length > 400 || !readsAsStatement(text)) {
       held.push({
         candidate_id: provisionalId,
@@ -893,6 +954,7 @@ export function cleanCandidateBatch(
       frame: spans.frame,
       time,
     });
+    positions.set(candidate_id, index);
     if (
       canonicalSemantics(kind, discourse) &&
       (UNSAFE_DISCOURSE.test(sourceEvidence(spans.frame)) ||
@@ -1007,6 +1069,7 @@ export function cleanCandidateBatch(
   return {
     candidates: candidates.filter((candidate) => !invalidRelations.has(candidate.candidate_id)),
     held,
+    positions,
   };
 }
 

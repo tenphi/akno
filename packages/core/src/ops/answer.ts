@@ -31,7 +31,7 @@ import {
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v25';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v26';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v15';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -99,11 +99,10 @@ a tentative assistant report must remain both tentative and attributed to the as
 name its source_speaker explicitly (or its source_role when unnamed), including the outer reporter in a nested
 report. Preserve any inner speaker named by the readable evidence too. A fictional example
 must remain explicitly fictional, even if its commitment is also hypothetical. Use ordinary language to describe
-these records; internal qualification fields are not facts about the person or product. self_attested only
-means the record came directly from the user; never add "self-attestation", "based on their own assertion",
-or an equivalent translation unless the readable evidence itself says that. It creates no extra content
-obligation beyond preserving the stated uncertainty and avoiding claims of independent verification.
-Keep a named source_speaker explicit for every nonfactual record, including self-attested beliefs, examples,
+these records; internal qualification fields are not facts about the person or product. A direct user
+assertion may be stated or attributed without inventing a claim about whether anybody verified it.
+Preserve uncertainty explicitly stated in the readable evidence; do not add verification-status disclaimers.
+Keep a named source_speaker explicit for every nonfactual record, including the user's beliefs and examples,
 proposals and questions. The outer recorder and any inner speaker remain distinct people.
 Unknown temporal precision means the record has no resolved date. Describe any relative time as relative
 to the undated source, never to today, and preserve that the calendar date is unknown.
@@ -371,7 +370,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     },
     budget_used: {
       ...base.budget_used,
-      evidence_tokens: estimateTokens(evidence.map(evidenceText).join('\n')),
+      evidence_tokens: estimateTokens(evidence.map((item) => evidenceText(item, true)).join('\n')),
     },
   };
   if (!generated.ok || generated.value === null) {
@@ -507,7 +506,10 @@ function answerMessages(
         question,
         memory_view: memoryView,
         ...(outputLanguage ? { output_language: outputLanguage } : {}),
-        evidence: evidence.map((item) => ({ evidence_id: item.evidence_id, excerpt: evidenceText(item) })),
+        evidence: evidence.map((item) => ({
+          evidence_id: item.evidence_id,
+          excerpt: evidenceText(item, true),
+        })),
       }),
     },
   ];
@@ -804,7 +806,7 @@ function answerLineEligible(line: Line, question: string, memoryView: MemoryView
   return intent.future && futureMemoryEligible(memory);
 }
 
-function evidenceText(item: AnswerContextItem): string {
+function evidenceText(item: AnswerContextItem, forGeneration = false): string {
   if (item.type === 'page') {
     return [
       `Title: ${item.title}`,
@@ -812,7 +814,7 @@ function evidenceText(item: AnswerContextItem): string {
         (line) =>
           `L${line.n}: ${line.text}` +
           (line.memory
-            ? `\nMemory qualification: ${JSON.stringify(Object.fromEntries(Object.entries(line.memory).filter(([key]) => ['kind', 'source_role', 'source_speaker', 'commitment', 'disposition', 'polarity', 'basis', 'temporal'].includes(key))))}`
+            ? `\nMemory qualification: ${JSON.stringify(Object.fromEntries(Object.entries(line.memory).filter(([key, value]) => ['kind', 'source_role', 'source_speaker', 'commitment', 'disposition', 'polarity', 'basis', 'temporal'].includes(key) && !(forGeneration && key === 'basis' && value === 'self_attested'))))}`
             : '') +
           (line.prose && !line.prose.answer_eligible
             ? `\nUntrusted discourse qualification: ${JSON.stringify({ status: line.prose.status, view: line.prose.view, reason: line.prose.reason, frame: line.prose.frame })}`

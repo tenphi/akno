@@ -37,3 +37,5 @@ Require independent proposition, action-argument and qualification-scope verdict
 Preserve original process meaning and reporter roles during English retention. Check retained proposition, action arguments and qualification separately against original sources; preserve structured outer and inner attribution without dropping reporters. Align unknown source-clock checks, require answers to bind report wording to the required speaker, and prevent unsupported whole-source absence claims from retrieved subsets.
 
 Keep negative epistemic statements scoped to their original subject: an exclusion that leaves another question unsettled cannot become a claim that the whole document omits the answer.
+
+Repair structurally rejected candidates once even when other candidates survive. Bind repairs to original positions and preserve every previously admitted record and relation; report repair failure while keeping verified knowledge usable. Keep the internal self-attested basis label out of answer generation while retaining it for verification and public evidence.

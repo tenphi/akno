@@ -386,6 +386,7 @@ async function retainExtracted(
     placement: 'automatic',
     initialResults,
     modelUsage: { ...extracted.modelUsage, placement: [] },
+    additionalDegraded: extracted.degradedReason ? [extracted.degradedReason] : [],
   });
 }
 
@@ -901,6 +902,7 @@ export async function retainRememberCandidates(
     dryRun: boolean;
     candidates: readonly ResolvedRetainCandidate[];
     held: readonly RetainCandidateResult[];
+    additionalDegraded?: DegradedReason[];
     modelUsage: {
       extraction: RetainModelCallReceipt | null;
       repair?: RetainModelCallReceipt;
@@ -940,6 +942,7 @@ export async function retainRememberCandidates(
       factsAdded = factsDerived;
     },
     initialResults: [...input.held],
+    additionalDegraded: input.additionalDegraded,
     modelUsage: { ...input.modelUsage, placement: [] },
   });
   return { result, factsAdded };
