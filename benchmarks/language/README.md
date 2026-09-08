@@ -55,6 +55,12 @@ answers were source-entailing, qualified and language compliant. The open-questi
 false language holds and loss of a substantive nested report leave coverage inadequate. The
 [pre-execution amendment](v33-trial-amendment.md) preserves these failed probes; no fresh full V33 trial began.
 
+The [V34 probes](results/v34) yielded 24/32 useful selected answers with 3/4 useful retained sets and
+32/32 useful retrievals, and 16/16 built-package answers with complete retention/retrieval. All accepted
+outputs were source-entailing, qualified and language compliant. Language false holds and report qualifier
+splitting were fixed in these probes; attribution grammar and semantic wording still caused eight nulls.
+The [pre-execution amendment](v34-trial-amendment.md) preserves these failures without starting a fresh full trial.
+
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
 development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets and nine
