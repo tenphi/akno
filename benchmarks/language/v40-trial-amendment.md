@@ -1,0 +1,7 @@
+# V40 pre-execution amendment
+
+Frozen runtime `452f261` completed both predeclared exposed probes. Independent selected scores are 2/4 complete retained sets, 24/32 useful retrievals and 26/32 useful answers. Built-package scores are 2/2, 16/16 and 16/16. Every answer is nonnull and language compliant; the six accepted selected answer failures lose the source-named personal nonselector. The competing-hypothesis retained sentence already loses that action agent. The rejected-offer retained set also omits the separate absence of a booked handover.
+
+Do not begin the fresh full trial. These are accepted source-entailment/agency failures and inadequate complete retention under the unchanged plan, not minor abstentions that may carry forward. No full V40 trial began; independently approved v19 held-out sources remain unexecuted. Preserve both raw reports, independent receipts and forensic findings without retrying unchanged runtime.
+
+V41 must preserve personal nonselection before persistence as well as during answer generation, including coordinated alternatives and passive forms. It must preserve an independent absence-of-booking statement without merging its frame with a different rejected action. Keep source-verification dimensions, structural-repair limits, admission, models and all evaluation thresholds unchanged. Reuse only exposed inputs for probes; approved v19 held-out inputs remain fresh until a justified complete repeated trial executes them.

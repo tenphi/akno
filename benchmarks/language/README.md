@@ -1,5 +1,7 @@
 # Language and discourse evaluation
 
+The [V40 exposed probes](results/v40/README.md) yielded 26/32 useful selected answers and 16/16 built-package answers. Six selected answers lose a personal nonselector, and selected complete retention is 2/4. The [amendment](v40-trial-amendment.md) defers fresh execution; no full V40 trial began, and approved v19 held-out inputs remain unexecuted.
+
 The latest complete [V39 trial](results/v39/README.md) fails: **251/320 useful answers**, 30/40 complete retained sets, three accepted contractual-word-sense errors and one placement availability failure. Its exposed probes had met readiness targets, but the full repeated trial did not establish stability. All v18 sources are now exposed. The [V40 plan](v40-trial-plan.md) addresses the observed failures and requires independent approval of fresh v19 held-out inputs before execution. Models and acceptance gates are unchanged.
 
 The following entries preserve earlier decisions at their respective trial boundaries; references to unexecuted inputs describe their status at that time.

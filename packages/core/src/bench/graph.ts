@@ -9,7 +9,7 @@ import { rebuildEvidenceGraph, resolveExactEntity } from '../index/graph.ts';
 import { discoverGraphMaintenanceCandidates } from '../maintenance/graph-candidates.ts';
 import { openStore } from '../store/db.ts';
 import { sha256 } from '../store/ids.ts';
-import { runMixedRetrievalBench } from './mixed-retrieval.ts';
+import { runMixedRetrievalBench, type MixedRetrievalBenchReport } from './mixed-retrieval.ts';
 
 export const GRAPH_BENCH_SCHEMA_VERSION = 1;
 
@@ -66,6 +66,7 @@ export interface GraphBenchReport {
     mixedRetrievalPassed: boolean;
   };
   cases: GraphBenchCaseReport[];
+  mixedRetrieval: MixedRetrievalBenchReport;
   passed: boolean;
   blockers: string[];
 }
@@ -442,6 +443,7 @@ export async function runGraphBench(options: GraphBenchOptions = {}): Promise<Gr
       thresholds,
       metrics,
       cases,
+      mixedRetrieval: mixed,
       passed: blockers.length === 0,
       blockers,
     };
