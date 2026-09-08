@@ -57,3 +57,5 @@ Translate generic attribution roles as prose while preserving actual names and s
 Supply source-backed exact reference hints to the bounded language check without exempting surrounding prose or overriding its verdict. Separate generic assistant display labels from named speakers during answer generation, while preserving original verifier/public evidence. Order retention support and qualifications before generated prose so each first-pass sentence can include its complete discourse frame.
 
 Recognize bounded relayed-report and attributed-assertion wording while rejecting wrong reporters and non-report objects. Formulate hypothesis answers as attributed record content, and preserve unspecified action objects in separately retained denials. Full source verification remains unchanged.
+
+Keep source-relative clock instructions free of concrete interval examples, supply localized status presentation labels, and recognize report-noun-bound Russian passive relay attribution. Preserve authored denials without adding extraction-scope explanations; semantic verification remains unchanged.

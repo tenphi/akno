@@ -38,7 +38,7 @@ import {
   semanticVerdictFields,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v32';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v33';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v18';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -94,6 +94,9 @@ Keep person, organization and product names in their exact original spelling; do
 Generic source roles such as assistant and user are descriptive prose: translate them into the requested
 language even when source_speaker repeats the role. They are not proper names or schema values in answer text.
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
+The display_labels are translation aids for kind, commitment and disposition. They add no proposition and
+change no qualification. Express relevant status in the requested language; do not copy English enum values
+into Russian prose.
 Preserve identity, negation, dates, times, amounts, units, scope, and current-versus-superseded state exactly.
 Ordinary prose carries a bounded prose qualification and exact frame. Preserve its report, hypothetical,
 planning, historical, or unresolved status; the frame is source context, not independent factual evidence.
@@ -119,10 +122,11 @@ person wrote or recorded it when the evidence explicitly supports that action; n
 Unknown temporal precision means the record has no resolved date. Describe any relative time as relative
 to the undated source, never to today, and preserve that the calendar date is unknown.
 When a source has this unresolved relative timing, retain BOTH its source-relative anchor and unknown
-reference date in the answer. "Next week; the date is unknown" drops the anchor. Use wording such as
-"next week relative to the undated original note" / "на следующей неделе относительно исходной
-недатированной записи". An abstract source-relative time with unknown calendar date preserves the
-qualification if the exact time unit is irrelevant to the question.
+reference date in the answer. An unknown date alone drops the anchor. Preserve the relative interval
+actually stated in the evidence, anchor it to the original undated source rather than today, and preserve
+that the calendar reference date is unknown. Never substitute a time value from an instruction or example.
+An abstract source-relative time with unknown calendar date preserves the qualification if the exact time
+unit is irrelevant to the question.
 
 Return structured answer blocks. Every substantive block must cite one or more supplied evidence_ids. Cite only
 evidence that directly supports the whole block. Answer covered parts of a compound question and list the missing
@@ -906,7 +910,7 @@ function memoryModelFields(
   forGeneration: boolean,
   outputLanguage?: OutputLanguage | null,
 ): Record<string, unknown> {
-  const fields = Object.fromEntries(
+  const fields: Record<string, unknown> = Object.fromEntries(
     Object.entries(memory).filter(
       ([key, value]) =>
         [
@@ -931,8 +935,74 @@ function memoryModelFields(
     delete fields.source_speaker;
     if (outputLanguage) fields.source_label = outputLanguage === 'ru' ? 'ассистент' : 'assistant';
   }
+  if (forGeneration && outputLanguage && memory.status === 'qualified') {
+    const labels = MEMORY_DISPLAY_LABELS[outputLanguage];
+    fields.display_labels = {
+      kind: labels.kind[memory.kind],
+      commitment: labels.commitment[memory.commitment],
+      disposition: labels.disposition[memory.disposition],
+    };
+  }
   return fields;
 }
+
+// Presentation vocabulary only: original enum values remain the semantic authority.
+const MEMORY_DISPLAY_LABELS = {
+  en: {
+    kind: {
+      claim: 'claim',
+      decision: 'decision',
+      preference: 'preference',
+      plan: 'plan',
+      event: 'event',
+      question: 'question',
+    },
+    commitment: {
+      asserted: 'asserted',
+      tentative: 'tentative',
+      hypothetical: 'hypothetical',
+      counterfactual: 'counterfactual',
+      none: 'no assertion',
+    },
+    disposition: {
+      active: 'active record',
+      proposed: 'proposed',
+      accepted: 'accepted',
+      rejected: 'rejected',
+      resolved: 'resolved question',
+      cancelled: 'cancelled',
+      completed: 'completed',
+      superseded: 'superseded record',
+    },
+  },
+  ru: {
+    kind: {
+      claim: 'утверждение',
+      decision: 'решение',
+      preference: 'предпочтение',
+      plan: 'план',
+      event: 'событие',
+      question: 'вопрос',
+    },
+    commitment: {
+      asserted: 'заявлено',
+      tentative: 'предварительный статус',
+      hypothetical: 'гипотетический контекст',
+      counterfactual: 'контрфактический контекст',
+      none: 'без утверждения',
+    },
+    disposition: {
+      active: 'активная запись',
+      proposed: 'предложено',
+      accepted: 'принято',
+      rejected: 'отклонено',
+      resolved: 'решённый вопрос',
+      cancelled: 'отменено',
+      completed: 'завершено',
+      superseded: 'заменённая запись',
+    },
+  },
+} as const;
 
 function answerLanguageReferences(ctx: AknoContext, evidence: AnswerContextItem[]): LanguageReference[] {
   const references: LanguageReference[] = [];
@@ -1207,6 +1277,7 @@ function hasBoundReporter(text: string, label: string): boolean {
       `(?:told|привед[её]н\\p{L}*|представлен\\p{L}*)\\s+(?:the )?${source}|` +
       `(?:according to|по словам|со слов|согласно)\\s+(?:the )?${source}|` +
       `(?:отч[её]т|сообщение)\\s+${source}|` +
+      `(?<![\\p{L}])(?:сообщение|отч[её]т|утверждение)\\s*,?\\s+переданн(?:ое|ый|ая|ые|ым|ой|ыми)\\s+${source}(?![’'])|` +
       `(?:report|account|statement|assertion)\\s+(?:by|from|attributed to)\\s+(?:the )?${source}(?![’'])|` +
       `${source}[’']s\\s+${qualifier}(?:report|account|statement|assertion)\\b`,
     'iu',

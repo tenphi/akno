@@ -1404,6 +1404,16 @@ describe('grounded answer discovery surface', () => {
       const excerpt = generation.evidence[0].excerpt as string;
       const qualification = JSON.parse(excerpt.match(/Memory qualification: (.+)/u)![1]!);
       expect(qualification.source_role).toBe('assistant');
+      expect(qualification).toMatchObject({
+        kind: 'claim',
+        commitment: 'tentative',
+        disposition: 'active',
+        display_labels: {
+          kind: 'утверждение',
+          commitment: 'предварительный статус',
+          disposition: 'активная запись',
+        },
+      });
       if (speaker === 'assistant') {
         expect(qualification).not.toHaveProperty('source_speaker');
         expect(qualification.source_label).toBe('ассистент');
@@ -1419,10 +1429,76 @@ describe('grounded answer discovery surface', () => {
         expect(language.supplied_references).toContainEqual({ kind: 'name', text: speaker });
       expect(JSON.stringify(userInput(modelRequests[2]!))).toContain(`"source_speaker":"${speaker}"`);
       expect(JSON.stringify(result.context)).toContain(`"source_speaker":"${speaker}"`);
+      expect(JSON.stringify(userInput(modelRequests[2]!))).not.toContain('display_labels');
+      expect(JSON.stringify(result.context)).not.toContain('display_labels');
     },
   );
 
+  it('presents a tentative plan without changing its kind to an assumption', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_plan_display v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=plan subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=proposed polarity=affirmed basis=self_attested -->\n- **Tentative · Proposal:** Ada Marlow tentatively proposed a silverpine inspection; the plan has not been accepted.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow предварительно предложила проверку silverpine; план не принят.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'Which silverpine plan was proposed?',
+      answer_language: 'ru',
+      memory_view: 'discussion',
+      include_context: true,
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer, JSON.stringify(result)).not.toBeNull();
+    const generation = JSON.parse(
+      (modelRequests[0]!.messages as Array<{ role: string; content: string }>).find((m) => m.role === 'user')!
+        .content,
+    );
+    const qualification = JSON.parse(generation.evidence[0].excerpt.match(/Memory qualification: (.+)/u)[1]);
+    expect(qualification).toMatchObject({
+      kind: 'plan',
+      commitment: 'tentative',
+      disposition: 'proposed',
+      display_labels: { kind: 'план', commitment: 'предварительный статус', disposition: 'предложено' },
+    });
+    expect(JSON.stringify(modelRequests[2])).not.toContain('display_labels');
+    expect(JSON.stringify(result.context)).not.toContain('display_labels');
+    expect(JSON.stringify(result.context)).toContain('"kind":"plan"');
+  });
+
   it.each([
+    [
+      'Неподтверждённое сообщение, переданное Ada Marlow со слов Bo Winters, касается проверки silverpine.',
+      true,
+    ],
+    ['Неподтверждённый отчёт переданный Ada Marlow касается проверки silverpine.', true],
+    ['Неподтверждённое утверждение, переданное Ada Marlow, касается проверки silverpine.', true],
+    [
+      'Неподтверждённое сообщение, переданное для Ada Marlow со слов Bo Winters, касается проверки silverpine.',
+      false,
+    ],
+    [
+      'Неподтверждённое сообщение, переданное Bo Winters, касается проверки silverpine; Ada Marlow находится рядом.',
+      false,
+    ],
+    [
+      'Устройство, переданное Ada Marlow, касается проверки silverpine; Bo Winters сообщил неподтверждённые сведения.',
+      false,
+    ],
+    ['Неподтверждённое сообщение о переданном Ada Marlow устройстве касается проверки silverpine.', false],
+    ['Неподтверждённое сообщение, переданное Ada Marlow’s device, касается проверки silverpine.', false],
     ['Ada Marlow relayed Bo Winters’s unverified assertion about silverpine inspection.', true],
     ['Ada Marlow relays Bo Winters’s unverified assertion about silverpine inspection.', true],
     ['Ada Marlow is relaying Bo Winters’s unverified assertion about silverpine inspection.', true],
