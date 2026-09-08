@@ -38,8 +38,16 @@ nonnull answers are source-entailing. V31 was frozen before fresh V29/V30 output
 
 The [V31 exposed probes](results/v31) yielded 22/24 useful selected answers with 3/3 complete retained
 sets, and 14/16 built-package answers with 2/2 complete retained sets. All nonnull answers were source-entailing,
-qualified and language compliant. The full v17 trial is running; V31 was frozen before any fresh V29/V30
-outputs or scores were opened. All trials remain separate evidence under their committed plans.
+qualified and language compliant. The [complete V31 gate](results/v31/gate.json) fails with 279/320 useful
+answers: development 69/80 and 70/80, held-out 72/80 and 68/80. Useful retention is 33/40. All retained
+content and nonnull answers are source-entailing, but two otherwise useful Russian answers leave the
+generic role “assistant” untranslated. Three nonnull answers are incomplete. All original trials remain preserved.
+
+The [V32 probes](results/v32) yielded 31/32 useful selected answers with 3/4 complete retained sets,
+and 11/16 built-package answers with 2/2 complete retained sets. The built probe accepted one untranslated
+generic assistant role in Russian and withheld five faithful question answers. No full fresh V32 trial
+began; the [pre-execution amendment](v32-trial-amendment.md) preserves this failure and explains why the
+exposed defects are addressed before using the still-unexecuted, independently approved v18 held-out inputs.
 
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
