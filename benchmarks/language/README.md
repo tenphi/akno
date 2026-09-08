@@ -5,6 +5,29 @@ retention and answer model is evaluated separately from an independent reviewer 
 `independentlyReviewed: false` and `releaseEligible: false`; the separate computed gate binds the reports to
 both reviews and is the authority for the reviewed result.
 
+The [v26 gate](results/v26/gate.json) fails with 240/320 independently useful writable answers:
+development 74/80 and 61/80, held-out 51/80 and 54/80. Useful retention is 34/40; all retained sets are
+source-entailing, but one nonnull answer contains an unsupported claim and qualification error.
+All 32 read-only abstentions are justified; 62 writable nulls remain unjustified. Initial and corrected
+independent judgments are preserved in the [complete evidence](results/v26).
+
+V27 permits one structural repair of rejected original positions while preserving admitted records and
+relations. The [exposed probes](results/v27) scored 8/16 useful selected answers and 16/16 useful
+built-package answers. Its full repeated v16 trial is running. V27 was committed before fresh full V26
+outputs were opened, as recorded in the [validation plan](v27-trial-plan.md); both full trials are preserved.
+
+The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
+sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
+development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets and nine
+unsupported nonnull answers; its built-package probe scored 8/16. Both complete trials and independent
+judgments remain preserved.
+
+The [v25 exposed diagnostics](results/v25) yielded 14/24 useful selected answers and 15/16 useful
+built-package answers, with every nonnull answer source-entailing. V26 preserves the original subject of
+negative epistemic statements: a limitation on what an exclusion establishes must not become whole-contract
+silence. V16 moves exposed v15 sources to development and adds ten independently preapproved fresh writable
+held-out sources; all acceptance thresholds remain unchanged.
+
 The [v22 gate](results/v22/gate.json) fails: development 77/80 and 72/80 useful answers, held-out
 69/80 and 61/80. Its 279/320 useful answers leave 40 unjustified nulls and one unsupported translation
 from service collection to data collection. Useful retention is 37/40, and all 32 read-only abstentions

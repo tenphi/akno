@@ -248,6 +248,47 @@ inference remain separate roadmap work.
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
 
+## Independently reviewed v26 and v27 diagnostics
+
+The v16 corpus ran twice per split at V26 runtime `23ab599`, using GPT-5.6 Luna and independent GPT-5.6 Sol
+review. The gate failed with 240/320 useful writable answers: development 74/80 and 61/80, held-out 51/80
+and 54/80. Useful retention was 34/40. All retained sets were source-entailing, but one nonnull answer added
+unsupported terminology doubt and lost qualification. All 32 read-only abstentions were justified; 62
+writable nulls were unjustified. No accepted language error, unsafe factual promotion, source-byte change
+or case availability failure was found. The [complete V26 evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v26)
+includes initial and corrected independent judgments after a consistency review under the unchanged contract.
+
+V27 at `7909f71` repairs structurally rejected original positions even when another candidate survives,
+while preserving every admitted record and relation. Its exposed report/exclusion diagnostic scored 8/16
+useful answers; the separate built-package probe scored 16/16, with all nonnull answers source-entailing.
+The [V27 probes](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v27) alone do not establish
+the full gate. The repeated v16 trial is running. V27 was committed before fresh full V26 outputs or scores
+were opened or graded; both trials are preserved under the committed validation plan.
+
+## Independently reviewed v23–v25 diagnostics
+
+The v15 corpus ran twice per split at frozen runtime `75c9b90` (v23) and `bd8e068` (v24), using GPT-5.6 Luna
+and independent GPT-5.6 Sol review. Both gates failed. V23 produced 253/320 useful writable answers, four
+unsupported retained sets and fourteen unsupported nonnull answers. V24 produced 275/320 useful answers:
+development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets, nine
+unsupported nonnull answers and 36 unjustified writable nulls. All 32 read-only abstentions were justified.
+No accepted qualification/language/promotion error, source-byte change or case availability failure was found
+in v24. Its separate built-package probe scored 8/16 useful answers.
+
+V24 was frozen before v23's fresh outputs were opened; its changes used only an exposed earlier probe.
+Both [v23 evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v23) and
+[v24 evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v24) are preserved.
+Errors included changing lack of arrangement into refusal, sanding into polishing, and a device-collection
+report into data collection. Subsequent extraction and verification distinguish proposition, action arguments
+and qualification, preserve supported reporter roles, and constrain whole-source absence statements.
+
+The exposed v25 diagnostics at `3988ba1` scored 14/24 useful selected answers and 15/16 useful built-package
+answers. Every nonnull answer was source-entailing. Verification correctly rejected an exclusion rewritten
+as whole-contract silence. The [complete v25 evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v25)
+remains preserved. V26's shared contract preserves the grammatical subject and scope of negative epistemic
+statements; semantic rejection remains final. V16 introduces ten fresh, independently approved writable
+held-out sources under the unchanged 90% coverage and zero-error gates.
+
 ## Independently reviewed v22 broader diagnostic
 
 The v14 corpus ran twice per split at runtime commit `4f893b4`, using GPT-5.6 Luna with independent

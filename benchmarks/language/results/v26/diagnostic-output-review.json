@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "language-diagnostic-output-review-v2",
+  "reviewer": {
+    "kind": "model",
+    "id": "gpt-5.6-sol",
+    "independent": true,
+    "didNotAuthorCorpus": true,
+    "didNotTuneRuntime": true
+  },
+  "cases": [
+    {
+      "id": "v15-held-exclusion",
+      "run": 1,
+      "retentionUseful": true,
+      "retainedSourceEntailed": true,
+      "knowledgeLanguageCompliant": true,
+      "qualificationPreserved": true,
+      "unsafeFactualPromotion": false,
+      "reason": "The retained English record faithfully preserves Ada Marlow’s direct assertion that sanding housing scratches is excluded. Its wording remains limited to that action and does not claim that the entire contract is silent about electrical-fault repair, so the adjacent nonsettlement scope is not contradicted or broadened.",
+      "answers": [
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "en",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": false,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "en",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": true,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The retrieved evidence is relevant, narrowly scoped, qualified, and source-entailed. The answer uses the requested language, attributes the exclusion to Ada Marlow, and denies sanding coverage without making any broader claim about electrical repair or the whole contract."
+        }
+      ]
+    }
+  ],
+  "summary": "The retained set, retrievals, and all eight answers are useful, qualified, language-compliant, and source-entailed. The narrow sanding exclusion does not become a claim of whole-contract silence, and no unsafe promotion occurs."
+}
