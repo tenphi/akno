@@ -35,14 +35,15 @@ import {
 import { qualificationEligibleForView } from '../memory/intent.ts';
 import {
   SEMANTIC_COMPARISON_CONTRACT,
+  PROPOSITION_SCOPE_CONTRACT,
   aggregateSemanticOutcomes,
   semanticVerdictConsistent,
   semanticVerdictFields,
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v45';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v29';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v46';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v30';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -122,6 +123,7 @@ Use the requested output_language for generated prose, regardless of question or
 Keep person, organization and product names in their exact original spelling; do not transliterate names.
 Generic source roles such as assistant and user are descriptive prose: translate them into the requested
 language even when source_speaker repeats the role. They are not proper names or schema values in answer text.
+Scope words such as fiction are descriptive prose too; translate them rather than copying source vocabulary.
 Resolve word sense from its governing context: a contractual condition is an условие договора, not a
 состояние устройства. Translate the supported term or requirement, without adding a physical-state claim.
 Preserve the source's level of specificity. A component measurement names the component, not a particular
@@ -141,6 +143,7 @@ When a generic source_label is supplied, use that localized label for attributio
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
 Keep any inner speaker and verification limits inside that scope.
+${PROPOSITION_SCOPE_CONTRACT}
 When an inner speaker is named, preserve that person as the reporting subject (INNER said/reported that).
 Especially with indeclinable names in Russian, avoid a delivery construction whose name can be read as
 recipient: "передала сообщение INNER" needlessly obscures whether INNER spoke or received the message.
@@ -223,10 +226,18 @@ for valve inspection", the valve belongs to the inspection purpose; this does no
 transported. Translate the same action, agent, object, purpose, instrument and destination without moving
 one into another role. "Sampling for casing analysis" likewise does not establish sampling the casing. Do not add parenthetical
 source-language glosses for ordinary words such as calendar frequencies; preserve exact names and identifiers.
+When the source describes coverage of a service or repair, keep that service or repair as the covered
+subject and the warranty as the covering instrument: "ремонт покрывается гарантией". Do not invert this
+into a motor covered by repair or a warranty covered by repair, including inside an unresolved question.
+If the source instead describes coverage of a component or damage, preserve that original subject.
 
 ${RETENTION_FRAME_CONTRACT}
 
-When supplied evidence gives incompatible values and does not establish which is authoritative, do not choose
+First apply any explicit clarification supplied in the evidence or bound source frame, including a
+clarification across languages. Clarified phrases refer to that same source-defined meaning; they are not
+competing values merely because their words differ. A language switch or lexical similarity alone does
+not establish equivalence. Only values still incompatible after this resolution require abstention.
+When those values remain incompatible and the source does not establish which is authoritative, do not choose
 or summarize the conflicting values in an answer block. Return no blocks and list the unresolved identity or
 value in missing_concepts. Akno will report the safe abstention and related source identities.
 When describing an assumed rule, include a stated conditional consequence that defines that rule, while

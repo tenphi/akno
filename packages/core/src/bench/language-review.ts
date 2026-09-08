@@ -15,6 +15,7 @@ import { LANGUAGE_CORPUS_V16 } from './language-corpus-v16.ts';
 import { LANGUAGE_CORPUS_V17 } from './language-corpus-v17.ts';
 import { LANGUAGE_CORPUS_V18 } from './language-corpus-v18.ts';
 import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
+import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -131,7 +132,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
                                     ? LANGUAGE_CORPUS_V18
                                     : corpusVersion === 'language-discourse-v19'
                                       ? LANGUAGE_CORPUS_V19
-                                      : null;
+                                      : corpusVersion === 'language-discourse-v20'
+                                        ? LANGUAGE_CORPUS_V20
+                                        : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -194,6 +197,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
           'language-discourse-v17',
           'language-discourse-v18',
           'language-discourse-v19',
+          'language-discourse-v20',
         ].includes(corpusVersion!) &&
         (entry.language !== source.language || entry.scenario !== source.scenario)
       )
@@ -228,6 +232,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
       'language-discourse-v17',
       'language-discourse-v18',
       'language-discourse-v19',
+      'language-discourse-v20',
     ].includes(corpusVersion!)
       ? 'language-review-packet-v2'
       : 'language-review-packet-v1',
@@ -246,6 +251,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
         'language-discourse-v17',
         'language-discourse-v18',
         'language-discourse-v19',
+        'language-discourse-v20',
       ].includes(corpusVersion!)
         ? ' Typed commitment describes the embedded proposition, not certainty that a discussion happened. Competing unconfirmed causes must remain tentative or hypothetical and must not gain ordinary factual/current eligibility. self_attested records direct user provenance; it is neither independent verification nor a requirement to verbalize self-attestation. Preserve corrective contrasts tied to the retained proposition, while unrelated adjacent details may be omitted.'
         : '') +
@@ -257,6 +263,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
         'language-discourse-v17',
         'language-discourse-v18',
         'language-discourse-v19',
+        'language-discourse-v20',
       ].includes(corpusVersion!)
         ? ' Return language-output-review-v2. Retained sets require retainedSourceEntailed:boolean: every saved proposition must be entailed in content and scope by the frozen original source; empty sets are vacuously true. Every answer requires sourceEntailed:boolean|null, null if and only if the answer is null. A nonnull answer must be entailed by the original source even when it repeats a flawed retained record. Preserve qualification separately: asserted + source_report + explicit unverified prose can faithfully represent an asserted report without independent verification. Service provision is not an instantiated booking. A focused entailed subset may omit unrelated details; explicit rejected-offer wording answers which offer was rejected without repeating the redundant no-plan clause. Omission affects usefulness unless it changes a coupled scope qualification. Any source-unfaithful accepted record or nonnull answer fails the gate, regardless of coverage.'
         : ''),
@@ -303,6 +310,7 @@ export function languageGateThresholds(corpusVersion: string) {
       'language-discourse-v17',
       'language-discourse-v18',
       'language-discourse-v19',
+      'language-discourse-v20',
     ].includes(corpusVersion!)
       ? { unsupportedRetainedOutputs: 0, unsupportedNonnullAnswers: 0 }
       : {}),
@@ -317,6 +325,7 @@ export function languageGateThresholds(corpusVersion: string) {
       'language-discourse-v17',
       'language-discourse-v18',
       'language-discourse-v19',
+      'language-discourse-v20',
     ].includes(corpusVersion)
       ? 0.9
       : 0.8,
@@ -336,6 +345,7 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
     'language-discourse-v17',
     'language-discourse-v18',
     'language-discourse-v19',
+    'language-discourse-v20',
   ].includes(reports[0]!.corpusVersion);
   if (
     review.schemaVersion !== (requiresEntailment ? 'language-output-review-v2' : 'language-output-review-v1')
@@ -498,6 +508,7 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
           'language-discourse-v17',
           'language-discourse-v18',
           'language-discourse-v19',
+          'language-discourse-v20',
         ].includes(report.corpusVersion)
           ? { breakdowns: reviewBreakdowns(observations, review) }
           : {}),

@@ -658,3 +658,7 @@ as diagnostic evidence, not relabeled as a measurement of the final guard. Verif
 qualified-answer coverage remain visible. This v2 diagnostic did not meet the live quality gate: retention
 was below target and accepted semantic/language errors were unassessed. Its held-out split is now exposed
 and cannot serve as an unseen release test after these fixes.
+
+Inferred views also recognize bounded questions about tentative assistant readings, qualified retellings, fictional promises and described unrealized variants. These cues select a view; they do not make a report or imagined claim eligible as an ordinary fact. Explicit views remain available when phrasing is ambiguous.
+
+Personal verification limits remain attached to the speaker: an assistant saying it has not examined an agreement does not establish that nobody has examined it. Generation and verification share this scope rule with coupled hypothetical consequences and fictional content. An explicit clarification in the supplied source can resolve a bilingual wording difference before conflict handling; a language switch alone cannot. These are fallible model judgments, evaluated alongside deterministic view and source-clock checks.

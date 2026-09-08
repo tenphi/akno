@@ -23,6 +23,7 @@ import type { FolderCatalogEntry } from '../kb/folders.ts';
 import { managedMemoryFingerprint } from './managed-memory.ts';
 import {
   SEMANTIC_COMPARISON_CONTRACT,
+  PROPOSITION_SCOPE_CONTRACT,
   aggregateSemanticOutcomes,
   semanticVerdictConsistent,
   semanticVerdictFields,
@@ -34,8 +35,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v36';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v25';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v37';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v26';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -154,6 +155,7 @@ a broader restriction on the underlying document. Use source_speaker for the out
 only for the actual inner reporters; do not repeat the outer narrator in that chain.
 
 ${QUALIFICATION_CONTRACT}
+${PROPOSITION_SCOPE_CONTRACT}
 
 Allowed disposition depends on kind: claim/preference use active or superseded; decision uses accepted,
 rejected or superseded; plan uses proposed, accepted, rejected, cancelled, completed or superseded; event

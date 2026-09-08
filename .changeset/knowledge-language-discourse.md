@@ -85,3 +85,5 @@ Keep epistemic nonresolution distinct from claims about a document's silence or 
 Constrain interpretation of singly supported extracted records with their exact bounded retention source frame inside existing answer model calls. Bind to live item/provenance hashes, preserve payload-only fallback, keep private frames out of public context/citations, and cap complete frames in retrieval order. Recognize bounded unresolved-question alternatives without bypassing semantic verification.
 
 Require a separate, consistent retained-excerpt selection verdict when an answer uses an original source frame, so negative or missing selection cannot be overridden by the existing semantic dimensions.
+
+Keep tentative assistant readings, qualified retellings, fictional promises and described unrealized variants in their inferred memory views. Preserve personal verification limits and covered-service roles across languages, resolve explicit source clarification before treating values as incompatible, and accept a source-bound unknown calendar-date form without changing factual eligibility.

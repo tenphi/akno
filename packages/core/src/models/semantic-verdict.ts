@@ -32,6 +32,25 @@ const dimensions = [
 
 const comparisonText = z.string().trim().min(1).max(320);
 
+/** Composition and verification must compare the same scoped unit when compressing source prose. */
+export const PROPOSITION_SCOPE_CONTRACT = `Preserve these boundaries within each selected proposition:
+- A personal epistemic limit keeps its actor and object. "I have not examined the terms or confirmed X"
+  supports "the speaker has not examined the terms or confirmed X", not "the terms have not been
+  examined" or "X has not been confirmed" without that actor. Naming the speaker as outer reporter does
+  not bind a later passive absence to them. Preserve examination and confirmation as separate limits;
+  merely calling X tentative/unverified cannot replace either limit. Apply this equally to assistant,
+  user and external speakers; never infer global ignorance, document silence or universal nonverification.
+- A hypothetical premise and its explicitly stated conditional consequence form one scoped unit. Keep
+  both when selecting that rule. A fictional promise keeps its promising party, recipient, benefit and
+  material limits inside fictional scope. A proposal to discuss it alone does not answer what it promises.
+  Do not infer that a complete source omits content merely because one retrieved excerpt lacks it.
+- Neutral provenance may introduce a record without claiming personal writing or recording. If that
+  action is unsupported, use neutral attribution; do not add "there is no evidence SOURCE recorded it".
+  Unsupported affirmative and negative metaclaims are equally unsupported.
+- Preserve real material acts separately from neutral framing: proposing an assumption is still a
+  proposal by its actual actor, even when the embedded rule is hypothetical. A proposal to discuss is not
+  completed discussion. Qualification must govern the affected clause, not appear only as a late disclaimer.`;
+
 /** A comparison makes a verdict auditable; it never supplies evidence or overrides a failed check. */
 export const semanticVerdictFields = {
   comparison: z.object({
@@ -68,6 +87,11 @@ export const SEMANTIC_COMPARISON_CONTRACT = `Before deciding the three booleans,
 - action_arguments: compare action, actor, object, purpose and any material modifier attachment. For a
   measurement or inspection, compare the named component separately from the property, method and result;
 - qualification_scope: compare speaker layers, polarity, commitment, disposition, uncertainty and time.
+For coverage language, compare what is covered and what provides coverage. "Repair is covered by the
+warranty" / "ремонт покрывается гарантией" does not mean "the motor is covered by repair" / "двигатель
+покрывается ремонтом" or "the warranty is covered by repair". Preserve those roles inside unresolved
+questions and negations too: retaining uncertainty does not excuse reversing the embedded relationship.
+${PROPOSITION_SCOPE_CONTRACT}
 For each negative epistemic clause, identify whose knowledge is lacking and what source or document the
 clause describes. "Neither inclusion nor exclusion is established" in an open question does not entail
 "neither is established by the agreement terms" / "условиями соглашения не установлены". The latter

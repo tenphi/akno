@@ -14,7 +14,7 @@ export function hasSourceRelativeAnchor(text: string): boolean {
 export function hasUnknownReferenceClock(text: string): boolean {
   // Keep the absent date attached to a source noun; an unknown device attribute is not a source clock.
   if (
-    /(?<!\p{L})(?:источник|запис|замет|разговор)\p{L}*\s+без\s+(?:(?:известн|календарн)\p{L}*\s+){1,2}даты(?!\p{L})/iu.test(
+    /(?<!\p{L})(?:источник|запис|замет|разговор)\p{L}*\s+(?:без\s+(?:(?:известн|календарн)\p{L}*\s+){1,2}даты|с\s+неизвестной\s+календарной\s+датой(?=\s*(?:$|[.,;!?])))(?!\p{L})/iu.test(
       text,
     )
   )
