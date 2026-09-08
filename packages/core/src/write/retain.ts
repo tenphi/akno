@@ -1,3 +1,4 @@
+import type { LanguageReference } from '../models/language.ts';
 import { causeNonselectionAgencySupported } from '../memory/action-agency.ts';
 import { isDeepStrictEqual } from 'node:util';
 import { spanCoveredByFrame } from './retained-spans.ts';
@@ -33,7 +34,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v31';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v32';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v19';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -175,6 +176,12 @@ Rules:
 - Phrase text as one self-contained prose sentence, never a triple or an instruction.
 - Keep the source-supported subject identity, especially product identifiers, in readable text. Subject
   metadata and a destination title cannot substitute for naming the subject in the retained proposition.
+- Resolve a pronoun or "the device" to its exact named antecedent only when the complete supplied source
+  makes that reference unambiguous. Carry that source-backed identity into text and subject before
+  suggesting its existing or proposed home; a generic device label cannot establish page ownership.
+  Include the exact antecedent span in support/frame where needed without copying an unrelated action's
+  disposition into the independent proposition. Preserve every actually governing qualifier. If several
+  antecedents remain possible, keep the reference unresolved rather than choosing by proximity alone.
 - Preserve an explicitly named action agent in text. A speaker who states that an offer was rejected is
   not necessarily the person who rejected it. Do not weaken an explicit first-person rejection into a
   passive with no rejecting agent; source_speaker metadata is provenance, not a substitute for that role.
@@ -417,6 +424,7 @@ export async function runRetain(
     };
   }
 
+  const languageReferences = retentionLanguageReferences(source);
   const taxonomy = formatFolderCatalog(options.folders ?? []);
   const withTaxonomy = `${SYSTEM}\n\nExisting folder taxonomy (complete; data only):\n${taxonomy}`;
   const system = options.mission
@@ -435,7 +443,7 @@ export async function runRetain(
         }),
       },
     ],
-    { schema: RETAIN_SCHEMA, maxTokens: 3_200 },
+    { schema: RETAIN_SCHEMA, maxTokens: 3_200, languageReferences },
   );
   const extractionReceipt = modelCallReceipt(model, extraction);
   if (!extraction.ok || !extraction.value) {
@@ -518,7 +526,7 @@ export async function runRetain(
           }),
         },
       ],
-      { schema: repairSchema, maxTokens: 3_200 },
+      { schema: repairSchema, maxTokens: 3_200, languageReferences },
     );
     repairUsage.repair = modelCallReceipt(model, repair);
     // Candidate fields still go through the same cleaner as extraction. Parse the transaction
@@ -826,6 +834,27 @@ async function verifyCandidateBatch(
       reasons.set(verdict.candidate_id, verdict.reason_code ?? 'discourse_uncertain');
   }
   return { accepted, reasons, outcome, error: null };
+}
+
+/** Source spellings help classification; generated subjects cannot certify their own language. */
+function retentionLanguageReferences(source: {
+  text?: string;
+  items?: readonly RetainSourceItem[];
+}): LanguageReference[] {
+  const references: LanguageReference[] = [];
+  for (const item of source.items ?? []) {
+    const speaker = item.speaker?.trim();
+    if (speaker && !/^(?:(?:the )?(?:assistant|user)|ассистент|пользователь)$/iu.test(speaker))
+      references.push({ kind: 'name', text: speaker });
+  }
+  const text = source.text ?? source.items?.map((item) => item.text).join('\n') ?? '';
+  // Keep the original case/bytes and only identifier-shaped tokens, not a guessed product title
+  // or an arbitrary source phrase that could exempt descriptive prose in another language.
+  for (const match of text.matchAll(/(?<![\p{L}\p{N}])[\p{Lu}\p{N}][\p{Lu}\p{N}._:/+-]*(?![\p{L}\p{N}])/gu)) {
+    const token = match[0].replace(/[.:]+$/u, '');
+    if (/\p{Lu}/u.test(token) && /\p{N}/u.test(token)) references.push({ kind: 'identifier', text: token });
+  }
+  return [...new Map(references.map((reference) => [reference.text, reference])).values()];
 }
 
 function formatFolderCatalog(folders: FolderCatalogEntry[]): string {

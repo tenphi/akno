@@ -40,7 +40,7 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v38';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v39';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v23';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -101,6 +101,9 @@ When a generic source_label is supplied, use that localized label for attributio
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
 Keep any inner speaker and verification limits inside that scope.
+When an inner speaker is named, preserve that person as the reporting subject (INNER said/reported that).
+Especially with indeclinable names in Russian, avoid a delivery construction whose name can be read as
+recipient: "передала сообщение INNER" needlessly obscures whether INNER spoke or received the message.
 Use this direct attribution construction instead of nominal readings or passive record-attribution
 wording; those variants can obscure the outer reporter.
 Preserve the actual agent of every material action, including an absence of choice. A source-named person
@@ -109,6 +112,12 @@ unambiguous personal subject with that nonselection; do not replace it with pass
 Russian "причина не выбрана" or "причину не выбрали" omits the named nonselector; preserve that actor.
 The same applies to "neither explanation selected" and "ни одна не выбрана": naming a person as
 considering alternatives does not bind that person to the separate passive nonselection.
+For a proposal or rejection whose actor is named in the readable evidence, state that actor with the
+proposing/rejecting verb in either answer language. "According to SOURCE, it was proposed" does not say
+who proposed it. Do not infer the actor merely from source_speaker, and leave genuinely unspecified booking
+agents unspecified. Bind every actor from the cited proposition itself.
+Attach tentative/unconfirmed qualification to its supported content or timing. Do not call the source
+record preliminary merely because the recorded hypothesis or proposed timing is tentative.
 The display_labels are translation aids for kind, commitment, disposition and temporal_status. They add no proposition and
 change no qualification. Express relevant status in the requested language; do not copy English enum values
 into Russian prose. Temporal status qualifies the timing, separately from the proposition's commitment

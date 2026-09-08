@@ -207,38 +207,41 @@ describe('cross-language retention boundary', () => {
         support: [{ quote: source }],
         discourse_frame: [{ quote: source }],
       };
-      const chat = vi.fn(async (messages: { content: string }[]) => {
-        const call = chat.mock.calls.length;
-        if (call === 1)
-          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
-        const payload = JSON.parse(messages.at(-1)!.content);
-        if (call === 2) {
-          expect(payload.validation_issues[0].reason).toContain('leading negative proposition');
+      const chat = vi.fn(
+        async (messages: { content: string }[], options: { languageReferences?: unknown[] }) => {
+          const call = chat.mock.calls.length;
+          if (call <= 2) expect(options.languageReferences).toEqual([{ kind: 'identifier', text: 'QX-100' }]);
+          if (call === 1)
+            return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+          const payload = JSON.parse(messages.at(-1)!.content);
+          if (call === 2) {
+            expect(payload.validation_issues[0].reason).toContain('leading negative proposition');
+            return {
+              ok: true,
+              value: JSON.stringify(
+                repairBatch([{ ...candidate, polarity: outcome === 'unchanged' ? 'affirmed' : 'negated' }]),
+              ),
+              latencyMs: 22,
+            };
+          }
+          expect(payload.candidates[0].text).toBe(source);
+          expect(payload.candidates[0].polarity).toBe('negated');
           return {
             ok: true,
-            value: JSON.stringify(
-              repairBatch([{ ...candidate, polarity: outcome === 'unchanged' ? 'affirmed' : 'negated' }]),
-            ),
-            latencyMs: 22,
+            value: JSON.stringify({
+              verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+                candidate_id: c.candidate_id,
+                ...semanticAudit(outcome === 'accepted', true, true),
+                proposition_supported: outcome === 'accepted',
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
+                reason_code: outcome === 'accepted' ? null : 'discourse_uncertain',
+              })),
+            }),
+            latencyMs: 33,
           };
-        }
-        expect(payload.candidates[0].text).toBe(source);
-        expect(payload.candidates[0].polarity).toBe('negated');
-        return {
-          ok: true,
-          value: JSON.stringify({
-            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
-              candidate_id: c.candidate_id,
-              ...semanticAudit(outcome === 'accepted', true, true),
-              proposition_supported: outcome === 'accepted',
-              action_arguments_preserved: true,
-              qualification_scope_preserved: true,
-              reason_code: outcome === 'accepted' ? null : 'discourse_uncertain',
-            })),
-          }),
-          latencyMs: 33,
-        };
-      });
+        },
+      );
       const model = {
         available: true,
         modelId: 'invented-denial-repair',

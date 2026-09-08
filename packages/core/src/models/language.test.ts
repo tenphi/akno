@@ -1,3 +1,4 @@
+import { runRetain } from '../write/retain.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ModelClient } from './client.ts';
 import { generatedProse } from './language.ts';
@@ -44,6 +45,35 @@ function responses(values: unknown[]) {
 }
 
 describe('explicit generation language', () => {
+  it('carries immutable retention references to the first language check without overriding a false verdict', async () => {
+    const sentence =
+      'Ada Marlow has no answer to whether the Zephyr QX-100 agreement includes return delivery.';
+    const output = { candidates: [{ subject: 'Zephyr QX-100 agreement return delivery', text: sentence }] };
+    const requests = responses([output, { compliant: false }]);
+    const result = await runRetain('', client(), {
+      sourceItems: [
+        {
+          item_id: 'turn-1111',
+          role: 'user',
+          speaker: 'Ada Marlow',
+          text: 'Вопрос о Zephyr QX-100 пока без ответа.',
+        },
+        { item_id: 'turn-2222', role: 'assistant', speaker: 'assistant', text: 'Это вопрос о QX-100.' },
+      ],
+    });
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).toEqual({
+      language: 'en',
+      excerpts: [output.candidates[0].subject, sentence],
+      supplied_references: [
+        { kind: 'name', text: 'Ada Marlow' },
+        { kind: 'identifier', text: 'QX-100' },
+      ],
+    });
+    expect(result.candidates).toEqual([]);
+    expect(result.degradedReason).toBe('language_mismatch');
+    expect(requests).toHaveLength(2);
+  });
+
   it('supplies only source reference hints used in prose without removing that prose from the check', async () => {
     const output = { text: 'Ada Marlow отклонила предложение для Zephyr QX-100.' };
     const requests = responses([output, { compliant: false }]);

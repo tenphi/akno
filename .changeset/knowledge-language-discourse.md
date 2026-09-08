@@ -69,3 +69,5 @@ Keep a narrator's corrective clarification outside an inner speaker's reported c
 Distinguish contractual terms from device state, proposal commitment from tentative timing, and record metadata from evidence. Preserve negative booking subjects and source-relative intervals after undated records. Constrain automatic placement to one admitted supplied choice while preserving semantic ownership and read-only checks.
 
 Preserve personal nonselection before generated retention and during answers, including coordinated English/Russian alternatives. Keep independent booking denials separate from rejected-offer frames while preserving complete original-source verification and the single structural-repair limit.
+
+Supply retention language checks with immutable source spelling hints while preserving negative verdicts and all prose checks. Clarify supported device reference resolution before ownership, explicit proposal/report action roles, and uncertainty attached to content or timing.
