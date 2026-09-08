@@ -11,6 +11,93 @@ const repairBatch = (candidates: unknown[]) => ({
 
 describe('cross-language retention boundary', () => {
   it.each([
+    ['Ada Marlow considers two tentative explanations; neither explanation selected.', false],
+    ['Ada Marlow considers two tentative explanations; she has selected neither explanation.', true],
+  ])('preserves personal nonselection before persistence: %s', (text, accepted) => {
+    const source = 'Я, Ada Marlow, рассматриваю две версии; ни одну причину я не выбрала.';
+    const candidate = {
+      kind: 'claim',
+      text,
+      subject: 'Zephyr QX-100',
+      attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+      discourse: { commitment: 'tentative', disposition: 'active' },
+      epistemic: { basis: 'self_attested' },
+      polarity: 'affirmed',
+      support: [{ quote: source }],
+      discourse_frame: [{ quote: source }],
+    };
+    const result = cleanCandidateBatch([candidate], { sourceText: source, generated: true });
+    expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+    if (!accepted) expect(result.held[0]?.reason).toContain('personal nonselector');
+    expect(cleanCandidateBatch([candidate], { sourceText: source }).candidates).toHaveLength(1);
+  });
+
+  it.each([true, false])(
+    'verifies the complete original source after separating an independent denial frame: %s',
+    async (supported) => {
+      const denial = 'No handover of Zephyr QX-100 has been booked.';
+      const source = denial + ' The offered shipment was rejected, not accepted.';
+      const candidate = {
+        kind: 'claim',
+        text: denial,
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'negated',
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+        time: null,
+      };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        const call = chat.mock.calls.length;
+        if (call === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (call === 2) {
+          expect(payload.validation_issues[0].reason).toContain('rejection scope');
+          return {
+            ok: true,
+            value: JSON.stringify(
+              repairBatch([
+                { ...candidate, support: [{ quote: denial }], discourse_frame: [{ quote: denial }] },
+              ]),
+            ),
+            latencyMs: 22,
+          };
+        }
+        expect(payload.source.text).toBe(source);
+        expect(payload.repair_obligations).toHaveLength(1);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              ...semanticAudit(supported, true, true),
+              proposition_supported: supported,
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
+              reason_code: supported ? null : 'discourse_uncertain',
+            })),
+          }),
+          latencyMs: 33,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-denial-scope',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(chat).toHaveBeenCalledTimes(3);
+      expect(result.candidates).toHaveLength(supported ? 1 : 0);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([
     ['No shipment of Zephyr QX-100 has been arranged.', 'affirmed', true, false],
     ['No shipment of Zephyr QX-100 has been arranged.', undefined, true, false],
     ['No shipment of Zephyr QX-100 has been arranged.', null, true, false],

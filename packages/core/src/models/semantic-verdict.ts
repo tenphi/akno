@@ -74,6 +74,9 @@ Separate neutral source framing (according to, states, the recorded question, in
 from material embedded actions. Such framing does not independently claim a new speaking/writing event.
 Do not demand identical framing verbs when the sourced content and its actors are preserved. Still reject
 turning a proposed discussion into a completed discussion or changing an embedded action, its agent or object.
+Check the actor of a negated choice independently from the actor of considering or reporting. A source
+saying that a person has not selected a cause does not support an unassigned "neither selected" state;
+merely naming that person elsewhere does not bind them to the embedded nonselection.
 Use the governing domain to resolve a word's sense: a contractual condition is a term or requirement,
 not the physical condition/state of a device. Fluency and preserved uncertainty do not excuse a changed sense.
 List a mismatch only when a concrete clause selects an unsupported meaning, changes a role or value,

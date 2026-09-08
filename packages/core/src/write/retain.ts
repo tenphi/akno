@@ -1,3 +1,4 @@
+import { causeNonselectionAgencySupported } from '../memory/action-agency.ts';
 import { isDeepStrictEqual } from 'node:util';
 import { spanCoveredByFrame } from './retained-spans.ts';
 import { explicitlyUnknownTime } from './retained-time.ts';
@@ -32,8 +33,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v30';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v18';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v31';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v19';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -177,6 +178,13 @@ Rules:
 - Preserve an explicitly named action agent in text. A speaker who states that an offer was rejected is
   not necessarily the person who rejected it. Do not weaken an explicit first-person rejection into a
   passive with no rejecting agent; source_speaker metadata is provenance, not a substitute for that role.
+- Preserve a personal choice or nonchoice as that person's action. If the source says a named person
+  has not selected a cause or explanation, keep that person as the grammatical nonselector in the retained
+  sentence; "neither explanation selected" loses the actor even if the person is named as considering them.
+- Keep a standalone factual denial of booking separate from a rejected offer. Give each independent
+  proposition its own deciding support/frame; do not copy unrelated rejection wording into the denial's
+  tuple. Never omit an enclosing hypothesis, quotation, speaker or other context that actually qualifies
+  the denial. Complete original source context remains authoritative for semantic verification.
 - Preserve a source's actual activity when retaining that activity: discussing hypotheses and privately
   considering them are not interchangeable event descriptions. For an embedded fictional proposition,
   use neutral framing such as "In SOURCE's fictional example, ..."; do not turn a proposed discussion
@@ -490,7 +498,7 @@ export async function runRetain(
           role: 'system',
           content:
             system +
-            "\nRepair the rejected representation once using the original source and validation issues. Return only repairs for allowed candidate_index positions. Preserve each position's source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. Admitted positions are immutable. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a position if no safe repair exists. Do not return events or new positions.",
+            "\nRepair the rejected representation once using the original source and validation issues. Return only repairs for allowed candidate_index positions. Preserve each position's source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. Admitted positions are immutable. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a position if no safe repair exists. Do not return events or new positions.",
         },
         {
           role: 'user',
@@ -1087,6 +1095,15 @@ function cleanCandidateBatchWithPositions(
         reason_code: 'discourse_uncertain',
         reason:
           'nonfactual readable prose must name its original outer source speaker, independently of any inner speaker',
+      });
+      continue;
+    }
+    if (options.generated && !causeNonselectionAgencySupported(text, sourceEvidence(spans.frame))) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'preserve the source-named personal nonselector in readable prose; an unassigned neither-selected state loses the action agent even when that person is named as considering the hypotheses',
       });
       continue;
     }

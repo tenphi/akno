@@ -1,3 +1,4 @@
+import { causeNonselectionAgencySupported } from '../memory/action-agency.ts';
 import { proseEligibleForView } from '../kb/prose.ts';
 import { z } from 'zod';
 import fs from 'node:fs';
@@ -39,8 +40,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v37';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v22';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v38';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v23';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -106,6 +107,8 @@ Preserve the actual agent of every material action, including an absence of choi
 who has not chosen a cause is not a claim that nobody has chosen one. Keep the person's name or an
 unambiguous personal subject with that nonselection; do not replace it with passive or impersonal wording.
 Russian "причина не выбрана" or "причину не выбрали" omits the named nonselector; preserve that actor.
+The same applies to "neither explanation selected" and "ни одна не выбрана": naming a person as
+considering alternatives does not bind that person to the separate passive nonselection.
 The display_labels are translation aids for kind, commitment, disposition and temporal_status. They add no proposition and
 change no qualification. Express relevant status in the requested language; do not copy English enum values
 into Russian prose. Temporal status qualifies the timing, separately from the proposition's commitment
@@ -1342,32 +1345,6 @@ function hasBoundReporter(text: string, label: string): boolean {
       `${source}[’']s\\s+${qualifier}(?:report|account|statement|assertion)\\b`,
     'iu',
   ).test(text.normalize('NFKC'));
-}
-
-/** Preserve a readable singular nonselector instead of broadening it to an unassigned choice state. */
-function causeNonselectionAgencySupported(answerText: string, support: string): boolean {
-  // Provenance metadata is not action agency. This floor activates from readable singular choice
-  // grammar only; the semantic verifier still checks the actual identity and all clause relationships.
-  const singular =
-    /\b(?:has not|hasn['’]t) (?:yet )?(?:chosen|selected) (?:an? |the )?cause\b|(?:не (?:выбрала?|выбирала?)\s+причин\p{L}*|причин\p{L}*\s+(?:(?:она|он|я|пока|ещ[её]|так и)\s+){0,3}не (?:выбрала?|выбирала?))(?=$|[^\p{L}])/iu;
-  if (!singular.test(support)) return true;
-  // A second personal clause cannot license an agentless clause elsewhere in the same block.
-  const unassigned =
-    /\b(?:no cause (?:has|had) been (?:chosen|selected)|(?:a |the )?cause (?:has|had) not (?:yet )?been (?:chosen|selected))\b|(?<![\p{L}])(?:причин\p{L}*\s+(?:(?:пока|ещ[её]|так и)\s+){0,2}не (?:выбрана?|выбрали|выбирали)|не (?:выбрали|выбирали)\s+причин\p{L}*)(?![\p{L}])/giu;
-  return [...answerText.matchAll(unassigned)].every((match) => {
-    const tail = answerText.slice(match.index + match[0].length);
-    const english = /[a-z]/iu.test(match[0]);
-    const agent = tail.match(english ? /^\s+by\s+([^.!?;,]+)/u : /^\s+([^.!?;,]+)/u)?.[1];
-    if (!agent) return false;
-    const pronoun = agent.match(/^(?:her|him|me|ею|им|мной)(?=$|[^\p{L}])/iu)?.[0];
-    // An explicit singular agent may retain passive voice. Its identity still needs verification.
-    const name = agent.match(/^\p{Lu}[\p{L}’'-]*(?:\s+\p{Lu}[\p{L}’'-]*){0,3}/u)?.[0];
-    const single = pronoun ?? (name && support.includes(name) ? name : null);
-    if (!single) return false;
-    const prefix = tail.match(english ? /^\s+by\s+/u : /^\s+/u)![0];
-    const rest = tail.slice(prefix.length + single.length);
-    return !/^\s*(?:(?:,\s*)?(?:and|with|и|с)(?=$|[^\p{L}])|,\s*\p{Lu})/u.test(rest);
-  });
 }
 
 function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerContextItem[]): boolean {
