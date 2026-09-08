@@ -40,8 +40,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v42';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v26';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v43';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v27';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -100,7 +100,12 @@ Resolve word sense from its governing context: a contractual condition is an у�
 Preserve the source's level of specificity. A component measurement names the component, not a particular
 measured property, method or result. Leave those details unspecified unless the cited source supplies them;
 do not complete a technical phrase from domain knowledge. The same rule applies to causal explanations,
-attributes and means. Translate the stated content without adding a more specific interpretation.
+attributes and means. Preserve stated degree, manner and mechanism too: do not broaden a specific
+insertion/seating fault into general incorrect installation, or a loose connection into an unspecified
+defect. Translate the stated content without adding or erasing a material restriction.
+The question selects what to answer; its wording is not evidence for its presuppositions. If it asks what
+someone recorded but the source only attributes a report to them, describe that report without claiming
+that they personally wrote or recorded it. Apply this distinction to every action presupposed by a question.
 Use a term's explicitly clarified referent consistently throughout the answer. If cited context clarifies
 an ambiguous component name, translate that meaning rather than another isolated dictionary sense. Do not
 introduce an additional component and then repeat the correct one in a later clause. Only the supplied
@@ -532,6 +537,8 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   if (supportRejected > 0) validation.rejection_counts.semantic_support = supportRejected;
   const citations = citedEvidence(verifiedBlocks, evidence).map(citationFor);
   const rendered = verifiedBlocks.map((block) => renderBlock(block, evidence)).join('\n\n');
+  // Generated missing concepts and recall labels are unverified control data. Interpolating them
+  // into a public note would bypass both answer-language and cited-proposition verification.
   const missing = dedupeStrings([
     ...parsed.data.missing_concepts,
     ...Object.entries(recalled.coverage ?? {}).flatMap(([concept, covered]) => (covered ? [] : [concept])),
@@ -566,7 +573,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
               : 'the independent support verifier found no fully supported answer block',
           }
         : missing.length > 0
-          ? { note: `memory evidence did not resolve: ${missing.join(', ')}` }
+          ? { note: 'memory evidence did not resolve every requested detail' }
           : {}),
     };
   }
@@ -579,7 +586,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
     ...generatedBase,
     reason_code: 'answered',
     ...(missing.length > 0
-      ? { note: `memory evidence did not cover: ${missing.join(', ')}` }
+      ? { note: 'memory evidence did not cover every requested detail' }
       : withheld
         ? { note: 'one or more draft blocks were withheld because their support could not be established' }
         : {}),
@@ -1456,9 +1463,9 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
 
 function tentativeLanguage(text: string): boolean {
   // Spaced passive uncertainty must qualify an epistemic noun, not deny an unrelated action.
-  const epistemicHead = '(?:гипотез\\p{L}*|верси\\p{L}*|сообщени\\p{L}*|утверждени\\p{L}*)';
+  const epistemicHead = '(?<!\\p{L})(?:гипотез\\p{L}*|верси\\p{L}*|сообщени\\p{L}*|утверждени\\p{L}*)';
   const unconfirmed =
-    'не\\s+(?:был[аои]?\\s+)?подтвержд[её]н(?:[аоы]|н(?:ый|ая|ое|ые|ого|ой|ому|ую|ым|ыми|ых))?(?!\\p{L})';
+    '(?<!\\p{L})не\\s*(?:был[аои]?\\s+)?(?:подтвержд[её]н|доказан)(?:[аоы]|н(?:ый|ая|ое|ые|ого|ой|ому|ую|ым|ыми|ых))?(?!\\p{L})';
   const spacedUncertainty = new RegExp(
     `${unconfirmed}\\s+${epistemicHead}|${epistemicHead}\\s+(?:(?:пока|ещ[её]|остаются?|оста[её]тся)\\s+){0,2}${unconfirmed}`,
     'iu',
@@ -1471,7 +1478,7 @@ function tentativeLanguage(text: string): boolean {
     /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|непроверенн|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
       text,
     ) ||
-    /\bunsupported (?:hypothes(?:is|es)|explanations?|possibilit(?:y|ies)|claims?|reports?|theor(?:y|ies)|beliefs?|assumptions?|conclusions?)\b|\b(?:hypothes(?:is|es)|explanations?|claims?|reports?|beliefs?) (?:is|are|remains?) (?:equally |still )?unsupported\b/iu.test(
+    /\b(?:unsupported|unproven) (?:hypothes(?:is|es)|explanations?|possibilit(?:y|ies)|claims?|reports?|theor(?:y|ies)|beliefs?|assumptions?|conclusions?)\b|\b(?:hypothes(?:is|es)|explanations?|claims?|reports?|beliefs?) (?:is|are|remains?) (?:equally |still )?(?:unsupported|unproven|not (?:yet )?proven)\b/iu.test(
       text,
     )
   );

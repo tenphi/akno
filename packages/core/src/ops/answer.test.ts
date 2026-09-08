@@ -106,6 +106,38 @@ describe('grounded answer discovery surface', () => {
     expect(result.degraded).toBeUndefined();
   });
 
+  it.each([true, false])(
+    'keeps unverified missing claims out of public notes (answer: %s)',
+    async (hasAnswer) => {
+      const fabricated = 'В источнике подтверждена бесплатная замена всех деталей.';
+      await useAnswerModel({
+        generation: {
+          blocks: hasAnswer ? [{ text: 'The warranty lasts 5 years.', evidence_ids: ['E1'] }] : [],
+          missing_concepts: [fabricated],
+        },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'What does the silverpine warranty marker say?',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      AnswerOutput.parse(result);
+      expect(result.outcome).toBe(hasAnswer ? 'partial' : 'not_answered');
+      expect(result.note).toBe(
+        hasAnswer
+          ? 'memory evidence did not cover every requested detail'
+          : 'memory evidence did not resolve every requested detail',
+      );
+      expect(result.answer).toBe(hasAnswer ? 'The warranty lasts 5 years. [products/zephyr-qx-100:3]' : null);
+      expect(result.citations).toHaveLength(hasAnswer ? 1 : 0);
+      expect(result.related_page_slugs).toContain('products/zephyr-qx-100');
+      expect(JSON.stringify(result)).not.toContain(fabricated);
+      expect(modelRequests).toHaveLength(hasAnswer ? 2 : 1);
+    },
+  );
+
   it('makes the slower qualified retrieval path explicit', async () => {
     const result = await memory.answer({
       question: 'What does the silverpine warranty marker say?',
@@ -1377,6 +1409,43 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'Ada Marlow обсуждала две пока не доказанные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      true,
+    ],
+    [
+      'Ada Marlow обсуждала две недоказанные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      true,
+    ],
+    [
+      'Ada Marlow обсуждала версии silverpine: ослабленный клапан и изношенный кабель. Эти версии пока не доказаны.',
+      true,
+    ],
+    ['Ada Marlow considered two unproven hypotheses about silverpine: a loose valve and a worn cable.', true],
+    [
+      'Ada Marlow considered silverpine hypotheses of a loose valve and a worn cable; the hypotheses are not yet proven.',
+      true,
+    ],
+    [
+      'Ada Marlow обсуждала две доказанные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала две вполне доказанные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала не только доказанные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала гипотезы silverpine: ослабленный клапан и изношенный кабель. Получение устройства не доказано.',
+      false,
+    ],
+    [
+      'Ada Marlow discussed silverpine hypotheses of a loose valve and a worn cable. The delivery is unproven.',
+      false,
+    ],
+    [
       'Ada Marlow обсуждала две не подтверждённые гипотезы silverpine: ослабленный клапан и изношенный кабель.',
       true,
     ],
@@ -1412,30 +1481,58 @@ describe('grounded answer discovery surface', () => {
       'Ada Marlow described the silverpine hypotheses of a loose valve and a worn cable; the hypotheses remain preliminary.',
       true,
     ],
-  ] as const)(
-    'keeps spaced Russian uncertainty attached to a qualified explanation: %s',
-    async (text, accepted) => {
-      write(
-        'products/zephyr-qx-100.md',
-        '# Zephyr QX-100\n\n<!-- akno:item mem_spaced v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow recorded two unconfirmed silverpine explanations: a loose valve and a worn cable; neither has evidence or is established.\n',
-      );
-      await memory.index({ verify: true });
-      await useAnswerModel({
-        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-        verification: { verdicts: [verdict('B1', true)] },
-      });
-      const result = await memory.answer({
-        question: 'Which silverpine hypotheses did Ada Marlow discuss?',
-        memory_view: 'discussion',
-        filter: { source: 'page' },
-        expand: false,
-        graph: false,
-      });
-      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
-      expect(modelRequests).toHaveLength(accepted ? 2 : 1);
-      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
-    },
-  );
+  ] as const)('keeps uncertainty attached to a qualified explanation: %s', async (text, accepted) => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_spaced v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow recorded two unconfirmed silverpine explanations: a loose valve and a worn cable; neither has evidence or is established.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'Which silverpine hypotheses did Ada Marlow discuss?',
+      memory_view: 'discussion',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+    expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+    if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+  });
+
+  it('still rejects a semantically unsupported unproven-hypothesis draft after the grammar floor', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_unproven v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow considers two unconfirmed silverpine explanations: a loose valve and a worn cable.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow рассматривает две пока не доказанные гипотезы silverpine: сломанный клапан и сгоревший кабель.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [verdict('B1', false)] },
+    });
+    const result = await memory.answer({
+      question: 'Which silverpine hypotheses did Ada Marlow consider?',
+      memory_view: 'discussion',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toBeNull();
+    expect(result.reason_code).toBe('verification_rejected');
+    expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
+    expect(modelRequests).toHaveLength(2);
+  });
 
   it.each([
     ['Ada Marlow has not chosen a cause.', true],

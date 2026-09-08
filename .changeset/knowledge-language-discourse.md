@@ -77,3 +77,5 @@ Preserve the source's level of specificity through generated knowledge and answe
 Preserve a source-named proposer separately from the reporting source. Hold bounded agentless proposal descriptions in generated retention and answers while admitting supported active, passive and possessive agency to complete semantic verification. Exact caller-provided candidates retain their model-free contract.
 
 Use an explicitly clarified referent consistently across bilingual retention and answers. Compare each generated clause against complete source context so an isolated dictionary sense or a later correct clause cannot authorize an incompatible component addition.
+
+Preserve material degree, manner and mechanism without rejecting grammar-neutral measurement complements. Recognize bounded unproven-hypothesis wording before mandatory semantic verification, and keep unverified missing-concept text out of public answer notes while preserving partial outcomes.

@@ -91,13 +91,18 @@ clause with that clarified meaning. A dictionary sense available in isolation is
 conflicts with the source's clarification. A later correct clause does not retract an earlier incompatible
 component or claim. Do not infer alias equivalence from lexical similarity or outside knowledge; when no
 supplied clarification resolves the ambiguity, preserve that ambiguity instead of selecting a new sense.
-Preserve the source's level of specificity. Naming a component to be measured does not establish which
-property is measured, which method is used, or what result is expected. A plausible property associated
-with that component is still unsupported unless the supplied source establishes it. An answer that adds
-such a property fails proposition_supported and action_arguments_preserved even when the component and
-general purpose remain recognizable. Generic wording such as measuring a component's parameters does
-not select a particular parameter. Apply the same comparison to other added attributes, causes and means;
-ordinary grammatical expansion without a new semantic restriction is not an added specification.
+Compare semantic restrictions, not word counts. A generic complement such as parameters / параметры
+in a measurement phrase does not identify a particular measured property and is not an unsupported
+specialization merely because the source leaves that complement implicit. Before rejecting added
+specificity, identify the concrete property, method, result, degree or other restriction actually selected
+by the candidate. A named component alone cannot support a particular associated property from domain
+knowledge; adding that property fails proposition_supported and action_arguments_preserved.
+Preserve material restrictions in the other direction too. A specific faulty action, degree or manner
+must not become a general defect: changing loose seating into general improper installation loses the
+described mechanism even if the broader claim is logically entailed. A material lost action modifier fails
+action_arguments_preserved; do not mislabel an entailed generalization as an unsupported added proposition.
+Ordinary grammatical expansion without a new restriction is allowed, while a described mechanism cannot
+be erased merely to produce a fluent summary. Unrelated adjacent details may still be omitted.
 List a mismatch only when a concrete clause selects an unsupported meaning, changes a role or value,
 or loses a material qualification. Its detail must name that clause and the conflicting or missing source
 basis. Keep comparison fields below 320 characters and each mismatch detail below 240 characters.
