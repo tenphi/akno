@@ -1,10 +1,12 @@
 import { semanticAudit } from '../../test/semantic-audit.ts';
+import Database from 'better-sqlite3';
+import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { AnswerOutput } from '@tenphi/akno-protocol';
+import { AnswerOutput, type AnswerContextItem } from '@tenphi/akno-protocol';
 import { open, type Akno } from '../open.ts';
 import { sha256 } from '../store/ids.ts';
 import {
@@ -59,6 +61,212 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each([true, false])(
+    'keeps an original retention frame private and honors its semantic verdict: %s',
+    async (supported) => {
+      const frame = await seedSourceFrame();
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: 'The open silverpine question is whether the warranty includes return delivery. It remains unresolved whether the warranty covers or excludes that delivery.',
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: {
+          verdicts: [
+            {
+              ...verdict('B1', supported),
+              excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+            },
+          ],
+        },
+      });
+      const before = treeFingerprint();
+      const result = await memory.answer({
+        question: 'Which open silverpine question remains?',
+        memory_view: 'questions',
+        include_context: true,
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null).toBe(supported);
+      expect(modelRequests).toHaveLength(2);
+      const payloads = modelRequests.map((request) =>
+        JSON.parse((request.messages as { content: string }[]).at(-1)!.content),
+      );
+      expect(payloads[0].evidence[0].retention_source_frame).toBe(frame);
+      expect(payloads[1].blocks[0].cited_evidence[0].retention_source_frame).toBe(frame);
+      expect(result.budget_used.evidence_tokens).toBeGreaterThan(Math.ceil(frame.length / 4));
+      expect(JSON.stringify(result)).not.toContain('amberfin');
+      expect(JSON.stringify(result)).not.toContain('retention_source_frame');
+      expect(result.context?.[0]?.type).toBe('page');
+      if (supported)
+        expect(result.citations).toEqual([
+          { id: 'E1', type: 'page', slug: 'products/zephyr-qx-100', lines: [4] },
+        ]);
+      expect(treeFingerprint()).toBe(before);
+    },
+  );
+
+  it.each([
+    undefined,
+    {
+      selected_by_retained_excerpt: false,
+      unselected_content: 'The unrelated amberfin phrase is absent from the retained excerpt.',
+    },
+    { selected_by_retained_excerpt: true, unselected_content: 'An unselected clause remains.' },
+    { selected_by_retained_excerpt: false, unselected_content: null },
+  ])('requires an independent, consistent retained-excerpt selection verdict: %j', async (selection) => {
+    await seedSourceFrame();
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'The open silverpine question is whether the warranty covers return delivery; its answer remains unknown. The source also contains an unrelated amberfin phrase.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: {
+        verdicts: [{ ...verdict('B1', true), ...(selection ? { excerpt_selection: selection } : {}) }],
+      },
+    });
+    const result = await memory.answer({
+      question: 'Which open silverpine question remains?',
+      memory_view: 'questions',
+      expand: false,
+      graph: false,
+    });
+    expect(modelRequests).toHaveLength(2);
+    expect(result.answer).toBeNull();
+    expect(result.citations).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain('amberfin');
+  });
+
+  it.each([
+    'valid',
+    'valid-crlf',
+    'moved',
+    'moved-file',
+    'missing',
+    'retracted',
+    'forgotten',
+    'pruned',
+    'hash',
+    'oversized',
+    'empty',
+    'candidate',
+    'proof',
+    'receipt',
+    'identity',
+    'provided-mode',
+    'source-hash',
+    'provided',
+    'multiple',
+    'stale-payload',
+    'whitespace',
+    'line-endings',
+    'stale-marker',
+    'duplicate-id',
+  ])('binds optional retention context to the exact live source support: %s', async (mutation) => {
+    const frame = await seedSourceFrame();
+    const original = path.join(root, 'products/zephyr-qx-100.md');
+    if (mutation === 'moved-file') fs.renameSync(original, path.join(root, 'products/invented-new-home.md'));
+    if (mutation === 'valid-crlf')
+      fs.writeFileSync(original, fs.readFileSync(original, 'utf8').replaceAll('\n', '\r\n'));
+    if (['moved-file', 'valid-crlf'].includes(mutation)) await memory.index({ verify: true });
+    const recalled = await memory.recall({
+      query: 'silverpine open question',
+      memory_view: 'questions',
+      expand: false,
+      graph: false,
+    });
+    const result = recalled.results.find((entry) => entry.type === 'page')!;
+    if (result.type !== 'page') throw new Error('missing invented page');
+    const evidence: AnswerContextItem = {
+      ...result,
+      evidence_id: 'E1',
+      lines: result.lines.filter((line) => line.memory?.status === 'qualified'),
+    };
+    expect(evidence.lines).toHaveLength(1);
+    const db = new Database(path.join(stateDir, 'akno.db'));
+    try {
+      db.exec(`INSERT INTO retain_receipts(source_id, revision, request_hash, source_hash, source_group, receipt_fingerprint, mode, result, created_at)
+        SELECT 'invented-retraction', revision, request_hash, source_hash, source_group, 'eeeeeeeeeeee', 'retract', '{}', created_at FROM retain_receipts LIMIT 1;
+        INSERT INTO changes(id, at, actor, op, summary) VALUES ('forgotten', '2026-01-01', 'user', 'forget', 'Invented retirement');`);
+      const mutations: Record<string, string> = {
+        moved: "UPDATE retain_supports SET slug = 'archive/invented-original-home'",
+        missing: 'DELETE FROM retain_supports',
+        retracted: "UPDATE retain_supports SET retracted_by = 'eeeeeeeeeeee'",
+        forgotten: "UPDATE retain_supports SET forgotten_by = 'forgotten'",
+        pruned: "UPDATE retain_supports SET evidence_pruned_at = '2026-01-01'",
+        hash: "UPDATE retain_supports SET evidence_hash = 'invalid'",
+        oversized: "UPDATE retain_supports SET evidence = printf('%1201s', 'x')",
+        empty: "UPDATE retain_supports SET evidence = ''",
+        candidate: "UPDATE retain_supports SET candidate_fingerprint = 'eeeeeeeeeeee'",
+        proof: "UPDATE retain_supports SET proof_group = 'eeeeeeeeeeee'",
+        receipt: "UPDATE retain_supports SET receipt_fingerprint = 'eeeeeeeeeeee'",
+        identity: "UPDATE retain_supports SET memory_id = 'mem_different'",
+        'provided-mode':
+          "UPDATE retain_receipts SET mode = 'provided_exact' WHERE source_id = 'invented-source'",
+        'source-hash': "UPDATE retain_supports SET input_hash = 'mismatched'",
+      };
+      if (mutations[mutation]) db.exec(mutations[mutation]);
+      const file = path.join(root, `${result.slug}.md`);
+      let content = fs.readFileSync(file, 'utf8');
+      if (mutation === 'provided') content = content.replace('@extracted ', '@provided ');
+      if (mutation === 'multiple')
+        content = content.replace(
+          '@extracted ',
+          '@extracted,dddddddddddd@eeeeeeeeeeee@ffffffffffff@extracted ',
+        );
+      if (mutation === 'whitespace') content = content.replace('return delivery', 'return delivery ');
+      if (mutation === 'line-endings') content = content.replaceAll('\n', '\r\n');
+      if (mutation === 'stale-payload') content = content.replace('return delivery', 'sensor repair');
+      if (mutation === 'stale-marker') content = content.replace('source-role=user', 'source-role=unknown');
+      if (mutation === 'duplicate-id') write('products/duplicate.md', content);
+      fs.writeFileSync(file, content);
+      if (['provided', 'multiple', 'duplicate-id'].includes(mutation)) await memory.index({ verify: true });
+      const frames = retentionSourceFrames(db, root, [evidence]);
+      expect(frames.get('E1')).toBe(
+        ['valid', 'valid-crlf', 'moved', 'moved-file'].includes(mutation) ? frame : undefined,
+      );
+    } finally {
+      db.close();
+    }
+  });
+
+  it('caps complete optional source frames in evidence order without clipping their qualification', async () => {
+    await seedSourceFrame();
+    const recalled = await memory.recall({
+      query: 'silverpine open question',
+      memory_view: 'questions',
+      expand: false,
+      graph: false,
+    });
+    const result = recalled.results.find((entry) => entry.type === 'page')!;
+    if (result.type !== 'page') throw new Error('missing invented page');
+    const evidence = Array.from({ length: 6 }, (_, i): AnswerContextItem => ({
+      ...result,
+      evidence_id: `E${i + 1}`,
+      lines: result.lines.filter((line) => line.memory?.status === 'qualified'),
+    }));
+    const db = new Database(path.join(stateDir, 'akno.db'));
+    try {
+      const frame = 'An invented bounded quote. '.padEnd(1_200, 'x');
+      db.prepare('UPDATE retain_supports SET evidence = ?, evidence_hash = ?').run(frame, sha256(frame));
+      const frames = retentionSourceFrames(db, root, evidence);
+      expect([...frames.keys()]).toEqual(['E1', 'E2', 'E3', 'E4']);
+      expect([...frames.values()]).toEqual([frame, frame, frame, frame]);
+    } finally {
+      db.close();
+    }
+  });
+
   it('returns ordered related identities and typed model degradation without evidence text or writes', async () => {
     const before = treeFingerprint();
     const result = await memory.answer({
@@ -985,6 +1193,28 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'The open question concerns silverpine return delivery. It remains unresolved whether the warranty covers delivery, the warranty excludes repairs.',
+      false,
+    ],
+    [
+      'The open question concerns silverpine return delivery. It remains unresolved whether the warranty covers or excludes that delivery.',
+      true,
+    ],
+    [
+      'The open question is about silverpine return delivery. It is unknown whether the warranty covers or excludes it.',
+      true,
+    ],
+    [
+      'It remains unresolved whether the silverpine warranty covers delivery. The warranty excludes delivery.',
+      false,
+    ],
+    [
+      'It remains unresolved whether the silverpine warranty covers delivery, but it excludes repairs.',
+      false,
+    ],
+    ['It remains unresolved whether the silverpine warranty covers delivery; it excludes repairs.', false],
+    ['It remains unresolved whether the silverpine warranty covers delivery and it excludes repairs.', false],
+    [
       'The open question is whether the silverpine warranty includes return delivery. Whether that delivery is covered or excluded has not been established.',
       true,
     ],
@@ -1042,6 +1272,37 @@ describe('grounded answer discovery surface', () => {
       expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
       expect(modelRequests).toHaveLength(accepted ? 2 : 1);
       if (!accepted) expect(result.validation?.rejection_counts).toEqual({ protected_value: 1 });
+    },
+  );
+
+  it.each([true, false])(
+    'does not split an unresolved question at a conjunction inside a word: %s',
+    async (supported) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_command v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=question subject=unresolved source-role=user reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** The open question is whether the silverpine command includes telemetry; the answer remains unknown.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: 'The open question concerns the silverpine command. It remains unresolved whether the command includes or does not include telemetry.',
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', supported)] },
+      });
+      const result = await memory.answer({
+        question: 'Which open silverpine question remains?',
+        memory_view: 'questions',
+        expand: false,
+        graph: false,
+      });
+      expect(modelRequests).toHaveLength(2);
+      expect(result.answer !== null).toBe(supported);
     },
   );
 
@@ -2731,6 +2992,30 @@ function temporalMarker(
     links: [],
     ...overrides,
   };
+}
+
+async function seedSourceFrame(): Promise<string> {
+  write(
+    'products/zephyr-qx-100.md',
+    '# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=question subject=unresolved source-role=user reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.\n',
+  );
+  await memory.index({ verify: true });
+  const frame =
+    'Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен. An unrelated amberfin phrase is not part of the selected record.';
+  const db = new Database(path.join(stateDir, 'akno.db'));
+  try {
+    db.prepare(
+      `INSERT INTO retain_receipts(source_id, revision, request_hash, source_hash, source_group, receipt_fingerprint, mode, result, change_id, created_at)
+      VALUES ('invented-source', 'v1', ?, ?, 'invented-group', 'aaaaaaaaaaaa', 'extract_automatic', '{}', NULL, '2026-01-01')`,
+    ).run(sha256(frame), sha256(frame));
+    db.prepare(
+      `INSERT INTO retain_supports(receipt_fingerprint, candidate_id, candidate_fingerprint, proof_group, memory_id, slug, selection, source_ref, origin, input_hash, evidence, evidence_hash, retracted_by, forgotten_by)
+      VALUES ('aaaaaaaaaaaa', 'candidate', 'bbbbbbbbbbbb', 'cccccccccccc', 'mem_frame', 'products/zephyr-qx-100', 'extracted', 'invented-source', 'user', ?, ?, ?, NULL, NULL)`,
+    ).run(sha256(frame), frame, sha256(frame));
+  } finally {
+    db.close();
+  }
+  return frame;
 }
 
 function verdict(

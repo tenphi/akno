@@ -14,6 +14,18 @@ English is the initial supported knowledge target. `answer({ answer_language: "r
 language applies; if both are unset, generation retains its legacy prompt behavior. Hosts discover the effective
 policy in `context.knowledge_language` and remain responsible for their own final conversation responses.
 
+For an automatically extracted record with one intact source support, answering also receives its bounded
+original quotation as internal context. The visible retained record determines what can be answered; the
+quotation constrains its meaning and qualifications. The same verifier call must separately confirm that
+every answer proposition was selected by the retained text; missing, inconsistent or negative selection
+verdicts withhold the block. This is a model judgment, not a proof that adjacent source content cannot leak. This
+context is bound to the current item and exact support fingerprints, hash checked, and excluded from public
+context and citations. The configured answer provider receives this bounded original quotation, and may be
+different from the provider used for retention. Complete frames are selected in retrieval order with a 4,800-character total cap.
+Missing archives, multiple supports, manually provided records and inactive or mismatched supports keep the
+existing retained-text-only behavior. Deleting durable state therefore loses this additional context;
+rebuilding the index in place preserves it. No additional model call or semantic retry is introduced.
+
 ## Generated prose and exact content
 
 The shared model client applies the policy to retained prose, semantic labels, summaries, observation patterns,

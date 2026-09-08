@@ -83,6 +83,11 @@ Separate neutral source framing (according to, states, the recorded question, in
 from material embedded actions. Such framing does not independently claim a new speaking/writing event.
 Do not demand identical framing verbs when the sourced content and its actors are preserved. Still reject
 turning a proposed discussion into a completed discussion or changing an embedded action, its agent or object.
+Track event identity before comparing agents. An explicitly named person who declined an offer thereby
+rejected that same offered action; a later passive restatement that "the offered action was rejected"
+can refer to that rejection without introducing another event or unknown rejector. Preserve a clear
+same-event antecedent across adjacent sentences. This does not transfer the actor to an independent
+action such as an unbooked collection, or to a different person's offer, action or rejection.
 Check the actor of a negated choice independently from the actor of considering or reporting. A source
 saying that a person has not selected a cause does not support an unassigned "neither selected" state;
 merely naming that person elsewhere does not bind them to the embedded nonselection.

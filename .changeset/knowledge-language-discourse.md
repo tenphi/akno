@@ -81,3 +81,7 @@ Use an explicitly clarified referent consistently across bilingual retention and
 Preserve material degree, manner and mechanism without rejecting grammar-neutral measurement complements. Recognize bounded unproven-hypothesis wording before mandatory semantic verification, and keep unverified missing-concept text out of public answer notes while preserving partial outcomes.
 
 Keep epistemic nonresolution distinct from claims about a document's silence or conclusiveness. Render source-named proposal actors explicitly and recognize source-linked unknown calendar-date wording without inferring a clock from unrelated attributes.
+
+Constrain interpretation of singly supported extracted records with their exact bounded retention source frame inside existing answer model calls. Bind to live item/provenance hashes, preserve payload-only fallback, keep private frames out of public context/citations, and cap complete frames in retrieval order. Recognize bounded unresolved-question alternatives without bypassing semantic verification.
+
+Require a separate, consistent retained-excerpt selection verdict when an answer uses an original source frame, so negative or missing selection cannot be overridden by the existing semantic dimensions.
