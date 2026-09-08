@@ -1613,6 +1613,71 @@ describe('grounded answer discovery surface', () => {
     expect(JSON.stringify(result.context)).toContain('"kind":"plan"');
   });
 
+  it('localizes tentative timing separately from asserted proposal commitment', async () => {
+    const marker = temporalMarker('mem_time_display', {
+      kind: 'plan',
+      speaker: 'Ada Marlow',
+      disposition: 'proposed',
+      time: { relation: 'scheduled', status: 'tentative', precision: 'unknown' },
+    });
+    write(
+      'memory/silverpine.md',
+      '# Silverpine inspection\n\n' +
+        managedMemoryBlock(
+          marker,
+          renderManagedMemoryPayload(
+            'Ada Marlow proposes a silverpine inspection with tentative timing; no calendar date is known and no plan is accepted.',
+            marker,
+          ),
+        ),
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow предложила проверку silverpine с предварительным сроком; календарная дата неизвестна, план не принят.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'What silverpine inspection is proposed?',
+      answer_language: 'ru',
+      memory_view: 'planning',
+      include_context: true,
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer, JSON.stringify(result)).not.toBeNull();
+    const input = (index: number) =>
+      JSON.parse(
+        (modelRequests[index]!.messages as Array<{ role: string; content: string }>).find(
+          (m) => m.role === 'user',
+        )!.content,
+      );
+    const qualification = JSON.parse(input(0).evidence[0].excerpt.match(/Memory qualification: (.+)/u)[1]);
+    expect(qualification).toMatchObject({
+      commitment: 'asserted',
+      disposition: 'proposed',
+      temporal: { time: { status: 'tentative', precision: 'unknown' } },
+      display_labels: {
+        commitment: 'заявлено',
+        disposition: 'предложено',
+        temporal_status: 'предварительный срок',
+      },
+    });
+    for (const original of [input(2), result.context]) {
+      expect(JSON.stringify(original)).not.toContain('display_labels');
+      expect(JSON.stringify(original)).toContain('tentative');
+      expect(JSON.stringify(original)).toContain('asserted');
+    }
+  });
+
   it.each([
     [
       'Неподтверждённое сообщение, переданное Ada Marlow со слов Bo Winters, касается проверки silverpine.',

@@ -63,3 +63,5 @@ Keep source-relative clock instructions free of concrete interval examples, supp
 Preserve exact subject identities and explicit action agents before placement and answer generation. Use direct localized report attribution, distinguish active record status from ongoing activity, and keep unresolved typed-question alternatives separate from asserted predicate denials without bypassing semantic verification.
 
 Preserve material personal nonselection through answers, with a bounded agency-presence floor and full source-agent verification. Recognize source-bound Russian counting constructions and distinguish narrative backshift from an actual changed temporal boundary.
+
+Keep a narrator's corrective clarification outside an inner speaker's reported clause while retaining both in one record. Localize temporal-status presentation separately from commitment and disposition, preserve source-supported hypothesis activity, and distinguish neutral record provenance from embedded action agency.

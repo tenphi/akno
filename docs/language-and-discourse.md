@@ -26,8 +26,9 @@ language check still covers the rest of the prose.
 Answer generation presents a generic assistant as a localized role label; verification and public evidence
 retain the original source metadata. A named speaker is never replaced by that display label. Generation
 uses direct localized outer attribution for reports and retains any nested speaker and verification limits.
-It also receives localized kind, commitment and disposition labels as presentation aids; original enums remain the qualification authority
-and verification/public evidence retain those original fields. Active record status does not independently
+It also receives localized kind, commitment, disposition and temporal-status labels as presentation aids; original enums remain the qualification authority
+and verification/public evidence retain those original fields. Tentative timing stays separate from a stated
+proposal and its proposed disposition. Active record status does not independently
 assert that a described mental activity is still ongoing. Explicit dates, endings and resolutions remain
 constrained by the source. A bounded answer check also prevents observed personal cause-nonselection
 wording from becoming an agentless state. An explicit agent still needs full source verification;
@@ -65,7 +66,8 @@ outcome before checking current configuration, with no additional translation or
 Extraction and verification share definitions for proposition polarity, unresolved questions, unaccepted
 proposals, fictional participants and source-relative time. A positive property inside a hypothetical scenario
 has affirmed polarity while its commitment remains hypothetical. Nested reports retain `source_report`
-basis even when the outer recorder is a user. Unanchored calendar references such as “tomorrow” stay in an
+basis even when the outer recorder is a user. A narrator's later corrective clarification stays outside
+the inner speaker's reported clause, with both clauses and verification limits in one retrievable record. Unanchored calendar references such as “tomorrow” stay in an
 explicit unknown, tentative time envelope; readable prose names both the source clock and its unknown date.
 `mentioned_at` must come from a supplied source timestamp. Durations and hypothetical coverage intervals
 remain prose; an established schedule retains its cadence and time envelope, with structured recurrence

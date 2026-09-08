@@ -31,7 +31,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v28';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v29';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v17';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -125,6 +125,12 @@ For each candidate, select its complete source-supported unit, exact support and
 then establish attribution, modality and time before writing text last. Compose that text from the completed
 frame as one independently retrievable record. A report's embedded proposition, outer reporter and explicit
 verification limits belong in that same record; do not leave its deciding qualification only in a sibling.
+When the outer narrator supplies a later corrective clarification of an inner report, close the inner
+speaker's reported clause before the clarification and explicitly name the narrator as its source.
+Keep both clauses in the same readable candidate with their shared verification limits. Do not move the
+narrator's contrast into what the inner speaker said, or turn a clarification of what was discussed into
+a broader restriction on the underlying document. Use source_speaker for the outer narrator and chain
+only for the actual inner reporters; do not repeat the outer narrator in that chain.
 
 ${QUALIFICATION_CONTRACT}
 

@@ -38,8 +38,8 @@ import {
   semanticVerdictFields,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v35';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v20';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v36';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v21';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -97,14 +97,16 @@ When a generic source_label is supplied, use that localized label for attributio
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
 Keep any inner speaker and verification limits inside that scope.
+Use this direct attribution construction instead of nominal readings or passive record-attribution
+wording; those variants can obscure the outer reporter.
 Preserve the actual agent of every material action, including an absence of choice. A source-named person
 who has not chosen a cause is not a claim that nobody has chosen one. Keep the person's name or an
 unambiguous personal subject with that nonselection; do not replace it with passive or impersonal wording.
-Russian "причина не выбрана" or "причину не выбрали" omits the named nonselector; preserve that actor. Use this construction instead of
-nominal readings or passive record-attribution wording; those variants can obscure the outer reporter.
-The display_labels are translation aids for kind, commitment and disposition. They add no proposition and
+Russian "причина не выбрана" or "причину не выбрали" omits the named nonselector; preserve that actor.
+The display_labels are translation aids for kind, commitment, disposition and temporal_status. They add no proposition and
 change no qualification. Express relevant status in the requested language; do not copy English enum values
-into Russian prose.
+into Russian prose. Temporal status qualifies the timing, separately from the proposition's commitment
+and the record's disposition; a stated proposal can still have tentative timing.
 Preserve identity, negation, dates, times, amounts, units, scope, and current-versus-superseded state exactly.
 Ordinary prose carries a bounded prose qualification and exact frame. Preserve its report, hypothetical,
 planning, historical, or unresolved status; the frame is source context, not independent factual evidence.
@@ -169,9 +171,11 @@ an actual missed action.
 Exception: when the question explicitly asks which competing hypotheses or alternatives were discussed,
 describe each supported alternative as an unestablished hypothesis, without selecting a winner. Their
 incompatibility is part of the requested discussion record; it does not establish any actual value.
-Describe hypothesis content using neutral record provenance: the record attributes the tentative alternatives
-to the named person. Do not add a discussion, writing or recording act merely because the question phrases
-it that way; considering alternatives and speaking about them need not establish the same external event.
+Describe hypothesis content with its source-supported activity and actor: when the evidence says a named
+person is considering alternatives, preserve that person considering them. Neutral record provenance may
+introduce this content but must not replace the activity or its actor. Do not add a discussion, writing or
+recording act merely because the question phrases it that way; considering alternatives and speaking about
+them need not establish the same external event.
 Preserve any action explicitly asked about only when the cited evidence establishes it.
 When describing the competing hypotheses, preserve explicit evidence status for each: if the readable
 record says neither has supporting evidence, say so. Merely calling both unconfirmed or unestablished
@@ -196,6 +200,10 @@ agent. Personal nonselection cannot become an unassigned passive state or indefi
 source attribution to a person does not fill an omitted agent of the embedded action. An answer must not
 broaden that person's lack of choice to nobody having chosen. Missing source-named agency fails the
 action-argument dimension even when the weaker wording is plausible.
+Neutral record provenance introduces sourced content; it does not itself assert that the record performs
+the embedded activity or that someone externally wrote or recorded it. Compare the embedded content and
+its actors separately from this reporting frame. Still reject changed or omitted material action agency;
+attributing a record to a person cannot supply a missing actor for its embedded consideration or nonselection.
 Reject an added object or interpretation not established by the
 cited evidence, even when it would be plausible in that setting. Typed qualifications and readable evidence together establish the record's status.
 An active disposition means the record has not been superseded or resolved; it does not independently
@@ -960,6 +968,7 @@ function memoryModelFields(
       kind: labels.kind[memory.kind],
       commitment: labels.commitment[memory.commitment],
       disposition: labels.disposition[memory.disposition],
+      ...(memory.temporal && { temporal_status: labels.temporal_status[memory.temporal.time.status] }),
     };
   }
   return fields;
@@ -968,6 +977,12 @@ function memoryModelFields(
 // Presentation vocabulary only: original enum values remain the semantic authority.
 const MEMORY_DISPLAY_LABELS = {
   en: {
+    temporal_status: {
+      actual: 'actual timing',
+      scheduled: 'scheduled timing',
+      planned: 'planned timing',
+      tentative: 'tentative timing',
+    },
     kind: {
       claim: 'claim',
       decision: 'decision',
@@ -995,6 +1010,12 @@ const MEMORY_DISPLAY_LABELS = {
     },
   },
   ru: {
+    temporal_status: {
+      actual: 'фактическое время',
+      scheduled: 'назначенное время',
+      planned: 'запланированное время',
+      tentative: 'предварительный срок',
+    },
     kind: {
       claim: 'утверждение',
       decision: 'решение',
