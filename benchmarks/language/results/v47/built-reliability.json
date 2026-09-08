@@ -1,0 +1,1393 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-08T20:43:43.353Z",
+  "corpusVersion": "language-discourse-v18",
+  "corpusFingerprint": "bbd6def51d25ea19f7fd273a95174e321b9789914ce288091e56d10e98a64866",
+  "selectedCaseIds": [
+    "v17-held-question",
+    "v17-held-assistant"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v6",
+  "answerPromptVersion": "answer-generation-v44",
+  "answerVerifierVersion": "answer-verifier-v28",
+  "retentionPromptVersion": "retain-extraction-language-v36",
+  "retentionVerifierVersion": "retain-verifier-language-v24",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 16,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 14,
+      "denominator": 16,
+      "rate": 0.875
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 14,
+      "denominator": 16,
+      "rate": 0.875
+    },
+    "answerReasons": {
+      "answered": 14,
+      "draft_rejected": 2
+    },
+    "routingReasons": {},
+    "holdStages": {},
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 1,
+    "mixed": 0
+  },
+  "byScenario": {
+    "open-question": 1,
+    "tentative-assistant-report": 1
+  },
+  "cases": [
+    {
+      "id": "v17-held-question",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve Ada Marlow’s unanswered question about return delivery of the device after repairs. Do not answer the embedded question or infer a delivery arrangement or exclusion. Describing the recorded open question is useful.",
+      "language": "en",
+      "scenario": "open-question",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6394,
+            "input_tokens": 5074,
+            "output_tokens": 556,
+            "total_tokens": 5630
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 3974,
+            "input_tokens": 4469,
+            "output_tokens": 325,
+            "total_tokens": 4794
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1689,
+              "input_tokens": 541,
+              "output_tokens": 80,
+              "total_tokens": 621
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2111,
+              "input_tokens": 361,
+              "output_tokens": 60,
+              "total_tokens": 421
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2177,
+              "input_tokens": 3173,
+              "output_tokens": 81,
+              "total_tokens": 3254
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3463,
+              "input_tokens": 3381,
+              "output_tokens": 278,
+              "total_tokens": 3659
+            }
+          },
+          "reviewAnswer": "The recorded open question attributed to Ada Marlow is whether the Zephyr QX-100 agreement includes returning the device after repairs. Neither coverage nor exclusion of the return delivery is established. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3202,
+              "input_tokens": 3184,
+              "output_tokens": 88,
+              "total_tokens": 3272
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4448,
+              "input_tokens": 3388,
+              "output_tokens": 297,
+              "total_tokens": 3685
+            }
+          },
+          "reviewAnswer": "В записи содержится открытый вопрос Ada Marlow о том, включает ли соглашение Zephyr QX-100 возврат устройства после ремонта; ни включение, ни исключение доставки при возврате не установлены. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2302,
+              "input_tokens": 3173,
+              "output_tokens": 81,
+              "total_tokens": 3254
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3168,
+              "input_tokens": 3381,
+              "output_tokens": 279,
+              "total_tokens": 3660
+            }
+          },
+          "reviewAnswer": "The recorded open question attributed to Ada Marlow is whether the Zephyr QX-100 agreement includes returning the device after repairs. Neither coverage nor exclusion of the return delivery is established. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2460,
+              "input_tokens": 3185,
+              "output_tokens": 89,
+              "total_tokens": 3274
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5464,
+              "input_tokens": 3389,
+              "output_tokens": 355,
+              "total_tokens": 3744
+            }
+          },
+          "reviewAnswer": "В записи содержится открытый вопрос Ada Marlow о том, включает ли соглашение по Zephyr QX-100 возврат устройства после ремонта; ни включение, ни исключение доставки при возврате не установлены. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "protected_value": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2543,
+              "input_tokens": 3179,
+              "output_tokens": 83,
+              "total_tokens": 3262
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2611,
+              "input_tokens": 3188,
+              "output_tokens": 88,
+              "total_tokens": 3276
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5022,
+              "input_tokens": 3392,
+              "output_tokens": 321,
+              "total_tokens": 3713
+            }
+          },
+          "reviewAnswer": "В записи содержится открытый вопрос Ada Marlow о том, включает ли соглашение по Zephyr QX-100 обратную доставку устройства после ремонта; не установлено ни наличие, ни исключение такой доставки. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "protected_value": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3270,
+              "input_tokens": 3179,
+              "output_tokens": 83,
+              "total_tokens": 3262
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "questions",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_44a16cc0",
+                "level": 1,
+                "kind": "question",
+                "subject": "ent_8d1895b0b62c9550888059f3",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "none",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2739,
+              "input_tokens": 3192,
+              "output_tokens": 92,
+              "total_tokens": 3284
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4261,
+              "input_tokens": 3396,
+              "output_tokens": 345,
+              "total_tokens": 3741
+            }
+          },
+          "reviewAnswer": "В записи содержится активный открытый вопрос Ada Marlow о том, включает ли соглашение по Zephyr QX-100 обратную доставку устройства после ремонта. Ни включение, ни исключение обратной доставки не установлено. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Open question:** Ada Marlow's question remains open as to whether the Zephyr QX-100 agreement includes returning the device after repairs, and neither coverage nor exclusion of the return delivery is established.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_44a16cc0",
+            "level": 1,
+            "kind": "question",
+            "subject": "ent_8d1895b0b62c9550888059f3",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "none",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v17-held-assistant",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve assistant attribution, tentative interpretation, twice-yearly indicator checks and no contract verification. This is an unverified assistant report, not an established requirement or a fictional stipulation.",
+      "language": "ru",
+      "scenario": "tentative-assistant-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5728,
+            "input_tokens": 5035,
+            "output_tokens": 440,
+            "total_tokens": 5475
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 4463,
+            "input_tokens": 4418,
+            "output_tokens": 379,
+            "total_tokens": 4797
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1140,
+              "input_tokens": 530,
+              "output_tokens": 41,
+              "total_tokens": 571
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1456,
+              "input_tokens": 366,
+              "output_tokens": 71,
+              "total_tokens": 437
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2359,
+              "input_tokens": 3176,
+              "output_tokens": 88,
+              "total_tokens": 3264
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3784,
+              "input_tokens": 3387,
+              "output_tokens": 319,
+              "total_tokens": 3706
+            }
+          },
+          "reviewAnswer": "According to the assistant, the tentative, preliminary, and unverified report was that servicing Zephyr QX-100 may include checking the indicator twice a year. The assistant had not studied the contract or verified this assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3510,
+              "input_tokens": 3195,
+              "output_tokens": 99,
+              "total_tokens": 3294
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4105,
+              "input_tokens": 3398,
+              "output_tokens": 295,
+              "total_tokens": 3693
+            }
+          },
+          "reviewAnswer": "По словам ассистента, предварительный и непроверенный отчёт состоит в том, что обслуживание Zephyr QX-100 может включать проверку индикатора дважды в год. Ассистент не изучал договор и не проверял это предположение. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2812,
+              "input_tokens": 3176,
+              "output_tokens": 145,
+              "total_tokens": 3321
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3277,
+              "input_tokens": 3387,
+              "output_tokens": 266,
+              "total_tokens": 3653
+            }
+          },
+          "reviewAnswer": "According to the assistant, the tentative, preliminary, and unverified report was that servicing Zephyr QX-100 may include checking the indicator twice a year. The assistant had not studied the contract or verified this assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2875,
+              "input_tokens": 3194,
+              "output_tokens": 98,
+              "total_tokens": 3292
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4497,
+              "input_tokens": 3397,
+              "output_tokens": 285,
+              "total_tokens": 3682
+            }
+          },
+          "reviewAnswer": "По словам ассистента, предварительный и непроверенный вариант состоит в том, что обслуживание Zephyr QX-100 может включать проверку индикатора два раза в год. Ассистент не изучал договор и не проверял это предположение. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3717,
+              "input_tokens": 3178,
+              "output_tokens": 161,
+              "total_tokens": 3339
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4117,
+              "input_tokens": 3389,
+              "output_tokens": 299,
+              "total_tokens": 3688
+            }
+          },
+          "reviewAnswer": "According to the assistant, the preliminary, unverified message was that servicing Zephyr QX-100 may include checking its indicator twice a year. The assistant had not studied the contract or verified this assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2828,
+              "input_tokens": 3202,
+              "output_tokens": 101,
+              "total_tokens": 3303
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3890,
+              "input_tokens": 3405,
+              "output_tokens": 321,
+              "total_tokens": 3726
+            }
+          },
+          "reviewAnswer": "По словам ассистента, его предварительное, непроверенное сообщение состоит в том, что техническое обслуживание Zephyr QX-100 может включать проверку индикатора дважды в год. Ассистент не изучал договор и не проверял это предположение. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2809,
+              "input_tokens": 3181,
+              "output_tokens": 139,
+              "total_tokens": 3320
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3167,
+              "input_tokens": 3392,
+              "output_tokens": 288,
+              "total_tokens": 3680
+            }
+          },
+          "reviewAnswer": "According to the assistant, the tentative, preliminary, and unverified report was that servicing Zephyr QX-100 may include checking the indicator twice a year. The assistant had not studied the contract or verified this assumption. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_57a45c89",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_f091175a915c7ce9f952c027",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2544,
+              "input_tokens": 3199,
+              "output_tokens": 98,
+              "total_tokens": 3297
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4153,
+              "input_tokens": 3402,
+              "output_tokens": 321,
+              "total_tokens": 3723
+            }
+          },
+          "reviewAnswer": "По словам ассистента, предварительное и непроверенное сообщение состоит в том, что обслуживание Zephyr QX-100 может включать проверку индикатора дважды в год. Ассистент не изучал договор и не проверял это предположение. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by assistant · Tentative:** The assistant's preliminary, unverified version is that servicing Zephyr QX-100 may include checking the indicator twice a year; the assistant has not studied the contract or verified this assumption.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_57a45c89",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_f091175a915c7ce9f952c027",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}
