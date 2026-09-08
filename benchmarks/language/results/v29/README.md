@@ -6,4 +6,6 @@ The exposed report/assistant/fiction diagnostic yielded 2/3 useful retained sets
 
 The separate built-package report/fiction probe after build and service restart yielded 2/2 useful retained sets, 15/16 useful answers and 16/16 useful retrieval judgments. One fictional answer was an unjustified null. All nonnull answers were source-entailing, qualified and language compliant. Source bytes remained unchanged in both probes.
 
-The full fresh v17 trial is running with both splits repeated twice under the committed V29 plan. These exposed probes alone do not establish the full 90% coverage and zero-error gate. Preserve every full-trial result and independent judgment, including failures.
+The complete v17 trial fails the unchanged gate. Useful answers are 224/320 writable combinations: development 56/80 and 49/80; held-out 68/80 and 51/80. Useful retention is 29/40. All retained sets are source-entailing, but one nonnull answer adds unsupported terminology doubt and loses qualification. All 32 read-only nulls are justified; 95 writable nulls remain unjustified. No accepted language or promotion error, source-byte change or case availability failure was found.
+
+The full reports, independent input/output judgments and computed `gate.json` are preserved here. V30 and V31 were frozen before these fresh outputs or scores were opened. Their separate complete trials remain required; neither exposed probe replaces the repeated gate.

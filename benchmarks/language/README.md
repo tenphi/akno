@@ -24,13 +24,22 @@ the same models, repeated 90% answer threshold and zero-error requirements.
 
 The [V29 exposed probes](results/v29) yielded 21/24 useful selected answers and 15/16 useful built-package
 answers. All nonnull answers were source-entailing, qualified and language compliant. Selected retention was
-2/3 useful because one report omitted a separate no-arrangement fact; built retention was 2/2. The full v17
-trial is running; these probes do not replace its repeated gate.
+2/3 useful because one report omitted a separate no-arrangement fact; built retention was 2/2. The
+[complete V29 gate](results/v29/gate.json) fails with 224/320 useful answers: development 56/80 and 49/80,
+held-out 68/80 and 51/80. Useful retention is 29/40; one nonnull answer contains unsupported terminology
+doubt and a qualification error. All 32 read-only abstentions are justified; 95 writable nulls are not.
 
 The [V30 exposed probes](results/v30) diverged: 14/24 useful selected answers with one accepted retained
 polarity error, and 16/16 useful built-package answers. Selected retention was 2/3 useful, built retention
-2/2. Both outcomes remain preserved. V31 addresses the exposed polarity and report-wording gaps before
-opening any fresh V29/V30 outputs, under the same preapproved v17 corpus and unchanged gate.
+2/2. Both outcomes remain preserved. The [complete V30 gate](results/v30/gate.json) fails with 259/320 useful
+answers: development 62/80 and 69/80, held-out 66/80 and 62/80. Useful retention is 32/40; two retained
+case-runs have typed qualification errors and one case has an availability failure. All retained sets and
+nonnull answers are source-entailing. V31 was frozen before fresh V29/V30 outputs were opened.
+
+The [V31 exposed probes](results/v31) yielded 22/24 useful selected answers with 3/3 complete retained
+sets, and 14/16 built-package answers with 2/2 complete retained sets. All nonnull answers were source-entailing,
+qualified and language compliant. The full v17 trial is running; V31 was frozen before any fresh V29/V30
+outputs or scores were opened. All trials remain separate evidence under their committed plans.
 
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
