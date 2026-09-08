@@ -14,6 +14,7 @@
     "clean": "tsc --build --clean",
     "typecheck": "tsc --build --force --emitDeclarationOnly false --noEmit false",
     "akno": "node packages/cli/src/bin.ts",
+    "pretest": "node scripts/prepare-test-extraction.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "docs:dev": "astro dev",
