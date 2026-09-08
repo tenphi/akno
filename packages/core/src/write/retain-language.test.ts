@@ -5,6 +5,126 @@ import { cleanCandidateBatch, runRetain } from './retain.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('cross-language retention boundary', () => {
+  it.each([true, false])(
+    'completes generated frames while keeping semantic verification authoritative (%s)',
+    async (supported) => {
+      const sentences = [
+        'I declined the optional Zephyr QX-100 warranty.',
+        'Had I chosen it, inspection during year six would have been covered.',
+        'That is an unrealized alternative, and I did not choose that warranty.',
+      ];
+      const source = sentences.join(' ');
+      const decision = {
+        kind: 'decision',
+        text: 'Ada Marlow declined the optional Zephyr QX-100 warranty.',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'asserted', disposition: 'rejected' },
+        epistemic: { basis: 'self_attested' },
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: sentences[0] }, { quote: sentences[2] }],
+      };
+      const counterfactual = {
+        ...decision,
+        kind: 'claim',
+        text: 'Ada Marlow described the unrealized counterfactual that inspection during year six would have been covered had she chosen the Zephyr QX-100 warranty.',
+        discourse: { commitment: 'counterfactual', disposition: 'active' },
+        discourse_frame: [{ quote: source }],
+      };
+      // Exact provided candidates retain their strict, model-free span contract.
+      const strict = cleanCandidateBatch([decision, counterfactual], { sourceText: source });
+      expect(strict.candidates).toHaveLength(1);
+      expect(strict.held[0]?.reason_code).toBe('discourse_uncertain');
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return {
+            ok: true,
+            value: JSON.stringify({ candidates: [decision, counterfactual] }),
+            latencyMs: 11,
+          };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.candidates).toHaveLength(2);
+        expect(payload.candidates[0].text).toBe(decision.text);
+        expect(payload.candidates[0].discourse_frame).toEqual([
+          ...decision.discourse_frame,
+          { quote: source },
+        ]);
+        expect(payload.candidates[1].discourse_frame).toEqual(counterfactual.discourse_frame);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }, i: number) => ({
+              candidate_id: c.candidate_id,
+              supported: i === 0 ? supported : true,
+              reason_code: i === 0 && !supported ? 'discourse_uncertain' : null,
+            })),
+          }),
+          latencyMs: 22,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-frame-verifier',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.modelUsage.repair).toBeUndefined();
+      expect(result.candidates).toHaveLength(supported ? 2 : 1);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([false, true])('holds excessive context without truncation or legacy fallback (%s)', (legacy) => {
+    const spans = Array.from({ length: 17 }, (_, i) => ({
+      quote: `Invented context sentence number ${i + 1}.`,
+    }));
+    const source = spans.map((s) => s.quote).join(' ');
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: 'The Zephyr QX-100 warranty covers inspection.',
+          support: [spans[0]],
+          discourse_frame: spans,
+          ...(legacy ? { evidence: spans[0]!.quote, frame: spans[0]!.quote } : {}),
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('source_unavailable');
+  });
+
+  it('holds generated completion that would exceed the frame cap', async () => {
+    const spans = Array.from({ length: 17 }, (_, i) => ({ quote: `Invented context sentence ${i + 1}.` }));
+    const source = spans.map((span) => span.quote).join(' ');
+    const candidate = {
+      kind: 'claim',
+      text: 'The Zephyr QX-100 warranty covers inspection.',
+      support: [spans[16]],
+      discourse_frame: spans.slice(0, 16),
+    };
+    const chat = vi.fn(async (messages: { content: string }[]) => {
+      if (chat.mock.calls.length === 2) {
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.validation_issues[0].reason_code).toBe('discourse_uncertain');
+      }
+      return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+    });
+    const model = {
+      available: true,
+      modelId: 'invented-frame-verifier',
+      chat,
+      reportInvalidResponse: vi.fn(),
+    } as unknown as ModelClient;
+    const result = await runRetain(source, model);
+    expect(result.candidates).toEqual([]);
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+  });
+
   it.each([false, true])('keeps a direct user denial distinct from a nested report (nested=%s)', (nested) => {
     const source = nested
       ? 'Bo Winters said the Zephyr QX-100 warranty does not cover inspection.'
@@ -239,7 +359,7 @@ describe('cross-language retention boundary', () => {
         support: [{ quote: source }],
         discourse_frame: [{ quote: source }],
       };
-      const bad = { ...good, discourse_frame: [{ quote: 'This is an assumption.' }] };
+      const bad = { ...good, discourse: { commitment: 'asserted', disposition: 'active' } };
       const events = [{ date: '2031-04-11', summary: 'Ada Marlow completed an invented inspection.' }];
       let calls = 0;
       const chat = vi.fn(async (messages: { content: string }[]) => {

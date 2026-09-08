@@ -17,3 +17,5 @@ Share qualification definitions between extraction and verification, provide fie
 Keep nested reports outside self-attested knowledge, distinguish duration properties from calendar schedules, and require readable unknown-time records to preserve their missing source date. Accept bounded recorded-report attribution and explicit unestablished wording while preserving semantic verification.
 
 Give answer verification the original question and memory view, preserve source-relative clocks in readable prose, and hold inconsistent exclusion polarity or unsupported reporter chains before semantic verification.
+
+Complete automatically extracted discourse frames with exact validated support without changing candidate prose or bypassing semantic verification. Reject excessive or malformed explicit spans instead of truncating context or falling back to legacy fields. Recognize bounded nested-report phrasing and translated unknown source dates, and clarify supported denials and competing hypotheses for answer verification. Add a broader independently reviewed corpus with a 90% answer gate and per-language/scenario coverage.

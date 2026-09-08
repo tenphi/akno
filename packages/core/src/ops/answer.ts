@@ -26,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v17';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v7';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v18';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v8';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -134,6 +134,15 @@ For a question record, describing which question remains unanswered is a useful 
 question about the record. Do not require evidence that answers the embedded open question. For ordinary
 asserted user knowledge, a faithful denial or exclusion can answer a factual query; source attribution does
 not turn the negative proposition into an unsupported assertion.
+Examples of supported question interpretation (when the corresponding evidence is cited):
+- Evidence: Ada Marlow states the warranty excludes paint damage. Question: Does it cover paint damage?
+  Answer: "No. Ada Marlow states that paint damage is excluded." / "Нет. По словам Ada Marlow,
+  повреждения краски исключены." The opening No/Нет expresses the same supported denial.
+- Evidence: Ada Marlow discusses monthly versus annual inspection as two unestablished hypotheses.
+  Question: Which competing inspection hypotheses were discussed? Answer: "Ada Marlow discussed monthly
+  and annual inspection as competing hypotheses; neither is established." Both alternatives are supported
+  discussion records. This does not authorize choosing either as the actual inspection requirement.
+These examples clarify entailment; still reject changed scope, missing qualifications or uncited premises.
 
 Judge every block separately using only the cited_evidence nested inside that block. Evidence attached to a
 different block cannot support it. Set supported to true only when the whole answer_text is directly entailed,
@@ -839,7 +848,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   // An unrelated factual citation cannot establish the proposition inside a report.
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
-    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|record(?:ed|s)? (?:an? )?(?:(?:unverified|unconfirmed|tentative) )?report|reportedly (?:said|told|reported|stated))\b|согласно|по словам|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
+    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|record(?:ed|s)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
   if (
@@ -977,6 +986,24 @@ function qualificationPolarityText(text: string, support: string): string {
         '',
       )
       .replace(/подтверждения (?:этому )?нет/giu, 'подтверждение отсутствует');
+  }
+  // Unspecified source clocks translate to a negated metaclaim in Russian. Activate this
+  // normalization only for an explicitly unresolved source clock, never an action or coverage denial.
+  if (
+    /\b(?:source(?:[’']s)? (?:reference )?(?:date|clock|timestamp)|reference date)[^.!?;\n]{0,80}\b(?:unknown|unspecified)\b|\b(?:unknown|unspecified) (?:source(?:[’']s)? (?:reference )?(?:date|clock|timestamp)|reference date)\b|(?:опорная дата|дата источника) (?:неизвестна|не указана)/iu.test(
+      support,
+    )
+  ) {
+    polarityText = polarityText
+      .replace(
+        /(\b(?:source(?:[’']s)? (?:reference )?(?:date|clock|timestamp)|reference date) (?:is |was |remains )?)not (?=specified\b)/giu,
+        '$1',
+      )
+      .replace(
+        /((?:опорная |исходная |календарная )?дата(?: источника| (?:для )?\p{L}+ года|, (?:к которой относится|от которой отсчитывается) \p{L}+ год,)? (?:была )?)не (?=указана(?=$|[^\p{L}]))/giu,
+        '$1',
+      )
+      .replace(/не (?=указана (?:опорная дата|дата источника)(?=$|[^\p{L}]))/giu, '');
   }
   if (/\b(counterfactual|unrealized alternative)\b|контрфактическ/iu.test(support)) {
     polarityText = polarityText.replace(

@@ -27,12 +27,15 @@ Run the production path against isolated invented knowledge bases with:
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v9 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v9 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v10 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v10 --runs 2 --output bench-results/language-held-out.json
 ```
 
-The frozen v9 development inputs were exposed during earlier diagnostic runs. Its held-out inputs were
-reviewed before their first execution. Once inspected to tune runtime behavior, a held-out set becomes
+The v10 development split contains all ten writable scenarios from the now-exposed v9 corpus. Its ten fresh
+held-out scenarios include multi-turn frames and new source wording. Both splits have one read-only case.
+V10 requires at least 90% useful qualified answers in each split/run, with language/scenario breakdowns;
+historical corpora retain their originally declared 80% answer threshold. Inputs require independent approval
+before their first execution. Once inspected to tune runtime behavior, a held-out set becomes
 diagnostic evidence; freezing its bytes does not make it unseen again. Preserve earlier reports instead of
 overwriting them or relabeling their results.
 

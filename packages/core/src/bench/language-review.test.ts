@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
-import { languageReviewPacket, adjudicateLanguageGate } from './language-review.ts';
+import { languageReviewPacket, adjudicateLanguageGate, languageGateThresholds } from './language-review.ts';
 import { ANSWER_PROMPT_VERSION, ANSWER_VERIFIER_PROMPT_VERSION } from '../ops/answer.ts';
 import { RETAIN_PROMPT_VERSION, RETAIN_VERIFIER_VERSION } from '../write/retain.ts';
 import { PROSE_PROJECTION_VERSION } from '../kb/prose.ts';
@@ -11,7 +12,8 @@ import type { runLanguageBench } from './language.ts';
 type Report = Awaited<ReturnType<typeof runLanguageBench>>;
 
 /** Synthetic judgments exercise the gate's accounting and integrity, never model quality. */
-function fixture() {
+function fixture(version: 'v3' | 'v10' = 'v3') {
+  const corpus = version === 'v3' ? LANGUAGE_CORPUS_V3 : LANGUAGE_CORPUS_V10;
   const evidence = {
     text: 'An invented qualified memory record.',
     qualification: {
@@ -36,12 +38,12 @@ function fixture() {
     didNotAuthorCorpus: true,
     didNotTuneRuntime: true,
   };
-  const fingerprint = sha256(JSON.stringify(LANGUAGE_CORPUS_V3));
+  const fingerprint = sha256(JSON.stringify(corpus));
   const inputs = {
     schemaVersion: 'language-input-review-v1',
     corpusFingerprint: fingerprint,
     reviewer: { ...reviewer, reviewedWithoutOutputs: true },
-    cases: LANGUAGE_CORPUS_V3.map((entry) => ({
+    cases: corpus.map((entry) => ({
       id: entry.id,
       approved: true,
       reason: 'Invented review fixture.',
@@ -50,10 +52,10 @@ function fixture() {
   const reports = (['development', 'held-out'] as const).map((split) => ({
     schemaVersion: 'language-benchmark-v2',
     corpusFingerprint: fingerprint,
-    corpusVersion: 'language-discourse-v3',
+    corpusVersion: `language-discourse-${version}`,
     runs: 2,
     split,
-    selectedCaseIds: LANGUAGE_CORPUS_V3.filter((entry) => entry.split === split).map((entry) => entry.id),
+    selectedCaseIds: corpus.filter((entry) => entry.split === split).map((entry) => entry.id),
     models: { answer: 'invented-runtime', retention: 'invented-runtime' },
     answerPromptVersion: ANSWER_PROMPT_VERSION,
     answerVerifierVersion: ANSWER_VERIFIER_PROMPT_VERSION,
@@ -64,28 +66,32 @@ function fixture() {
     knowledgeLanguage: 'en',
     setup: 'separate-writable-fidelity-and-read-only-admission',
     cases: [1, 2].flatMap((run) =>
-      LANGUAGE_CORPUS_V3.filter((entry) => entry.split === split).map((entry) => ({
-        id: entry.id,
-        run,
-        expectedHold: entry.hold ?? false,
-        retainedItems: entry.hold ? 0 : 1,
-        reviewKnowledge: entry.hold ? [] : [evidence],
-        availabilityFailure: false,
-        bytesStable: true,
-        ordinaryCorrect: true,
-        queries: ['en', 'ru'].flatMap((queryLanguage) =>
-          ['en', 'ru'].flatMap((requestedAnswerLanguage) =>
-            [false, true].map((explicitView) => ({
-              queryLanguage,
-              requestedAnswerLanguage,
-              explicitView,
-              retainedEvidence: entry.hold ? 0 : 1,
-              reviewRetrieval: entry.hold ? [] : [evidence],
-              reviewAnswer: entry.hold ? null : 'An invented qualified answer.',
-            })),
+      corpus
+        .filter((entry) => entry.split === split)
+        .map((entry) => ({
+          id: entry.id,
+          language: entry.language,
+          scenario: entry.scenario,
+          run,
+          expectedHold: entry.hold ?? false,
+          retainedItems: entry.hold ? 0 : 1,
+          reviewKnowledge: entry.hold ? [] : [evidence],
+          availabilityFailure: false,
+          bytesStable: true,
+          ordinaryCorrect: true,
+          queries: ['en', 'ru'].flatMap((queryLanguage) =>
+            ['en', 'ru'].flatMap((requestedAnswerLanguage) =>
+              [false, true].map((explicitView) => ({
+                queryLanguage,
+                requestedAnswerLanguage,
+                explicitView,
+                retainedEvidence: entry.hold ? 0 : 1,
+                reviewRetrieval: entry.hold ? [] : [evidence],
+                reviewAnswer: entry.hold ? null : 'An invented qualified answer.',
+              })),
+            ),
           ),
-        ),
-      })),
+        })),
     ),
   })) as unknown as Report[];
   const packet = languageReviewPacket(reports, inputs);
@@ -120,6 +126,60 @@ function fixture() {
 }
 
 describe('independently adjudicated language gate', () => {
+  it.each([8, 9])('enforces the declared 90% boundary in every broader-corpus run (%s misses)', (misses) => {
+    const { reports, inputs, outputs } = fixture('v10');
+    const held = reports.find((report) => report.split === 'held-out')!;
+    const ids = new Set(
+      held.cases.filter((entry) => entry.run === 1 && !entry.expectedHold).map((entry) => entry.id),
+    );
+    outputs.cases
+      .filter((entry) => entry.run === 1 && ids.has(entry.id))
+      .flatMap((entry) => entry.answers)
+      .slice(0, misses)
+      .forEach((answer) => {
+        answer.usefulQualifiedAnswer = false;
+      });
+    held.thresholds = { ...languageGateThresholds(held.corpusVersion), usefulQualifiedAnswerCoverage: 0 };
+    outputs.packetFingerprint = languageReviewPacket(reports, inputs).packetFingerprint;
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(gate.thresholds.usefulQualifiedAnswerCoverage).toBe(0.9);
+    expect(gate.releaseEligible).toBe(misses === 8);
+    expect(gate.failures).toEqual(misses === 8 ? [] : ['held-out/run-1:usefulQualifiedAnswerCoverage']);
+    const group = gate.groups.find((entry) => entry.split === 'held-out' && entry.run === 1)!;
+    expect(group.metrics.usefulQualifiedAnswerCoverage).toEqual({
+      numerator: 80 - misses,
+      denominator: 80,
+      rate: (80 - misses) / 80,
+    });
+    for (const dimension of [
+      'bySourceLanguage',
+      'byScenario',
+      'byQueryLanguage',
+      'byAnswerLanguage',
+    ] as const) {
+      const rows = Object.values(group.breakdowns![dimension]);
+      expect(rows.reduce((sum, row) => sum + row.usefulQualifiedAnswerCoverage.numerator, 0)).toBe(
+        80 - misses,
+      );
+      expect(rows.reduce((sum, row) => sum + row.usefulQualifiedAnswerCoverage.denominator, 0)).toBe(80);
+    }
+  });
+
+  it('preserves the original policy for historical corpora', () => {
+    expect(languageGateThresholds('language-discourse-v9').usefulQualifiedAnswerCoverage).toBe(0.8);
+    const { reports, inputs, outputs } = fixture();
+    expect(adjudicateLanguageGate(reports, inputs, outputs).thresholds.usefulQualifiedAnswerCoverage).toBe(
+      0.8,
+    );
+  });
+
+  it('binds broader-corpus breakdown dimensions to frozen sources', () => {
+    const { reports, inputs } = fixture('v10');
+    reports[0]!.cases[0]!.language = 'mixed';
+    reports[0]!.cases[0]!.scenario = 'invented-altered-scenario';
+    expect(() => languageReviewPacket(reports, inputs)).toThrow('source dimensions');
+  });
+
   it.each([
     { reviewRetrieval: 'x', retainedEvidence: 1 },
     { reviewRetrieval: {}, retainedEvidence: undefined },

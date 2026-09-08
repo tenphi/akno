@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v3';
+export const MEMORY_VIEW_VERSION = 'memory-view-v4';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -100,7 +100,7 @@ export function qualificationEligibleForView(memory: QualifiedMemory, view: Memo
 
 function russianMemoryView(query: string): MemoryView | null {
   if (
-    /(?:^|[^\p{L}])(?:сообщил|сообщила|сообщает|сказал|сказала|по словам|согласно|утверждает)(?=$|[^\p{L}])/iu.test(
+    /(?:^|[^\p{L}])(?:сообщил|сообщила|сообщает|сказал|сказала|по словам|со слов|согласно|утверждает)(?=$|[^\p{L}])/iu.test(
       query,
     )
   )

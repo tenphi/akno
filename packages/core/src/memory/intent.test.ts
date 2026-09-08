@@ -27,6 +27,8 @@ describe('memory-view inference', () => {
     ['What is the planned inspection schedule?', 'planning'],
     ['How long is the warranty?', 'factual'],
     ['Что сообщил Bo Winters о гарантии?', 'reports'],
+    ['Что Ada Marlow записала со слов Bo Winters о ремонте?', 'reports'],
+    ['Какие слова есть в описании гарантии?', 'factual'],
     ['Какие открытые вопросы остались?', 'questions'],
     ['Какие гипотезы обсуждались о гарантии?', 'discussion'],
     ['Какие решения отклонены?', 'history'],

@@ -23,7 +23,7 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v11';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v12';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v5';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -318,7 +318,10 @@ export async function runRetain(
     ...(options.mentionedAt ? { mentionedAt: options.mentionedAt } : {}),
     ...(options.timezone ? { timezone: options.timezone } : {}),
   };
-  let cleanedBatch = cleanCandidateBatch(parsed.candidates, cleaningOptions);
+  let cleanedBatch = cleanCandidateBatch(
+    completeGeneratedFrames(parsed.candidates, cleaningOptions),
+    cleaningOptions,
+  );
   const repairUsage: { repair?: RetainModelCallReceipt } = {};
   // One structural repair can recover a malformed representation. It never overrides a semantic
   // rejection, replaces already admitted candidates, or loops until a model agrees.
@@ -359,7 +362,10 @@ export async function runRetain(
         modelUsage: { extraction: extractionReceipt, ...repairUsage, verification: null },
       };
     }
-    const repairedBatch = cleanCandidateBatch(repaired.candidates, cleaningOptions);
+    const repairedBatch = cleanCandidateBatch(
+      completeGeneratedFrames(repaired.candidates, cleaningOptions),
+      cleaningOptions,
+    );
     if (repairedBatch.candidates.length > 0) {
       // Candidate repair has no authority over the separate legacy event extraction.
       cleanedBatch = repairedBatch;
@@ -839,6 +845,24 @@ function spanSource(span: RetainSourceSpan, options: CandidateCleaningOptions): 
     : options.sourceText;
 }
 
+/** Automatic extraction can choose a broad support quote and narrower context quotes. Including the
+ * already validated original support adds context without guessing semantics or rewriting the claim.
+ * Caller-provided candidates still use the strict cleaner, and semantic verification remains mandatory. */
+function completeGeneratedFrames(value: unknown, options: CandidateCleaningOptions): unknown {
+  if (!Array.isArray(value)) return value;
+  return value.map((entry) => {
+    if (!entry || typeof entry !== 'object') return entry;
+    const record = entry as Record<string, unknown>;
+    const spans = candidateSpans(record, options);
+    if ('issue' in spans) return entry;
+    const missing = spans.support.filter(
+      (span) => !spanCoveredByFrame(span, spans.frame, spanSource(span, options)),
+    );
+    if (!missing.length || spans.frame.length + missing.length > 16) return entry;
+    return { ...record, discourse_frame: [...spans.frame, ...missing] };
+  });
+}
+
 function candidateSpans(
   record: Record<string, unknown>,
   options: CandidateCleaningOptions,
@@ -848,6 +872,14 @@ function candidateSpans(
   const explicitSupport = cleanSpans(record.support, options);
   const explicitFrame = cleanSpans(record.discourse_frame, options);
   if (explicitSupport && explicitFrame) return { support: explicitSupport, frame: explicitFrame };
+  // Explicit spans are the contract once supplied. Legacy fields must not conceal malformed
+  // or excessive context by substituting a smaller, apparently valid quote.
+  if (record.support !== undefined || record.discourse_frame !== undefined) {
+    return {
+      issue: 'explicit support and discourse frame must both contain valid bounded exact spans',
+      reasonCode: 'source_unavailable',
+    };
+  }
 
   // Compatibility with the original remember extractor. The complete frame is proposition
   // support too; using it for both fields preserves the exact-containment invariant.
@@ -873,7 +905,7 @@ function candidateSpans(
 }
 
 function cleanSpans(value: unknown, options: CandidateCleaningOptions): RetainSourceSpan[] | null {
-  if (!Array.isArray(value) || value.length === 0) return null;
+  if (!Array.isArray(value) || value.length === 0 || value.length > 16) return null;
   const spans: RetainSourceSpan[] = [];
   for (const raw of value) {
     if (!raw || typeof raw !== 'object') return null;
@@ -885,7 +917,7 @@ function cleanSpans(value: unknown, options: CandidateCleaningOptions): RetainSo
     spans.push({ quote, ...(itemId ? { item_id: itemId } : {}) });
   }
   if (new Set(spans.map(spanKey)).size !== spans.length) return null;
-  return spans.slice(0, 16);
+  return spans;
 }
 
 function exactLegacySpan(value: unknown, options: CandidateCleaningOptions): RetainSourceSpan | null {

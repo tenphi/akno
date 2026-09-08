@@ -91,15 +91,16 @@ cases must be assessed separately from model quality.
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,
-Russian and mixed sources; exposed corpora remain available unchanged. V9 keeps the exposed development inputs
-and introduces a fresh held-out set, reviewed before execution by a separate model. Earlier corpora remain
+Russian and mixed sources; exposed corpora remain available unchanged. V10 moves the ten previously evaluated
+writable scenarios into development and adds ten fresh held-out scenarios, including longer multi-turn context.
+Each split also has a read-only admission case. A separate model approves source/expectation pairs before execution. Earlier corpora remain
 diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v9 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v9 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v10 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v10 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -134,7 +135,11 @@ and effective memory view to interpret short answers without treating the questi
 Exact source frames may contain a
 narrower support quotation; they must remain byte-exact, uniquely located, and in the same source item.
 Several adjacent frame quotations may cover one support quotation; only whitespace may bridge them.
-Missing words, including negations, remain a hold. A proposal with explicitly unknown temporal precision,
+Exact provided retention holds when the frame omits words, including negations. Automatic extraction can
+complete a partial frame by appending its already validated exact support quotation. It preserves every original
+frame span and the candidate prose, adds no guessed source context, and still requires full semantic verification.
+Support and frame arrays each have a 16-span cap; invalid explicit spans cannot fall back to legacy fields, and
+completion never truncates context to fit. A proposal with explicitly unknown temporal precision,
 tentative time status and no date boundaries or recurrence may retain an unresolved source-relative time.
 Its readable sentence must identify the unknown source clock; bare “tomorrow” is insufficient even with unknown
 structured precision. It is never actionable or eligible for a bounded date query. Invented resolved dates still fail validation.
@@ -178,8 +183,12 @@ node scripts/review-language.mjs \
 
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
-at least 80% independently judged useful retention, independently relevant qualified retrieval and useful qualified answers, with at
-most 5% availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
+at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
+v10 corpus requires at least 90% useful qualified answers in every split/run; historical corpora retain their
+original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
+V10 gates also break down useful retention and answers by source language and scenario, and answers by query
+and requested output language. These groups describe coverage within a finite corpus, not independent samples.
+At most 5% of cases may have availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
 source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
 duplicate judgments and abstention-only output cannot pass. Abstentions remain separately adjudicated.
 Retrieval is judged once per query-language/view pair; duplicated evidence in the two answer-language rows

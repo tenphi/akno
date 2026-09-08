@@ -5,6 +5,7 @@ import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
 import { LANGUAGE_CORPUS_V7 } from './language-corpus-v7.ts';
 import { LANGUAGE_CORPUS_V8 } from './language-corpus-v8.ts';
 import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
+import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -92,7 +93,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
                 ? LANGUAGE_CORPUS_V8
                 : corpusVersion === 'language-discourse-v9'
                   ? LANGUAGE_CORPUS_V9
-                  : null;
+                  : corpusVersion === 'language-discourse-v10'
+                    ? LANGUAGE_CORPUS_V10
+                    : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -143,6 +146,11 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
       if (!ReviewMaterial.safeParse(entry).success)
         throw new Error('missing or malformed retained/retrieval review evidence');
       const source = expected.find((candidate) => candidate.id === entry.id)!;
+      if (
+        corpusVersion === 'language-discourse-v10' &&
+        (entry.language !== source.language || entry.scenario !== source.scenario)
+      )
+        throw new Error('altered source dimensions');
       if (entry.expectedHold !== (source.hold ?? false)) throw new Error('altered hold expectation');
       exactIds(entry.queries.map(queryKey), matrixKeys());
       if (entry.retainedItems !== entry.reviewKnowledge.length)
@@ -191,7 +199,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
   return { ...packet, packetFingerprint: sha256(JSON.stringify(packet)) };
 }
 
-export const LANGUAGE_GATE_THRESHOLDS = {
+const LANGUAGE_GATE_THRESHOLDS = {
   unsafeFactualPromotion: 0,
   acceptedLanguageViolations: 0,
   translationQualificationErrors: 0,
@@ -202,9 +210,19 @@ export const LANGUAGE_GATE_THRESHOLDS = {
   availabilityFailureRate: 0.05,
 } as const;
 
+/** Historical trials keep their original policy; the broader corpus declares its stronger target
+ * before execution. Never accept a report-supplied threshold as authority for passing a gate. */
+export function languageGateThresholds(corpusVersion: string) {
+  return {
+    ...LANGUAGE_GATE_THRESHOLDS,
+    usefulQualifiedAnswerCoverage: corpusVersion === 'language-discourse-v10' ? 0.9 : 0.8,
+  };
+}
+
 /** Fail closed on missing, duplicated, stale, or internally contradictory adjudication. */
 export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, rawOutputReview: unknown) {
   const packet = languageReviewPacket(reports, inputReview);
+  const thresholds = languageGateThresholds(reports[0]!.corpusVersion);
   const review = OutputReview.parse(rawOutputReview);
   if (review.packetFingerprint !== packet.packetFingerprint) throw new Error('stale output review');
   for (const report of reports) separateReviewer(review.reviewer, report);
@@ -304,7 +322,7 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         'qualifiedRetrievalCoverage',
         'usefulQualifiedAnswerCoverage',
       ] as const)
-        if (metrics[key].rate === null || metrics[key].rate! < LANGUAGE_GATE_THRESHOLDS[key])
+        if (metrics[key].rate === null || metrics[key].rate! < thresholds[key])
           failures.push(`${prefix}:${key}`);
       for (const key of [
         'unsafeFactualPromotion',
@@ -312,16 +330,23 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         'translationQualificationErrors',
         'sourceByteChanges',
       ] as const)
-        if (metrics[key] > LANGUAGE_GATE_THRESHOLDS[key]) failures.push(`${prefix}:${key}`);
+        if (metrics[key] > thresholds[key]) failures.push(`${prefix}:${key}`);
       if (
         metrics.availabilityFailureRate.rate === null ||
-        metrics.availabilityFailureRate.rate > LANGUAGE_GATE_THRESHOLDS.availabilityFailureRate
+        metrics.availabilityFailureRate.rate > thresholds.availabilityFailureRate
       )
         failures.push(`${prefix}:availability`);
       if (metrics.expectedSafeHolds.denominator && metrics.expectedSafeHolds.rate !== 1)
         failures.push(`${prefix}:admission`);
       if (metrics.ordinaryProseFailures > 0) failures.push(`${prefix}:ordinaryProse`);
-      return { split: report.split, run, metrics };
+      return {
+        split: report.split,
+        run,
+        metrics,
+        ...(report.corpusVersion === 'language-discourse-v10'
+          ? { breakdowns: reviewBreakdowns(observations, review) }
+          : {}),
+      };
     }),
   );
   return {
@@ -337,9 +362,66 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
     packetFingerprint: packet.packetFingerprint,
     inputReviewFingerprint: packet.inputReviewFingerprint,
     outputReviewFingerprint: sha256(JSON.stringify(review)),
-    thresholds: LANGUAGE_GATE_THRESHOLDS,
+    thresholds,
     failures,
     groups,
+  };
+}
+
+function reviewBreakdowns(observations: Report['cases'], review: z.infer<typeof OutputReview>) {
+  const cases = observations
+    .filter((entry) => !entry.expectedHold)
+    .map((entry) => ({
+      ...entry,
+      judgment: review.cases.find((judgment) => judgment.id === entry.id && judgment.run === entry.run)!,
+    }));
+  const answers = cases.flatMap((entry) =>
+    entry.judgment.answers.map((answer) => ({
+      ...answer,
+      sourceLanguage: entry.language,
+      scenario: entry.scenario,
+    })),
+  );
+  const summarizeAnswers = (rows: typeof answers) => ({
+    usefulQualifiedAnswerCoverage: rate(rows.filter((row) => row.usefulQualifiedAnswer).length, rows.length),
+    justifiedAbstentions: rows.filter((row) => row.justifiedAbstention).length,
+    acceptedLanguageViolations: rows.filter((row) => row.languageCompliant === false).length,
+    translationQualificationErrors: rows.filter((row) => !row.qualificationPreserved).length,
+    unsafeFactualPromotion: rows.filter((row) => row.unsafeFactualPromotion).length,
+  });
+  const byAnswerDimension = (dimension: 'queryLanguage' | 'answerLanguage') =>
+    Object.fromEntries(
+      ['en', 'ru'].map((key) => [key, summarizeAnswers(answers.filter((row) => row[dimension] === key))]),
+    );
+  const bySourceDimension = (dimension: 'language' | 'scenario') =>
+    Object.fromEntries(
+      [...new Set(cases.map((entry) => entry[dimension]))].map((key) => {
+        const selected = cases.filter((entry) => entry[dimension] === key);
+        return [
+          key,
+          {
+            usefulRetentionCoverage: rate(
+              selected.filter((entry) => entry.judgment.retentionUseful).length,
+              selected.length,
+            ),
+            ...summarizeAnswers(
+              selected.flatMap((entry) =>
+                entry.judgment.answers.map((answer) => ({
+                  ...answer,
+                  sourceLanguage: entry.language,
+                  scenario: entry.scenario,
+                })),
+              ),
+            ),
+          },
+        ];
+      }),
+    );
+  return {
+    bySourceLanguage: bySourceDimension('language'),
+    byScenario: bySourceDimension('scenario'),
+    byQueryLanguage: byAnswerDimension('queryLanguage'),
+    byAnswerLanguage: byAnswerDimension('answerLanguage'),
   };
 }
 

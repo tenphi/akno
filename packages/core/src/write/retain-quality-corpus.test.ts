@@ -352,7 +352,7 @@ describe('automatic retain discourse quality corpus', () => {
           text: 'Ada Marlow will visit Blackwater Bay tomorrow.',
           kind: 'plan',
           support: [{ quote: 'Ada Marlow will visit Blackwater Bay tomorrow.' }],
-          frame: [{ quote: 'Ada Marlow will visit Blackwater Bay tomorrow.' }],
+          discourse_frame: [{ quote: 'Ada Marlow will visit Blackwater Bay tomorrow.' }],
           time: {
             start: '2026-09-02',
             precision: 'day',
