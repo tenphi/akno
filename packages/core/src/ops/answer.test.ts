@@ -735,6 +735,78 @@ describe('grounded answer discovery surface', () => {
       true,
     ],
     [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Предварительный непроверенный отчёт assistant: проверка silverpine включена.',
+      true,
+      'discourse',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Непроверенное сообщение ассистента о возможном требовании проверки silverpine.',
+      true,
+      'discourse',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Предварительный непроверенный отчёт об ассистенте: проверка silverpine включена.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Непроверенный отчёт об устройстве silverpine. Ассистент рядом.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Отчёт assistant: проверка silverpine включена.',
+      false,
+      'discourse',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Bo Winters reported a tentative unverified silverpine inspection requirement. The assistant is nearby.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Bo Winters сообщил предварительное непроверенное требование проверки silverpine. Ассистент рядом.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'The assistant stood nearby while Bo Winters reported a tentative unverified silverpine inspection requirement.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Ассистент стоял рядом, а Bo Winters сообщил непроверенное предположение о проверке silverpine.',
+      false,
+      'attribution',
+    ],
+    [
       'counterfactual',
       'self_attested',
       'Ada Marlow described a counterfactual where silverpine valve repair would be covered, after rejecting the offer.',
@@ -971,6 +1043,38 @@ describe('grounded answer discovery surface', () => {
       expect(modelRequests).toHaveLength(1);
     },
   );
+
+  it.each([
+    ['The original source does not mention silverpine valve repair.', false],
+    ['The original record says nothing about silverpine valve repair.', false],
+    ['The source contains no information about silverpine valve repair.', false],
+    ['Silverpine valve repair is not stated in the original source.', false],
+    ['Silverpine valve repair was not described in the original note.', false],
+    ['Исходная запись не описывает ремонт клапана silverpine.', false],
+    ['The silverpine agreement says nothing about electrical faults.', true],
+    ['The original note does not mention silverpine electrical faults.', true],
+    ['The silverpine return-shipping question remains unanswered.', true],
+  ] as const)('does not infer whole-source absence from retrieved evidence: %s', async (text, explicit) => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n' + (explicit ? text : 'The silverpine warranty covers inspection.') + '\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'What silverpine details are recorded?',
+      filter: { source: 'page' },
+      memory_view: 'all',
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer === null, JSON.stringify(result)).toBe(!explicit);
+    expect(modelRequests).toHaveLength(explicit ? 2 : 1);
+    if (!explicit) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+  });
 
   it('removes a block whose invented exact value does not occur in its citation', async () => {
     await useAnswerModel({

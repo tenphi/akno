@@ -33,3 +33,5 @@ Recognize bounded English/Russian queries about qualified reports, declined offe
 Enforce the configured knowledge language for history rewrites, corrected managed-memory sentences and newly generated curator revision prose. Preserve exact authored text during authorized moves, while checking modified or duplicated additions and holding revisions on language-check failure before persistence.
 
 Require independent proposition, action-argument and qualification-scope verdicts before accepting generated answers. Preserve object/purpose and modifier attachment through translation; missing or negative verification dimensions withhold the affected answer block without retry.
+
+Preserve original process meaning and reporter roles during English retention. Check retained proposition, action arguments and qualification separately against original sources; preserve structured outer and inner attribution without dropping reporters. Align unknown source-clock checks, require answers to bind report wording to the required speaker, and prevent unsupported whole-source absence claims from retrieved subsets.

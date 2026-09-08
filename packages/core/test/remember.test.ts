@@ -128,7 +128,9 @@ async function startStubChat(): Promise<typeof server> {
                   content: JSON.stringify({
                     verdicts: (payload.candidates ?? []).map((candidate) => ({
                       candidate_id: candidate.candidate_id,
-                      supported: true,
+                      proposition_supported: true,
+                      action_arguments_preserved: true,
+                      qualification_scope_preserved: true,
                       reason_code: null,
                     })),
                   }),

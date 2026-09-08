@@ -31,8 +31,8 @@ import {
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v24';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v14';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v25';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v15';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -118,6 +118,9 @@ evidence that directly supports the whole block. Answer covered parts of a compo
 parts in missing_concepts. If the evidence does not answer anything, return no blocks. Do not write citation markers,
 file titles, storage identifiers, or line numbers in block text; Akno renders validated citations itself.
 Speaker names needed for attribution belong in the answer text.
+Never infer what the complete original source omitted from the retrieved subset. If a requested detail is
+missing from the supplied evidence, list it in missing_concepts; do not claim the original source never
+mentioned it. An explicit domain-level exclusion or an unanswered question can still be described faithfully.
 Use explicit status wording for each cited nonfactual record: hypothetical, counterfactual, unverified report,
 open question, proposed or rejected (or their requested-language equivalents). Preserve an actual rejection
 when citing that decision; merely saying an option was not selected does not describe the rejection itself.
@@ -168,6 +171,9 @@ Use the supplied question and memory_view only to interpret what the answer addr
 responses and requests to describe competing hypotheses. The question is not evidence for its premises
 and cannot supply missing facts. A faithful list of incompatible hypotheses answers a discussion question
 without claiming either hypothesis is true.
+The retrieved subset does not establish what a complete original source omitted. Reject claims that the
+original source never mentioned a detail unless the readable evidence explicitly establishes that absence.
+Domain-level exclusions and explicitly unanswered questions remain legitimate negative propositions.
 For a question record, describing which question remains unanswered is a useful supported answer to a
 question about the record. Do not require evidence that answers the embedded open question. For ordinary
 asserted user knowledge, a faithful denial or exclusion can answer a factual query; source attribution does
@@ -855,6 +861,10 @@ function validateDraft(
           : evidenceText(source!),
       )
       .join('\n');
+    if (hasEvidenceOmissionClaim(block.text) && !hasEvidenceOmissionClaim(support)) {
+      reject('discourse');
+      continue;
+    }
     if (
       !protectedValuesSupported(
         block.text,
@@ -897,6 +907,13 @@ function validateDraft(
   return { blocks, rejected, rejectionCounts };
 }
 
+/** A retrieved subset cannot establish absence from the complete original source. */
+function hasEvidenceOmissionClaim(text: string): boolean {
+  return /\b(?:source|evidence|record|note|conversation)\s+(?:(?:does|did)\s+not|never|doesn't|didn't)\s+(?:mention|describe|record|include|specify|state)\b|\b(?:source|evidence|record|note|conversation)\s+(?:says? nothing|contains? no (?:mention|information|detail)|has no (?:mention|information|detail))\b|\b(?:not|never)\s+(?:mentioned|described|recorded|included|specified|stated)\s+in\s+(?:the\s+)?(?:(?:original|supplied|retrieved)\s+)?(?:source|evidence|record|note|conversation)\b|(?:источник|запис|замет|разговор)\p{L}*\s+(?:не\s+(?:содерж|упомина|описыва|указыва)|ничего\s+не\s+(?:говор|сообщ))|не\s+(?:упомянут|описан|указан|зафиксирован)\p{L}*\s+в\s+(?:(?:исходн|предоставленн)\p{L}*\s+)?(?:источник|запис|замет|разговор)/iu.test(
+    text,
+  );
+}
+
 function proseStatusSupported(text: string, sources: AnswerContextItem[]): boolean {
   const qualifications = sources.flatMap((source) =>
     source.type === 'page'
@@ -905,7 +922,7 @@ function proseStatusSupported(text: string, sources: AnswerContextItem[]): boole
   );
   return qualifications.every((q) => {
     if (q.view === 'reports')
-      return /\b(according to|reported|said|quoted|states?|described|example)\b|согласно|сообщ|сказал|цитат|пример/iu.test(
+      return /\b(according to|reported|said|says|quoted|states?|described|example)\b|согласно|сообщ|сказал|цитат|пример/iu.test(
         text,
       );
     if (q.view === 'discussion')
@@ -941,14 +958,23 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
     /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggest(?:s|ed)?|(?:gave|provided) (?:(?:an?|the) )?(?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}report|record(?:ed|s)?(?:,? as)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
-  if (
-    !attributionVerb &&
-    reportLines.some((line) => line.memory?.status === 'qualified' && line.memory.basis === 'source_report')
-  )
-    return false;
   return reportLines.every((line) => {
     if (line.memory?.status !== 'qualified') return false;
     const speaker = line.memory.source_speaker?.trim();
+    const sourceLabel =
+      line.memory.source_role === 'assistant' &&
+      (!speaker || /^(?:the )?assistant$|^ассистент$/iu.test(speaker))
+        ? '(?:assistant|ассистент(?:а|ом|у)?)'
+        : speaker?.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (line.memory.basis === 'source_report' && !sourceLabel && !attributionVerb) return false;
+    if (
+      line.memory.basis === 'source_report' &&
+      sourceLabel &&
+      (!hasBoundReporter(answerText, sourceLabel) ||
+        (!attributionVerb &&
+          !new RegExp(`(?:отч[её]т|сообщение)\\s+${sourceLabel}(?![\\p{L}\\p{N}])`, 'iu').test(answerText)))
+    )
+      return false;
     // Some retained records spell the assistant role into source_speaker. It is a translatable
     // role label, while an actual named speaker must still occur in its original spelling.
     if (
@@ -958,6 +984,26 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
       return /\bassistant\b|ассистент/iu.test(answerText);
     return !speaker || normalized.includes(normalizeComparable(speaker));
   });
+}
+
+/** The source must occupy a reporting role, not merely occur near somebody else's report. */
+function hasBoundReporter(text: string, label: string): boolean {
+  const source = `(?<![\\p{L}\\p{N}])${label}(?![\\p{L}\\p{N}])`;
+  const modifiers =
+    '(?:(?:tentatively|preliminarily|reportedly|only|merely|also|explicitly|предварительно|предположительно|только|лишь)\\s+){0,3}';
+  const predicate =
+    '(?:reported|reports|said|says|stated|states|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|recorded|records|gave|provided|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|записал\\p{L}*|переда\\p{L}*)';
+  const qualifier = '(?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}';
+  return new RegExp(
+    `${source}\\s+${modifiers}${predicate}(?![\\p{L}])|` +
+      `${source}\\s+${modifiers}(?:and )?as (?:an?|the) ${qualifier}report\\b|` +
+      `(?:told|привед[её]н\\p{L}*|представлен\\p{L}*)\\s+(?:the )?${source}|` +
+      `(?:according to|по словам|со слов|согласно)\\s+(?:the )?${source}|` +
+      `(?:отч[её]т|сообщение)\\s+${source}|` +
+      `(?:report|account|statement)\\s+(?:by|from)\\s+(?:the )?${source}|` +
+      `${source}[’']s\\s+${qualifier}(?:report|account|statement)\\b`,
+    'iu',
+  ).test(text.normalize('NFKC'));
 }
 
 function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerContextItem[]): boolean {

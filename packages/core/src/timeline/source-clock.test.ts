@@ -35,6 +35,17 @@ describe('source-relative time qualification', () => {
     ['Завтра относительно исходной записи; дата исходной записи отсутствует.', true, true, true],
     ['Ada proposed the review; the date is unknown.', false, false, true],
     ['Ada proposed the review at a source-relative time whose date is unknown.', false, true, true],
+    [
+      'Tomorrow relative to the moment of the original record; its date cannot be recovered.',
+      true,
+      true,
+      true,
+    ],
+    ['Tomorrow relative to the time of that undated note.', true, true, true],
+    ['Tomorrow relative to the date of the original source; the calendar date is unknown.', true, true, true],
+    ['Tomorrow relative to the moment of inspection; the calendar date is unknown.', true, false, true],
+    ['Tomorrow relative to the time of device pickup; the note is undated.', true, false, true],
+    ['Tomorrow relative to the moment of the source; the device cannot be recovered.', true, true, false],
     ['The device is undated.', false, false, false],
     ['The device has no date.', false, false, false],
   ] as const)(

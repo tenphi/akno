@@ -61,7 +61,9 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
         content = {
           verdicts: (payload.candidates ?? []).map((item) => ({
             candidate_id: item.candidate_id,
-            supported: verificationSupported,
+            proposition_supported: verificationSupported,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
             reason_code: verificationSupported ? null : 'discourse_uncertain',
           })),
         };

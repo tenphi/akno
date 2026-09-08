@@ -54,7 +54,9 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }, i: number) => ({
               candidate_id: c.candidate_id,
-              supported: i === 0 ? supported : true,
+              proposition_supported: i === 0 ? supported : true,
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
               reason_code: i === 0 && !supported ? 'discourse_uncertain' : null,
             })),
           }),
@@ -416,7 +418,9 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
               candidate_id: c.candidate_id,
-              supported,
+              proposition_supported: supported,
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
               reason_code: supported ? null : 'time_unresolved',
             })),
           }),
@@ -465,7 +469,9 @@ describe('cross-language retention boundary', () => {
             verdicts: [
               {
                 candidate_id: payload.candidates[0].candidate_id,
-                supported: !answersItself,
+                proposition_supported: !answersItself,
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
                 reason_code: answersItself ? 'discourse_uncertain' : null,
               },
             ],
@@ -571,7 +577,9 @@ describe('cross-language retention boundary', () => {
           value: JSON.stringify({
             verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
               candidate_id: c.candidate_id,
-              supported: true,
+              proposition_supported: true,
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
               reason_code: null,
             })),
           }),
@@ -723,13 +731,31 @@ describe('cross-language retention boundary', () => {
             verdicts: payload.candidates
               .flatMap((candidate: { candidate_id: string }) => ({
                 candidate_id: candidate.candidate_id,
-                supported: outcome === 'accepted',
+                proposition_supported: outcome === 'accepted',
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
                 reason_code: outcome === 'accepted' ? null : 'discourse_uncertain',
               }))
-              .flatMap((verdict: { candidate_id: string; supported: boolean; reason_code: string | null }) =>
-                outcome === 'duplicate-verdict'
-                  ? [verdict, { ...verdict, supported: true, reason_code: null }]
-                  : [verdict],
+              .flatMap(
+                (verdict: {
+                  candidate_id: string;
+                  proposition_supported: boolean;
+                  action_arguments_preserved: boolean;
+                  qualification_scope_preserved: boolean;
+                  reason_code: string | null;
+                }) =>
+                  outcome === 'duplicate-verdict'
+                    ? [
+                        verdict,
+                        {
+                          ...verdict,
+                          proposition_supported: true,
+                          action_arguments_preserved: true,
+                          qualification_scope_preserved: true,
+                          reason_code: null,
+                        },
+                      ]
+                    : [verdict],
               ),
           }),
           latencyMs: 33,
@@ -806,6 +832,15 @@ describe('cross-language retention boundary', () => {
       true,
     ],
     ['Ada Marlow proposed reviewing silverpine tomorrow relative to the undated original note.', true],
+    [
+      'Ada Marlow proposed reviewing silverpine tomorrow relative to the moment of the original record; the calendar date cannot be recovered.',
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing silverpine tomorrow relative to the moment of inspection; the calendar date is unknown.',
+      false,
+    ],
+    ['Ada Marlow proposed reviewing silverpine tomorrow; the original note is undated.', false],
     [
       'Ada Marlow proposed reviewing silverpine tomorrow relative to the original note; calendar dates cannot be recovered.',
       true,
@@ -1004,7 +1039,9 @@ describe('cross-language retention boundary', () => {
               ? {
                   verdicts: user.candidates.map((candidate: { candidate_id: string }) => ({
                     candidate_id: candidate.candidate_id,
-                    supported: true,
+                    proposition_supported: true,
+                    action_arguments_preserved: true,
+                    qualification_scope_preserved: true,
                     reason_code: null,
                   })),
                 }
