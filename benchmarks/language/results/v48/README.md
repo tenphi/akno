@@ -1,0 +1,18 @@
+# V48 exposed-probe results and full-trial readiness
+
+Frozen runtime `9ca76ba` passed 2,193 tests across 133 files, all required local checks and separate GPT-5.6 Sol review/fix rounds. Original findings and final reviews are preserved. Build, restart and socket readiness passed; an isolated compiled-code reproduction verified positive selection, withheld negative/missing selection, identical bound frames in both model calls, private public responses and unchanged source bytes. macOS/Linux CI and documentation passed. Runtime remains GPT-5.6 Luna; independent semantic grading and separate forensic/code review use GPT-5.6 Sol.
+
+| Probe | Complete useful retention | Useful retrievals | Useful answers |
+| --- | --- | --- | --- |
+| Selected exposed development | 4/4 | 32/32 | 27/32 |
+| Built-package question/assistant | 2/2 | 16/16 | 16/16 |
+
+Independent source-only grading and separate forensic inspection found no accepted source-entailment, qualification, language or promotion errors. All six retained sets are complete and all 48 retrieval rows are useful. The selected alternatives preserve loose insertion, explicit absence of evidence for both hypotheses and personal nonselection in every answer. The declined-offer record is retained and all eight answers preserve its actor and meaning. Both built records have eight useful answers, including the previously falsely held unresolved English question alternatives.
+
+Five writable nulls remain coverage losses. Three report generations wrongly treat a bilingual clarification as a conflict between component descriptions. One English proposal verifier wrongly treats the calendar indeterminacy inherent in the selected undated-relative record as unselected additional content. One Russian proposal draft hits the bounded source-clock/discourse floor on “исходной записи с неизвестной календарной датой”. These losses remain visible; none is relabeled as justified abstention. Nonnull production happens to equal independently useful answers in this revision, but those are separate measurements. No source bytes changed and no case availability failures occurred.
+
+The aggregate exposed answer result is 43/48 (89.6%); the selected subset is 27/32 (84.4%). Neither passes or substitutes for the full per-split/run gate. All scenarios retain useful evidence and produce useful answers, no accepted errors remain, and the five losses are concentrated in two exposed scenarios rather than whole missing cases. The implementation agent elects to carry these bounded coverage losses into a complete repeated trial, as permitted by the predeclared plan, instead of requiring perfect diagnostics. The forensic reviewer recommends resolving the remaining holds first; that recommendation is preserved. This is an explicit readiness judgment, not a lowered threshold or a claim that the full trial will pass.
+
+The full trial uses both independently approved v19 splits twice, ten writable and one read-only case per split, and eight English/Russian query/answer/view combinations per case. Its held-out inputs have never been executed before this trial. Gates remain at least 90% useful answers in every split/run, at least 80% useful retention/retrieval, zero accepted source-entailment/qualification/language/promotion/source-byte errors and at most 5% case availability failures. Every started case and trial must finish and receive independent grading regardless of outcome. Runtime and model roles stay frozen; no semantic retry or threshold change is authorized.
+
+PR #70 remains open and unmerged. Finite invented English/Russian scenarios do not establish arbitrary-language or longitudinal reliability.
