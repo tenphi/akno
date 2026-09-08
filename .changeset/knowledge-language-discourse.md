@@ -73,3 +73,5 @@ Preserve personal nonselection before generated retention and during answers, in
 Supply retention language checks with immutable source spelling hints while preserving negative verdicts and all prose checks. Clarify supported device reference resolution before ownership, explicit proposal/report action roles, and uncertainty attached to content or timing.
 
 Preserve the source's level of specificity through generated knowledge and answers. Compare measured components separately from unspecified properties, methods and results, and reject unsupported specializations within the existing semantic verdict dimensions.
+
+Preserve a source-named proposer separately from the reporting source. Hold bounded agentless proposal descriptions in generated retention and answers while admitting supported active, passive and possessive agency to complete semantic verification. Exact caller-provided candidates retain their model-free contract.

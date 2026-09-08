@@ -1,5 +1,44 @@
 import { describe, expect, it } from 'vitest';
-import { causeNonselectionAgencySupported } from './action-agency.ts';
+import { causeNonselectionAgencySupported, proposalAgencySupported } from './action-agency.ts';
+
+describe('proposal action agency across retention and answers', () => {
+  const sources = [
+    'Ada Marlow proposed reviewing the warranty exceptions.',
+    'I, Ada Marlow, proposed reviewing the warranty exceptions.',
+    'Ada Marlow предложила проверить исключения из гарантии.',
+    'The review was proposed by Ada Marlow.',
+  ];
+
+  it.each([
+    ['According to Ada Marlow, the tentative proposal was to review the exceptions.', false],
+    ['According to Ada Marlow, it was proposed to review the exceptions.', false],
+    ['По словам Ada Marlow, было предложено проверить исключения.', false],
+    ['Ada Marlow proposed reviewing the exceptions.', true],
+    ['She proposed reviewing the exceptions.', true],
+    ['The review was proposed by Ada Marlow.', true],
+    ['The review was proposed by her.', true],
+    ["Ada Marlow's proposal was to review the exceptions.", true],
+    ['Her tentative proposal was to review the exceptions.', true],
+    ['Ada Marlow предложила проверить исключения.', true],
+    ['Её предложение заключалось в проверке исключений.', true],
+  ] as const)('keeps reporting separate from proposing: %s', (text, accepted) => {
+    for (const source of sources) expect(proposalAgencySupported(text, source), source).toBe(accepted);
+  });
+
+  it('does not turn a report source into an otherwise unspecified proposer', () => {
+    const source = 'According to Ada Marlow, the proposal was to review the exceptions.';
+    expect(proposalAgencySupported(source, source)).toBe(true);
+  });
+
+  it('defers independently anonymous source proposals to full semantic pairing', () => {
+    expect(
+      proposalAgencySupported(
+        'The proposal was to review the exclusions.',
+        'Ada Marlow proposed a service visit. The proposal was to review the exclusions.',
+      ),
+    ).toBe(true);
+  });
+});
 
 describe('personal nonselection across retention and answers', () => {
   const sources = [

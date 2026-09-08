@@ -11,6 +11,28 @@ const repairBatch = (candidates: unknown[]) => ({
 
 describe('cross-language retention boundary', () => {
   it.each([
+    ['According to Ada Marlow, the proposal was to review the warranty exceptions.', false],
+    ['Ada Marlow proposed reviewing the warranty exceptions.', true],
+  ])('keeps an explicit proposer in generated retention: %s', (text, accepted) => {
+    const source = 'Ada Marlow предложила проверить исключения из гарантии.';
+    const candidate = {
+      kind: 'plan',
+      text,
+      subject: 'Zephyr QX-100',
+      attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+      discourse: { commitment: 'asserted', disposition: 'proposed' },
+      epistemic: { basis: 'self_attested' },
+      polarity: 'affirmed',
+      support: [{ quote: source }],
+      discourse_frame: [{ quote: source }],
+    };
+    const result = cleanCandidateBatch([candidate], { sourceText: source, generated: true });
+    expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+    if (!accepted) expect(result.held[0]?.reason).toContain('source-named proposer');
+    expect(cleanCandidateBatch([candidate], { sourceText: source }).candidates).toHaveLength(1);
+  });
+
+  it.each([
     ['Ada Marlow considers two tentative explanations; neither explanation selected.', false],
     ['Ada Marlow considers two tentative explanations; she has selected neither explanation.', true],
   ])('preserves personal nonselection before persistence: %s', (text, accepted) => {

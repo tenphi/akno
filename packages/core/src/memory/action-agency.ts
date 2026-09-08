@@ -1,3 +1,35 @@
+/** Hold bounded proposal descriptions that omit every proposer role present in readable source prose. */
+export function proposalAgencySupported(text: string, support: string): boolean {
+  // This is a presence floor, not a parser or an actor-identity verdict. Unrecognized grammar and
+  // pairing between multiple proposals still require the complete source/citation-scoped verifier.
+  const named = String.raw`(?!(?:The|This|That|A|An)\b)\p{Lu}[\p{L}’'-]*(?:\s+\p{Lu}[\p{L}’'-]*){1,3}`;
+  const actor = String.raw`(?:${named}|I|[Hh]e|[Ss]he|[Ww]e|[Tt]hey|[Яя]|[Оо]н[аи]?|[Мм]ы)`;
+  const verb = String.raw`(?:propos(?:e|es|ed|ing)|suggest(?:s|ed|ing)?|предложил[аи]?|предлага(?:ет|ют|л[аои]?))`;
+  const active = new RegExp(
+    String.raw`(?<![\p{L}])${actor},?\s+(?:(?:has|have|had|is|was|were|tentatively|previously|предварительно|ранее)\s+){0,2}${verb}(?![\p{L}])`,
+    'u',
+  );
+  const passiveAgent = new RegExp(
+    String.raw`(?<![\p{L}])(?:(?:proposed|suggested)\s+by\s+(?:${actor}|her|him|me|us|them)|предложен[аоы]?\s+(?:${actor}|ею|им|мной|нами|ими))(?![\p{L}])`,
+    'u',
+  );
+  const ownedProposal = new RegExp(
+    String.raw`(?<![\p{L}])(?:(?:${named})['’]s\s+(?:tentative\s+)?proposal|(?:[Hh]er|[Hh]is|[Mm]y|[Oo]ur|[Tt]heir)\s+(?:tentative\s+)?proposal|(?:[Ее][её]|[Ее]го|[Мм]о[её]|[Нн]аше|[Ии]х)\s+(?:предварительное\s+)?предложение|предложение\s+${named})(?![\p{L}])`,
+    'u',
+  );
+  const hasProposer = (value: string) =>
+    active.test(value) || passiveAgent.test(value) || ownedProposal.test(value);
+  if (!hasProposer(support)) return true;
+  const unassignedDescription =
+    /\bproposal (?:is|was) to\b|\b(?:it|review|inspection|discussion) (?:is|was|has been|had been) (?:tentatively )?(?:proposed|suggested)\b|(?<![\p{L}])(?:было предложено|предлагалось|предложение (?:состояло|заключалось))(?=$|[^\p{L}])/iu;
+  if (!unassignedDescription.test(text)) return true;
+  // A separate anonymous proposal in the source may be the one being described. Matching this
+  // shape only defers semantic pairing; it cannot certify the answer's action or omitted actor.
+  if (support.split(/[.!?;\n]/u).some((clause) => unassignedDescription.test(clause) && !hasProposer(clause)))
+    return true;
+  return hasProposer(text);
+}
+
 /** Preserve a readable singular nonselector instead of broadening it to an unassigned choice state. */
 export function causeNonselectionAgencySupported(answerText: string, support: string): boolean {
   // Provenance metadata is not action agency. This floor activates from readable singular choice

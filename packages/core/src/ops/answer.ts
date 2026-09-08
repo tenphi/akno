@@ -1,4 +1,4 @@
-import { causeNonselectionAgencySupported } from '../memory/action-agency.ts';
+import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
 import { proseEligibleForView } from '../kb/prose.ts';
 import { z } from 'zod';
 import fs from 'node:fs';
@@ -40,8 +40,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v40';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v24';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v41';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v25';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -120,6 +120,9 @@ For a proposal or rejection whose actor is named in the readable evidence, state
 proposing/rejecting verb in either answer language. "According to SOURCE, it was proposed" does not say
 who proposed it. Do not infer the actor merely from source_speaker, and leave genuinely unspecified booking
 agents unspecified. Bind every actor from the cited proposition itself.
+When the readable source names the proposer, say that person proposed the action. "According to SOURCE,
+the proposal was to ..." names a reporter but omits the proposer just as "По словам SOURCE, было
+предложено ..." does. Prefer the explicit proposing verb with its source-supported subject.
 Attach tentative/unconfirmed qualification to its supported content or timing. Do not call the source
 record preliminary merely because the recorded hypothesis or proposed timing is tentative.
 The display_labels are translation aids for kind, commitment, disposition and temporal_status. They add no proposition and
@@ -1176,7 +1179,10 @@ function validateDraft(
       reject('attribution');
       continue;
     }
-    if (!causeNonselectionAgencySupported(block.text, support)) {
+    if (
+      !causeNonselectionAgencySupported(block.text, support) ||
+      !proposalAgencySupported(block.text, support)
+    ) {
       reject('attribution');
       continue;
     }

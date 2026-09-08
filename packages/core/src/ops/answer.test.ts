@@ -1503,6 +1503,38 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
+  it.each([
+    ['According to Ada Marlow, the proposal was to review the silverpine warranty exceptions.', false, true],
+    ['По словам Ada Marlow, было предложено проверить исключения из гарантии silverpine.', false, true],
+    ['Ada Marlow proposed reviewing the silverpine warranty exceptions.', true, true],
+    ['Ada Marlow предложила проверить исключения из гарантии silverpine.', true, true],
+    ['Ada Marlow proposed reviewing the silverpine warranty exceptions.', false, false],
+  ] as const)(
+    'requires proposer agency before still-mandatory semantic verification: %s',
+    async (text, accepted, semanticSupport) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_proposal_agency v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=plan subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested -->\n- **Proposal:** Ada Marlow proposed reviewing the silverpine warranty exceptions; the proposal remains unaccepted.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', semanticSupport)] },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine warranty proposal did Ada Marlow make?',
+        memory_view: 'planning',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted || !semanticSupport ? 2 : 1);
+      if (!accepted && semanticSupport)
+        expect(result.validation?.rejection_counts).toEqual({ attribution: 1 });
+    },
+  );
+
   it.each(['assistant', 'Assistant Meridian'])(
     'projects generic display labels without changing source names or verifier evidence: %s',
     async (speaker) => {

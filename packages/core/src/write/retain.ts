@@ -1,5 +1,5 @@
 import type { LanguageReference } from '../models/language.ts';
-import { causeNonselectionAgencySupported } from '../memory/action-agency.ts';
+import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
 import { isDeepStrictEqual } from 'node:util';
 import { spanCoveredByFrame } from './retained-spans.ts';
 import { explicitlyUnknownTime } from './retained-time.ts';
@@ -34,8 +34,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v33';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v20';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v34';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v21';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -188,6 +188,8 @@ Rules:
 - Preserve an explicitly named action agent in text. A speaker who states that an offer was rejected is
   not necessarily the person who rejected it. Do not weaken an explicit first-person rejection into a
   passive with no rejecting agent; source_speaker metadata is provenance, not a substitute for that role.
+  Likewise, preserve a named proposer with the proposing verb. "According to SOURCE, the proposal was
+  to ..." identifies a reporter, not the actor who put forward the proposal.
 - Preserve a personal choice or nonchoice as that person's action. If the source says a named person
   has not selected a cause or explanation, keep that person as the grammatical nonselector in the retained
   sentence; "neither explanation selected" loses the actor even if the person is named as considering them.
@@ -1136,6 +1138,15 @@ function cleanCandidateBatchWithPositions(
         reason_code: 'discourse_uncertain',
         reason:
           'preserve the source-named personal nonselector in readable prose; an unassigned neither-selected state loses the action agent even when that person is named as considering the hypotheses',
+      });
+      continue;
+    }
+    if (options.generated && !proposalAgencySupported(text, sourceEvidence(spans.frame))) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'preserve the source-named proposer in readable prose; attribution to a reporter does not bind that person to an otherwise anonymous proposal',
       });
       continue;
     }
