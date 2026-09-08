@@ -1422,6 +1422,63 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
+  it.each([
+    ['Ada Marlow relayed Bo Winters’s unverified assertion about silverpine inspection.', true],
+    ['Ada Marlow relays Bo Winters’s unverified assertion about silverpine inspection.', true],
+    ['Ada Marlow is relaying Bo Winters’s unverified assertion about silverpine inspection.', true],
+    ['Ada Marlow relayed an unverified report about silverpine inspection.', true],
+    ['The unverified report attributed to Ada Marlow concerns silverpine inspection.', true],
+    ['Ada Marlow’s unverified assertion concerns silverpine inspection.', true],
+    [
+      'Ada Marlow relayed a device to Bo Winters, who stated an unverified silverpine inspection requirement.',
+      false,
+    ],
+    [
+      'Ada Marlow is relaying a device; Bo Winters has an unverified assertion about silverpine inspection.',
+      false,
+    ],
+    ['Bo Winters relayed an unverified silverpine inspection report while Ada Marlow stood nearby.', false],
+    [
+      'The unverified report attributed to Bo Winters concerns silverpine inspection; Ada Marlow stood nearby.',
+      false,
+    ],
+    ['The unverified report attributed to Ada Marlow’s device concerns silverpine inspection.', false],
+    [
+      'The unverified report attributed to Bo Winters’ device concerns silverpine inspection.',
+      false,
+      'Bo Winters',
+    ],
+    [
+      "The unverified report attributed to Bo Winters' device concerns silverpine inspection.",
+      false,
+      'Bo Winters',
+    ],
+    ['The unverified report attributed to Bo Winters concerns silverpine inspection.', true, 'Bo Winters'],
+  ] as const)(
+    'binds relay and attributed-assertion constructions to the reporter: %s',
+    async (text, accepted, speaker = 'Ada Marlow') => {
+      write(
+        'products/zephyr-qx-100.md',
+        `# Zephyr QX-100\n\n<!-- akno:item mem_relay v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=${encodeURIComponent(speaker)} reports=0 commitment=asserted disposition=active polarity=affirmed basis=source_report -->\n- **Reported by ${speaker}:** ${speaker} relayed ${speaker === 'Ada Marlow' ? 'Bo Winters' : 'Ada Marlow'}’s unverified assertion about silverpine inspection.\n`,
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: `What silverpine report did ${speaker} relay?`,
+        memory_view: 'reports',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ attribution: 1 });
+    },
+  );
+
   it('keeps internal user-provenance labels in verification and public evidence, outside generation', async () => {
     write(
       'products/zephyr-qx-100.md',

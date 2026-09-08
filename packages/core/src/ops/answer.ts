@@ -38,7 +38,7 @@ import {
   semanticVerdictFields,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v31';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v32';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v18';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -157,6 +157,10 @@ an actual missed action.
 Exception: when the question explicitly asks which competing hypotheses or alternatives were discussed,
 describe each supported alternative as an unestablished hypothesis, without selecting a winner. Their
 incompatibility is part of the requested discussion record; it does not establish any actual value.
+Describe hypothesis content using neutral record provenance: the record attributes the tentative alternatives
+to the named person. Do not add a discussion, writing or recording act merely because the question phrases
+it that way; considering alternatives and speaking about them need not establish the same external event.
+Preserve any action explicitly asked about only when the cited evidence establishes it.
 When describing the competing hypotheses, preserve explicit evidence status for each: if the readable
 record says neither has supporting evidence, say so. Merely calling both unconfirmed or unestablished
 loses that distinction, because an unconfirmed hypothesis could still have supporting evidence.`;
@@ -1163,7 +1167,7 @@ function hasBoundReporter(text: string, label: string): boolean {
   const modifiers =
     '(?:(?:tentatively|preliminarily|unconfirmedly|unverifiedly|reportedly|only|merely|also|explicitly|without verification|предварительно|предположительно|непроверенно|неподтвержд[её]нно|только|лишь)(?:,?\\s+(?:and\\s+|и\\s+)?)){0,3}';
   const predicate =
-    '(?:reported|reports|said|says|stated|states|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|переда\\p{L}*)';
+    '(?:reported|reports|said|says|stated|states|asserted|asserts|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|переда\\p{L}*)';
   const qualifier = '(?:(?:tentative|preliminary|unverified|unconfirmed)(?:,?\\s+(?:and\\s+)?)){0,3}';
   // Productive adverbs can qualify a reporting verb without changing its subject. Keep new English
   // forms lowercase so a short source label cannot consume another person's capitalized name.
@@ -1184,7 +1188,7 @@ function hasBoundReporter(text: string, label: string): boolean {
     "(?:(?!(?:while|whereas|although|but|and|because|which|who|whose)\\b)[\\p{L}\\p{N}’'-]+\\s+){1,8}(?:is|are|was|were|has|have|had|do|does|did|can|could|may|might|would|will|must|should|remains?|remained|rejects?|rejected|declines?|declined|cancelled|canceled|completed|proposed|accepted|requires?|includes?|covers?|permits?|reported|reports|said|says|stated|states|told|claimed|claims)\\b";
   // Case-fold the reporting grammar, but not the inner person's proper-name shape.
   const ownedReport = new RegExp(
-    `${source}\\s+${modifiers}(?:recorded|records)\\s+((?:[\\p{L}’'.-]+ ){0,3}[\\p{L}’'.-]+)[’']s\\s+${qualifier}(?:report|account|statement)\\b`,
+    `${source}\\s+${modifiers}(?:recorded|records|relayed|relays|(?:is|was) relaying)\\s+((?:[\\p{L}’'.-]+ ){0,3}[\\p{L}’'.-]+)[’']s\\s+${qualifier}(?:report|account|statement|assertion)\\b`,
     'giu',
   );
   if (
@@ -1195,16 +1199,16 @@ function hasBoundReporter(text: string, label: string): boolean {
     return true;
   return new RegExp(
     `${source}\\s+${modifiers}${predicate}(?![\\p{L}])|` +
-      `${source}\\s+${modifiers}(?:recorded|records)(?:,? as)?\\s+(?:(?:an?|the)\\s+)?${qualifier}(?:report|account|statement)\\b|` +
-      `${source}\\s+${modifiers}(?:recorded|records)\\s+that\\s+${reportedClause}|` +
+      `${source}\\s+${modifiers}(?:recorded|records|relayed|relays|(?:is|was) relaying)(?:,? as)?\\s+(?:(?:an?|the)\\s+)?${qualifier}(?:report|account|statement|assertion)\\b|` +
+      `${source}\\s+${modifiers}(?:recorded|records|relayed|relays|(?:is|was) relaying)\\s+that\\s+${reportedClause}|` +
       `${source}\\s+${modifiers}записал\\p{L}*\\s+(?:со слов|по словам|что|(?:(?:непроверенн|неподтвержд[её]н|предварительн)\\p{L}*\\s+){0,3}(?:сообщение|отч[её]т))|` +
       `${source}\\s+${modifiers}(?:gave|provided)\\s+(?:(?:an?|the)\\s+)?${qualifier}report\\b|` +
       `${source}\\s+${modifiers}(?:and )?as (?:an?|the) ${qualifier}report\\b|` +
       `(?:told|привед[её]н\\p{L}*|представлен\\p{L}*)\\s+(?:the )?${source}|` +
       `(?:according to|по словам|со слов|согласно)\\s+(?:the )?${source}|` +
       `(?:отч[её]т|сообщение)\\s+${source}|` +
-      `(?:report|account|statement)\\s+(?:by|from)\\s+(?:the )?${source}|` +
-      `${source}[’']s\\s+${qualifier}(?:report|account|statement)\\b`,
+      `(?:report|account|statement|assertion)\\s+(?:by|from|attributed to)\\s+(?:the )?${source}(?![’'])|` +
+      `${source}[’']s\\s+${qualifier}(?:report|account|statement|assertion)\\b`,
     'iu',
   ).test(text.normalize('NFKC'));
 }
