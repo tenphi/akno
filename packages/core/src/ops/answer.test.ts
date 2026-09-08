@@ -1123,6 +1123,30 @@ describe('grounded answer discovery surface', () => {
     ['The assistant tentatively and unconfirmedly reported a silverpine inspection requirement.', true],
     ['The assistant tentatively and unverifiedly reported a silverpine inspection requirement.', true],
     [
+      'The assistant tentatively and provisionally reported an unverified silverpine inspection requirement.',
+      true,
+    ],
+    [
+      'The assistant cautiously and tentatively reported an unverified silverpine inspection requirement.',
+      true,
+    ],
+    [
+      'The assistant allegedly never reported a tentative unverified silverpine inspection requirement.',
+      false,
+    ],
+    [
+      'The assistant provisionally gave a device to Bo Winters, who reported an unverified silverpine inspection requirement.',
+      false,
+    ],
+    ['The assistant Family tentatively reported an unverified silverpine inspection requirement.', false],
+    ['The assistant family tentatively reported an unverified silverpine inspection requirement.', false],
+    ['The assistant assembly tentatively reported an unverified silverpine inspection requirement.', false],
+    ['The assistant friendly tentatively reported an unverified silverpine inspection requirement.', false],
+    [
+      'Bo Winters tentatively and provisionally reported an unverified silverpine inspection requirement while the assistant stood nearby.',
+      false,
+    ],
+    [
       'The assistant stood nearby while Bo Winters tentatively and unverifiedly reported a silverpine inspection requirement.',
       false,
     ],

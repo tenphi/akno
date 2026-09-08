@@ -10,6 +10,161 @@ const repairBatch = (candidates: unknown[]) => ({
 
 describe('cross-language retention boundary', () => {
   it.each([
+    ['No shipment of Zephyr QX-100 has been arranged.', 'affirmed', true, false],
+    ['No shipment of Zephyr QX-100 has been arranged.', undefined, true, false],
+    ['No shipment of Zephyr QX-100 has been arranged.', null, true, false],
+    ['No shipment of Zephyr QX-100 has been arranged.', 'negative', true, false],
+    ['Ada Marlow states that no shipment of Zephyr QX-100 has been arranged.', 'affirmed', true, false],
+    ['Ada Marlow recorded that no Zephyr QX-100 inspection was completed.', 'affirmed', true, false],
+    [
+      'No Zephyr QX-100 shipment has been arranged, but service terms permit inspection.',
+      'affirmed',
+      true,
+      false,
+    ],
+    ['Ada Marlow states that no shipment of Zephyr QX-100 has been arranged.', 'negated', true, true],
+    ['Ada Marlow states that no shipment of Zephyr QX-100 has been arranged.', 'affirmed', false, true],
+    [
+      'Ada Marlow states that no more than five Zephyr QX-100 inspections were recorded.',
+      'affirmed',
+      true,
+      true,
+    ],
+    ['No less than five Zephyr QX-100 inspections were recorded.', 'affirmed', true, true],
+    ['No doubt the Zephyr QX-100 service is available.', 'affirmed', true, true],
+    ['Ada Marlow states that no question the Zephyr QX-100 service is available.', 'affirmed', true, true],
+    ['No wonder the Zephyr QX-100 service is available.', 'affirmed', true, true],
+    ['No matter who owns Zephyr QX-100, the service is available.', 'affirmed', true, true],
+    ['No sooner had Zephyr QX-100 arrived than inspection began.', 'affirmed', true, true],
+    ['No end of Zephyr QX-100 inspections have been completed.', 'affirmed', true, true],
+    ['No later than the stated deadline, Zephyr QX-100 inspections were recorded.', 'affirmed', true, true],
+    [
+      'Ada Marlow states that Zephyr QX-100 inspection is available; no shipment has been arranged.',
+      'affirmed',
+      true,
+      true,
+    ],
+  ] as const)(
+    'holds only the leading generated negative proposition (%s)',
+    (text, polarity, generated, accepted) => {
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: 'claim',
+            text,
+            subject: 'Zephyr QX-100',
+            attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+            discourse: { commitment: 'asserted', disposition: 'active' },
+            epistemic: { basis: 'self_attested' },
+            polarity,
+            support: [{ quote: text }],
+            discourse_frame: [{ quote: text }],
+          },
+        ],
+        { sourceText: text, generated },
+      );
+      expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+      if (!accepted) expect(result.held[0]?.reason).toContain('leading negative proposition');
+    },
+  );
+
+  it.each([
+    [
+      'claim',
+      'hypothetical',
+      'active',
+      'Ada Marlow described hypothetical Zephyr QX-100 repair coverage; no actual agreement is established.',
+    ],
+    [
+      'plan',
+      'asserted',
+      'rejected',
+      'Ada Marlow rejected the Zephyr QX-100 shipment proposal; no shipment has been arranged.',
+    ],
+  ])(
+    'keeps a qualified positive proposition separate from an adjacent negative (%s/%s)',
+    (kind, commitment, disposition, text) => {
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind,
+            text,
+            subject: 'Zephyr QX-100',
+            attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+            discourse: { commitment, disposition },
+            epistemic: { basis: 'self_attested' },
+            polarity: 'affirmed',
+            support: [{ quote: text }],
+            discourse_frame: [{ quote: text }],
+          },
+        ],
+        { sourceText: text, generated: true },
+      );
+      expect(result.candidates).toHaveLength(1);
+    },
+  );
+
+  it.each(['accepted', 'unchanged', 'unsupported'] as const)(
+    'requires a negative-clause repair to pass full verification (%s)',
+    async (outcome) => {
+      const source = 'Ada Marlow states that no shipment of Zephyr QX-100 has been arranged.';
+      const candidate = {
+        kind: 'claim',
+        text: source,
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'affirmed',
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        const call = chat.mock.calls.length;
+        if (call === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (call === 2) {
+          expect(payload.validation_issues[0].reason).toContain('leading negative proposition');
+          return {
+            ok: true,
+            value: JSON.stringify(
+              repairBatch([{ ...candidate, polarity: outcome === 'unchanged' ? 'affirmed' : 'negated' }]),
+            ),
+            latencyMs: 22,
+          };
+        }
+        expect(payload.candidates[0].text).toBe(source);
+        expect(payload.candidates[0].polarity).toBe('negated');
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              proposition_supported: outcome === 'accepted',
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
+              reason_code: outcome === 'accepted' ? null : 'discourse_uncertain',
+            })),
+          }),
+          latencyMs: 33,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-denial-repair',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(result.candidates).toHaveLength(outcome === 'accepted' ? 1 : 0);
+      expect(chat).toHaveBeenCalledTimes(outcome === 'unchanged' ? 2 : 3);
+      if (outcome === 'unsupported') expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([
     [
       'plan',
       'proposed',

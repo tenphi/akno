@@ -1008,6 +1008,20 @@ function hasBoundReporter(text: string, label: string): boolean {
   const predicate =
     '(?:reported|reports|said|says|stated|states|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|переда\\p{L}*)';
   const qualifier = '(?:(?:tentative|preliminary|unverified|unconfirmed)(?:,?\\s+(?:and\\s+)?)){0,3}';
+  // Productive adverbs can qualify a reporting verb without changing its subject. Keep new English
+  // forms lowercase so a short source label cannot consume another person's capitalized name.
+  // Existing bounded constructions below continue to admit their known case-insensitive modifiers.
+  const productiveModifiers = '(?:(?:[a-z]+ly|without verification)(?:,?\\s+(?:and\\s+)?)){1,3}';
+  const productiveReport = new RegExp(`${source}\\s+(${productiveModifiers})${predicate}(?![\\p{L}])`, 'giu');
+  // These nominal/adjectival heads can introduce another subject after a source-label prefix.
+  const nonAdverbHeads =
+    /\b(?:family|assembly|supply|reply|tally|rally|ally|folly|belly|bully|butterfly|dragonfly|firefly|jelly|friendly|elderly|orderly|lovely|lonely)\b/iu;
+  if (
+    [...text.normalize('NFKC').matchAll(productiveReport)].some(
+      (match) => !/\b[A-Z][A-Za-z]*ly\b/u.test(match[1]!) && !nonAdverbHeads.test(match[1]!),
+    )
+  )
+    return true;
   // 'Recorded that device' is an object, so require a bounded finite clause without a sentence break.
   const reportedClause =
     "(?:(?!(?:while|whereas|although|but|and|because|which|who|whose)\\b)[\\p{L}\\p{N}’'-]+\\s+){1,8}(?:is|are|was|were|has|have|had|do|does|did|can|could|may|might|would|will|must|should|remains?|remained|rejects?|rejected|declines?|declined|cancelled|canceled|completed|proposed|accepted|requires?|includes?|covers?|permits?|reported|reports|said|says|stated|states|told|claimed|claims)\\b";

@@ -27,6 +27,11 @@ answers. All nonnull answers were source-entailing, qualified and language compl
 2/3 useful because one report omitted a separate no-arrangement fact; built retention was 2/2. The full v17
 trial is running; these probes do not replace its repeated gate.
 
+The [V30 exposed probes](results/v30) diverged: 14/24 useful selected answers with one accepted retained
+polarity error, and 16/16 useful built-package answers. Selected retention was 2/3 useful, built retention
+2/2. Both outcomes remain preserved. V31 addresses the exposed polarity and report-wording gaps before
+opening any fresh V29/V30 outputs, under the same preapproved v17 corpus and unchanged gate.
+
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
 development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets and nine

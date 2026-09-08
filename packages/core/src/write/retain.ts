@@ -25,8 +25,8 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v22';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v14';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v23';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v15';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -71,6 +71,11 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   does not automatically govern the recorder's following independent assertion. Preserve the speaker
   who actually supplies each statement; do not make an adjacent direct assertion part of the inner report
   merely because both statements concern the same topic.
+  Each candidate must carry its own material attribution and verification limits in readable text.
+  The same support/frame may justify separate records, but a sibling candidate cannot carry another
+  candidate's required qualification. Keep a report's lack of verification with that report; do not
+  transfer it onto the recorder's separate direct assertion. Each candidate must remain faithful if
+  every other candidate is withheld.
   A first-person assistant's preliminary assumption or tentative reading is a useful tentative source_report,
   not independent evidence and not automatically a hypothetical scenario. Preserve the assistant as source
   and explicit lack of verification; do not reject the qualified report merely because the assistant said it.
@@ -714,6 +719,24 @@ const EXPLICIT_FICTION =
 const INTRODUCED_FICTION =
   /\b(?:fictional|invented)\s+(?:example|scenario|story)\s*,?\s*(?:in which|where)\s+\S|(?<![\p{L}])вымышлен[\p{L}]*\s+(?:пример|сценар|истори)[\p{L}]*\s*,?\s*(?:где|в котор[\p{L}]*)\s+\S/iu;
 
+/** A leading negative clause selects the denial itself, unlike an unrelated negative qualifier later. */
+function hasLeadingExistentialDenial(text: string, speaker: string | undefined): boolean {
+  let clause = text.normalize('NFKC');
+  if (speaker) {
+    const label = speaker.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    clause = clause.replace(
+      new RegExp(
+        `^${label}\\s+(?:states?|stated|reports?|reported|says|said|records?|recorded|asserts?|asserted)\\s+(?:that\\s+)?`,
+        'iu',
+      ),
+      '',
+    );
+  }
+  return /^no\s+(?!(?:more|less|fewer|later|earlier|sooner|doubt|question|wonder|matter|surprise|end)\b)(?:[\p{L}\p{N}'’/-]+\s+){1,12}(?:is|are|was|were|has|have|had|does|do|did|can|could|will|would)\b/iu.test(
+    clause,
+  );
+}
+
 const REPORT_UNCERTAINTY =
   /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:independently )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
 const RELATIVE_TIME =
@@ -857,6 +880,22 @@ function cleanCandidateBatchWithPositions(
         candidate_id: provisionalId,
         reason_code: 'discourse_uncertain',
         reason: 'an attribution-chain speaker lacks an explicit reporting relation in the source frame',
+      });
+      continue;
+    }
+    if (
+      options.generated &&
+      kind === 'claim' &&
+      discourse.commitment === 'asserted' &&
+      discourse.disposition === 'active' &&
+      record.polarity !== 'negated' &&
+      hasLeadingExistentialDenial(text, attribution.source_speaker)
+    ) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'the leading negative proposition requires negated polarity; preserve its meaning and its own qualifiers instead of relabeling or relying on a sibling candidate',
       });
       continue;
     }
