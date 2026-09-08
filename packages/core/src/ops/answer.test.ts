@@ -1121,6 +1121,11 @@ describe('grounded answer discovery surface', () => {
     ],
     ['Ассистент предварительно и непроверенно сообщил о требовании проверки silverpine.', true],
     ['The assistant tentatively and unconfirmedly reported a silverpine inspection requirement.', true],
+    ['The assistant tentatively and unverifiedly reported a silverpine inspection requirement.', true],
+    [
+      'The assistant stood nearby while Bo Winters tentatively and unverifiedly reported a silverpine inspection requirement.',
+      false,
+    ],
     ['Ассистент предварительно и неподтверждённо сообщил о требовании проверки silverpine.', true],
     [
       'The assistant stood nearby while Bo Winters tentatively and unconfirmedly reported a silverpine inspection requirement.',

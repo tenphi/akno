@@ -25,8 +25,8 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v21';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v13';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v22';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v14';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -67,6 +67,10 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   Outer lack of verification alone does not change the inner speaker's commitment. Derive commitment
   from the inner clause's own modality: a direct assertion remains asserted; a hedged inner claim remains
   tentative. Keep the recorder's verification limits in readable prose and source_report provenance.
+  Determine attribution separately for each proposition. A named inner speaker's report in one clause
+  does not automatically govern the recorder's following independent assertion. Preserve the speaker
+  who actually supplies each statement; do not make an adjacent direct assertion part of the inner report
+  merely because both statements concern the same topic.
   A first-person assistant's preliminary assumption or tentative reading is a useful tentative source_report,
   not independent evidence and not automatically a hypothetical scenario. Preserve the assistant as source
   and explicit lack of verification; do not reject the qualified report merely because the assistant said it.

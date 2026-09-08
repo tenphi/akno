@@ -31,7 +31,7 @@ import {
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v28';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v29';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v17';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -117,6 +117,10 @@ evidence that directly supports the whole block. Answer covered parts of a compo
 parts in missing_concepts. If the evidence does not answer anything, return no blocks. Do not write citation markers,
 file titles, storage identifiers, or line numbers in block text; Akno renders validated citations itself.
 Speaker names needed for attribution belong in the answer text.
+Every cited record contributes its own qualifications. A block describing a hypothetical proposition
+should cite its hypothetical record; do not also cite a separate proposed discussion plan unless the
+block describes that plan and preserves its proposed status. Shared topic alone does not justify an
+extra citation, and discussing a proposition does not establish acceptance of a related plan.
 Never infer what the complete original source omitted from the retrieved subset. If a requested detail is
 missing from the supplied evidence, list it in missing_concepts; do not claim the original source never
 mentioned it. An explicit domain-level exclusion or an unanswered question can still be described faithfully.
@@ -1000,7 +1004,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
 function hasBoundReporter(text: string, label: string): boolean {
   const source = `(?<![\\p{L}\\p{N}])${label}(?![\\p{L}\\p{N}])`;
   const modifiers =
-    '(?:(?:tentatively|preliminarily|unconfirmedly|reportedly|only|merely|also|explicitly|without verification|предварительно|предположительно|непроверенно|неподтвержд[её]нно|только|лишь)(?:,?\\s+(?:and\\s+|и\\s+)?)){0,3}';
+    '(?:(?:tentatively|preliminarily|unconfirmedly|unverifiedly|reportedly|only|merely|also|explicitly|without verification|предварительно|предположительно|непроверенно|неподтвержд[её]нно|только|лишь)(?:,?\\s+(?:and\\s+|и\\s+)?)){0,3}';
   const predicate =
     '(?:reported|reports|said|says|stated|states|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|переда\\p{L}*)';
   const qualifier = '(?:(?:tentative|preliminary|unverified|unconfirmed)(?:,?\\s+(?:and\\s+)?)){0,3}';

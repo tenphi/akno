@@ -43,3 +43,5 @@ Repair structurally rejected candidates once even when other candidates survive.
 Bind report wording directly to its named outer source while accepting bounded tentative modifiers, finite report complements and spaced Russian passive uncertainty. Preserve prior guards against unrelated recordings and negation. Provide exact per-kind structural repair guidance, preserve conditional rule consequences and explicit absence of arrangements, and compare ordinary meaning-preserving translations within the existing three-dimension semantic verifier.
 
 Separate a recorder's lack of verification from the inner speaker's commitment, and prevent a fictional proposition from inheriting asserted status from a plan to discuss it. Preserve explicit absence of supporting evidence when answering about competing hypotheses, and accept bounded unconfirmed report modifiers without relaxing semantic verification.
+
+Keep adjacent direct assertions with their own source instead of extending a nested speaker's report across unrelated clauses. Accept bounded unverified report modifiers and select answer citations whose separate discourse statuses are actually preserved by the answer.

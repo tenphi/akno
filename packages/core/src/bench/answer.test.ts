@@ -34,7 +34,7 @@ describe('grounded-answer benchmark', () => {
       embedding: { available: true, totalChunks: 15, embeddedChunks: 15 },
       answerModel: {
         available: true,
-        generationPromptVersion: 'answer-generation-v28',
+        generationPromptVersion: 'answer-generation-v29',
         verifierPromptVersion: 'answer-verifier-v17',
       },
       metrics: {
