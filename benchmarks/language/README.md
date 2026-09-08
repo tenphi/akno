@@ -22,6 +22,11 @@ was started: confirmed V27 modal errors and exposed V28 false rejections are add
 the unchanged, independently approved and unexecuted v17 inputs. The [V29 plan](v29-trial-plan.md) preserves
 the same models, repeated 90% answer threshold and zero-error requirements.
 
+The [V29 exposed probes](results/v29) yielded 21/24 useful selected answers and 15/16 useful built-package
+answers. All nonnull answers were source-entailing, qualified and language compliant. Selected retention was
+2/3 useful because one report omitted a separate no-arrangement fact; built retention was 2/2. The full v17
+trial is running; these probes do not replace its repeated gate.
+
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
 development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets and nine
