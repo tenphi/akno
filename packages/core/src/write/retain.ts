@@ -34,8 +34,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v32';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v19';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v33';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v20';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -57,6 +57,9 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   Disambiguate relational nouns with their governing context. A contract condition is a contractual term
   or requirement; it is not the device's physical condition or state. Preserve the narrower supported sense
   in English prose so later translation cannot change the object of verification.
+  Preserve the source's level of specificity: a named component measurement does not identify a measured
+  property, method or result. Leave those unspecified unless the supplied source establishes them. Do not
+  fill technical details, causes or attributes from domain knowledge when formulating retained prose.
 - Preserve the subject and scope of negative epistemic statements. "This assertion or exclusion does
   not establish or address X" does not entail "the contract or source says nothing about X". Only
   attribute silence or omission to the whole document when the source explicitly makes that document

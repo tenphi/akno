@@ -40,8 +40,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v39';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v23';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v40';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v24';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -97,6 +97,10 @@ Generic source roles such as assistant and user are descriptive prose: translate
 language even when source_speaker repeats the role. They are not proper names or schema values in answer text.
 Resolve word sense from its governing context: a contractual condition is an условие договора, not a
 состояние устройства. Translate the supported term or requirement, without adding a physical-state claim.
+Preserve the source's level of specificity. A component measurement names the component, not a particular
+measured property, method or result. Leave those details unspecified unless the cited source supplies them;
+do not complete a technical phrase from domain knowledge. The same rule applies to causal explanations,
+attributes and means. Translate the stated content without adding a more specific interpretation.
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.

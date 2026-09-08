@@ -63,8 +63,10 @@ export const semanticVerdictFields = {
 
 export const SEMANTIC_COMPARISON_CONTRACT = `Before deciding the three booleans, write a concise comparison:
 - source_meaning: the proposition the supplied source actually establishes in its discourse context;
-- candidate_meaning: the proposition the candidate actually states in that same context;
-- action_arguments: compare action, actor, object, purpose and any material modifier attachment;
+- candidate_meaning: the proposition the candidate actually states in that same context, retaining every
+  added specification rather than silently replacing it with the source's more general wording;
+- action_arguments: compare action, actor, object, purpose and any material modifier attachment. For a
+  measurement or inspection, compare the named component separately from the property, method and result;
 - qualification_scope: compare speaker layers, polarity, commitment, disposition, uncertainty and time.
 These are audit notes, not new evidence. Use only the supplied source for source meaning, and the candidate
 for candidate meaning. Do not compare a remembered hypothesis with an established real-world fact: compare
@@ -79,6 +81,13 @@ saying that a person has not selected a cause does not support an unassigned "ne
 merely naming that person elsewhere does not bind them to the embedded nonselection.
 Use the governing domain to resolve a word's sense: a contractual condition is a term or requirement,
 not the physical condition/state of a device. Fluency and preserved uncertainty do not excuse a changed sense.
+Preserve the source's level of specificity. Naming a component to be measured does not establish which
+property is measured, which method is used, or what result is expected. A plausible property associated
+with that component is still unsupported unless the supplied source establishes it. An answer that adds
+such a property fails proposition_supported and action_arguments_preserved even when the component and
+general purpose remain recognizable. Generic wording such as measuring a component's parameters does
+not select a particular parameter. Apply the same comparison to other added attributes, causes and means;
+ordinary grammatical expansion without a new semantic restriction is not an added specification.
 List a mismatch only when a concrete clause selects an unsupported meaning, changes a role or value,
 or loses a material qualification. Its detail must name that clause and the conflicting or missing source
 basis. Keep comparison fields below 320 characters and each mismatch detail below 240 characters.
