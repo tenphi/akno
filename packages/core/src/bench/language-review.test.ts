@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
 import { LANGUAGE_CORPUS_V12 } from './language-corpus-v12.ts';
+import { LANGUAGE_CORPUS_V13 } from './language-corpus-v13.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
 import { languageReviewPacket, adjudicateLanguageGate, languageGateThresholds } from './language-review.ts';
@@ -14,7 +15,7 @@ import type { runLanguageBench } from './language.ts';
 type Report = Awaited<ReturnType<typeof runLanguageBench>>;
 
 /** Synthetic judgments exercise the gate's accounting and integrity, never model quality. */
-function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' = 'v3') {
+function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' | 'v13' = 'v3') {
   const corpus =
     version === 'v3'
       ? LANGUAGE_CORPUS_V3
@@ -22,7 +23,9 @@ function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' = 'v3') {
         ? LANGUAGE_CORPUS_V10
         : version === 'v11'
           ? LANGUAGE_CORPUS_V11
-          : LANGUAGE_CORPUS_V12;
+          : version === 'v12'
+            ? LANGUAGE_CORPUS_V12
+            : LANGUAGE_CORPUS_V13;
   const evidence = {
     text: 'An invented qualified memory record.',
     qualification: {
@@ -105,7 +108,7 @@ function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' = 'v3') {
   })) as unknown as Report[];
   const packet = languageReviewPacket(reports, inputs);
   const outputs = {
-    schemaVersion: 'language-output-review-v1',
+    schemaVersion: version === 'v13' ? 'language-output-review-v2' : 'language-output-review-v1',
     packetFingerprint: packet.packetFingerprint,
     reviewer,
     cases: packet.cases.map((entry) => ({
@@ -113,6 +116,7 @@ function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' = 'v3') {
       run: entry.run,
       retentionUseful: !entry.source.hold,
       retentionJustifiedHold: entry.source.hold ?? false,
+      ...(version === 'v13' ? { retainedSourceEntailed: true } : {}),
       knowledgeLanguageCompliant: true,
       qualificationPreserved: true,
       unsafeFactualPromotion: false,
@@ -125,6 +129,7 @@ function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' = 'v3') {
         usefulQualifiedRetrieval: answer.retrievedEvidence.length > 0,
         justifiedAbstention: answer.answer === null,
         languageCompliant: answer.answer === null ? null : true,
+        ...(version === 'v13' ? { sourceEntailed: answer.answer === null ? null : true } : {}),
         qualificationPreserved: true,
         unsafeFactualPromotion: false,
         reason: 'Invented review fixture.',
@@ -174,7 +179,7 @@ describe('independently adjudicated language gate', () => {
     }
   });
 
-  it.each(['v11', 'v12'] as const)(
+  it.each(['v11', 'v12', 'v13'] as const)(
     'keeps the stronger gate and complete breakdowns for fresh corpus %s',
     (version) => {
       const { reports, inputs, outputs } = fixture(version);
@@ -186,6 +191,84 @@ describe('independently adjudicated language gate', () => {
       );
     },
   );
+
+  it('fails qualified but source-unsupported output even when coverage remains above its thresholds', () => {
+    const { reports, inputs, outputs } = fixture('v13');
+    outputs.cases[0]!.retentionUseful = false;
+    outputs.cases[0]!.retainedSourceEntailed = false;
+    outputs.cases[0]!.answers[0]!.usefulQualifiedAnswer = false;
+    outputs.cases[0]!.answers[0]!.sourceEntailed = false;
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(gate.schemaVersion).toBe('language-quality-gate-v2');
+    expect(gate.releaseEligible).toBe(false);
+    expect(gate.failures).toEqual([
+      'development/run-1:unsupportedRetainedOutputs',
+      'development/run-1:unsupportedNonnullAnswers',
+    ]);
+    expect(gate.groups[0]!.metrics.usefulQualifiedAnswerCoverage.rate).toBe(79 / 80);
+    expect(gate.groups[0]!.metrics.translationQualificationErrors).toBe(0);
+  });
+
+  it('records a failed precision gate for a useful mixed retained set', () => {
+    const { reports, inputs, outputs } = fixture('v13');
+    const observation = reports[0]!.cases[0]!;
+    observation.retainedItems = 2;
+    observation.reviewKnowledge.push({
+      ...observation.reviewKnowledge[0]!,
+      text: 'An additional unsupported invented record.',
+    });
+    outputs.packetFingerprint = languageReviewPacket(reports, inputs).packetFingerprint;
+    outputs.cases[0]!.retainedSourceEntailed = false;
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(gate.releaseEligible).toBe(false);
+    expect(gate.failures).toEqual(['development/run-1:unsupportedRetainedOutputs']);
+    expect(gate.groups[0]!.metrics.unsupportedRetainedOutputs).toBe(1);
+    expect(gate.groups[0]!.metrics.usefulRetentionCoverage.rate).toBe(1);
+  });
+
+  it('allows focused source-entailed answers and distinguishes nulls from unsupported assertions', () => {
+    const { reports, inputs, outputs } = fixture('v13');
+    expect(outputs.cases.some((c) => c.answers.some((a) => a.sourceEntailed === null))).toBe(true);
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(gate.releaseEligible).toBe(true);
+    expect(gate.thresholds.unsupportedRetainedOutputs).toBe(0);
+    expect(gate.thresholds.unsupportedNonnullAnswers).toBe(0);
+    expect(gate.groups.every((g) => g.metrics.unsupportedNonnullAnswers === 0)).toBe(true);
+  });
+
+  it.each([
+    'missing-retained',
+    'missing-answer',
+    'spoofed-retained',
+    'spoofed-answer',
+    'null-present',
+    'false-absent',
+    'false-empty',
+    'legacy-schema',
+  ])('fails closed on invalid source-entailment adjudication: %s', (mode) => {
+    const { reports, inputs, outputs } = fixture('v13');
+    const first = outputs.cases[0]!;
+    const empty = outputs.cases.find((c) => c.retentionJustifiedHold)!;
+    if (mode === 'missing-retained') delete first.retainedSourceEntailed;
+    if (mode === 'missing-answer') delete first.answers[0]!.sourceEntailed;
+    if (mode === 'spoofed-retained') Object.assign(first, { retainedSourceEntailed: 'true' });
+    if (mode === 'spoofed-answer') Object.assign(first.answers[0]!, { sourceEntailed: 'true' });
+    if (mode === 'null-present') first.answers[0]!.sourceEntailed = null;
+    if (mode === 'false-absent') empty.answers[0]!.sourceEntailed = false;
+    if (mode === 'false-empty') empty.retainedSourceEntailed = false;
+    if (mode === 'legacy-schema') outputs.schemaVersion = 'language-output-review-v1';
+    expect(() => adjudicateLanguageGate(reports, inputs, outputs)).toThrow();
+  });
+
+  it('leaves historical review schemas and policy unchanged', () => {
+    const { reports, inputs, outputs } = fixture('v12');
+    const packet = languageReviewPacket(reports, inputs);
+    const gate = adjudicateLanguageGate(reports, inputs, outputs);
+    expect(packet.schemaVersion).toBe('language-review-packet-v1');
+    expect(gate.schemaVersion).toBe('language-quality-gate-v1');
+    expect(gate.thresholds).not.toHaveProperty('unsupportedRetainedOutputs');
+    expect(gate.groups[0]!.metrics).not.toHaveProperty('unsupportedNonnullAnswers');
+  });
 
   it('preserves the original policy for historical corpora', () => {
     expect(languageGateThresholds('language-discourse-v9').usefulQualifiedAnswerCoverage).toBe(0.8);

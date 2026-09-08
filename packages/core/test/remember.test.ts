@@ -612,7 +612,7 @@ describe('the title on a page remember creates', () => {
     // page after that first fact would make every later recall misdescribe the broader subject.
     server.respondWith([
       {
-        text: 'The Zephyr QX-100 is scheduled for calibration at dawn.',
+        text: 'The Zephyr QX-100 uses a brass calibration dial.',
         subject: 'Zephyr calibration',
         page: 'home/blackwater-expedition',
         kind: 'claim',
@@ -620,7 +620,7 @@ describe('the title on a page remember creates', () => {
     ]);
     const mem = await openMem();
     try {
-      await mem.remember({ text: 'The Zephyr QX-100 is scheduled for calibration at dawn.' });
+      await mem.remember({ text: 'The Zephyr QX-100 uses a brass calibration dial.' });
       const content = created('home/blackwater-expedition');
       expect(content).toContain('title: "Blackwater Expedition"');
       expect(content).not.toContain('Zephyr calibration');

@@ -8,6 +8,7 @@ import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
 import { LANGUAGE_CORPUS_V12 } from './language-corpus-v12.ts';
+import { LANGUAGE_CORPUS_V13 } from './language-corpus-v13.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -57,24 +58,33 @@ const AnswerReview = z.object({
   unsafeFactualPromotion: z.boolean(),
   reason: z.string().min(1),
 });
-const OutputReview = z.object({
+const RetentionReview = z.object({
+  id: z.string(),
+  run: z.number().int().positive(),
+  retentionUseful: z.boolean(),
+  retentionJustifiedHold: z.boolean(),
+  knowledgeLanguageCompliant: z.boolean(),
+  qualificationPreserved: z.boolean(),
+  unsafeFactualPromotion: z.boolean(),
+  reason: z.string().min(1),
+  answers: z.array(AnswerReview).length(8),
+});
+const OutputReviewV1 = z.object({
   schemaVersion: z.literal('language-output-review-v1'),
   packetFingerprint: z.string(),
   reviewer: Reviewer,
+  cases: z.array(RetentionReview),
+});
+const OutputReviewV2 = OutputReviewV1.extend({
+  schemaVersion: z.literal('language-output-review-v2'),
   cases: z.array(
-    z.object({
-      id: z.string(),
-      run: z.number().int().positive(),
-      retentionUseful: z.boolean(),
-      retentionJustifiedHold: z.boolean(),
-      knowledgeLanguageCompliant: z.boolean(),
-      qualificationPreserved: z.boolean(),
-      unsafeFactualPromotion: z.boolean(),
-      reason: z.string().min(1),
-      answers: z.array(AnswerReview).length(8),
+    RetentionReview.extend({
+      retainedSourceEntailed: z.boolean(),
+      answers: z.array(AnswerReview.extend({ sourceEntailed: z.boolean().nullable() })).length(8),
     }),
   ),
 });
+const OutputReview = z.discriminatedUnion('schemaVersion', [OutputReviewV1, OutputReviewV2]);
 
 /** The packet excludes runtime verifier decisions and aggregate scores from semantic adjudication. */
 export function languageReviewPacket(reports: Report[], rawInputReview: unknown) {
@@ -101,7 +111,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
                       ? LANGUAGE_CORPUS_V11
                       : corpusVersion === 'language-discourse-v12'
                         ? LANGUAGE_CORPUS_V12
-                        : null;
+                        : corpusVersion === 'language-discourse-v13'
+                          ? LANGUAGE_CORPUS_V13
+                          : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -153,9 +165,12 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
         throw new Error('missing or malformed retained/retrieval review evidence');
       const source = expected.find((candidate) => candidate.id === entry.id)!;
       if (
-        ['language-discourse-v10', 'language-discourse-v11', 'language-discourse-v12'].includes(
-          corpusVersion!,
-        ) &&
+        [
+          'language-discourse-v10',
+          'language-discourse-v11',
+          'language-discourse-v12',
+          'language-discourse-v13',
+        ].includes(corpusVersion!) &&
         (entry.language !== source.language || entry.scenario !== source.scenario)
       )
         throw new Error('altered source dimensions');
@@ -181,15 +196,19 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
     separateReviewer(inputReview.reviewer, report);
   }
   const packet = {
-    schemaVersion: 'language-review-packet-v1',
+    schemaVersion:
+      corpusVersion === 'language-discourse-v13' ? 'language-review-packet-v2' : 'language-review-packet-v1',
     corpusFingerprint: fingerprint,
     inputReviewFingerprint: sha256(JSON.stringify(inputReview)),
     reportFingerprints: reports.map((report) => sha256(JSON.stringify(report))).sort(),
     contract: contract(first),
     instructions:
       'Judge source entailment and useful records, not world truth. English is required for generated knowledge. Answer prose must follow its requested language; original names and citations may remain exact. A null answer is not a useful answer; judge its abstention separately. Read-only admission requires a hold. All qualifications must survive together, including nested attribution, fiction, incompatible alternatives and unknown source-relative time. Runtime verifier agreement is not an independent truth label.' +
-      (corpusVersion === 'language-discourse-v12'
+      (['language-discourse-v12', 'language-discourse-v13'].includes(corpusVersion!)
         ? ' Typed commitment describes the embedded proposition, not certainty that a discussion happened. Competing unconfirmed causes must remain tentative or hypothetical and must not gain ordinary factual/current eligibility. self_attested records direct user provenance; it is neither independent verification nor a requirement to verbalize self-attestation. Preserve corrective contrasts tied to the retained proposition, while unrelated adjacent details may be omitted.'
+        : '') +
+      (corpusVersion === 'language-discourse-v13'
+        ? ' Return language-output-review-v2. Retained sets require retainedSourceEntailed:boolean: every saved proposition must be entailed in content and scope by the frozen original source; empty sets are vacuously true. Every answer requires sourceEntailed:boolean|null, null if and only if the answer is null. A nonnull answer must be entailed by the original source even when it repeats a flawed retained record. Preserve qualification separately: asserted + source_report + explicit unverified prose can faithfully represent an asserted report without independent verification. Service provision is not an instantiated booking. A focused entailed subset may omit unrelated details; explicit rejected-offer wording answers which offer was rejected without repeating the redundant no-plan clause. Omission affects usefulness unless it changes a coupled scope qualification. Any source-unfaithful accepted record or nonnull answer fails the gate, regardless of coverage.'
         : ''),
     cases: reports.flatMap((report) =>
       report.cases.map((entry) => ({
@@ -226,10 +245,14 @@ const LANGUAGE_GATE_THRESHOLDS = {
 export function languageGateThresholds(corpusVersion: string) {
   return {
     ...LANGUAGE_GATE_THRESHOLDS,
+    ...(corpusVersion === 'language-discourse-v13'
+      ? { unsupportedRetainedOutputs: 0, unsupportedNonnullAnswers: 0 }
+      : {}),
     usefulQualifiedAnswerCoverage: [
       'language-discourse-v10',
       'language-discourse-v11',
       'language-discourse-v12',
+      'language-discourse-v13',
     ].includes(corpusVersion)
       ? 0.9
       : 0.8,
@@ -241,6 +264,11 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
   const packet = languageReviewPacket(reports, inputReview);
   const thresholds = languageGateThresholds(reports[0]!.corpusVersion);
   const review = OutputReview.parse(rawOutputReview);
+  const requiresEntailment = reports[0]!.corpusVersion === 'language-discourse-v13';
+  if (
+    review.schemaVersion !== (requiresEntailment ? 'language-output-review-v2' : 'language-output-review-v1')
+  )
+    throw new Error('unexpected output review schema for corpus');
   if (review.packetFingerprint !== packet.packetFingerprint) throw new Error('stale output review');
   for (const report of reports) separateReviewer(review.reviewer, report);
   exactIds(
@@ -272,7 +300,9 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         justifiedAbstentions = 0;
       let promotions = 0,
         languageErrors = 0,
-        qualificationErrors = 0;
+        qualificationErrors = 0,
+        unsupportedRetainedOutputs = 0,
+        unsupportedNonnullAnswers = 0;
       for (const observation of observations) {
         const judgment = review.cases.find((entry) => entry.id === observation.id && entry.run === run)!;
         exactIds(judgment.answers.map(answerKey), matrixKeys());
@@ -282,6 +312,14 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
           (judgment.retentionUseful && judgment.retentionJustifiedHold)
         )
           throw new Error('inconsistent retention judgment');
+        if (requiresEntailment) {
+          if (!('retainedSourceEntailed' in judgment)) throw new Error('missing retained source entailment');
+          if (!judgment.retainedSourceEntailed) {
+            // A useful retained set can still contain an additional unsupported proposition.
+            if (!observation.retainedItems) throw new Error('inconsistent retained source entailment');
+            unsupportedRetainedOutputs++;
+          }
+        }
         if (judgment.retentionUseful && !observation.expectedHold) retained++;
         if (judgment.retentionJustifiedHold && observation.expectedHold) safeHolds++;
         if (judgment.unsafeFactualPromotion) promotions++;
@@ -300,6 +338,16 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
             (!present && answer.languageCompliant !== null)
           )
             throw new Error('inconsistent answer judgment');
+          if (requiresEntailment) {
+            if (!('sourceEntailed' in answer)) throw new Error('missing answer source entailment');
+            if (
+              (present && answer.sourceEntailed === null) ||
+              (!present && answer.sourceEntailed !== null) ||
+              (answer.usefulQualifiedAnswer && answer.sourceEntailed !== true)
+            )
+              throw new Error('inconsistent answer source entailment');
+            if (present && answer.sourceEntailed === false) unsupportedNonnullAnswers++;
+          }
           if (answer.usefulQualifiedAnswer && !observation.expectedHold) usefulAnswers++;
           // Answer language does not rerun recall. Count each query/view retrieval once and
           // require consistent judgments when its evidence appears in both answer rows.
@@ -326,6 +374,7 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         unsafeFactualPromotion: promotions,
         acceptedLanguageViolations: languageErrors,
         translationQualificationErrors: qualificationErrors,
+        ...(requiresEntailment ? { unsupportedRetainedOutputs, unsupportedNonnullAnswers } : {}),
         sourceByteChanges: observations.filter((entry) => entry.bytesStable !== true).length,
         availabilityFailureRate: rate(
           observations.filter((entry) => entry.availabilityFailure).length,
@@ -334,6 +383,12 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         ordinaryProseFailures: observations.filter((entry) => !entry.ordinaryCorrect).length,
       };
       const prefix = `${report.split}/run-${run}`;
+      if (requiresEntailment) {
+        if (unsupportedRetainedOutputs > thresholds.unsupportedRetainedOutputs!)
+          failures.push(`${prefix}:unsupportedRetainedOutputs`);
+        if (unsupportedNonnullAnswers > thresholds.unsupportedNonnullAnswers!)
+          failures.push(`${prefix}:unsupportedNonnullAnswers`);
+      }
       for (const key of [
         'usefulRetentionCoverage',
         'qualifiedRetrievalCoverage',
@@ -360,16 +415,19 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         split: report.split,
         run,
         metrics,
-        ...(['language-discourse-v10', 'language-discourse-v11', 'language-discourse-v12'].includes(
-          report.corpusVersion,
-        )
+        ...([
+          'language-discourse-v10',
+          'language-discourse-v11',
+          'language-discourse-v12',
+          'language-discourse-v13',
+        ].includes(report.corpusVersion)
           ? { breakdowns: reviewBreakdowns(observations, review) }
           : {}),
       };
     }),
   );
   return {
-    schemaVersion: 'language-quality-gate-v1',
+    schemaVersion: requiresEntailment ? 'language-quality-gate-v2' : 'language-quality-gate-v1',
     independentlyReviewed: true,
     adjudicationKind: review.reviewer.kind,
     reviewer: review.reviewer.id,

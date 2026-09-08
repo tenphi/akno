@@ -26,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v20';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v10';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v21';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v11';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -888,7 +888,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   // An unrelated factual citation cannot establish the proposition inside a report.
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
-    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|record(?:ed|s)?(?:,? as)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
+    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggest(?:s|ed)?|(?:gave|provided) (?:(?:an?|the) )?(?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}report|record(?:ed|s)?(?:,? as)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
   if (
@@ -934,7 +934,8 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
     }
     const dispositionPatterns: Partial<Record<typeof memory.disposition, RegExp>> = {
       proposed: /\b(proposal|proposed)\b|предлож/iu,
-      rejected: /\b(rejected|declined|not accepted)\b|отклон|отверг|не принят/iu,
+      rejected:
+        /\b(rejected|declined|not accepted|did not accept)\b|отклон|отверг|не принят|не принял[аио]?(?=$|[^\p{L}])/iu,
       cancelled: /\b(cancelled|canceled)\b|отмен/iu,
       completed: /\b(completed|finished|done)\b|заверш|выполн/iu,
       superseded: /\b(superseded|replaced|former)\b|замен|прежн/iu,
@@ -974,7 +975,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
 
 function tentativeLanguage(text: string): boolean {
   return (
-    /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
+    /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|непроверенн|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
       text,
     ) ||
     /\bunsupported (?:hypothes(?:is|es)|explanations?|possibilit(?:y|ies)|claims?|reports?|theor(?:y|ies)|beliefs?|assumptions?|conclusions?)\b|\b(?:hypothes(?:is|es)|explanations?|claims?|reports?|beliefs?) (?:is|are|remains?) (?:equally |still )?unsupported\b/iu.test(

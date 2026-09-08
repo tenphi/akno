@@ -658,6 +658,27 @@ describe('grounded answer discovery surface', () => {
       'tentative',
       'source_report',
       'The assistant reported an unverified silverpine inspection requirement.',
+      'The assistant tentatively suggested a silverpine inspection requirement; this remains unverified.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'The assistant gave a tentative, unverified report of a silverpine inspection requirement.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Ассистент сообщил непроверенный отчёт о требовании проверки silverpine.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
       'The assistant recorded, as a tentative unverified report, the silverpine inspection requirement.',
       true,
     ],
@@ -1259,6 +1280,8 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     ['rejected', 'Ada Marlow rejected the offer to inspect the silverpine valve.', true],
+    ['rejected', 'Ada Marlow did not accept the offer to inspect the silverpine valve.', true],
+    ['rejected', 'Ada Marlow не приняла предложение проверить клапан silverpine.', true],
     ['rejected', 'Ada Marlow отвергла предложение проверить клапан silverpine.', true],
     ['cancelled', 'Ada Marlow cancelled the silverpine valve inspection.', true],
     ['completed', 'Ada Marlow completed the silverpine valve inspection.', true],

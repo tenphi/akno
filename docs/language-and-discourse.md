@@ -100,8 +100,8 @@ rebuild/replay, graph eligibility, and failures. It does not establish live-mode
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v12 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v12 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v13 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v13 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -204,9 +204,9 @@ node scripts/review-language.mjs \
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
 at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
-v10, v11 and v12 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
+v10 through v13 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
 original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
-V10 and V11 gates also break down useful retention and answers by source language and scenario, and answers by query
+V10 through V13 gates also break down useful retention and answers by source language and scenario, and answers by query
 and requested output language. These groups describe coverage within a finite corpus, not independent samples.
 At most 5% of cases may have availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
 source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
@@ -215,6 +215,15 @@ Retrieval is judged once per query-language/view pair; duplicated evidence in th
 must receive the same judgment and cannot increase its weight. Model adjudication is labeled as such and must use a model different from the runtime retention/answer model;
 it is fallible review of a finite invented corpus, not human validation or a longitudinal reliability guarantee.
 
+V13 uses `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
+`retainedSourceEntailed`: all saved propositions must follow from the frozen original source; an empty set
+is vacuously true. Each answer receives `sourceEntailed`, null if and only if the answer is null. A nonnull
+answer must follow from the original source even if it repeats flawed retained knowledge. Unsupported
+retained sets and nonnull answers must both be zero. A mixed retained set can contain useful knowledge and
+an unsupported addition; it still fails this precision gate. Focused answers may select a supported subset,
+but cannot remove a restriction that changes meaning. These judgments are scored separately from the qualification and language dimensions; altered attribution
+or commitment can also change whether the content follows from its source. Earlier corpora retain the original review schema and policy.
+
 Older frozen answer corpora are unchanged. Some expect factual answers from a record that “says” a claim;
 the stricter report boundary abstains on those cases. Their benchmark gates expose the coverage loss instead
 of silently replacing expected answers. General longitudinal reliability and bounded observation/reflection
@@ -222,6 +231,40 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v20 broader diagnostic
+
+The v12 corpus ran twice per split at runtime commit `5e0b5d3`, using GPT-5.6 Luna with independent
+GPT-5.6 Sol input/output review. The unchanged 90% answer gate **failed**:
+
+| Split/run     | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------- | ---------------: | ------------------: | -----------------------: |
+| Development 1 |             7/10 |               28/40 |                    60/80 |
+| Development 2 |             8/10 |               32/40 |                    62/80 |
+| Held-out 1    |             9/10 |               36/40 |                    66/80 |
+| Held-out 2    |             9/10 |               36/40 |                    66/80 |
+
+The 254/320 useful answers leave 51 unjustified nulls and 15 source-unfaithful answers. Both repetitions
+changed a reported service provision into an instantiated pickup booking; most answers repeated that
+unsupported change. The report attribution and lack of verification survived, so the final review records
+no qualification or factual-promotion error. This distinction motivated V13's separate zero-tolerance
+source-entailment gate. There were no accepted language errors, source-byte changes or case availability
+failures, and all 32 read-only abstentions were justified. Four writable retentions were entirely empty;
+three more lost necessary content or scope.
+
+The [complete reports, review receipts and failed gate](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v20)
+remain preserved. A separate built-package probe produced 21/24 answers, of which 14/24 were independently
+useful; it reproduced the provision-to-booking error and does not replace the full trial. Final review
+receipts distinguish source scope from qualification and accept focused, explicitly rejected-offer answers
+without requiring a redundant no-plan sentence.
+
+V21 adds generated-candidate checks for typed booking context and readable source-supported subject
+identifiers, preserves unresolved alternatives in questions, and recognizes explicit unrecoverable source
+dates. Shared prompts distinguish service provision from booking, assistant tentative reports from
+hypothetical scenarios, and source-supplied conditional consequences from new deductions. Bounded answer
+checks accept additional faithful attribution, rejection and uncertainty forms without bypassing source
+verification. V13's ten fresh held-out sources were independently approved before execution; the answer
+threshold remains 90% in every split/run.
 
 ## Independently reviewed v19 broader diagnostic
 

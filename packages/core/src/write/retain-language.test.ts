@@ -317,6 +317,174 @@ describe('cross-language retention boundary', () => {
     expect(result.candidates[0]?.epistemic.basis).toBe(nested ? 'source_report' : 'self_attested');
   });
 
+  it.each([
+    ['Zephyr QX-100', 'The Zephyr QX-100 warranty covers inspection.', true],
+    ['Zephyr QX-100', 'The warranty covers inspection.', false],
+    ['Zephyr QX-100', 'The Zephyr QX-1000 warranty covers inspection.', false],
+    ['Zephyr QX-1000', 'The warranty covers inspection.', true],
+  ])(
+    'keeps source-supported subject identifiers in generated readable prose: %s %s',
+    (subject, text, accepted) => {
+      const source = 'The Zephyr QX-100 warranty covers inspection.';
+      const candidate = {
+        kind: 'claim',
+        subject,
+        text,
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      const result = cleanCandidateBatch([candidate], { sourceText: source, generated: true });
+      expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+      if (!accepted) expect(result.held[0]?.reason).toContain('subject identifier');
+      expect(cleanCandidateBatch([candidate], { sourceText: source }).candidates).toHaveLength(1);
+    },
+  );
+
+  it.each([
+    ['The silverpine service provides pickup for inspection.', null, true],
+    ['The silverpine pickup is scheduled for inspection.', null, false],
+    ['The silverpine pickup is already booked for inspection.', null, false],
+    ['The silverpine pickup is not scheduled for inspection.', null, true],
+    [
+      'The silverpine pickup was scheduled for 2031-04-11.',
+      { start: '2031-04-11', precision: 'day', relation: 'scheduled', status: 'scheduled' },
+      true,
+    ],
+    [
+      'The silverpine pickup is scheduled, but its date is unknown.',
+      { precision: 'unknown', relation: 'scheduled', status: 'scheduled' },
+      true,
+    ],
+    [
+      'The silverpine pickup is scheduled for inspection.',
+      { start: '2031-04-11', precision: 'day', relation: 'occurred', status: 'actual' },
+      false,
+    ],
+  ] as const)(
+    'requires generated schedule prose to agree with its time envelope: %s',
+    (text, time, accepted) => {
+      const candidate = {
+        kind: 'claim',
+        text,
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        attribution: { source_role: 'user' },
+        support: [{ quote: text }],
+        discourse_frame: [{ quote: text }],
+        time,
+      };
+      const result = cleanCandidateBatch([candidate], { sourceText: text, generated: true });
+      expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+      if (!accepted) expect(result.held[0]?.reason_code).toBe('time_unresolved');
+      // Exact caller input does not opt into the automatic representation check.
+      expect(cleanCandidateBatch([candidate], { sourceText: text }).candidates).toHaveLength(1);
+    },
+  );
+
+  it.each([false, true])(
+    'repairs a generated schedule inconsistency without treating the repair as evidence (%s)',
+    async (supported) => {
+      const source = 'Для silverpine предусмотрен забор на осмотр.';
+      const bad = {
+        kind: 'claim',
+        text: 'The silverpine pickup is scheduled for inspection.',
+        attribution: { source_role: 'user' },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+        time: null,
+      };
+      const corrected = { ...bad, text: 'The silverpine service provides pickup for inspection.' };
+      const invented = { ...bad, time: { precision: 'unknown', relation: 'scheduled', status: 'scheduled' } };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [bad] }), latencyMs: 11 };
+        if (chat.mock.calls.length === 2) {
+          expect(payload.validation_issues[0].reason_code).toBe('time_unresolved');
+          expect(payload.source.text).toBe(source);
+          return {
+            ok: true,
+            value: JSON.stringify({ candidates: [supported ? corrected : invented] }),
+            latencyMs: 11,
+          };
+        }
+        expect(payload.source.text).toBe(source);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              supported,
+              reason_code: supported ? null : 'time_unresolved',
+            })),
+          }),
+          latencyMs: 11,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-schedule-checker',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(chat).toHaveBeenCalledTimes(3);
+      expect(result.candidates).toHaveLength(supported ? 1 : 0);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([false, true])(
+    'keeps open inclusion/exclusion alternatives without answering the question (%s)',
+    async (answersItself) => {
+      const source =
+        'Ada Marlow has an open silverpine question: whether a crate is provided or excluded. No answer is recorded.';
+      const candidate = {
+        kind: 'question',
+        text: answersItself
+          ? 'Ada Marlow’s silverpine crate question is answered: a crate is excluded.'
+          : 'Ada Marlow has an open silverpine question about a crate, making no claim either that it is provided or excluded.',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'none', disposition: 'active' },
+        polarity: 'affirmed',
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.source.text).toBe(source);
+        expect(payload.candidates[0].discourse.commitment).toBe('none');
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: [
+              {
+                candidate_id: payload.candidates[0].candidate_id,
+                supported: !answersItself,
+                reason_code: answersItself ? 'discourse_uncertain' : null,
+              },
+            ],
+          }),
+          latencyMs: 11,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-question-checker',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.candidates).toHaveLength(answersItself ? 0 : 1);
+      if (answersItself) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
   it.each(['property', 'unanchored', 'anchored'] as const)(
     'distinguishes coverage duration from established schedules (%s)',
     (mode) => {
@@ -634,6 +802,19 @@ describe('cross-language retention boundary', () => {
     [
       'Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the original recording, whose reference date is unknown.',
       true,
+    ],
+    ['Ada Marlow proposed reviewing silverpine tomorrow relative to the undated original note.', true],
+    [
+      'Ada Marlow proposed reviewing silverpine tomorrow relative to the original note; calendar dates cannot be recovered.',
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing silverpine tomorrow relative to the original recording; its date could not be determined.',
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing silverpine tomorrow relative to the original note; the device cannot be recovered.',
+      false,
     ],
   ] as const)('requires both source-relative meaning and an unknown date: %s', (text, accepted) => {
     const source = 'I propose reviewing the Zephyr QX-100 warranty tomorrow.';
