@@ -85,6 +85,12 @@ proposer. If the source names the proposer, that omission fails action_arguments
 proposal's content and time remain faithful. Never infer that actor from source_speaker metadata alone.
 Use the governing domain to resolve a word's sense: a contractual condition is a term or requirement,
 not the physical condition/state of a device. Fluency and preserved uncertainty do not excuse a changed sense.
+Use explicit clarification in the complete supplied context to resolve an earlier ambiguous term,
+including when the source switches languages. Compare the actual referent selected by every candidate
+clause with that clarified meaning. A dictionary sense available in isolation is unsupported when it
+conflicts with the source's clarification. A later correct clause does not retract an earlier incompatible
+component or claim. Do not infer alias equivalence from lexical similarity or outside knowledge; when no
+supplied clarification resolves the ambiguity, preserve that ambiguity instead of selecting a new sense.
 Preserve the source's level of specificity. Naming a component to be measured does not establish which
 property is measured, which method is used, or what result is expected. A plausible property associated
 with that component is still unsupported unless the supplied source establishes it. An answer that adds

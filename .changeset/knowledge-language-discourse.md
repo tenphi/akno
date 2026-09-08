@@ -75,3 +75,5 @@ Supply retention language checks with immutable source spelling hints while pres
 Preserve the source's level of specificity through generated knowledge and answers. Compare measured components separately from unspecified properties, methods and results, and reject unsupported specializations within the existing semantic verdict dimensions.
 
 Preserve a source-named proposer separately from the reporting source. Hold bounded agentless proposal descriptions in generated retention and answers while admitting supported active, passive and possessive agency to complete semantic verification. Exact caller-provided candidates retain their model-free contract.
+
+Use an explicitly clarified referent consistently across bilingual retention and answers. Compare each generated clause against complete source context so an isolated dictionary sense or a later correct clause cannot authorize an incompatible component addition.

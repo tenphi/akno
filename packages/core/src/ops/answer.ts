@@ -40,8 +40,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v41';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v25';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v42';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v26';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -101,6 +101,10 @@ Preserve the source's level of specificity. A component measurement names the co
 measured property, method or result. Leave those details unspecified unless the cited source supplies them;
 do not complete a technical phrase from domain knowledge. The same rule applies to causal explanations,
 attributes and means. Translate the stated content without adding a more specific interpretation.
+Use a term's explicitly clarified referent consistently throughout the answer. If cited context clarifies
+an ambiguous component name, translate that meaning rather than another isolated dictionary sense. Do not
+introduce an additional component and then repeat the correct one in a later clause. Only the supplied
+clarification establishes the shared referent; similarity or domain knowledge cannot establish it.
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.

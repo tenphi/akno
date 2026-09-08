@@ -34,8 +34,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v34';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v21';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v35';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v22';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -60,6 +60,11 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   Preserve the source's level of specificity: a named component measurement does not identify a measured
   property, method or result. Leave those unspecified unless the supplied source establishes them. Do not
   fill technical details, causes or attributes from domain knowledge when formulating retained prose.
+  When the same source explicitly clarifies a referent across languages, use that clarified meaning
+  consistently. Do not expand an ambiguous earlier term into additional components or alternatives.
+  Keep both original-language evidence spans exact; their source clarification, not lexical similarity
+  or outside knowledge, is what permits one consistent referent in generated prose. If the source does
+  not resolve the ambiguity, preserve it rather than choosing a convenient dictionary sense.
 - Preserve the subject and scope of negative epistemic statements. "This assertion or exclusion does
   not establish or address X" does not entail "the contract or source says nothing about X". Only
   attribute silence or omission to the whole document when the source explicitly makes that document
