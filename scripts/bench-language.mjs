@@ -17,13 +17,13 @@ const { values } = parseArgs({
 if (
   !values.live ||
   !['development', 'held-out'].includes(values.split) ||
-  !['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13'].includes(
+  !['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v12', 'v13', 'v14'].includes(
     values.corpus,
   ) ||
   !/^[1-5]$/.test(values.runs)
 ) {
   console.error(
-    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2|v3|v4|v5|v6|v7|v8|v9|v10|v11|v12|v13] [--runs 1..5] [--case ID] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
+    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2|v3|v4|v5|v6|v7|v8|v9|v10|v11|v12|v13|v14] [--runs 1..5] [--case ID] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
   );
   process.exitCode = 2;
 } else {

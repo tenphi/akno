@@ -24,10 +24,15 @@ import {
   temporalQueryIntent,
 } from '../timeline/eligibility.ts';
 import { recall } from './recall.ts';
+import {
+  hasDeicticTime,
+  hasSourceRelativeAnchor,
+  hasUnknownReferenceClock,
+} from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v21';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v11';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v22';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v12';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -100,6 +105,11 @@ Keep a named source_speaker explicit for every nonfactual record, including self
 proposals and questions. The outer recorder and any inner speaker remain distinct people.
 Unknown temporal precision means the record has no resolved date. Describe any relative time as relative
 to the undated source, never to today, and preserve that the calendar date is unknown.
+When a source has this unresolved relative timing, retain BOTH its source-relative anchor and unknown
+reference date in the answer. "Next week; the date is unknown" drops the anchor. Use wording such as
+"next week relative to the undated original note" / "на следующей неделе относительно исходной
+недатированной записи". An abstract source-relative time with unknown calendar date preserves the
+qualification if the exact time unit is irrelevant to the question.
 
 Return structured answer blocks. Every substantive block must cite one or more supplied evidence_ids. Cite only
 evidence that directly supports the whole block. Answer covered parts of a compound question and list the missing
@@ -129,6 +139,12 @@ is supported. Meaning-preserving translation between English and Russian is allo
 not a contradiction. Do not require a translated answer to repeat an original phrase verbatim, except names
 and protected values. Typed qualifications and readable evidence together establish the record's status.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
+When the readable evidence anchors a relative time to an undated original note, preserve both the source
+anchor and the unresolved calendar date. Reject "next week; calendar date unknown" / "на следующей
+неделе; календарная дата неизвестна" because the source anchor is missing. "Next week relative to the
+undated original note" / "на следующей неделе относительно исходной недатированной записи" preserves
+both. Describing only an unknown date also loses the source-relative relation. The actual temporal
+envelope in required_records is a constraint, not an independent source of new dates or events.
 For each block, check the required_records against its own cited_evidence: content and scope, identities,
 embedded polarity, then commitment and disposition. For epistemic basis, apply the following provenance rules. Grammatical negation used to
 express uncertainty, lack of an answer, fictional scope, rejected selection or attribution is not automatically
@@ -508,6 +524,7 @@ async function verifyDraftSupport(
                             polarity: line.memory.polarity,
                             source_role: line.memory.source_role,
                             source_speaker: line.memory.source_speaker,
+                            temporal: line.memory.temporal,
                           },
                         ]
                       : [],
@@ -888,6 +905,9 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   // An unrelated factual citation cannot establish the proposition inside a report.
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
+    /\b[Rr]ecord(?:ed|s) (?:\p{Lu}[\p{L}’'.-]* ){0,3}\p{Lu}[\p{L}’'.-]*[’']s (?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}(?:report|account|statement)\b/u.test(
+      answerText,
+    ) ||
     /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggest(?:s|ed)?|(?:gave|provided) (?:(?:an?|the) )?(?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}report|record(?:ed|s)?(?:,? as)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
@@ -969,6 +989,15 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
       required.push(
         /\b(plan|planned|planning|scheduled|proposal|proposed)\b|план|назнач|предлож/iu.test(answerText),
       );
+    // Unknown precision alone is not a source-relative claim. Activate this floor only when
+    // the cited readable record already anchors deictic timing to an unresolved source clock.
+    if (
+      memory.temporal?.time.precision === 'unknown' &&
+      hasDeicticTime(line.text) &&
+      hasSourceRelativeAnchor(line.text) &&
+      hasUnknownReferenceClock(line.text)
+    )
+      required.push(hasSourceRelativeAnchor(answerText) && hasUnknownReferenceClock(answerText));
     return required.length > 0 && required.every(Boolean);
   });
 }

@@ -9,6 +9,7 @@ import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
 import { LANGUAGE_CORPUS_V12 } from './language-corpus-v12.ts';
 import { LANGUAGE_CORPUS_V13 } from './language-corpus-v13.ts';
+import { LANGUAGE_CORPUS_V14 } from './language-corpus-v14.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -113,7 +114,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
                         ? LANGUAGE_CORPUS_V12
                         : corpusVersion === 'language-discourse-v13'
                           ? LANGUAGE_CORPUS_V13
-                          : null;
+                          : corpusVersion === 'language-discourse-v14'
+                            ? LANGUAGE_CORPUS_V14
+                            : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -170,6 +173,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
           'language-discourse-v11',
           'language-discourse-v12',
           'language-discourse-v13',
+          'language-discourse-v14',
         ].includes(corpusVersion!) &&
         (entry.language !== source.language || entry.scenario !== source.scenario)
       )
@@ -196,18 +200,19 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
     separateReviewer(inputReview.reviewer, report);
   }
   const packet = {
-    schemaVersion:
-      corpusVersion === 'language-discourse-v13' ? 'language-review-packet-v2' : 'language-review-packet-v1',
+    schemaVersion: ['language-discourse-v13', 'language-discourse-v14'].includes(corpusVersion!)
+      ? 'language-review-packet-v2'
+      : 'language-review-packet-v1',
     corpusFingerprint: fingerprint,
     inputReviewFingerprint: sha256(JSON.stringify(inputReview)),
     reportFingerprints: reports.map((report) => sha256(JSON.stringify(report))).sort(),
     contract: contract(first),
     instructions:
       'Judge source entailment and useful records, not world truth. English is required for generated knowledge. Answer prose must follow its requested language; original names and citations may remain exact. A null answer is not a useful answer; judge its abstention separately. Read-only admission requires a hold. All qualifications must survive together, including nested attribution, fiction, incompatible alternatives and unknown source-relative time. Runtime verifier agreement is not an independent truth label.' +
-      (['language-discourse-v12', 'language-discourse-v13'].includes(corpusVersion!)
+      (['language-discourse-v12', 'language-discourse-v13', 'language-discourse-v14'].includes(corpusVersion!)
         ? ' Typed commitment describes the embedded proposition, not certainty that a discussion happened. Competing unconfirmed causes must remain tentative or hypothetical and must not gain ordinary factual/current eligibility. self_attested records direct user provenance; it is neither independent verification nor a requirement to verbalize self-attestation. Preserve corrective contrasts tied to the retained proposition, while unrelated adjacent details may be omitted.'
         : '') +
-      (corpusVersion === 'language-discourse-v13'
+      (['language-discourse-v13', 'language-discourse-v14'].includes(corpusVersion!)
         ? ' Return language-output-review-v2. Retained sets require retainedSourceEntailed:boolean: every saved proposition must be entailed in content and scope by the frozen original source; empty sets are vacuously true. Every answer requires sourceEntailed:boolean|null, null if and only if the answer is null. A nonnull answer must be entailed by the original source even when it repeats a flawed retained record. Preserve qualification separately: asserted + source_report + explicit unverified prose can faithfully represent an asserted report without independent verification. Service provision is not an instantiated booking. A focused entailed subset may omit unrelated details; explicit rejected-offer wording answers which offer was rejected without repeating the redundant no-plan clause. Omission affects usefulness unless it changes a coupled scope qualification. Any source-unfaithful accepted record or nonnull answer fails the gate, regardless of coverage.'
         : ''),
     cases: reports.flatMap((report) =>
@@ -245,7 +250,7 @@ const LANGUAGE_GATE_THRESHOLDS = {
 export function languageGateThresholds(corpusVersion: string) {
   return {
     ...LANGUAGE_GATE_THRESHOLDS,
-    ...(corpusVersion === 'language-discourse-v13'
+    ...(['language-discourse-v13', 'language-discourse-v14'].includes(corpusVersion!)
       ? { unsupportedRetainedOutputs: 0, unsupportedNonnullAnswers: 0 }
       : {}),
     usefulQualifiedAnswerCoverage: [
@@ -253,6 +258,7 @@ export function languageGateThresholds(corpusVersion: string) {
       'language-discourse-v11',
       'language-discourse-v12',
       'language-discourse-v13',
+      'language-discourse-v14',
     ].includes(corpusVersion)
       ? 0.9
       : 0.8,
@@ -264,7 +270,9 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
   const packet = languageReviewPacket(reports, inputReview);
   const thresholds = languageGateThresholds(reports[0]!.corpusVersion);
   const review = OutputReview.parse(rawOutputReview);
-  const requiresEntailment = reports[0]!.corpusVersion === 'language-discourse-v13';
+  const requiresEntailment = ['language-discourse-v13', 'language-discourse-v14'].includes(
+    reports[0]!.corpusVersion,
+  );
   if (
     review.schemaVersion !== (requiresEntailment ? 'language-output-review-v2' : 'language-output-review-v1')
   )
@@ -420,6 +428,7 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
           'language-discourse-v11',
           'language-discourse-v12',
           'language-discourse-v13',
+          'language-discourse-v14',
         ].includes(report.corpusVersion)
           ? { breakdowns: reviewBreakdowns(observations, review) }
           : {}),

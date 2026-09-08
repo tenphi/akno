@@ -100,8 +100,8 @@ rebuild/replay, graph eligibility, and failures. It does not establish live-mode
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v13 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v13 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v14 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v14 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -204,9 +204,9 @@ node scripts/review-language.mjs \
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
 at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
-v10 through v13 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
+v10 through v14 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
 original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
-V10 through V13 gates also break down useful retention and answers by source language and scenario, and answers by query
+V10 through V14 gates also break down useful retention and answers by source language and scenario, and answers by query
 and requested output language. These groups describe coverage within a finite corpus, not independent samples.
 At most 5% of cases may have availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
 source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
@@ -215,7 +215,7 @@ Retrieval is judged once per query-language/view pair; duplicated evidence in th
 must receive the same judgment and cannot increase its weight. Model adjudication is labeled as such and must use a model different from the runtime retention/answer model;
 it is fallible review of a finite invented corpus, not human validation or a longitudinal reliability guarantee.
 
-V13 uses `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
+V13 and V14 use `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
 `retainedSourceEntailed`: all saved propositions must follow from the frozen original source; an empty set
 is vacuously true. Each answer receives `sourceEntailed`, null if and only if the answer is null. A nonnull
 answer must follow from the original source even if it repeats flawed retained knowledge. Unsupported
@@ -231,6 +231,41 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v21 broader diagnostic
+
+The v13 corpus ran twice per split at runtime commit `a7c3f65`, using GPT-5.6 Luna and separate
+GPT-5.6 Sol input/output review. Every group reached the 90% useful-answer target, but the gate **failed**
+for five omitted source-relative time qualifications:
+
+| Split/run     | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------- | ---------------: | ------------------: | -----------------------: |
+| Development 1 |            10/10 |               40/40 |                    79/80 |
+| Development 2 |            10/10 |               40/40 |                    72/80 |
+| Held-out 1    |            10/10 |               40/40 |                    78/80 |
+| Held-out 2    |            10/10 |               40/40 |                    79/80 |
+
+The 308/320 useful answers leave seven unjustified nulls and five answers that mention a relative month
+and unknown calendar date without tying that month to the undated original source. All 40 writable
+retentions are useful. There were no accepted source-unsupported records or answers, language violations,
+unsafe factual promotions, source-byte changes or case availability failures. All 32 read-only abstentions
+were justified. The initial independent review missed the five clock omissions; a consistency recheck
+against the same contract corrected those judgments. Both receipts remain in the
+[complete evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v21), with the corrected
+receipt governing the failed gate. No inputs or thresholds changed during that recheck.
+
+A separate built-package probe passed independent review for two records and all 16 answers. A selected
+four-case diagnostic retained all four records faithfully and produced 29/32 useful answers, including one
+source-clock omission. Those probes provide deployment and diagnostic evidence, not replacement trials.
+Forensic review found six of the seven full-trial nulls were correct rejections of flawed drafts; the remaining
+false rejection involved a possessive inner-speaker attribution.
+
+V22 requires both the source anchor and unknown calendar clock when the cited record explicitly carries
+unresolved source-relative timing. Unknown precision alone does not activate this check. Abstract timing
+may preserve the qualification without repeating its exact unit; every accepted block still undergoes
+semantic verification. V22 also accepts a bounded possessive speaker report frame while preserving the
+outer recorder and semantic checks. V14's fresh held-out inputs were independently approved before
+execution under the unchanged 90% and zero-error thresholds.
 
 ## Independently reviewed v20 broader diagnostic
 

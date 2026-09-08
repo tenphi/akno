@@ -556,6 +556,36 @@ describe('grounded answer discovery surface', () => {
       'tentative',
       'source_report',
       'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      'The assistant recorded Bo Winters’s unverified report about silverpine inspection coverage.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      "The assistant recorded Bo Winters's tentative, unverified report about silverpine inspection coverage.",
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      'Bo Winters’s unverified report concerns silverpine inspection coverage.',
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
+      "The assistant recorded a device's unverified report about silverpine inspection coverage.",
+      false,
+      'attribution',
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
       'The assistant recorded a tentative, unverified report from Bo Winters about silverpine inspection coverage.',
       true,
     ],
@@ -1325,6 +1355,124 @@ describe('grounded answer discovery surface', () => {
       expect(result.reason_code, JSON.stringify(result)).toBe(accepted ? 'answered' : 'draft_rejected');
       expect(modelRequests).toHaveLength(accepted ? 2 : 1);
       if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+    },
+  );
+
+  it.each([
+    [
+      'Ada Marlow proposed reviewing the silverpine estimate next week. The calendar date is unknown because the source was undated.',
+      true,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе; календарная дата неизвестна, поскольку исходная запись не датирована.',
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing the silverpine estimate next week relative to the undated original note.',
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing the silverpine estimate at a source-relative time whose calendar date is unknown.',
+      true,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе относительно исходной недатированной записи.',
+      true,
+    ],
+    ['Ada Marlow proposed reviewing the silverpine estimate next week; the calendar date is unknown.', false],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе; календарная дата неизвестна.',
+      false,
+    ],
+    ['Ada Marlow proposed reviewing the silverpine estimate next week relative to the original note.', false],
+    ['Ada Marlow proposed reviewing the silverpine estimate; the calendar date is unknown.', false],
+    [
+      'Ada Marlow proposed reviewing the silverpine estimate next week relative to the original note; the device cannot be recovered.',
+      false,
+    ],
+  ] as const)('preserves the source-relative unknown clock: %s', async (text, accepted) => {
+    const marker = temporalMarker('mem_unknown_source_clock', {
+      kind: 'plan',
+      disposition: 'proposed',
+      commitment: 'tentative',
+      speaker: 'Ada Marlow',
+      time: { precision: 'unknown', relation: 'scheduled', status: 'tentative' },
+    });
+    write(
+      'plans/estimate.md',
+      '# Silverpine estimate\n\n' +
+        managedMemoryBlock(
+          marker,
+          renderManagedMemoryPayload(
+            'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
+            marker,
+          ),
+        ),
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+      verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+    });
+    const result = await memory.answer({
+      question: 'What silverpine estimate review was proposed?',
+      memory_view: 'planning',
+      filter: { folder: 'plans' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.reason_code, JSON.stringify(result)).toBe(accepted ? 'answered' : 'draft_rejected');
+    expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+    if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+    else {
+      const messages = modelRequests[1]!.messages as Array<{ content: string }>;
+      const verification = JSON.parse(messages.at(-1)!.content);
+      expect(verification.blocks[0].required_records[0].temporal.time).toMatchObject({
+        precision: 'unknown',
+        status: 'tentative',
+      });
+    }
+  });
+
+  it.each([
+    ['Ada Marlow proposes reviewing the silverpine estimate; the calendar date is unknown.', true],
+    [
+      'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
+      false,
+    ],
+  ] as const)(
+    'keeps source-clock activation narrow and preserves semantic rejection: %s',
+    async (source, supported) => {
+      const marker = temporalMarker('mem_clock_activation', {
+        kind: 'plan',
+        disposition: 'proposed',
+        commitment: 'tentative',
+        speaker: 'Ada Marlow',
+        time: { precision: 'unknown', relation: 'scheduled', status: 'tentative' },
+      });
+      write(
+        'plans/estimate.md',
+        '# Silverpine estimate\n\n' + managedMemoryBlock(marker, renderManagedMemoryPayload(source, marker)),
+      );
+      await memory.index({ verify: true });
+      const text = supported
+        ? 'Ada Marlow proposed reviewing the silverpine estimate; its calendar date is unknown.'
+        : 'Ada Marlow proposed reviewing the silverpine estimate next week relative to the undated original note.';
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [{ block_id: 'B1', supported }] },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine estimate review was proposed?',
+        memory_view: 'planning',
+        filter: { folder: 'plans' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code, JSON.stringify(result)).toBe(
+        supported ? 'answered' : 'verification_rejected',
+      );
+      expect(modelRequests).toHaveLength(2);
     },
   );
 
