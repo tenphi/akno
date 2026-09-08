@@ -1,0 +1,7 @@
+# V39 full-trial readiness
+
+The completed exposed selected probe yields 4/4 complete retained sets, 32/32 useful retrievals and 29/32 independently useful answers; the built-package probe yields 2/2, 16/16 and 16/16. No accepted source-entailment, qualification, language, agency, promotion or source-byte error was independently found. Three writable nulls remain recorded losses. These results satisfy the frozen plan's readiness condition and justify proceeding with full validation while carrying the residuals honestly. No further runtime change or semantic retry is made.
+
+Execute both full v18 splits twice on frozen runtime `5759f46`, ten writable cases and one read-only case per split, eight independent English/Russian query/answer and explicit/inferred-view combinations. Fresh v18 held-out sources are still unexecuted at this decision. Input fingerprint is `bbd6def51d25ea19f7fd273a95174e321b9789914ce288091e56d10e98a64866`; the original independent input receipt is preserved.
+
+Every started trial must complete and be independently graded against original-source/output packets regardless of outcome. Required gates remain at least 90% useful answers in EACH split/run, at least 80% useful retention/retrieval, zero accepted source/qualification/language/promotion/source-byte errors and at most 5% case availability failures. Runtime GPT-5.6 Luna and independent grader/reviewer GPT-5.6 Sol remain unchanged. Fresh-output tuning requires new held-out inputs. Keep PR #70 open and unmerged.
