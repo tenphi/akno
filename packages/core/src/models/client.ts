@@ -94,6 +94,8 @@ export interface ChatMessage {
 export interface ChatOptions {
   /** Null explicitly preserves source language for exact extraction/transcription. */
   outputLanguage?: OutputLanguage | null;
+  /** Add schema-specific generated prose; never suppress the shared prose-field check. */
+  additionalLanguageProse?: (value: unknown) => string[];
   json?: boolean;
   /**
    * The shape the prompt asks for, as a zod schema, sent so the endpoint can constrain
@@ -513,7 +515,23 @@ export class ModelClient {
       options,
     );
     if (!result.ok || result.value === null) return result;
-    const excerpts = generatedProse(parseJsonLoose<unknown>(result.value) ?? result.value);
+    let excerpts: string[];
+    try {
+      const parsed = parseJsonLoose<unknown>(result.value) ?? result.value;
+      const additional = options.additionalLanguageProse?.(parsed) ?? [];
+      if (!Array.isArray(additional) || additional.some((entry) => typeof entry !== 'string'))
+        throw new Error('invalid generated prose selection');
+      excerpts = [...generatedProse(parsed), ...additional.filter((entry) => entry.trim())];
+    } catch {
+      this.reportInvalidResponse('language_check_failed');
+      return {
+        ...result,
+        ok: false,
+        value: null,
+        reason: 'language_check_failed',
+        error: 'generated prose could not be selected for the bounded language check',
+      };
+    }
     if (excerpts.length === 0) return result;
     const remaining =
       options.timeoutMs === undefined

@@ -17,8 +17,14 @@ policy in `context.knowledge_language` and remain responsible for their own fina
 ## Generated prose and exact content
 
 The shared model client applies the policy to retained prose, semantic labels, summaries, observation patterns,
-reflection principles, curation bodies, and new titles. Exact original support/discourse-frame quotations,
+reflection principles, curation bodies, rewritten history lines, corrected managed-memory sentences, and new titles. Exact original support/discourse-frame quotations,
 names, identifiers, code, paths, existing title references, and destination headings keep their original form.
+Curator revisions check newly generated complete Markdown through a schema-specific selector. Exact original
+lines are exempt, including transfers between authorized paths; each original occurrence can exempt only
+one final occurrence. Changed bytes and extra copies are checked. Existing proposed after-states are never
+source-language authority. Invalid revision shapes or failed selection return a typed language-check failure
+before a revision can be sealed or applied. Operational decision reasons are prompt-governed explanations,
+not durable knowledge fields checked by this boundary.
 Source image extraction/transcription explicitly preserves the source language.
 Changing the setting does not translate existing pages, rename identities or folders, or enqueue bulk translation.
 

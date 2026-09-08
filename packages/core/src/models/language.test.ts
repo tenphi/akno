@@ -88,6 +88,42 @@ describe('explicit generation language', () => {
     expect(requests).toHaveLength(2);
   });
 
+  it.each([
+    { line: 'Гарантия действовала пять лет.' },
+    { decisions: [{ id: 'mem_1111', outcome: 'rewrite', replacement: 'Гарантия действует пять лет.' }] },
+  ])('holds wrong-language durable maintenance prose: %j', async (output) => {
+    const requests = responses([output, { compliant: false }]);
+    const result = await client().chat([{ role: 'user', content: 'Correct the recorded sentence.' }]);
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_mismatch' });
+    expect(JSON.parse(requests[1]!.messages[1]!.content).excerpts).toHaveLength(1);
+  });
+
+  it('adds schema-specific prose without suppressing the shared language check', async () => {
+    const requests = responses([
+      { body: 'Новое утверждение.', after: 'A new sentence.' },
+      { compliant: false },
+    ]);
+    const result = await client().chat([{ role: 'user', content: 'Revise.' }], {
+      additionalLanguageProse: () => ['A new sentence.'],
+    });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_mismatch' });
+    expect(JSON.parse(requests[1]!.messages[1]!.content).excerpts).toEqual([
+      'Новое утверждение.',
+      'A new sentence.',
+    ]);
+  });
+
+  it('fails closed when schema-specific prose cannot be selected', async () => {
+    const requests = responses([{ operations: [{ after: 'Непроверенный текст.' }] }]);
+    const result = await client().chat([{ role: 'user', content: 'Revise.' }], {
+      additionalLanguageProse: () => {
+        throw new Error('invalid operation');
+      },
+    });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+    expect(requests).toHaveLength(1);
+  });
+
   it('allows source transcription to preserve its original language explicitly', async () => {
     const requests = responses(['Гарантия действует пять лет.']);
     const result = await client().chat([{ role: 'user', content: 'Transcribe exactly.' }], {

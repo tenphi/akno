@@ -24,7 +24,7 @@ let server: {
   calls: () => number;
   curatorCalls: () => number;
   revisionCalls: () => number;
-  curatorRevision: (value: 'off' | 'once' | 'always') => void;
+  curatorRevision: (value: 'off' | 'once' | 'always' | 'wrong-language') => void;
   loseMarker: (value: boolean) => void;
   changeNumber: (value: boolean) => void;
   echoDraft: (value: boolean) => void;
@@ -751,6 +751,21 @@ describe('plan-backed hygiene', () => {
     expect(server.calls()).toBe(5);
     expect(server.curatorCalls()).toBe(2);
     expect(server.revisionCalls()).toBe(1);
+  });
+
+  it('blocks wrong-language curator revisions before recording a revision or changing source bytes', async () => {
+    await mem.close();
+    mem = await openMem(false, 'auto', { knowledgeLanguage: 'en' });
+    const target = path.join(root, 'people/ada-marlow.md');
+    const before = fs.readFileSync(target, 'utf8');
+    server.curatorRevision('wrong-language');
+    const report = await mem.dream({ phase: 'curate', mode: 'auto' });
+    const plan = mem.plan(report.maintenancePlan!.id);
+    expect(plan.items[0]).toMatchObject({ revision: 1, status: 'blocked' });
+    expect(plan.items[0]!.previousRevisions).toEqual([]);
+    expect(server.revisionCalls()).toBe(1);
+    expect(server.curatorCalls()).toBe(1);
+    expect(fs.readFileSync(target, 'utf8')).toBe(before);
   });
 
   it('rejects another revision request after the configured bounded attempt', async () => {
@@ -2138,6 +2153,7 @@ async function openMem(
   write: boolean,
   mode?: MaintenanceMode,
   options: {
+    knowledgeLanguage?: 'en';
     allowSplits?: boolean;
     allowExtracts?: boolean;
     allowMerges?: boolean;
@@ -2176,6 +2192,7 @@ async function openMem(
     overrides: {
       akno_path: root,
       state_dir: stateDir,
+      ...(options.knowledgeLanguage ? { knowledge_language: options.knowledgeLanguage } : {}),
       providers: { stub: { base_url: server.url } },
       models: {
         embedding: options.semanticMerges
@@ -2220,7 +2237,7 @@ async function startStub(): Promise<typeof server> {
   let calls = 0;
   let curatorCalls = 0;
   let revisionCalls = 0;
-  let curatorRevision: 'off' | 'once' | 'always' = 'off';
+  let curatorRevision: 'off' | 'once' | 'always' | 'wrong-language' = 'off';
   let drop = false;
   let changeNumber = false;
   let echoDraft = false;
@@ -2264,8 +2281,30 @@ async function startStub(): Promise<typeof server> {
         response.end(JSON.stringify({ data }));
         return;
       }
-      const system = body.messages?.find((message) => message.role === 'system')?.content ?? '';
+      const system =
+        body.messages
+          ?.filter((message) => message.role === 'system')
+          .map((message) => message.content)
+          .join('\n') ?? '';
       const user = body.messages?.find((message) => message.role === 'user')?.content ?? '';
+      if (system.includes('Check the language of generated prose')) {
+        const { excerpts } = JSON.parse(user) as { excerpts: string[] };
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    compliant: !excerpts.some((text) => text.includes('Теперь живёт по адресу')),
+                  }),
+                },
+              },
+            ],
+          }),
+        );
+        return;
+      }
       if (invalidDerivation && user.startsWith('Page: ')) {
         response.writeHead(400, { 'content-type': 'application/json' });
         response.end(JSON.stringify({ error: { message: 'invented derivation failure' } }));
@@ -2287,7 +2326,13 @@ async function startStub(): Promise<typeof server> {
       if (system.includes('filter candidate Markdown page pairs')) semanticMergeCalls++;
       if (system.includes('correct an exact maintenance proposal')) {
         response.writeHead(200, { 'content-type': 'application/json' });
-        response.end(JSON.stringify({ choices: [{ message: { content: curatorRevisionResponse(user) } }] }));
+        response.end(
+          JSON.stringify({
+            choices: [
+              { message: { content: curatorRevisionResponse(user, curatorRevision === 'wrong-language') } },
+            ],
+          }),
+        );
         return;
       }
       const content = user.startsWith('Page: ')
@@ -2300,11 +2345,13 @@ async function startStub(): Promise<typeof server> {
           : system.includes('independent curator')
             ? JSON.stringify({
                 outcome:
-                  curatorRevision === 'always' || (curatorRevision === 'once' && curatorCalls === 1)
+                  curatorRevision === 'always' ||
+                  ((curatorRevision === 'once' || curatorRevision === 'wrong-language') && curatorCalls === 1)
                     ? 'revise'
                     : 'approve',
                 reason:
-                  curatorRevision === 'always' || (curatorRevision === 'once' && curatorCalls === 1)
+                  curatorRevision === 'always' ||
+                  ((curatorRevision === 'once' || curatorRevision === 'wrong-language') && curatorCalls === 1)
                     ? 'Use the clearer invented wording while preserving the exact scope.'
                     : 'The rewrite is conservative and preserves knowledge.',
               })
@@ -2432,7 +2479,7 @@ async function startStub(): Promise<typeof server> {
   };
 }
 
-function curatorRevisionResponse(user: string): string {
+function curatorRevisionResponse(user: string, wrongLanguage = false): string {
   const payload = JSON.parse(user) as {
     immutable_scope: {
       operations: { type: 'replace' | 'create' | 'delete'; relPath: string; after?: string }[];
@@ -2443,7 +2490,7 @@ function curatorRevisionResponse(user: string): string {
     operations: [
       {
         rel_path: operation.relPath,
-        after: operation.after!.replace('lives at', 'resides at'),
+        after: operation.after!.replace('lives at', wrongLanguage ? 'Теперь живёт по адресу' : 'resides at'),
       },
     ],
   });

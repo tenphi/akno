@@ -15,6 +15,8 @@ export function languageInstruction(language: OutputLanguage): string {
 
 const PROSE_KEYS = new Set([
   'text',
+  'line',
+  'replacement',
   'summary',
   'claim',
   'pattern',
