@@ -14,12 +14,31 @@ import { LANGUAGE_CORPUS_V7 } from './language-corpus-v7.ts';
 import { LANGUAGE_CORPUS_V8 } from './language-corpus-v8.ts';
 import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
+import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('frozen language/discourse evaluation', () => {
+  it('freezes fresh eleventh-corpus sources with the same broader scenario coverage', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V11))).toBe(
+      '0ac6b0f9d4fd50b077f7bd2404c164d5646d00521587c9ac513f6439c7761d2f',
+    );
+    expect(LANGUAGE_CORPUS_V11.filter((entry) => entry.admission === 'writable')).toHaveLength(20);
+    const exposed = new Set(LANGUAGE_CORPUS_V10.flatMap((entry) => entry.items.map((item) => item.text)));
+    expect(
+      LANGUAGE_CORPUS_V11.filter((entry) => entry.split === 'held-out')
+        .flatMap((entry) => entry.items)
+        .some((item) => exposed.has(item.text)),
+    ).toBe(false);
+    expect(
+      LANGUAGE_CORPUS_V11.filter((entry) => entry.split === 'held-out').map((entry) => entry.scenario),
+    ).toEqual(
+      LANGUAGE_CORPUS_V10.filter((entry) => entry.split === 'held-out').map((entry) => entry.scenario),
+    );
+  });
+
   it('freezes the broader tenth corpus and separates exposed development from fresh held-out sources', () => {
     expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V10))).toBe(
       '1d88c0fab0bb7c1b5cc474f85c563c874c2d4f7933aa9257aec6e96fd0c1ede9',

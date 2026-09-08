@@ -26,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v18';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v8';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v19';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v9';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -126,6 +126,12 @@ is supported. Meaning-preserving translation between English and Russian is allo
 not a contradiction. Do not require a translated answer to repeat an original phrase verbatim, except names
 and protected values. Typed qualifications and readable evidence together establish the record's status.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
+For each block, check the required_records against its own cited_evidence: content and scope, identities,
+embedded polarity, then every commitment/disposition/basis qualification. Grammatical negation used to
+express uncertainty, lack of an answer, fictional scope, rejected selection or attribution is not automatically
+a denial of the embedded property. Preserve the actual embedded predicate's polarity across translation.
+The checklist contains constraints, not independent factual evidence. Internal labels such as self_attested
+must not be presented as statements made by the source speaker.
 Use the supplied question and memory_view only to interpret what the answer addresses, including yes/no
 responses and requests to describe competing hypotheses. The question is not evidence for its premises
 and cannot supply missing facts. A faithful list of incompatible hypotheses answers a discussion question
@@ -480,6 +486,27 @@ async function verifyDraftSupport(
           blocks: blocks.map((block, index) => ({
             block_id: blockIds[index],
             answer_text: block.text,
+            required_records: block.evidence_ids.flatMap((evidenceId) => {
+              const item = byEvidenceId.get(evidenceId)!;
+              return item.type === 'page'
+                ? item.lines.flatMap((line) =>
+                    line.memory?.status === 'qualified'
+                      ? [
+                          {
+                            evidence_id: evidenceId,
+                            kind: line.memory.kind,
+                            commitment: line.memory.commitment,
+                            disposition: line.memory.disposition,
+                            basis: line.memory.basis,
+                            polarity: line.memory.polarity,
+                            source_role: line.memory.source_role,
+                            source_speaker: line.memory.source_speaker,
+                          },
+                        ]
+                      : [],
+                  )
+                : [];
+            }),
             cited_evidence: block.evidence_ids.map((evidenceId) => ({
               evidence_id: evidenceId,
               excerpt: evidenceText(byEvidenceId.get(evidenceId)!),
@@ -786,6 +813,12 @@ function validateDraft(
               (line) => line.memory?.answer_eligible === false || line.prose?.answer_eligible === false,
             ),
         ),
+        sources.every(
+          (source) =>
+            source?.type === 'page' &&
+            source.lines.length > 0 &&
+            source.lines.every((line) => line.memory?.status === 'qualified'),
+        ),
       )
     ) {
       reject('protected_value');
@@ -848,7 +881,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   // An unrelated factual citation cannot establish the proposition inside a report.
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
-    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|record(?:ed|s)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
+    /\b(according to|reported|reports|said|says|stated|states|claimed|claims|attributed|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|record(?:ed|s)?(?:,? as)? (?:(?:an?|the) )?(?:(?:unverified|unconfirmed|tentative)(?:,? )){0,2}report|recorded that [^.!?;\n]{1,120}\btold|reportedly (?:said|told|reported|stated))\b|согласно|по словам|со слов|сообщ|сказал|утвержда|приписан|описал|представлен|привед[её]н|предполож|считает|считал/iu.test(
       answerText,
     );
   if (
@@ -894,7 +927,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
     }
     const dispositionPatterns: Partial<Record<typeof memory.disposition, RegExp>> = {
       proposed: /\b(proposal|proposed)\b|предлож/iu,
-      rejected: /\b(rejected|declined|not accepted)\b|отклон|не принят/iu,
+      rejected: /\b(rejected|declined|not accepted)\b|отклон|отверг|не принят/iu,
       cancelled: /\b(cancelled|canceled)\b|отмен/iu,
       completed: /\b(completed|finished|done)\b|заверш|выполн/iu,
       superseded: /\b(superseded|replaced|former)\b|замен|прежн/iu,
@@ -944,11 +977,21 @@ function fictionalScopeSupported(text: string, support: string): boolean {
  * and introduced negation cannot survive unless they occur in the cited source. This rejects exact-value
  * failures cheaply and predictably before Akno pays for semantic supportedness judgment.
  */
-function protectedValuesSupported(answerText: string, supportText: string, qualified = false): boolean {
+function protectedValuesSupported(
+  answerText: string,
+  supportText: string,
+  qualified = false,
+  typedMemory = false,
+): boolean {
   const support = normalizeComparable(supportText);
   for (const token of digitBearingTokens(answerText)) {
     if (!protectedTokenSupported(token, support)) return false;
   }
+  // Typed memory separates embedded polarity from the grammar of reports, uncertainty, questions,
+  // fiction and rejected choices. Comparing the mere presence of "not"/"не" rejects faithful
+  // translations. Keep a narrow predicate-denial floor; full citation-scoped verification remains
+  // authoritative for translated polarity and every qualification, including mixed clauses.
+  if (typedMemory) return !containsPredicateDenial(answerText) || containsPredicateDenial(supportText);
   const answerNegated = containsNegation(
     qualified ? qualificationPolarityText(answerText, supportText) : answerText,
   );
@@ -956,6 +999,12 @@ function protectedValuesSupported(answerText: string, supportText: string, quali
     qualified ? qualificationPolarityText(supportText, supportText) : supportText,
   );
   return !answerNegated || sourceNegated;
+}
+
+function containsPredicateDenial(text: string): boolean {
+  return /\b(?:not|never) (?:have |been |be |being |ever ){0,3}(?:cover(?:s|ed|ing)?|includ(?:e|es|ed|ing)|requir(?:e|es|ed|ing)|permit(?:s|ted|ting)?|allow(?:s|ed|ing)?)\b|\b(?:doesn't|don't|isn't|wasn't|wouldn't|won't|cannot|can't) (?:be |have |been ){0,3}(?:cover(?:s|ed|ing)?|includ(?:e|es|ed|ing)|requir(?:e|es|ed|ing)|permit(?:s|ted|ting)?|allow(?:s|ed|ing)?)\b|(?<!not )(?<!never )\bexclud(?:e|es|ed|ing)\b|(?:^|[^\p{L}])не (?:был[аои]? |будет |будут |было |бы ){0,2}(?:покрыт[аоы]?|покрыва(?:ет|ют|л[аои]?|ть)(?:ся)?|включ(?:а(?:ет|ют|л[аои]?|ть)|[её]н[аоы]?)|требу(?:ет|ют|етс[яь]|ются)|предусмотр(?:ен[аоы]?|еть)|разреш(?:[её]н[аоы]?|ает|ают)|допуска(?:ет|ют|л[аои]?))(?=$|[^\p{L}])|(?<!не )(?<![\p{L}])исключа(?:ет|ют|л|ла|ло|ли)(?![\p{L}])/iu.test(
+    text,
+  );
 }
 
 function qualificationPolarityText(text: string, support: string): string {

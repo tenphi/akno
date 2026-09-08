@@ -623,7 +623,7 @@ describe('grounded answer discovery surface', () => {
       'Ada Marlow described the counterfactual where silverpine repairs in year three would be covered.',
       'Ada Marlow описала контрфактический сценарий ремонта silverpine. Опорная дата третьего года не указана.',
       false,
-      'protected_value',
+      'semantic_support',
     ],
     [
       'tentative',
@@ -631,6 +631,49 @@ describe('grounded answer discovery surface', () => {
       'The assistant reported an unverified claim from Bo Winters about silverpine inspection coverage.',
       'The assistant recorded the tentative, unverified report from Bo Winters about silverpine inspection coverage.',
       true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant recorded an unverified report from Bo Winters about silverpine valve inspection rather than replacement.',
+      'Ассистент записал со слов Bo Winters неподтверждённое сообщение о проверке клапана silverpine, а не о его замене; подтверждения этому нет.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'The assistant recorded, as a tentative unverified report, the silverpine inspection requirement.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified silverpine inspection requirement.',
+      'Ассистент сообщил о возможном требовании проверки silverpine без проверки этого сообщения.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described a counterfactual where silverpine valve repair would be covered, after rejecting the offer.',
+      'Ada Marlow описала контрфактический вариант с покрытием ремонта клапана silverpine; она отклонила предложение, а не приняла его.',
+      true,
+    ],
+    [
+      'hypothetical',
+      'self_attested',
+      'Ada Marlow described a fictional silverpine example where Bo Winters is a participant rather than a real source.',
+      'Ada Marlow обсуждала вымышленный пример silverpine, где Bo Winters — участник примера, а не реальный источник сообщения.',
+      true,
+    ],
+    [
+      'tentative',
+      'source_report',
+      'The assistant reported an unverified claim that silverpine inspection is included but valve replacement is not included.',
+      'The assistant reported an unverified claim that silverpine inspection is not included.',
+      false,
+      'semantic_support',
     ],
   ] as const)(
     'preserves compound qualifications across languages: %s %s %s',
@@ -642,7 +685,7 @@ describe('grounded answer discovery surface', () => {
       await memory.index({ verify: true });
       await useAnswerModel({
         generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
-        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+        verification: { verdicts: [{ block_id: 'B1', supported: rejectionReason !== 'semantic_support' }] },
       });
       const result = await memory.answer({
         question: 'What was discussed about the silverpine warranty?',
@@ -652,11 +695,17 @@ describe('grounded answer discovery surface', () => {
         graph: false,
       });
       expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
-      expect(result.reason_code).toBe(accepted ? 'answered' : 'draft_rejected');
+      expect(result.reason_code).toBe(
+        accepted
+          ? 'answered'
+          : rejectionReason === 'semantic_support'
+            ? 'verification_rejected'
+            : 'draft_rejected',
+      );
       expect(result.validation).toMatchObject({
         generated_blocks: 1,
-        passed_guards: accepted ? 1 : 0,
-        verified_blocks: accepted ? 1 : null,
+        passed_guards: accepted || rejectionReason === 'semantic_support' ? 1 : 0,
+        verified_blocks: accepted ? 1 : rejectionReason === 'semantic_support' ? 0 : null,
       });
       if (!accepted) expect(result.validation?.rejection_counts).toEqual({ [rejectionReason]: 1 });
       AnswerOutput.parse(result);

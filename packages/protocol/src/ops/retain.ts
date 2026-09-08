@@ -86,7 +86,7 @@ export const ProvidedRetainCandidate = z
       claim: ['active', 'superseded'],
       preference: ['active', 'superseded'],
       decision: ['accepted', 'rejected', 'superseded'],
-      plan: ['proposed', 'accepted', 'cancelled', 'completed', 'superseded'],
+      plan: ['proposed', 'accepted', 'rejected', 'cancelled', 'completed', 'superseded'],
       event: ['active', 'cancelled', 'superseded'],
       question: ['active', 'resolved'],
     };

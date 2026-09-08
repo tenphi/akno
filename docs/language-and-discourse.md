@@ -91,16 +91,17 @@ cases must be assessed separately from model quality.
 ## Evaluation
 
 The frozen language/discourse corpora separate development and held-out cases with invented English,
-Russian and mixed sources; exposed corpora remain available unchanged. V10 moves the ten previously evaluated
-writable scenarios into development and adds ten fresh held-out scenarios, including longer multi-turn context.
+Russian and mixed sources; exposed corpora remain available unchanged. V10 doubles the earlier writable
+scenario count. V11 moves the ten exposed v10 held-out scenarios into development and adds ten fresh
+held-out scenarios of the same kinds, including multi-turn context.
 Each split also has a read-only admission case. A separate model approves source/expectation pairs before execution. Earlier corpora remain
 diagnostic evidence of their recorded runtime versions. Deterministic CI covers policy, exact quotes, qualification, source-byte preservation,
 rebuild/replay, graph eligibility, and failures. It does not establish live-model quality.
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v10 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v10 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v11 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v11 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -138,11 +139,23 @@ Several adjacent frame quotations may cover one support quotation; only whitespa
 Exact provided retention holds when the frame omits words, including negations. Automatic extraction can
 complete a partial frame by appending its already validated exact support quotation. It preserves every original
 frame span and the candidate prose, adds no guessed source context, and still requires full semantic verification.
-Support and frame arrays each have a 16-span cap; invalid explicit spans cannot fall back to legacy fields, and
+Support arrays have an eight-span cap and frames a 16-span cap; invalid explicit spans cannot fall back to legacy fields, and
 completion never truncates context to fit. A proposal with explicitly unknown temporal precision,
 tentative time status and no date boundaries or recurrence may retain an unresolved source-relative time.
 Its readable sentence must identify the unknown source clock; bare “tomorrow” is insufficient even with unknown
 structured precision. It is never actionable or eligible for a bounded date query. Invented resolved dates still fail validation.
+
+Rejected plans keep their rejected disposition through the public schema, saved markers and history views;
+they are excluded from planning and factual views. Explicit invalid commitment/disposition values are held
+instead of being silently normalized. Reports that explicitly lack confirmation must retain that qualification
+in readable prose: source attribution alone cannot substitute for it.
+
+For blocks citing only qualified managed records, the answer guard screens concrete predicate denial rather
+than the mere presence of a grammatical negator. English/Russian translations can introduce negation while
+preserving uncertainty, open-question status, fiction, report attribution or rejected selection. Exact token
+and citation checks remain deterministic. Predicate matching is a heuristic: complete and mixed-clause polarity
+still requires the full citation-scoped semantic verifier, which receives a checklist of the cited records'
+typed constraints. Mixed or untyped evidence retains the conservative lexical comparison.
 
 When an entire extracted batch fails validation, retention permits one structural repair using the complete
 original source and validation issues. Every repaired candidate passes the same validation and semantic
@@ -184,9 +197,9 @@ node scripts/review-language.mjs \
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
 at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
-v10 corpus requires at least 90% useful qualified answers in every split/run; historical corpora retain their
+v10 and v11 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
 original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
-V10 gates also break down useful retention and answers by source language and scenario, and answers by query
+V10 and V11 gates also break down useful retention and answers by source language and scenario, and answers by query
 and requested output language. These groups describe coverage within a finite corpus, not independent samples.
 At most 5% of cases may have availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
 source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
@@ -202,6 +215,32 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v18 broader diagnostic
+
+The broader v10 corpus ran twice per split at runtime commit `66f191d`, using GPT-5.6 Luna and separate
+GPT-5.6 Sol input/output review. It contains twenty writable scenarios rather than ten, with new multi-turn
+held-out sources. The predeclared 90% answer gate **failed**; its scores are not directly comparable to the
+smaller corpus's 80% gate.
+
+| Split / repetition | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------------ | ---------------- | ------------------- | ------------------------ |
+| Development / 1    | 10/10            | 40/40               | 77/80                    |
+| Development / 2    | 9/10             | 36/40               | 70/80                    |
+| Held-out / 1       | 10/10            | 39/40               | 63/80                    |
+| Held-out / 2       | 8/10             | 28/40               | 54/80                    |
+
+There were 55 unjustified null answers and one non-null answer missing an explicit qualification.
+One saved report lost its source's lack of confirmation, producing a separate knowledge qualification error.
+A tentative representation of two unconfirmed competing hypotheses was accepted semantically: a typed
+expectation mismatch alone does not mean the uncertainty or alternatives were lost. Three writable case/runs
+saved no knowledge, including one with model availability degradation. All 32 read-only abstentions were
+justified; no unsafe factual promotion, accepted language violation or source-byte change was found.
+
+The [original gate and complete reports/reviews](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v18)
+remain unchanged. Its built-package report/counterfactual probe produced all sixteen answers and preserved
+the actual declined decision plus unrealized alternative; that separate deployment evidence does not replace
+the failed broader trial. The v10 held-out inputs are now exposed development evidence.
 
 ## Independently reviewed v17 result
 

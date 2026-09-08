@@ -5,6 +5,12 @@ retention and answer model is evaluated separately from an independent reviewer 
 `independentlyReviewed: false` and `releaseEligible: false`; the separate computed gate binds the reports to
 both reviews and is the authority for the reviewed result.
 
+The [v18 broader diagnostic](results/v18/gate.json) fails its predeclared 90% answer target. It preserves
+264/320 useful answers, 55 unjustified nulls, one incomplete answer, one saved-report qualification omission
+and one case with model availability degradation. Complete reports and independent receipts remain in
+[results/v18](results/v18). Its corpus contains twice the earlier writable scenario count. V11 uses the exposed
+v10 held-out scenarios for development and introduces ten fresh sources of the same kinds.
+
 The [v17 gate](results/v17/gate.json) passes for the v9 corpus and frozen runtime at `bb78edf`, using
 GPT-5.6 Luna for retention/answers and GPT-5.6 Sol for independent review. Useful retention was 19/20,
 qualified retrieval 80/80, and useful qualified answers 143/160 across the two repetitions per split.
@@ -27,8 +33,8 @@ Run the production path against isolated invented knowledge bases with:
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v10 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v10 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v11 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v11 --runs 2 --output bench-results/language-held-out.json
 ```
 
 The v10 development split contains all ten writable scenarios from the now-exposed v9 corpus. Its ten fresh

@@ -23,17 +23,19 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v12';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v5';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v13';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v6';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
   affirmed; the statement that the scenario is not real changes commitment, not that property's polarity.
   A denied property such as excluded damage has negated polarity. Confidence in a denial does not make it affirmed.
 - An unresolved question can be remembered as a question without answering its embedded proposition.
-  An unaccepted proposal remains proposed unless the source actually rejects it.
+  An unaccepted proposal remains proposed unless the source actually rejects it. A rejected plan keeps
+  kind=plan and disposition=rejected; it is neither a proposed nor an actionable plan.
 - A direct user assertion, including a denial, uses self_attested unless it relays another source.
-  This records the user's assertion, not independent verification. Nested reports and assistant, external
+  This records the user's assertion, not independent verification. Explicit lack of confirmation or verification
+  must remain in readable prose; "reportedly" or source_report alone does not preserve that qualification. Nested reports and assistant, external
   or unknown assertions remain source_report, even when the outer recorder is a user.
 - Durations, frequencies and ordinal coverage terms that describe a property or hypothetical condition
   stay in prose with time=null; they do not establish a calendar event. An established calendar schedule
@@ -534,6 +536,8 @@ const COPULA = /\b(is|are|was|were|has|have|had|will|would|does|do|did|can|may|m
 const VERB_SHAPED = /\b\w{3,}(?:s|ed|es)\b/i;
 const UNSAFE_DISCOURSE =
   /\b(suppose|assuming|hypothetical|counterfactual|if|invented example|fictional example|not a real|for illustration|might|maybe|perhaps|merely proposed|was proposed|were proposed|was rejected|were rejected|did not choose|not decided)\b|предполож|допустим|если бы|если|гипотез|возможно|вероятно|отклон|не решил|не принято|вымышлен|только пример/iu;
+const REPORT_UNCERTAINTY =
+  /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
 const RELATIVE_TIME =
   /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
 
@@ -575,6 +579,15 @@ export function cleanCandidateBatch(
     }
     const kind = cleanKind(record.kind);
     const discourse = cleanDiscourse(record.discourse, kind);
+    if (!discourse) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'explicit commitment or disposition is invalid for the candidate kind; preserve the source status in a valid typed record',
+      });
+      continue;
+    }
     if (canonicalSemantics(kind, discourse) && SPECULATIVE.test(text)) {
       held.push({
         candidate_id: provisionalId,
@@ -639,6 +652,19 @@ export function cleanCandidateBatch(
       kind,
       Boolean(attribution.chain?.length),
     );
+    if (
+      epistemic.basis === 'source_report' &&
+      REPORT_UNCERTAINTY.test(sourceEvidence(spans.frame)) &&
+      !REPORT_UNCERTAINTY.test(text)
+    ) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'the source report explicitly lacks confirmation or verification; preserve that uncertainty in readable prose, independently of attribution',
+      });
+      continue;
+    }
     const speaker = attribution.source_speaker;
     const assistantLabel =
       attribution.source_role === 'assistant' && /^(?:the )?assistant$|^ассистент$/iu.test(speaker ?? '');
@@ -1027,8 +1053,19 @@ function supportedSourceItems(
     .filter((item): item is RetainSourceItem => Boolean(item));
 }
 
-function cleanDiscourse(value: unknown, kind: RetainCandidate['kind']): RetainCandidate['discourse'] {
+function cleanDiscourse(value: unknown, kind: RetainCandidate['kind']): RetainCandidate['discourse'] | null {
   const record = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
+  if (
+    record &&
+    ((record.commitment !== undefined &&
+      !['asserted', 'tentative', 'hypothetical', 'counterfactual', 'none'].includes(
+        String(record.commitment),
+      )) ||
+      (record.disposition !== undefined &&
+        !dispositionsFor(kind).includes(record.disposition as RetainCandidate['discourse']['disposition'])) ||
+      (kind === 'question' && record.commitment !== undefined && record.commitment !== 'none'))
+  )
+    return null;
   const commitment = ['asserted', 'tentative', 'hypothetical', 'counterfactual', 'none'].includes(
     String(record?.commitment),
   )
@@ -1063,7 +1100,7 @@ function readableUnknownSourceClock(text: string): boolean {
     return true;
   // Source-relative alone leaves a reader unable to tell whether the reference date is recoverable.
   return (
-    /\b(source-relative|relative to (?:the )?(?:source|record)|(?:source|record)(?:['’]s)? (?:reference )?(?:date|clock|timestamp))\b|относительно (?:даты )?источник|дат[аы] источника/iu.test(
+    /\b(source-relative|relative to (?:the )?(?:original )?(?:source|record(?:ing)?|note|conversation)|(?:source|record(?:ing)?|note|conversation)(?:['’]s)? (?:reference )?(?:date|clock|timestamp))\b|относительно (?:даты )?источник|дат[аы] источника/iu.test(
       text,
     ) &&
     /\b(unknown|unspecified|unavailable|not (?:provided|recorded|known))\b|неизвест|не указан/iu.test(text) &&
@@ -1192,7 +1229,7 @@ function dispositionsFor(kind: RetainCandidate['kind']): RetainCandidate['discou
     claim: ['active', 'superseded'],
     preference: ['active', 'superseded'],
     decision: ['accepted', 'rejected', 'superseded'],
-    plan: ['proposed', 'accepted', 'cancelled', 'completed', 'superseded'],
+    plan: ['proposed', 'accepted', 'rejected', 'cancelled', 'completed', 'superseded'],
     event: ['active', 'cancelled', 'superseded'],
     question: ['active', 'resolved'],
   }[kind] as RetainCandidate['discourse']['disposition'][];

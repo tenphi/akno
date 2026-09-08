@@ -125,6 +125,100 @@ describe('cross-language retention boundary', () => {
     expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
   });
 
+  it.each([true, false])(
+    'preserves explicit lack of report verification in readable prose (%s)',
+    (preserved) => {
+      const source = 'Bo Winters reported silverpine inspection coverage. There is no confirmation.';
+      const text =
+        'Ada Marlow recorded that Bo Winters reported silverpine inspection coverage.' +
+        (preserved ? ' This is unverified.' : '');
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: 'claim',
+            text,
+            attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+            discourse: { commitment: 'asserted', disposition: 'active' },
+            epistemic: { basis: 'source_report' },
+            support: [{ quote: source }],
+            discourse_frame: [{ quote: source }],
+          },
+        ],
+        { sourceText: source },
+      );
+      expect(result.candidates).toHaveLength(preserved ? 1 : 0);
+      if (!preserved) expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
+
+  it.each([
+    'I have not confirmed it.',
+    'It was not confirmed.',
+    'Я не подтвердила это.',
+    'Это не было подтверждено.',
+  ])('holds an omitted explicit lack of confirmation: %s', (qualification) => {
+    const report = 'Bo Winters reported silverpine inspection coverage.';
+    const source = `${report} ${qualification}`;
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'claim',
+          text: `Ada Marlow recorded that ${report}`,
+          attribution: { source_role: 'user' },
+          discourse: { commitment: 'asserted', disposition: 'active' },
+          epistemic: { basis: 'source_report' },
+          support: [{ quote: source }],
+          discourse_frame: [{ quote: source }],
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+  });
+
+  it.each(['rejected', 'cancelled', 'completed'])(
+    'preserves plan disposition %s instead of normalizing it to a proposal',
+    (disposition) => {
+      const source = `Ada Marlow recorded the ${disposition} plan for silverpine inspection.`;
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind: 'plan',
+            text: source,
+            discourse: { commitment: 'asserted', disposition },
+            attribution: { source_role: 'user' },
+            support: [{ quote: source }],
+            discourse_frame: [{ quote: source }],
+          },
+        ],
+        { sourceText: source },
+      );
+      expect(result.candidates[0]?.discourse.disposition).toBe(disposition);
+    },
+  );
+
+  it.each([
+    { commitment: 'invented-invalid', disposition: 'proposed' },
+    { commitment: 'asserted', disposition: 'active' },
+  ])('holds invalid explicit plan semantics instead of silently changing status (%s)', (discourse) => {
+    const source = 'Ada Marlow discussed a silverpine inspection proposal.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'plan',
+          text: source,
+          discourse,
+          support: [{ quote: source }],
+          discourse_frame: [{ quote: source }],
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+  });
+
   it.each([false, true])('keeps a direct user denial distinct from a nested report (nested=%s)', (nested) => {
     const source = nested
       ? 'Bo Winters said the Zephyr QX-100 warranty does not cover inspection.'
@@ -465,6 +559,10 @@ describe('cross-language retention boundary', () => {
     ],
     [
       'Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the source, whose reference date is unknown.',
+      true,
+    ],
+    [
+      'Ada Marlow proposed reviewing the Zephyr QX-100 warranty tomorrow relative to the original recording, whose reference date is unknown.',
       true,
     ],
   ] as const)('requires both source-relative meaning and an unknown date: %s', (text, accepted) => {

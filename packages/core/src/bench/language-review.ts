@@ -6,6 +6,7 @@ import { LANGUAGE_CORPUS_V7 } from './language-corpus-v7.ts';
 import { LANGUAGE_CORPUS_V8 } from './language-corpus-v8.ts';
 import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
+import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -95,7 +96,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
                   ? LANGUAGE_CORPUS_V9
                   : corpusVersion === 'language-discourse-v10'
                     ? LANGUAGE_CORPUS_V10
-                    : null;
+                    : corpusVersion === 'language-discourse-v11'
+                      ? LANGUAGE_CORPUS_V11
+                      : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -147,7 +150,7 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
         throw new Error('missing or malformed retained/retrieval review evidence');
       const source = expected.find((candidate) => candidate.id === entry.id)!;
       if (
-        corpusVersion === 'language-discourse-v10' &&
+        ['language-discourse-v10', 'language-discourse-v11'].includes(corpusVersion!) &&
         (entry.language !== source.language || entry.scenario !== source.scenario)
       )
         throw new Error('altered source dimensions');
@@ -215,7 +218,11 @@ const LANGUAGE_GATE_THRESHOLDS = {
 export function languageGateThresholds(corpusVersion: string) {
   return {
     ...LANGUAGE_GATE_THRESHOLDS,
-    usefulQualifiedAnswerCoverage: corpusVersion === 'language-discourse-v10' ? 0.9 : 0.8,
+    usefulQualifiedAnswerCoverage: ['language-discourse-v10', 'language-discourse-v11'].includes(
+      corpusVersion,
+    )
+      ? 0.9
+      : 0.8,
   };
 }
 
@@ -343,7 +350,7 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         split: report.split,
         run,
         metrics,
-        ...(report.corpusVersion === 'language-discourse-v10'
+        ...(['language-discourse-v10', 'language-discourse-v11'].includes(report.corpusVersion)
           ? { breakdowns: reviewBreakdowns(observations, review) }
           : {}),
       };
