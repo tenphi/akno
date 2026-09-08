@@ -59,3 +59,5 @@ Supply source-backed exact reference hints to the bounded language check without
 Recognize bounded relayed-report and attributed-assertion wording while rejecting wrong reporters and non-report objects. Formulate hypothesis answers as attributed record content, and preserve unspecified action objects in separately retained denials. Full source verification remains unchanged.
 
 Keep source-relative clock instructions free of concrete interval examples, supply localized status presentation labels, and recognize report-noun-bound Russian passive relay attribution. Preserve authored denials without adding extraction-scope explanations; semantic verification remains unchanged.
+
+Preserve exact subject identities and explicit action agents before placement and answer generation. Use direct localized report attribution, distinguish active record status from ongoing activity, and keep unresolved typed-question alternatives separate from asserted predicate denials without bypassing semantic verification.

@@ -24,9 +24,12 @@ speakers keep their exact spelling. A bounded answer guard checks known generic 
 against the effective answer language, while preserving exact source quotations and code. The shared model
 language check still covers the rest of the prose.
 Answer generation presents a generic assistant as a localized role label; verification and public evidence
-retain the original source metadata. A named speaker is never replaced by that display label. Generation also receives localized kind,
-commitment and disposition labels as presentation aids; original enums remain the qualification authority
-and verification/public evidence retain those original fields.
+retain the original source metadata. A named speaker is never replaced by that display label. Generation
+uses direct localized outer attribution for reports and retains any nested speaker and verification limits.
+It also receives localized kind, commitment and disposition labels as presentation aids; original enums remain the qualification authority
+and verification/public evidence retain those original fields. Active record status does not independently
+assert that a described mental activity is still ongoing. Explicit dates, endings and resolutions remain
+constrained by the source.
 Curator revisions check newly generated complete Markdown through a schema-specific selector. Exact original
 lines are exempt, including transfers between authorized paths; each original occurrence can exempt only
 one final occurrence. Changed bytes and extra copies are checked. Existing proposed after-states are never

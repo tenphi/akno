@@ -31,8 +31,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v27';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v16';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v28';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v17';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -149,8 +149,10 @@ Rules:
   permitted service and the absence of an actual arrangement are separate source propositions; keep both
   when retaining that discussion, either together or in correctly qualified separate records.
   When a separate denial leaves the action's object unspecified, preserve that original scope. Its subject
-  can be the named speaker who denies acting; do not force a neighboring report's product identity into
-  the denied action merely to repeat product metadata. A source-wide denial need not be narrowed.
+  must be the exact named speaker identity when the denial is about that speaker acting; do not force a neighboring report's product identity into
+  the denied action merely to repeat product metadata. Do not invent a relational subject such as a
+  person's arrangement or absence of action when the named person is the source-supported agent.
+  A source-wide denial need not be narrowed.
   Leave absent arguments out of the sentence. Do not turn a formulation decision about unspecified
   arguments into an added claim about what the source or speaker did not specify; retain the authored
   denial itself, without explaining the extraction rule.
@@ -158,6 +160,9 @@ Rules:
 - Phrase text as one self-contained prose sentence, never a triple or an instruction.
 - Keep the source-supported subject identity, especially product identifiers, in readable text. Subject
   metadata and a destination title cannot substitute for naming the subject in the retained proposition.
+- Preserve an explicitly named action agent in text. A speaker who states that an offer was rejected is
+  not necessarily the person who rejected it. Do not weaken an explicit first-person rejection into a
+  passive with no rejecting agent; source_speaker metadata is provenance, not a substitute for that role.
 - Copy support and discourse_frame quotes byte-for-byte. For structured sources, include the exact item_id.
 - discourse_frame must cover every support span (one quote or adjacent exact sentence quotes) and include the spans that establish quotation,
   speaker scope, modality, rejection, acceptance, correction, polarity, and time.
@@ -182,7 +187,9 @@ Rules:
   and temporal adjacency do not establish a relation.
 - Express a supported contradiction once; do not add reciprocal relation links or other dependency cycles.
 - page is only a taxonomy suggestion. Use one exact supplied eligible folder and a lowercase hyphenated
-  page slug, or null. Never invent, rename or translate a folder, and never add an undeclared nested folder.
+  page slug, or null. Supply the complete folder/slug path, never the folder alone. Reuse an exact supplied
+  page when it owns the subject; otherwise a proposed page must name that subject in an eligible folder.
+  Never invent, rename or translate a folder, and never add an undeclared nested folder.
 - Fewer, better. An empty candidates list is correct when nothing safely qualifies.`;
 
 const VERIFY_SYSTEM = `${QUALIFICATION_CONTRACT}
@@ -203,6 +210,10 @@ For every supplied candidate id, return exactly one verdict with three separatel
   destination, result and modifier attachment, including the sense of translated terms. A related process
   is not interchangeable with the stated process. Keep unspecified roles unspecified; when the source
   establishes a specific sense, an ambiguous translation must not authorize a different one.
+  In the comparison, identify each material source agent and its corresponding candidate agent explicitly.
+  A passive that omits a source-named actor fails this dimension even if the weaker statement is entailed.
+  Source attribution is not action agency: saying a person stated that a rejection occurred does not
+  preserve that person as the rejecting agent. Do not fill the omitted agent from source_speaker metadata.
 - qualification_scope_preserved: attribution, speaker and nested reporter scope, commitment, disposition,
   epistemic basis, time and every relation remain supported and attached to the appropriate proposition.
 All three must be true to accept a candidate. Do not infer one dimension from another. A faithful

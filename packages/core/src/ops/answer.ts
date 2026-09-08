@@ -38,8 +38,8 @@ import {
   semanticVerdictFields,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v33';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v18';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v34';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v19';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -94,6 +94,10 @@ Keep person, organization and product names in their exact original spelling; do
 Generic source roles such as assistant and user are descriptive prose: translate them into the requested
 language even when source_speaker repeats the role. They are not proper names or schema values in answer text.
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
+For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
+or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
+Keep any inner speaker and verification limits inside that scope. Use this construction instead of
+nominal readings or passive record-attribution wording; those variants can obscure the outer reporter.
 The display_labels are translation aids for kind, commitment and disposition. They add no proposition and
 change no qualification. Express relevant status in the requested language; do not copy English enum values
 into Russian prose.
@@ -185,6 +189,10 @@ alternatives when both remain explicitly unestablished and neither is selected. 
 and protected values. Translation must also preserve the action's sense and object: device collection and
 data collection are different actions. Reject an added object or interpretation not established by the
 cited evidence, even when it would be plausible in that setting. Typed qualifications and readable evidence together establish the record's status.
+An active disposition means the record has not been superseded or resolved; it does not independently
+assert that a described mental activity is ongoing at answer time. Past discussion/consideration wording,
+including Russian imperfective past tense, does not by itself claim completion or resolution. Preserve
+explicit source dates and temporal boundaries, and reject an actual added ending or selected conclusion.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
 When the readable evidence anchors a relative time to an undated original note, preserve both the source
 anchor and the unresolved calendar date. Reject "next week; calendar date unknown" / "на следующей
@@ -1095,6 +1103,18 @@ function validateDraft(
             source.lines.length > 0 &&
             source.lines.every((line) => line.memory?.status === 'qualified'),
         ),
+        sources.every(
+          (source) =>
+            source?.type === 'page' &&
+            source.lines.length > 0 &&
+            source.lines.every(
+              (line) =>
+                line.memory?.status === 'qualified' &&
+                line.memory.kind === 'question' &&
+                line.memory.commitment === 'none' &&
+                line.memory.disposition === 'active',
+            ),
+        ),
       )
     ) {
       reject('protected_value');
@@ -1377,6 +1397,9 @@ function tentativeLanguage(text: string): boolean {
   );
   return (
     spacedUncertainty.test(text) ||
+    /\bpreliminary (?:hypothes(?:is|es)|explanations?|claims?|reports?|accounts?|beliefs?|assumptions?|proposals?|interpretations?|readings?)\b|\b(?:hypothes(?:is|es)|explanations?|claims?|reports?|accounts?|beliefs?|assumptions?|proposals?|interpretations?|readings?) (?:is|are|was|were|remains?|remained) (?:still )?preliminary\b/iu.test(
+      text,
+    ) ||
     /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|непроверенн|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
       text,
     ) ||
@@ -1401,6 +1424,7 @@ function protectedValuesSupported(
   supportText: string,
   qualified = false,
   typedMemory = false,
+  unresolvedQuestion = false,
 ): boolean {
   const support = normalizeComparable(supportText);
   for (const token of digitBearingTokens(answerText)) {
@@ -1410,7 +1434,10 @@ function protectedValuesSupported(
   // fiction and rejected choices. Comparing the mere presence of "not"/"не" rejects faithful
   // translations. Keep a narrow predicate-denial floor; full citation-scoped verification remains
   // authoritative for translated polarity and every qualification, including mixed clauses.
-  if (typedMemory) return !containsPredicateDenial(answerText) || containsPredicateDenial(supportText);
+  if (typedMemory) {
+    const assertionText = unresolvedQuestion ? questionAssertionText(answerText) : answerText;
+    return !containsPredicateDenial(assertionText) || containsPredicateDenial(supportText);
+  }
   const answerNegated = containsNegation(
     qualified ? qualificationPolarityText(answerText, supportText) : answerText,
   );
@@ -1418,6 +1445,26 @@ function protectedValuesSupported(
     qualified ? qualificationPolarityText(supportText, supportText) : supportText,
   );
   return !answerNegated || sourceNegated;
+}
+
+/** Only an explicitly unresolved clause in typed question evidence can contain an unasserted denial. */
+function questionAssertionText(text: string): string {
+  // Remove the bounded interrogative scope, not an entire answer containing the word "question".
+  // Clause contrasts and sentence breaks stop the scope so a separate asserted exclusion still fails.
+  const englishBody =
+    '(?:(?!(?:but|however|although|while|whereas|because|since|and|yet)\\b)[^.!?;\\n]){1,240}';
+  const english = new RegExp(
+    `\\bwhether\\s+${englishBody}\\s+(?:has|have) not been (?:established|determined|resolved)\\b`,
+    'giu',
+  );
+  const russianBody = '(?:(?!(?<![\\p{L}])(?:но|однако|зато|поскольку|ведь|а)(?![\\p{L}]))[^.!?;\\n]){1,240}';
+  const russian = new RegExp(
+    `(?<![\\p{L}])(?:(?:оста[её]тся|осталось) (?:неустановленным|неизвестным|неясным)|не (?:установлено|определено|известно)),\\s*${russianBody}(?=[.!?;\\n]|$)`,
+    'giu',
+  );
+  return text
+    .replace(english, '')
+    .replace(russian, (clause) => (/(?<![\p{L}])ли(?![\p{L}])/iu.test(clause) ? '' : clause));
 }
 
 function containsPredicateDenial(text: string): boolean {

@@ -74,7 +74,7 @@ The one rejected Russian draft changes `has not accepted a plan` to `не утв
 
 ### Competing hypotheses
 
-Six answers pass with both alternatives, preliminary status, evidence for neither, and no selected cause. One English explicit draft was rejected by the deterministic discourse floor and one Russian explicit draft by semantic verification. Both use past imperfective `considered/рассматривала` for retained active `is considering`; the latter verdict says this may imply the activity ended. Neither draft states resolution, supersession, or a selected cause, so these are conservative false holds rather than clear factual errors.
+Six answers pass with both alternatives, preliminary status, evidence for neither, and no selected cause. One English explicit draft was rejected by the deterministic discourse floor because `tentativeLanguage` does not recognize English `preliminary` in `competing, preliminary hypotheses`; this is a lexical tentative-status false hold, not a tense check. One Russian explicit draft was separately rejected by semantic verification because past imperfective `рассматривала` may imply that retained active `is considering` has ended. Neither draft states resolution, supersession, or a selected cause, so both are conservative false holds rather than clear factual errors.
 
 Neutral record provenance worked in several answers (`The recorded tentative alternatives attributed to Ada...`, `The record attributes...`) without inventing a writing act. Other answers described consideration directly; that action is supported by the retained record. I found no accepted invented discussion/recording event.
 
@@ -82,7 +82,7 @@ Neutral record provenance worked in several answers (`The recorded tentative alt
 
 The V36 losses are split between narrow lexical floors and source meaning/routing lost upstream:
 
-- lexical guards: three selected Russian passive-attribution holds, two built unresolved-question polarity holds, one built possessive `reading` attribution hold, and one selected active/past discourse hold;
+- lexical guards: three selected Russian passive-attribution holds, two built unresolved-question polarity holds, one built possessive `reading` attribution hold, and one selected English `preliminary` tentative-vocabulary hold;
 - upstream retention/placement: the complete no-shipment denial has an unroutable invented subject, and the rejected-offer record drops Ada's agent role;
 - semantic decisions: one justified accepted-versus-asserted plan mismatch, three downstream rejections caused by the retention actor loss, and one conservative active/past alternatives rejection.
 

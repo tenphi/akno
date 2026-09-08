@@ -951,6 +951,68 @@ describe('grounded answer discovery surface', () => {
     });
   });
 
+  it.each([
+    [
+      'The open question is whether the silverpine warranty includes return delivery. Whether that delivery is covered or excluded has not been established.',
+      true,
+    ],
+    [
+      'Открытый вопрос о доставке silverpine: остаётся неустановленным, предусматривает ли гарантия доставку или исключает её.',
+      true,
+    ],
+    [
+      'Открытый вопрос о доставке silverpine: не установлено, включает ли гарантия доставку или исключает её.',
+      true,
+    ],
+    [
+      'The open question is whether silverpine delivery is covered or excluded has not been established. The warranty excludes delivery.',
+      false,
+    ],
+    [
+      'Whether silverpine delivery is covered or excluded has not been established, but the warranty excludes delivery. The question remains open.',
+      false,
+    ],
+    [
+      'The open question is whether the silverpine warranty covers delivery, but the warranty excludes repairs has not been established.',
+      false,
+    ],
+    [
+      'Открытый вопрос silverpine: остаётся неустановленным, покрыта ли доставка или исключена. Гарантия исключает доставку.',
+      false,
+    ],
+    [
+      'Открытый вопрос silverpine: остаётся неустановленным, покрыта ли доставка, но гарантия исключает ремонт.',
+      false,
+    ],
+    [
+      'Открытый вопрос silverpine: не установлено, включает ли гарантия доставку, а ремонт она исключает.',
+      false,
+    ],
+  ] as const)(
+    'separates unresolved question alternatives from asserted exclusions: %s',
+    async (text, accepted) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_scoped_question v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=question subject=unresolved source-role=user reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** The open question is whether the silverpine warranty includes return delivery; neither coverage nor exclusion is established.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'Which open silverpine question remains?',
+        memory_view: 'questions',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ protected_value: 1 });
+    },
+  );
+
   it.each(['unknown', 'unestablished', 'unverified', 'not confirmed'])(
     'does not treat epistemic uncertainty as predicate negation: %s',
     async (uncertainty) => {
@@ -1319,6 +1381,10 @@ describe('grounded answer discovery surface', () => {
       true,
     ],
     [
+      'Ada Marlow considered two competing preliminary hypotheses about silverpine: a loose valve and a worn cable. Neither had supporting evidence.',
+      true,
+    ],
+    [
       'Ada Marlow обсуждала две версии silverpine: ослабленный клапан и изношенный кабель. Эти версии пока не подтверждены.',
       true,
     ],
@@ -1337,6 +1403,14 @@ describe('grounded answer discovery surface', () => {
     [
       'Ada Marlow обсуждала гипотезы silverpine: ослабленный клапан и изношенный кабель. Получение устройства не подтверждено.',
       false,
+    ],
+    [
+      'Ada Marlow used a preliminary silverpine inspection to establish a loose valve and a worn cable as causes.',
+      false,
+    ],
+    [
+      'Ada Marlow described the silverpine hypotheses of a loose valve and a worn cable; the hypotheses remain preliminary.',
+      true,
     ],
   ] as const)(
     'keeps spaced Russian uncertainty attached to a qualified explanation: %s',
