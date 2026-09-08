@@ -111,8 +111,8 @@ rebuild/replay, graph eligibility, and failures. It does not establish live-mode
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v16 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v16 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v17 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v17 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -169,7 +169,9 @@ than the mere presence of a grammatical negator. English/Russian translations ca
 preserving uncertainty, open-question status, fiction, report attribution or rejected selection. Exact token
 and citation checks remain deterministic. Predicate matching is a heuristic: complete and mixed-clause polarity
 still requires the full citation-scoped semantic verifier, which receives a checklist of the cited records'
-typed constraints. Mixed or untyped evidence retains the conservative lexical comparison. Direct user
+typed constraints. Mixed or untyped evidence retains the conservative lexical comparison. Named report sources use a bounded grammatical reporting relation. Tentative modifiers and report ownership
+can express that relation; recording an unrelated object cannot. Spaced Russian passive uncertainty must
+qualify an epistemic noun rather than deny an unrelated action. Direct user
 provenance (`self_attested`) does not require adding a claim of self-attestation to the answer. The generator
 receives the source identity and qualifications without this internal basis label; the verifier and public
 evidence retain the complete metadata. This avoids introducing verification disclaimers absent from the source. Closed plans
@@ -183,6 +185,8 @@ relations continue to use original indices. Every repaired candidate passes the 
 verification. The complete records, relations and order of already admitted candidates must remain identical.
 An invalid or unavailable repair preserves those admitted candidates for verification and reports typed
 degradation, including through remember previews and replay. Semantic verifier rejections are not retried.
+Structural repair guidance identifies the exact allowed commitment and disposition for the candidate kind.
+Questions require commitment none; invalid explicit values are held rather than silently coerced.
 Generated nonfactual prose must keep its named outer source speaker; source metadata alone cannot satisfy
 this readable attribution check. Named inner reporters require a bounded explicit reporting relation in the
 original frame; a name merely appearing as a fictional participant is insufficient. Semantic verification still
@@ -220,9 +224,9 @@ node scripts/review-language.mjs \
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
 at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
-v10 through v16 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
+v10 through v17 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
 original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
-V10 through V16 gates also break down useful retention and answers by source language and scenario, and answers by query
+V10 through V17 gates also break down useful retention and answers by source language and scenario, and answers by query
 and requested output language. These groups describe coverage within a finite corpus, not independent samples.
 At most 5% of cases may have availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
 source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
@@ -231,7 +235,7 @@ Retrieval is judged once per query-language/view pair; duplicated evidence in th
 must receive the same judgment and cannot increase its weight. Model adjudication is labeled as such and must use a model different from the runtime retention/answer model;
 it is fallible review of a finite invented corpus, not human validation or a longitudinal reliability guarantee.
 
-V13 through V16 use `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
+V13 through V17 use `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
 `retainedSourceEntailed`: all saved propositions must follow from the frozen original source; an empty set
 is vacuously true. Each answer receives `sourceEntailed`, null if and only if the answer is null. A nonnull
 answer must follow from the original source even if it repeats flawed retained knowledge. Unsupported

@@ -39,3 +39,5 @@ Preserve original process meaning and reporter roles during English retention. C
 Keep negative epistemic statements scoped to their original subject: an exclusion that leaves another question unsettled cannot become a claim that the whole document omits the answer.
 
 Repair structurally rejected candidates once even when other candidates survive. Bind repairs to original positions and preserve every previously admitted record and relation; report repair failure while keeping verified knowledge usable. Keep the internal self-attested basis label out of answer generation while retaining it for verification and public evidence.
+
+Bind report wording directly to its named outer source while accepting bounded tentative modifiers, finite report complements and spaced Russian passive uncertainty. Preserve prior guards against unrelated recordings and negation. Provide exact per-kind structural repair guidance, preserve conditional rule consequences and explicit absence of arrangements, and compare ordinary meaning-preserving translations within the existing three-dimension semantic verifier.

@@ -256,6 +256,29 @@ describe('cross-language retention boundary', () => {
     expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
   });
 
+  it.each([
+    ['question', 'tentative', 'active', 'commitment must be none'],
+    ['question', 'asserted', 'active', 'commitment must be none'],
+    ['decision', 'asserted', 'resolved', 'disposition must be accepted, rejected, superseded'],
+  ])('reports precise structural repair guidance for %s/%s/%s', (kind, commitment, disposition, reason) => {
+    const source = 'Ada Marlow recorded a question about silverpine inspection.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind,
+          text: source,
+          discourse: { commitment, disposition },
+          support: [{ quote: source }],
+          discourse_frame: [{ quote: source }],
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.candidates).toEqual([]);
+    expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    expect(result.held[0]?.reason).toContain(reason);
+  });
+
   it.each(['rejected', 'cancelled', 'completed'])(
     'preserves plan disposition %s instead of normalizing it to a proposal',
     (disposition) => {

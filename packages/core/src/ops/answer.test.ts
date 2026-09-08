@@ -1076,6 +1076,141 @@ describe('grounded answer discovery surface', () => {
     if (!explicit) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
   });
 
+  it.each([
+    [
+      'The assistant relayed an unverified report that Bo Winters declined the silverpine offer.',
+      'The assistant recorded that Bo Winters rejected the silverpine offer; the report remains unverified.',
+    ],
+    [
+      'The assistant relayed an unverified report that Bo Winters made no arrangement for silverpine shipment.',
+      'The assistant recorded that Bo Winters did not arrange silverpine shipment; the report remains unverified.',
+    ],
+    [
+      'The assistant relayed an unverified report that a silverpine inspection hypothesis is not confirmed.',
+      'The assistant recorded that the silverpine inspection hypothesis remains unconfirmed.',
+    ],
+  ])('admits a bounded finite report complement: %s', async (source, text) => {
+    write(
+      'products/zephyr-qx-100.md',
+      `# Zephyr QX-100\n\n<!-- akno:item mem_complement v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=assistant speaker=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by assistant · Tentative:** ${source}\n`,
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'What silverpine report did the assistant give?',
+      memory_view: 'reports',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer, JSON.stringify(result)).not.toBeNull();
+    expect(modelRequests).toHaveLength(2);
+  });
+
+  it.each([
+    [
+      'The assistant gave a tentative, preliminary, and unverified report of a silverpine inspection requirement.',
+      true,
+    ],
+    [
+      'The assistant tentatively and without verification reported a silverpine inspection requirement.',
+      true,
+    ],
+    ['Ассистент предварительно и непроверенно сообщил о требовании проверки silverpine.', true],
+    ['The assistant provided an unverified report that silverpine inspection might be required.', true],
+    ["The assistant's preliminary, tentative and unverified report concerns silverpine inspection.", true],
+    [
+      'The assistant gave a device to Bo Winters, who reported an unverified silverpine inspection requirement.',
+      false,
+    ],
+    [
+      'The assistant provided an unverified device; Bo Winters reported a silverpine inspection requirement.',
+      false,
+    ],
+    ['Bo Winters described the assistant in an unverified report about silverpine inspection.', false],
+    [
+      'The assistant recorded that device. An unverified report exists. The silverpine warranty covers inspection.',
+      false,
+    ],
+    [
+      'The assistant recorded that device while Bo Winters reported an unverified silverpine inspection requirement.',
+      false,
+    ],
+  ] as const)('binds qualified report wording to its actual outer source: %s', async (text, accepted) => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_adverbs v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=assistant speaker=assistant reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by assistant · Tentative:** The assistant reported an unverified silverpine inspection requirement.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+      verification: { verdicts: [verdict('B1', true)] },
+    });
+    const result = await memory.answer({
+      question: 'What silverpine report did the assistant give?',
+      memory_view: 'reports',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+    expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+    if (!accepted) expect(result.validation?.rejection_counts).toEqual({ attribution: 1 });
+  });
+
+  it.each([
+    [
+      'Ada Marlow обсуждала две не подтверждённые гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      true,
+    ],
+    [
+      'Ada Marlow обсуждала две версии silverpine: ослабленный клапан и изношенный кабель. Эти версии пока не подтверждены.',
+      true,
+    ],
+    [
+      'Ada Marlow обсуждала две подтверждённые гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала не только подтверждённые гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала гипотезы silverpine: ослабленный клапан и изношенный кабель. Она не подтверждает получение устройства.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала гипотезы silverpine: ослабленный клапан и изношенный кабель. Получение устройства не подтверждено.',
+      false,
+    ],
+  ] as const)(
+    'keeps spaced Russian uncertainty attached to a qualified explanation: %s',
+    async (text, accepted) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_spaced v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow recorded two unconfirmed silverpine explanations: a loose valve and a worn cable; neither has evidence or is established.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine hypotheses did Ada Marlow discuss?',
+        memory_view: 'discussion',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+    },
+  );
+
   it('keeps internal user-provenance labels in verification and public evidence, outside generation', async () => {
     write(
       'products/zephyr-qx-100.md',

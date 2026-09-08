@@ -31,8 +31,8 @@ import {
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v26';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v15';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v27';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v16';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -134,6 +134,10 @@ source-language glosses for ordinary words such as calendar frequencies; preserv
 When supplied evidence gives incompatible values and does not establish which is authoritative, do not choose
 or summarize the conflicting values in an answer block. Return no blocks and list the unresolved identity or
 value in missing_concepts. Akno will report the safe abstention and related source identities.
+When describing an assumed rule, include a stated conditional consequence that defines that rule, while
+keeping both the assumption and consequence hypothetical. Do not turn the hypothetical violation into
+an actual missed action.
+
 Exception: when the question explicitly asks which competing hypotheses or alternatives were discussed,
 describe each supported alternative as an unestablished hypothesis, without selecting a winner. Their
 incompatibility is part of the requested discussion record; it does not establish any actual value.`;
@@ -145,7 +149,12 @@ not use outside knowledge.
 The question asks about a record. Entailment is about what the evidence records, not proof that an embedded
 belief, report, example, or conditional is true in the world. A faithful qualified description of that record
 is supported. Meaning-preserving translation between English and Russian is allowed; different wording is
-not a contradiction. Do not require a translated answer to repeat an original phrase verbatim, except names
+not a contradiction. Compare the complete proposition in its discourse context, including ordinary
+inflection, synonymy and equivalent component descriptions. Do not reject a phrase only because an
+unrelated reading is theoretically possible: reject when the drafted wording selects an unsupported
+meaning or role. A replacement of a component for a device preserves component replacement; it does not
+assert replacement of the whole device. Two competing explanations listed with "and" still preserve
+alternatives when both remain explicitly unestablished and neither is selected. Do not require a translated answer to repeat an original phrase verbatim, except names
 and protected values. Translation must also preserve the action's sense and object: device collection and
 data collection are different actions. Reject an added object or interpretation not established by the
 cited evidence, even when it would be plausible in that setting. Typed qualifications and readable evidence together establish the record's status.
@@ -969,13 +978,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
         ? '(?:assistant|ассистент(?:а|ом|у)?)'
         : speaker?.normalize('NFKC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     if (line.memory.basis === 'source_report' && !sourceLabel && !attributionVerb) return false;
-    if (
-      line.memory.basis === 'source_report' &&
-      sourceLabel &&
-      (!hasBoundReporter(answerText, sourceLabel) ||
-        (!attributionVerb &&
-          !new RegExp(`(?:отч[её]т|сообщение)\\s+${sourceLabel}(?![\\p{L}\\p{N}])`, 'iu').test(answerText)))
-    )
+    if (line.memory.basis === 'source_report' && sourceLabel && !hasBoundReporter(answerText, sourceLabel))
       return false;
     // Some retained records spell the assistant role into source_speaker. It is a translatable
     // role label, while an actual named speaker must still occur in its original spelling.
@@ -992,12 +995,30 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
 function hasBoundReporter(text: string, label: string): boolean {
   const source = `(?<![\\p{L}\\p{N}])${label}(?![\\p{L}\\p{N}])`;
   const modifiers =
-    '(?:(?:tentatively|preliminarily|reportedly|only|merely|also|explicitly|предварительно|предположительно|только|лишь)\\s+){0,3}';
+    '(?:(?:tentatively|preliminarily|reportedly|only|merely|also|explicitly|without verification|предварительно|предположительно|непроверенно|только|лишь)(?:,?\\s+(?:and\\s+|и\\s+)?)){0,3}';
   const predicate =
-    '(?:reported|reports|said|says|stated|states|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|recorded|records|gave|provided|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|записал\\p{L}*|переда\\p{L}*)';
-  const qualifier = '(?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}';
+    '(?:reported|reports|said|says|stated|states|claimed|claims|described|assumed|assumes|believed|believes|hypothesized|suspected|suspects|suggested|suggests|interpreted|сообщ\\p{L}*|сказал\\p{L}*|утвержда\\p{L}*|описал\\p{L}*|предполож\\p{L}*|счита\\p{L}*|переда\\p{L}*)';
+  const qualifier = '(?:(?:tentative|preliminary|unverified|unconfirmed)(?:,?\\s+(?:and\\s+)?)){0,3}';
+  // 'Recorded that device' is an object, so require a bounded finite clause without a sentence break.
+  const reportedClause =
+    "(?:(?!(?:while|whereas|although|but|and|because|which|who|whose)\\b)[\\p{L}\\p{N}’'-]+\\s+){1,8}(?:is|are|was|were|has|have|had|do|does|did|can|could|may|might|would|will|must|should|remains?|remained|rejects?|rejected|declines?|declined|cancelled|canceled|completed|proposed|accepted|requires?|includes?|covers?|permits?|reported|reports|said|says|stated|states|told|claimed|claims)\\b";
+  // Case-fold the reporting grammar, but not the inner person's proper-name shape.
+  const ownedReport = new RegExp(
+    `${source}\\s+${modifiers}(?:recorded|records)\\s+((?:[\\p{L}’'.-]+ ){0,3}[\\p{L}’'.-]+)[’']s\\s+${qualifier}(?:report|account|statement)\\b`,
+    'giu',
+  );
+  if (
+    [...text.normalize('NFKC').matchAll(ownedReport)].some((match) =>
+      /^(?:\p{Lu}[\p{L}’'.-]* ){0,3}\p{Lu}[\p{L}’'.-]*$/u.test(match[1]!),
+    )
+  )
+    return true;
   return new RegExp(
     `${source}\\s+${modifiers}${predicate}(?![\\p{L}])|` +
+      `${source}\\s+${modifiers}(?:recorded|records)(?:,? as)?\\s+(?:(?:an?|the)\\s+)?${qualifier}(?:report|account|statement)\\b|` +
+      `${source}\\s+${modifiers}(?:recorded|records)\\s+that\\s+${reportedClause}|` +
+      `${source}\\s+${modifiers}записал\\p{L}*\\s+(?:со слов|по словам|что|(?:(?:непроверенн|неподтвержд[её]н|предварительн)\\p{L}*\\s+){0,3}(?:сообщение|отч[её]т))|` +
+      `${source}\\s+${modifiers}(?:gave|provided)\\s+(?:(?:an?|the)\\s+)?${qualifier}report\\b|` +
       `${source}\\s+${modifiers}(?:and )?as (?:an?|the) ${qualifier}report\\b|` +
       `(?:told|привед[её]н\\p{L}*|представлен\\p{L}*)\\s+(?:the )?${source}|` +
       `(?:according to|по словам|со слов|согласно)\\s+(?:the )?${source}|` +
@@ -1091,7 +1112,16 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
 }
 
 function tentativeLanguage(text: string): boolean {
+  // Spaced passive uncertainty must qualify an epistemic noun, not deny an unrelated action.
+  const epistemicHead = '(?:гипотез\\p{L}*|верси\\p{L}*|сообщени\\p{L}*|утверждени\\p{L}*)';
+  const unconfirmed =
+    'не\\s+(?:был[аои]?\\s+)?подтвержд[её]н(?:[аоы]|н(?:ый|ая|ое|ые|ого|ой|ому|ую|ым|ыми|ых))?(?!\\p{L})';
+  const spacedUncertainty = new RegExp(
+    `${unconfirmed}\\s+${epistemicHead}|${epistemicHead}\\s+(?:(?:пока|ещ[её]|остаются?|оста[её]тся)\\s+){0,2}${unconfirmed}`,
+    'iu',
+  );
   return (
+    spacedUncertainty.test(text) ||
     /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|непроверенн|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
       text,
     ) ||
