@@ -1,0 +1,1 @@
+The first full-packet helper invocation failed during import because the frozen compiled copy lacked a node_modules resolution path for zod. No report was read, no model was called, and no runtime or result changed. A symlink to the unchanged core package dependencies restored resolution before packet generation. The complete trial reports remain the sole grading inputs.
