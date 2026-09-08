@@ -24,6 +24,7 @@ import {
   aggregateSemanticOutcomes,
   semanticVerdictConsistent,
   semanticVerdictFields,
+  semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
 /**
@@ -31,8 +32,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v29';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v17';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v30';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v18';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -51,6 +52,9 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   context to disambiguate the English term when the source establishes a narrower sense. Lack of an
   arrangement is not refusal, lack of consent, or a decision not to act. Preserve those distinctions.
   This does not require unrelated adjacent details, or confuse uncertainty negation with an excluded action.
+  Disambiguate relational nouns with their governing context. A contract condition is a contractual term
+  or requirement; it is not the device's physical condition or state. Preserve the narrower supported sense
+  in English prose so later translation cannot change the object of verification.
 - Preserve the subject and scope of negative epistemic statements. "This assertion or exclusion does
   not establish or address X" does not entail "the contract or source says nothing about X". Only
   attribute silence or omission to the whole document when the source explicitly makes that document
@@ -61,6 +65,10 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   kind=plan and disposition=rejected; it is neither a proposed nor an actionable plan. Rejecting a positive
   action does not negate the embedded action: a rejected offer to send an item has affirmed polarity and
   rejected disposition. Only an explicit denial of the embedded property or action uses negated polarity.
+  kind=plan describes a course of action, including an offer; it does not assert that the user intended it.
+  Keep commitment, disposition and time.status separate. An explicit proposal is asserted with proposed
+  disposition even when its timing is tentative. Lack of acceptance or a source date does not lower
+  commitment. Use tentative commitment only when the source actually hedges the proposition itself.
 - A supported conditional premise and its stated consequence belong to the same scoped record. Keep both
   when the source supplies both; never derive additional consequences or discard the condition.
 - Competing unconfirmed hypotheses use tentative or hypothetical commitment, even when the readable
@@ -169,6 +177,10 @@ Rules:
 - Preserve an explicitly named action agent in text. A speaker who states that an offer was rejected is
   not necessarily the person who rejected it. Do not weaken an explicit first-person rejection into a
   passive with no rejecting agent; source_speaker metadata is provenance, not a substitute for that role.
+- Preserve a source's actual activity when retaining that activity: discussing hypotheses and privately
+  considering them are not interchangeable event descriptions. For an embedded fictional proposition,
+  use neutral framing such as "In SOURCE's fictional example, ..."; do not turn a proposed discussion
+  into a performed discussion or description. Retain a separate proposed-discussion record when material.
 - Copy support and discourse_frame quotes byte-for-byte. For structured sources, include the exact item_id.
 - discourse_frame must cover every support span (one quote or adjacent exact sentence quotes) and include the spans that establish quotation,
   speaker scope, modality, rejection, acceptance, correction, polarity, and time.
@@ -738,7 +750,10 @@ async function verifyCandidateBatch(
             .filter((candidate) => !ids.includes(candidate.candidate_id))
             .map(({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => candidate),
           candidates: candidates.map(
-            ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => candidate,
+            ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => ({
+              ...candidate,
+              record_scope: semanticRecordScope({ kind: candidate.kind, ...candidate.discourse }),
+            }),
           ),
         }),
       },
@@ -1100,7 +1115,7 @@ function cleanCandidateBatchWithPositions(
     }
     if (
       options.generated &&
-      /\b(?:is|are|was|were|has been|have been)\s+(?:already\s+)?(?:scheduled|booked)\b/iu.test(text) &&
+      hasAffirmedBooking(text) &&
       !(
         time &&
         ['scheduled', 'due'].includes(time.relation) &&
@@ -1291,6 +1306,18 @@ function cleanCandidateBatchWithPositions(
     held,
     positions,
   };
+}
+
+function hasAffirmedBooking(text: string): boolean {
+  const booking = /\b(?:is|are|was|were|has been|have been)\s+(?:already\s+)?(?:scheduled|booked)\b/giu;
+  // A negated subject can precede an affirmative-looking auxiliary: "no handover has been
+  // booked" describes absence, not a booking with a missing clock. Check each clause so a
+  // separate actual booking still requires its temporal envelope. A prepositional noun tail
+  // must stop at clause connectives or a finite predicate; otherwise an earlier denial can
+  // incorrectly excuse a later affirmative booking. Unrecognized syntax stays conservative.
+  const negativeSubject =
+    /(?:^|[,;.!?]|\b(?:and|but|that)\s)\s*no\s+(?:handover|pickup|collection|shipment|appointment|inspection|meeting|delivery|service|visit|booking|transfer)(?:\s+(?:of|for|with)\s+(?!(?:no|not)\b)(?:(?!(?:is|are|was|were|has|have|had|can|could|will|would|should|must|and|but|or|nor|yet|so|that|which|who|whose|although|though|even|while|whereas|because|since|unless|until|before|after|if|when|where|whether|once|as|despite|nevertheless|however|therefore|remain(?:s|ed)?|exist(?:s|ed)?|mean(?:s|t)?|impl(?:y|ies|ied)|prov(?:e|es|ed)|confirm(?:s|ed)?|show(?:s|ed)?|suggest(?:s|ed)?|ensure(?:s|d)?)\b)[\p{L}\p{N}'’_-]+\s*){1,10})?\s*$/iu;
+  return [...text.matchAll(booking)].some((match) => !negativeSubject.test(text.slice(0, match.index)));
 }
 
 function spanSource(span: RetainSourceSpan, options: CandidateCleaningOptions): string | undefined {

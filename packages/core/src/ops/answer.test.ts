@@ -1636,7 +1636,7 @@ describe('grounded answer discovery surface', () => {
       generation: {
         blocks: [
           {
-            text: 'Ada Marlow предложила проверку silverpine с предварительным сроком; календарная дата неизвестна, план не принят.',
+            text: 'Ada Marlow предлагает проверку silverpine с предварительным сроком; календарная дата неизвестна, план не принят.',
             evidence_ids: ['E1'],
           },
         ],

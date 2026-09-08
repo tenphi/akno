@@ -22,12 +22,36 @@ import { LANGUAGE_CORPUS_V15 } from './language-corpus-v15.ts';
 import { LANGUAGE_CORPUS_V16 } from './language-corpus-v16.ts';
 import { LANGUAGE_CORPUS_V17 } from './language-corpus-v17.ts';
 import { LANGUAGE_CORPUS_V18 } from './language-corpus-v18.ts';
+import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS } from './language-corpus.ts';
 import { runLanguageBench } from './language.ts';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('frozen language/discourse evaluation', () => {
+  it('freezes nineteenth-corpus sources and keeps fresh held-out scenario coverage', () => {
+    expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V19))).toBe(
+      '2b1913d73efee8c14007feb2a4745711e27518a47e20ca5df52bf1cc1f3e8372',
+    );
+    for (const split of ['development', 'held-out']) {
+      expect(LANGUAGE_CORPUS_V19.filter((c) => c.split === split && c.admission === 'writable')).toHaveLength(
+        10,
+      );
+      expect(
+        LANGUAGE_CORPUS_V19.filter((c) => c.split === split && c.admission === 'read-only'),
+      ).toHaveLength(1);
+    }
+    const exposed = new Set(LANGUAGE_CORPUS_V18.flatMap((c) => c.items.map((i) => i.text)));
+    expect(
+      LANGUAGE_CORPUS_V19.filter((c) => c.split === 'held-out')
+        .flatMap((c) => c.items)
+        .some((i) => exposed.has(i.text)),
+    ).toBe(false);
+    expect(LANGUAGE_CORPUS_V19.filter((c) => c.split === 'held-out').map((c) => c.scenario)).toEqual(
+      LANGUAGE_CORPUS_V18.filter((c) => c.split === 'held-out').map((c) => c.scenario),
+    );
+  });
+
   it('freezes eighteenth-corpus sources and keeps fresh held-out scenario coverage', () => {
     expect(sha256(JSON.stringify(LANGUAGE_CORPUS_V18))).toBe(
       'bbd6def51d25ea19f7fd273a95174e321b9789914ce288091e56d10e98a64866',

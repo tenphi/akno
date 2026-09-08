@@ -65,3 +65,5 @@ Preserve exact subject identities and explicit action agents before placement an
 Preserve material personal nonselection through answers, with a bounded agency-presence floor and full source-agent verification. Recognize source-bound Russian counting constructions and distinguish narrative backshift from an actual changed temporal boundary.
 
 Keep a narrator's corrective clarification outside an inner speaker's reported clause while retaining both in one record. Localize temporal-status presentation separately from commitment and disposition, preserve source-supported hypothesis activity, and distinguish neutral record provenance from embedded action agency.
+
+Distinguish contractual terms from device state, proposal commitment from tentative timing, and record metadata from evidence. Preserve negative booking subjects and source-relative intervals after undated records. Constrain automatic placement to one admitted supplied choice while preserving semantic ownership and read-only checks.

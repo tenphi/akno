@@ -36,10 +36,11 @@ import {
   aggregateSemanticOutcomes,
   semanticVerdictConsistent,
   semanticVerdictFields,
+  semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v36';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v21';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v37';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v22';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -93,6 +94,8 @@ Use the requested output_language for generated prose, regardless of question or
 Keep person, organization and product names in their exact original spelling; do not transliterate names.
 Generic source roles such as assistant and user are descriptive prose: translate them into the requested
 language even when source_speaker repeats the role. They are not proper names or schema values in answer text.
+Resolve word sense from its governing context: a contractual condition is an условие договора, not a
+состояние устройства. Translate the supported term or requirement, without adding a physical-state claim.
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
@@ -647,6 +650,7 @@ async function verifyDraftBatch(
                             source_role: line.memory.source_role,
                             source_speaker: line.memory.source_speaker,
                             temporal: line.memory.temporal,
+                            record_scope: semanticRecordScope(line.memory),
                           },
                         ]
                       : [],
@@ -1389,7 +1393,7 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
       );
     }
     const dispositionPatterns: Partial<Record<typeof memory.disposition, RegExp>> = {
-      proposed: /\b(proposal|proposed)\b|предлож/iu,
+      proposed: /\bpropos(?:al|e[sd]?|ing)\b|предлож|предлага/iu,
       rejected:
         /\b(rejected|declined|not accepted|did not accept)\b|отклон|отверг|не принят|не принял[аио]?(?=$|[^\p{L}])/iu,
       cancelled: /\b(cancelled|canceled)\b|отмен/iu,
@@ -1433,7 +1437,9 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
     if (memory.temporal?.time.status === 'tentative') required.push(tentative);
     if (memory.kind === 'plan' && !closedPlan)
       required.push(
-        /\b(plan|planned|planning|scheduled|proposal|proposed)\b|план|назнач|предлож/iu.test(answerText),
+        /\b(plan|planned|planning|scheduled|propos(?:al|e[sd]?|ing))\b|план|назнач|предлож|предлага/iu.test(
+          answerText,
+        ),
       );
     // Unknown precision alone is not a source-relative claim. Activate this floor only when
     // the cited readable record already anchors deictic timing to an unresolved source clock.

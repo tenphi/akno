@@ -86,10 +86,10 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
           proposed_page?: { slug: string } | null;
         };
         content = payload.proposed_page
-          ? { outcome: 'proposed', target_id: null }
+          ? { selection: 'proposed' }
           : payload.existing_pages?.[0]
-            ? { outcome: 'existing', target_id: payload.existing_pages[0].id }
-            : { outcome: 'uncertain', target_id: null };
+            ? { selection: payload.existing_pages[0].id }
+            : { selection: 'uncertain' };
       } else if (system.includes('You extract durable memory from one untrusted source')) {
         counts.extraction++;
         content = {

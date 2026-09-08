@@ -1,8 +1,12 @@
+# Language and discourse evaluation
+
+The latest complete [V39 trial](results/v39/README.md) fails: **251/320 useful answers**, 30/40 complete retained sets, three accepted contractual-word-sense errors and one placement availability failure. Its exposed probes had met readiness targets, but the full repeated trial did not establish stability. All v18 sources are now exposed. The [V40 plan](v40-trial-plan.md) addresses the observed failures and requires independent approval of fresh v19 held-out inputs before execution. Models and acceptance gates are unchanged.
+
+The following entries preserve earlier decisions at their respective trial boundaries; references to unexecuted inputs describe their status at that time.
+
 The [V37 exposed probes](results/v37/README.md) yielded 25/32 independently useful selected answers and 16/16 useful built-package answers. The selected result includes three accepted source-named agency omissions; all review corrections are preserved. The [amendment](v37-trial-amendment.md) defers fresh execution. No full V37 trial started; v18 held-out inputs remain unexecuted.
 
 The [V36 exposed probes](results/v36/README.md) yielded 23/32 useful selected answers and 13/16 useful built-package answers, with no accepted errors. Corrected selected retention/retrieval are 2/4 and 24/32: the separately retained denial is missing and the rejected offer lost its rejecting actor. Twelve writable nulls remain. The [preserved amendment](v36-trial-amendment.md) defers fresh execution; no full V36 trial started and v18 held-out inputs remain unexecuted.
-
-# Language and discourse evaluation
 
 These artifacts contain only the invented English/Russian corpus and its generated outputs. The runtime
 retention and answer model is evaluated separately from an independent reviewer model. Raw reports keep

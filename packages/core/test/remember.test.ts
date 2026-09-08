@@ -45,6 +45,7 @@ interface StubServer {
 }
 
 interface StubOwnershipInput {
+  allowed_selections: string[];
   memory: { text: string; subject: string; kind: string; time: Record<string, unknown> | null };
   existing_pages: { id: string; title: string; headings: string[]; excerpt: string }[];
   proposed_page: { slug: string; title: string } | null;
@@ -92,10 +93,10 @@ async function startStubChat(): Promise<typeof server> {
     const selected =
       exactFixtureOwner ?? (memoryText.includes('meal box') ? undefined : payload.existing_pages[0]);
     return selected
-      ? { outcome: 'existing', target_id: selected.id }
+      ? { selection: selected.id }
       : payload.proposed_page
-        ? { outcome: 'proposed', target_id: null }
-        : { outcome: 'uncertain', target_id: null };
+        ? { selection: 'proposed' }
+        : { selection: 'uncertain' };
   };
   const instance = http.createServer((request, response) => {
     const chunks: Buffer[] = [];
@@ -847,9 +848,7 @@ describe('canonical destination qualification', () => {
     ]);
     server.decideOwnershipWith((input) => {
       const target = input.existing_pages.find((page) => page.title === 'Zephyr QX-100');
-      return target
-        ? { outcome: 'existing', target_id: target.id }
-        : { outcome: 'uncertain', target_id: null };
+      return target ? { selection: target.id } : { selection: 'uncertain' };
     });
     const mem = await openMem({
       models: {
@@ -887,7 +886,7 @@ describe('canonical destination qualification', () => {
         kind: 'claim',
       },
     ]);
-    server.decideOwnershipWith(() => ({ outcome: 'proposed', target_id: null }));
+    server.decideOwnershipWith(() => ({ selection: 'proposed' }));
     const mem = await openMem({
       models: {
         embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
@@ -900,6 +899,52 @@ describe('canonical destination qualification', () => {
       await mem.index({});
       const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
       expect(result.wrote?.[0]).toMatchObject({ slug: 'equipment/zephyr-qx-100', action: 'created' });
+      expect(fs.readFileSync(existingPath, 'utf8')).toBe(before);
+    } finally {
+      await mem.close();
+    }
+  });
+
+  it.each([
+    ['unknown page token', { selection: 'P999' }],
+    ['unoffered new page', { selection: 'proposed' }],
+    ['missing selection', { outcome: 'existing', target_id: null }],
+    ['null selection', { selection: null }],
+  ])('holds an invalid ownership choice without retrying: %s', async (_name, reply) => {
+    fs.mkdirSync(path.join(root, 'equipment'), { recursive: true });
+    const existingPath = path.join(root, 'equipment/zephyr-qx-100.md');
+    const before = '# Zephyr QX-100\n\nEquipment warranty notes.\n';
+    fs.writeFileSync(existingPath, before);
+    server.respondWith([
+      {
+        text: 'The Zephyr QX-100 warranty lasts five years.',
+        subject: 'Zephyr QX-100 warranty',
+        page: 'equipment/zephyr-qx-100',
+        kind: 'claim',
+      },
+    ]);
+    let calls = 0;
+    server.decideOwnershipWith((input) => {
+      calls += 1;
+      expect(input.proposed_page).toBeNull();
+      expect(input.existing_pages.length).toBeGreaterThan(0);
+      expect(input.allowed_selections).toEqual(['uncertain', ...input.existing_pages.map((page) => page.id)]);
+      return reply;
+    });
+    const mem = await openMem({
+      models: {
+        embedding: { provider: 'stub', id: 'stub-embed', dimensions: TOPIC_TERMS.length + 1 },
+        reranker: { id: null, enabled: false },
+        derive: { provider: 'stub', id: 'stub-derive' },
+        expansion: { provider: 'stub', id: 'stub-derive' },
+      },
+    });
+    try {
+      await mem.index({});
+      const result = await mem.remember({ text: 'The Zephyr QX-100 warranty lasts five years.' });
+      expect(result.wrote).toBeUndefined();
+      expect(calls).toBe(1);
+      expect(result.considered?.[0]?.kept).toBe(false);
       expect(fs.readFileSync(existingPath, 'utf8')).toBe(before);
     } finally {
       await mem.close();
@@ -935,7 +980,7 @@ describe('canonical destination qualification', () => {
     server.decideOwnershipWith((input) => {
       classifierCalls += 1;
       expect(input.existing_pages.map((page) => page.title)).not.toContain('April 2031');
-      return { outcome: 'proposed', target_id: null };
+      return { selection: 'proposed' };
     });
     const mem = await openMem({
       models: {
@@ -979,7 +1024,7 @@ describe('canonical destination qualification', () => {
     let classifierCalls = 0;
     server.decideOwnershipWith(() => {
       classifierCalls += 1;
-      return { outcome: 'proposed', target_id: null };
+      return { selection: 'proposed' };
     });
     const mem = await openMem();
     try {

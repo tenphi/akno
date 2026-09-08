@@ -1,5 +1,28 @@
 import { z } from 'zod';
 import type { ModelOutcome, ModelUsage } from './client.ts';
+import type { ProvidedRetainCandidate } from '@tenphi/akno-protocol';
+
+/** Definitions of submitted labels, never evidence that those labels fit the source. */
+export function semanticRecordScope(record: {
+  kind: ProvidedRetainCandidate['kind'];
+  commitment: ProvidedRetainCandidate['discourse']['commitment'];
+  disposition: ProvidedRetainCandidate['discourse']['disposition'];
+}): string[] {
+  const scope: string[] = [];
+  if (record.kind === 'plan')
+    scope.push(
+      'Plan denotes a recorded course of action, including an offered action. It does not independently assert personal intent, acceptance, an actual booking or performance.',
+    );
+  if (record.commitment === 'hypothetical' || record.commitment === 'counterfactual')
+    scope.push(
+      'The commitment qualifies the embedded scenario content. Neutral attribution of that content to its source is not itself hypothetical or a separate performed action.',
+    );
+  if (record.disposition === 'active')
+    scope.push(
+      'Active denotes current record validity. It neither asserts ongoing activity nor requires the answer to verbalize this internal label.',
+    );
+  return scope;
+}
 
 const dimensions = [
   'proposition_supported',
@@ -46,6 +69,13 @@ export const SEMANTIC_COMPARISON_CONTRACT = `Before deciding the three booleans,
 These are audit notes, not new evidence. Use only the supplied source for source meaning, and the candidate
 for candidate meaning. Do not compare a remembered hypothesis with an established real-world fact: compare
 the hypothesis as a hypothesis. The same applies to questions, fictional examples and attributed reports.
+record_scope defines submitted metadata; it is not evidence that the metadata matches the original source.
+Separate neutral source framing (according to, states, the recorded question, in the author's example)
+from material embedded actions. Such framing does not independently claim a new speaking/writing event.
+Do not demand identical framing verbs when the sourced content and its actors are preserved. Still reject
+turning a proposed discussion into a completed discussion or changing an embedded action, its agent or object.
+Use the governing domain to resolve a word's sense: a contractual condition is a term or requirement,
+not the physical condition/state of a device. Fluency and preserved uncertainty do not excuse a changed sense.
 List a mismatch only when a concrete clause selects an unsupported meaning, changes a role or value,
 or loses a material qualification. Its detail must name that clause and the conflicting or missing source
 basis. Keep comparison fields below 320 characters and each mismatch detail below 240 characters.

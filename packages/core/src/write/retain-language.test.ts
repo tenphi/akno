@@ -731,6 +731,20 @@ describe('cross-language retention boundary', () => {
     ['The silverpine pickup is scheduled for inspection.', null, false],
     ['The silverpine pickup is already booked for inspection.', null, false],
     ['The silverpine pickup is not scheduled for inspection.', null, true],
+    ['No handover of the silverpine device has been booked.', null, true, 'negated'],
+    ['Ada Marlow states that no appointment has been booked.', null, true],
+    ['The offer was declined, and no handover of Zephyr QX-100 has been booked.', null, true],
+    ['No handover has been booked; the inspection is scheduled.', null, false, 'negated'],
+    ['The inspection is scheduled, but no handover has been booked.', null, false],
+    ['No appointment was delayed, and the inspection is scheduled.', null, false, 'negated'],
+    ['No appointment with Ada Marlow has been booked.', null, true, 'negated'],
+    ['No appointment with Ada Marlow remains although the handover is booked.', null, false, 'negated'],
+    ['No appointment with Ada Marlow remains while the handover is booked.', null, false, 'negated'],
+    ['No appointment with Ada Marlow remains whereas the handover is booked.', null, false, 'negated'],
+    ['No appointment with Ada Marlow remains because the handover is booked.', null, false, 'negated'],
+    ['No appointment with Ada Marlow confirms the handover is booked.', null, false, 'negated'],
+    ['No fewer than two inspections are scheduled.', null, false],
+    ['No doubt the inspection is scheduled.', null, false],
     [
       'The silverpine pickup was scheduled for 2031-04-11.',
       { start: '2031-04-11', precision: 'day', relation: 'scheduled', status: 'scheduled' },
@@ -748,10 +762,11 @@ describe('cross-language retention boundary', () => {
     ],
   ] as const)(
     'requires generated schedule prose to agree with its time envelope: %s',
-    (text, time, accepted) => {
+    (text, time, accepted, polarity = 'affirmed') => {
       const candidate = {
         kind: 'claim',
         text,
+        polarity,
         discourse: { commitment: 'asserted', disposition: 'active' },
         attribution: { source_role: 'user' },
         support: [{ quote: text }],
