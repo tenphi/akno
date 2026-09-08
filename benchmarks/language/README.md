@@ -61,6 +61,12 @@ outputs were source-entailing, qualified and language compliant. Language false 
 splitting were fixed in these probes; attribution grammar and semantic wording still caused eight nulls.
 The [pre-execution amendment](v34-trial-amendment.md) preserves these failures without starting a fresh full trial.
 
+The [V35 probes](results/v35) yielded 28/32 useful selected answers with 3/4 useful retained sets and
+complete retrieval, and 16/16 built-package answers with complete retention/retrieval. All accepted output
+was source-entailing, qualified and language compliant. Three undated drafts changed a month to a week;
+one also mixed languages. A faithful Russian passive report was falsely held. The
+[pre-execution amendment](v35-trial-amendment.md) preserves these failures before fresh execution.
+
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:
 development 69/80 and 70/80, held-out 66/80 and 70/80. It recorded four unsupported retained sets and nine
