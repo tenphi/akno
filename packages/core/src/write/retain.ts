@@ -24,8 +24,8 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v17';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v10';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v18';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v11';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -44,6 +44,11 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   context to disambiguate the English term when the source establishes a narrower sense. Lack of an
   arrangement is not refusal, lack of consent, or a decision not to act. Preserve those distinctions.
   This does not require unrelated adjacent details, or confuse uncertainty negation with an excluded action.
+- Preserve the subject and scope of negative epistemic statements. "This assertion or exclusion does
+  not establish or address X" does not entail "the contract or source says nothing about X". Only
+  attribute silence or omission to the whole document when the source explicitly makes that document
+  the subject of the statement. A candidate may omit unrelated adjacent detail; a narrow exclusion alone
+  need not restate every unsettled question about the document.
 - An unresolved question can be remembered as a question without answering its embedded proposition.
   An unaccepted proposal remains proposed unless the source actually rejects it. A rejected plan keeps
   kind=plan and disposition=rejected; it is neither a proposed nor an actionable plan. Rejecting a positive
