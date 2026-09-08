@@ -38,8 +38,8 @@ import {
   semanticVerdictFields,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v34';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v19';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v35';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v20';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -96,7 +96,11 @@ language even when source_speaker repeats the role. They are not proper names or
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
-Keep any inner speaker and verification limits inside that scope. Use this construction instead of
+Keep any inner speaker and verification limits inside that scope.
+Preserve the actual agent of every material action, including an absence of choice. A source-named person
+who has not chosen a cause is not a claim that nobody has chosen one. Keep the person's name or an
+unambiguous personal subject with that nonselection; do not replace it with passive or impersonal wording.
+Russian "причина не выбрана" or "причину не выбрали" omits the named nonselector; preserve that actor. Use this construction instead of
 nominal readings or passive record-attribution wording; those variants can obscure the outer reporter.
 The display_labels are translation aids for kind, commitment and disposition. They add no proposition and
 change no qualification. Express relevant status in the requested language; do not copy English enum values
@@ -187,11 +191,18 @@ meaning or role. A replacement of a component for a device preserves component r
 assert replacement of the whole device. Two competing explanations listed with "and" still preserve
 alternatives when both remain explicitly unestablished and neither is selected. Do not require a translated answer to repeat an original phrase verbatim, except names
 and protected values. Translation must also preserve the action's sense and object: device collection and
-data collection are different actions. Reject an added object or interpretation not established by the
+data collection are different actions. In the action-argument comparison, identify each material source agent and the corresponding answer
+agent. Personal nonselection cannot become an unassigned passive state or indefinite-personal claim;
+source attribution to a person does not fill an omitted agent of the embedded action. An answer must not
+broaden that person's lack of choice to nobody having chosen. Missing source-named agency fails the
+action-argument dimension even when the weaker wording is plausible.
+Reject an added object or interpretation not established by the
 cited evidence, even when it would be plausible in that setting. Typed qualifications and readable evidence together establish the record's status.
 An active disposition means the record has not been superseded or resolved; it does not independently
 assert that a described mental activity is ongoing at answer time. Past discussion/consideration wording,
-including Russian imperfective past tense, does not by itself claim completion or resolution. Preserve
+including Russian imperfective past tense, does not by itself claim completion or resolution.
+Narrative tense backshift while describing the same undated record does not alone introduce a new
+reference date; reject an actual changed temporal boundary or changed present-state claim. Preserve
 explicit source dates and temporal boundaries, and reject an actual added ending or selected conclusion.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
 When the readable evidence anchors a relative time to an undated original note, preserve both the source
@@ -1124,6 +1135,10 @@ function validateDraft(
       reject('attribution');
       continue;
     }
+    if (!causeNonselectionAgencySupported(block.text, support)) {
+      reject('attribution');
+      continue;
+    }
     if (!proseStatusSupported(block.text, sources as AnswerContextItem[])) {
       reject('discourse');
       continue;
@@ -1302,6 +1317,32 @@ function hasBoundReporter(text: string, label: string): boolean {
       `${source}[’']s\\s+${qualifier}(?:report|account|statement|assertion)\\b`,
     'iu',
   ).test(text.normalize('NFKC'));
+}
+
+/** Preserve a readable singular nonselector instead of broadening it to an unassigned choice state. */
+function causeNonselectionAgencySupported(answerText: string, support: string): boolean {
+  // Provenance metadata is not action agency. This floor activates from readable singular choice
+  // grammar only; the semantic verifier still checks the actual identity and all clause relationships.
+  const singular =
+    /\b(?:has not|hasn['’]t) (?:yet )?(?:chosen|selected) (?:an? |the )?cause\b|(?:не (?:выбрала?|выбирала?)\s+причин\p{L}*|причин\p{L}*\s+(?:(?:она|он|я|пока|ещ[её]|так и)\s+){0,3}не (?:выбрала?|выбирала?))(?=$|[^\p{L}])/iu;
+  if (!singular.test(support)) return true;
+  // A second personal clause cannot license an agentless clause elsewhere in the same block.
+  const unassigned =
+    /\b(?:no cause (?:has|had) been (?:chosen|selected)|(?:a |the )?cause (?:has|had) not (?:yet )?been (?:chosen|selected))\b|(?<![\p{L}])(?:причин\p{L}*\s+(?:(?:пока|ещ[её]|так и)\s+){0,2}не (?:выбрана?|выбрали|выбирали)|не (?:выбрали|выбирали)\s+причин\p{L}*)(?![\p{L}])/giu;
+  return [...answerText.matchAll(unassigned)].every((match) => {
+    const tail = answerText.slice(match.index + match[0].length);
+    const english = /[a-z]/iu.test(match[0]);
+    const agent = tail.match(english ? /^\s+by\s+([^.!?;,]+)/u : /^\s+([^.!?;,]+)/u)?.[1];
+    if (!agent) return false;
+    const pronoun = agent.match(/^(?:her|him|me|ею|им|мной)(?=$|[^\p{L}])/iu)?.[0];
+    // An explicit singular agent may retain passive voice. Its identity still needs verification.
+    const name = agent.match(/^\p{Lu}[\p{L}’'-]*(?:\s+\p{Lu}[\p{L}’'-]*){0,3}/u)?.[0];
+    const single = pronoun ?? (name && support.includes(name) ? name : null);
+    if (!single) return false;
+    const prefix = tail.match(english ? /^\s+by\s+/u : /^\s+/u)![0];
+    const rest = tail.slice(prefix.length + single.length);
+    return !/^\s*(?:(?:,\s*)?(?:and|with|и|с)(?=$|[^\p{L}])|,\s*\p{Lu})/u.test(rest);
+  });
 }
 
 function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerContextItem[]): boolean {

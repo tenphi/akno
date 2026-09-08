@@ -29,7 +29,9 @@ uses direct localized outer attribution for reports and retains any nested speak
 It also receives localized kind, commitment and disposition labels as presentation aids; original enums remain the qualification authority
 and verification/public evidence retain those original fields. Active record status does not independently
 assert that a described mental activity is still ongoing. Explicit dates, endings and resolutions remain
-constrained by the source.
+constrained by the source. A bounded answer check also prevents observed personal cause-nonselection
+wording from becoming an agentless state. An explicit agent still needs full source verification;
+provenance metadata alone does not establish who performed an action.
 Curator revisions check newly generated complete Markdown through a schema-specific selector. Exact original
 lines are exempt, including transfers between authorized paths; each original occurrence can exempt only
 one final occurrence. Changed bytes and extra copies are checked. Existing proposed after-states are never

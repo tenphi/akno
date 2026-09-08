@@ -1437,6 +1437,67 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
+  it.each([
+    ['Ada Marlow has not chosen a cause.', true],
+    ['She has not chosen a cause.', true],
+    ['No cause has been chosen by Ada Marlow.', true],
+    ['No cause has been chosen by her.', true],
+    ['No cause has been chosen by anyone.', false],
+    ['No cause has been chosen by us.', false],
+    ['No cause has been chosen by them.', false],
+    ['No cause has been chosen by Ada Marlow and Bo Winters.', false],
+    ['No cause has been chosen by her and Bo Winters.', false],
+    ['No cause has been chosen by Ada Marlow, Bo Winters.', false],
+    ['No cause has been chosen.', false],
+    ['A cause has not yet been selected.', false],
+    ['Ada Marlow has not chosen a cause. No cause has been chosen.', false],
+    ['Причину она не выбрала.', true],
+    ['Она не выбрала причину.', true],
+    ['Причина не выбрана Ada Marlow.', true],
+    ['Причина не выбрана ею.', true],
+    ['Причина не выбрана никем.', false],
+    ['Причина не выбрана нами.', false],
+    ['Причина не выбрана ими.', false],
+    ['Причина не выбрана Ada Marlow и Bo Winters.', false],
+    ['Причина не выбрана ею и Bo Winters.', false],
+    ['Причина не выбрана.', false],
+    ['Причина пока не выбрана.', false],
+    ['Причину ещё не выбрали.', false],
+    ['По её словам, причину ещё не выбрали.', false],
+    ['Причину она не выбрала. Причину ещё не выбрали.', false],
+  ] as const)(
+    'keeps personal cause nonselection from becoming an unassigned state: %s',
+    async (choice, accepted) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_choice_agency v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow considers two tentative silverpine hypotheses, a loose valve and a worn cable, and has not chosen a cause.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: `Ada Marlow considers two tentative silverpine hypotheses, a loose valve and a worn cable. ${choice}`,
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'Which tentative silverpine hypotheses did Ada Marlow consider?',
+        memory_view: 'discussion',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ attribution: 1 });
+    },
+  );
+
   it.each(['assistant', 'Assistant Meridian'])(
     'projects generic display labels without changing source names or verifier evidence: %s',
     async (speaker) => {
