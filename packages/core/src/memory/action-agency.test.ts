@@ -12,6 +12,10 @@ describe('proposal action agency across retention and answers', () => {
   it.each([
     ['According to Ada Marlow, the tentative proposal was to review the exceptions.', false],
     ['According to Ada Marlow, it was proposed to review the exceptions.', false],
+    [
+      'According to the proposed discussion attributed to Ada Marlow, the example concerns inspection.',
+      false,
+    ],
     ['По словам Ada Marlow, было предложено проверить исключения.', false],
     ['Ada Marlow proposed reviewing the exceptions.', true],
     ['She proposed reviewing the exceptions.', true],
@@ -37,6 +41,19 @@ describe('proposal action agency across retention and answers', () => {
         'Ada Marlow proposed a service visit. The proposal was to review the exclusions.',
       ),
     ).toBe(true);
+  });
+
+  it('distinguishes an actual proposer from a separately attributed discussion', () => {
+    const source = 'Ada Marlow proposed a discussion attributed to Bo Winters.';
+    expect(proposalAgencySupported(source, source)).toBe(true);
+    const anonymous = 'The proposed discussion attributed to Ada Marlow concerns inspection.';
+    expect(proposalAgencySupported(anonymous, anonymous)).toBe(true);
+    expect(
+      proposalAgencySupported(
+        'The proposed discussion attributed to Ada Marlow concerns inspection. Bo Winters reported a defect.',
+        'Ada Marlow proposed discussing inspection. Bo Winters reported a defect.',
+      ),
+    ).toBe(false);
   });
 });
 

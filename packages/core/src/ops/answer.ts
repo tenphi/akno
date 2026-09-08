@@ -1,3 +1,4 @@
+import { coverageRolesSupported } from '../memory/coverage-roles.ts';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
 import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
 import { proseEligibleForView } from '../kb/prose.ts';
@@ -42,8 +43,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v46';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v30';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v47';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v31';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -227,7 +228,8 @@ transported. Translate the same action, agent, object, purpose, instrument and d
 one into another role. "Sampling for casing analysis" likewise does not establish sampling the casing. Do not add parenthetical
 source-language glosses for ordinary words such as calendar frequencies; preserve exact names and identifiers.
 When the source describes coverage of a service or repair, keep that service or repair as the covered
-subject and the warranty as the covering instrument: "ремонт покрывается гарантией". Do not invert this
+subject and the warranty as the covering instrument. Prefer the active Russian construction "гарантия
+покрывает ремонт" / "покрывает ли гарантия ремонт" to keep those roles explicit. Do not invert this
 into a motor covered by repair or a warranty covered by repair, including inside an unresolved question.
 If the source instead describes coverage of a component or damage, preserve that original subject.
 
@@ -1268,6 +1270,10 @@ function validateDraft(
       reject('protected_value');
       continue;
     }
+    if (!coverageRolesSupported(block.text, support)) {
+      reject('semantic_support');
+      continue;
+    }
     if (!attributedReportsSupported(block.text, sources as AnswerContextItem[])) {
       reject('attribution');
       continue;
@@ -1451,6 +1457,7 @@ function hasBoundReporter(text: string, label: string): boolean {
       `${source}\\s+${modifiers}(?:and )?as (?:an?|the) ${qualifier}report\\b|` +
       `(?:told|привед[её]н\\p{L}*|представлен\\p{L}*)\\s+(?:the )?${source}|` +
       `(?:according to|по словам|со слов|согласно)\\s+(?:the )?${source}|` +
+      `(?<![\\p{L}])по\\s+(?:предварительному|неподтвержд[её]нному|непроверенному)\\s+сообщению\\s+${source}\\s*[,:]\\s*(?=[\\p{L}\\p{N}])|` +
       `(?:отч[её]т|сообщение)\\s+${source}|` +
       `(?<![\\p{L}])(?:сообщение|отч[её]т|утверждение)\\s*,?\\s+переданн(?:ое|ый|ая|ые|ым|ой|ыми)\\s+${source}(?![’'])|` +
       `(?:report|account|statement|assertion)\\s+(?:by|from|attributed to)\\s+(?:the )?${source}(?![’'])|` +

@@ -120,7 +120,16 @@ Each verdict now includes a bounded comparison of source meaning, candidate mean
 and qualification scope, followed by one concrete mismatch for each failed dimension. Missing comparisons,
 contradictory mismatch/boolean pairs and accepted retention verdicts carrying hold reasons fail closed.
 Comparison notes are audit material, never evidence or an acceptance override. Preserved source ambiguity
-is legitimate; selecting an unsupported reading or losing material ambiguity is not. Retention compares at most two disjoint candidates per call; answers compare one block per call. This keeps required audit prose within the ordinary provider-role output ceiling, which remains authoritative. Usage and latency receipts sum the calls and preserve unavailable usage as unknown.
+is legitimate; selecting an unsupported reading or losing material ambiguity is not. Retention compares at most two disjoint candidates per call; answers compare one block per call. The requested output allowance includes audit prose; the configured provider-role ceiling remains authoritative, and truncation fails closed. Usage and latency receipts sum the calls and preserve unavailable usage as unknown.
+
+Multi-span retention candidates also require one short interpretation for every validated discourse-frame
+span, keyed by private server-assigned IDs. Missing, duplicate or foreign IDs fail the verifier call closed. Retention verdicts must be complete JSON; missing closing delimiters are never repaired into an accepted decision.
+Each interpretation accounts for the positive content and its limits before the aggregate semantic
+comparison. The audit includes original-source clarification across languages without treating adjacency
+as equivalence. A repaired position keeps its original proposition obligation separately from source
+evidence. Single-span candidates retain their existing comparison. Interpretations and relationship labels
+remain fallible model judgments; their presence does not prove entailment or override a negative dimension.
+This accounting uses the same verification call with a bounded allowance per required span.
 
 Missing dimensions fail closed. Each candidate or block is submitted once during the semantic verification pass, with no retry after rejection. Disjoint batches retain the full original source or their own cited evidence; related candidates supply relation context only. Final retention applies dependency closure: a relation whose internal target was withheld also withholds its source record and all transitive dependents. A malformed or unavailable verification batch withholds the operation; a semantic rejection does not prevent checking other batches. Retention verifies against the complete original source, including process identity and word sense; a fluent English paraphrase cannot certify its own meaning. Generated attribution normalization keeps the structured outer recorder and explicitly supported inner reporters, holds contradictory roles or chain overflow, and never truncates a chain. Unknown source clocks require both a readable source anchor and unknown date. Answers cannot infer what the whole original source omitted from a retrieved subset.
 CLI excerpts show qualification labels and scope line references;

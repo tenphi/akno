@@ -21,6 +21,7 @@ import { z } from 'zod';
 import { parseJsonLoose, type ModelClient, type ModelOutcome } from '../models/client.ts';
 import type { FolderCatalogEntry } from '../kb/folders.ts';
 import { managedMemoryFingerprint } from './managed-memory.ts';
+import { retentionFrameAudit, RETENTION_FRAME_AUDIT_CONTRACT } from './retention-frame-audit.ts';
 import {
   SEMANTIC_COMPARISON_CONTRACT,
   PROPOSITION_SCOPE_CONTRACT,
@@ -36,7 +37,7 @@ import {
  * the two public operations from gradually learning different meanings for the same source.
  */
 export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v37';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v26';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v27';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -240,7 +241,8 @@ Rules:
   Never invent, rename or translate a folder, and never add an undeclared nested folder.
 - Fewer, better. An empty candidates list is correct when nothing safely qualifies.`;
 
-const VERIFY_SYSTEM = `${QUALIFICATION_CONTRACT}
+const VERIFY_SYSTEM = `${RETENTION_FRAME_AUDIT_CONTRACT}
+${QUALIFICATION_CONTRACT}
 Candidates may paraphrase English, Russian, or mixed-language sources into English. Verify cross-language entailment against exact original spans: preserve polarity, speaker and nested attribution, modality, disposition, relations, and time. A fluent translation is not evidence. Ordinary inflection, synonymy and equivalent component descriptions can preserve
 meaning. Compare propositions in their complete discourse context; do not reject wording merely because
 an unrelated reading is theoretically possible. Reject a selected unsupported meaning or action role.
@@ -754,19 +756,30 @@ async function verifyCandidateBatch(
   error: string | null;
 }> {
   const ids = candidates.map((candidate) => candidate.candidate_id) as [string, ...string[]];
+  const frameAudits = new Map(
+    candidates.map((candidate) => [candidate.candidate_id, retentionFrameAudit(candidate.discourse_frame)]),
+  );
   const reason = z.enum([
     'source_unavailable',
     'discourse_uncertain',
     'time_unresolved',
     'noncanonical_without_context',
   ]);
+  const verdictShapes = candidates.map((candidate) => {
+    const audit = frameAudits.get(candidate.candidate_id);
+    return z.object({
+      candidate_id: z.literal(candidate.candidate_id),
+      ...(audit ? { span_audit: audit.schema } : {}),
+      ...semanticVerdictFields,
+      reason_code: reason.nullable(),
+    });
+  });
   const schema = z.object({
     verdicts: z.array(
-      z.object({
-        candidate_id: z.enum(ids),
-        ...semanticVerdictFields,
-        reason_code: reason.nullable(),
-      }),
+      z.discriminatedUnion(
+        'candidate_id',
+        verdictShapes as [(typeof verdictShapes)[number], ...(typeof verdictShapes)[number][]],
+      ),
     ),
   });
   const outcome = await model.chat(
@@ -783,6 +796,9 @@ async function verifyCandidateBatch(
           candidates: candidates.map(
             ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => ({
               ...candidate,
+              ...(frameAudits.get(candidate.candidate_id)
+                ? { frame_spans: frameAudits.get(candidate.candidate_id)!.spans }
+                : {}),
               record_scope: semanticRecordScope({ kind: candidate.kind, ...candidate.discourse }),
             }),
           ),
@@ -790,9 +806,15 @@ async function verifyCandidateBatch(
       },
     ],
     // The allowance includes hidden reasoning, even for a single yes/no verdict.
-    // The fixed small batch fits the ordinary derive-role ceiling; caller limits still apply.
-    // ModelClient still enforces the configured provider-role output ceiling.
-    { schema, maxTokens: 1_024 + candidates.length * 1_200 },
+    // Each required span interpretation gets an allowance; never drop its audit to fit a smaller cap.
+    // ModelClient still enforces the configured provider-role ceiling and reports incomplete output.
+    {
+      schema,
+      maxTokens:
+        1_024 +
+        candidates.length * 1_200 +
+        [...frameAudits.values()].reduce((sum, audit) => sum + (audit?.spans.length ?? 0) * 160, 0),
+    },
   );
   if (!outcome.ok || !outcome.value) {
     return {
@@ -802,7 +824,15 @@ async function verifyCandidateBatch(
       error: outcome.error ?? 'verification failed',
     };
   }
-  const parsed = schema.safeParse(parseJsonLoose<unknown>(outcome.value));
+  // A verifier response is an atomic decision. The extraction parser can salvage truncated JSON,
+  // but completing missing delimiters here would turn an incomplete decision into permission to write.
+  let completeVerdict: unknown = null;
+  try {
+    completeVerdict = JSON.parse(outcome.value);
+  } catch {
+    // Preserve the existing malformed-verifier failure path below, without repair or another call.
+  }
+  const parsed = schema.safeParse(completeVerdict);
   if (
     !parsed.success ||
     !parsed.data.verdicts.every(

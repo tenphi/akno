@@ -21,7 +21,7 @@ export function proposalAgencySupported(text: string, support: string): boolean 
     active.test(value) || passiveAgent.test(value) || ownedProposal.test(value);
   if (!hasProposer(support)) return true;
   const unassignedDescription =
-    /\bproposal (?:is|was) to\b|\b(?:it|review|inspection|discussion) (?:is|was|has been|had been) (?:tentatively )?(?:proposed|suggested)\b|(?<![\p{L}])(?:было предложено|предлагалось|предложение (?:состояло|заключалось))(?=$|[^\p{L}])/iu;
+    /\bproposal (?:is|was) to\b|\b(?:it|review|inspection|discussion) (?:is|was|has been|had been) (?:tentatively )?(?:proposed|suggested)\b|\b(?:proposed|suggested) (?:discussion|review|inspection|action) (?:(?:is|was) )?(?:(?:only|merely) )?attributed to\b|(?<![\p{L}])(?:было предложено|предлагалось|предложение (?:состояло|заключалось))(?=$|[^\p{L}])/iu;
   if (!unassignedDescription.test(text)) return true;
   // A separate anonymous proposal in the source may be the one being described. Matching this
   // shape only defers semantic pairing; it cannot certify the answer's action or omitted actor.

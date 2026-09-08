@@ -1,4 +1,4 @@
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { semanticAudit, frameAuditFields } from '../../test/semantic-audit.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
@@ -521,14 +521,17 @@ describe('cross-language retention boundary', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            verdicts: payload.candidates.map((c: { candidate_id: string }, i: number) => ({
-              candidate_id: c.candidate_id,
-              ...semanticAudit(i === 0 ? supported : true, true, true),
-              proposition_supported: i === 0 ? supported : true,
-              action_arguments_preserved: true,
-              qualification_scope_preserved: true,
-              reason_code: i === 0 && !supported ? 'discourse_uncertain' : null,
-            })),
+            verdicts: payload.candidates.map(
+              (c: { candidate_id: string; frame_spans?: { frame_id: string }[] }, i: number) => ({
+                candidate_id: c.candidate_id,
+                ...frameAuditFields(c),
+                ...semanticAudit(i === 0 ? supported : true, true, true),
+                proposition_supported: i === 0 ? supported : true,
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
+                reason_code: i === 0 && !supported ? 'discourse_uncertain' : null,
+              }),
+            ),
           }),
           latencyMs: 22,
         };

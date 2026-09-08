@@ -1619,6 +1619,24 @@ describe('grounded answer discovery surface', () => {
       false,
     ],
     ['Ассистент предварительно и неподтверждённо сообщил о требовании проверки silverpine.', true],
+    ['По предварительному сообщению ассистента, проверка silverpine может требоваться.', true],
+    ['По неподтверждённому сообщению ассистента, проверка silverpine может требоваться.', true],
+    ['По непроверенному сообщению ассистента: проверка silverpine может требоваться.', true],
+    [
+      'По предварительному сообщению ассистента, проверка silverpine может требоваться. Ассистент не изучал условия и не подтвердил сообщение.',
+      true,
+    ],
+    [
+      'По предварительному сообщению Bo Winters, проверка silverpine может требоваться. Ассистент стоял рядом.',
+      false,
+    ],
+    [
+      'Bo Winters изучал предварительное сообщение. Ассистент стоял рядом; проверка silverpine может требоваться.',
+      false,
+    ],
+    ['По предварительному сообщению. Ассистент стоял рядом; проверка silverpine может требоваться.', false],
+    ['По предварительному сообщению ассистента. Проверка silverpine может требоваться.', false],
+
     [
       'The assistant stood nearby while Bo Winters tentatively and unconfirmedly reported a silverpine inspection requirement.',
       false,
@@ -1794,6 +1812,34 @@ describe('grounded answer discovery surface', () => {
     expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
     expect(modelRequests).toHaveLength(2);
   });
+
+  it.each([
+    ['Запись не определяет, покрывается ли ремонтом по гарантии ремонт двигателя silverpine.', false, true],
+    ['Запись не определяет, покрывается ли гарантией ремонт двигателя silverpine.', true, true],
+    ['Запись не определяет, покрывается ли гарантией ремонт двигателя silverpine.', false, false],
+  ] as const)(
+    'checks covered-repair roles before mandatory semantic verification: %s',
+    async (text, accepted, semanticSupport) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\nThe record does not settle whether silverpine motor repair is covered by the warranty.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [verdict('B1', semanticSupport)] },
+      });
+      const result = await memory.answer({
+        question: 'Is silverpine motor repair covered?',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted || !semanticSupport ? 2 : 1);
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
+    },
+  );
 
   it.each([
     ['Ada Marlow has not chosen a cause.', true],
