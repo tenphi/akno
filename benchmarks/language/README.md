@@ -1,3 +1,5 @@
+The [V37 exposed probes](results/v37/README.md) yielded 25/32 independently useful selected answers and 16/16 useful built-package answers. The selected result includes three accepted source-named agency omissions; all review corrections are preserved. The [amendment](v37-trial-amendment.md) defers fresh execution. No full V37 trial started; v18 held-out inputs remain unexecuted.
+
 The [V36 exposed probes](results/v36/README.md) yielded 23/32 useful selected answers and 13/16 useful built-package answers, with no accepted errors. Corrected selected retention/retrieval are 2/4 and 24/32: the separately retained denial is missing and the rejected offer lost its rejecting actor. Twelve writable nulls remain. The [preserved amendment](v36-trial-amendment.md) defers fresh execution; no full V36 trial started and v18 held-out inputs remain unexecuted.
 
 # Language and discourse evaluation

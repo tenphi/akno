@@ -1,0 +1,2769 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-08T16:18:45.221Z",
+  "corpusVersion": "language-discourse-v18",
+  "corpusFingerprint": "bbd6def51d25ea19f7fd273a95174e321b9789914ce288091e56d10e98a64866",
+  "selectedCaseIds": [
+    "v17-held-report",
+    "v17-held-rejected",
+    "v17-held-undated",
+    "v17-held-alternatives"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v6",
+  "answerPromptVersion": "answer-generation-v34",
+  "answerVerifierVersion": "answer-verifier-v19",
+  "retentionPromptVersion": "retain-extraction-language-v28",
+  "retentionVerifierVersion": "retain-verifier-language-v17",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 32,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 28,
+      "denominator": 32,
+      "rate": 0.875
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 28,
+      "denominator": 32,
+      "rate": 0.875
+    },
+    "answerReasons": {
+      "answered": 28,
+      "verification_rejected": 2,
+      "draft_rejected": 2
+    },
+    "routingReasons": {},
+    "holdStages": {
+      "verification": 1
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 1,
+      "denominator": 4,
+      "rate": 0.25
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 1,
+    "mixed": 2
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "rejected-plan": 1,
+    "undated-proposal": 1,
+    "competing-hypotheses": 1
+  },
+  "cases": [
+    {
+      "id": "v17-held-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve recorder Ada Marlow, inner speaker Bo Winters, no inspected terms or confirmation, permitted shipment of the device for hinge-resistance measurement rather than hinge replacement, and no arranged shipment. No actual shipment or booking follows. Keep the measurement/replacement contrast in the same scoped memory.",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "held",
+            "reason": "discourse_uncertain",
+            "holdStage": "verification",
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 15945,
+            "input_tokens": 4265,
+            "output_tokens": 1213,
+            "total_tokens": 5478
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 15216,
+            "input_tokens": 3621,
+            "output_tokens": 959,
+            "total_tokens": 4580
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1213,
+              "input_tokens": 567,
+              "output_tokens": 22,
+              "total_tokens": 589
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3011,
+              "input_tokens": 383,
+              "output_tokens": 74,
+              "total_tokens": 457
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4436,
+              "input_tokens": 2358,
+              "output_tokens": 220,
+              "total_tokens": 2578
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4838,
+              "input_tokens": 2440,
+              "output_tokens": 279,
+              "total_tokens": 2719
+            }
+          },
+          "reviewAnswer": "According to Ada Marlow, Bo Winters reportedly told her that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge. Ada Marlow only relayed Bo Winters, had not read the terms, and had received no confirmation, so this remains an unverified report. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4234,
+              "input_tokens": 2371,
+              "output_tokens": 199,
+              "total_tokens": 2570
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4782,
+              "input_tokens": 2448,
+              "output_tokens": 301,
+              "total_tokens": 2749
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, Bo Winters якобы сообщил ей, что условия Zephyr QX-100 позволяют отправить устройство для измерения сопротивления шарнира, а не для замены шарнира. Ada Marlow лишь передала сообщение Bo Winters, сама не читала условия и не получила подтверждения, поэтому это неподтверждённый отчёт. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3092,
+              "input_tokens": 2358,
+              "output_tokens": 111,
+              "total_tokens": 2469
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5115,
+              "input_tokens": 2440,
+              "output_tokens": 324,
+              "total_tokens": 2764
+            }
+          },
+          "reviewAnswer": "According to Ada Marlow, Bo Winters reportedly said that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge. Ada Marlow was only relaying Bo Winters, had not read the terms, and had received no confirmation, so this remains an unverified report. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5238,
+              "input_tokens": 2358,
+              "output_tokens": 176,
+              "total_tokens": 2534
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5643,
+              "input_tokens": 2435,
+              "output_tokens": 365,
+              "total_tokens": 2800
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, Bo Winters якобы сообщил, что условия Zephyr QX-100 позволяют отправить устройство для измерения сопротивления шарнира, а не для замены шарнира. Это непроверенный отчёт: Ada Marlow не читала условия и не получила подтверждения. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4126,
+              "input_tokens": 2367,
+              "output_tokens": 176,
+              "total_tokens": 2543
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 11889,
+              "input_tokens": 2449,
+              "output_tokens": 268,
+              "total_tokens": 2717
+            }
+          },
+          "reviewAnswer": "According to Ada Marlow, Bo Winters reportedly told her that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge. Ada Marlow only relayed Bo Winters’ report, had not read the terms, and had received no confirmation, so the message remains unconfirmed. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6931,
+              "input_tokens": 2378,
+              "output_tokens": 208,
+              "total_tokens": 2586
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5053,
+              "input_tokens": 2455,
+              "output_tokens": 294,
+              "total_tokens": 2749
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, Bo Winters якобы сообщил ей, что условия Zephyr QX-100 допускают отправку устройства для измерения сопротивления шарнира, а не для замены шарнира. Это неподтверждённое сообщение: Ada Marlow лишь передаёт слова Bo Winters, не читала условия и не получила подтверждения. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4193,
+              "input_tokens": 2359,
+              "output_tokens": 184,
+              "total_tokens": 2543
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4893,
+              "input_tokens": 2441,
+              "output_tokens": 280,
+              "total_tokens": 2721
+            }
+          },
+          "reviewAnswer": "According to Ada Marlow, Bo Winters reportedly told her that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge. Ada Marlow had not read the terms and had received no confirmation, so this remains an unconfirmed report. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_47a2fd5e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_30ad83b264a399c2604dabec",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3833,
+              "input_tokens": 2372,
+              "output_tokens": 205,
+              "total_tokens": 2577
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4803,
+              "input_tokens": 2449,
+              "output_tokens": 296,
+              "total_tokens": 2745
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, Bo Winters якобы сообщил ей, что условия Zephyr QX-100 позволяют отправить устройство в другое место для измерения сопротивления шарнира, а не для замены шарнира. Ada Marlow лишь передаёт слова Bo Winters, сама не читала условия и не получила подтверждения. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** Bo Winters reportedly told Ada Marlow that the Zephyr QX-100 terms allow the device to be sent away to measure hinge resistance, not to replace the hinge; Ada Marlow only relays Bo Winters, had not read the terms, and had received no confirmation.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_47a2fd5e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_30ad83b264a399c2604dabec",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v17-held-rejected",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve the explicitly rejected workshop-shipment and power-switch inspection proposal, no shipment plan and no scheduled pickup. A focused answer may describe the explicit rejection without redundant no-plan wording. Do not create an active plan or completed inspection.",
+      "language": "en",
+      "scenario": "rejected-plan",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 14691,
+            "input_tokens": 4222,
+            "output_tokens": 1200,
+            "total_tokens": 5422
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 17561,
+            "input_tokens": 3505,
+            "output_tokens": 874,
+            "total_tokens": 4379
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1581,
+              "input_tokens": 531,
+              "output_tokens": 54,
+              "total_tokens": 585
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3098,
+              "input_tokens": 522,
+              "output_tokens": 157,
+              "total_tokens": 679
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1799,
+              "input_tokens": 352,
+              "output_tokens": 54,
+              "total_tokens": 406
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1044,
+              "input_tokens": 496,
+              "output_tokens": 29,
+              "total_tokens": 525
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 2,
+      "noncanonicalEligibilityFlag": true,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2441,
+              "input_tokens": 2280,
+              "output_tokens": 68,
+              "total_tokens": 2348
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4513,
+              "input_tokens": 2370,
+              "output_tokens": 255,
+              "total_tokens": 2625
+            }
+          },
+          "reviewAnswer": "Ada Marlow declined the offer to send Zephyr QX-100 to the workshop for inspection of its power switch. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3026,
+              "input_tokens": 2286,
+              "output_tokens": 70,
+              "total_tokens": 2356
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6823,
+              "input_tokens": 2372,
+              "output_tokens": 335,
+              "total_tokens": 2707
+            }
+          },
+          "reviewAnswer": "Ada Marlow отклонила предложение отправить Zephyr QX-100 в мастерскую для проверки его выключателя питания. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2377,
+              "input_tokens": 2280,
+              "output_tokens": 68,
+              "total_tokens": 2348
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4294,
+              "input_tokens": 2370,
+              "output_tokens": 270,
+              "total_tokens": 2640
+            }
+          },
+          "reviewAnswer": "Ada Marlow declined the offer to send Zephyr QX-100 to the workshop for inspection of its power switch. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2298,
+              "input_tokens": 2286,
+              "output_tokens": 70,
+              "total_tokens": 2356
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5049,
+              "input_tokens": 2372,
+              "output_tokens": 313,
+              "total_tokens": 2685
+            }
+          },
+          "reviewAnswer": "Ada Marlow отклонила предложение отправить Zephyr QX-100 в мастерскую для проверки его выключателя питания. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2737,
+              "input_tokens": 2285,
+              "output_tokens": 67,
+              "total_tokens": 2352
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3806,
+              "input_tokens": 2375,
+              "output_tokens": 214,
+              "total_tokens": 2589
+            }
+          },
+          "reviewAnswer": "Ada Marlow rejected the proposal to send Zephyr QX-100 to the workshop to inspect its power switch. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2653,
+              "input_tokens": 2294,
+              "output_tokens": 72,
+              "total_tokens": 2366
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4053,
+              "input_tokens": 2380,
+              "output_tokens": 253,
+              "total_tokens": 2633
+            }
+          },
+          "reviewAnswer": "Ada Marlow отклонила предложение отправить Zephyr QX-100 в мастерскую для осмотра его выключателя питания. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3697,
+              "input_tokens": 2285,
+              "output_tokens": 140,
+              "total_tokens": 2425
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4714,
+              "input_tokens": 2375,
+              "output_tokens": 298,
+              "total_tokens": 2673
+            }
+          },
+          "reviewAnswer": "Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch. [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "history",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_dc72d170",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_ad81671f1970e38d1c361190",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "rejected",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2690,
+              "input_tokens": 2294,
+              "output_tokens": 72,
+              "total_tokens": 2366
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5550,
+              "input_tokens": 2380,
+              "output_tokens": 333,
+              "total_tokens": 2713
+            }
+          },
+          "reviewAnswer": "Ada Marlow отклонила предложение отправить Zephyr QX-100 в мастерскую для осмотра его выключателя питания. [memory/equipment:6]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Rejected:** Ada Marlow rejected the offer to send Zephyr QX-100 to the workshop to inspect its power switch, and sending it is not her plan.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_dc72d170",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_ad81671f1970e38d1c361190",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "rejected",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- Ada Marlow states that collection of the device has not been booked and that this is a record of an offer that was declined.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_c89cc4b1",
+            "level": 1,
+            "kind": "claim",
+            "subject": "unresolved",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v17-held-undated",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve the unaccepted transfer-terms review proposal, with no meeting. Next month is relative to the original undated note, with unknown calendar month. Retention and any answer mentioning timing must preserve both the source-relative anchor and unknown date. Do not resolve it from processing time.",
+      "language": "mixed",
+      "scenario": "undated-proposal",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 12557,
+            "input_tokens": 4234,
+            "output_tokens": 954,
+            "total_tokens": 5188
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5073,
+            "input_tokens": 3448,
+            "output_tokens": 345,
+            "total_tokens": 3793
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1851,
+              "input_tokens": 573,
+              "output_tokens": 91,
+              "total_tokens": 664
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1900,
+              "input_tokens": 384,
+              "output_tokens": 82,
+              "total_tokens": 466
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3055,
+              "input_tokens": 2387,
+              "output_tokens": 95,
+              "total_tokens": 2482
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4861,
+              "input_tokens": 2489,
+              "output_tokens": 315,
+              "total_tokens": 2804
+            }
+          },
+          "reviewAnswer": "Ada Marlow tentatively proposed reviewing the Zephyr QX-100 service transfer terms next month, relative to the undated note; the calendar month cannot be determined. She had not accepted a plan or arranged a meeting and was only proposing the review. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2962,
+              "input_tokens": 2382,
+              "output_tokens": 103,
+              "total_tokens": 2485
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4839,
+              "input_tokens": 2497,
+              "output_tokens": 333,
+              "total_tokens": 2830
+            }
+          },
+          "reviewAnswer": "По словам Ada Marlow, это было лишь предложено и не принято как план: она предлагала пересмотреть условия сервисной передачи Zephyr QX-100 в следующем месяце относительно недатированной заметки; календарный месяц определить нельзя. Встреча не была организована. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "verification_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 0,
+            "rejection_counts": {
+              "semantic_support": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4533,
+              "input_tokens": 2392,
+              "output_tokens": 213,
+              "total_tokens": 2605
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 15393,
+              "input_tokens": 2494,
+              "output_tokens": 518,
+              "total_tokens": 3012
+            }
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "discourse": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3076,
+              "input_tokens": 2389,
+              "output_tokens": 110,
+              "total_tokens": 2499
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2652,
+              "input_tokens": 2399,
+              "output_tokens": 102,
+              "total_tokens": 2501
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5023,
+              "input_tokens": 2501,
+              "output_tokens": 317,
+              "total_tokens": 2818
+            }
+          },
+          "reviewAnswer": "Ada Marlow proposed, tentatively, reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date; the calendar month cannot be determined. She had not accepted a plan or arranged a meeting and was only proposing the review. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "discourse": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4494,
+              "input_tokens": 2392,
+              "output_tokens": 108,
+              "total_tokens": 2500
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4968,
+              "input_tokens": 2396,
+              "output_tokens": 253,
+              "total_tokens": 2649
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3990,
+              "input_tokens": 2498,
+              "output_tokens": 282,
+              "total_tokens": 2780
+            }
+          },
+          "reviewAnswer": "The tentative proposal attributed to Ada Marlow was to review the Zephyr QX-100 service transfer terms next month, counted from the undated note. The calendar month cannot be determined; she had not accepted a plan or arranged a meeting and was only proposing the review. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_15347d4f",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4986,
+              "input_tokens": 2387,
+              "output_tokens": 231,
+              "total_tokens": 2618
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4255,
+              "input_tokens": 2502,
+              "output_tokens": 290,
+              "total_tokens": 2792
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила пересмотреть условия передачи обслуживания Zephyr QX-100 в следующем месяце относительно недатированной заметки; календарный месяц определить невозможно. План оставался предварительным: она его не приняла, не назначила встречу и лишь предложила такую проверку. [memory/zephyr-qx-100:14]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Proposal · Tentative:** Ada Marlow proposes reviewing the Zephyr QX-100 service transfer terms next month, counted from the undated note rather than the processing date, but the calendar month cannot be determined; she has not accepted a plan or arranged a meeting and is only proposing the review.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_15347d4f",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_a7c5e4c624d4b3cda39e4f79",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v17-held-alternatives",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve both tentative alternatives, a damaged cable and an overheated controller, with Ada Marlow attribution, no evidence for either and no selected cause. Either tentative or hypothetical commitment may preserve the discussion; neither explanation is an established cause.",
+      "language": "ru",
+      "scenario": "competing-hypotheses",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9969,
+            "input_tokens": 4186,
+            "output_tokens": 756,
+            "total_tokens": 4942
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6112,
+            "input_tokens": 3335,
+            "output_tokens": 344,
+            "total_tokens": 3679
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1450,
+              "input_tokens": 542,
+              "output_tokens": 46,
+              "total_tokens": 588
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1742,
+              "input_tokens": 365,
+              "output_tokens": 61,
+              "total_tokens": 426
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "verification_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 0,
+            "rejection_counts": {
+              "semantic_support": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2593,
+              "input_tokens": 2313,
+              "output_tokens": 91,
+              "total_tokens": 2404
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 9060,
+              "input_tokens": 2402,
+              "output_tokens": 600,
+              "total_tokens": 3002
+            }
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4125,
+              "input_tokens": 2346,
+              "output_tokens": 201,
+              "total_tokens": 2547
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5934,
+              "input_tokens": 2429,
+              "output_tokens": 309,
+              "total_tokens": 2738
+            }
+          },
+          "reviewAnswer": "В записи Ada Marlow рассматривает две конкурирующие предварительные гипотезы о неисправности Zephyr QX-100: повреждённый кабель и перегретый контроллер. По её словам, доказательств ни одной из них нет, и причина не выбрана; обе гипотезы остаются неподтверждёнными. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3335,
+              "input_tokens": 2318,
+              "output_tokens": 118,
+              "total_tokens": 2436
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4862,
+              "input_tokens": 2407,
+              "output_tokens": 289,
+              "total_tokens": 2696
+            }
+          },
+          "reviewAnswer": "Ada Marlow tentatively considered two competing, preliminary malfunction hypotheses for the failures of Zephyr QX-100: a damaged cable and an overheated controller. The evidence states that neither hypothesis had supporting evidence, and Ada Marlow had not chosen a cause. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3263,
+              "input_tokens": 2337,
+              "output_tokens": 149,
+              "total_tokens": 2486
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6136,
+              "input_tokens": 2420,
+              "output_tokens": 392,
+              "total_tokens": 2812
+            }
+          },
+          "reviewAnswer": "Ada Marlow рассматривала две конкурирующие предварительные гипотезы о неисправности Zephyr QX-100: повреждённый кабель и перегретый контроллер. По её словам, ни одна из них не имеет подтверждающих доказательств, и причина пока не выбрана. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3007,
+              "input_tokens": 2319,
+              "output_tokens": 125,
+              "total_tokens": 2444
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4083,
+              "input_tokens": 2408,
+              "output_tokens": 253,
+              "total_tokens": 2661
+            }
+          },
+          "reviewAnswer": "Ada Marlow tentatively considered two competing, preliminary hypotheses for the failures of Zephyr QX-100: a damaged cable and an overheated controller. She said there was evidence for neither and had not chosen a cause. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3608,
+              "input_tokens": 2352,
+              "output_tokens": 151,
+              "total_tokens": 2503
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4520,
+              "input_tokens": 2435,
+              "output_tokens": 304,
+              "total_tokens": 2739
+            }
+          },
+          "reviewAnswer": "Ada Marlow предварительно рассматривала две конкурирующие, пока не подтверждённые гипотезы о сбоях Zephyr QX-100: повреждённый кабель и перегретый контроллер. По её словам, ни одна из гипотез не имеет доказательств, и причину ещё не выбрали. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3050,
+              "input_tokens": 2329,
+              "output_tokens": 120,
+              "total_tokens": 2449
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4731,
+              "input_tokens": 2418,
+              "output_tokens": 300,
+              "total_tokens": 2718
+            }
+          },
+          "reviewAnswer": "The record attributes two competing, preliminary hypotheses to Ada Marlow regarding the failures of Zephyr QX-100: a damaged cable and an overheated controller. She says there is evidence for neither, and she has not chosen a cause; both remain unestablished hypotheses. [memory/equipment:7]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_04269c91",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22f71ab0338e1df82e2e7c92",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5394,
+              "input_tokens": 2363,
+              "output_tokens": 183,
+              "total_tokens": 2546
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5981,
+              "input_tokens": 2446,
+              "output_tokens": 381,
+              "total_tokens": 2827
+            }
+          },
+          "reviewAnswer": "По записи, Ada Marlow рассматривала две конкурирующие предварительные гипотезы о сбоях Zephyr QX-100: повреждённый кабель и перегретый контроллер. Для обеих гипотез, по её словам, не было доказательств, и причину она не выбрала; это остаётся предварительным, неустановленным объяснением. [memory/equipment:7]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Tentative:** Ada Marlow is considering two competing, preliminary hypotheses for the failures of Zephyr QX-100—a damaged cable and an overheated controller—but says there is evidence for neither and has not chosen a cause.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_04269c91",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_22f71ab0338e1df82e2e7c92",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}
