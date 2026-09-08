@@ -100,8 +100,8 @@ rebuild/replay, graph eligibility, and failures. It does not establish live-mode
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v11 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v11 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v12 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v12 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -148,14 +148,21 @@ structured precision. It is never actionable or eligible for a bounded date quer
 Rejected plans keep their rejected disposition through the public schema, saved markers and history views;
 they are excluded from planning and factual views. Explicit invalid commitment/disposition values are held
 instead of being silently normalized. Reports that explicitly lack confirmation must retain that qualification
-in readable prose: source attribution alone cannot substitute for it.
+in readable prose: source attribution alone cannot substitute for it. A corrective contrast that defines the
+same action or value, such as “adjustment, not replacement,” stays in one readable record; unrelated adjacent
+details are optional. Extraction and verification use the principal proposition's polarity, keeping a
+positive action distinct from its rejected disposition or a contrasted exclusion.
 
 For blocks citing only qualified managed records, the answer guard screens concrete predicate denial rather
 than the mere presence of a grammatical negator. English/Russian translations can introduce negation while
 preserving uncertainty, open-question status, fiction, report attribution or rejected selection. Exact token
 and citation checks remain deterministic. Predicate matching is a heuristic: complete and mixed-clause polarity
 still requires the full citation-scoped semantic verifier, which receives a checklist of the cited records'
-typed constraints. Mixed or untyped evidence retains the conservative lexical comparison.
+typed constraints. Mixed or untyped evidence retains the conservative lexical comparison. Direct user
+provenance (`self_attested`) does not require adding a claim of self-attestation to the answer. Closed plans
+must preserve their rejected/cancelled/completed/superseded status, without redundant planning wording.
+Competing unconfirmed hypotheses retain tentative or hypothetical commitment even when their discussion
+is established; they do not gain ordinary factual eligibility from the certainty of that outer discussion.
 
 When an entire extracted batch fails validation, retention permits one structural repair using the complete
 original source and validation issues. Every repaired candidate passes the same validation and semantic
@@ -197,7 +204,7 @@ node scripts/review-language.mjs \
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
 at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
-v10 and v11 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
+v10, v11 and v12 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
 original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
 V10 and V11 gates also break down useful retention and answers by source language and scenario, and answers by query
 and requested output language. These groups describe coverage within a finite corpus, not independent samples.
@@ -215,6 +222,35 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v19 broader diagnostic
+
+The v11 corpus ran twice per split at runtime commit `015f122`, using GPT-5.6 Luna with independent
+GPT-5.6 Sol input/output review. The unchanged 90% answer gate **failed**:
+
+| Split/run     | Useful retention | Qualified retrieval | Useful qualified answers |
+| ------------- | ---------------: | ------------------: | -----------------------: |
+| Development 1 |            10/10 |               40/40 |                    72/80 |
+| Development 2 |            10/10 |               40/40 |                    74/80 |
+| Held-out 1    |            10/10 |               40/40 |                    71/80 |
+| Held-out 2    |             9/10 |               36/40 |                    62/80 |
+
+The 279/320 useful answers leave 34 unjustified nulls and seven incomplete answers caused by a lost
+retention contrast. The review found no accepted language or factual-promotion errors or source changes;
+all 32 read-only abstentions were justified. One answer call reported a typed language mismatch. Its original
+generated prose was not retained in the diagnostic trace, so that failure cannot be adjudicated as a true
+language violation or a false language-check rejection.
+
+A separate code audit identified asserted metadata on a readable competing-hypothesis record. The blind
+reviewer accepted it as a faithful assertion that a discussion happened; the implementation contract requires
+commitment to describe the embedded proposition. The original receipt remains unchanged. V12 explicitly
+states that semantic distinction before input and output review, allowing tentative or hypothetical status
+when either preserves the supported meaning. It moves exposed v11 cases into development and introduces
+ten fresh writable held-out sources under the unchanged 90% target.
+
+The [complete reports, review receipts and failed gate](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v19)
+remain available. The 16-answer built-package probe is separate deployment evidence and does not replace the
+full trial.
 
 ## Independently reviewed v18 broader diagnostic
 

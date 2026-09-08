@@ -26,8 +26,8 @@ import {
 import { recall } from './recall.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v19';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v9';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v20';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v10';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -92,7 +92,10 @@ a tentative assistant report must remain both tentative and attributed to the as
 name its source_speaker explicitly (or its source_role when unnamed), including the outer reporter in a nested
 report. Preserve any inner speaker named by the readable evidence too. A fictional example
 must remain explicitly fictional, even if its commitment is also hypothetical. Use ordinary language to describe
-these records; internal qualification fields are not facts about the person or product.
+these records; internal qualification fields are not facts about the person or product. self_attested only
+means the record came directly from the user; never add "self-attestation", "based on their own assertion",
+or an equivalent translation unless the readable evidence itself says that. It creates no extra content
+obligation beyond preserving the stated uncertainty and avoiding claims of independent verification.
 Keep a named source_speaker explicit for every nonfactual record, including self-attested beliefs, examples,
 proposals and questions. The outer recorder and any inner speaker remain distinct people.
 Unknown temporal precision means the record has no resolved date. Describe any relative time as relative
@@ -127,11 +130,15 @@ not a contradiction. Do not require a translated answer to repeat an original ph
 and protected values. Typed qualifications and readable evidence together establish the record's status.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
 For each block, check the required_records against its own cited_evidence: content and scope, identities,
-embedded polarity, then every commitment/disposition/basis qualification. Grammatical negation used to
+embedded polarity, then commitment and disposition. For epistemic basis, apply the following provenance rules. Grammatical negation used to
 express uncertainty, lack of an answer, fictional scope, rejected selection or attribution is not automatically
 a denial of the embedded property. Preserve the actual embedded predicate's polarity across translation.
-The checklist contains constraints, not independent factual evidence. Internal labels such as self_attested
-must not be presented as statements made by the source speaker.
+The checklist contains constraints, not independent factual evidence. source_report requires readable
+attribution and report scope. self_attested records direct user provenance; it is neither independent
+verification nor a statement by the speaker about their evidence. It requires no extra answer wording.
+A faithful description of a user's unconfirmed hypotheses preserves self_attested without mentioning it.
+Reject invented "self-attestation", "based on their own assertion", and equivalent translations unless the
+readable evidence itself says that; do not require those phrases or reject an answer for omitting them.
 Use the supplied question and memory_view only to interpret what the answer addresses, including yes/no
 responses and requests to describe competing hypotheses. The question is not evidence for its premises
 and cannot supply missing facts. A faithful list of incompatible hypotheses answers a discussion question
@@ -948,12 +955,16 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
       );
     if (memory.commitment === 'counterfactual')
       required.push(/\b(counterfactual|would have|had .* then)\b|контрфактическ|если бы/iu.test(answerText));
-    if (memory.temporal?.time.status === 'scheduled')
+    // A closed plan's disposition already prevents it being mistaken for an actionable schedule.
+    const closedPlan =
+      memory.kind === 'plan' &&
+      ['rejected', 'cancelled', 'completed', 'superseded'].includes(memory.disposition);
+    if (!closedPlan && memory.temporal?.time.status === 'scheduled')
       required.push(/\b(scheduled|due|plan|planned)\b|заплан|назнач|план/iu.test(answerText));
-    if (memory.temporal?.time.status === 'planned')
+    if (!closedPlan && memory.temporal?.time.status === 'planned')
       required.push(/\b(plan|planned|planning)\b|план/iu.test(answerText));
     if (memory.temporal?.time.status === 'tentative') required.push(tentative);
-    if (memory.kind === 'plan')
+    if (memory.kind === 'plan' && !closedPlan)
       required.push(
         /\b(plan|planned|planning|scheduled|proposal|proposed)\b|план|назнач|предлож/iu.test(answerText),
       );
@@ -962,8 +973,13 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
 }
 
 function tentativeLanguage(text: string): boolean {
-  return /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
-    text,
+  return (
+    /\b(tentative(?:ly)?|possibly|uncertain|unverified|unconfirmed|unestablished|not (?:yet )?(?:been )?established|may|might)\b|предполож|предварительн|неуверенн|возмож|неопредел|неподтвержд|неустановлен|может|могла?|не (?:был[аои]? )?(?:в этом )?уверен|не проверен|не (?:был[аои]? )?установлен(?:а|о|ы)?(?=$|[^\p{L}])/iu.test(
+      text,
+    ) ||
+    /\bunsupported (?:hypothes(?:is|es)|explanations?|possibilit(?:y|ies)|claims?|reports?|theor(?:y|ies)|beliefs?|assumptions?|conclusions?)\b|\b(?:hypothes(?:is|es)|explanations?|claims?|reports?|beliefs?) (?:is|are|remains?) (?:equally |still )?unsupported\b/iu.test(
+      text,
+    )
   );
 }
 

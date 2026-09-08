@@ -5,6 +5,14 @@ retention and answer model is evaluated separately from an independent reviewer 
 `independentlyReviewed: false` and `releaseEligible: false`; the separate computed gate binds the reports to
 both reviews and is the authority for the reviewed result.
 
+The [v19 broader diagnostic](results/v19/gate.json) also fails the unchanged 90% answer target: development
+72/80 and 74/80, held-out 71/80 and 62/80 independently useful answers. It records 34 unjustified nulls and
+seven incomplete answers following one lost retention contrast. All 32 read-only abstentions were justified.
+Complete [reports and reviews](results/v19) are preserved. A separate code audit found an asserted metadata
+mismatch on a competing-hypothesis record that the blind grader accepted as a faithful outer discussion
+statement; the new v12 review instructions explicitly define commitment as belonging to the embedded proposition.
+V12 moves exposed v11 held-out cases into development and adds ten fresh writable held-out sources.
+
 The [v18 broader diagnostic](results/v18/gate.json) fails its predeclared 90% answer target. It preserves
 264/320 useful answers, 55 unjustified nulls, one incomplete answer, one saved-report qualification omission
 and one case with model availability degradation. Complete reports and independent receipts remain in
@@ -33,8 +41,8 @@ Run the production path against isolated invented knowledge bases with:
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v11 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v11 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v12 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v12 --runs 2 --output bench-results/language-held-out.json
 ```
 
 The v10 development split contains all ten writable scenarios from the now-exposed v9 corpus. Its ten fresh

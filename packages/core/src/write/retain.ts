@@ -23,16 +23,27 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v13';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v6';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v14';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v7';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
   affirmed; the statement that the scenario is not real changes commitment, not that property's polarity.
   A denied property such as excluded damage has negated polarity. Confidence in a denial does not make it affirmed.
+- An explicit corrective contrast tied to the same action, role, value or outcome is a material scope
+  boundary. If retaining the selected side, keep the excluded alternative in the SAME readable candidate:
+  "adjustment, not replacement" / "регулировка, а не замена" must not become just "adjustment".
+  The principal positive proposition stays affirmed; its contrasted exclusion does not negate the entire
+  record. Do not split the selected and excluded sides into separate candidates that could survive alone.
+  This does not require unrelated adjacent details, or confuse uncertainty negation with an excluded action.
 - An unresolved question can be remembered as a question without answering its embedded proposition.
   An unaccepted proposal remains proposed unless the source actually rejects it. A rejected plan keeps
-  kind=plan and disposition=rejected; it is neither a proposed nor an actionable plan.
+  kind=plan and disposition=rejected; it is neither a proposed nor an actionable plan. Rejecting a positive
+  action does not negate the embedded action: a rejected offer to send an item has affirmed polarity and
+  rejected disposition. Only an explicit denial of the embedded property or action uses negated polarity.
+- Competing unconfirmed hypotheses use tentative or hypothetical commitment, even when the readable
+  sentence confidently states that the user discussed them. Neither alternative becomes asserted just
+  because the discussion itself is established.
 - A direct user assertion, including a denial, uses self_attested unless it relays another source.
   This records the user's assertion, not independent verification. Explicit lack of confirmation or verification
   must remain in readable prose; "reportedly" or source_report alone does not preserve that qualification. Nested reports and assistant, external
@@ -109,7 +120,9 @@ source. The proposed candidates are claims to audit, never evidence and never in
 
 For every supplied candidate id, return exactly one verdict. supported=true only when the source entails the
 candidate's readable wording, attribution, speaker scope, commitment, disposition, polarity, epistemic basis,
-time, and every relation. Exact quotes existing in the source is necessary but not sufficient. A proposal,
+time, and every relation. Reject omission of a coupled corrective contrast or scope restriction, even if
+what remains would be entailed in isolation. Unrelated adjacent details may be omitted. Exact quotes existing
+in the source is necessary but not sufficient. A proposal,
 hypothesis, counterfactual, quotation, rejection, question, correction, or tentative statement must never be
 verified as an ordinary current fact. Unknown temporal precision with no boundaries or recurrence preserves
 an unresolved time reference; it does not require a source clock. A scheduled relation with tentative status
@@ -536,6 +549,32 @@ const COPULA = /\b(is|are|was|were|has|have|had|will|would|does|do|did|can|may|m
 const VERB_SHAPED = /\b\w{3,}(?:s|ed|es)\b/i;
 const UNSAFE_DISCOURSE =
   /\b(suppose|assuming|hypothetical|counterfactual|if|invented example|fictional example|not a real|for illustration|might|maybe|perhaps|merely proposed|was proposed|were proposed|was rejected|were rejected|did not choose|not decided)\b|предполож|допустим|если бы|если|гипотез|возможно|вероятно|отклон|не решил|не принято|вымышлен|только пример/iu;
+// A hypothesis noun can name an established result or the object of a decision. Keep completed
+// confirmation in its own clause, so it cannot resolve a different uncertain hypothesis by proximity.
+function hasUnresolvedHypothesis(text: string): boolean {
+  return text.split(/[.!?;\n]/u).some((clause) => {
+    if (/\bhypothes(?:iz|is)(?:e[sd]?|ing)\b/iu.test(clause)) return true;
+    if (
+      /\bhypothes(?:is|es)\s+(?:is|are|remains?)\s+(?:(?:still|equally|currently)\s+)?(?:unconfirmed|unsupported|unestablished|tentative)\b/iu.test(
+        clause,
+      )
+    )
+      return true;
+    if (
+      !/\b(?:unconfirmed|unsupported|unestablished|competing|tentative)(?:[\s,]+[\p{L}-]+){0,4}[\s,]+hypothes(?:is|es)\b/iu.test(
+        clause,
+      )
+    )
+      return false;
+    const completedResolution =
+      !/\b(?:not|never|neither|nor|might|may|could|would|if|unless)\b/iu.test(clause) &&
+      /\bhypothes(?:is|es)\s+(?:was|were|is|are|has been|have been)\s+(?:confirmed|established|refuted|rejected|resolved)\b|\b(?:confirmed|established|refuted|rejected|resolved)\s+(?:the|a|this|that)\s+(?:[\p{L},-]+\s+){0,4}hypothes(?:is|es)\b/iu.test(
+        clause,
+      );
+    return !completedResolution;
+  });
+}
+
 const REPORT_UNCERTAINTY =
   /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
 const RELATIVE_TIME =
@@ -588,7 +627,7 @@ export function cleanCandidateBatch(
       });
       continue;
     }
-    if (canonicalSemantics(kind, discourse) && SPECULATIVE.test(text)) {
+    if (canonicalSemantics(kind, discourse) && (SPECULATIVE.test(text) || hasUnresolvedHypothesis(text))) {
       held.push({
         candidate_id: provisionalId,
         reason_code: 'noncanonical_without_context',
@@ -752,7 +791,11 @@ export function cleanCandidateBatch(
       frame: spans.frame,
       time,
     });
-    if (canonicalSemantics(kind, discourse) && UNSAFE_DISCOURSE.test(sourceEvidence(spans.frame))) {
+    if (
+      canonicalSemantics(kind, discourse) &&
+      (UNSAFE_DISCOURSE.test(sourceEvidence(spans.frame)) ||
+        hasUnresolvedHypothesis(sourceEvidence(spans.frame)))
+    ) {
       held.push({
         candidate_id,
         reason_code: 'discourse_uncertain',

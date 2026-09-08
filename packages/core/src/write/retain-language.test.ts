@@ -125,6 +125,76 @@ describe('cross-language retention boundary', () => {
     expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
   });
 
+  it.each([
+    ['Ada Marlow confirmed the hypothesis that silverpine requires inspection.', 'claim', 'active', true],
+    ['The silverpine inspection hypothesis was confirmed by Ada Marlow.', 'claim', 'active', true],
+    ['Ada Marlow decided to document the hypothesis in the silverpine record.', 'decision', 'accepted', true],
+    ['The formerly unsupported silverpine hypothesis was confirmed.', 'claim', 'active', true],
+    ['Ada Marlow confirmed the competing silverpine hypothesis was wrong.', 'claim', 'active', true],
+    ['Ada Marlow rejected the competing silverpine hypothesis.', 'decision', 'accepted', true],
+    ['The unsupported silverpine hypothesis was not confirmed.', 'claim', 'active', false],
+    ['The unsupported silverpine hypothesis might have been confirmed.', 'claim', 'active', false],
+    ['The silverpine inspection hypothesis remains unconfirmed.', 'claim', 'active', false],
+    ['Ada Marlow hypothesizes that silverpine requires inspection.', 'claim', 'active', false],
+    ['Ada Marlow hypothesised that silverpine requires inspection.', 'claim', 'active', false],
+  ] as const)(
+    'separates unresolved hypotheses from established statements about them: %s',
+    (source, kind, disposition, accepted) => {
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind,
+            text: source,
+            discourse: { commitment: 'asserted', disposition },
+            attribution: { source_role: 'user' },
+            epistemic: { basis: 'self_attested' },
+            support: [{ quote: source }],
+            discourse_frame: [{ quote: source }],
+          },
+        ],
+        { sourceText: source },
+      );
+      expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+    },
+  );
+
+  it.each(['hypothesis', 'hypotheses'])(
+    'holds an asserted %s while accepting faithful uncertain metadata',
+    (noun) => {
+      const source = `Ada Marlow is keeping the unconfirmed ${noun} that silverpine requires inspection.`;
+      const candidate = {
+        kind: 'claim',
+        text: source,
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        epistemic: { basis: 'self_attested' },
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      for (const commitment of ['asserted', 'tentative', 'hypothetical']) {
+        const result = cleanCandidateBatch(
+          [{ ...candidate, discourse: { commitment, disposition: 'active' } }],
+          { sourceText: source },
+        );
+        expect(result.candidates).toHaveLength(commitment === 'asserted' ? 0 : 1);
+        if (commitment === 'asserted')
+          expect(result.held[0]?.reason_code).toBe('noncanonical_without_context');
+      }
+      // Removing uncertainty from generated prose must not hide it in the exact source frame.
+      const flattened = cleanCandidateBatch(
+        [
+          {
+            ...candidate,
+            text: 'The silverpine warranty requires inspection.',
+            discourse: { commitment: 'asserted', disposition: 'active' },
+          },
+        ],
+        { sourceText: source },
+      );
+      expect(flattened.candidates).toEqual([]);
+      expect(flattened.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
+
   it.each([true, false])(
     'preserves explicit lack of report verification in readable prose (%s)',
     (preserved) => {

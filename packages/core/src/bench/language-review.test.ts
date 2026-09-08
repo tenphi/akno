@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
+import { LANGUAGE_CORPUS_V12 } from './language-corpus-v12.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
 import { languageReviewPacket, adjudicateLanguageGate, languageGateThresholds } from './language-review.ts';
@@ -13,9 +14,15 @@ import type { runLanguageBench } from './language.ts';
 type Report = Awaited<ReturnType<typeof runLanguageBench>>;
 
 /** Synthetic judgments exercise the gate's accounting and integrity, never model quality. */
-function fixture(version: 'v3' | 'v10' | 'v11' = 'v3') {
+function fixture(version: 'v3' | 'v10' | 'v11' | 'v12' = 'v3') {
   const corpus =
-    version === 'v3' ? LANGUAGE_CORPUS_V3 : version === 'v10' ? LANGUAGE_CORPUS_V10 : LANGUAGE_CORPUS_V11;
+    version === 'v3'
+      ? LANGUAGE_CORPUS_V3
+      : version === 'v10'
+        ? LANGUAGE_CORPUS_V10
+        : version === 'v11'
+          ? LANGUAGE_CORPUS_V11
+          : LANGUAGE_CORPUS_V12;
   const evidence = {
     text: 'An invented qualified memory record.',
     qualification: {
@@ -167,15 +174,18 @@ describe('independently adjudicated language gate', () => {
     }
   });
 
-  it('keeps the stronger gate and complete breakdowns for the next fresh corpus', () => {
-    const { reports, inputs, outputs } = fixture('v11');
-    const gate = adjudicateLanguageGate(reports, inputs, outputs);
-    expect(gate.releaseEligible).toBe(true);
-    expect(gate.thresholds.usefulQualifiedAnswerCoverage).toBe(0.9);
-    expect(gate.groups.every((group) => Object.keys(group.breakdowns!.byAnswerLanguage).length === 2)).toBe(
-      true,
-    );
-  });
+  it.each(['v11', 'v12'] as const)(
+    'keeps the stronger gate and complete breakdowns for fresh corpus %s',
+    (version) => {
+      const { reports, inputs, outputs } = fixture(version);
+      const gate = adjudicateLanguageGate(reports, inputs, outputs);
+      expect(gate.releaseEligible).toBe(true);
+      expect(gate.thresholds.usefulQualifiedAnswerCoverage).toBe(0.9);
+      expect(gate.groups.every((group) => Object.keys(group.breakdowns!.byAnswerLanguage).length === 2)).toBe(
+        true,
+      );
+    },
+  );
 
   it('preserves the original policy for historical corpora', () => {
     expect(languageGateThresholds('language-discourse-v9').usefulQualifiedAnswerCoverage).toBe(0.8);

@@ -7,6 +7,7 @@ import { LANGUAGE_CORPUS_V8 } from './language-corpus-v8.ts';
 import { LANGUAGE_CORPUS_V9 } from './language-corpus-v9.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V11 } from './language-corpus-v11.ts';
+import { LANGUAGE_CORPUS_V12 } from './language-corpus-v12.ts';
 import { LANGUAGE_CORPUS_V6 } from './language-corpus-v6.ts';
 import { LANGUAGE_CORPUS_V5 } from './language-corpus-v5.ts';
 import { LANGUAGE_CORPUS_V4 } from './language-corpus-v4.ts';
@@ -98,7 +99,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
                     ? LANGUAGE_CORPUS_V10
                     : corpusVersion === 'language-discourse-v11'
                       ? LANGUAGE_CORPUS_V11
-                      : null;
+                      : corpusVersion === 'language-discourse-v12'
+                        ? LANGUAGE_CORPUS_V12
+                        : null;
   if (!corpus) throw new Error('unexpected corpus');
   const fingerprint = sha256(JSON.stringify(corpus));
   if (inputReview.corpusFingerprint !== fingerprint) throw new Error('stale input review');
@@ -150,7 +153,9 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
         throw new Error('missing or malformed retained/retrieval review evidence');
       const source = expected.find((candidate) => candidate.id === entry.id)!;
       if (
-        ['language-discourse-v10', 'language-discourse-v11'].includes(corpusVersion!) &&
+        ['language-discourse-v10', 'language-discourse-v11', 'language-discourse-v12'].includes(
+          corpusVersion!,
+        ) &&
         (entry.language !== source.language || entry.scenario !== source.scenario)
       )
         throw new Error('altered source dimensions');
@@ -182,7 +187,10 @@ export function languageReviewPacket(reports: Report[], rawInputReview: unknown)
     reportFingerprints: reports.map((report) => sha256(JSON.stringify(report))).sort(),
     contract: contract(first),
     instructions:
-      'Judge source entailment and useful records, not world truth. English is required for generated knowledge. Answer prose must follow its requested language; original names and citations may remain exact. A null answer is not a useful answer; judge its abstention separately. Read-only admission requires a hold. All qualifications must survive together, including nested attribution, fiction, incompatible alternatives and unknown source-relative time. Runtime verifier agreement is not an independent truth label.',
+      'Judge source entailment and useful records, not world truth. English is required for generated knowledge. Answer prose must follow its requested language; original names and citations may remain exact. A null answer is not a useful answer; judge its abstention separately. Read-only admission requires a hold. All qualifications must survive together, including nested attribution, fiction, incompatible alternatives and unknown source-relative time. Runtime verifier agreement is not an independent truth label.' +
+      (corpusVersion === 'language-discourse-v12'
+        ? ' Typed commitment describes the embedded proposition, not certainty that a discussion happened. Competing unconfirmed causes must remain tentative or hypothetical and must not gain ordinary factual/current eligibility. self_attested records direct user provenance; it is neither independent verification nor a requirement to verbalize self-attestation. Preserve corrective contrasts tied to the retained proposition, while unrelated adjacent details may be omitted.'
+        : ''),
     cases: reports.flatMap((report) =>
       report.cases.map((entry) => ({
         id: entry.id,
@@ -218,9 +226,11 @@ const LANGUAGE_GATE_THRESHOLDS = {
 export function languageGateThresholds(corpusVersion: string) {
   return {
     ...LANGUAGE_GATE_THRESHOLDS,
-    usefulQualifiedAnswerCoverage: ['language-discourse-v10', 'language-discourse-v11'].includes(
-      corpusVersion,
-    )
+    usefulQualifiedAnswerCoverage: [
+      'language-discourse-v10',
+      'language-discourse-v11',
+      'language-discourse-v12',
+    ].includes(corpusVersion)
       ? 0.9
       : 0.8,
   };
@@ -350,7 +360,9 @@ export function adjudicateLanguageGate(reports: Report[], inputReview: unknown, 
         split: report.split,
         run,
         metrics,
-        ...(['language-discourse-v10', 'language-discourse-v11'].includes(report.corpusVersion)
+        ...(['language-discourse-v10', 'language-discourse-v11', 'language-discourse-v12'].includes(
+          report.corpusVersion,
+        )
           ? { breakdowns: reviewBreakdowns(observations, review) }
           : {}),
       };

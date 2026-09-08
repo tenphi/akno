@@ -391,6 +391,21 @@ describe('grounded answer discovery surface', () => {
       'protected_value',
     ],
     [
+      'tentative',
+      'self_attested',
+      'Ada Marlow tentatively believes that the silverpine warranty requires inspection.',
+      'The silverpine warranty requires inspection for unsupported devices.',
+      false,
+      'discourse',
+    ],
+    [
+      'tentative',
+      'self_attested',
+      'Ada Marlow is keeping competing, equally unsupported hypotheses about the silverpine warranty: a valve fault or a loose cable; neither is confirmed.',
+      'Ada Marlow discussed a valve fault and a loose cable as competing, equally unsupported hypotheses about the silverpine warranty. Neither explanation is confirmed.',
+      true,
+    ],
+    [
       'hypothetical',
       'self_attested',
       'Ada Marlow discussed two unestablished hypotheses about the silverpine warranty: annual and biennial inspections.',
@@ -1241,6 +1256,54 @@ describe('grounded answer discovery surface', () => {
     expect(result.answer).toContain('proposed');
     expect(modelRequests).toHaveLength(2);
   });
+
+  it.each([
+    ['rejected', 'Ada Marlow rejected the offer to inspect the silverpine valve.', true],
+    ['rejected', 'Ada Marlow отвергла предложение проверить клапан silverpine.', true],
+    ['cancelled', 'Ada Marlow cancelled the silverpine valve inspection.', true],
+    ['completed', 'Ada Marlow completed the silverpine valve inspection.', true],
+    ['superseded', 'Ada Marlow recorded a superseded silverpine valve inspection.', true],
+    ['rejected', 'Ada Marlow will inspect the silverpine valve.', false],
+    ['cancelled', 'Ada Marlow plans to inspect the silverpine valve.', false],
+    ['completed', 'Ada Marlow plans to inspect the silverpine valve.', false],
+    ['superseded', 'Ada Marlow plans to inspect the silverpine valve.', false],
+  ] as const)(
+    'keeps plan lifecycle status without redundant planning words: %s %s',
+    async (disposition, text, accepted) => {
+      const marker = temporalMarker('mem_closed_plan', {
+        kind: 'plan',
+        disposition,
+        speaker: 'Ada Marlow',
+        time: { start: '2031-04-18', precision: 'day', relation: 'scheduled', status: 'planned' },
+      });
+      write(
+        'plans/closed.md',
+        '# Silverpine inspection history\n\n' +
+          managedMemoryBlock(
+            marker,
+            renderManagedMemoryPayload(
+              `Ada Marlow recorded the ${disposition} silverpine valve inspection originally planned for 2031-04-18; it is no longer an actionable plan.`,
+              marker,
+            ),
+          ),
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
+        verification: { verdicts: [{ block_id: 'B1', supported: true }] },
+      });
+      const result = await memory.answer({
+        question: 'What is recorded in the silverpine valve inspection history?',
+        memory_view: 'history',
+        filter: { folder: 'plans' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code, JSON.stringify(result)).toBe(accepted ? 'answered' : 'draft_rejected');
+      expect(modelRequests).toHaveLength(accepted ? 2 : 1);
+      if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
+    },
+  );
 
   it('uses the reader clock to separate expired state, factual history, and actionable future work', async () => {
     const expired = temporalMarker('mem_expired', {
