@@ -1,7 +1,7 @@
 import type { MemoryQualification, MemoryView, RecallMode } from '@tenphi/akno-protocol';
 
 export type QualifiedMemory = Extract<MemoryQualification, { status: 'qualified' }>;
-export const MEMORY_VIEW_VERSION = 'memory-view-v5';
+export const MEMORY_VIEW_VERSION = 'memory-view-v6';
 
 /** The subset shared by protocol qualifications and the rebuildable SQL projection. */
 export interface MemorySemantics {
@@ -32,12 +32,13 @@ export function inferMemoryView(query: string, mode: RecallMode = 'lookup'): Mem
     return 'questions';
   }
   if (
-    /\b(hypothetical|hypotheses|hypothesis|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses|fictional (?:[a-z-]+ ){0,3}examples?)\b/i.test(
+    /\b(hypothetical|hypotheses|hypothesis|counterfactual|what if|suppose|scenario|scenarios|alternative|alternatives|competing (?:[a-z-]+ ){0,3}explanations?|ideas? considered|discussed options?|tentative beliefs?|unconfirmed hypotheses|fictional (?:[a-z-]+ ){0,3}examples?)\b/i.test(
       query,
     )
   ) {
     return 'discussion';
   }
+  if (declinedOffer(query)) return 'history';
   if (
     /\b(history|historical|previously|formerly|reject(?:s|ed|ing)?|cancel(?:led|ed)?|completed|superseded|resolved|what was decided|decision history)\b/i.test(
       query,
@@ -98,7 +99,34 @@ export function qualificationEligibleForView(memory: QualifiedMemory, view: Memo
   );
 }
 
+// A measured decline is factual. Require the declined object to be an offer/plan, with a
+// bounded grammatical connection; merely mentioning an offer elsewhere is insufficient.
+function declinedOffer(query: string): boolean {
+  return /\b(?:(?:offers?|proposals?|plans?|options?) (?:did|does|has|had|was|were) (?:[\p{L}'’-]+ ){0,4}declin(?:e[sd]?|ing)|declin(?:e[sd]?|ing) (?:an?|the|this|that|her|his|their) (?:[\p{L}'’-]+ ){0,3}(?:offer|proposal|plan|option))\b/iu.test(
+    query,
+  );
+}
+
+// Binding the phrase and predicate by word distance excludes an unrelated predicate in a
+// following clause. These patterns are precision-oriented cues, not a general discourse parser.
+function boundedDiscoursePhrase(noun: string, predicate: string): RegExp {
+  const gap = String.raw`(?:[ \t]+[\p{L}\p{N}-]+){0,8}[ \t]+`;
+  return new RegExp(
+    String.raw`(?:^|[^\p{L}\p{N}])(?:${noun}${gap}${predicate}|${predicate}${gap}${noun})(?=$|[^\p{L}\p{N}])`,
+    'iu',
+  );
+}
+const RUSSIAN_QUALIFIED_REPORT = boundedDiscoursePhrase(
+  String.raw`(?:неподтвержд[её]нн|непроверенн|предварительн)\p{L}* (?:[\p{L}-]+ ){0,3}сообщени\p{L}*`,
+  String.raw`(?:записал[аи]?|дал[аи]?|передал[аи]?)`,
+);
+const RUSSIAN_UNREALIZED_DISCUSSION = boundedDiscoursePhrase(
+  String.raw`нереализованн\p{L}* (?:[\p{L}-]+ ){0,3}вариант\p{L}*`,
+  String.raw`(?:описал[аи]?|рассмотрел[аи]?|обсудил[аи]?)`,
+);
+
 function russianMemoryView(query: string): MemoryView | null {
+  if (RUSSIAN_QUALIFIED_REPORT.test(query)) return 'reports';
   if (
     /(?:^|[^\p{L}])(?:сообщил|сообщила|сообщает|сказал|сказала|по словам|со слов|согласно|утверждает)(?=$|[^\p{L}])/iu.test(
       query,
@@ -107,6 +135,7 @@ function russianMemoryView(query: string): MemoryView | null {
     return 'reports';
   if (/вопрос\p{L}* (?:остал|открыт|не реш)|нереш[её]нн\p{L}* вопрос|открыт\p{L}* вопрос/iu.test(query))
     return 'questions';
+  if (RUSSIAN_UNREALIZED_DISCUSSION.test(query)) return 'discussion';
   if (/гипотез|гипотетическ|контрфактическ|что если|предположим|сценари|альтернатив|обсуждал/iu.test(query))
     return 'discussion';
   // The noun "replacement" asks about coverage too; only an explicit completed replacement

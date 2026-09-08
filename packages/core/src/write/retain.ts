@@ -23,8 +23,8 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v15';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v8';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v16';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v9';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -35,6 +35,9 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   "adjustment, not replacement" / "регулировка, а не замена" must not become just "adjustment".
   The principal positive proposition stays affirmed; its contrasted exclusion does not negate the entire
   record. Do not split the selected and excluded sides into separate candidates that could survive alone.
+  Translation must preserve the action's sense and object: collecting a device is not collecting data,
+  and examining a component is not replacing it. If the source leaves an object's identity ambiguous,
+  keep that ambiguity instead of supplying a plausible object.
   This does not require unrelated adjacent details, or confuse uncertainty negation with an excluded action.
 - An unresolved question can be remembered as a question without answering its embedded proposition.
   An unaccepted proposal remains proposed unless the source actually rejects it. A rejected plan keeps
@@ -73,6 +76,12 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   inferred one. A counterfactual remains active unless the source explicitly supersedes it; rejecting its
   antecedent is what makes it counterfactual, not superseded. Represent explicit rejection or cancellation
   in a separate correctly typed decision or plan record when the source supports that record.
+  Preserve BOTH that actual outcome and the stated unrealized alternative when retaining their discussion;
+  neither one substitutes for the other. The counterfactual sentence may also carry the actual outcome as
+  context, but its embedded conditional property still uses counterfactual commitment and active disposition.
+  For example, a source declining an extension and describing the repair it would have covered supports
+  an asserted rejected plan plus an active counterfactual repair claim. It does not support actual coverage.
+  That active counterfactual is source-entailing even though its antecedent never happened.
 - A source author's fictional participant is not an additional real-world reporter. The original author
   may self-attest the hypothetical record without independently establishing its embedded proposition.`;
 
@@ -591,7 +600,7 @@ function hasUnresolvedHypothesis(text: string): boolean {
 }
 
 const REPORT_UNCERTAINTY =
-  /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
+  /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:independently )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
 const RELATIVE_TIME =
   /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
 

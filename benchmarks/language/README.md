@@ -5,6 +5,19 @@ retention and answer model is evaluated separately from an independent reviewer 
 `independentlyReviewed: false` and `releaseEligible: false`; the separate computed gate binds the reports to
 both reviews and is the authority for the reviewed result.
 
+The [v22 gate](results/v22/gate.json) fails: development 77/80 and 72/80 useful answers, held-out
+69/80 and 61/80. Its 279/320 useful answers leave 40 unjustified nulls and one unsupported translation
+from service collection to data collection. Useful retention is 37/40, and all 32 read-only abstentions
+are justified. No accepted qualification/language/promotion error or source-byte change was found.
+The [complete evidence](results/v22) includes the initial review and corrected source-entailment judgment.
+Separate selected and built-package probes scored 23/24 and 14/16.
+
+V23 narrows additional English/Russian intent phrases to qualified reports, rejected offers and discussed
+alternatives, preserves explicit independent-verification uncertainty, and clarifies both actual and
+counterfactual retention. Translation checks preserve action sense and object. V15 moves the exposed v14
+held-out sources into development and adds ten independently approved fresh writable sources under the
+unchanged source-entailment, qualification and 90% answer gates.
+
 The [v21 gate](results/v21/gate.json) reaches 90% useful-answer coverage in every split/run but still
 fails for five omitted source-relative time qualifications. Development has 79/80 and 72/80 useful answers;
 held-out has 78/80 and 79/80. All 40 writable retentions are useful, all 32 read-only abstentions justified,
@@ -52,7 +65,7 @@ all 16 read-only abstentions were justified. The built-package probe is separate
 
 The input review was completed without outputs. Output review receives the frozen sources, their approved
 expectations, saved knowledge, retrieved passages and answers, without runtime verifier verdicts or aggregate scores. It judges
-useful retention, relevant qualified retrieval, qualified answers, justified abstentions, language, attribution and factual promotion. V13 and V14 also judge retained and answered content against the original source, scored separately from qualification.
+useful retention, relevant qualified retrieval, qualified answers, justified abstentions, language, attribution and factual promotion. V13 through V15 also judge retained and answered content against the original source, scored separately from qualification.
 Null answers never count as useful answers. Review is fallible model adjudication of a finite corpus.
 
 The gate requires both complete splits with at least two runs and all eight query/answer/view combinations.
@@ -64,8 +77,8 @@ Run the production path against isolated invented knowledge bases with:
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v14 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v14 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v15 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v15 --runs 2 --output bench-results/language-held-out.json
 ```
 
 The v10 development split contains all ten writable scenarios from the now-exposed v9 corpus. Its ten fresh

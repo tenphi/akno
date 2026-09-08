@@ -31,8 +31,8 @@ import {
 } from '../timeline/source-clock.ts';
 import { qualificationEligibleForView } from '../memory/intent.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v22';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v12';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v23';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v13';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -119,7 +119,9 @@ Speaker names needed for attribution belong in the answer text.
 Use explicit status wording for each cited nonfactual record: hypothetical, counterfactual, unverified report,
 open question, proposed or rejected (or their requested-language equivalents). Preserve an actual rejection
 when citing that decision; merely saying an option was not selected does not describe the rejection itself.
-Translate descriptive vocabulary into the requested answer language. Do not add parenthetical
+Translate descriptive vocabulary into the requested answer language. Preserve the action's sense and
+object: collecting a device is not collecting data; inspecting a component is not replacing it. Do not add
+an object that the evidence leaves unspecified. Do not add parenthetical
 source-language glosses for ordinary words such as calendar frequencies; preserve exact names and identifiers.
 
 When supplied evidence gives incompatible values and does not establish which is authoritative, do not choose
@@ -137,7 +139,9 @@ The question asks about a record. Entailment is about what the evidence records,
 belief, report, example, or conditional is true in the world. A faithful qualified description of that record
 is supported. Meaning-preserving translation between English and Russian is allowed; different wording is
 not a contradiction. Do not require a translated answer to repeat an original phrase verbatim, except names
-and protected values. Typed qualifications and readable evidence together establish the record's status.
+and protected values. Translation must also preserve the action's sense and object: device collection and
+data collection are different actions. Reject an added object or interpretation not established by the
+cited evidence, even when it would be plausible in that setting. Typed qualifications and readable evidence together establish the record's status.
 Unknown temporal precision supports an undated, source-relative proposal, never a concrete calendar date.
 When the readable evidence anchors a relative time to an undated original note, preserve both the source
 anchor and the unresolved calendar date. Reject "next week; calendar date unknown" / "на следующей
@@ -905,6 +909,7 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
   // An unrelated factual citation cannot establish the proposition inside a report.
   const normalized = normalizeComparable(answerText);
   const attributionVerb =
+    /\bas (?:an?|the) (?:(?:tentative|unverified|unconfirmed)[, ]+){1,2}report\b/iu.test(answerText) ||
     /\b[Rr]ecord(?:ed|s) (?:\p{Lu}[\p{L}’'.-]* ){0,3}\p{Lu}[\p{L}’'.-]*[’']s (?:(?:tentative|unverified|unconfirmed)[, ]+){0,2}(?:report|account|statement)\b/u.test(
       answerText,
     ) ||
@@ -961,7 +966,17 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
       superseded: /\b(superseded|replaced|former)\b|замен|прежн/iu,
     };
     const disposition = dispositionPatterns[memory.disposition];
-    if (disposition) required.push(disposition.test(answerText));
+    if (disposition) {
+      // Nonselection can describe a rejected plan, but is not a general synonym for rejection
+      // (a pending choice may also be unselected). The semantic verifier still checks final refusal.
+      const rejectedPlanWording =
+        memory.kind === 'plan' &&
+        memory.disposition === 'rejected' &&
+        /\bdid not (?:choose|select|enrol(?:l)?)\b|(?:^|[^\p{L}])отказал(?:ся|ась|ось|ись)(?=$|[^\p{L}])/iu.test(
+          answerText,
+        );
+      required.push(disposition.test(answerText) || rejectedPlanWording);
+    }
     const tentative =
       tentativeLanguage(answerText) ||
       (memory.kind === 'plan' &&

@@ -100,8 +100,8 @@ rebuild/replay, graph eligibility, and failures. It does not establish live-mode
 
 ```bash
 pnpm build
-pnpm bench:language --live --split development --corpus v14 --runs 2 --output bench-results/language-development.json
-pnpm bench:language --live --split held-out --corpus v14 --runs 2 --output bench-results/language-held-out.json
+pnpm bench:language --live --split development --corpus v15 --runs 2 --output bench-results/language-development.json
+pnpm bench:language --live --split held-out --corpus v15 --runs 2 --output bench-results/language-held-out.json
 ```
 
 These explicitly opted-in runs use configured model roles and temporary isolated knowledge bases. They retain,
@@ -204,9 +204,9 @@ node scripts/review-language.mjs \
 The computed gate requires both complete splits, at least two runs, all eight query/answer/view combinations,
 current matching runtime contracts, and exact corpus/report/review fingerprints. Every split/run must achieve
 at least 80% independently judged useful retention and independently relevant qualified retrieval. The broader
-v10 through v14 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
+v10 through v15 corpora require at least 90% useful qualified answers in every split/run; historical corpora retain their
 original 80% answer threshold. The policy comes from the frozen corpus version, not a report-supplied number.
-V10 through V14 gates also break down useful retention and answers by source language and scenario, and answers by query
+V10 through V15 gates also break down useful retention and answers by source language and scenario, and answers by query
 and requested output language. These groups describe coverage within a finite corpus, not independent samples.
 At most 5% of cases may have availability failures. Accepted language errors, qualification errors, unsafe factual promotions and
 source-byte changes must all be zero; read-only holds must all be correct. Missing reviews, stale receipts,
@@ -215,7 +215,7 @@ Retrieval is judged once per query-language/view pair; duplicated evidence in th
 must receive the same judgment and cannot increase its weight. Model adjudication is labeled as such and must use a model different from the runtime retention/answer model;
 it is fallible review of a finite invented corpus, not human validation or a longitudinal reliability guarantee.
 
-V13 and V14 use `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
+V13 through V15 use `language-output-review-v2` and `language-quality-gate-v2`. Every retained set receives
 `retainedSourceEntailed`: all saved propositions must follow from the frozen original source; an empty set
 is vacuously true. Each answer receives `sourceEntailed`, null if and only if the answer is null. A nonnull
 answer must follow from the original source even if it repeats flawed retained knowledge. Unsupported
@@ -231,6 +231,32 @@ inference remain separate roadmap work.
 
 A split used to diagnose or tune a fix is exposed diagnostic evidence afterward, even if its frozen name is
 `held-out`. Fresh independently reviewed cases are required for an unbiased release-quality claim.
+
+## Independently reviewed v22 broader diagnostic
+
+The v14 corpus ran twice per split at runtime commit `4f893b4`, using GPT-5.6 Luna with independent
+GPT-5.6 Sol review. The unchanged gate failed:
+
+| Split       | Run 1 useful answers | Run 2 useful answers |
+| ----------- | -------------------: | -------------------: |
+| Development |                77/80 |                72/80 |
+| Held-out    |                69/80 |                61/80 |
+
+The 279/320 useful answers leave 40 unjustified nulls and one unsupported translation from service
+collection to data collection. Useful retention was 37/40; all 32 read-only abstentions were justified.
+No accepted qualification, language or promotion error, source-byte change or availability failure was found.
+The initial reviewer missed the translation error; a consistency recheck against the unchanged contract
+corrected one judgment. Both receipts and the authoritative failed gate are preserved in the
+[complete evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v22).
+Selected diagnostics yielded 23/24 useful answers and the separate built-package probe 14/16.
+
+Eighteen nulls followed missed implicit memory-view intent, sixteen followed incomplete/held retention,
+and six were false draft/verifier rejections. V23 adds bounded query phrases with factual counterexamples,
+recognizes explicit independent-verification uncertainty and typed rejected-plan wording, and clarifies
+retaining actual outcomes alongside their counterfactual alternatives. Translation instructions preserve
+the action's sense and object. All candidates and accepted answer drafts still require semantic verification.
+V15 reuses exposed v14 sources only for development and adds ten independently approved fresh writable
+held-out sources. No acceptance threshold changes.
 
 ## Independently reviewed v21 broader diagnostic
 
