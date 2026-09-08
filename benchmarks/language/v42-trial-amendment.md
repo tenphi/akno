@@ -1,0 +1,7 @@
+# V42 pre-execution amendment
+
+Frozen runtime `0dfc98a` completed both predeclared exposed probes. Corrected independent selected scores are 3/4 complete retained sets, 32/32 useful retrievals and 30/32 useful answers; built-package scores are 2/2, 16/16 and 16/16. Preserve the initial and corrected semantic review: one accepted translation invents temperature as the property measured by an otherwise unspecified thermostat measurement. One writable null and an unplaced independent no-booking statement remain coverage losses.
+
+Defer full execution because the accepted error violates the unchanged zero-error gate. No full V42 trial began; approved v19 held-out inputs remain unexecuted. V43 should preserve the source's level of specificity in generation and in the existing separate source/candidate/action comparisons. A component being measured does not establish its measured property, method or value; domain plausibility cannot supply those details. Keep the same model, three verdict dimensions, schema, single structural repair, semantic no-retry policy and thresholds.
+
+Complete separate review/fix rounds, all required checks, commit/freeze and redeploy before the same exposed probes. Independently grade every output. Minor remaining coverage losses may carry honestly into a justified full repeated trial; do not demand 100% or disguise losses. Fresh execution remains conditional on readiness and every started full trial must finish and receive independent grading regardless of outcome.
