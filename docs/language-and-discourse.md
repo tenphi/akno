@@ -265,9 +265,17 @@ includes initial and corrected independent judgments after a consistency review 
 V27 at `7909f71` repairs structurally rejected original positions even when another candidate survives,
 while preserving every admitted record and relation. Its exposed report/exclusion diagnostic scored 8/16
 useful answers; the separate built-package probe scored 16/16, with all nonnull answers source-entailing.
-The [V27 probes](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v27) alone do not establish
-the full gate. The repeated v16 trial is running. V27 was committed before fresh full V26 outputs or scores
-were opened or graded; both trials are preserved under the committed validation plan.
+The [complete V27 evidence](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v27)
+failed the repeated gate with 239/320 useful answers, 32/40 useful retained sets, three case-runs with typed
+qualification errors, one unsupported answer and one case availability failure. Both initial and corrected
+independent judgments remain preserved. V27 was frozen before fresh full V26 outputs were opened.
+
+The [V28 probes](https://github.com/tenphi/akno/tree/main/benchmarks/language/results/v28) yielded 23/32
+useful selected answers and 16/16 built-package answers; all nonnull answers were source-entailing. Its
+fresh full trial was never started. V29 separates outer nonverification from inner-speaker commitment and
+real discussion plans from their fictional propositions, preserves absence of evidence in hypothesis answers,
+and addresses bounded report-wording false rejections. It uses the unchanged independently approved fresh
+v17 inputs under the same repeated 90% and zero-error gate.
 
 ## Independently reviewed v23–v25 diagnostics
 

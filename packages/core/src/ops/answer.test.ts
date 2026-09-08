@@ -1120,6 +1120,16 @@ describe('grounded answer discovery surface', () => {
       true,
     ],
     ['Ассистент предварительно и непроверенно сообщил о требовании проверки silverpine.', true],
+    ['The assistant tentatively and unconfirmedly reported a silverpine inspection requirement.', true],
+    ['Ассистент предварительно и неподтверждённо сообщил о требовании проверки silverpine.', true],
+    [
+      'The assistant stood nearby while Bo Winters tentatively and unconfirmedly reported a silverpine inspection requirement.',
+      false,
+    ],
+    [
+      'Ассистент стоял рядом, а Bo Winters предварительно и неподтверждённо сообщил о требовании проверки silverpine.',
+      false,
+    ],
     ['The assistant provided an unverified report that silverpine inspection might be required.', true],
     ["The assistant's preliminary, tentative and unverified report concerns silverpine inspection.", true],
     [
@@ -1265,6 +1275,40 @@ describe('grounded answer discovery surface', () => {
     expect(modelRequests).toHaveLength(1);
     expect(result.model_usage.generation?.total_tokens).toBe(133);
     expect(result.model_usage.verification).toBeNull();
+  });
+
+  it('does not use recorded-question wording to bypass a wrong-recorder verdict', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_question v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=question subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** Ada Marlow has an unanswered question about silverpine warranty coverage.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: "Bo Winters recorded Ada Marlow's open question about silverpine warranty coverage.",
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [verdict('B1', true, false, true)] },
+    });
+    const result = await memory.answer({
+      question: 'Which silverpine coverage question remains open?',
+      memory_view: 'questions',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toBeNull();
+    expect(result.validation).toMatchObject({
+      passed_guards: 1,
+      verified_blocks: 0,
+      rejection_counts: { semantic_support: 1 },
+    });
+    expect(modelRequests).toHaveLength(2);
   });
 
   it('withholds semantically unsupported prose without reporting verification failure', async () => {

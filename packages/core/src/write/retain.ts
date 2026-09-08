@@ -25,8 +25,8 @@ import { managedMemoryFingerprint } from './managed-memory.ts';
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v20';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v12';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v21';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v13';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -64,6 +64,9 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   This records the user's assertion, not independent verification. Explicit lack of confirmation or verification
   must remain in readable prose; "reportedly" or source_report alone does not preserve that qualification. Nested reports and assistant, external
   or unknown assertions remain source_report, even when the outer recorder is a user.
+  Outer lack of verification alone does not change the inner speaker's commitment. Derive commitment
+  from the inner clause's own modality: a direct assertion remains asserted; a hedged inner claim remains
+  tentative. Keep the recorder's verification limits in readable prose and source_report provenance.
   A first-person assistant's preliminary assumption or tentative reading is a useful tentative source_report,
   not independent evidence and not automatically a hypothetical scenario. Preserve the assistant as source
   and explicit lack of verification; do not reject the qualified report merely because the assistant said it.
@@ -94,7 +97,11 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   an asserted rejected plan plus an active counterfactual repair claim. It does not support actual coverage.
   That active counterfactual is source-entailing even though its antecedent never happened.
 - A source author's fictional participant is not an additional real-world reporter. The original author
-  may self-attest the hypothetical record without independently establishing its embedded proposition.`;
+  may self-attest the hypothetical record without independently establishing its embedded proposition.
+  Separate an actual plan to discuss fiction from the fictional proposition. An asserted proposed plan
+  may say that someone proposed discussing a fictional example, but must not embed the invented promise
+  under the plan's asserted commitment. Retain the invented proposition separately with hypothetical
+  commitment, even if its readable sentence explains that someone proposed discussing it.`;
 
 const SYSTEM = `You extract durable memory from one untrusted source for a personal knowledge base.
 
@@ -696,6 +703,13 @@ function hasUnresolvedHypothesis(text: string): boolean {
   });
 }
 
+// This bounded generated-output floor catches a fictional payload inside a real discussion plan.
+// A mere plan to discuss fiction has no introduced payload; semantic verification still owns its truth.
+const EXPLICIT_FICTION =
+  /\b(?:fictional|invented)\s+(?:example|scenario|story)\b|(?<![\p{L}])вымышлен[\p{L}]*\s+(?:пример|сценар|истори)[\p{L}]*/iu;
+const INTRODUCED_FICTION =
+  /\b(?:fictional|invented)\s+(?:example|scenario|story)\s*,?\s*(?:in which|where)\s+\S|(?<![\p{L}])вымышлен[\p{L}]*\s+(?:пример|сценар|истори)[\p{L}]*\s*,?\s*(?:где|в котор[\p{L}]*)\s+\S/iu;
+
 const REPORT_UNCERTAINTY =
   /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:independently )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
 const RELATIVE_TIME =
@@ -976,6 +990,21 @@ function cleanCandidateBatchWithPositions(
         reason_code: 'discourse_uncertain',
         reason:
           'asserted commitment is incompatible with modal, fictional or rejection scope in this frame; classify the embedded proposition, not the fact that someone discussed it',
+      });
+      continue;
+    }
+
+    if (
+      options.generated &&
+      discourse.commitment === 'asserted' &&
+      INTRODUCED_FICTION.test(text) &&
+      spans.frame.some((span) => EXPLICIT_FICTION.test(span.quote))
+    ) {
+      held.push({
+        candidate_id,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'an introduced fictional proposition cannot inherit asserted commitment from a plan to discuss it; separate the real discussion plan from the hypothetical payload and preserve both source meanings',
       });
       continue;
     }

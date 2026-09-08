@@ -9,3 +9,7 @@ Development and deterministic tests use only exposed V26 sources and invented st
 First run one exposed assistant/question/fiction/alternatives diagnostic on the changed runtime, and a separate built-package probe after rebuild and service restart. Preserve every result; do not rerun unchanged-runtime semantic rejection until success. Then run both fresh v17 splits twice, with all eight English/Russian query/answer and explicit/inferred-view combinations.
 
 Runtime remains GPT-5.6 Luna. Independent semantic input/output review and separate code review use GPT-5.6 Sol. The gate remains at least 90% useful answers in every split/run, at least 80% useful retention/retrieval, zero accepted language/qualification/source-entailment/promotion/source-byte errors and at most 5% case availability failures. Further output-driven changes require fresh held-out inputs for a release-quality claim. These trials cover a finite invented scenario family, not arbitrary-language or longitudinal memory reliability.
+
+## Recorded execution outcome
+
+Both planned exposed probes completed and are preserved in `results/v28`. The full fresh v17 trial was never started: independent V27 review confirmed nested-report commitment and embedded-fiction typing errors before fresh execution. V29 fixes those gaps using exposed sources and reuses the unchanged, approved and unexecuted v17 inputs under its separately committed plan. V28 therefore has diagnostic evidence only.

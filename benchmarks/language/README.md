@@ -11,10 +11,16 @@ source-entailing, but one nonnull answer contains an unsupported claim and quali
 All 32 read-only abstentions are justified; 62 writable nulls remain unjustified. Initial and corrected
 independent judgments are preserved in the [complete evidence](results/v26).
 
-V27 permits one structural repair of rejected original positions while preserving admitted records and
-relations. The [exposed probes](results/v27) scored 8/16 useful selected answers and 16/16 useful
-built-package answers. Its full repeated v16 trial is running. V27 was committed before fresh full V26
-outputs were opened, as recorded in the [validation plan](v27-trial-plan.md); both full trials are preserved.
+The [v27 gate](results/v27/gate.json) also fails: 239/320 useful writable answers (development 62/80 and
+68/80; held-out 60/80 and 49/80), 32/40 useful retained sets, three retained case-runs with typed qualification
+errors, one unsupported nonnull answer and one case availability failure. Initial and corrected judgments
+are preserved. V27 was frozen before fresh V26 outputs were opened; both complete trials remain available.
+
+The [V28 exposed probes](results/v28) yielded 23/32 useful selected answers with all four retained sets
+useful, and 16/16 built-package answers. All nonnull answers were source-entailing. No fresh full V28 trial
+was started: confirmed V27 modal errors and exposed V28 false rejections are addressed in V29 before using
+the unchanged, independently approved and unexecuted v17 inputs. The [V29 plan](v29-trial-plan.md) preserves
+the same models, repeated 90% answer threshold and zero-error requirements.
 
 The [v23 gate](results/v23/gate.json) failed with 253/320 useful writable answers, four unsupported retained
 sets and fourteen unsupported nonnull answers. The [v24 gate](results/v24/gate.json) failed with 275/320:

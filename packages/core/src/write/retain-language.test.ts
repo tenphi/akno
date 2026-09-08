@@ -9,6 +9,201 @@ const repairBatch = (candidates: unknown[]) => ({
 });
 
 describe('cross-language retention boundary', () => {
+  it.each([
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed discussing a fictional example in which the Zephyr QX-100 warranty covers repairs.',
+      true,
+      true,
+      false,
+    ],
+    [
+      'claim',
+      'active',
+      'asserted',
+      'Ada Marlow described an invented story where the Zephyr QX-100 warranty covers repairs.',
+      true,
+      true,
+      false,
+    ],
+    [
+      'claim',
+      'active',
+      'hypothetical',
+      'Ada Marlow described a fictional example in which the Zephyr QX-100 warranty covers repairs.',
+      true,
+      true,
+      true,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed discussing a fictional example about Zephyr QX-100.',
+      true,
+      true,
+      true,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed inspecting Zephyr QX-100, where the control button is located.',
+      true,
+      true,
+      true,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed a fictional example. The Zephyr QX-100 is where the story ends.',
+      true,
+      true,
+      true,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed discussing a fictional example in which the Zephyr QX-100 warranty covers repairs.',
+      false,
+      true,
+      true,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed discussing a fictional example in which the Zephyr QX-100 warranty covers repairs.',
+      true,
+      false,
+      true,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed обсуждение в вымышленном примере, где гарантия Zephyr QX-100 покрывает ремонт.',
+      true,
+      true,
+      false,
+    ],
+    [
+      'plan',
+      'proposed',
+      'asserted',
+      'Ada Marlow proposed вымышленную историю, в которой гарантия Zephyr QX-100 покрывает ремонт.',
+      true,
+      true,
+      false,
+    ],
+  ])(
+    'separates introduced fiction from its discussion plan (%s/%s/%s: %s)',
+    (kind, disposition, commitment, text, fictionalFrame, generated, accepted) => {
+      const source = fictionalFrame
+        ? 'Ada Marlow proposed discussing a fictional example about Zephyr QX-100.'
+        : 'Ada Marlow proposed discussing the Zephyr QX-100 warranty.';
+      const result = cleanCandidateBatch(
+        [
+          {
+            kind,
+            text,
+            subject: 'Zephyr QX-100',
+            attribution: { source_role: 'user' },
+            discourse: { commitment, disposition },
+            epistemic: { basis: 'self_attested' },
+            support: [{ quote: source }],
+            discourse_frame: [{ quote: source }],
+          },
+        ],
+        { sourceText: source, generated },
+      );
+      expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+      if (!accepted) expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
+
+  it('allows a real discussion plan whose relative clause identifies the fictional artifact', () => {
+    const source =
+      'Ada Marlow proposed discussing a fictional story that Bo Winters wrote about Zephyr QX-100.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'plan',
+          text: source,
+          subject: 'Zephyr QX-100',
+          attribution: { source_role: 'user' },
+          discourse: { commitment: 'asserted', disposition: 'proposed' },
+          epistemic: { basis: 'self_attested' },
+          support: [{ quote: source }],
+          discourse_frame: [{ quote: source }],
+        },
+      ],
+      { sourceText: source, generated: true },
+    );
+    expect(result.candidates).toHaveLength(1);
+  });
+
+  it.each(['still-asserted', 'verified', 'unsupported'] as const)(
+    'keeps introduced-fiction repair subject to structural and semantic checks (%s)',
+    async (outcome) => {
+      const source =
+        'Ada Marlow proposed discussing a fictional example in which the Zephyr QX-100 warranty covers repairs.';
+      const candidate = {
+        kind: 'plan',
+        text: source,
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user' },
+        discourse: { commitment: 'asserted', disposition: 'proposed' },
+        epistemic: { basis: 'self_attested' },
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      const repaired =
+        outcome === 'still-asserted'
+          ? { ...candidate, text: source.replace('example in which', 'story where') }
+          : { ...candidate, kind: 'claim', discourse: { commitment: 'hypothetical', disposition: 'active' } };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        const call = chat.mock.calls.length;
+        if (call === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (call === 2) {
+          expect(payload.validation_issues[0].reason).toContain('introduced fictional proposition');
+          return { ok: true, value: JSON.stringify(repairBatch([repaired])), latencyMs: 22 };
+        }
+        expect(payload.candidates[0].discourse.commitment).toBe('hypothetical');
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              proposition_supported: outcome === 'verified',
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
+              reason_code: outcome === 'verified' ? null : 'discourse_uncertain',
+            })),
+          }),
+          latencyMs: 33,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-fiction-repair',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(result.candidates).toHaveLength(outcome === 'verified' ? 1 : 0);
+      expect(chat).toHaveBeenCalledTimes(outcome === 'still-asserted' ? 2 : 3);
+      if (outcome === 'unsupported') expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
   it.each([true, false])(
     'completes generated frames while keeping semantic verification authoritative (%s)',
     async (supported) => {
