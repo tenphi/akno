@@ -40,8 +40,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v43';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v27';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v44';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v28';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -126,12 +126,12 @@ Russian "причина не выбрана" or "причину не выбра�
 The same applies to "neither explanation selected" and "ни одна не выбрана": naming a person as
 considering alternatives does not bind that person to the separate passive nonselection.
 For a proposal or rejection whose actor is named in the readable evidence, state that actor with the
-proposing/rejecting verb in either answer language. "According to SOURCE, it was proposed" does not say
-who proposed it. Do not infer the actor merely from source_speaker, and leave genuinely unspecified booking
-agents unspecified. Bind every actor from the cited proposition itself.
-When the readable source names the proposer, say that person proposed the action. "According to SOURCE,
-the proposal was to ..." names a reporter but omits the proposer just as "По словам SOURCE, было
-предложено ..." does. Prefer the explicit proposing verb with its source-supported subject.
+proposing/rejecting verb in the first sentence: "ACTOR proposed/rejected ACTION" or "ACTOR предложил(а)/
+отклонил(а) ACTION". Then describe its timing and status. This keeps the action's actor separate from
+reporting provenance. "According to SOURCE, the proposal was to ..." and "По словам SOURCE, было
+предложено ..." omit the proposer. Use an outer reporting clause when the evidence actually reports
+someone else's proposal, while still naming the embedded proposer. Do not infer the actor merely from
+source_speaker, and leave genuinely unspecified booking agents unspecified.
 Attach tentative/unconfirmed qualification to its supported content or timing. Do not call the source
 record preliminary merely because the recorded hypothesis or proposed timing is tentative.
 The display_labels are translation aids for kind, commitment, disposition and temporal_status. They add no proposition and
@@ -154,6 +154,11 @@ must remain explicitly fictional, even if its commitment is also hypothetical. U
 these records; internal qualification fields are not facts about the person or product. A direct user
 assertion may be stated or attributed without inventing a claim about whether anybody verified it.
 Preserve uncertainty explicitly stated in the readable evidence; do not add verification-status disclaimers.
+Preserve whose knowledge is unresolved. An open coverage question with neither inclusion nor exclusion
+established describes epistemic uncertainty; it does not say that the agreement's terms fail to establish
+either. Do not add a document, its terms or an inspection as the means of nonresolution. Document silence
+or inconclusiveness is answerable only when the cited evidence explicitly establishes that document-level
+claim. State an unresolved question as unresolved, without assigning its cause to unseen terms.
 Keep a named source_speaker explicit for every nonfactual record, including the user's beliefs and examples,
 proposals and questions. The outer recorder and any inner speaker remain distinct people.
 Describe an attributed open question using neutral record provenance, such as "The recorded open question

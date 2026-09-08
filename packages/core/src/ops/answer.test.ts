@@ -2454,6 +2454,10 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе, то есть на неделе после исходной записи без известной календарной даты.',
+      true,
+    ],
+    [
       'Ada Marlow proposed reviewing the silverpine estimate next week. The calendar date is unknown because the source was undated.',
       true,
     ],
@@ -2534,9 +2538,14 @@ describe('grounded answer discovery surface', () => {
       'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
       false,
     ],
+    [
+      'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
+      false,
+      'Ada Marlow предложила изменить смету silverpine на следующей неделе, то есть на неделе после исходной записи без известной календарной даты.',
+    ],
   ] as const)(
     'keeps source-clock activation narrow and preserves semantic rejection: %s',
-    async (source, supported) => {
+    async (source, supported, alternative?: string) => {
       const marker = temporalMarker('mem_clock_activation', {
         kind: 'plan',
         disposition: 'proposed',
@@ -2549,9 +2558,11 @@ describe('grounded answer discovery surface', () => {
         '# Silverpine estimate\n\n' + managedMemoryBlock(marker, renderManagedMemoryPayload(source, marker)),
       );
       await memory.index({ verify: true });
-      const text = supported
-        ? 'Ada Marlow proposed reviewing the silverpine estimate; its calendar date is unknown.'
-        : 'Ada Marlow proposed reviewing the silverpine estimate next week relative to the undated original note.';
+      const text =
+        alternative ??
+        (supported
+          ? 'Ada Marlow proposed reviewing the silverpine estimate; its calendar date is unknown.'
+          : 'Ada Marlow proposed reviewing the silverpine estimate next week relative to the undated original note.');
       await useAnswerModel({
         generation: { blocks: [{ text, evidence_ids: ['E1'] }], missing_concepts: [] },
         verification: { verdicts: [verdict('B1', supported)] },

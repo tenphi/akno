@@ -68,6 +68,13 @@ export const SEMANTIC_COMPARISON_CONTRACT = `Before deciding the three booleans,
 - action_arguments: compare action, actor, object, purpose and any material modifier attachment. For a
   measurement or inspection, compare the named component separately from the property, method and result;
 - qualification_scope: compare speaker layers, polarity, commitment, disposition, uncertainty and time.
+For each negative epistemic clause, identify whose knowledge is lacking and what source or document the
+clause describes. "Neither inclusion nor exclusion is established" in an open question does not entail
+"neither is established by the agreement terms" / "условиями соглашения не установлены". The latter
+adds a document-level claim that the terms fail to establish an answer. A surrounding open-question frame
+does not remove that addition. Preserve a document's silence or inconclusiveness when the original source
+explicitly establishes it; do not infer it from a speaker's uncertainty or lack of verification. A changed
+epistemic subject or means of nonresolution fails proposition_supported and qualification_scope_preserved.
 These are audit notes, not new evidence. Use only the supplied source for source meaning, and the candidate
 for candidate meaning. Do not compare a remembered hypothesis with an established real-world fact: compare
 the hypothesis as a hypothesis. The same applies to questions, fictional examples and attributed reports.

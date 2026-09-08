@@ -3,6 +3,16 @@ import { hasDeicticTime, hasSourceRelativeAnchor, hasUnknownReferenceClock } fro
 
 describe('source-relative time qualification', () => {
   it.each([
+    ['В следующем месяце после исходной записи без известной календарной даты.', true, true, true],
+    ['Завтра относительно заметки без известной даты.', true, true, true],
+    [
+      'В следующем месяце после исходной записи; устройство без известной календарной даты.',
+      true,
+      true,
+      false,
+    ],
+    ['Завтра относительно заметки без известного датчика.', true, true, false],
+    ['Завтра относительно заметки с известной календарной датой.', true, true, false],
     ['Next month refers to an undated source with an unknown calendar month.', true, true, true],
     [
       'Tomorrow refers to the moment of the undated source note; the corresponding calendar date cannot be recovered.',
