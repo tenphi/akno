@@ -1319,10 +1319,14 @@ function cleanCandidateBatchWithPositions(
       kind,
       Boolean(attribution.chain?.length),
     );
+    const reportAttributionNames = [
+      ...(attribution.source_speaker ? [attribution.source_speaker] : []),
+      ...(attribution.chain?.map(({ speaker }) => speaker) ?? []),
+    ];
     if (
       epistemic.basis === 'source_report' &&
-      hasReportUncertainty(sourceEvidence(spans.frame)) &&
-      !hasReportUncertainty(text)
+      hasReportUncertainty(sourceEvidence(spans.frame), reportAttributionNames) &&
+      !hasReportUncertainty(text, reportAttributionNames)
     ) {
       held.push({
         candidate_id: provisionalId,
@@ -1439,18 +1443,21 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
-    if (
-      RELATIVE_TIME.test(sourceEvidence(spans.frame)) &&
-      explicitlyUnknownTime(time) &&
-      !(hasSourceRelativeAnchor(text) && hasUnknownReferenceClock(text))
-    ) {
-      held.push({
-        candidate_id: provisionalId,
-        reason_code: 'time_unresolved',
-        reason:
-          'an unknown source-relative time must explicitly name both its source-relative clock and unknown reference date in readable prose; bare tomorrow could mean processing time',
-      });
-      continue;
+    if (RELATIVE_TIME.test(sourceEvidence(spans.frame)) && explicitlyUnknownTime(time)) {
+      const relative = hasSourceRelativeAnchor(text);
+      const unknown = hasUnknownReferenceClock(text);
+      if (!relative || !unknown) {
+        held.push({
+          candidate_id: provisionalId,
+          reason_code: 'time_unresolved',
+          reason: relative
+            ? 'the source-relative anchor is recognized in readable prose, but the unknown reference date is not; preserve the source date uncertainty without changing the supported clock relation'
+            : unknown
+              ? 'the unknown reference date is recognized in readable prose, but the source-relative anchor is not; clarify the relation to the original source entry rather than processing without changing the supported uncertainty'
+              : 'neither the source-relative anchor nor the unknown reference date is recognized in readable prose; preserve both source-supported clock dimensions without inventing dates or causal relations',
+        });
+        continue;
+      }
     }
     const pageRaw = typeof record.page === 'string' ? record.page : null;
     const cleanedPage = pageRaw ? cleanSlug(pageRaw) : null;

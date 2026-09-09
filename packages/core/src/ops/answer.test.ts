@@ -325,9 +325,16 @@ describe('grounded answer discovery surface', () => {
         generation: (request: Record<string, unknown>) => {
           const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
           expect(payload.output_language).toBe('ru');
-          expect(JSON.stringify(request.messages)).toContain('terse role plan in output_language');
+          expect(JSON.stringify(request.messages)).toContain('terse source-wording role plan');
           return {
-            record_readings: sourceFrameReading(),
+            record_readings: [
+              {
+                evidence_id: 'E1',
+                selected_meaning:
+                  'Source operation: "connector continuity test"; whether required; unknown answer.',
+                clarification_or_ambiguity: null,
+              },
+            ],
             blocks: [{ rendering_mode: 'translate', text, evidence_ids: ['E1'] }],
             missing_concepts: [],
           };
@@ -336,6 +343,13 @@ describe('grounded answer discovery surface', () => {
           const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
           expect(payload).not.toHaveProperty('question');
           expect(JSON.stringify(payload)).not.toContain('record_readings');
+          const format = request.response_format as {
+            schema?: Record<string, any>;
+            json_schema?: { schema: Record<string, any> };
+          };
+          const wire = format.schema ?? format.json_schema!.schema;
+          const order = Object.keys(wire.properties.verdicts.items.properties);
+          expect(order.indexOf('excerpt_selection')).toBeLessThan(order.indexOf('source_alignments'));
           const block = payload.blocks[0];
           expect(
             block.cited_evidence[0].retention_source_frame.map((a: { text: string }) => a.text).join(''),
@@ -358,9 +372,9 @@ describe('grounded answer discovery surface', () => {
                     actor: compared,
                     qualification: compared,
                     object_and_mechanism: {
-                      ...compared,
-                      detail:
-                        'Source tests electrical continuity; answer tests generic connector integrity. The specific property is lost.',
+                      ...mechanismComparison(compared),
+                      source_specifics: 'Test connector electrical continuity.',
+                      answer_specifics: 'Test generic connector integrity.',
                       relation: 'generalized',
                     },
                   },
@@ -385,6 +399,9 @@ describe('grounded answer discovery surface', () => {
       expect(result.answer).toBeNull();
       expect(result.reason_code).toBe('verification_rejected');
       expect(modelRequests).toHaveLength(3);
+      const languageCheck = (modelRequests[1]!.messages as { content: string }[]).at(-1)!.content;
+      expect(languageCheck).not.toContain('connector continuity test');
+      expect(languageCheck).not.toContain('Source operation');
       expect(JSON.stringify(result)).not.toContain('source_alignments');
     },
   );
@@ -443,7 +460,8 @@ describe('grounded answer discovery surface', () => {
                       source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
                       answer_anchor: block.answer_segments[0].anchor_id,
                       relation: 'preserved',
-                      detail: 'The retained factual content is preserved.',
+                      source_specifics: 'The retained factual content.',
+                      answer_specifics: 'The same retained factual content.',
                     },
                     qualification: incidental,
                   },
@@ -843,7 +861,7 @@ describe('grounded answer discovery surface', () => {
                         ? 'The original group remains the experiencer.'
                         : 'The group experiencer is missing or replaced despite the neighboring Ada predicates.',
                     },
-                    object_and_mechanism: compared,
+                    object_and_mechanism: mechanismComparison(compared),
                     qualification: {
                       ...compared,
                       relation: supported ? 'preserved' : relation === 'omitted' ? 'generalized' : 'changed',
@@ -925,7 +943,7 @@ describe('grounded answer discovery surface', () => {
                       detail:
                         'No selected epistemic experiencer: source is impersonal or the separate group limit is private.',
                     },
-                    object_and_mechanism: compared,
+                    object_and_mechanism: mechanismComparison(compared),
                     qualification: compared,
                   },
                 ],
@@ -997,7 +1015,7 @@ describe('grounded answer discovery surface', () => {
                     relation: 'not_selected',
                     detail: 'The denial leaves the booking actor unspecified.',
                   },
-                  object_and_mechanism: compared,
+                  object_and_mechanism: mechanismComparison(compared),
                   qualification: compared,
                 },
               ],
@@ -1065,6 +1083,131 @@ describe('grounded answer discovery surface', () => {
     expect(result.reason_code).toBe(phase === 'generation' ? 'invalid_draft' : 'verification_unavailable');
     expect(modelRequests).toHaveLength(phase === 'generation' ? 1 : 2);
   });
+
+  it.each([
+    ['focused promise', false, false, true],
+    ['proposal added under promise citation', true, false, false],
+    ['proposal and promise cited', true, true, true],
+    ['promise added under proposal citation', true, 'proposal-only', false],
+  ] as const)(
+    'keeps excerpt selection independent from a shared original frame: %s',
+    async (_case, addProposal, citeProposal, selected) => {
+      const original =
+        'Ada Marlow proposes discussing a fictional silverpine case about Zephyr QX-100. In that fictional case, Vulpine Mutual promises Bo Winters free valve inspection; no actual contract is concluded.';
+      const promise =
+        "- **Hypothetical:** In Ada Marlow's fictional silverpine case about Zephyr QX-100, Vulpine Mutual promises Bo Winters free valve inspection; the promise exists only inside the fiction.";
+      await seedSourceFrame({
+        text: promise,
+        frame: original,
+        kind: 'claim',
+        commitment: 'hypothetical',
+        polarity: 'affirmed',
+        sourceSpeaker: 'Ada Marlow',
+      });
+      const file = path.join(root, 'products/zephyr-qx-100.md');
+      fs.appendFileSync(
+        file,
+        '\n<!-- akno:item mem_proposal v=2 supports=aaaaaaaaaaaa@dddddddddddd@cccccccccccc@extracted level=1 kind=plan subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested -->\n- **Proposal:** Ada Marlow proposes discussing a fictional silverpine case about Zephyr QX-100; this remains only a proposal.\n',
+      );
+      const db = new Database(path.join(stateDir, 'akno.db'));
+      try {
+        db.prepare(
+          `INSERT INTO retain_supports(receipt_fingerprint, candidate_id, candidate_fingerprint, proof_group, memory_id, slug, selection, source_ref, origin, input_hash, evidence, evidence_hash, retracted_by, forgotten_by)
+          VALUES ('aaaaaaaaaaaa', 'candidate-proposal', 'dddddddddddd', 'cccccccccccc', 'mem_proposal', 'products/zephyr-qx-100', 'extracted', 'invented-source', 'user', ?, ?, ?, NULL, NULL)`,
+        ).run(sha256(original), original, sha256(original));
+      } finally {
+        db.close();
+      }
+      await memory.index({ verify: true });
+      const before = fs.readFileSync(file, 'utf8');
+      const text = addProposal
+        ? 'In the fictional silverpine case Ada Marlow proposed discussing, Vulpine Mutual promises Bo Winters free valve inspection; the promise exists only inside the fiction.'
+        : "In Ada Marlow's fictional silverpine case, Vulpine Mutual promises Bo Winters free valve inspection; the promise exists only inside the fiction.";
+      let cited: string[] = [];
+      await useAnswerModel({
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const proposal = payload.evidence.find((e: { excerpt: string }) =>
+            e.excerpt.includes('**Proposal:**'),
+          );
+          const promiseEvidence = payload.evidence.find((e: { excerpt: string }) =>
+            e.excerpt.includes('**Hypothetical:**'),
+          );
+          expect(proposal.retention_source_frame).toBe(original);
+          expect(promiseEvidence.retention_source_frame).toBe(original);
+          cited =
+            citeProposal === 'proposal-only'
+              ? [proposal.evidence_id]
+              : citeProposal
+                ? [promiseEvidence.evidence_id, proposal.evidence_id]
+                : [promiseEvidence.evidence_id];
+          return {
+            record_readings: payload.evidence.map((e: { evidence_id: string; excerpt: string }) => ({
+              evidence_id: e.evidence_id,
+              selected_meaning:
+                e.evidence_id === proposal.evidence_id
+                  ? 'Ada Marlow "proposes discussing" a fictional case.'
+                  : 'Vulpine Mutual "promises" free valve inspection only in fiction.',
+              clarification_or_ambiguity:
+                e.evidence_id === proposal.evidence_id
+                  ? 'The fictional promise is a separate record.'
+                  : 'The proposal act is a neighboring frame proposition excluded by this excerpt.',
+            })),
+            blocks: [{ text, evidence_ids: cited }],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const block = payload.blocks[0];
+          expect(block.cited_evidence.map((e: { evidence_id: string }) => e.evidence_id)).toEqual(cited);
+          expect(JSON.stringify(payload)).not.toContain('record_readings');
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true),
+                excerpt_selection: {
+                  selected_by_retained_excerpt: selected,
+                  unselected_content: selected
+                    ? null
+                    : 'A material clause is present only in an uncited neighboring record.',
+                },
+                source_alignments: block.cited_evidence.map(
+                  (e: { evidence_id: string; retention_source_frame: { anchor_id: string }[] }) => {
+                    const part = {
+                      source_anchor: e.retention_source_frame[0]!.anchor_id,
+                      answer_anchor: block.answer_segments[0].anchor_id,
+                      detail: 'The selected source contribution remains qualified.',
+                      relation: 'preserved',
+                    };
+                    return {
+                      evidence_id: e.evidence_id,
+                      source_context: 'Only the cited retained contribution is selected.',
+                      actor: part,
+                      object_and_mechanism: mechanismComparison(part),
+                      qualification: part,
+                    };
+                  },
+                ),
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What fictional silverpine promise did Ada Marlow propose discussing?',
+        memory_view: 'discussion',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(modelRequests, JSON.stringify(result)).toHaveLength(2);
+      expect(result.answer !== null).toBe(selected);
+      expect(result.citations).toHaveLength(selected ? (citeProposal ? 2 : 1) : 0);
+      if (!selected) expect(result.reason_code).toBe('verification_rejected');
+      expect(fs.readFileSync(file, 'utf8')).toBe(before);
+    },
+  );
 
   it('audits only framed citations when one block also cites an ordinary retained record', async () => {
     await seedSourceFrame();
@@ -4540,6 +4683,17 @@ function sourceFrameReading() {
   ];
 }
 
+function mechanismComparison<
+  T extends { detail: string; source_anchor?: string | null; answer_anchor?: string | null },
+>(part: T) {
+  const { detail, ...coordinates } = part;
+  return {
+    ...coordinates,
+    source_specifics: part.source_anchor === null ? null : detail.slice(0, 80),
+    answer_specifics: part.answer_anchor === null ? null : detail.slice(0, 80),
+  };
+}
+
 function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
   return [
     {
@@ -4555,7 +4709,8 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
         source_quote: 'покрывает ли гарантия обратную доставку',
         answer_quote: objectQuote,
         relation: 'preserved',
-        detail: 'The warranty coverage question concerns return delivery.',
+        source_specifics: 'Warranty coverage of return delivery.',
+        answer_specifics: 'Warranty coverage of return delivery.',
       },
       qualification: {
         source_quote: 'Ответ неизвестен',

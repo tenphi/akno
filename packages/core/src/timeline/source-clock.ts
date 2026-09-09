@@ -1,3 +1,5 @@
+import { hasUnretractedClauseEnd } from '../memory/clause-ending.ts';
+
 /** Bounded lexical floors; the complete cited block still requires semantic verification. */
 export function hasDeicticTime(text: string): boolean {
   return /\b(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\s+(?:day|week|month|year|morning|afternoon|evening|night|monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b|сегодня|завтра|вчера|(?:следующ|прошл|эт[аоу]|нынешн)\p{L}*\s+(?:день|дня|дн[её]м|недел|месяц|год|году|утр|вечер)/iu.test(
@@ -7,6 +9,7 @@ export function hasDeicticTime(text: string): boolean {
 
 export function hasSourceRelativeAnchor(text: string): boolean {
   if (hasExplainedSourceEntryClock(text)) return true;
+  if (hasInitialRecordingClock(text)) return true;
   if (hasRussianExplainedSourceEntryClock(text)) return true;
   // A quoted deictic word can name the record's clock; a quoted example of an entire anchoring
   // sentence cannot supply it. Require the time expression as the subject of this new construction.
@@ -188,6 +191,28 @@ function hasUndatedOriginalClock(text: string): boolean {
       .split(/[.!?;\n]/u)
       .at(-1)!;
     return !/(?<![\p{L}])(?:якобы|пример|если)(?![\p{L}])|(?<![\p{L}])не[ \t]*$/iu.test(prefix);
+  });
+}
+
+/** "Initial recording" must name the proposal's source clock, not a device recording. */
+function hasInitialRecordingClock(text: string): boolean {
+  const unquoted = maskSourceClockQuotations(text);
+  const actor = String.raw`(?:I|[Hh]e|[Ss]he|[Ww]e|[Tt]hey|(?!(?:The|This|That|If|Unless|When|Suppose|Example|Not|Allegedly)(?![\p{L}]))\p{Lu}[\p{L}'’-]*(?:[ \t]+\p{Lu}[\p{L}'’-]*){0,3})`;
+  const objectWord = String.raw`(?!(?:in|next|last|not|if|unless|when|that|whether|and|but|said|says|asked|asks|denied|denies|false|allegedly)(?![\p{L}]))[\p{L}\p{N}][\p{L}\p{N}'’-]*`;
+  const head = String.raw`(?:^|[.;!])[ \t]*${actor}[ \t]+(?:proposes|proposed)[ \t]+(?:reviewing|checking)[ \t]+(?:${objectWord}[ \t]+){1,12}`;
+  return (['day', 'week', 'month', 'year'] as const).some((period) => {
+    const unknown = String.raw`(?:,[ \t]+but[ \t]+the[ \t]+calendar[ \t]+${period}[ \t]+is[ \t]+undetermined[ \t]+because[ \t]+the[ \t]+recording[ \t]+date[ \t]+is[ \t]+unknown)?`;
+    const clocks = [
+      String.raw`in[ \t]+the[ \t]+${period}[ \t]+after[ \t]+the[ \t]+initial[ \t]+recording,[ \t]+not[ \t]+after[ \t]+processing`,
+      String.raw`in[ \t]+the[ \t]+${period}[ \t]+before[ \t]+the[ \t]+initial[ \t]+recording,[ \t]+not[ \t]+before[ \t]+processing`,
+      String.raw`(?:next|last)[ \t]+${period}[ \t]+relative[ \t]+to[ \t]+the[ \t]+initial[ \t]+recording,[ \t]+not[ \t]+processing`,
+    ];
+    return clocks.some((clock) => {
+      const pattern = new RegExp(String.raw`${head}${clock}${unknown}`, 'gu');
+      return [...unquoted.matchAll(pattern)].some((match) =>
+        hasUnretractedClauseEnd(unquoted, match.index + match[0].length),
+      );
+    });
   });
 }
 

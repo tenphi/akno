@@ -505,3 +505,64 @@ describe('proposal-bound Russian source-entry explanations', () => {
     expect(hasUnknownReferenceClock(text)).toBe(false);
   });
 });
+
+describe('proposal-bound initial recording clocks', () => {
+  const direct =
+    'Ada Marlow proposes reviewing the silverpine repair terms in the month after the initial recording, not after processing';
+  const relative =
+    'Ada Marlow proposes reviewing the silverpine repair terms next month relative to the initial recording, not processing';
+  const date = ', but the calendar month is undetermined because the recording date is unknown';
+  it.each([direct + date + '.', relative + '; the recording date and calendar month are unknown.'])(
+    'keeps the two clock dimensions separate: %s',
+    (text) => {
+      expect(hasSourceRelativeAnchor(text)).toBe(true);
+      expect(hasUnknownReferenceClock(text)).toBe(true);
+    },
+  );
+  it('does not make an initial source anchor establish unknownness', () => {
+    expect(hasSourceRelativeAnchor(direct + '.')).toBe(true);
+    expect(hasUnknownReferenceClock(direct + '.')).toBe(false);
+  });
+  it.each([
+    direct.replaceAll('after', 'before'),
+    direct.replaceAll('month', 'year'),
+    relative.replace('next month', 'last week'),
+    relative.replace('Ada Marlow', 'She'),
+    direct + '. She discussed the proposal separately',
+    direct + '. And the discussion continued',
+    relative + '; the proposal remained tentative',
+  ])('admits a closed proposal relation with its processing contrast: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text + '.')).toBe(true);
+  });
+  it.each([
+    'If ' + direct,
+    'Allegedly ' + direct,
+    'It is false that ' + direct,
+    'Example: ' + direct,
+    direct.replace('proposes', 'does not propose'),
+    direct.replace('proposes', 'asked whether she proposes'),
+    direct.replace('the initial recording', 'the initial device recording'),
+    direct.replace('the initial recording', 'the initial recording of processing'),
+    direct.replace('initial recording', 'initial\nrecording'),
+    direct.replace(', not after processing', ''),
+    direct.replace(', not after processing', '. Not after processing'),
+    direct.replace(', not after processing', ', not before processing'),
+    relative.replace('next month relative to', 'next month before'),
+    relative.replace(', not processing', ', if processing is delayed'),
+    direct + date.replace('calendar month', 'calendar year'),
+    direct + '; but this is false',
+    direct + '; and this is false',
+    ...[
+      '. But this is false',
+      '. And that is false',
+      '; HOWEVER this is false',
+      '!\n Actually this is false',
+      '.\n\tThis is false',
+    ].flatMap((tail) => [direct + tail, relative + tail]),
+    direct + ', but the source clock was processing',
+    direct + '?',
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) => `${open}${direct}${close}`),
+  ])('rejects a borrowed, ambiguous or retracted initial-recording relation: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text + '.')).toBe(false);
+  });
+});

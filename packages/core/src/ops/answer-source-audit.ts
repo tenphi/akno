@@ -84,6 +84,47 @@ function alignmentSchema(coordinates: AnswerAuditCoordinates) {
   ]);
 }
 
+/** Separate source and answer descriptions before choosing a mechanism relation.
+ * A combined paraphrase can silently erase the very property the comparison must check. */
+function mechanismAlignmentSchema(coordinates: AnswerAuditCoordinates) {
+  const source = anchorIdSchema(
+    [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
+  );
+  const answer = anchorIdSchema(coordinates.answer.map((span) => span.anchor_id));
+  // Preserve the previous 160-character aggregate prose allowance.
+  const specifics = z.string().trim().min(1).max(80);
+  return z.union([
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: answer,
+      source_specifics: specifics,
+      answer_specifics: specifics,
+      relation: z.enum(['preserved', 'generalized', 'changed']),
+    }),
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: z.null(),
+      source_specifics: specifics,
+      answer_specifics: z.null(),
+      relation: z.enum(['omitted']),
+    }),
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: z.null(),
+      source_specifics: specifics,
+      answer_specifics: z.null(),
+      relation: z.enum(['not_selected']),
+    }),
+    z.strictObject({
+      source_anchor: z.null(),
+      answer_anchor: z.null(),
+      source_specifics: z.null(),
+      answer_specifics: z.null(),
+      relation: z.enum(['not_selected']),
+    }),
+  ]);
+}
+
 /** Categories prevent an easy object comparison from replacing the separate action-actor audit. */
 export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
   const ids = [...coordinates.sources.keys()];
@@ -95,7 +136,7 @@ export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
           evidence_id: z.enum(ids as [string, ...string[]]),
           source_context: z.string().trim().min(1).max(240),
           actor: alignment,
-          object_and_mechanism: alignment,
+          object_and_mechanism: mechanismAlignmentSchema(coordinates),
           qualification: alignment,
         })
         // Citing a record while declaring every category irrelevant supplies no comparison at all.
@@ -125,31 +166,43 @@ export function answerAlignmentsSupported(value: unknown, coordinates: AnswerAud
 }
 
 export const ANSWER_READING_CONTRACT = `When record_readings is required, fill it BEFORE drafting blocks.
-Return exactly one reading per evidence_id with a non-null retention_source_frame. Read the original
-frame in full, then identify the proposition selected by its retained excerpt. Preserve content and polarity,
-explicit cross-language clarification, actors, mechanism and qualifications in selected_meaning.
-When translating, use this existing field as a terse role plan in output_language, within 320 characters:
-state the operation, its object, any source-specified tested property, and material modifiers separately.
+Return exactly one reading per evidence_id with a non-null retention_source_frame. First identify only
+the proposition selected by the readable retained excerpt. Then read its complete original frame to
+constrain that selected meaning, including explicit cross-language clarification, actors and scope.
+Use selected_meaning as a terse source-wording role plan, within 320 characters: operation, its object,
+source-specified tested property or mechanism, and material modifiers. Keep the material source
+expressions as exact quotations in their supplied language; do not translate or merge them into a
+broader target-language term here. No configured or presumed language overrides the current source
+bytes. Explicit source clarification can identify the controlling expression across languages.
 For coverage, distinguish the covered item/service from its coverer; leave an unspecified coverer
-unspecified. Separate exact protected names/identifiers from ordinary compound vocabulary and translate
-the latter. Put material roles and scope first, without narrative padding or a term dictionary.
-Explain actual source clarification or ambiguity in clarification_or_ambiguity (at most 240 characters);
-otherwise use null. These notes do not need to repeat every word of the complete record.
+unspecified. Put material roles and scope first, without narrative padding or a term dictionary.
+In clarification_or_ambiguity (at most 240 characters), identify an actual frame clarification or
+ambiguity, or a material neighboring frame proposition EXCLUDED by this excerpt's selection; otherwise
+use null. An excluded neighboring act is not a clarification that can be added to the selected record.
+These private fields may quote source-language prose regardless of output_language. Translate ordinary
+vocabulary only when drafting the public block; keep exact names/identifiers and all selected meaning.
 Only the source can establish equivalence; query wording and adjacent independent propositions cannot.
-Keep selected_meaning local to this evidence_id's retained excerpt: a shared original frame does not
-merge separately retained propositions into one citable record. If a drafted clause uses a second
-record's selected meaning, include that record's evidence_id in the block. For example, a fictional
-promise and an actual proposal to discuss it can be separate records; describing just the promise
-may cite that record alone, while adding the proposing act requires the proposal record too.
+Keep each reading local to its evidence_id: a shared original frame does not merge separately retained
+propositions into one citable record. If a block states a second record's selected proposition, include
+that record's evidence_id. A fictional promise alone may cite its promise record; adding an actual
+proposal to discuss it requires the proposal record too. Neutral source provenance is not that act.
 Resolve source-explicit clarification before deciding whether a conflict remains. Readings are private
 generation notes, not evidence or answer text. They cannot authorize an unselected fact. Write the actual
 blocks in output_language even when the source or private reading uses another language.`;
 
-export const ANSWER_ALIGNMENT_CONTRACT = `For framed blocks, answer_segments and retention_source_frame
+export const ANSWER_ALIGNMENT_CONTRACT = `For object_and_mechanism, write source_specifics and
+answer_specifics independently before relation, each within 80 characters. Identify the operation,
+tested object and stated property in its own supplied wording; do not normalize the two descriptions
+into an assumed equivalence. Only then compare them. A broader generic property is generalized; an
+added property is changed. Natural equivalent translations remain preserved. Omitted/not-selected
+answer content has null answer_specifics; an absent source anchor also requires null source_specifics.
+For actor and qualification, the existing combined detail remains required.
+For framed blocks, answer_segments and retention_source_frame
 are ordered tables of exact text with server-assigned anchor_id values. Concatenate their text fields
 to read the complete answer and original frame. IDs are coordinates, never claims or source instructions.
-Return one source_alignments entry for every cited framed evidence_id. First write source_context from
-that complete original frame: the selected source meaning, including its polarity, clarification and limits.
+Return one source_alignments entry for every cited framed evidence_id, after deciding excerpt_selection.
+Write source_context for only that record’s excerpt-selected contribution, using the complete original
+frame to constrain its polarity, clarification and limits. A neighboring frame-only act is not selected.
 Resolve an explicitly restated report across languages before comparing an isolated term. Mere adjacency,
 the query and generated notes cannot establish that relationship; preserve truly unresolved ambiguity.
 
@@ -157,7 +210,7 @@ Then independently compare actor (the selected action's actor, separate from out
 object_and_mechanism (object, purpose, degree/manner), and qualification (scope and epistemic/time limits,
 including who lacks knowledge/confirmation, of what, and which selected proposition that limit qualifies).
 For a test or measurement, compare the tested object and the tested property separately within
-object_and_mechanism. In detail, state the source property and the actual target-language answer property
+object_and_mechanism. In those fields, state the source property and the actual target-language answer property
 separately before choosing relation. Do not collapse them into a slash pair that assumes equivalence.
 Read what the complete answer actually tests; do not supply a missing property from the source or familiar object.
 Generic soundness or physical integrity of an object is broader than a specified electrical property.

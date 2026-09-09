@@ -22,12 +22,19 @@ const part = () => ({
   relation: 'preserved',
   detail: 'The source-supported selected meaning is preserved in the whole block.',
 });
+const mechanism = () => ({
+  source_anchor: 'source-actor',
+  answer_anchor: 'answer-actor',
+  source_specifics: 'Inspect a loosely inserted connector.',
+  answer_specifics: 'Проверить неплотно вставленный разъём.',
+  relation: 'preserved',
+});
 const audit = () => [
   {
     evidence_id: 'E1',
     source_context: 'Ada proposed checking a loosely inserted connector; the proposal remains unaccepted.',
     actor: part(),
-    object_and_mechanism: part(),
+    object_and_mechanism: mechanism(),
     qualification: part(),
   },
 ];
@@ -81,6 +88,9 @@ describe('private original-source answer audits', () => {
           ...entries[0]![category],
           relation,
           answer_anchor: relation === 'omitted' ? null : 'answer-actor',
+          ...(category === 'object_and_mechanism' && relation === 'omitted'
+            ? { answer_specifics: null }
+            : {}),
         };
         const value = [{ ...entries[0], [category]: entry }];
         expect(answerAlignmentSchema(coordinates).safeParse(value).success).toBe(true);
@@ -109,7 +119,7 @@ describe('private original-source answer audits', () => {
       ...entries[0],
       evidence_id: 'E2',
       actor: { ...part(), source_anchor: 'other-source' },
-      object_and_mechanism: { ...part(), source_anchor: 'other-source' },
+      object_and_mechanism: { ...mechanism(), source_anchor: 'other-source' },
       qualification: { ...part(), source_anchor: 'other-source' },
     };
     expect(answerAlignmentSchema(combined).safeParse([...entries, second]).success).toBe(true);
@@ -122,6 +132,58 @@ describe('private original-source answer audits', () => {
     if (kind === 'duplicate') entries.push(entries[0]!);
     if (kind === 'foreign') entries[0]!.evidence_id = 'E2';
     expect(answerAlignmentsSupported(entries, coordinates)).toBe(false);
+  });
+
+  it.each(['preserved', 'generalized', 'changed', 'omitted', 'not_selected'] as const)(
+    'keeps mechanism descriptions aligned with null coordinates for %s',
+    (relation) => {
+      for (const source_anchor of [null, 'source-actor'])
+        for (const answer_anchor of [null, 'answer-actor']) {
+          const comparison = {
+            ...mechanism(),
+            relation,
+            source_anchor,
+            answer_anchor,
+            source_specifics: source_anchor === null ? null : 'Connector continuity.',
+            answer_specifics: answer_anchor === null ? null : 'Electrical continuity.',
+          };
+          const expected =
+            relation === 'not_selected'
+              ? answer_anchor === null
+              : source_anchor !== null &&
+                (relation === 'omitted' ? answer_anchor === null : answer_anchor !== null);
+          const entries = [{ ...audit()[0], object_and_mechanism: comparison }];
+          expect(answerAlignmentSchema(coordinates).safeParse(entries).success).toBe(expected);
+          expect(answerAlignmentsSupported(entries, coordinates)).toBe(
+            expected && ['preserved', 'not_selected'].includes(relation),
+          );
+        }
+    },
+  );
+
+  it('requires separate bounded source and answer specifics without a legacy fallback', () => {
+    for (const comparison of [
+      part(),
+      { ...mechanism(), source_specifics: undefined },
+      { ...mechanism(), answer_specifics: undefined },
+      { ...mechanism(), source_specifics: 'x'.repeat(81) },
+      { ...mechanism(), answer_specifics: 'x'.repeat(81) },
+      { ...mechanism(), source_specifics: null },
+      { ...mechanism(), answer_specifics: null },
+      { ...mechanism(), detail: 'Combined comparison is no longer allowed.' },
+      { ...mechanism(), relation: 'omitted', answer_anchor: null },
+      {
+        ...mechanism(),
+        relation: 'not_selected',
+        source_anchor: null,
+        answer_anchor: null,
+        answer_specifics: null,
+      },
+    ])
+      expect(
+        answerAlignmentSchema(coordinates).safeParse([{ ...audit()[0], object_and_mechanism: comparison }])
+          .success,
+      ).toBe(false);
   });
 
   it('requires complete bounded source context before comparison', () => {
@@ -155,7 +217,19 @@ describe('private original-source answer audits', () => {
     expect(answerAlignmentsSupported([{ ...audit()[0], actor: incidental }], coordinates)).toBe(true);
     expect(
       answerAlignmentsSupported(
-        [{ ...audit()[0], actor: incidental, object_and_mechanism: incidental, qualification: incidental }],
+        [
+          {
+            ...audit()[0],
+            actor: incidental,
+            object_and_mechanism: {
+              ...mechanism(),
+              relation: 'not_selected',
+              answer_anchor: null,
+              answer_specifics: null,
+            },
+            qualification: incidental,
+          },
+        ],
         coordinates,
       ),
     ).toBe(false);
@@ -243,6 +317,23 @@ describe('provider-visible alignment branches', () => {
           new Set(['source_anchor', 'answer_anchor', 'relation', 'detail']),
         );
       }
+      const mechanismBranches = wire.properties.alignments.items.properties.object_and_mechanism.anyOf;
+      expect(mechanismBranches).toHaveLength(4);
+      for (const branch of mechanismBranches) {
+        expect(Object.keys(branch.properties)).toEqual([
+          'source_anchor',
+          'answer_anchor',
+          'source_specifics',
+          'answer_specifics',
+          'relation',
+        ]);
+        expect(branch.additionalProperties).toBe(false);
+        expect(new Set(branch.required)).toEqual(new Set(Object.keys(branch.properties)));
+      }
+      expect(mechanismBranches[0].properties.source_specifics.maxLength).toBe(80);
+      expect(mechanismBranches[0].properties.answer_specifics.maxLength).toBe(80);
+      expect(mechanismBranches[1].properties.answer_specifics.type).toBe('null');
+      expect(mechanismBranches[3].properties.source_specifics.type).toBe('null');
       expect(branches[0].properties.source_anchor.enum).toEqual(['source-actor']);
       expect(branches[0].properties.answer_anchor.enum).toEqual(['answer-actor']);
       expect(branches[0].properties.relation.enum).toEqual(['preserved', 'generalized', 'changed']);

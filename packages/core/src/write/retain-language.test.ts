@@ -1603,6 +1603,46 @@ describe('cross-language retention boundary', () => {
       });
   });
 
+  it.each([
+    [
+      'Ada Marlow proposed reviewing silverpine next month relative to the original record.',
+      'the source-relative anchor is recognized',
+    ],
+    [
+      'Ada Marlow proposed reviewing silverpine next month; the calendar month is unknown.',
+      'the unknown reference date is recognized',
+    ],
+    [
+      'Ada Marlow proposed reviewing silverpine next month.',
+      'neither the source-relative anchor nor the unknown reference date is recognized',
+    ],
+  ])('identifies the missing clock prerequisite without changing the typed hold: %s', (text, reason) => {
+    const source =
+      'Ada Marlow proposes reviewing silverpine next month. The original record is undated and the calendar month is unknown.';
+    const result = cleanCandidateBatch(
+      [
+        {
+          kind: 'plan',
+          subject: 'silverpine',
+          text,
+          attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+          discourse: { commitment: 'tentative', disposition: 'proposed' },
+          epistemic: { basis: 'self_attested' },
+          support: [{ quote: source }],
+          discourse_frame: [{ quote: source }],
+          time: { precision: 'unknown', status: 'tentative', relation: 'scheduled' },
+        },
+      ],
+      { sourceText: source },
+    );
+    expect(result.candidates).toHaveLength(0);
+    expect(result.held[0]).toMatchObject({
+      reason_code: 'time_unresolved',
+      reason: expect.stringContaining(reason),
+    });
+    expect(result.held[0]?.reason).not.toContain('bare tomorrow');
+  });
+
   it.each(['unknown', 'day'] as const)(
     'keeps an undated proposal but rejects an invented resolved date (%s)',
     (precision) => {

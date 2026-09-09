@@ -2,13 +2,25 @@ const REPORT_UNCERTAINTY =
   /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:independently )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
 
 /** Presence of a personal epistemic limit; predicate equivalence still needs source verification. */
-export function hasReportUncertainty(text: string): boolean {
+export function hasReportUncertainty(text: string, attributionNames: readonly string[] = []): boolean {
   if (REPORT_UNCERTAINTY.test(text)) return true;
   const unquoted = text.replace(
     /«[^»]*»|“[^”]*”|"[^"\n]*"|\x60[^\x60]*\x60|‘[^’]*’|(?<![\p{L}\p{N}])'(?:[^'\n]|(?<=[\p{L}\p{N}])'(?=[\p{L}\p{N}]))+'(?![\p{L}\p{N}])/gu,
     '⟦quotation⟧',
   );
-  const name = String.raw`(?!(?:The|This|That|A|An|If|Unless|When|Suppose|Example|Allegedly|Not)\b)\p{Lu}[\p{L}’'-]*(?:[ \t]+\p{Lu}[\p{L}’'-]*){1,3}`;
+  const fullName = String.raw`(?!(?:The|This|That|A|An|If|Unless|When|Suppose|Example|Allegedly|Not|I|He|She|We|They|You|It)\b)\p{Lu}[\p{L}’'-]*(?:[ \t]+\p{Lu}[\p{L}’'-]*){1,3}`;
+  // Short references come only from distinct validated attribution names. A capitalized
+  // sentence subject alone cannot establish a person, and shared first names are ambiguous.
+  const names = [...new Set(attributionNames.map((value) => value.trim().replace(/[ \t]+/gu, ' ')))];
+  const firstNames = names
+    .filter((value) => new RegExp(`^${fullName}$`, 'u').test(value))
+    .map((value) => value.split(' ')[0]!);
+  const aliases = firstNames
+    .filter((value) => firstNames.filter((other) => other === value).length === 1)
+    .map((value) => value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'));
+  const name = aliases.length
+    ? String.raw`(?:${fullName}|(?:${aliases.join('|')})(?![\p{L}\p{N}_]))`
+    : fullName;
   const namedActor = String.raw`(?:${name}|(?:[Tt]he[ \t]+)?(?:AI[ \t]+)?assistant)`;
   const actor = String.raw`(?:${namedActor}|I|[Hh]e|[Ss]he|[Ww]e|[Tt]hey)`;
   const negativeAuxiliary = String.raw`(?:has|have|had)[ \t]+not[ \t]+(?:yet[ \t]+)?`;
@@ -40,8 +52,16 @@ export function hasReportUncertainty(text: string): boolean {
       ? String.raw`(?:${finalPredicate}|${reflexive}[ \t]+${personalCheck})`
       : finalPredicate;
     const coordination = String.raw`(?:[ \t]+or[ \t]+${reportCheck}|,[ \t]+and[ \t]+${negativeAuxiliary}${reportCheck}|,[ \t]+${reportCheck},[ \t]+or[ \t]+${finalCheck})`;
+    // A relay does not establish uncertainty by itself. It can only continue the already
+    // complete same-subject negative reading/checking pair without changing that report object.
+    const selfCheck = reflexive
+      ? String.raw`(?:[ \t]+without[ \t]+(?:independently[ \t]+)?(?:checking|verifying|confirming)[ \t]+it[ \t]+${reflexive})?`
+      : '';
+    const relayContinuation = String.raw`,?[ \t]+and[ \t]+(?:only[ \t]+)?(?:passes[ \t]+on|conveys|relays)[ \t]+(?:this|that|the)[ \t]+(?:meaning|account|report)${selfCheck}`;
+    const closedContinuation = String.raw`(?:${negativeExplanation}|${possibleContinuation}|${clarification}|${relayContinuation})?`;
+    const end = String.raw`(?=[ \t]*(?:$|[.!?\n]|;(?![ \t]*(?:[Bb]ut|[Hh]owever|[Yy]et|[Aa]ctually|(?:[Aa]nd[ \t]+)?[Tt]his[ \t]+is[ \t]+false)(?![\p{L}]))))`;
     const pattern = new RegExp(
-      String.raw`(?:^|[.;!])[ \t]*(?:[Tt]he[ \t]+report[ \t]+(?:says|states)[ \t]+(?:that[ \t]+)?)?${subject}(?:,[ \t]*${name},)?${relay}[ \t]+${negativeAuxiliary}${examination}${coordination}(?:${negativeExplanation}|${possibleContinuation}|${clarification})?(?=[ \t]*(?:$|[.!?;\n]))`,
+      String.raw`(?:^|[.;!])[ \t]*(?:[Tt]he[ \t]+report[ \t]+(?:says|states)[ \t]+(?:that[ \t]+)?)?${subject}(?:,[ \t]*${name},)?${relay}[ \t]+${negativeAuxiliary}${examination}${coordination}${closedContinuation}${end}`,
       'u',
     );
     return pattern.test(unquoted);

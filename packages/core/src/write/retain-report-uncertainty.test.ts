@@ -14,6 +14,8 @@ const clarified =
 const personalList =
   'Ada Marlow only conveys this account and has not read the agreement, independently checked the account, or herself checked this reported meaning.';
 const checked = 'Ada Marlow has not read the agreement or independently checked this account.';
+const relayTail =
+  'Ada has not read the agreement or independently checked Bo’s account and only passes on that meaning without checking it herself.';
 const repeatedCheck =
   'Ada Marlow is only passing on this meaning, has not read the agreement, and has not independently checked Bo Winters’s account.';
 const record = (qualification: string, original = source) => ({
@@ -35,6 +37,27 @@ const record = (qualification: string, original = source) => ({
 describe('shared negation in readable report uncertainty', () => {
   it.each([
     [coordinated, true],
+    [relayTail, true],
+    [relayTail.replace('Bo’s', 'Bo Winters’s').replace(' and only', ', and only'), true],
+    [relayTail.replace('Ada has', 'Ada Marlow has'), true],
+    [relayTail.replace('Ada has', 'She has'), true],
+    [relayTail.replace('Ada has', 'She has').replace('herself', 'himself'), false],
+    [relayTail.replace('Ada has', 'I have').replace('herself', 'himself'), false],
+    [relayTail.replace('has not read', 'has read'), false],
+    [relayTail.replace('Bo’s account', 'the device'), false],
+    [relayTail.replace('and only', 'and Bo only'), false],
+    [relayTail.replace('that meaning', 'that device'), false],
+    [relayTail.replace('without checking', 'after checking'), false],
+    [relayTail.replace('herself.', 'herself, but she then confirmed it.'), false],
+    [relayTail.replace('herself.', 'herself; but this is false.'), false],
+    [relayTail.replace('herself.', 'herself; and this is false.'), false],
+    [`If ${relayTail}`, false],
+    [`Example: ${relayTail}`, false],
+    [`It is false that ${relayTail}`, false],
+    [`Ada Marlow asked whether ${relayTail}`, false],
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(
+      ([open, close]) => [`${open}${relayTail}${close}`, false] as const,
+    ),
     [checked, true],
     [`The report says ${checked}`, true],
     [`Ada Marlow denied she has not read the agreement or independently checked this account.`, false],
@@ -191,7 +214,7 @@ describe('shared negation in readable report uncertainty', () => {
   });
 
   it.each(
-    [coordinated, continued, clarified, personalList, checked, repeatedCheck].flatMap(
+    [coordinated, continued, clarified, personalList, checked, repeatedCheck, relayTail].flatMap(
       (qualification) =>
         [
           [false, true, qualification],

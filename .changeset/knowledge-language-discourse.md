@@ -156,3 +156,5 @@ counterfactual alternatives across translation. Compare tested properties before
 paraphrases, keeping private translation notes subordinate to original evidence and all semantic checks.
 
 Keep a named source's exact spelling and existing attribution requirement beside its current record during answer generation. Give tentative records a conditional scope definition that preserves an asserted discussion while its embedded hypotheses remain uncertain. Recognize bounded Russian proposal-clock explanations and independently stated calendar unknowability without weakening source verification.
+
+Preserve supplied source wording in private answer planning before translation. Verify cited-excerpt selection before private-frame interpretation and compare source and answer mechanisms separately within the existing prose allowance. Recognize complete nominal counterfactuals, closed personal report relays and source-bound initial-recording clocks while retaining all independent semantic checks.
