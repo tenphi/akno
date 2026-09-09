@@ -1,0 +1,327 @@
+{
+  "runtimeCommit": "ac1059e4a3df85fbfef12749f65439a69434d56c",
+  "model": "gpt-5.6-luna",
+  "purpose": "Protocol-only constant JSON echo using actual compiled retention-verifier schemas; no semantic usefulness claim or memory writes.",
+  "controls": [
+    {
+      "sizes": [
+        1,
+        2
+      ],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "verdicts": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "candidate_id": {
+                      "type": "string",
+                      "enum": [
+                        "cand_96755812f5cfa50a5a6e6e76"
+                      ]
+                    },
+                    "comparison": {
+                      "type": "object",
+                      "properties": {
+                        "source_meaning": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        },
+                        "candidate_meaning": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        },
+                        "action_arguments": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        },
+                        "qualification_scope": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        }
+                      },
+                      "required": [
+                        "source_meaning",
+                        "candidate_meaning",
+                        "action_arguments",
+                        "qualification_scope"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "mismatches": {
+                      "maxItems": 3,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "dimension": {
+                            "type": "string",
+                            "enum": [
+                              "proposition_supported",
+                              "action_arguments_preserved",
+                              "qualification_scope_preserved"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "unsupported_content",
+                              "changed_value",
+                              "changed_action_or_role",
+                              "changed_qualification",
+                              "omitted_scope",
+                              "changed_repair_proposition"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 240
+                          }
+                        },
+                        "required": [
+                          "dimension",
+                          "kind",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "proposition_supported": {
+                      "type": "boolean"
+                    },
+                    "action_arguments_preserved": {
+                      "type": "boolean"
+                    },
+                    "qualification_scope_preserved": {
+                      "type": "boolean"
+                    },
+                    "reason_code": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "source_unavailable",
+                            "discourse_uncertain",
+                            "time_unresolved",
+                            "noncanonical_without_context"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "candidate_id",
+                    "comparison",
+                    "mismatches",
+                    "proposition_supported",
+                    "action_arguments_preserved",
+                    "qualification_scope_preserved",
+                    "reason_code"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "candidate_id": {
+                      "type": "string",
+                      "enum": [
+                        "cand_ed15bad0fcdfda8ca7ff72cf"
+                      ]
+                    },
+                    "span_audit": {
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "frame_id": {
+                            "type": "string",
+                            "enum": [
+                              "F1",
+                              "F2"
+                            ]
+                          },
+                          "interpretation": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 240
+                          },
+                          "relationship": {
+                            "type": "string",
+                            "enum": [
+                              "restatement",
+                              "clarification",
+                              "contrast",
+                              "independent",
+                              "unresolved"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "frame_id",
+                          "interpretation",
+                          "relationship"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "comparison": {
+                      "type": "object",
+                      "properties": {
+                        "source_meaning": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        },
+                        "candidate_meaning": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        },
+                        "action_arguments": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        },
+                        "qualification_scope": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 320
+                        }
+                      },
+                      "required": [
+                        "source_meaning",
+                        "candidate_meaning",
+                        "action_arguments",
+                        "qualification_scope"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "mismatches": {
+                      "maxItems": 3,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "dimension": {
+                            "type": "string",
+                            "enum": [
+                              "proposition_supported",
+                              "action_arguments_preserved",
+                              "qualification_scope_preserved"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "unsupported_content",
+                              "changed_value",
+                              "changed_action_or_role",
+                              "changed_qualification",
+                              "omitted_scope",
+                              "changed_repair_proposition"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 240
+                          }
+                        },
+                        "required": [
+                          "dimension",
+                          "kind",
+                          "detail"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "proposition_supported": {
+                      "type": "boolean"
+                    },
+                    "action_arguments_preserved": {
+                      "type": "boolean"
+                    },
+                    "qualification_scope_preserved": {
+                      "type": "boolean"
+                    },
+                    "reason_code": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "source_unavailable",
+                            "discourse_uncertain",
+                            "time_unresolved",
+                            "noncanonical_without_context"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "candidate_id",
+                    "span_audit",
+                    "comparison",
+                    "mismatches",
+                    "proposition_supported",
+                    "action_arguments_preserved",
+                    "qualification_scope_preserved",
+                    "reason_code"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "verdicts"
+        ],
+        "additionalProperties": false
+      },
+      "messages": [
+        {
+          "role": "system",
+          "content": "This is a protocol-only JSON echo control. Copy the supplied constant JSON exactly. Do not interpret claims or make a semantic judgment."
+        },
+        {
+          "role": "user",
+          "content": "{\"verdicts\":[{\"candidate_id\":\"cand_96755812f5cfa50a5a6e6e76\",\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_ed15bad0fcdfda8ca7ff72cf\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}"
+        }
+      ],
+      "maxTokens": 3744,
+      "status": "completed",
+      "ok": true,
+      "value": "{\"verdicts\":[{\"candidate_id\":\"cand_96755812f5cfa50a5a6e6e76\",\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null},{\"candidate_id\":\"cand_ed15bad0fcdfda8ca7ff72cf\",\"span_audit\":[{\"frame_id\":\"F1\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"},{\"frame_id\":\"F2\",\"interpretation\":\"Invented protocol marker.\",\"relationship\":\"independent\"}],\"comparison\":{\"source_meaning\":\"Invented protocol marker.\",\"candidate_meaning\":\"Invented protocol marker.\",\"action_arguments\":\"Invented protocol marker.\",\"qualification_scope\":\"Invented protocol marker.\"},\"mismatches\":[],\"proposition_supported\":true,\"action_arguments_preserved\":true,\"qualification_scope_preserved\":true,\"reason_code\":null}]}",
+      "reason": null,
+      "error": null,
+      "latencyMs": 3011.345417,
+      "usage": {
+        "inputTokens": 806,
+        "outputTokens": 251,
+        "totalTokens": 1057,
+        "cachedInputTokens": 0,
+        "reasoningOutputTokens": 15
+      },
+      "schemaValid": true
+    }
+  ]
+}
