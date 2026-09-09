@@ -1,0 +1,500 @@
+{
+  "runtimeCommit": "c699916e8f0f8f6537dcb66558ded4f998cf8cfd",
+  "providerCalls": 0,
+  "groups": [
+    {
+      "group": "alignment",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-alignment.log",
+      "exitCode": 0,
+      "logSha256": "4ac60a4d133a6b65f44bf8935e3f2e50cad3b2adf9a327629d97bcaadd9efaf1",
+      "records": [
+        {
+          "compiledSourceClock": true,
+          "compiledFramedAnswers": true,
+          "immutableOwnTextReferences": true,
+          "staleAndForeignBlockReferencesRejected": true,
+          "mandatorySemantics": true,
+          "mandatorySelection": true,
+          "strictVerdictJson": true,
+          "readingsPrivate": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "qualification",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-qualification.log",
+      "exitCode": 0,
+      "logSha256": "5154effbc9a45ff140afcfb5ebd43db1c9a03ee69db2bc97803d6e65f40b1726",
+      "records": [
+        {
+          "compiledContinuedReportUncertainty": true,
+          "compiledProposerFloor": true,
+          "compiledHypotheticalVersions": true,
+          "mandatorySemantics": true,
+          "unrelatedInstallationHeld": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "rendering",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-rendering.log",
+      "exitCode": 0,
+      "logSha256": "0f6a5db293038a4b0213b6a1eaed38cde45bd9c6b8b2bde4c0a95bc693aa4eeb",
+      "records": [
+        {
+          "compiledQuestionSeparation": true,
+          "compiledFullOriginalFrameUnchanged": true,
+          "compiledCopyAndTranslation": true,
+          "currentPayloadLanguageChecked": true,
+          "strictCopyBranches": true,
+          "completeRecordVerification": true,
+          "mandatorySemantics": true,
+          "mandatorySelection": true,
+          "strictJson": true,
+          "leadingDenialVerifiedWithoutRepair": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0
+        },
+        {
+          "compiledTwoFrameSchema": true,
+          "excerptSelectionBeforeAlignments": true,
+          "mandatoryNegativeSelection": true,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "boundaries",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-boundaries.log",
+      "exitCode": 0,
+      "logSha256": "6ea13e378c4d93ee17aad025ee731d8536294f5a2b34878ad3bc89ece9fbca97",
+      "records": [
+        {
+          "compiledOrdinaryQuestionPreserved": true,
+          "compiledRussianExplainedProposal": true,
+          "compiledProposalClockRetractions": true,
+          "compiledNominalAssistantAttribution": true,
+          "compiledRussianSourceTimeAnchor": true,
+          "compiledRussianUnknownClock": true,
+          "compiledClockMandatorySemantics": true,
+          "compiled600CharacterBound": true,
+          "compiledSourceClock": true,
+          "sourceClockQuotesExcluded": true,
+          "unknownProposalFullyVerified": true,
+          "compiledReporterReversal": true,
+          "compiledGenericPassive": true,
+          "compiledCoverageInstrument": true,
+          "mandatorySemantics": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "retention",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-retention.log",
+      "exitCode": 0,
+      "logSha256": "27982181f26a5f0dd1cd04d619946567437395fa07daecfa0a0f12403e1a4fc0",
+      "records": [
+        {
+          "compiledExtractionAndRepairFieldOrder": true,
+          "compiledExplicitRepairTargets": true,
+          "compiledReadOnlyAdmittedContext": true,
+          "compiledClosedReportClarification": true,
+          "compiledQuotedBookingAlias": true,
+          "compiledSubjectFrameCompleteness": true,
+          "providedCandidateUnchanged": true,
+          "repairPositionPreserved": true,
+          "mandatoryFullSourceSemantics": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "person",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-person.log",
+      "exitCode": 0,
+      "logSha256": "7b02862f0a6f26026a3625c3cafae6d8771129928ea32c0d7f90ee22bb52aadd",
+      "records": [
+        {
+          "compiledPersonProposal": true,
+          "independentOwnershipRequired": true,
+          "noSynthesizedProposal": true,
+          "unresolvedDevicePreserved": true,
+          "passiveAgentPreserved": true,
+          "unrelatedProductBytesUnchanged": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "retention-shape",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-retention-shape.log",
+      "exitCode": 0,
+      "logSha256": "bb3c8787dd91e017d6be271b14dc6af039152427f4c2b03bd1c299595bcb1411",
+      "records": [
+        {
+          "compiledRetentionFieldOrder": true,
+          "compiledRestrictiveNamingDenial": true,
+          "sourceAndSubjectBoundNaming": true,
+          "affirmativeBookingStillRequiresTime": true,
+          "governingEpistemicQualification": true,
+          "canonicalModalFrameStillHeld": true,
+          "completeOriginalSource": true,
+          "mandatoryFullSourceSemantics": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "epistemic-object",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-epistemic-object.log",
+      "exitCode": 0,
+      "logSha256": "e1799aac78cc497032d1939a5157edec43bf21c1d663ba5cfe0ee0211eee5e90",
+      "records": [
+        {
+          "compiledEpistemicObjectControls": true,
+          "answerCases": 8,
+          "mandatoryOriginalFrame": true,
+          "negativeSemanticsRejected": true,
+          "negativeAlignmentRejected": true,
+          "invalidOmittedAnchorUnavailable": true,
+          "contractualAndPhysicalStateSupported": true,
+          "recordAndPersonalSubjectsDistinct": true,
+          "retentionSemanticsRequired": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "translation",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-translation.log",
+      "exitCode": 0,
+      "logSha256": "97d590094ae5ef5e3c656b01a6b2ece3fcba90f11c4256c4f9c176ada891d9b4",
+      "records": [
+        {
+          "compiledQuestionSeparation": true,
+          "compiledFullOriginalFrameUnchanged": true,
+          "compiledTranslationOnly": true,
+          "forbiddenCopyRejected": true,
+          "declaredLanguagePolicyRestriction": true,
+          "currentPayloadLanguageChecked": true,
+          "strictCopyBranches": true,
+          "completeRecordVerification": true,
+          "mandatorySemantics": true,
+          "mandatorySelection": true,
+          "strictJson": true,
+          "leadingDenialVerifiedWithoutRepair": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "presentation",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-presentation.log",
+      "exitCode": 0,
+      "logSha256": "d710f29310f1da0016a6c195f3a43f5b025d0e9814465621e8f4d9145e06d2c6",
+      "records": [
+        {
+          "compiledReportDisplayPhrases": true,
+          "compiledExactNamedSourceHint": true,
+          "compiledConditionalTentativeScope": true,
+          "namedAndGenericSources": true,
+          "englishAndRussian": true,
+          "generationOnly": true,
+          "mandatorySemantics": true,
+          "sourceBytesUnchanged": true,
+          "cases": 8,
+          "extraModelPasses": 0
+        }
+      ]
+    },
+    {
+      "group": "text-bound",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-text-bound.log",
+      "exitCode": 0,
+      "logSha256": "24883a764141204c620777692d99a85c49b57f0d83c43876c9ea43ce9335a919",
+      "records": [
+        {
+          "compiledNormalizedTextBound": true,
+          "boundaries": [
+            399,
+            400,
+            401
+          ],
+          "utf16AstralBoundary": true,
+          "preciseOriginalPositionRepair": true,
+          "immutableAdmittedSibling": true,
+          "completeOriginalSource": true,
+          "mandatoryFullSourceSemantics": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "reference",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-reference.log",
+      "exitCode": 0,
+      "logSha256": "4d07387b3bdca97b2f8064ce1c6b42775951011c0fa00357f2634be0aab23c8e",
+      "records": [
+        {
+          "compiledSourceAttachedRecord": true,
+          "cases": 8,
+          "completeOriginalSource": true,
+          "componentOwnershipDistinct": true,
+          "competingAndUnrelatedSubjectsRejected": true,
+          "scopeAndObjectChangesRejected": true,
+          "mandatoryFullSourceSemantics": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "group",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-group.log",
+      "exitCode": 0,
+      "logSha256": "6a5eb7be3e3a00b09635df570a4b1ef6076b810bdd3704910b6ab500eb1f7224",
+      "records": [
+        {
+          "compiledGroupRelativeEpistemicScope": true,
+          "cases": 13,
+          "englishRussianAndFiniteParaphrases": true,
+          "omittedNullAndChangedActualAnchors": true,
+          "validNegativeVerdictsOrdinaryRejection": true,
+          "impersonalSourcePreserved": true,
+          "independentPrivateLimitUnselected": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "bounded",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-bounded.log",
+      "exitCode": 0,
+      "logSha256": "dd6ee8389036fb21f063f2327cdb09a4ca1d4c7d2c954f456c605bd18348b619",
+      "records": [
+        {
+          "compiledUnansweredCoverageRoles": true,
+          "compiledNominalCounterfactual": true,
+          "compiledOriginalUnknownClock": true,
+          "compiledAlignmentBranches": 20,
+          "compiledCoordinatedPersonalReport": true,
+          "mandatoryFullSourceVerification": true,
+          "extraSemanticPasses": 0,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledExactAdvisoryRepair": true,
+          "compiledOriginalObligation": true,
+          "compiledCompactAuditSourceAuthority": true,
+          "mandatoryFullSourceVerification": true,
+          "extraSemanticPasses": 0,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledTwoPartNegativeReport": true,
+          "compiledEnglishSourceEntry": true,
+          "compiledEnglishAndRussianCounterfactual": true,
+          "compiledComparisonBeforeRelation": true,
+          "strictPairedAlignmentShapes": true,
+          "extraSemanticPasses": 0,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledAffirmativeReportBoundary": true,
+          "compiledAffirmativeSourceClockBoundary": true,
+          "compiledAffirmativeCounterfactualBoundary": true,
+          "colonScopePreserved": true,
+          "extraSemanticPasses": 0,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledCounterfactualRightBoundary": true,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledRussianExplainedProposalClock": true,
+          "compiledIndependentUnknownCalendar": true,
+          "compiledClockRetractionAndConditionalBoundaries": true,
+          "compiledTentativeRecordScope": true,
+          "mandatoryFullSourceVerification": true,
+          "extraSemanticPasses": 0,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledAttributionBoundReportRelay": true,
+          "compiledReportSemanticNegative": true,
+          "compiledInitialRecordingIndependentClocks": true,
+          "compiledImmediateRetractionBoundary": true,
+          "compiledMechanismBranches": 20,
+          "legacyMechanismShapeRejected": true,
+          "incidentalOperationCaps80Each": true,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "property",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-property.log",
+      "exitCode": 0,
+      "logSha256": "a2e5f29cd154b17f099bf650349fe5cd833d82aa5234d142c6bd7930ef2e63bf",
+      "records": [
+        {
+          "compiledPropertyCases": 13,
+          "separateNegativePropertyEnforced": true,
+          "allPositiveNegativeHeld": true,
+          "positivePropertyCannotOverrideSemanticsOrSelection": true,
+          "copyAndTranslation": true,
+          "strictWireCaps50And30": true,
+          "mixedCitationOwnership": true,
+          "foreignStaleAndMalformedHeld": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledPromptClockPhraseMeetsFrozenFloor": true,
+          "compiledCompleteReportSentences": true,
+          "compiledPresentationRepair": true,
+          "oneRepairAndMandatorySemantics": true,
+          "unchanged400UnitBound": true,
+          "modelCompetenceClaimed": false
+        },
+        {
+          "compiledPersonallyCheck": true,
+          "closedSourceBoundaries": true,
+          "propertyAbsentAndUnselectedSeparated": true,
+          "noSemanticCompetenceClaim": true
+        }
+      ]
+    },
+    {
+      "group": "polarity",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-polarity.log",
+      "exitCode": 0,
+      "logSha256": "3bf56f77dd14895d5a4bcbf0227aecf0cb578c667341df2ab13bad2c660b6ea4",
+      "records": [
+        {
+          "compiledSourcePolarityCases": 11,
+          "requiredStrictEnum": true,
+          "immutableCandidateEquality": true,
+          "allPositiveMismatchHeld": true,
+          "matchingCannotOverrideSemanticNegative": true,
+          "atomicInvalidUnavailable": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "clock",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-clock.log",
+      "exitCode": 0,
+      "logSha256": "7293c58b3ed4351fbb8d359f333250af7eaf52a9ed2d1494b7f8bec5846c6a9a",
+      "records": [
+        {
+          "compiledClockCases": 7,
+          "narrowClockBranch": true,
+          "joinedLanguageProse": true,
+          "unchangedLocalAndSemanticGates": true,
+          "malformedNoFallback": true,
+          "sourceBytesUnchanged": true,
+          "extraModelPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "report-repair",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-report-repair.log",
+      "exitCode": 0,
+      "logSha256": "acbe56bff376f5f6bf67c8e76f1f1a11fcff2d0292d96083884e528ff5f2f383",
+      "records": [
+        {
+          "compiledReportTextRepair": true,
+          "strictMixedIndexBranches": true,
+          "unchanged400UnitBound": true,
+          "languageMaterialization": true,
+          "immutableSiblingAndCompletedSourceProof": true,
+          "finalSemanticAndPolarityNegatives": true,
+          "governingComparisonBeforePolarity": true,
+          "standaloneUnknownClock": true,
+          "extraSemanticPasses": 0,
+          "modelCompetenceClaimed": false
+        }
+      ]
+    },
+    {
+      "group": "language-audit",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-language-audit.log",
+      "exitCode": 0,
+      "logSha256": "1080e68ee64520f4dce33283cc6b6070d62e70e808d941f858689927e37e1422",
+      "records": [
+        {
+          "group": "language-audit",
+          "compiledRuntimeImports": true,
+          "providerCalls": 0
+        }
+      ]
+    },
+    {
+      "group": "negative-evidence",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-negative-evidence.log",
+      "exitCode": 0,
+      "logSha256": "084175ff71e70360fc1dc8ff4b8ce480cebd9ae3c1c41d73eb1f2fd35eac6e7c",
+      "records": [
+        {
+          "group": "negative-evidence",
+          "compiledRuntimeImports": true,
+          "providerCalls": 0
+        }
+      ]
+    },
+    {
+      "group": "clock-repair",
+      "status": "completed",
+      "log": "tmp/v75-postdeploy-clock-repair.log",
+      "exitCode": 0,
+      "logSha256": "959f477e39e626538856ad09480a17a87549e578a0a91ba81f0aa9e2b4b1bbae",
+      "records": [
+        {
+          "group": "clock-repair",
+          "compiledRuntimeImports": true,
+          "providerCalls": 0
+        }
+      ]
+    }
+  ],
+  "passed": true
+}
