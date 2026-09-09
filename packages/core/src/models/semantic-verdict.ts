@@ -40,6 +40,16 @@ export const PROPOSITION_SCOPE_CONTRACT = `Preserve these boundaries within each
   not bind a later passive absence to them. Preserve examination and confirmation as separate limits;
   merely calling X tentative/unverified cannot replace either limit. Apply this equally to assistant,
   user and external speakers; never infer global ignorance, document silence or universal nonverification.
+- Personal negative actions keep their own actors. "She has not adopted the proposal as a plan or
+  arranged a meeting" does not establish an anonymous unadopted plan or unarranged meeting. Compose
+  adoption and arrangement with explicit personal subjects, including an unambiguous shared subject.
+  A named proposer or reporter does not supply either actor; preserving one action's actor does not
+  preserve the other. Compare each action separately, including within proposed/undated records.
+- Keep separate epistemic predicates attached to their stated subjects. "Ada has no answer" describes
+  her knowledge; "the note establishes neither inclusion nor exclusion" describes the note's content.
+  When both are selected, compose separate clauses with both subjects explicit. Do not merge them into
+  "Ada has no answer establishing either", swap their subjects, or claim the agreement terms establish
+  neither. Neither personal uncertainty nor note-level inconclusiveness implies the other by itself.
 - A hypothetical premise and its explicitly stated conditional consequence form one scoped unit. Keep
   both when selecting that rule. A fictional promise keeps its promising party, recipient, benefit and
   material limits inside fictional scope. A proposal to discuss it alone does not answer what it promises.

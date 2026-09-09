@@ -11,6 +11,37 @@ const repairBatch = (candidates: unknown[]) => ({
 
 describe('cross-language retention boundary', () => {
   it.each([
+    [
+      'Ada Marlow proposed a review; the proposal has not been adopted as a plan, and no meeting has been arranged.',
+      false,
+    ],
+    [
+      'Ada Marlow proposed a review; she has not adopted the proposal as a plan, and no meeting has been arranged.',
+      false,
+    ],
+    ['Ada Marlow proposed a review; she has not adopted the proposal as a plan or arranged a meeting.', true],
+  ])('preserves each personal negative action in generated retention: %s', (text, accepted) => {
+    const source =
+      'Ada Marlow proposed a review. She has not adopted the proposal as a plan or arranged a meeting.';
+    const candidate = {
+      kind: 'plan',
+      text,
+      subject: 'Zephyr QX-100',
+      attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+      discourse: { commitment: 'asserted', disposition: 'proposed' },
+      epistemic: { basis: 'self_attested' },
+      polarity: 'affirmed',
+      support: [{ quote: source }],
+      discourse_frame: [{ quote: source }],
+    };
+    const result = cleanCandidateBatch([candidate], { sourceText: source, generated: true });
+    expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+    if (!accepted)
+      expect(result.held[0]?.reason).toContain('personal plan adoption and meeting arrangement separately');
+    expect(cleanCandidateBatch([candidate], { sourceText: source }).candidates).toHaveLength(1);
+  });
+
+  it.each([
     ['According to Ada Marlow, the proposal was to review the warranty exceptions.', false],
     ['Ada Marlow proposed reviewing the warranty exceptions.', true],
   ])('keeps an explicit proposer in generated retention: %s', (text, accepted) => {

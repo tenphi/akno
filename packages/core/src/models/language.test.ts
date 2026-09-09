@@ -45,6 +45,66 @@ function responses(values: unknown[]) {
 }
 
 describe('explicit generation language', () => {
+  it.each([
+    ['Обещана замена axle-cap.', false, ['axle-cap']],
+    ['Обещана замена колпачка оси.', true, []],
+    ['В цитате «axle-cap» и коде `cedar-fetch` сохранено написание.', true, []],
+    ['Идентификатор cedar-fetch сохранён.', true, ['cedar-fetch']],
+    ['Идентификатор cedar-fetch означает replacement of the axle cap.', false, ['cedar-fetch']],
+  ] as const)(
+    'sends attention hints without overriding the language verdict: %s',
+    async (text, compliant, reviewTokens) => {
+      const requests = responses([{ text }, { compliant }]);
+      const reference = { kind: 'identifier' as const, text: 'cedar-fetch' };
+      const result = await client().chat(
+        [{ role: 'user', content: 'Translate the component description.' }],
+        {
+          outputLanguage: 'ru',
+          languageReferences: [reference],
+        },
+      );
+      expect(result.ok).toBe(compliant);
+      if (!compliant) expect(result).toMatchObject({ value: null, reason: 'language_mismatch' });
+      expect(requests).toHaveLength(2);
+      const payload = JSON.parse(requests[1]!.messages[1]!.content);
+      expect(payload.excerpts).toEqual([text]);
+      expect(payload.review_tokens ?? []).toEqual(reviewTokens);
+      expect(payload.supplied_references ?? []).toEqual(text.includes(reference.text) ? [reference] : []);
+    },
+  );
+
+  it('bounds attention hints while keeping every excerpt in the same check', async () => {
+    const terms = Array.from(
+      { length: 40 },
+      (_, index) => `cedar-${String.fromCharCode(97 + Math.floor(index / 26), 97 + (index % 26))}`,
+    );
+    const output = { text: terms.join(' '), summary: 'Общее описание.' };
+    const requests = responses([output, { compliant: false }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe.' }], { outputLanguage: 'ru' });
+    expect(result.ok).toBe(false);
+    const payload = JSON.parse(requests[1]!.messages[1]!.content);
+    expect(payload.review_tokens).toEqual(terms.slice(0, 32));
+    expect(payload.excerpts).toEqual([output.text, output.summary]);
+    expect(requests).toHaveLength(2);
+  });
+
+  it('counts attention hints toward the existing size ceiling', async () => {
+    const text = 'а'.repeat(23970) + ' cedar-fetch cedar-fetch';
+    const requests = responses([{ text }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe.' }], { outputLanguage: 'ru' });
+    expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+    expect(requests).toHaveLength(1);
+  });
+
+  it('leaves English compound output free of Russian attention hints', async () => {
+    const requests = responses([
+      { text: 'A cedar-fetch identifier and an axle-cap description.' },
+      { compliant: true },
+    ]);
+    expect((await client().chat([{ role: 'user', content: 'Describe.' }])).ok).toBe(true);
+    expect(JSON.parse(requests[1]!.messages[1]!.content)).not.toHaveProperty('review_tokens');
+  });
+
   it('carries immutable retention references to the first language check without overriding a false verdict', async () => {
     const sentence =
       'Ada Marlow has no answer to whether the Zephyr QX-100 agreement includes return delivery.';

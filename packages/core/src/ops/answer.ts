@@ -1,3 +1,4 @@
+import { personalNegativeActionsSupported } from '../memory/personal-negative-actions.ts';
 import { coverageRolesSupported } from '../memory/coverage-roles.ts';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
 import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
@@ -43,8 +44,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v47';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v31';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v48';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v32';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
   return z.object({
@@ -113,7 +114,12 @@ A null frame means only that this optional context is unavailable, not that the 
 A record's broad translated word must retain the more precise meaning supplied by its frame. In particular,
 absence of evidence is distinct from absence of confirmation. If the record's "unsupported hypotheses"
 means neither has evidence in the original frame, preserve that absence for both, not merely "unconfirmed".
-Compare each material source modifier with its answer counterpart. Do not erase a specific mechanism
+The retained excerpt selects the proposition, while the bound original frame controls its source meaning.
+Equivalent source-language framing need not copy the retained paraphrase's verb: a speaker positing a
+hypothetical rule may be described as introducing that hypothetical rule when the original frame supports
+that act. This does not authorize enacting/adopting the rule or completing a merely proposed discussion.
+Identify a concrete changed act before rejecting a faithful framing difference; adjacent unselected acts
+remain unavailable. Compare each material source modifier with its answer counterpart. Do not erase a specific mechanism
 into a generic defect. Preserve the stated content at its original scope and specificity.`;
 
 const ANSWER_SYSTEM_PROMPT = `You answer a question using only supplied memory evidence.
@@ -1280,7 +1286,8 @@ function validateDraft(
     }
     if (
       !causeNonselectionAgencySupported(block.text, support) ||
-      !proposalAgencySupported(block.text, support)
+      !proposalAgencySupported(block.text, support) ||
+      !personalNegativeActionsSupported(block.text, support)
     ) {
       reject('attribution');
       continue;

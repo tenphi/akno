@@ -1939,6 +1939,76 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
+  it.each([
+    ['The proposal has not been adopted as a plan or used to arrange a meeting.', false, true],
+    ['She has not adopted the proposal as a plan; no meeting has been arranged.', false, true],
+    ['Не принятым ею как план, без организации встречи.', false, true],
+    ['She has not adopted the proposal as a plan or arranged a meeting.', true, true],
+    ['She has not adopted the proposal as a plan or arranged a meeting.', false, false],
+  ] as const)(
+    'keeps negative action agency before mandatory semantics: %s',
+    async (negativeActions, accepted, semanticSupport) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_personal_actions v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=plan subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested -->\n- **Proposal:** Ada Marlow proposed reviewing the silverpine warranty exceptions; she has not adopted the proposal as a plan or arranged a meeting.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: `Ada Marlow proposed reviewing the silverpine warranty exceptions. ${negativeActions}`,
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', semanticSupport)] },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine warranty proposal did Ada Marlow make?',
+        memory_view: 'planning',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(accepted);
+      expect(modelRequests).toHaveLength(accepted || !semanticSupport ? 2 : 1);
+      if (!accepted && semanticSupport)
+        expect(result.validation?.rejection_counts).toEqual({ attribution: 1 });
+    },
+  );
+
+  it('still verifies event pairing when an independently anonymous plan defers the actor floor', async () => {
+    write(
+      'products/zephyr-qx-100.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_separate_plans v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=plan subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=asserted disposition=proposed polarity=affirmed basis=self_attested -->\n- **Proposal:** Ada Marlow proposed reviewing the silverpine warranty exceptions. She has not adopted the silverpine proposal as a plan. The amberfin proposal has not been adopted as a plan.\n',
+    );
+    await memory.index({ verify: true });
+    await useAnswerModel({
+      generation: {
+        blocks: [
+          {
+            text: 'Ada Marlow proposed reviewing the silverpine warranty exceptions. The silverpine proposal has not been adopted as a plan.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: { verdicts: [verdict('B1', false)] },
+    });
+    const result = await memory.answer({
+      question: 'Which silverpine warranty proposal did Ada Marlow make?',
+      memory_view: 'planning',
+      filter: { source: 'page' },
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toBeNull();
+    expect(modelRequests).toHaveLength(2);
+    expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
+  });
+
   it.each(['assistant', 'Assistant Meridian'])(
     'projects generic display labels without changing source names or verifier evidence: %s',
     async (speaker) => {

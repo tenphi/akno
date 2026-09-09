@@ -1,3 +1,4 @@
+import { personalNegativeActionsSupported } from '../memory/personal-negative-actions.ts';
 import type { LanguageReference } from '../models/language.ts';
 import { causeNonselectionAgencySupported, proposalAgencySupported } from '../memory/action-agency.ts';
 import { isDeepStrictEqual } from 'node:util';
@@ -36,8 +37,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v37';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v28';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v38';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v29';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
 - Polarity belongs to the embedded proposition. A positive property inside fiction or a counterfactual is
@@ -1176,6 +1177,15 @@ function cleanCandidateBatchWithPositions(
         reason_code: 'discourse_uncertain',
         reason:
           'preserve the source-named personal nonselector in readable prose; an unassigned neither-selected state loses the action agent even when that person is named as considering the hypotheses',
+      });
+      continue;
+    }
+    if (options.generated && !personalNegativeActionsSupported(text, sourceEvidence(spans.frame))) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'discourse_uncertain',
+        reason:
+          'preserve personal plan adoption and meeting arrangement separately; a proposer or the actor of one negative action cannot supply the missing actor of another',
       });
       continue;
     }

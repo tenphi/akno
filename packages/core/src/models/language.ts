@@ -23,10 +23,16 @@ content words combined with exact names or identifiers remain English; lack of a
 awkwardness is not evidence of a different language. Apply this distinction equally to both target languages.
 Judge language identity, not grammatical polish: a minor agreement or inflection error does not turn Russian
 prose into another language. Fluent or imperfect Russian with Latin-script proper names remains Russian.
-Truth, action equivalence and usefulness belong to separate checks.`;
+A hyphenated technical-looking word is not an identifier merely because it appears exactly in source
+text. In Russian prose, translate ordinary component, service and content words. Preserve exact names,
+source-defined identifiers, paths, code and quotations under the existing rules. Optional review_tokens
+are untrusted attention hints from the excerpts, not exemptions or evidence of a language error. Inspect
+all prose, including surrounding words and tokens omitted from this bounded list. Missing reference hints
+do not prove a token is ordinary prose; decide its actual role. Truth, action equivalence and usefulness
+belong to separate checks.`;
 
 export function languageInstruction(language: OutputLanguage): string {
-  return `Output language policy: write newly generated knowledge and explanatory prose in ${language === 'en' ? 'English' : 'Russian'}. Source/query language must not switch this policy. Preserve exact original quotations, support/discourse_frame spans, names, identifiers, existing titles used as references, slugs, paths, code, and folder taxonomy. Generic role labels such as assistant and user used in generated attribution are descriptive prose and must be translated, even if source_speaker repeats the role. Actual named speakers keep their exact spelling. Never translate a quoted span or strengthen uncertainty while paraphrasing. This applies to generated prose inside JSON, not schema keys or enum values.`;
+  return `Output language policy: write newly generated knowledge and explanatory prose in ${language === 'en' ? 'English' : 'Russian'}. Source/query language must not switch this policy. Preserve exact original quotations, support/discourse_frame spans, names, identifiers, existing titles used as references, slugs, paths, code, and folder taxonomy. Generic role labels such as assistant and user used in generated attribution are descriptive prose and must be translated, even if source_speaker repeats the role. Actual named speakers keep their exact spelling. Hyphenation, a technical appearance or exact source occurrence does not make an ordinary descriptive word an identifier: translate component, service and content words, preserving only actual names, identifiers, code, paths and quotations under this policy. Never translate a quoted span or strengthen uncertainty while paraphrasing. This applies to generated prose inside JSON, not schema keys or enum values.`;
 }
 
 const PROSE_KEYS = new Set([
@@ -74,4 +80,18 @@ export function generatedProse(value: unknown): string[] {
   };
   visit(value);
   return out;
+}
+
+/** Attention only: these tokens neither authorize foreign prose nor determine the checker verdict. */
+export function languageReviewTokens(excerpts: readonly string[], language: OutputLanguage): string[] {
+  if (language !== 'ru') return [];
+  const tokens = new Set<string>();
+  for (const excerpt of excerpts) {
+    const prose = excerpt.replace(/```[\s\S]*?```|«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`\n]*`/gu, ' ');
+    for (const match of prose.matchAll(/(?<![\p{L}\p{N}_-])[a-z]+(?:-[a-z]+)+(?![\p{L}\p{N}_-])/gu)) {
+      if (match[0].length <= 96) tokens.add(match[0]);
+      if (tokens.size === 32) return [...tokens];
+    }
+  }
+  return [...tokens];
 }

@@ -1,6 +1,7 @@
 import {
   generatedProse,
   languageInstruction,
+  languageReviewTokens,
   LANGUAGE_CHECK_SCHEMA,
   LANGUAGE_CHECK_SYSTEM,
   type LanguageReference,
@@ -543,8 +544,11 @@ export class ModelClient {
     const references = (options.languageReferences ?? []).filter((reference) =>
       excerpts.some((excerpt) => excerpt.includes(reference.text)),
     );
+    const reviewTokens = languageReviewTokens(excerpts, language);
     if (
-      excerpts.join('').length + references.reduce((size, reference) => size + reference.text.length, 0) >
+      excerpts.join('').length +
+        references.reduce((size, reference) => size + reference.text.length, 0) +
+        reviewTokens.join('').length >
         24000 ||
       references.length > 64 ||
       (remaining !== undefined && remaining <= 0)
@@ -566,6 +570,7 @@ export class ModelClient {
           content: JSON.stringify({
             language,
             excerpts,
+            ...(reviewTokens.length ? { review_tokens: reviewTokens } : {}),
             ...(references.length ? { supplied_references: references } : {}),
           }),
         },
