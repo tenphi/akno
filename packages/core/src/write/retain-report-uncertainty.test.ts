@@ -165,7 +165,9 @@ describe('shared negation in readable report uncertainty', () => {
           };
         const input = JSON.parse(messages.at(-1)!.content);
         if (repair && call === 2) {
-          expect(input.validation_issues[0].reason).toContain('explicitly lacks confirmation');
+          expect(input.repair_targets[0].validation_issues[0].reason).toContain(
+            'explicitly lacks confirmation',
+          );
           return {
             ok: true,
             value: JSON.stringify({ repairs: [{ candidate_index: 0, candidate: record(qualification) }] }),

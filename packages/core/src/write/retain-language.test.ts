@@ -238,7 +238,7 @@ describe('cross-language retention boundary', () => {
           return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
         if (call === 2) {
-          expect(payload.validation_issues[0].reason).toContain('rejection scope');
+          expect(payload.repair_targets[0].validation_issues[0].reason).toContain('rejection scope');
           return {
             ok: true,
             value: JSON.stringify(
@@ -398,7 +398,9 @@ describe('cross-language retention boundary', () => {
             return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
           const payload = JSON.parse(messages.at(-1)!.content);
           if (call === 2) {
-            expect(payload.validation_issues[0].reason).toContain('leading negative proposition');
+            expect(payload.repair_targets[0].validation_issues[0].reason).toContain(
+              'leading negative proposition',
+            );
             return {
               ok: true,
               value: JSON.stringify(
@@ -602,7 +604,9 @@ describe('cross-language retention boundary', () => {
           return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
         if (call === 2) {
-          expect(payload.validation_issues[0].reason).toContain('introduced fictional proposition');
+          expect(payload.repair_targets[0].validation_issues[0].reason).toContain(
+            'introduced fictional proposition',
+          );
           return { ok: true, value: JSON.stringify(repairBatch([repaired])), latencyMs: 22 };
         }
         expect(payload.candidates[0].discourse.commitment).toBe('hypothetical');
@@ -745,7 +749,7 @@ describe('cross-language retention boundary', () => {
     const chat = vi.fn(async (messages: { content: string }[]) => {
       if (chat.mock.calls.length === 2) {
         const payload = JSON.parse(messages.at(-1)!.content);
-        expect(payload.validation_issues[0].reason_code).toBe('discourse_uncertain');
+        expect(payload.repair_targets[0].validation_issues[0].reason_code).toBe('discourse_uncertain');
         return { ok: true, value: JSON.stringify(repairBatch([candidate])), latencyMs: 11 };
       }
       return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
@@ -1118,7 +1122,7 @@ describe('cross-language retention boundary', () => {
         if (chat.mock.calls.length === 1)
           return { ok: true, value: JSON.stringify({ candidates: [bad] }), latencyMs: 11 };
         if (chat.mock.calls.length === 2) {
-          expect(payload.validation_issues[0].reason_code).toBe('time_unresolved');
+          expect(payload.repair_targets[0].validation_issues[0].reason_code).toBe('time_unresolved');
           expect(payload.source.text).toBe(source);
           return {
             ok: true,
@@ -1275,11 +1279,13 @@ describe('cross-language retention boundary', () => {
           return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
         if (calls === 2) {
-          expect(payload.validation_issues[0]).toMatchObject({
+          expect(payload.repair_targets[0].validation_issues[0]).toMatchObject({
             reason_code: 'time_unresolved',
             reason: expect.stringContaining('time.mentioned_at'),
           });
-          expect(payload.validation_issues[0].reason).toContain('Keep the unknown temporal envelope');
+          expect(payload.repair_targets[0].validation_issues[0].reason).toContain(
+            'Keep the unknown temporal envelope',
+          );
           return {
             ok: true,
             value: JSON.stringify(
@@ -1430,7 +1436,7 @@ describe('cross-language retention boundary', () => {
         if (calls === 2) {
           const payload = JSON.parse(messages.at(-1)!.content);
           expect(payload.source.text).toBe(source);
-          expect(payload.validation_issues[0].reason_code).toBe('discourse_uncertain');
+          expect(payload.repair_targets[0].validation_issues[0].reason_code).toBe('discourse_uncertain');
           if (outcome === 'unavailable')
             return { ok: false, value: null, error: 'invented provider failure', latencyMs: 22 };
           return {

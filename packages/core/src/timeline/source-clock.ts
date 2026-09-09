@@ -43,6 +43,26 @@ export function hasSourceRelativeAnchor(text: string): boolean {
 }
 
 export function hasUnknownReferenceClock(text: string): boolean {
+  // "Установить" can mean establish a date or install a component. Require a directly bound
+  // date head in this branch; a nearby calendar word or a quoted example cannot supply it.
+  const deictic = '(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\\s+(?:day|week|month|year))';
+  const unquoted = text.replace(
+    /`[^`\n]*`|«[^»]*»|“[^”]*”|"[^"\n]*"|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+    (span) => {
+      const content = span.slice(1, -1);
+      return new RegExp(`^${deictic}$`, 'iu').test(content) ? content : ' ';
+    },
+  );
+  // A comma may introduce a permission condition or reversal. Only the closed clock contrast
+  // continues this admission; quoting its bare deictic label does not quote the whole assertion.
+  const clockContrast = `,\\s+а\\s+${deictic}\\s+относится\\s+не\\s+к\\s+сегодняшнему\\s+дню\\s+и\\s+не\\s+к\\s+моменту\\s+обработки(?=\\s*(?:$|[.;!?]))`;
+  if (
+    new RegExp(
+      `(?<!\\p{L})(?:дат(?:а|у|ы|е|ой)|календарн\\p{L}*\\s+(?:день|месяц|год))\\s+установить\\s+нельзя(?!\\p{L})(?=\\s*(?:$|[.;!?]|${clockContrast}))`,
+      'iu',
+    ).test(unquoted)
+  )
+    return true;
   // Keep the absent date attached to a source noun; an unknown device attribute is not a source clock.
   if (
     /(?<!\p{L})(?:источник|запис|замет|разговор)\p{L}*\s+(?:без\s+(?:(?:известн|календарн)\p{L}*\s+){1,2}даты|с\s+неизвестной\s+календарной\s+датой(?=\s*(?:$|[.,;!?])))(?!\p{L})/iu.test(

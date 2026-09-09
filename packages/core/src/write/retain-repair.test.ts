@@ -51,7 +51,7 @@ function modelFor(extracted: unknown[], repair: unknown, verify = true) {
         return { ok: false, value: null, error: 'invented repair outage', latencyMs: 22 };
       return { ok: true, value: repair === 'malformed' ? '{oops' : JSON.stringify(repair), latencyMs: 22 };
     }
-    expect(call).toBe(3);
+    expect(call).toBeGreaterThanOrEqual(3);
     const payload = JSON.parse(messages.at(-1)!.content);
     return {
       ok: true,
@@ -94,7 +94,12 @@ describe('one transactional structural repair', () => {
       const result = await runRetain(source, model);
       expect(chat).toHaveBeenCalledTimes(3);
       const request = JSON.parse(chat.mock.calls[1]![0].at(-1)!.content);
-      expect(request.admitted_positions).toEqual([1]);
+      expect(request.read_only_admitted_context).toEqual([
+        { candidate_index: 1, subject: good.subject, kind: good.kind, text: good.text },
+      ]);
+      expect(request.rejected_candidates).toBeUndefined();
+      expect(request.repair_targets).toHaveLength(1);
+      expect(request.repair_targets[0]).toMatchObject({ candidate_index: 0, original_candidate: bad });
       const verificationRequest = JSON.parse(chat.mock.calls[2]![0].at(-1)!.content);
       expect(verificationRequest.repair_obligations).toEqual([
         {
@@ -105,7 +110,7 @@ describe('one transactional structural repair', () => {
         },
       ]);
       expect(
-        request.validation_issues.map((entry: { candidate_index: number }) => entry.candidate_index),
+        request.repair_targets.map((entry: { candidate_index: number }) => entry.candidate_index),
       ).toEqual([0]);
       expect(result.candidates.find((candidate) => candidate.text === minor)).toEqual(original[0]);
       expect(result.candidates).toHaveLength(verify ? 2 : 1);
@@ -130,6 +135,7 @@ describe('one transactional structural repair', () => {
     { repairs: [{ candidate_index: 2, candidate: fixed }] },
     { repairs: [{ candidate_index: 1, candidate: fixed }] },
     { repairs: [{ candidate_index: 0.5, candidate: fixed }] },
+    { repairs: [{ candidate_index: -1, candidate: fixed }] },
     { repairs: [{ candidate_index: 0, candidate: good }] },
     {
       repairs: [{ candidate_index: 0, candidate: fixed }],
@@ -163,7 +169,49 @@ describe('one transactional structural repair', () => {
     expect(result.candidates).toHaveLength(1);
     expect(result.held).toEqual([]);
     expect(chat).toHaveBeenCalledTimes(3);
-    expect(JSON.parse(chat.mock.calls[1]![0].at(-1)!.content).admitted_positions).toEqual([]);
+    expect(JSON.parse(chat.mock.calls[1]![0].at(-1)!.content).read_only_admitted_context).toEqual([]);
+  });
+
+  it('binds noncontiguous repair targets to their original drafts, not their target-array offsets', async () => {
+    const secondBad = JSON.parse(JSON.stringify(bad).replaceAll('silverpine', 'amberleaf'));
+    const secondFixed = JSON.parse(JSON.stringify(fixed).replaceAll('silverpine', 'amberleaf'));
+    const { model, chat } = modelFor([bad, good, secondBad], {
+      repairs: [
+        { candidate_index: 2, candidate: secondFixed },
+        { candidate_index: 0, candidate: fixed },
+      ],
+    });
+    const fullSource = `${source} ${report.replaceAll('silverpine', 'amberleaf')}`;
+    const result = await runRetain(fullSource, model);
+    const request = JSON.parse(chat.mock.calls[1]![0].at(-1)!.content);
+    expect(
+      request.repair_targets.map((target: { candidate_index: number }) => target.candidate_index),
+    ).toEqual([0, 2]);
+    expect(
+      request.repair_targets.map((target: { original_candidate: unknown }) => target.original_candidate),
+    ).toEqual([bad, secondBad]);
+    expect(
+      request.repair_targets.every(
+        (target: { validation_issues: unknown[] }) => target.validation_issues.length > 0,
+      ),
+    ).toBe(true);
+    expect(request.read_only_admitted_context).toEqual([
+      { candidate_index: 1, subject: good.subject, kind: good.kind, text: good.text },
+    ]);
+    expect(result.candidates.map((candidate) => candidate.text)).toEqual([
+      fixed.text,
+      minor,
+      secondFixed.text,
+    ]);
+    expect(result.degradedReason).toBeNull();
+    const obligations = chat.mock.calls
+      .slice(2)
+      .flatMap((call) => JSON.parse(call[0].at(-1)!.content).repair_obligations);
+    expect(obligations.map((obligation: { original: unknown }) => obligation.original)).toEqual([
+      bad,
+      secondBad,
+    ]);
+    expect(chat).toHaveBeenCalledTimes(4); // Extraction, one repair and two existing verification batches.
   });
 
   it('rejects two failed positions repaired into one duplicate proposition', async () => {

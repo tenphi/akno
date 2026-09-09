@@ -37,7 +37,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v42';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v43';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v30';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -160,6 +160,8 @@ a broader restriction on the underlying document. Use source_speaker for the out
 only for the actual inner reporters; do not repeat the outer narrator in that chain.
 A cross-language restatement can clarify the referent of an earlier term. Preserve the clarified shared
 referent; do not invent alternative components or services merely from different source wordings.
+Preserve explicit epistemic experiencers in the generated sentence: unknown to us is a group-relative
+limit, not unqualified unknownness. Keep the source's group reference without inventing its membership.
 
 ${QUALIFICATION_CONTRACT}
 ${PROPOSITION_SCOPE_CONTRACT}
@@ -521,9 +523,10 @@ export async function runRetain(
   // One transaction repairs only failed original positions, before semantic verification.
   // A minor surviving record must not prevent repairing the deciding report or hypothesis.
   if (cleanedBatch.held.length > 0 && Array.isArray(parsed.candidates)) {
+    const originalCandidates = parsed.candidates;
     const failedPositions = [
       ...new Set(cleanedBatch.held.map((held) => cleanedBatch.positions.get(held.candidate_id)!)),
-    ];
+    ].sort((a, b) => a - b);
     const repairSchema = z.object({
       repairs: z
         .array(
@@ -540,7 +543,7 @@ export async function runRetain(
           role: 'system',
           content:
             system +
-            "\nRepair the rejected representation once using the original source and validation issues. Return only repairs for allowed candidate_index positions. Preserve each position's source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. Admitted positions are immutable. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a position if no safe repair exists. Do not return events or new positions.",
+            "\nRepair each repair_targets entry once using the complete original source and that entry's validation_issues. Copy its explicit candidate_index into the repair; this is a zero-based original extraction index, not the position in repair_targets or repairs. Preserve that entry's original_candidate source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. read_only_admitted_context is a read-only index of surviving records for relation references, never a list of repair targets. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. If the only issue is missing subject antecedent context, add its exact source span to the deciding frame while preserving the same proposition. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a target if no safe repair exists. Do not return events or new positions.",
         },
         {
           role: 'user',
@@ -549,13 +552,21 @@ export async function runRetain(
             reference_clock: options.mentionedAt
               ? { mentioned_at: options.mentionedAt, timezone: options.timezone ?? null }
               : null,
-            rejected_candidates: parsed.candidates,
-            admitted_positions: cleanedBatch.candidates.map((candidate) =>
-              cleanedBatch.positions.get(candidate.candidate_id),
-            ),
-            validation_issues: cleanedBatch.held.map((held) => ({
-              ...held,
-              candidate_index: cleanedBatch.positions.get(held.candidate_id),
+            // Bind failures to their original draft explicitly. An array containing admitted
+            // siblings under a "rejected" label can invite substituting the wrong proposition.
+            index_basis: 'zero_based_original_extraction_order',
+            repair_targets: failedPositions.map((candidate_index) => ({
+              candidate_index,
+              original_candidate: originalCandidates[candidate_index],
+              validation_issues: cleanedBatch.held
+                .filter((held) => cleanedBatch.positions.get(held.candidate_id) === candidate_index)
+                .map(({ reason_code, reason }) => ({ reason_code, reason })),
+            })),
+            read_only_admitted_context: cleanedBatch.candidates.map((candidate) => ({
+              candidate_index: cleanedBatch.positions.get(candidate.candidate_id),
+              subject: candidate.subject,
+              kind: candidate.kind,
+              text: candidate.text,
             })),
           }),
         },

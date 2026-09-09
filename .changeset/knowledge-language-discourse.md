@@ -109,3 +109,9 @@ Extend the complete-record rendering limit to 600 readable characters, retaining
 Preserve generated subject identifiers in readable records and their deciding source frames. Recognize
 bounded report clarifications and quoted noun aliases in negative booking statements without bypassing
 semantic verification. Clarify collective citation support and preserve specific component insertion details.
+
+Structural retention repair binds each failed original position to its own draft and validation issues,
+with a compact read-only index for admitted relation targets. Existing immutable-position checks and
+full-source semantic obligations remain mandatory. A bounded Russian date phrase now preserves an
+unknown source clock; generation keeps explicit group-relative knowledge limits and source-established
+bilingual clarifications when selecting a report.

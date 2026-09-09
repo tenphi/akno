@@ -152,8 +152,9 @@ describe('required retention frame accounting', () => {
       if (chat.mock.calls.length === 1)
         return { ok: true, latencyMs: 11, value: JSON.stringify({ candidates: [record, original] }) };
       if (chat.mock.calls.length === 2) {
-        expect(payload.validation_issues).toHaveLength(1);
-        expect(payload.validation_issues[0].candidate_index).toBe(1);
+        expect(payload.repair_targets).toHaveLength(1);
+        expect(payload.repair_targets[0].validation_issues).toHaveLength(1);
+        expect(payload.repair_targets[0].candidate_index).toBe(1);
         return {
           ok: true,
           latencyMs: 22,

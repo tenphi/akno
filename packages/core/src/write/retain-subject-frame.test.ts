@@ -74,7 +74,7 @@ describe('generated subject identity across source items', () => {
         const payload = JSON.parse(messages.at(-1)!.content);
         expect(payload.source.items).toEqual(sourceItems);
         if (chat.mock.calls.length === 2) {
-          expect(payload.validation_issues[0].reason).toContain('subject identifier');
+          expect(payload.repair_targets[0].validation_issues[0].reason).toContain('subject identifier');
           return {
             ok: true,
             value: JSON.stringify({ repairs: [{ candidate_index: 0, candidate: record(true, true) }] }),

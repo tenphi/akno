@@ -60,7 +60,7 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v54';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v55';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v37';
 
 function answerDraftSchema(
@@ -166,6 +166,9 @@ Apply this priority order:
 1. Read the complete bound original frame to resolve source meaning, including explicit clarification
    across languages. A source's explicit restatement of the same report can clarify an earlier term.
    A language switch, query wording, lexical similarity or outside knowledge cannot establish an alias.
+   When the source itself resolves the referent and the retained record selects that report, a query
+   repeating the earlier term still selects the clarified report. Preserve the source clarification;
+   do not recreate an unresolved conflict solely because the query uses its earlier wording.
 2. The retained excerpt selects the proposition that may be answered. The frame constrains its meaning;
    it cannot authorize an adjacent fact, actor, action or value absent from that selected proposition.
 3. Keep the selected proposition's actor, action/object/purpose/mechanism, polarity and material limits

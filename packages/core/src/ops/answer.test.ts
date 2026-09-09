@@ -3485,6 +3485,26 @@ describe('grounded answer discovery surface', () => {
       false,
     ],
     ['Ada Marlow proposed reviewing the silverpine estimate next week relative to the original note.', false],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе относительно исходной записи; календарную дату установить нельзя.',
+      true,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе относительно исходной записи; календарную дату установить нельзя, а “next week” относится не к сегодняшнему дню и не к моменту обработки.',
+      true,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе относительно исходной записи; календарную дату установить нельзя, если пользователь не разрешит изменение.',
+      false,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе; календарную дату установить нельзя.',
+      false,
+    ],
+    [
+      'Ada Marlow предложила проверить смету silverpine на следующей неделе относительно исходной записи. Пример: «календарную дату установить нельзя».',
+      false,
+    ],
     ['Ada Marlow proposed reviewing the silverpine estimate; the calendar date is unknown.', false],
     [
       'Ada Marlow proposed reviewing the silverpine estimate next week relative to the original note; the device cannot be recovered.',
@@ -3544,6 +3564,11 @@ describe('grounded answer discovery surface', () => {
       'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
       false,
       'Ada Marlow предложила изменить смету silverpine на следующей неделе, то есть на неделе после исходной записи без известной календарной даты.',
+    ],
+    [
+      'Ada Marlow proposes reviewing the silverpine estimate next week, relative to the undated original note; the calendar date is unknown.',
+      false,
+      'Ada Marlow предложила изменить смету silverpine на следующей неделе относительно исходной записи; календарную дату установить нельзя.',
     ],
   ] as const)(
     'keeps source-clock activation narrow and preserves semantic rejection: %s',
