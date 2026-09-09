@@ -566,3 +566,51 @@ describe('proposal-bound initial recording clocks', () => {
     expect(hasSourceRelativeAnchor(text + '.')).toBe(false);
   });
 });
+
+describe('explicit unestablished original-record clock', () => {
+  const explicit = "The original record's date and calendar month cannot be established.";
+  const relation = '“Next month” means the month after the original record rather than after processing.';
+
+  it.each(['day', 'week', 'month', 'year'])(
+    'recognizes only the independently explicit unknown %s',
+    (period) => {
+      for (const apostrophe of ["'", '’'])
+        for (const cannot of ['cannot', "can't", 'can’t']) {
+          const text = explicit.replace('month', period).replace("'", apostrophe).replace('cannot', cannot);
+          expect(hasUnknownReferenceClock(text)).toBe(true);
+          expect(hasSourceRelativeAnchor(text)).toBe(false);
+        }
+      expect(hasUnknownReferenceClock(relation)).toBe(false);
+      expect(hasSourceRelativeAnchor(relation)).toBe(true);
+      expect(hasUnknownReferenceClock(`${relation} ${explicit}`)).toBe(true);
+    },
+  );
+
+  it.each([
+    explicit.replace('cannot', 'can'),
+    explicit.replace('cannot', 'may not'),
+    explicit.replace('original', 'device'),
+    explicit.replace('original', 'processing'),
+    explicit.replace('date and calendar month', 'status and calendar month'),
+    explicit.replace('date and calendar month', 'date and latch gap'),
+    explicit.replace("record's", "record's device's"),
+    explicit.replace('date and calendar month', 'calendar month and date'),
+    explicit.replace('date and', 'date; and'),
+    explicit.replace('cannot be', 'cannot\nbe'),
+    explicit.replace('.', '?'),
+    ...['If ', 'Example: ', 'Allegedly ', 'Ada Marlow said that ', 'It is false that '].map(
+      (prefix) => prefix + explicit,
+    ),
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([a, b]) => a + explicit + b),
+    ...[
+      ', but it was established.',
+      '; HOWEVER it was established.',
+      '.\nBut it was established.',
+      '; this is false.',
+    ].map((tail) => explicit.slice(0, -1) + tail),
+    'The original record. Its date and calendar month cannot be established.',
+    'The original record, whose calendar month cannot be established, supplies the interval.',
+  ])('does not borrow a source date from a qualified or unrelated clause: %s', (text) => {
+    expect(hasUnknownReferenceClock(text)).toBe(false);
+  });
+});

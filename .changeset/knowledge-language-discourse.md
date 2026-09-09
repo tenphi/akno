@@ -167,3 +167,10 @@ Keep a selected operation's unspecified tested property distinct from an unselec
 private answer audit. A property declared unselected now requires its containing operation to be
 unselected; ordinary actions explicitly declare absence on both sides. Recognize a closed same-subject
 negative report list ending in a personal verification limit, while retaining mandatory source semantics.
+
+Repair an otherwise valid report's unreadable verification limit through three bounded model-written
+sentences while cloning its metadata and source spans. Recheck language, the complete candidate vector,
+immutable siblings and original-source semantics under the existing one-repair and 400-unit limits.
+Recognize an explicit original-record date and calendar unit that cannot be established. Keep retention
+label definitions separate from untrusted candidates and compare governing predicates before selecting
+source polarity; negative semantic decisions remain final.

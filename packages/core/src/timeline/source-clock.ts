@@ -79,6 +79,7 @@ export function hasSourceRelativeAnchor(text: string): boolean {
 
 export function hasUnknownReferenceClock(text: string): boolean {
   if (hasUndatedOriginalClock(text)) return true;
+  if (hasUnestablishedOriginalClock(text)) return true;
   // A directly coordinated calendar clause is independent of preceding personal action denials.
   // An example, condition, quoted predicate or following retraction cannot close this assertion.
   if (hasDirectUnknownRussianCalendar(text)) return true;
@@ -118,6 +119,16 @@ function maskSourceClockQuotations(text: string): string {
   return text.replace(
     /`[^`]*`|«[^»]*»|“[^”]*”|"[^"\n]*"|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
     '⟦quotation⟧',
+  );
+}
+
+/** Establishing a source date is distinct from establishing a nearby device property. */
+function hasUnestablishedOriginalClock(text: string): boolean {
+  const unquoted = maskSourceClockQuotations(text);
+  const pattern =
+    /(?:^|[.;!])[ \t]*(?:the[ \t]+)?original[ \t]+record['’]s[ \t]+date[ \t]+and[ \t]+calendar[ \t]+(?:day|week|month|year)[ \t]+(?:cannot|can['’]t)[ \t]+be[ \t]+established/giu;
+  return [...unquoted.matchAll(pattern)].some((match) =>
+    hasUnretractedClauseEnd(unquoted, match.index + match[0].length),
   );
 }
 

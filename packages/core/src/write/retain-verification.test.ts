@@ -1,7 +1,12 @@
 import { semanticAudit } from '../../test/semantic-audit.ts';
 import { describe, expect, it, vi } from 'vitest';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
-import type { ModelClient } from '../models/client.ts';
+import {
+  toEndpointSchema,
+  strictModeViolations,
+  type ModelClient,
+  type ChatOptions,
+} from '../models/client.ts';
 
 const source = 'Условия silverpine разрешают перевозку для осмотра клапана; замена клапана не предусмотрена.';
 const candidate = {
@@ -347,21 +352,41 @@ describe('record-local tentative scope in retention verification', () => {
   it.each(['pass', 'proposition_supported', 'action_arguments_preserved', 'qualification_scope_preserved'])(
     'carries scoped label definitions without bypassing any source-verdict dimension: %s',
     async (mode) => {
-      const chat = vi.fn(async (messages: { content: string }[]) => {
+      const chat = vi.fn(async (messages: { content: string }[], callOptions: ChatOptions) => {
         if (chat.mock.calls.length === 1)
           return { ok: true, value: JSON.stringify({ candidates: [record] }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
         expect(payload.source.items).toEqual(items);
         expect(payload).not.toHaveProperty('repair_targets');
         const verifyingRecord = payload.candidates[0];
+        expect(payload.typed_label_contracts).toHaveLength(1);
+        expect(payload.typed_label_contracts[0]).toMatchObject({
+          candidate_id: verifyingRecord.candidate_id,
+          conditional_rule: 'tentative_embedded_when_asserted_discussion_is_explicit',
+          otherwise: 'ordinary_tentative',
+        });
+        expect(verifyingRecord).not.toHaveProperty('record_scope');
+        expect(verifyingRecord).not.toHaveProperty('typed_label_contracts');
+        const wire: any = toEndpointSchema(callOptions.schema!);
+        expect(strictModeViolations(wire)).toEqual([]);
+        expect(JSON.stringify(wire)).not.toMatch(/"(?:oneOf|const)":/u);
+        const keys = Object.keys(wire.properties.verdicts.items.properties);
+        expect(keys.indexOf('span_audit')).toBeLessThan(keys.indexOf('comparison'));
+        expect(keys.indexOf('comparison')).toBeLessThan(keys.indexOf('source_selected_polarity'));
+        expect(keys.indexOf('source_selected_polarity')).toBeLessThan(keys.indexOf('proposition_supported'));
+
         expect(verifyingRecord.text).toBe(record.text);
         expect(verifyingRecord.discourse).toEqual(record.discourse);
-        expect(verifyingRecord.record_scope.join(' ')).toContain(
-          'supplied source and candidate explicitly couple',
-        );
-        expect(verifyingRecord.record_scope.join(' ')).toContain(
-          'Otherwise tentative qualifies the proposition normally',
-        );
+        expect(
+          payload.typed_label_contracts
+            .find((entry: { candidate_id: string }) => entry.candidate_id === verifyingRecord.candidate_id)!
+            .definitions.join(' '),
+        ).toContain('supplied source and candidate explicitly couple');
+        expect(
+          payload.typed_label_contracts
+            .find((entry: { candidate_id: string }) => entry.candidate_id === verifyingRecord.candidate_id)!
+            .definitions.join(' '),
+        ).toContain('Otherwise tentative qualifies the proposition normally');
         expect(verifyingRecord.frame_spans.map((span: { quote: string }) => span.quote)).toEqual(
           items.map((item) => item.text),
         );
@@ -405,6 +430,90 @@ describe('record-local tentative scope in retention verification', () => {
       expect(result.candidates).toHaveLength(mode === 'pass' ? 1 : 0);
       expect(JSON.stringify(result.candidates)).not.toContain('record_scope');
       if (mode !== 'pass') expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+});
+
+describe('explicit original-clock retention repair', () => {
+  const clockSource =
+    'I, Ada Marlow, propose reviewing the Zephyr QX-100 repair terms next month. I have not accepted the plan or arranged a meeting. The initial record date is unknown; next month means the month after that record, not after processing, and its calendar month cannot be established.';
+  const clockText =
+    'Ada Marlow proposes reviewing Zephyr QX-100 repair terms next month. She has not accepted the plan or arranged a meeting. “Next month” means the month after the original record rather than after processing.';
+  const fixed = `${clockText} The original record's date and calendar month cannot be established.`;
+  const draft = `${clockText} Its calendar month cannot be established.`;
+  const clockRecord = {
+    kind: 'plan',
+    subject: 'Zephyr QX-100',
+    text: draft,
+    attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+    discourse: { commitment: 'asserted', disposition: 'proposed' },
+    epistemic: { basis: 'self_attested' },
+    polarity: 'affirmed',
+    support: [{ quote: clockSource }],
+    discourse_frame: [{ quote: clockSource }],
+    time: {
+      start: null,
+      until: null,
+      precision: 'unknown',
+      relation: 'scheduled',
+      status: 'tentative',
+      mentioned_at: null,
+      timezone: null,
+      recurrence: null,
+    },
+  };
+  it.each([true, false])(
+    'requires one structural repair and a final source verdict (%s)',
+    async (positive) => {
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        const payload = JSON.parse(messages.at(-1)!.content);
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [clockRecord] }), latencyMs: 11 };
+        if (payload.repair_targets) {
+          expect(payload.repair_targets[0].validation_issues[0].reason).toContain(
+            'unknown reference date is not',
+          );
+          expect(payload.repair_targets[0]).not.toHaveProperty('repair_contract');
+          return {
+            ok: true,
+            value: JSON.stringify({
+              repairs: [{ candidate_index: 0, candidate: { ...clockRecord, text: fixed } }],
+            }),
+            latencyMs: 11,
+          };
+        }
+        expect(payload.source.text).toBe(clockSource);
+        expect(payload.candidates[0].text).toBe(fixed);
+        expect(payload.candidates[0].time.precision).toBe('unknown');
+        expect(payload.repair_obligations[0].original).toEqual(clockRecord);
+        return {
+          ok: true,
+          latencyMs: 11,
+          value: JSON.stringify({
+            verdicts: [
+              {
+                candidate_id: payload.candidates[0].candidate_id,
+                source_selected_polarity: 'affirmed',
+                ...semanticAudit(positive),
+                proposition_supported: positive,
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
+                reason_code: null,
+              },
+            ],
+          }),
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-explicit-clock',
+        chat,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(clockSource, model);
+      expect(chat).toHaveBeenCalledTimes(3);
+      expect(result.candidates).toHaveLength(positive ? 1 : 0);
+      if (!positive) expect(result.held[0]?.hold_stage).toBe('verification');
     },
   );
 });

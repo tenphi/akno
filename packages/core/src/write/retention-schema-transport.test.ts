@@ -82,7 +82,14 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
             if (sizes.length === 1) expect(items.type).toBe('object');
             for (const [index, branch] of branches.entries()) {
               expect(branch.properties.candidate_id.enum).toEqual([payload.candidates[index].candidate_id]);
-              expect(branch.required.slice(0, 2)).toEqual(['candidate_id', 'source_selected_polarity']);
+              expect(branch.required[0]).toBe('candidate_id');
+              const comparisonIndex = branch.required.indexOf('comparison');
+              expect(comparisonIndex).toBe(sizes[index]! > 1 ? 2 : 1);
+              expect(branch.required[comparisonIndex + 1]).toBe('source_selected_polarity');
+              expect(payload.typed_label_contracts[index].candidate_id).toBe(
+                payload.candidates[index].candidate_id,
+              );
+              expect(payload.candidates[index]).not.toHaveProperty('record_scope');
               expect(branch.properties.source_selected_polarity.enum).toEqual(['affirmed', 'negated']);
               if (sizes[index]! > 1) {
                 expect(branch.required).toContain('span_audit');
