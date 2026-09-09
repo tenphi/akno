@@ -1,0 +1,9 @@
+# V62 source-scope adjudication
+
+I preserved the initial source-only receipt as `tmp/language-selected-output-review-v62-initial.json` and re-read only the complete original source and the disputed `v19-held-report` EN-query/RU-answer/explicit-view output in the public packet.
+
+The source's verification object is the reported service term or condition. Ada says she has not read the service terms, has no independent confirmation of Bo's report, and in Russian calls it `не проверенное мной условие`. In this frame, Russian `условие` means a contractual term or condition. The disputed answer first translates that frame correctly, but ends with `не имеет независимого подтверждения этого сообщения о состоянии`. `Состояние` ordinarily means a state or condition in the state-of-something sense; it is not the contractual-term sense supplied by `условие`. The phrase therefore characterizes the report as being “about a state,” a proposition the source does not supply.
+
+The preceding sentence context makes clear which message is being referenced, but it does not erase the added complement `о состоянии` or turn it into a natural synonym for “about this contractual condition.” Without that complement, `подтверждения этого сообщения` would preserve the source. With it, the answer changes the semantic object of the unconfirmed report despite retaining the other roles and service details.
+
+I corrected only this answer coordinate: `usefulQualifiedAnswer=false`, `sourceEntailed=false`, and `qualificationPreserved=false`. It remains Russian-language compliant and is not an unsafe factual promotion. Its retrieved evidence remains useful, source-entailed, and qualified. Selected V62 totals become 45/48 useful answers, with two null coverage losses and one produced source/qualification error; retention remains 5/6 and retrieval remains 48/48.
