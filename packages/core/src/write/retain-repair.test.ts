@@ -56,14 +56,17 @@ function modelFor(extracted: unknown[], repair: unknown, verify = true) {
     return {
       ok: true,
       value: JSON.stringify({
-        verdicts: payload.candidates.map((c: { candidate_id: string; text: string }) => ({
-          candidate_id: c.candidate_id,
-          ...semanticAudit(verify || c.text === minor, true, true),
-          proposition_supported: verify || c.text === minor,
-          action_arguments_preserved: true,
-          qualification_scope_preserved: true,
-          reason_code: null,
-        })),
+        verdicts: payload.candidates.map(
+          (c: { polarity: 'affirmed' | 'negated'; candidate_id: string; text: string }) => ({
+            candidate_id: c.candidate_id,
+            source_selected_polarity: c.polarity,
+            ...semanticAudit(verify || c.text === minor, true, true),
+            proposition_supported: verify || c.text === minor,
+            action_arguments_preserved: true,
+            qualification_scope_preserved: true,
+            reason_code: null,
+          }),
+        ),
       }),
       latencyMs: 33,
     };
@@ -118,6 +121,7 @@ describe('one transactional structural repair', () => {
             verdicts: [
               {
                 candidate_id: input.candidates[0].candidate_id,
+                source_selected_polarity: 'affirmed',
                 ...semanticAudit(supported, supported, supported),
                 proposition_supported: supported,
                 action_arguments_preserved: supported,

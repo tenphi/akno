@@ -445,7 +445,24 @@ describe('grounded answer discovery surface', () => {
   );
   it.each(
     (['clock', 'counterfactual'] as const).flatMap((kind) =>
-      (['preserved', 'semantic-negative', 'translated-name'] as const).map((mode) => [kind, mode] as const),
+      (kind === 'clock'
+        ? ([
+            'preserved',
+            'semantic-negative',
+            'translated-name',
+            'wrong-period',
+            'wrong-direction',
+            'omit-nonacceptance',
+            'omit-no-event',
+            'omit-proposal-only',
+            'omit-processing',
+            'omit-calendar',
+            'label-scope',
+            'local-clock-negative',
+            'language-negative',
+          ] as const)
+        : (['preserved', 'semantic-negative', 'translated-name'] as const)
+      ).map((mode) => [kind, mode] as const),
     ),
   )(
     'renders complete qualified records with explicit clauses and exact names (%s / %s)',
@@ -461,6 +478,63 @@ describe('grounded answer discovery surface', () => {
       if (mode === 'semantic-negative')
         text = text.replace(kind === 'clock' ? 'смету' : 'седьмой', kind === 'clock' ? 'договор' : 'восьмой');
       if (mode === 'translated-name') text = text.replaceAll('Ada Marlow', 'Ада Марлоу');
+      let translated_record:
+        | {
+            proposition_and_nontemporal_scope: string;
+            source_clock_anchor: string;
+            remaining_clock_qualifications: string;
+          }
+        | undefined;
+      if (kind === 'clock') {
+        const parts = text.split('. ');
+        translated_record = {
+          proposition_and_nontemporal_scope: parts[0] + '. ' + parts[4],
+          source_clock_anchor: parts[1] + '.',
+          remaining_clock_qualifications: parts[2] + '. ' + parts[3] + '.',
+        };
+        if (mode === 'wrong-period')
+          translated_record.source_clock_anchor = translated_record.source_clock_anchor.replace(
+            'месяц',
+            'год',
+          );
+        if (mode === 'wrong-direction')
+          translated_record.source_clock_anchor = translated_record.source_clock_anchor.replace(
+            'Следующий',
+            'Прошлый',
+          );
+        if (mode === 'omit-nonacceptance')
+          translated_record.proposition_and_nontemporal_scope =
+            translated_record.proposition_and_nontemporal_scope.replace('не приняла план и ', '');
+        if (mode === 'omit-no-event')
+          translated_record.proposition_and_nontemporal_scope =
+            translated_record.proposition_and_nontemporal_scope.replace(' и не организовала встречу', '');
+        if (mode === 'omit-proposal-only')
+          translated_record.proposition_and_nontemporal_scope =
+            translated_record.proposition_and_nontemporal_scope.replace('; это только предложение', '');
+        if (mode === 'omit-processing')
+          translated_record.remaining_clock_qualifications = 'Календарный месяц неизвестен.';
+        if (mode === 'omit-calendar')
+          translated_record.remaining_clock_qualifications = 'Отсчёт ведётся не от времени обработки.';
+        if (mode === 'label-scope')
+          translated_record.proposition_and_nontemporal_scope =
+            '**Предварительное предложение:** ' + translated_record.proposition_and_nontemporal_scope;
+        if (mode === 'local-clock-negative')
+          translated_record.source_clock_anchor = 'Следующий месяц отсчитывается от времени обработки.';
+        if (mode === 'language-negative')
+          translated_record.proposition_and_nontemporal_scope =
+            'Ada Marlow proposed reviewing the silverpine estimate next month.';
+        text = [
+          translated_record.proposition_and_nontemporal_scope,
+          translated_record.source_clock_anchor,
+          translated_record.remaining_clock_qualifications,
+        ].join(' ');
+      }
+      const semanticSupport = [
+        'preserved',
+        'translated-name',
+        'local-clock-negative',
+        'language-negative',
+      ].includes(mode);
       const marker = temporalMarker('mem_frame', {
         kind: kind === 'clock' ? 'plan' : 'claim',
         commitment: kind === 'clock' ? 'asserted' : 'counterfactual',
@@ -482,15 +556,25 @@ describe('grounded answer discovery surface', () => {
       const original = fs.readFileSync(file, 'utf8');
       await useAnswerModel({
         knowledgeLanguage: 'en',
+        languageCheck: mode !== 'language-negative',
         generation: (request: Record<string, unknown>) => {
           const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
           expect(payload.complete_record_rendering, JSON.stringify(payload)).toBeDefined();
+          expect(payload.complete_record_rendering.source_clock_translation).toBe(
+            kind === 'clock' ? true : undefined,
+          );
           expect(payload.evidence[0].excerpt).toContain('"exact_spelling":"Ada Marlow"');
           return {
             record_readings: [
               { evidence_id: 'E1', selected_meaning: source, clarification_or_ambiguity: null },
             ],
-            blocks: [{ rendering_mode: 'translate', text, evidence_ids: ['E1'] }],
+            blocks: [
+              {
+                rendering_mode: 'translate',
+                ...(translated_record ? { translated_record } : { text }),
+                evidence_ids: ['E1'],
+              },
+            ],
             missing_concepts: [],
           };
         },
@@ -509,7 +593,7 @@ describe('grounded answer discovery surface', () => {
           return {
             verdicts: [
               {
-                ...verdict('B1', true, mode !== 'semantic-negative', true),
+                ...verdict('B1', true, semanticSupport, true),
                 excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
                 source_alignments: [
                   {
@@ -544,11 +628,20 @@ describe('grounded answer discovery surface', () => {
       expect(result.reason_code, JSON.stringify(result)).toBe(
         mode === 'preserved'
           ? 'answered'
-          : mode === 'translated-name'
-            ? 'draft_rejected'
-            : 'verification_rejected',
+          : mode === 'language-negative'
+            ? 'generation_failed'
+            : ['translated-name', 'local-clock-negative'].includes(mode)
+              ? 'draft_rejected'
+              : 'verification_rejected',
       );
-      expect(modelRequests).toHaveLength(mode === 'translated-name' ? 2 : 3);
+      expect(modelRequests).toHaveLength(
+        ['translated-name', 'local-clock-negative', 'language-negative'].includes(mode) ? 2 : 3,
+      );
+      const languagePayload = JSON.parse(
+        (modelRequests[1]!.messages as { content: string }[]).at(-1)!.content,
+      );
+      expect(languagePayload.excerpts).toContain(text);
+      expect(JSON.stringify(result)).not.toContain('translated_record');
       expect(fs.readFileSync(file, 'utf8')).toBe(original);
     },
   );

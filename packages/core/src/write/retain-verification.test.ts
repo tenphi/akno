@@ -41,6 +41,7 @@ describe('retention semantic verification dimensions', () => {
       expect(payload.candidates[0].text).toBe(candidate.text);
       const verdict: Record<string, unknown> = {
         candidate_id: payload.candidates[0].candidate_id,
+        source_selected_polarity: 'affirmed',
         ...semanticAudit(
           mode !== 'proposition_supported',
           mode !== 'action_arguments_preserved',
@@ -121,10 +122,18 @@ describe('bounded first-pass retention verification', () => {
         expect(payload.source.text).toBe(completeSource);
         expect(payload.candidates).toHaveLength(2);
         expect(payload.related_candidates).toHaveLength(48);
-        const verdicts = payload.candidates.map((record: { candidate_id: string }) => {
-          seen.push(record.candidate_id);
-          return { candidate_id: record.candidate_id, ...semanticAudit(), ...dimensions, reason_code: null };
-        });
+        const verdicts = payload.candidates.map(
+          (record: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => {
+            seen.push(record.candidate_id);
+            return {
+              candidate_id: record.candidate_id,
+              source_selected_polarity: 'affirmed',
+              ...semanticAudit(),
+              ...dimensions,
+              reason_code: null,
+            };
+          },
+        );
         return {
           ok: true,
           value: JSON.stringify({ verdicts }),
@@ -177,17 +186,20 @@ describe('bounded first-pass retention verification', () => {
         ok: true,
         latencyMs: 22,
         value: JSON.stringify({
-          verdicts: payload.candidates.map((record: { candidate_id: string; text: string }) => {
-            checkedIds.push(record.candidate_id);
-            const supported = record.text !== texts[2];
-            return {
-              candidate_id: record.candidate_id,
-              ...semanticAudit(supported),
-              ...dimensions,
-              proposition_supported: supported,
-              reason_code: supported ? null : 'discourse_uncertain',
-            };
-          }),
+          verdicts: payload.candidates.map(
+            (record: { polarity: 'affirmed' | 'negated'; candidate_id: string; text: string }) => {
+              checkedIds.push(record.candidate_id);
+              const supported = record.text !== texts[2];
+              return {
+                candidate_id: record.candidate_id,
+                source_selected_polarity: record.polarity,
+                ...semanticAudit(supported),
+                ...dimensions,
+                proposition_supported: supported,
+                reason_code: supported ? null : 'discourse_uncertain',
+              };
+            },
+          ),
         }),
       };
     });
@@ -360,6 +372,7 @@ describe('record-local tentative scope in retention verification', () => {
             verdicts: [
               {
                 candidate_id: verifyingRecord.candidate_id,
+                source_selected_polarity: 'affirmed',
                 span_audit: verifyingRecord.frame_spans.map((span: { frame_id: string }) => ({
                   frame_id: span.frame_id,
                   interpretation:

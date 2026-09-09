@@ -23,6 +23,8 @@ const cases = [
   { sizes: [2, 3], malformed: 'swapped-audits' },
   { sizes: [1, 2], malformed: 'unexpected-single-audit' },
   { sizes: [2, 3], malformed: 'foreign-candidate' },
+  { sizes: [1, 2], malformed: 'missing-polarity' },
+  { sizes: [1, 2], malformed: 'invalid-polarity' },
 ];
 describe.each(['chat', 'responses'] as const)('retention wire-schema compatibility: %s', (api) => {
   it.each(cases)(
@@ -32,7 +34,7 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
       const records = sizes.map((size, group) => {
         const frame = Array.from({ length: size }, (_, index) => {
           const item_id = `invented-${group}-${index}`;
-          const text = `The Zephyr QX-100 inspection label is marker-${group}-${index}.`;
+          const text = `The Zephyr QX-100 inspection label is ${group % 2 ? 'not ' : ''}marker-${group}-${index}.`;
           sourceItems.push({ item_id, text, role: 'user', speaker: 'Ada Marlow' });
           return { item_id, quote: text };
         });
@@ -43,7 +45,7 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
           attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
           discourse: { commitment: 'asserted', disposition: 'active' },
           epistemic: { basis: 'self_attested' },
-          polarity: 'affirmed',
+          polarity: group % 2 ? 'negated' : 'affirmed',
           support: [frame[0]],
           discourse_frame: frame,
         };
@@ -80,6 +82,8 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
             if (sizes.length === 1) expect(items.type).toBe('object');
             for (const [index, branch] of branches.entries()) {
               expect(branch.properties.candidate_id.enum).toEqual([payload.candidates[index].candidate_id]);
+              expect(branch.required.slice(0, 2)).toEqual(['candidate_id', 'source_selected_polarity']);
+              expect(branch.properties.source_selected_polarity.enum).toEqual(['affirmed', 'negated']);
               if (sizes[index]! > 1) {
                 expect(branch.required).toContain('span_audit');
                 expect(branch.properties.span_audit.minItems).toBe(sizes[index]);
@@ -91,8 +95,13 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
             }
             output = {
               verdicts: payload.candidates.map(
-                (candidate: { candidate_id: string; frame_spans?: { frame_id: string }[] }) => ({
+                (candidate: {
+                  polarity: 'affirmed' | 'negated';
+                  candidate_id: string;
+                  frame_spans?: { frame_id: string }[];
+                }) => ({
                   candidate_id: candidate.candidate_id,
+                  source_selected_polarity: candidate.polarity,
                   ...frameAuditFields(candidate),
                   ...semanticAudit(),
                   proposition_supported: true,
@@ -112,6 +121,8 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
               ];
             if (malformed === 'unexpected-single-audit') verdicts[0].span_audit = verdicts[1].span_audit;
             if (malformed === 'foreign-candidate') verdicts[0].candidate_id = 'invented-foreign-candidate';
+            if (malformed === 'missing-polarity') delete verdicts[1].source_selected_polarity;
+            if (malformed === 'invalid-polarity') verdicts[1].source_selected_polarity = 'unknown';
           }
           const content = JSON.stringify(output);
           return new Response(

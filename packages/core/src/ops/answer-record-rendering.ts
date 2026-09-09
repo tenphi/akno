@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import type { AnswerContextItem } from '@tenphi/akno-protocol';
 import type { OutputLanguage } from '../models/language.ts';
+import {
+  hasDeicticTime,
+  hasSourceRelativeAnchor,
+  hasUnknownReferenceClock,
+} from '../timeline/source-clock.ts';
 
 export interface AnswerRecordRendering {
   evidence_id: string;
   text: string;
   copy_allowed?: false;
+  source_clock_translation?: true;
 }
 
 /** A single bound record permits preservation without guessing its current language from old policy. */
@@ -37,16 +43,36 @@ export function answerRecordRendering(
     // Policy does not prove the language of old bytes. This only removes a shortcut; a translation
     // can preserve already-localized prose and still must pass actual language and source checks.
     ...(knowledgeLanguage && language !== knowledgeLanguage ? { copy_allowed: false as const } : {}),
+    // Match the readable-clock obligation enforced downstream. A private frame or unknown
+    // metadata alone cannot authorize an extra source-clock statement in generated prose.
+    ...(language === 'ru' &&
+    item.lines[0]!.memory.temporal?.time.precision === 'unknown' &&
+    hasDeicticTime(text) &&
+    hasSourceRelativeAnchor(text) &&
+    hasUnknownReferenceClock(text)
+      ? { source_clock_translation: true as const }
+      : {}),
   };
 }
 
 export function answerRecordBlockSchema(record: AnswerRecordRendering) {
   const evidence_ids = z.array(z.enum([record.evidence_id])).length(1);
-  const translation = z.strictObject({
-    rendering_mode: z.enum(['translate']),
-    text: z.string().trim().min(1).max(2_000),
-    evidence_ids,
-  });
+  const translation = record.source_clock_translation
+    ? z.strictObject({
+        rendering_mode: z.enum(['translate']),
+        translated_record: z.strictObject({
+          // These fields and two joining spaces share the previous 2,000-character text cap.
+          proposition_and_nontemporal_scope: z.string().trim().min(1).max(1_200),
+          source_clock_anchor: z.string().trim().min(1).max(400),
+          remaining_clock_qualifications: z.string().trim().min(1).max(398),
+        }),
+        evidence_ids,
+      })
+    : z.strictObject({
+        rendering_mode: z.enum(['translate']),
+        text: z.string().trim().min(1).max(2_000),
+        evidence_ids,
+      });
   if (record.copy_allowed === false) return translation;
   // Ordinary anyOf, not a discriminated oneOf, is supported by the existing provider contract.
   return z.union([
@@ -56,6 +82,32 @@ export function answerRecordBlockSchema(record: AnswerRecordRendering) {
     }),
     translation,
   ]);
+}
+
+/** Concatenation adds no semantic content; the exact result still needs language and source checks. */
+export function answerRecordText(
+  block:
+    | { text: string }
+    | { rendering_mode: 'copy' }
+    | {
+        translated_record: {
+          proposition_and_nontemporal_scope: string;
+          source_clock_anchor: string;
+          remaining_clock_qualifications: string;
+        };
+      },
+  record?: AnswerRecordRendering,
+): string {
+  if ('text' in block) return block.text;
+  if ('translated_record' in block) {
+    const clauses = block.translated_record;
+    return [
+      clauses.proposition_and_nontemporal_scope,
+      clauses.source_clock_anchor,
+      clauses.remaining_clock_qualifications,
+    ].join(' ');
+  }
+  return record!.text;
 }
 
 export const ANSWER_RECORD_RENDERING_CONTRACT = `When complete_record_rendering is supplied, select that
@@ -110,4 +162,18 @@ Then give separate complete clauses locating that interval relative to the origi
 contrasting it with processing time, and stating the unknown calendar date or period. Keep the actual
 direction and interval, and preserve any nonacceptance, no-event or proposal-only limits separately.
 Use these clauses only for qualifications already in the retained record; an ordinary dated statement
-must not acquire unknownness or a processing-time contrast. Do not derive a calendar date from today.`;
+must not acquire unknownness or a processing-time contrast. Do not derive a calendar date from today.
+
+When source_clock_translation is true and you select translate, return translated_record instead of text.
+Each segment is final public prose, not a plan or evidence. The server joins them with spaces in this order:
+- proposition_and_nontemporal_scope: translate the complete actor/action/object, its actual selected
+  interval, visible status labels, and every nonclock limit. Keep nonacceptance, no-event and proposal-only
+  limits when retained. A tentative-time label qualifies timing, not uncertainty about the proposal act.
+- source_clock_anchor: one standalone sentence with the selected interval as subject of
+  «отсчитывается от времени первоначальной записи без даты». Preserve the actual interval and direction;
+  do not state an unrelated example or quote the whole anchoring sentence.
+- remaining_clock_qualifications: translate the remaining retained clock restrictions, including
+  processing-time contrast and unknown recording/calendar time only when present. Do not invent a clock.
+End each segment with sentence punctuation. Together they must translate every clause of the complete
+retained record without importing a proposition from the query or private frame. Missing or conflicting
+support requires no block. The segment names supply no authority and cannot bypass any verification.`;

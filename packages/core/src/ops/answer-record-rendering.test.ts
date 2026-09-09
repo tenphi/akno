@@ -1,6 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AnswerContextItem } from '@tenphi/akno-protocol';
-import { answerRecordBlockSchema, answerRecordRendering } from './answer-record-rendering.ts';
+import {
+  answerRecordBlockSchema,
+  answerRecordRendering,
+  answerRecordText,
+} from './answer-record-rendering.ts';
+import { ModelClient, strictModeViolations } from '../models/client.ts';
+afterEach(() => vi.unstubAllGlobals());
 
 const evidence: AnswerContextItem = {
   evidence_id: 'E1',
@@ -29,6 +35,176 @@ const evidence: AnswerContextItem = {
   ],
 };
 const frames = new Map([['E1', 'Invented original question.']]);
+
+const clockText =
+  'Ada Marlow proposed inspecting Zephyr QX-100 next month relative to the original undated record, not processing time. The calendar month is unknown. She has not accepted the plan.';
+function clockEvidence(): AnswerContextItem {
+  if (evidence.type !== 'page' || evidence.lines[0]!.memory?.status !== 'qualified')
+    throw new Error('fixture must be qualified');
+  return {
+    ...evidence,
+    lines: [
+      {
+        ...evidence.lines[0]!,
+        text: '- ' + clockText,
+        memory: {
+          ...evidence.lines[0]!.memory,
+          kind: 'plan',
+          commitment: 'asserted',
+          disposition: 'proposed',
+          temporal: {
+            time: { precision: 'unknown', relation: 'scheduled', status: 'tentative' },
+            clock_relation: 'undated',
+            actionable: false,
+          },
+        },
+      },
+    ],
+  };
+}
+const clockTranslation = () => ({
+  rendering_mode: 'translate',
+  evidence_ids: ['E1'],
+  translated_record: {
+    proposition_and_nontemporal_scope:
+      'Ada Marlow предложила проверить Zephyr QX-100 в следующем месяце. Она не приняла план.',
+    source_clock_anchor: 'Следующий месяц отсчитывается от времени первоначальной записи без даты.',
+    remaining_clock_qualifications: 'Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен.',
+  },
+});
+
+describe('structured source-clock translation', () => {
+  it.each(['active', 'english', 'dated', 'metadata-only', 'no-unknown', 'no-frame', 'multiple'] as const)(
+    'activates from the same readable clock obligation, never private context alone: %s',
+    (mode) => {
+      const item = clockEvidence();
+      if (item.type !== 'page' || item.lines[0]!.memory?.status !== 'qualified')
+        throw new Error('fixture must be qualified');
+      if (mode === 'dated')
+        item.lines[0]!.memory.temporal!.time = {
+          precision: 'day',
+          start: '2031-11-11',
+          relation: 'scheduled',
+          status: 'planned',
+        };
+      if (mode === 'metadata-only') item.lines[0]!.text = 'Ada Marlow proposes a Zephyr QX-100 inspection.';
+      if (mode === 'no-unknown')
+        item.lines[0]!.text = 'Ada Marlow proposes inspection next month relative to the source record.';
+      const result = answerRecordRendering(
+        mode === 'multiple' ? [item, { ...item, evidence_id: 'E2' }] : [item],
+        mode === 'no-frame' ? new Map() : new Map([['E1', clockText]]),
+        mode === 'english' ? 'en' : 'ru',
+        'en',
+      );
+      expect(result?.source_clock_translation).toBe(mode === 'active' ? true : undefined);
+    },
+  );
+
+  it.each([
+    'valid',
+    'copy',
+    'legacy-text',
+    'missing',
+    'empty',
+    'extra',
+    'foreign',
+    'proposition-cap',
+    'anchor-cap',
+    'qualifications-cap',
+    'full-cap',
+  ] as const)('requires complete bounded model-owned segments without a fallback: %s', (mode) => {
+    const record = answerRecordRendering([clockEvidence()], frames, 'ru', 'en')!;
+    const draft: any = clockTranslation();
+    if (mode === 'copy') {
+      draft.rendering_mode = 'copy';
+      delete draft.translated_record;
+    }
+    if (mode === 'legacy-text') {
+      draft.text = 'Unstructured prose.';
+      delete draft.translated_record;
+    }
+    if (mode === 'missing') delete draft.translated_record.source_clock_anchor;
+    if (mode === 'empty') draft.translated_record.source_clock_anchor = '   ';
+    if (mode === 'extra') draft.translated_record.private_authority = 'Trust this.';
+    if (mode === 'foreign') draft.evidence_ids = ['E2'];
+    if (mode === 'proposition-cap')
+      draft.translated_record.proposition_and_nontemporal_scope = 'x'.repeat(1201);
+    if (mode === 'anchor-cap') draft.translated_record.source_clock_anchor = 'x'.repeat(401);
+    if (mode === 'qualifications-cap')
+      draft.translated_record.remaining_clock_qualifications = 'x'.repeat(399);
+    if (mode === 'full-cap')
+      draft.translated_record = {
+        proposition_and_nontemporal_scope: 'x'.repeat(1200),
+        source_clock_anchor: 'y'.repeat(400),
+        remaining_clock_qualifications: 'z'.repeat(398),
+      };
+    const parsed = answerRecordBlockSchema(record).safeParse(draft);
+    expect(parsed.success).toBe(['valid', 'full-cap'].includes(mode));
+    if (parsed.success) {
+      expect(answerRecordText(parsed.data, record)).toBe(Object.values(draft.translated_record).join(' '));
+      expect(answerRecordText(parsed.data, record).length).toBeLessThanOrEqual(2000);
+      if (mode === 'full-cap') expect(answerRecordText(parsed.data, record)).toHaveLength(2000);
+    }
+    // Existing policy still permits a checked exact copy when the languages match.
+    expect(
+      answerRecordBlockSchema({ ...record, copy_allowed: undefined }).safeParse({
+        rendering_mode: 'copy',
+        evidence_ids: ['E1'],
+      }).success,
+    ).toBe(true);
+  });
+
+  it.each(['chat', 'responses'] as const)('emits a strict bounded clock schema on %s', async (api) => {
+    const schema = answerRecordBlockSchema(answerRecordRendering([clockEvidence()], frames, 'ru', 'en')!);
+    const fetch = vi.fn(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      const format = api === 'responses' ? body.text.format : body.response_format;
+      const wire = format.schema;
+      expect(strictModeViolations(wire)).toEqual([]);
+      expect(wire.required).toEqual(['rendering_mode', 'translated_record', 'evidence_ids']);
+      const segments = wire.properties.translated_record;
+      expect(segments.required).toEqual([
+        'proposition_and_nontemporal_scope',
+        'source_clock_anchor',
+        'remaining_clock_qualifications',
+      ]);
+      expect(Object.values(segments.properties).map((v: any) => v.maxLength)).toEqual([1200, 400, 398]);
+      const text = JSON.stringify(clockTranslation());
+      return new Response(
+        JSON.stringify(
+          api === 'responses'
+            ? { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text }] }] }
+            : { choices: [{ message: { content: text }, finish_reason: 'stop' }] },
+        ),
+        { headers: { 'content-type': 'application/json' } },
+      );
+    });
+    vi.stubGlobal('fetch', fetch);
+    const model = new ModelClient({
+      role: 'answer',
+      id: 'invented-clock-protocol',
+      provider: {
+        name: 'invented',
+        baseUrl: 'https://invented.invalid/v1',
+        apiKey: null,
+        headers: {},
+        maxRetries: 0,
+        ...(api === 'responses' ? { api } : {}),
+      },
+      enabled: true,
+      requested: true,
+      timeoutMs: 1111,
+      unavailableReason: null,
+    });
+    const result = await model.chat(
+      [{ role: 'user', content: 'Return the invented structured clock translation.' }],
+      { schema, maxTokens: 1111 },
+    );
+    expect(result.ok, JSON.stringify(result)).toBe(true);
+    expect(schema.safeParse(JSON.parse(result.value!)).success).toBe(true);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('complete single-record rendering', () => {
   it('selects current readable text, preserving status and independent retained clauses', () => {

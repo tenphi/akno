@@ -59,10 +59,13 @@ async function startAutomaticRetainStub(): Promise<AutomaticRetainStub> {
       let content: unknown;
       if (system.includes('independently verify proposed retained memories')) {
         counts.verification++;
-        const payload = JSON.parse(user) as { candidates?: { candidate_id: string }[] };
+        const payload = JSON.parse(user) as {
+          candidates?: { candidate_id: string; polarity: 'affirmed' | 'negated' }[];
+        };
         content = {
           verdicts: (payload.candidates ?? []).map((item) => ({
             candidate_id: item.candidate_id,
+            source_selected_polarity: item.polarity,
             ...semanticAudit(verificationSupported, true, true),
             proposition_supported: verificationSupported,
             action_arguments_preserved: true,

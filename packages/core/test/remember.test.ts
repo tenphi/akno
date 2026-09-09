@@ -122,7 +122,9 @@ async function startStubChat(): Promise<typeof server> {
       const requestSystem = body.messages?.find((message) => message.role === 'system')?.content ?? '';
       const sourceText = body.messages?.find((message) => message.role === 'user')?.content ?? '';
       if (requestSystem.includes('independently verify proposed retained memories')) {
-        const payload = JSON.parse(sourceText) as { candidates?: { candidate_id?: string }[] };
+        const payload = JSON.parse(sourceText) as {
+          candidates?: { candidate_id?: string; polarity: 'affirmed' | 'negated' }[];
+        };
         response.end(
           JSON.stringify({
             choices: [
@@ -131,6 +133,7 @@ async function startStubChat(): Promise<typeof server> {
                   content: JSON.stringify({
                     verdicts: (payload.candidates ?? []).map((candidate) => ({
                       candidate_id: candidate.candidate_id,
+                      source_selected_polarity: candidate.polarity,
                       ...semanticAudit(true, true, true),
                       proposition_supported: true,
                       action_arguments_preserved: true,

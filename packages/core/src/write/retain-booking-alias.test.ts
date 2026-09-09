@@ -55,8 +55,13 @@ describe('a negative booking subject with a quoted noun alias', () => {
           ok: true,
           value: JSON.stringify({
             verdicts: payload.candidates.map(
-              (c: { candidate_id: string; frame_spans: { frame_id: string }[] }) => ({
+              (c: {
+                polarity: 'affirmed' | 'negated';
+                candidate_id: string;
+                frame_spans: { frame_id: string }[];
+              }) => ({
                 candidate_id: c.candidate_id,
+                source_selected_polarity: c.polarity,
                 ...frameAuditFields(c),
                 ...semanticAudit(supported, true, true),
                 proposition_supported: supported,

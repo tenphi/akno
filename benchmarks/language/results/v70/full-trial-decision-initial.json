@@ -140,11 +140,10 @@
   "publishedAnswerErrors": 0,
   "adjudication": "Source-only review and focused-question adjudication retain 54/64 selected useful answers. Full forensics applies a stricter completeness requirement to fiction q0/q2/q4 and gives 51/64. The adopted answers supply the requested promise and cite every asserted clause; they need not repeat the proposal relation supplied in the question. Both interpretations are preserved.",
   "falseLocalHolds": {
-    "counterfactual": 2,
-    "unknownClockUnambiguous": 3
+    "counterfactual": 3,
+    "unknownClock": 4
   },
   "correctBadDraftHolds": {
-    "counterfactualRejectionDisposition": 1,
     "coverageRole": 1,
     "fictionLanguage": 1,
     "fictionQualification": 1
@@ -159,11 +158,5 @@
     "held-out"
   ],
   "answerOutputTokenLimit": 2400,
-  "thresholdsChanged": false,
-  "heldClockHeadingAmbiguity": {
-    "case": "v20-held-undated",
-    "query": 3,
-    "description": "False source-anchor floor on the body; tentative heading has disputed attachment."
-  },
-  "followupStageCorrection": "Counterfactual q3 selects an additional rejected-decision record while omitting explicit rejection; q5/q7 select only the counterfactual record. Public scores and deferral remain unchanged."
+  "thresholdsChanged": false
 }

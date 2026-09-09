@@ -115,14 +115,17 @@ describe('generated subject identity across source items', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
-              candidate_id: c.candidate_id,
-              ...semanticAudit(supported, supported, supported),
-              proposition_supported: supported,
-              action_arguments_preserved: supported,
-              qualification_scope_preserved: supported,
-              reason_code: supported ? null : 'discourse_uncertain',
-            })),
+            verdicts: payload.candidates.map(
+              (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
+                candidate_id: c.candidate_id,
+                source_selected_polarity: c.polarity,
+                ...semanticAudit(supported, supported, supported),
+                proposition_supported: supported,
+                action_arguments_preserved: supported,
+                qualification_scope_preserved: supported,
+                reason_code: supported ? null : 'discourse_uncertain',
+              }),
+            ),
           }),
           latencyMs: 11,
         };
@@ -205,8 +208,13 @@ describe('generated subject identity across source items', () => {
           ok: true,
           value: JSON.stringify({
             verdicts: payload.candidates.map(
-              (c: { candidate_id: string; frame_spans: { frame_id: string }[] }) => ({
+              (c: {
+                polarity: 'affirmed' | 'negated';
+                candidate_id: string;
+                frame_spans: { frame_id: string }[];
+              }) => ({
                 candidate_id: c.candidate_id,
+                source_selected_polarity: c.polarity,
                 ...frameAuditFields(c),
                 ...semanticAudit(supported, true, true),
                 proposition_supported: supported,
@@ -353,8 +361,13 @@ describe('generated subject identity across source items', () => {
           latencyMs: 11,
           value: JSON.stringify({
             verdicts: payload.candidates.map(
-              (candidate: { candidate_id: string; frame_spans: { frame_id: string }[] }) => ({
+              (candidate: {
+                polarity: 'affirmed' | 'negated';
+                candidate_id: string;
+                frame_spans: { frame_id: string }[];
+              }) => ({
                 candidate_id: candidate.candidate_id,
+                source_selected_polarity: candidate.polarity,
                 ...frameAuditFields(candidate),
                 ...semanticAudit(false, true, true),
                 proposition_supported: false,

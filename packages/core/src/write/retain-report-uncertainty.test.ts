@@ -250,14 +250,17 @@ describe('shared negation in readable report uncertainty', () => {
         return {
           ok: true,
           value: JSON.stringify({
-            verdicts: input.candidates.map((c: { candidate_id: string }) => ({
-              candidate_id: c.candidate_id,
-              ...semanticAudit(supported, true, true),
-              proposition_supported: supported,
-              action_arguments_preserved: true,
-              qualification_scope_preserved: true,
-              reason_code: supported ? null : 'discourse_uncertain',
-            })),
+            verdicts: input.candidates.map(
+              (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
+                candidate_id: c.candidate_id,
+                source_selected_polarity: c.polarity,
+                ...semanticAudit(supported, true, true),
+                proposition_supported: supported,
+                action_arguments_preserved: true,
+                qualification_scope_preserved: true,
+                reason_code: supported ? null : 'discourse_uncertain',
+              }),
+            ),
           }),
           latencyMs: 11,
         };

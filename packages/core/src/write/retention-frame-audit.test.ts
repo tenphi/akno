@@ -65,6 +65,7 @@ describe('required retention frame accounting', () => {
       );
       const verdict: Record<string, unknown> = {
         candidate_id: payload.candidates[0].candidate_id,
+        source_selected_polarity: 'affirmed',
         span_audit: [
           {
             frame_id: 'F1',
@@ -179,8 +180,13 @@ describe('required retention frame accounting', () => {
         latencyMs: 33,
         value: JSON.stringify({
           verdicts: payload.candidates.map(
-            (candidate: { candidate_id: string; frame_spans?: { frame_id: string }[] }) => ({
+            (candidate: {
+              polarity: 'affirmed' | 'negated';
+              candidate_id: string;
+              frame_spans?: { frame_id: string }[];
+            }) => ({
               candidate_id: candidate.candidate_id,
+              source_selected_polarity: candidate.polarity,
               ...frameAuditFields(candidate),
               ...semanticAudit(),
               proposition_supported: true,
@@ -305,8 +311,13 @@ describe('required retention frame accounting', () => {
           latencyMs: 22,
           value: JSON.stringify({
             verdicts: payload.candidates.map(
-              (candidate: { candidate_id: string; frame_spans?: { frame_id: string }[] }) => ({
+              (candidate: {
+                polarity: 'affirmed' | 'negated';
+                candidate_id: string;
+                frame_spans?: { frame_id: string }[];
+              }) => ({
                 candidate_id: candidate.candidate_id,
+                source_selected_polarity: candidate.polarity,
                 ...frameAuditFields(candidate),
                 ...semanticAudit(),
                 proposition_supported: true,
@@ -371,8 +382,16 @@ describe('required retention frame accounting', () => {
           latencyMs: 11,
           value: JSON.stringify({
             verdicts: payload.candidates.map(
-              (candidate: { candidate_id: string; frame_spans: { frame_id: string }[] }, i: number) => ({
+              (
+                candidate: {
+                  polarity: 'affirmed' | 'negated';
+                  candidate_id: string;
+                  frame_spans: { frame_id: string }[];
+                },
+                i: number,
+              ) => ({
                 candidate_id: candidate.candidate_id,
+                source_selected_polarity: candidate.polarity,
                 span_audit: candidate.frame_spans.map(({ frame_id }) => ({
                   frame_id,
                   interpretation:

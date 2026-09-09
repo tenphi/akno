@@ -51,6 +51,7 @@ import {
   answerRecordBlockSchema,
   type AnswerRecordRendering,
   ANSWER_RECORD_RENDERING_CONTRACT,
+  answerRecordText,
 } from './answer-record-rendering.ts';
 import {
   SEMANTIC_COMPARISON_CONTRACT,
@@ -61,7 +62,7 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v65';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v66';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v45';
 
 function answerDraftSchema(
@@ -587,8 +588,10 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
             // ID selection must not bypass the existing language check on the eventual answer.
             additionalLanguageProse: (value: unknown) => {
               const draft = liveDraftSchema.safeParse(value);
-              return draft.success && draft.data.blocks.some((block) => !('text' in block))
-                ? [recordRendering.text]
+              return draft.success
+                ? draft.data.blocks
+                    .filter((block) => !('text' in block))
+                    .map((block) => answerRecordText(block, recordRendering))
                 : [];
             },
           }
@@ -640,7 +643,7 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
 
   const materialized: AnswerDraft = {
     blocks: parsed.data.blocks.map((block) => ({
-      text: 'text' in block ? block.text : recordRendering!.text,
+      text: answerRecordText(block, recordRendering),
       evidence_ids: block.evidence_ids,
     })),
     missing_concepts: parsed.data.missing_concepts,
