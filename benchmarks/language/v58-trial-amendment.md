@@ -1,0 +1,5 @@
+# V58 disposition after the declared exposed probes
+
+Both probes completed on frozen dae04e2. Independent source-only grading found **58/80 useful answers** (29/48 selected, 29/32 built), 15 writable nulls and seven produced but incomplete answers to the two-part exclusion question. All 65 produced answers preserve source entailment, qualification and language; no unsafe factual promotion or source-byte change was found. Complete useful retention is 7/10 and useful retrieval is 64/80. Case availability and answer operation failures are zero.
+
+Full repeated execution is deferred for substantial coverage loss. Fresh approved V20 held-out remains unexecuted. All [reports and reviews](results/v58/README.md), including the initial/corrected exclusion diagnosis and the held-hypothesis scope disagreement, are preserved. Continue with bounded fixes and the same independent review/fix, complete local checks, freeze, redeploy, provider controls and declared exposed evaluation. No semantic retry, model/pass change, threshold weakening or issue edit; PR #70 remains open.
