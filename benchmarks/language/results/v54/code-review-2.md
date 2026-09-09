@@ -16,20 +16,20 @@ The final diff resolves this coherently:
 
 - [config/default.jsonc](../config/default.jsonc) raises the committed answer-role default to 2,400 and documents latency/cost and fail-closed consequences;
 - [config/local.example.jsonc](../config/local.example.jsonc) now uses the same 2,400 value, so the documented OpenAI overlay does not silently restore the obsolete ceiling;
-- ordinary generation still asks for 1,024, while framed generation may request 512 more per frame and verification may use the larger role allowance ([answer.ts](../packages/core/src/ops/answer.ts));
+- ordinary generation still asks for 1,024, while framed generation may request 512 more per frame and verification may use the larger role allowance ([answer.ts](../../../../packages/core/src/ops/answer.ts));
 - the existing unframed verifier request can also now use up to its 2,224-token task request. This is a real default cost/latency change and is accurately stated in the plan, changeset and language/discourse documentation;
 - explicit lower caller limits still constrain generation, and the configured role remains authoritative for every call. The 777-token integration assertion verifies the actual lower-of-two behavior rather than incorrectly expecting a caller request above the role cap to pass through; and
-- [bench-language.mjs](../scripts/bench-language.mjs) provides an explicit, validated, one-run `--answer-output-tokens` overlay. Reports record resolved answer and retention ceilings, and [language-review.ts](../packages/core/src/bench/language-review.ts) binds them into the review fingerprint and rejects mixed-budget report sets. The V54 plan explicitly says its 2,400-token results do not establish reliability for the service's preserved 1,024-token local override.
+- [bench-language.mjs](../../../../scripts/bench-language.mjs) provides an explicit, validated, one-run `--answer-output-tokens` overlay. Reports record resolved answer and retention ceilings, and [language-review.ts](../../../../packages/core/src/bench/language-review.ts) binds them into the review fingerprint and rejects mixed-budget report sets. The V54 plan explicitly says its 2,400-token results do not establish reliability for the service's preserved 1,024-token local override.
 
 The 2,400 ceiling is a reasonable bounded default for the normal one- or two-frame case and preserves the detailed comparison fields. A block can cite as many as eight framed records, so an unusually large or verbose audit can still exceed it; that failure remains typed and closed rather than being repaired or accepted.
 
 ### Resolved — strict parsing initially lacked end-to-end malformed-output tests
 
-The final [answer.test.ts](../packages/core/src/ops/answer.test.ts) exercises both truncated and trailing-content JSON in framed generation and verification. It establishes a null answer, no citations, the correct `invalid_draft` or `verification_unavailable` reason, and one first-pass request per phase with no retry. This covers the production transport path rather than merely unit-testing `JSON.parse`.
+The final [answer.test.ts](../../../../packages/core/src/ops/answer.test.ts) exercises both truncated and trailing-content JSON in framed generation and verification. It establishes a null answer, no citations, the correct `invalid_draft` or `verification_unavailable` reason, and one first-pass request per phase with no retry. This covers the production transport path rather than merely unit-testing `JSON.parse`.
 
 ### Resolved — a cited framed record could initially mark every audit category `not_selected`
 
-[answer-source-audit.ts](../packages/core/src/ops/answer-source-audit.ts) now requires at least one selected category per cited framed record. Its unit test keeps a genuinely incidental category unselected beside selected object/qualification comparisons and rejects a record whose actor, object/mechanism and qualification are all `not_selected`. This closes the empty-audit escape without making neighboring, unselected source text an answer obligation.
+[answer-source-audit.ts](../../../../packages/core/src/ops/answer-source-audit.ts) now requires at least one selected category per cited framed record. Its unit test keeps a genuinely incidental category unselected beside selected object/qualification comparisons and rejects a record whose actor, object/mechanism and qualification are all `not_selected`. This closes the empty-audit escape without making neighboring, unselected source text an answer obligation.
 
 ### Resolved — exact caller-cap test and documented example
 
