@@ -1,0 +1,7 @@
+# V72 validation evidence
+
+The [declared plan](../../v72-trial-plan.md) follows the [V71 evidence](../v71/README.md) committed in 1e6f79d. This revision recognizes the closed same-subject personal-verification limit and separates operation irrelevance from explicit absence of a tested property. Public schemas, models, output caps, call counts, semantic negatives and acceptance gates remain unchanged. A model may still misclassify a present property as absent; schema validity does not establish semantic correctness.
+
+Two independent Sol code reviews find no actionable blocker. All local gates pass: **3,410 tests in 146 files**, typecheck/build, lint, knip, formatting, repository safety, documentation doctor/build, smoke and installed-package smoke. Seventeen compiled control groups pass, including the new property-state dependency and report grammar. Initial and corrected fixture failures and reviews remain preserved.
+
+Freeze/push, build/restart/socket redeployment, postdeploy controls, four invented actual-provider schema controls, CI/documentation, independent preflight and the once-only exposed 64+32 probes remain pending. Protocol controls will include active and absent-from-both property branches in the actual two-record verifier shape under the unchanged isolated 2,400-token ceiling. The service 1,024-token overlay remains unvalidated by these trials. Fresh V21 held-out inputs remain unexecuted. No release acceptance is claimed; PR #70 stays open and unmerged.

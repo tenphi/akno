@@ -161,6 +161,13 @@ function propertyAlignmentSchema(coordinates: AnswerAuditCoordinates) {
       answer_property: z.null(),
       relation: z.enum(['not_selected']),
     }),
+    z.strictObject({
+      source_anchor: z.null(),
+      answer_anchor: z.null(),
+      source_property: z.null(),
+      answer_property: z.null(),
+      relation: z.enum(['absent_from_both']),
+    }),
   ]);
 }
 
@@ -169,6 +176,7 @@ export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
   const ids = [...coordinates.sources.keys()];
   const alignment = alignmentSchema(coordinates);
   const operation = operationAlignmentSchema(coordinates, 50);
+  const ordinaryOperation = operationAlignmentSchema(coordinates, 80);
   const property = propertyAlignmentSchema(coordinates);
   const context = {
     evidence_id: z.enum(ids as [string, ...string[]]),
@@ -180,9 +188,8 @@ export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
   const entrySchema = z.union([
     z.strictObject({
       ...context,
-      // An absent property needs no description. Keep the whole former prose allowance
-      // available to ordinary actions instead of imposing an unrelated compression penalty.
-      object_and_operation: operationAlignmentSchema(coordinates, 80),
+      // An irrelevant property cannot hide a lost restriction on a selected operation.
+      object_and_operation: z.union([ordinaryOperation.options[2], ordinaryOperation.options[3]]),
       tested_property: property.options[3],
       qualification: alignment,
     }),
@@ -190,6 +197,14 @@ export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
       ...context,
       object_and_operation: z.union([operation.options[0], operation.options[1]]),
       tested_property: z.union([property.options[0], property.options[1], property.options[2]]),
+      qualification: alignment,
+    }),
+    z.strictObject({
+      ...context,
+      // Ordinary actions may specify no tested property. Require that explicit assertion,
+      // keeping their full prose allowance without declaring the action unselected.
+      object_and_operation: z.union([ordinaryOperation.options[0], ordinaryOperation.options[1]]),
+      tested_property: property.options[4],
       qualification: alignment,
     }),
   ]);
@@ -216,7 +231,9 @@ export function answerAlignmentsSupported(value: unknown, coordinates: AnswerAud
       (part) =>
         (part.source_anchor === null || sourceIds.has(part.source_anchor)) &&
         (part.answer_anchor === null || answerIds.has(part.answer_anchor)) &&
-        (part.relation === 'preserved' || part.relation === 'not_selected'),
+        (part.relation === 'preserved' ||
+          part.relation === 'not_selected' ||
+          (part === entry.tested_property && part.relation === 'absent_from_both')),
     );
   });
 }
@@ -248,7 +265,7 @@ blocks in output_language even when the source or private reading uses another l
 
 export const ANSWER_ALIGNMENT_CONTRACT = `For object_and_operation, write source_specifics and
 answer_specifics independently before relation, each within 50 characters when tested_property is
-selected, or 80 each when the property is all-null not_selected. Identify the operation,
+compared, or 80 each when it is all-null absent_from_both or not_selected. Identify the operation,
 acted-on object, purpose and manner/degree in their own supplied wording. For tested_property, separately
 write source_property and answer_property before its own relation, each within 30 characters. Name only
 the specific tested or measured property in each side's supplied wording. Do not normalize either pair
@@ -256,10 +273,13 @@ into an assumed equivalence. Natural equivalent translations remain preserved. O
 operation content has null answer_specifics; an absent source anchor requires null source_specifics.
 For an omitted property, keep its source anchor/description and use null answer anchor/description.
 For an answer-added property, use null source anchor/description, its actual answer anchor/description
-and changed. Use the all-null property not_selected branch only when this record's selected contribution
-has no tested property and the answer adds none, or when the whole test proposition is unselected.
-A property comparison requires its containing object_and_operation to be selected too. Ordinary plans,
-questions, promises or denials without a tested property need no invented one.
+and changed. The all-null property not_selected branch requires the whole containing operation to be
+not_selected too. For a selected operation where neither the source nor the answer specifies a tested
+property, use all-null absent_from_both. This explicitly asserts absence on BOTH sides; do not use it
+when either side specifies a property. A source property omitted or generalized by the answer still
+requires an active comparison. A property comparison requires its containing object_and_operation to
+be selected too. Ordinary plans, questions, promises or denials without a tested property need no
+invented one. Neither absence nor irrelevance may replace a lost property of a selected test.
 For actor and qualification, the existing combined detail remains required.
 For framed blocks, answer_segments and retention_source_frame
 are ordered tables of exact text with server-assigned anchor_id values. Concatenate their text fields

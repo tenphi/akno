@@ -162,3 +162,8 @@ Preserve supplied source wording in private answer planning before translation. 
 Allow a compact retained record to use short complete sentences while keeping its report and personal verification limits together under the unchanged text bound. Translate retained counterfactuals and unknown source clocks through explicit qualified clauses, preserving exact required names. Require separate object/operation and tested-property verdicts in the existing answer audit, with strict null/anchor ownership and the same aggregate description allowance; a lost or added property independently withholds the answer.
 
 Compare source-derived polarity with extracted metadata in the existing retention verifier, and preserve qualified Russian source-clock translations as bounded segments checked together against their retained record.
+
+Keep a selected operation's unspecified tested property distinct from an unselected operation in the
+private answer audit. A property declared unselected now requires its containing operation to be
+unselected; ordinary actions explicitly declare absence on both sides. Recognize a closed same-subject
+negative report list ending in a personal verification limit, while retaining mandatory source semantics.

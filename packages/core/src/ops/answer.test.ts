@@ -315,6 +315,9 @@ describe('grounded answer discovery surface', () => {
           'omitted',
           'added',
           'all-positive-negative',
+          'property-unselected',
+          'absent',
+          'absent-semantic-negative',
           'semantic-negative',
           'unselected',
         ] as const
@@ -323,11 +326,12 @@ describe('grounded answer discovery surface', () => {
   )(
     'enforces the independent tested-property decision through complete-record translation (%s / %s)',
     async (queryLanguage, mode) => {
-      const supported = mode === 'preserved';
+      const absent = mode === 'absent' || mode === 'absent-semantic-negative';
+      const supported = mode === 'preserved' || mode === 'absent';
       const positiveProperty = ['preserved', 'semantic-negative', 'unselected'].includes(mode);
-      const frame = `The open silverpine question is whether the Zephyr QX-100 terms require a connector ${mode === 'added' ? '' : 'continuity '}test; its answer remains unknown.`;
+      const frame = `The open silverpine question is whether the Zephyr QX-100 terms require a connector ${mode === 'added' || absent ? '' : 'continuity '}test; its answer remains unknown.`;
       const targetProperty = positiveProperty || mode === 'added' ? 'непрерывности цепи' : 'целостности';
-      const text = `Открытый вопрос silverpine: требуют ли условия Zephyr QX-100 проверки ${mode === 'omitted' ? '' : targetProperty + ' '}разъёма; ответ остаётся неизвестным.`;
+      const text = `Открытый вопрос silverpine: требуют ли условия Zephyr QX-100 проверки ${mode === 'omitted' || absent ? '' : targetProperty + ' '}разъёма; ответ остаётся неизвестным.`;
       const original = await seedSourceFrame({
         text: '- **Open question:** ' + frame,
         frame,
@@ -346,7 +350,7 @@ describe('grounded answer discovery surface', () => {
               {
                 evidence_id: 'E1',
                 selected_meaning:
-                  mode === 'added'
+                  mode === 'added' || absent
                     ? 'Source operation: "connector test"; whether required; unknown answer.'
                     : 'Source operation: "connector continuity test"; whether required; unknown answer.',
                 clarification_or_ambiguity: null,
@@ -383,8 +387,11 @@ describe('grounded answer discovery surface', () => {
               {
                 ...verdict(
                   'B1',
-                  mode !== 'semantic-negative',
-                  positiveProperty || mode === 'all-positive-negative',
+                  mode !== 'semantic-negative' && mode !== 'absent-semantic-negative',
+                  positiveProperty ||
+                    absent ||
+                    mode === 'all-positive-negative' ||
+                    mode === 'property-unselected',
                   true,
                 ),
                 source_alignments: [
@@ -399,19 +406,28 @@ describe('grounded answer discovery surface', () => {
                       answer_specifics: 'Проверить разъём.',
                       relation: 'preserved',
                     },
-                    tested_property: {
-                      source_anchor: mode === 'added' ? null : compared.source_anchor,
-                      answer_anchor: mode === 'omitted' ? null : compared.answer_anchor,
-                      source_property: mode === 'added' ? null : 'Electrical continuity',
-                      answer_property: mode === 'omitted' ? null : targetProperty,
-                      relation: positiveProperty
-                        ? 'preserved'
-                        : mode === 'omitted'
-                          ? 'omitted'
-                          : mode === 'added'
-                            ? 'changed'
-                            : 'generalized',
-                    },
+                    tested_property:
+                      absent || mode === 'property-unselected'
+                        ? {
+                            source_anchor: null,
+                            answer_anchor: null,
+                            source_property: null,
+                            answer_property: null,
+                            relation: absent ? 'absent_from_both' : 'not_selected',
+                          }
+                        : {
+                            source_anchor: mode === 'added' ? null : compared.source_anchor,
+                            answer_anchor: mode === 'omitted' ? null : compared.answer_anchor,
+                            source_property: mode === 'added' ? null : 'Electrical continuity',
+                            answer_property: mode === 'omitted' ? null : targetProperty,
+                            relation: positiveProperty
+                              ? 'preserved'
+                              : mode === 'omitted'
+                                ? 'omitted'
+                                : mode === 'added'
+                                  ? 'changed'
+                                  : 'generalized',
+                          },
                   },
                 ],
                 excerpt_selection: {
@@ -435,7 +451,13 @@ describe('grounded answer discovery surface', () => {
         graph: false,
       });
       expect(result.answer).toBe(supported ? text + ' [products/zephyr-qx-100:4]' : null);
-      expect(result.reason_code).toBe(supported ? 'answered' : 'verification_rejected');
+      expect(result.reason_code).toBe(
+        supported
+          ? 'answered'
+          : mode === 'property-unselected'
+            ? 'verification_unavailable'
+            : 'verification_rejected',
+      );
       expect(modelRequests).toHaveLength(3);
       const languageCheck = (modelRequests[1]!.messages as { content: string }[]).at(-1)!.content;
       expect(languageCheck).not.toContain('connector continuity test');
@@ -607,7 +629,7 @@ describe('grounded answer discovery surface', () => {
                       answer_anchor: null,
                       source_property: null,
                       answer_property: null,
-                      relation: 'not_selected',
+                      relation: 'absent_from_both',
                     },
                     qualification: compared,
                   },
@@ -709,7 +731,7 @@ describe('grounded answer discovery surface', () => {
                       answer_anchor: null,
                       source_property: null,
                       answer_property: null,
-                      relation: 'not_selected',
+                      relation: 'absent_from_both',
                     },
                   },
                 ],
@@ -1121,7 +1143,7 @@ describe('grounded answer discovery surface', () => {
                       answer_anchor: null,
                       source_property: null,
                       answer_property: null,
-                      relation: 'not_selected',
+                      relation: 'absent_from_both',
                     },
                   },
                 ],
@@ -1204,7 +1226,7 @@ describe('grounded answer discovery surface', () => {
                       answer_anchor: null,
                       source_property: null,
                       answer_property: null,
-                      relation: 'not_selected',
+                      relation: 'absent_from_both',
                     },
                   },
                 ],
@@ -1283,7 +1305,7 @@ describe('grounded answer discovery surface', () => {
                     answer_anchor: null,
                     source_property: null,
                     answer_property: null,
-                    relation: 'not_selected',
+                    relation: 'absent_from_both',
                   },
                 },
               ],
@@ -1459,7 +1481,7 @@ describe('grounded answer discovery surface', () => {
                         answer_anchor: null,
                         source_property: null,
                         answer_property: null,
-                        relation: 'not_selected',
+                        relation: 'absent_from_both',
                       },
                     };
                   },
@@ -4998,7 +5020,7 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
         answer_anchor: null,
         source_property: null,
         answer_property: null,
-        relation: 'not_selected',
+        relation: 'absent_from_both',
       },
     },
   ];

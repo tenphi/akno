@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
 import type { ModelClient } from '../models/client.ts';
 import { semanticAudit } from '../../test/semantic-audit.ts';
+import { hasReportUncertainty } from '../memory/report-uncertainty.ts';
 
 const report =
   'According to Ada Marlow, Bo Winters says the Zephyr QX-100 terms permit a regulator inspection.';
@@ -13,6 +14,8 @@ const clarified =
   "Ada Marlow has not read the service terms or independently confirmed this report, and she clarifies that these are Bo Winters's words in her retelling rather than a condition she verified.";
 const personalList =
   'Ada Marlow only conveys this account and has not read the agreement, independently checked the account, or herself checked this reported meaning.';
+const personally =
+  "She has not read the agreement, independently checked Bo Winters's account, or personally verified this meaning.";
 const checked = 'Ada Marlow has not read the agreement or independently checked this account.';
 const relayTail =
   'Ada has not read the agreement or independently checked Bo’s account and only passes on that meaning without checking it herself.';
@@ -35,6 +38,131 @@ const record = (qualification: string, original = source) => ({
 });
 
 describe('shared negation in readable report uncertainty', () => {
+  it.each([
+    [personally, true],
+    [`Ada Marlow is only passing on this meaning; ${personally.replace('She', 'she')}`, true],
+    [personally.replace('She has', 'I have'), true],
+    [personally.replace('She has', 'We have'), true],
+    [personally.replace('She has', 'They have'), true],
+    [personally.replace('She has', 'Ada Marlow has'), true],
+    [personally.replace('She has', 'Ada has'), true],
+    [personally.replace('She has', 'The assistant has'), true],
+    [personally.replace('verified this meaning', 'confirmed it'), true],
+    [personally.replace('verified this meaning', 'checked this reported meaning'), true],
+    [personally.replace('has not read', 'has read'), false],
+    [personally.replace('or personally', 'or has personally'), false],
+    [personally.replace('or personally', 'or Bo Winters personally'), false],
+    [personally.replace('this meaning', 'the device'), false],
+    [personally.replace('verified this meaning', 'replaced this meaning'), false],
+    [personally.replace('verified this meaning', 'described this meaning'), false],
+    ...['reportedly', 'allegedly', 'publicly', 'personally independently'].map(
+      (adverb) => [personally.replace('personally', adverb), false] as const,
+    ),
+    ...['If ', 'Example: ', 'Ada Marlow asked whether ', 'Ada Marlow denied ', 'It is false that '].map(
+      (prefix) => [prefix + personally, false] as const,
+    ),
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(
+      ([open, close]) => [`${open}${personally}${close}`, false] as const,
+    ),
+    ...[
+      ', but she later confirmed it.',
+      '; but she later confirmed it.',
+      '; and this is false.',
+      ' and she confirmed it.',
+    ].map((ending) => [personally.slice(0, -1) + ending, false] as const),
+    [personally.replace('verified this meaning', 'verified'), false],
+  ])('binds the literal personal-check adverb to its closed negative list: %s', (qualification, accepted) => {
+    const result = cleanCandidateBatch([record(qualification)], { sourceText: source, generated: true });
+    expect(result.candidates).toHaveLength(accepted ? 1 : 0);
+    if (!accepted) expect(result.held[0]?.reason).toContain('not recognized in a closed readable clause');
+  });
+
+  it('does not treat a source newline as horizontal predicate coordination', () => {
+    // Generated records normalize whitespace before cleaning; the source helper sees original bytes.
+    expect(hasReportUncertainty(personally.replace('or personally', 'or\npersonally'))).toBe(false);
+  });
+
+  it.each(
+    [false, true].flatMap((repair) =>
+      (
+        [
+          'preserved',
+          'wrong-actor',
+          'wrong-report-object',
+          'generic-source',
+          'retracted-source',
+          'retracted-candidate',
+        ] as const
+      ).map((mode) => [repair, mode] as const),
+    ),
+  )('verifies personal-check semantics after at most one repair (%s / %s)', async (repair, mode) => {
+    const personalLimit = personally.replace('She', 'Ada Marlow');
+    const retractedLimit = personalLimit.slice(0, -1) + '; she later verified this meaning.';
+    const original =
+      mode === 'generic-source'
+        ? source
+        : `${report} ${mode === 'retracted-source' ? retractedLimit : personalLimit}`;
+    const qualification =
+      mode === 'wrong-actor'
+        ? personally.replace('She', 'Bo Winters')
+        : mode === 'wrong-report-object'
+          ? personalLimit.replace("checked Bo Winters's", "checked Ada Marlow's")
+          : mode === 'retracted-candidate'
+            ? retractedLimit
+            : personalLimit;
+    const candidate = record(qualification, original);
+    const supported = mode === 'preserved';
+    const chat = vi.fn(async (messages: { content: string }[]) => {
+      const call = chat.mock.calls.length;
+      if (call === 1)
+        return {
+          ok: true,
+          value: JSON.stringify({ candidates: [repair ? record('', original) : candidate] }),
+          latencyMs: 11,
+        };
+      const payload = JSON.parse(messages.at(-1)!.content);
+      if (repair && call === 2) {
+        expect(payload.repair_targets).toHaveLength(1);
+        expect(payload.repair_targets[0].candidate_index).toBe(0);
+        return {
+          ok: true,
+          value: JSON.stringify({ repairs: [{ candidate_index: 0, candidate }] }),
+          latencyMs: 11,
+        };
+      }
+      expect(payload.source.text).toBe(original);
+      expect(payload.candidates[0].text).toBe(candidate.text);
+      return {
+        ok: true,
+        value: JSON.stringify({
+          verdicts: [
+            {
+              candidate_id: payload.candidates[0].candidate_id,
+              source_selected_polarity: 'affirmed',
+              ...semanticAudit(supported, true, true),
+              proposition_supported: supported,
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
+              reason_code: supported ? null : 'discourse_uncertain',
+            },
+          ],
+        }),
+        latencyMs: 11,
+      };
+    });
+    const model = {
+      available: true,
+      modelId: 'invented-personal-check',
+      chat,
+      degradedReason: () => null,
+      reportInvalidResponse: vi.fn(),
+    } as unknown as ModelClient;
+    const result = await runRetain(original, model);
+    expect(chat).toHaveBeenCalledTimes(repair ? 3 : 2);
+    expect(result.candidates).toHaveLength(supported ? 1 : 0);
+    if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+  });
+
   it.each([
     [coordinated, true],
     [relayTail, true],
