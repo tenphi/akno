@@ -922,6 +922,49 @@ const COPULA = /\b(is|are|was|were|has|have|had|will|would|does|do|did|can|may|m
 const VERB_SHAPED = /\b\w{3,}(?:s|ed|es)\b/i;
 const UNSAFE_DISCOURSE =
   /\b(suppose|assuming|hypothetical|counterfactual|if|invented example|fictional example|not a real|for illustration|might|maybe|perhaps|merely proposed|was proposed|were proposed|was rejected|were rejected|did not choose|not decided)\b|предполож|допустим|если бы|если|гипотез|возможно|вероятно|отклон|не решил|не принято|вымышлен|только пример/iu;
+
+/** A leading booking denial need not inherit a following offer's rejection. This only admits it
+ * to the existing full-source verifier; support isolation is not proof that the claim is true. */
+function leadingIndependentDenial(
+  support: readonly RetainSourceSpan[],
+  frame: readonly RetainSourceSpan[],
+  options: CandidateCleaningOptions,
+): boolean {
+  if (!options.generated || support.length !== 1 || frame.length !== 1) return false;
+  const span = support[0]!;
+  const source = spanSource(span, options);
+  if (!source?.trimStart().startsWith(span.quote) || !frame[0]!.quote.startsWith(span.quote)) return false;
+  if (
+    !/^No\s+(?:handover|pickup|collection|shipment|appointment|inspection|meeting|delivery|booking|transfer)\b[^.!?;\n]{0,120}\s+(?:has|have|had)\s+been\s+(?:booked|arranged|scheduled)\.$/u.test(
+      span.quote,
+    )
+  )
+    return false;
+  if (UNSAFE_DISCOURSE.test(span.quote)) return false;
+  // A rejected assertion can retract the denial itself. Only a separately named offered action
+  // supplies the exception; pronouns, quotation frames and every other modal scope stay held.
+  const remainder = frame[0]!.quote.slice(span.quote.length).trim();
+  if (
+    !/^The (?:offered|proposed) (?:shipment|handover|delivery|collection|appointment|meeting|inspection|review|offer|plan) was rejected(?:, not accepted)?\.$/u.test(
+      remainder,
+    )
+  )
+    return false;
+  // Remove only this exact permitted neighbor. A later rejected assertion, including one in
+  // another source item, may retract the denial and must still trip the conservative floor.
+  if (!source.trimStart().startsWith(frame[0]!.quote)) return false;
+  const scopedSource = source.replace(frame[0]!.quote, span.quote);
+  const completeSource = options.sourceItems
+    ? options.sourceItems.map((item) => (item.item_id === span.item_id ? scopedSource : item.text)).join('\n')
+    : scopedSource;
+  const residualRejection =
+    /\b(?:reject(?:s|ed|ing|ion)?|retract(?:s|ed|ing|ion)?|withdrew|withdraw(?:s|n|ing)?)\b/iu;
+  return (
+    !UNSAFE_DISCOURSE.test(completeSource) &&
+    !residualRejection.test(completeSource) &&
+    !hasUnresolvedHypothesis(completeSource)
+  );
+}
 // A hypothesis noun can name an established result or the object of a decision. Keep completed
 // confirmation in its own clause, so it cannot resolve a different uncertain hypothesis by proximity.
 function hasUnresolvedHypothesis(text: string): boolean {
@@ -1309,7 +1352,14 @@ function cleanCandidateBatchWithPositions(
     if (
       canonicalSemantics(kind, discourse) &&
       (UNSAFE_DISCOURSE.test(sourceEvidence(spans.frame)) ||
-        hasUnresolvedHypothesis(sourceEvidence(spans.frame)))
+        hasUnresolvedHypothesis(sourceEvidence(spans.frame))) &&
+      !(
+        kind === 'claim' &&
+        record.polarity === 'negated' &&
+        attribution.source_role === 'user' &&
+        epistemic.basis === 'self_attested' &&
+        leadingIndependentDenial(spans.support, spans.frame, options)
+      )
     ) {
       held.push({
         candidate_id,

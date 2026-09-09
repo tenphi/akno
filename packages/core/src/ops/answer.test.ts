@@ -20,10 +20,12 @@ let stateDir: string;
 let memory: Akno;
 let modelServer: http.Server | null;
 let modelRequests: Record<string, unknown>[];
+let modelResponseError: unknown;
 
 beforeEach(async () => {
   modelServer = null;
   modelRequests = [];
+  modelResponseError = undefined;
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-kb-'));
   stateDir = fs.mkdtempSync(path.join(os.tmpdir(), 'akno-answer-state-'));
   write('products/zephyr-qx-100.md', '# Zephyr QX-100\n\nThe silverpine warranty lasts five years.\n');
@@ -58,9 +60,223 @@ afterEach(async () => {
     await new Promise<void>((resolve) => modelServer!.close(() => resolve()));
   }
   for (const target of [root, stateDir]) fs.rmSync(target, { recursive: true, force: true });
+  if (modelResponseError) throw modelResponseError;
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each([false, true])(
+    'renders the complete selected record while keeping private neighbors and embedded citations out: %s',
+    async (hasReference) => {
+      const first = 'The silverpine warranty includes inspections.';
+      const retained = first + ' The storage case is blue.' + (hasReference ? ' [invented/other:77]' : '');
+      await seedSourceFrame({
+        text: '- ' + retained,
+        frame: retained + ' An unrelated amberfin fact remains private.',
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: 'affirmed',
+      });
+      await useAnswerModel({
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          if (hasReference) expect(payload.complete_record_rendering).toBeUndefined();
+          else
+            expect(payload.complete_record_rendering, JSON.stringify(payload)).toEqual({
+              evidence_id: 'E1',
+              text: retained,
+            });
+          return {
+            record_readings: sourceFrameReading(),
+            blocks: [
+              hasReference
+                ? { text: first, evidence_ids: ['E1'] }
+                : { rendering_mode: 'copy', evidence_ids: ['E1'] },
+            ],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const block = payload.blocks[0];
+          const body = block.answer_segments.map((s: { text: string }) => s.text).join('');
+          expect(body).toBe(hasReference ? first : retained);
+          const incidental = {
+            source_anchor: null,
+            answer_anchor: null,
+            relation: 'not_selected',
+            detail: 'No separate actor or modal restriction is selected.',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true),
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context: 'The warranty includes inspections and the retained case color is blue.',
+                    actor: incidental,
+                    object_and_mechanism: {
+                      source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+                      answer_anchor: block.answer_segments[0].anchor_id,
+                      relation: 'preserved',
+                      detail: 'The retained factual content is preserved.',
+                    },
+                    qualification: incidental,
+                  },
+                ],
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What does the silverpine warranty include?',
+        filter: { folder: 'products' },
+        answer_language: 'en',
+        expand: false,
+        graph: false,
+      });
+      const expected = hasReference ? first : retained;
+      expect(result.answer).toBe(expected + ' [products/zephyr-qx-100:4]');
+      const languageCall = modelRequests.find((r) =>
+        (r.messages as { content: string }[])[0]!.content.startsWith('Check the language'),
+      )!;
+      expect(JSON.parse((languageCall.messages as { content: string }[]).at(-1)!.content).excerpts).toContain(
+        expected,
+      );
+      expect(result.citations).toHaveLength(1);
+      expect(JSON.stringify(result)).not.toContain('invented/other');
+      expect(JSON.stringify(result)).not.toContain('amberfin');
+      expect(modelRequests).toHaveLength(3);
+    },
+  );
+
+  it.each([
+    'copy',
+    'translate',
+    'semantic-negative',
+    'selection-negative',
+    'language-negative',
+    'forged-copy',
+    'empty',
+  ])('renders one bound record through the existing gates: %s', async (mode) => {
+    await seedSourceFrame();
+    const copied =
+      '**Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.';
+    const translated =
+      'Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.';
+    const text = mode === 'translate' ? translated : copied;
+    await useAnswerModel({
+      generation: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        expect(payload.complete_record_rendering).toEqual({ evidence_id: 'E1', text: copied });
+        type WireSchema = {
+          properties: {
+            blocks: { items: { anyOf: { required: string[]; additionalProperties: boolean }[] } };
+          };
+        };
+        const format = request.response_format as {
+          schema?: WireSchema;
+          json_schema?: { schema: WireSchema };
+        };
+        const schema = (format.schema ?? format.json_schema?.schema)!;
+        expect(schema.properties.blocks.items.anyOf).toHaveLength(2);
+        expect(schema.properties.blocks.items.anyOf[0]).toMatchObject({
+          required: ['rendering_mode', 'evidence_ids'],
+          additionalProperties: false,
+        });
+        expect(schema.properties.blocks.items.anyOf[1]).toMatchObject({
+          required: ['rendering_mode', 'text', 'evidence_ids'],
+          additionalProperties: false,
+        });
+        expect(JSON.stringify(schema)).not.toMatch(/"(?:oneOf|const)":/u);
+        return {
+          record_readings: sourceFrameReading(),
+          blocks:
+            mode === 'empty'
+              ? []
+              : [
+                  {
+                    rendering_mode:
+                      mode === 'translate' || mode === 'selection-negative' ? 'translate' : 'copy',
+                    evidence_ids: ['E1'],
+                    ...(mode === 'translate'
+                      ? { text }
+                      : mode === 'selection-negative'
+                        ? {
+                            text:
+                              copied + ' An unrelated amberfin phrase is not part of the selected record.',
+                          }
+                        : mode === 'forged-copy'
+                          ? { text: 'A fabricated warranty applies.' }
+                          : {}),
+                  },
+                ],
+          missing_concepts: [],
+        };
+      },
+      languageCheck: mode !== 'language-negative',
+      verification: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        const block = payload.blocks[0];
+        expect(block.rendering_scope).toBe('complete_retained_record');
+        const body = block.answer_segments.map((s: { text: string }) => s.text).join('');
+        const alignment = sourceFrameAlignment(
+          mode === 'translate'
+            ? 'покрывает ли гарантия обратную доставку'
+            : 'whether the warranty covers return delivery',
+          mode === 'translate' ? 'Ответ неизвестен' : 'its answer remains unknown',
+        );
+        if (mode === 'semantic-negative') {
+          alignment[0]!.qualification.relation = 'generalized';
+          alignment[0]!.qualification.detail = 'The original qualification is not preserved.';
+        }
+        expect(body).toContain(text);
+        return {
+          verdicts: [
+            {
+              ...verdict('B1', true, true, mode !== 'semantic-negative'),
+              source_alignments: alignment,
+              excerpt_selection: {
+                selected_by_retained_excerpt: mode !== 'selection-negative',
+                unselected_content:
+                  mode === 'selection-negative' ? 'The amberfin clause is private frame-only content.' : null,
+              },
+            },
+          ],
+        };
+      },
+    });
+    const result = await memory.answer({
+      question: 'Which open silverpine question remains?',
+      memory_view: 'questions',
+      answer_language: mode === 'translate' || mode === 'language-negative' ? 'ru' : 'en',
+      expand: false,
+      graph: false,
+    });
+    if (mode === 'copy' || mode === 'translate')
+      expect(result.answer).toBe(text + ' [products/zephyr-qx-100:4]');
+    else expect(result.answer).toBeNull();
+    if (!['empty', 'forged-copy'].includes(mode)) {
+      const languageRequest = modelRequests.find((r) =>
+        (r.messages as { content: string }[])[0]!.content.startsWith('Check the language'),
+      )!;
+      const languageInput = JSON.parse((languageRequest.messages as { content: string }[]).at(-1)!.content);
+      expect(languageInput.excerpts).toContain(
+        mode === 'selection-negative'
+          ? copied + ' An unrelated amberfin phrase is not part of the selected record.'
+          : text,
+      );
+    }
+    expect(
+      modelRequests.filter((r) => JSON.stringify(r.messages).includes('independently verify')),
+    ).toHaveLength(['empty', 'forged-copy', 'language-negative'].includes(mode) ? 0 : 1);
+    expect(JSON.stringify(result)).not.toContain('rendering_mode');
+    expect(JSON.stringify(result)).not.toContain('complete_record_rendering');
+    expect(JSON.stringify(result)).not.toContain('amberfin');
+  });
+
   it('verifies a framed denial while keeping independent positive source content unselected', async () => {
     const source =
       'No silverpine collection of Zephyr QX-100 has been booked. Ada Marlow proposed a separate inspection.';
@@ -3429,7 +3645,7 @@ async function seedSourceFrame(options?: {
   frame: string;
   kind: 'claim';
   commitment: 'asserted';
-  polarity: 'negated';
+  polarity: 'negated' | 'affirmed';
 }): Promise<string> {
   write(
     'products/zephyr-qx-100.md',
@@ -3515,6 +3731,7 @@ async function useAnswerModel(script: {
   verification: unknown;
   reportUsage?: boolean;
   knowledgeLanguage?: 'en';
+  languageCheck?: boolean;
   transformResponse?: (content: string, verifying: boolean) => string;
 }): Promise<void> {
   await memory.close();
@@ -3522,41 +3739,47 @@ async function useAnswerModel(script: {
     const chunks: Buffer[] = [];
     request.on('data', (chunk: Buffer) => chunks.push(chunk));
     request.on('end', () => {
-      const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
-      modelRequests.push(body);
-      const system = (body.messages as Array<{ role: string; content: string }>)
-        .filter((message) => message.role === 'system')
-        .map((message) => message.content)
-        .join('\n');
-      const verifying = system.includes('independently verify');
-      const configured = system.startsWith('Check the language of generated prose')
-        ? { compliant: true }
-        : verifying
-          ? script.verification
-          : script.generation;
-      const scripted = typeof configured === 'function' ? configured(body) : configured;
-      const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
-      const content = verifying ? testAnchorCoordinates(scripted, payload) : scripted;
-      response.writeHead(200, { 'content-type': 'application/json' });
-      response.end(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                content:
-                  script.transformResponse?.(JSON.stringify(content), verifying) ?? JSON.stringify(content),
+      try {
+        const body = JSON.parse(Buffer.concat(chunks).toString('utf8')) as Record<string, unknown>;
+        modelRequests.push(body);
+        const system = (body.messages as Array<{ role: string; content: string }>)
+          .filter((message) => message.role === 'system')
+          .map((message) => message.content)
+          .join('\n');
+        const verifying = system.includes('independently verify');
+        const configured = system.startsWith('Check the language of generated prose')
+          ? { compliant: script.languageCheck ?? true }
+          : verifying
+            ? script.verification
+            : script.generation;
+        const scripted = typeof configured === 'function' ? configured(body) : configured;
+        const payload = JSON.parse((body.messages as { content: string }[]).at(-1)!.content);
+        const content = verifying ? testAnchorCoordinates(scripted, payload) : scripted;
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.end(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content:
+                    script.transformResponse?.(JSON.stringify(content), verifying) ?? JSON.stringify(content),
+                },
               },
-            },
-          ],
-          ...(script.reportUsage === false
-            ? {}
-            : {
-                usage: verifying
-                  ? { prompt_tokens: 222, completion_tokens: 33, total_tokens: 255 }
-                  : { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
-              }),
-        }),
-      );
+            ],
+            ...(script.reportUsage === false
+              ? {}
+              : {
+                  usage: verifying
+                    ? { prompt_tokens: 222, completion_tokens: 33, total_tokens: 255 }
+                    : { prompt_tokens: 111, completion_tokens: 22, total_tokens: 133 },
+                }),
+          }),
+        );
+      } catch (error) {
+        modelResponseError ??= error;
+        response.writeHead(500, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { message: 'Invented model fixture failed.' } }));
+      }
     });
   });
   await new Promise<void>((resolve) => modelServer!.listen(0, '127.0.0.1', resolve));

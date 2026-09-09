@@ -10,6 +10,136 @@ const repairBatch = (candidates: unknown[]) => ({
 });
 
 describe('cross-language retention boundary', () => {
+  it.each(['same-item', 'separate-item', 'passive-modifier', 'active'])(
+    'keeps a retracted leading denial held across the complete source: %s',
+    (location) => {
+      const denial = 'No handover of Zephyr QX-100 has been booked.';
+      const frame = denial + ' The offered shipment was rejected, not accepted.';
+      const retraction =
+        location === 'passive-modifier'
+          ? 'The denial was explicitly rejected.'
+          : location === 'active'
+            ? 'Ada Marlow rejected the denial.'
+            : 'The denial was rejected.';
+      const sourceItems = [
+        {
+          item_id: 'turn-1111',
+          role: 'user' as const,
+          speaker: 'Ada Marlow',
+          text: frame + (location !== 'separate-item' ? ' ' + retraction : ''),
+        },
+        ...(location === 'separate-item'
+          ? [{ item_id: 'turn-2222', role: 'user' as const, speaker: 'Ada Marlow', text: retraction }]
+          : []),
+      ];
+      const candidate = {
+        kind: 'claim',
+        text: denial,
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'negated',
+        support: [{ item_id: 'turn-1111', quote: denial }],
+        discourse_frame: [{ item_id: 'turn-1111', quote: frame }],
+        time: null,
+      };
+      const result = cleanCandidateBatch([candidate], { sourceItems, generated: true });
+      expect(result.candidates).toHaveLength(0);
+      expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
+
+  it.each([true, false])(
+    'verifies a narrow leading denial against its full rejection context: %s',
+    async (supported) => {
+      const denial = 'No handover of Zephyr QX-100 has been booked.';
+      const source = denial + ' The offered shipment was rejected, not accepted.';
+      const candidate = {
+        kind: 'claim',
+        text: denial,
+        subject: 'Zephyr QX-100',
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'negated',
+        support: [{ quote: denial }],
+        discourse_frame: [{ quote: source }],
+        time: null,
+      };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.source.text).toBe(source);
+        expect(payload.candidates[0].discourse_frame[0].quote).toBe(source);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              ...semanticAudit(supported, true, true),
+              proposition_supported: supported,
+              action_arguments_preserved: true,
+              qualification_scope_preserved: true,
+              reason_code: supported ? null : 'discourse_uncertain',
+            })),
+          }),
+          latencyMs: 22,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-leading-denial',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.candidates).toHaveLength(supported ? 1 : 0);
+      expect(result.modelUsage.repair).toBeUndefined();
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([
+    ['No handover of Zephyr QX-100 has been booked. The offered shipment was rejected, not accepted.', true],
+    ['No handover of Zephyr QX-100 has been booked. The assertion was rejected.', false],
+    ['No handover of Zephyr QX-100 has been booked. This was rejected.', false],
+    ['No handover of Zephyr QX-100 has been booked. The offered shipment might have been rejected.', false],
+    [
+      'Suppose no handover of Zephyr QX-100 has been booked. The offered shipment was rejected, not accepted.',
+      false,
+    ],
+    [
+      'In a hypothetical scenario: No handover of Zephyr QX-100 has been booked. The offered shipment was rejected, not accepted.',
+      false,
+    ],
+    [
+      '"No handover of Zephyr QX-100 has been booked." The offered shipment was rejected, not accepted.',
+      false,
+    ],
+  ])('keeps neighboring scope conservative for %s', (source, admitted) => {
+    const denial = 'No handover of Zephyr QX-100 has been booked.';
+    const candidate = {
+      kind: 'claim',
+      text: denial,
+      subject: 'Zephyr QX-100',
+      attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+      discourse: { commitment: 'asserted', disposition: 'active' },
+      epistemic: { basis: 'self_attested' },
+      polarity: 'negated',
+      support: [{ quote: source.includes(denial) ? denial : source }],
+      discourse_frame: [{ quote: source }],
+      time: null,
+    };
+    expect(cleanCandidateBatch([candidate], { sourceText: source, generated: true }).candidates).toHaveLength(
+      admitted ? 1 : 0,
+    );
+    expect(cleanCandidateBatch([candidate], { sourceText: source }).candidates).toHaveLength(0);
+  });
+
   it.each([
     [
       'Ada Marlow proposed a review; the proposal has not been adopted as a plan, and no meeting has been arranged.',

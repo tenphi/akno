@@ -66,6 +66,20 @@ occur in the generated excerpts to be sent; the surrounding prose is still check
 negative verdict. Minor grammar errors are distinguished from a change of language. These hints are data,
 not instructions or evidence of truth.
 
+When a query retrieves exactly one qualified managed record with a valid original-source binding and a
+resolved answer language, answer generation can select an exact copy or one complete translation of that
+record, capped at 400 readable characters including status labels. Longer records use ordinary
+composition. A copy selects the evidence ID; the server supplies current readable text after removing its list
+marker and boundary whitespace. Both copies and translations pass the existing language check and every
+answer guard and source verifier. Original-source context cannot add a fact absent from the retained record.
+The complete record is the rendering unit on this path, so an independent clause already in that short
+retained record may also appear. This trades focused brevity for preserving the record's complete meaning.
+
+This path does not infer a record's language from its script, current configuration or historical receipt.
+The model chooses copy or translation; an incorrect language choice is withheld without a retry. Records
+containing citation-like Markdown or HTML, multiple records, mixed evidence and unresolved output languages
+use ordinary answer composition. Translation completeness and all semantic judgments remain fallible.
+
 Provided retention remains exact and model-free. With English configured, callers must attest supplied prose
 with `retention.knowledge_language: "en"`. Missing attestation returns `language_policy_required`; a different
 declared language returns `language_mismatch`, without a write or replay receipt. The caller owns that attestation
