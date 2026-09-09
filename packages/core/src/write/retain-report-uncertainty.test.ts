@@ -199,14 +199,14 @@ describe('shared negation in readable report uncertainty', () => {
   ])('recognizes a closed negated list without borrowing another clause: %s', (qualification, accepted) => {
     const result = cleanCandidateBatch([record(qualification)], { sourceText: source, generated: true });
     expect(result.candidates).toHaveLength(accepted ? 1 : 0);
-    if (!accepted) expect(result.held[0]?.reason).toContain('explicitly lacks confirmation');
+    if (!accepted) expect(result.held[0]?.reason).toContain('not recognized in a closed readable clause');
   });
 
   it('uses the same recognition for source and generated prose', () => {
     const original = `${report} ${coordinated}`;
     const missing = cleanCandidateBatch([record('', original)], { sourceText: original, generated: true });
     expect(missing.candidates).toHaveLength(0);
-    expect(missing.held[0]?.reason).toContain('explicitly lacks confirmation');
+    expect(missing.held[0]?.reason).toContain('not recognized in a closed readable clause');
     expect(
       cleanCandidateBatch([record(coordinated, original)], { sourceText: original, generated: true })
         .candidates,
@@ -237,7 +237,7 @@ describe('shared negation in readable report uncertainty', () => {
         const input = JSON.parse(messages.at(-1)!.content);
         if (repair && call === 2) {
           expect(input.repair_targets[0].validation_issues[0].reason).toContain(
-            'explicitly lacks confirmation',
+            'not recognized in a closed readable clause',
           );
           return {
             ok: true,

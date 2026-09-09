@@ -81,6 +81,93 @@ function modelFor(extracted: unknown[], repair: unknown, verify = true) {
 }
 
 describe('one transactional structural repair', () => {
+  it.each(['preserved', 'possession-to-action', 'limit-actor', 'drop-contrast'] as const)(
+    'keeps report limits in the same compact record without repairing a semantic negative (%s)',
+    async (mode) => {
+      const embedded =
+        'Bo Winters says Zephyr QX-100 terms permit return-spring measurement, not replacement.';
+      const limit = 'Ada Marlow has not read the terms and has no independent confirmation of the report.';
+      const fullSource = `According to Ada Marlow, ${embedded} ${limit}`;
+      let text = fullSource;
+      if (mode === 'possession-to-action')
+        text = text.replace('has no independent confirmation of', 'has not independently confirmed');
+      if (mode === 'limit-actor') text = text.replace(limit, limit.replace('Ada Marlow', 'Bo Winters'));
+      if (mode === 'drop-contrast') text = text.replace(', not replacement', '');
+      const candidate = {
+        ...fixed,
+        subject: 'Zephyr QX-100',
+        text,
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        support: [{ quote: fullSource }],
+        discourse_frame: [{ quote: fullSource }],
+      };
+      expect(text.length).toBeLessThanOrEqual(400);
+      expect(
+        cleanCandidateBatch([candidate], { sourceText: fullSource, generated: true }).candidates,
+      ).toHaveLength(1);
+      const supported = mode === 'preserved';
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        const input = JSON.parse(messages.at(-1)!.content);
+        expect(input.source.text).toBe(fullSource);
+        expect(input.candidates[0].text).toBe(text);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: [
+              {
+                candidate_id: input.candidates[0].candidate_id,
+                ...semanticAudit(supported, supported, supported),
+                proposition_supported: supported,
+                action_arguments_preserved: supported,
+                qualification_scope_preserved: supported,
+                reason_code: supported ? null : 'discourse_uncertain',
+              },
+            ],
+          }),
+          latencyMs: 11,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-report-presentation',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(fullSource, model);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.candidates.map((c) => c.text)).toEqual(supported ? [text] : []);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it('repairs an unrecognized embedded personal limit into its own sentence without changing its meaning', async () => {
+    const embedded =
+      'According to Bo Winters, Zephyr QX-100 terms permit measuring the latch gap, not changing the latch; Ada Marlow is only relaying this meaning and has not read the agreement or independently checked Bo Winters’s account.';
+    const text =
+      'According to Ada Marlow, Bo Winters says Zephyr QX-100 terms permit measuring the latch gap, not changing the latch. Ada Marlow has not read the agreement or independently checked Bo Winters’s account.';
+    const fullSource = text;
+    const original = {
+      ...fixed,
+      subject: 'Zephyr QX-100',
+      text: embedded,
+      discourse: { commitment: 'asserted', disposition: 'active' },
+      support: [{ quote: fullSource }],
+      discourse_frame: [{ quote: fullSource }],
+    };
+    const repaired = { ...original, text };
+    const { model, chat } = modelFor([original], { repairs: [{ candidate_index: 0, candidate: repaired }] });
+    const result = await runRetain(fullSource, model);
+    expect(chat).toHaveBeenCalledTimes(3);
+    const repair = JSON.parse(chat.mock.calls[1]![0].at(-1)!.content);
+    expect(repair.repair_targets[0].validation_issues[0].reason).toContain(
+      'not recognized in a closed readable clause',
+    );
+    expect(result.candidates.map((c) => c.text)).toEqual([text]);
+  });
+
   it.each([true, false])(
     'reports the precise text limit to its original repair position, retaining semantics (%s)',
     async (supported) => {

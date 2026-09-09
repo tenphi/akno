@@ -77,7 +77,9 @@ record is the rendering unit here; unrelated material in its private frame remai
 only constrains interpretation, including explicit bilingual clarification. A conflict requires withholding
 the block, not correcting or expanding the record. If it cannot answer the question, return no blocks.
 
-In translations, proper names keep their exact source spelling: do not transliterate them. Translate
+In translations, proper names keep their exact source spelling: do not transliterate them. After
+translating the surrounding prose, copy each required named_source_reference.exact_spelling verbatim
+into its source-supported role in the final text. Never introduce a name or role absent from the record. Translate
 ordinary vocabulary and generic role labels, including every part of a hyphenated component description.
 Translate the complete compound by its source meaning; do not leave an English fragment beside a
 translated noun. A technical test selects both an object and a tested property: naming only the object
@@ -96,4 +98,16 @@ Do not specialize an unspecified measurement by choosing its measured property. 
 in their source roles: a covered repair is not a repair that covers the component. For an unresolved
 repair-coverage question in Russian, a nominal relation such as «вопрос о покрытии ремонта» followed
 by the component in the genitive case preserves the repair object. Preserve the record's actual nonresolution
-predicate and scope, and supply a coverer only when the selected source names one.`;
+predicate and scope, and supply a coverer only when the selected source names one.
+
+When translating a retained counterfactual into Russian, render its actual selected antecedent with
+an explicit «если бы» conditional and its consequence with a subjunctive «бы». State the retained
+nonoccurrence and not-current limit in separate complete clauses. Preserve whose unrealized action
+conditions which consequence; do not replace the conditional with a nominal description of an alternative.
+When the record uses an unknown source clock, first translate its actor/action and actual interval.
+Then give separate complete clauses locating that interval relative to the original undated record
+(in Russian, make the interval the subject of «отсчитывается от времени первоначальной записи без даты»),
+contrasting it with processing time, and stating the unknown calendar date or period. Keep the actual
+direction and interval, and preserve any nonacceptance, no-event or proposal-only limits separately.
+Use these clauses only for qualifications already in the retained record; an ordinary dated statement
+must not acquire unknownness or a processing-time contrast. Do not derive a calendar date from today.`;

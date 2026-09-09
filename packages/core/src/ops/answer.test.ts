@@ -306,13 +306,28 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
-  it.each(['en', 'ru'] as const)(
-    'keeps a generalized measured property unpublished even when its broader claim is entailed (%s query)',
-    async (queryLanguage) => {
-      const frame =
-        'The open silverpine question is whether the Zephyr QX-100 terms require a connector continuity test; its answer remains unknown.';
-      const text =
-        'Открытый вопрос silverpine: требуют ли условия Zephyr QX-100 проверки целостности разъёма; ответ остаётся неизвестным.';
+  it.each(
+    (['en', 'ru'] as const).flatMap((language) =>
+      (
+        [
+          'preserved',
+          'generalized',
+          'omitted',
+          'added',
+          'all-positive-negative',
+          'semantic-negative',
+          'unselected',
+        ] as const
+      ).map((mode) => [language, mode] as const),
+    ),
+  )(
+    'enforces the independent tested-property decision through complete-record translation (%s / %s)',
+    async (queryLanguage, mode) => {
+      const supported = mode === 'preserved';
+      const positiveProperty = ['preserved', 'semantic-negative', 'unselected'].includes(mode);
+      const frame = `The open silverpine question is whether the Zephyr QX-100 terms require a connector ${mode === 'added' ? '' : 'continuity '}test; its answer remains unknown.`;
+      const targetProperty = positiveProperty || mode === 'added' ? 'непрерывности цепи' : 'целостности';
+      const text = `Открытый вопрос silverpine: требуют ли условия Zephyr QX-100 проверки ${mode === 'omitted' ? '' : targetProperty + ' '}разъёма; ответ остаётся неизвестным.`;
       const original = await seedSourceFrame({
         text: '- **Open question:** ' + frame,
         frame,
@@ -331,7 +346,9 @@ describe('grounded answer discovery surface', () => {
               {
                 evidence_id: 'E1',
                 selected_meaning:
-                  'Source operation: "connector continuity test"; whether required; unknown answer.',
+                  mode === 'added'
+                    ? 'Source operation: "connector test"; whether required; unknown answer.'
+                    : 'Source operation: "connector continuity test"; whether required; unknown answer.',
                 clarification_or_ambiguity: null,
               },
             ],
@@ -364,22 +381,43 @@ describe('grounded answer discovery surface', () => {
           return {
             verdicts: [
               {
-                ...verdict('B1', true, false, true),
+                ...verdict(
+                  'B1',
+                  mode !== 'semantic-negative',
+                  positiveProperty || mode === 'all-positive-negative',
+                  true,
+                ),
                 source_alignments: [
                   {
                     evidence_id: 'E1',
                     source_context: frame,
                     actor: compared,
                     qualification: compared,
-                    object_and_mechanism: {
+                    object_and_operation: {
                       ...mechanismComparison(compared),
-                      source_specifics: 'Test connector electrical continuity.',
-                      answer_specifics: 'Test generic connector integrity.',
-                      relation: 'generalized',
+                      source_specifics: 'Test the connector.',
+                      answer_specifics: 'Проверить разъём.',
+                      relation: 'preserved',
+                    },
+                    tested_property: {
+                      source_anchor: mode === 'added' ? null : compared.source_anchor,
+                      answer_anchor: mode === 'omitted' ? null : compared.answer_anchor,
+                      source_property: mode === 'added' ? null : 'Electrical continuity',
+                      answer_property: mode === 'omitted' ? null : targetProperty,
+                      relation: positiveProperty
+                        ? 'preserved'
+                        : mode === 'omitted'
+                          ? 'omitted'
+                          : mode === 'added'
+                            ? 'changed'
+                            : 'generalized',
                     },
                   },
                 ],
-                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+                excerpt_selection: {
+                  selected_by_retained_excerpt: mode !== 'unselected',
+                  unselected_content: mode === 'unselected' ? 'Invented negative selection verdict.' : null,
+                },
               },
             ],
           };
@@ -396,13 +434,122 @@ describe('grounded answer discovery surface', () => {
         expand: false,
         graph: false,
       });
-      expect(result.answer).toBeNull();
-      expect(result.reason_code).toBe('verification_rejected');
+      expect(result.answer).toBe(supported ? text + ' [products/zephyr-qx-100:4]' : null);
+      expect(result.reason_code).toBe(supported ? 'answered' : 'verification_rejected');
       expect(modelRequests).toHaveLength(3);
       const languageCheck = (modelRequests[1]!.messages as { content: string }[]).at(-1)!.content;
       expect(languageCheck).not.toContain('connector continuity test');
       expect(languageCheck).not.toContain('Source operation');
       expect(JSON.stringify(result)).not.toContain('source_alignments');
+    },
+  );
+  it.each(
+    (['clock', 'counterfactual'] as const).flatMap((kind) =>
+      (['preserved', 'semantic-negative', 'translated-name'] as const).map((mode) => [kind, mode] as const),
+    ),
+  )(
+    'renders complete qualified records with explicit clauses and exact names (%s / %s)',
+    async (kind, mode) => {
+      const source =
+        kind === 'clock'
+          ? 'Ada Marlow proposed reviewing the silverpine estimate next month relative to the original undated record, not processing time. The calendar month is unknown. Ada Marlow has not accepted a plan or organized a meeting; this remains only a proposal.'
+          : 'Ada Marlow described an unrealized alternative: if she had bought the silverpine extension for Zephyr QX-100, repairs in year seven would have been covered. Ada Marlow did not buy the extension. This is not her current coverage.';
+      let text =
+        kind === 'clock'
+          ? 'Ada Marlow предложила рассмотреть смету silverpine в следующем месяце. Следующий месяц отсчитывается от времени первоначальной записи без даты. Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен. Ada Marlow не приняла план и не организовала встречу; это только предложение.'
+          : 'Если бы Ada Marlow купила расширение silverpine для Zephyr QX-100, ремонт в седьмой год был бы покрыт. Ada Marlow не купила расширение. Это не её действующее покрытие.';
+      if (mode === 'semantic-negative')
+        text = text.replace(kind === 'clock' ? 'смету' : 'седьмой', kind === 'clock' ? 'договор' : 'восьмой');
+      if (mode === 'translated-name') text = text.replaceAll('Ada Marlow', 'Ада Марлоу');
+      const marker = temporalMarker('mem_frame', {
+        kind: kind === 'clock' ? 'plan' : 'claim',
+        commitment: kind === 'clock' ? 'asserted' : 'counterfactual',
+        disposition: kind === 'clock' ? 'proposed' : 'active',
+        speaker: 'Ada Marlow',
+        time:
+          kind === 'clock' ? { precision: 'unknown', relation: 'scheduled', status: 'tentative' } : undefined,
+      });
+      marker.supports = marker.supports.map((support) => ({ ...support, selection: 'extracted' }));
+      await seedSourceFrame({
+        text: source,
+        frame: source,
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: 'affirmed',
+        marker,
+      });
+      const file = path.join(root, 'products/zephyr-qx-100.md');
+      const original = fs.readFileSync(file, 'utf8');
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload.complete_record_rendering, JSON.stringify(payload)).toBeDefined();
+          expect(payload.evidence[0].excerpt).toContain('"exact_spelling":"Ada Marlow"');
+          return {
+            record_readings: [
+              { evidence_id: 'E1', selected_meaning: source, clarification_or_ambiguity: null },
+            ],
+            blocks: [{ rendering_mode: 'translate', text, evidence_ids: ['E1'] }],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload).not.toHaveProperty('question');
+          const block = payload.blocks[0];
+          expect(block.rendering_scope).toBe('complete_retained_record');
+          expect(block.answer_segments.map((a: { text: string }) => a.text).join('')).toBe(text);
+          const compared = {
+            source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+            answer_anchor: block.answer_segments[0].anchor_id,
+            relation: 'preserved',
+            detail: 'The source action and its explicit limits are compared.',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true, mode !== 'semantic-negative', true),
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context:
+                      'The action remains qualified by its original conditional or temporal limits.',
+                    actor: compared,
+                    object_and_operation: mechanismComparison(compared),
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'not_selected',
+                    },
+                    qualification: compared,
+                  },
+                ],
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine discussion is recorded?',
+        memory_view: kind === 'clock' ? 'planning' : 'discussion',
+        answer_language: 'ru',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.reason_code, JSON.stringify(result)).toBe(
+        mode === 'preserved'
+          ? 'answered'
+          : mode === 'translated-name'
+            ? 'draft_rejected'
+            : 'verification_rejected',
+      );
+      expect(modelRequests).toHaveLength(mode === 'translated-name' ? 2 : 3);
+      expect(fs.readFileSync(file, 'utf8')).toBe(original);
     },
   );
   it.each([false, true])(
@@ -456,7 +603,7 @@ describe('grounded answer discovery surface', () => {
                     evidence_id: 'E1',
                     source_context: 'The warranty includes inspections and the retained case color is blue.',
                     actor: incidental,
-                    object_and_mechanism: {
+                    object_and_operation: {
                       source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
                       answer_anchor: block.answer_segments[0].anchor_id,
                       relation: 'preserved',
@@ -464,6 +611,13 @@ describe('grounded answer discovery surface', () => {
                       answer_specifics: 'The same retained factual content.',
                     },
                     qualification: incidental,
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'not_selected',
+                    },
                   },
                 ],
                 excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
@@ -861,13 +1015,20 @@ describe('grounded answer discovery surface', () => {
                         ? 'The original group remains the experiencer.'
                         : 'The group experiencer is missing or replaced despite the neighboring Ada predicates.',
                     },
-                    object_and_mechanism: mechanismComparison(compared),
+                    object_and_operation: mechanismComparison(compared),
                     qualification: {
                       ...compared,
                       relation: supported ? 'preserved' : relation === 'omitted' ? 'generalized' : 'changed',
                       detail: supported
                         ? 'The group-relative scope remains.'
                         : 'The actual epistemic predicate loses or changes its group-relative scope.',
+                    },
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'not_selected',
                     },
                   },
                 ],
@@ -943,8 +1104,15 @@ describe('grounded answer discovery surface', () => {
                       detail:
                         'No selected epistemic experiencer: source is impersonal or the separate group limit is private.',
                     },
-                    object_and_mechanism: mechanismComparison(compared),
+                    object_and_operation: mechanismComparison(compared),
                     qualification: compared,
+                    tested_property: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      source_property: null,
+                      answer_property: null,
+                      relation: 'not_selected',
+                    },
                   },
                 ],
                 excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
@@ -1015,8 +1183,15 @@ describe('grounded answer discovery surface', () => {
                     relation: 'not_selected',
                     detail: 'The denial leaves the booking actor unspecified.',
                   },
-                  object_and_mechanism: mechanismComparison(compared),
+                  object_and_operation: mechanismComparison(compared),
                   qualification: compared,
+                  tested_property: {
+                    source_anchor: null,
+                    answer_anchor: null,
+                    source_property: null,
+                    answer_property: null,
+                    relation: 'not_selected',
+                  },
                 },
               ],
               excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
@@ -1184,8 +1359,15 @@ describe('grounded answer discovery surface', () => {
                       evidence_id: e.evidence_id,
                       source_context: 'Only the cited retained contribution is selected.',
                       actor: part,
-                      object_and_mechanism: mechanismComparison(part),
+                      object_and_operation: mechanismComparison(part),
                       qualification: part,
+                      tested_property: {
+                        source_anchor: null,
+                        answer_anchor: null,
+                        source_property: null,
+                        answer_property: null,
+                        relation: 'not_selected',
+                      },
                     };
                   },
                 ),
@@ -4705,7 +4887,7 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
         relation: 'not_selected',
         detail: 'This question names no action actor.',
       },
-      object_and_mechanism: {
+      object_and_operation: {
         source_quote: 'покрывает ли гарантия обратную доставку',
         answer_quote: objectQuote,
         relation: 'preserved',
@@ -4718,6 +4900,13 @@ function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
         relation: 'preserved',
         detail: 'The answer remains unknown.',
       },
+      tested_property: {
+        source_anchor: null,
+        answer_anchor: null,
+        source_property: null,
+        answer_property: null,
+        relation: 'not_selected',
+      },
     },
   ];
 }
@@ -4729,10 +4918,14 @@ async function seedSourceFrame(options?: {
   commitment: 'asserted' | 'none' | 'hypothetical';
   polarity: 'negated' | 'affirmed';
   sourceSpeaker?: string;
+  marker?: ManagedMemoryMarker;
 }): Promise<string> {
   write(
     'products/zephyr-qx-100.md',
-    `# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=${options?.kind ?? 'question'} subject=unresolved source-role=user${options?.sourceSpeaker ? ` speaker=${encodeURIComponent(options.sourceSpeaker)}` : ''} reports=0 commitment=${options?.commitment ?? 'none'} disposition=active polarity=${options?.polarity ?? 'affirmed'} basis=self_attested -->\n${options?.text ?? '- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.'}\n`,
+    options?.marker
+      ? '# Zephyr QX-100\n\n' +
+          managedMemoryBlock(options.marker, renderManagedMemoryPayload(options.text, options.marker))
+      : `# Zephyr QX-100\n\n<!-- akno:item mem_frame v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@extracted level=1 kind=${options?.kind ?? 'question'} subject=unresolved source-role=user${options?.sourceSpeaker ? ` speaker=${encodeURIComponent(options.sourceSpeaker)}` : ''} reports=0 commitment=${options?.commitment ?? 'none'} disposition=active polarity=${options?.polarity ?? 'affirmed'} basis=self_attested -->\n${options?.text ?? '- **Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.'}\n`,
   );
   await memory.index({ verify: true });
   const frame =
@@ -4788,7 +4981,7 @@ function testAnchorCoordinates(content: unknown, payload: Record<string, unknown
       const source =
         block.cited_evidence.find((e) => e.evidence_id === alignment.evidence_id)?.retention_source_frame ??
         [];
-      for (const category of ['actor', 'object_and_mechanism', 'qualification']) {
+      for (const category of ['actor', 'object_and_operation', 'tested_property', 'qualification']) {
         const part = alignment[category];
         if (!part || !('source_quote' in part)) continue;
         part.source_anchor =

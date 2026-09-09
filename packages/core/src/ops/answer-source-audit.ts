@@ -84,15 +84,14 @@ function alignmentSchema(coordinates: AnswerAuditCoordinates) {
   ]);
 }
 
-/** Separate source and answer descriptions before choosing a mechanism relation.
- * A combined paraphrase can silently erase the very property the comparison must check. */
-function mechanismAlignmentSchema(coordinates: AnswerAuditCoordinates) {
+/** Keep the operation comparison independent of whether its tested property survives. */
+function operationAlignmentSchema(coordinates: AnswerAuditCoordinates, perSideLimit: 50 | 80) {
   const source = anchorIdSchema(
     [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
   );
   const answer = anchorIdSchema(coordinates.answer.map((span) => span.anchor_id));
-  // Preserve the previous 160-character aggregate prose allowance.
-  const specifics = z.string().trim().min(1).max(80);
+  // Operation and property descriptions together retain the 160-character prose allowance.
+  const specifics = z.string().trim().min(1).max(perSideLimit);
   return z.union([
     z.strictObject({
       source_anchor: source,
@@ -125,26 +124,83 @@ function mechanismAlignmentSchema(coordinates: AnswerAuditCoordinates) {
   ]);
 }
 
+function propertyAlignmentSchema(coordinates: AnswerAuditCoordinates) {
+  const source = anchorIdSchema(
+    [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
+  );
+  const answer = anchorIdSchema(coordinates.answer.map((span) => span.anchor_id));
+  const property = z.string().trim().min(1).max(30);
+  // An answer can invent a property for an unspecified source test. Its missing source
+  // counterpart needs its own negative wire shape, not an all-null incidental comparison.
+  return z.union([
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: answer,
+      source_property: property,
+      answer_property: property,
+      relation: z.enum(['preserved', 'generalized', 'changed']),
+    }),
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: z.null(),
+      source_property: property,
+      answer_property: z.null(),
+      relation: z.enum(['omitted']),
+    }),
+    z.strictObject({
+      source_anchor: z.null(),
+      answer_anchor: answer,
+      source_property: z.null(),
+      answer_property: property,
+      relation: z.enum(['changed']),
+    }),
+    z.strictObject({
+      source_anchor: z.null(),
+      answer_anchor: z.null(),
+      source_property: z.null(),
+      answer_property: z.null(),
+      relation: z.enum(['not_selected']),
+    }),
+  ]);
+}
+
 /** Categories prevent an easy object comparison from replacing the separate action-actor audit. */
 export function answerAlignmentSchema(coordinates: AnswerAuditCoordinates) {
   const ids = [...coordinates.sources.keys()];
   const alignment = alignmentSchema(coordinates);
+  const operation = operationAlignmentSchema(coordinates, 50);
+  const property = propertyAlignmentSchema(coordinates);
+  const context = {
+    evidence_id: z.enum(ids as [string, ...string[]]),
+    source_context: z.string().trim().min(1).max(240),
+    actor: alignment,
+  };
+  // Make the containing-operation dependency visible during provider decoding. A parser-only
+  // refinement would allow the provider to generate a negative verdict that becomes unavailable.
+  const entrySchema = z.union([
+    z.strictObject({
+      ...context,
+      // An absent property needs no description. Keep the whole former prose allowance
+      // available to ordinary actions instead of imposing an unrelated compression penalty.
+      object_and_operation: operationAlignmentSchema(coordinates, 80),
+      tested_property: property.options[3],
+      qualification: alignment,
+    }),
+    z.strictObject({
+      ...context,
+      object_and_operation: z.union([operation.options[0], operation.options[1]]),
+      tested_property: z.union([property.options[0], property.options[1], property.options[2]]),
+      qualification: alignment,
+    }),
+  ]);
   return z
     .array(
-      z
-        .object({
-          evidence_id: z.enum(ids as [string, ...string[]]),
-          source_context: z.string().trim().min(1).max(240),
-          actor: alignment,
-          object_and_mechanism: mechanismAlignmentSchema(coordinates),
-          qualification: alignment,
-        })
-        // Citing a record while declaring every category irrelevant supplies no comparison at all.
-        .refine((entry) =>
-          [entry.actor, entry.object_and_mechanism, entry.qualification].some(
-            (part) => part.relation !== 'not_selected',
-          ),
+      // Citing a record while declaring every category irrelevant supplies no comparison at all.
+      entrySchema.refine((value) =>
+        [value.actor, value.object_and_operation, value.tested_property, value.qualification].some(
+          (part) => part.relation !== 'not_selected',
         ),
+      ),
     )
     .length(ids.length)
     .refine((entries) => new Set(entries.map((entry) => entry.evidence_id)).size === ids.length);
@@ -156,7 +212,7 @@ export function answerAlignmentsSupported(value: unknown, coordinates: AnswerAud
   const answerIds = new Set(coordinates.answer.map((span) => span.anchor_id));
   return parsed.data.every((entry) => {
     const sourceIds = new Set(coordinates.sources.get(entry.evidence_id)!.map((span) => span.anchor_id));
-    return [entry.actor, entry.object_and_mechanism, entry.qualification].every(
+    return [entry.actor, entry.object_and_operation, entry.tested_property, entry.qualification].every(
       (part) =>
         (part.source_anchor === null || sourceIds.has(part.source_anchor)) &&
         (part.answer_anchor === null || answerIds.has(part.answer_anchor)) &&
@@ -190,12 +246,20 @@ Resolve source-explicit clarification before deciding whether a conflict remains
 generation notes, not evidence or answer text. They cannot authorize an unselected fact. Write the actual
 blocks in output_language even when the source or private reading uses another language.`;
 
-export const ANSWER_ALIGNMENT_CONTRACT = `For object_and_mechanism, write source_specifics and
-answer_specifics independently before relation, each within 80 characters. Identify the operation,
-tested object and stated property in its own supplied wording; do not normalize the two descriptions
-into an assumed equivalence. Only then compare them. A broader generic property is generalized; an
-added property is changed. Natural equivalent translations remain preserved. Omitted/not-selected
-answer content has null answer_specifics; an absent source anchor also requires null source_specifics.
+export const ANSWER_ALIGNMENT_CONTRACT = `For object_and_operation, write source_specifics and
+answer_specifics independently before relation, each within 50 characters when tested_property is
+selected, or 80 each when the property is all-null not_selected. Identify the operation,
+acted-on object, purpose and manner/degree in their own supplied wording. For tested_property, separately
+write source_property and answer_property before its own relation, each within 30 characters. Name only
+the specific tested or measured property in each side's supplied wording. Do not normalize either pair
+into an assumed equivalence. Natural equivalent translations remain preserved. Omitted/not-selected
+operation content has null answer_specifics; an absent source anchor requires null source_specifics.
+For an omitted property, keep its source anchor/description and use null answer anchor/description.
+For an answer-added property, use null source anchor/description, its actual answer anchor/description
+and changed. Use the all-null property not_selected branch only when this record's selected contribution
+has no tested property and the answer adds none, or when the whole test proposition is unselected.
+A property comparison requires its containing object_and_operation to be selected too. Ordinary plans,
+questions, promises or denials without a tested property need no invented one.
 For actor and qualification, the existing combined detail remains required.
 For framed blocks, answer_segments and retention_source_frame
 are ordered tables of exact text with server-assigned anchor_id values. Concatenate their text fields
@@ -207,16 +271,19 @@ Resolve an explicitly restated report across languages before comparing an isola
 the query and generated notes cannot establish that relationship; preserve truly unresolved ambiguity.
 
 Then independently compare actor (the selected action's actor, separate from outer reporter),
-object_and_mechanism (object, purpose, degree/manner), and qualification (scope and epistemic/time limits,
+object_and_operation (object, purpose, degree/manner), tested_property, and qualification (scope and epistemic/time limits,
 including who lacks knowledge/confirmation, of what, and which selected proposition that limit qualifies).
-For a test or measurement, compare the tested object and the tested property separately within
-object_and_mechanism. In those fields, state the source property and the actual target-language answer property
-separately before choosing relation. Do not collapse them into a slash pair that assumes equivalence.
+For a test or measurement, compare the tested object/operation and the tested property through their
+separate required relations. A preserved operation cannot override a lost property. Do not collapse
+source and answer properties into a slash pair that assumes equivalence.
 Read what the complete answer actually tests; do not supply a missing property from the source or familiar object.
 Generic soundness or physical integrity of an object is broader than a specified electrical property.
-If the source specifies such a property and the answer lacks that sense, mark generalized and set
+If the source specifies such a property and the answer replaces it with a broader sense, mark tested_property generalized and set
 action_arguments_preserved false with a matching mismatch even if the broader claim remains entailed.
 A natural equivalent that retains the property passes; an unspecified source test must stay unspecified.
+An entirely absent property is omitted; a substituted or added property is changed. Each negative
+property relation requires action_arguments_preserved false and its own concrete mismatch. Do not mark
+the property not_selected merely because the answer omits it from a selected test.
 For an epistemic predicate, actor compares its grammatical subject or experiencer, including a source-stated
 note/record subject; it is not automatically the outer reporter. Direct self-attested provenance alone
 requires no repeated speaker wording. Still preserve required report attribution and personal agency.
@@ -250,20 +317,20 @@ cannot hide its loss or turn a generalized, changed or omitted contribution into
 Use preserved for equivalent meaning, including natural technical paraphrase. Use generalized for a
 material restriction lost from the complete block, changed for a different actor/object/scope, or omitted
 when a required selected counterpart has no answer counterpart (answer_anchor null). These three
-negative relations require concrete differences in detail and the corresponding semantic mismatch.
+negative relations require concrete differences in the comparison descriptions and the corresponding semantic mismatch.
 For omitted, answer_anchor MUST be null; an anchor locating nearby text is not a missing counterpart.
 For a present but changed or generalized counterpart, use that relation and its actual answer anchor.
 An actor loss requires action_arguments_preserved false and its own mismatch; a lost or changed epistemic
 limit requires qualification_scope_preserved false and its own mismatch. Assess proposition_supported
 separately and give a mismatch for it too if false. Never pair a negative alignment with all-positive
 dimensions or place every defect solely under qualification regardless of which dimension it affects.
-For an incidental category not selected or asserted in this block, use not_selected and answer_anchor
+For an incidental actor, operation or qualification not selected or asserted in this block, use not_selected and answer_anchor
 null; source_anchor may be null only if no applicable source content exists. A sentence/anchor is not
 an indivisible proposition: independent neighboring details need not appear. Complete-record rendering
 requires the entire RETAINED record, not every proposition in the private frame. If the retained record
 identifies a person's question without retaining their separate recording act, do not require that act
 or label its absence an omitted actor. The selected question owner must still be preserved. Every cited record must
-contribute at least one selected category; all three cannot be not_selected.
+contribute at least one selected category; all four cannot be not_selected.
 
 Do not mark a named proposer not_selected when describing that proposal. An outer reporter is not its
 proposer, and a generic fault does not preserve a specific mechanism. Source_context and comparisons
