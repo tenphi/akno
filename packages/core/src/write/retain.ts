@@ -59,8 +59,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v53';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v37';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v54';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v38';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -675,6 +675,11 @@ export async function runRetain(
     const repairSchema = z.strictObject({
       repairs: z.array(repairEntrySchema(RETAIN_SCHEMA.shape.candidates.element)).max(failedPositions.length),
     });
+    // Local refinements are intentionally absent from the provider schema. Apply the same
+    // transaction validation before selecting prose so invalid deltas cannot trigger a language call.
+    const transactionSchema = z.strictObject({
+      repairs: z.array(repairEntrySchema(z.record(z.string(), z.unknown()))).max(failedPositions.length),
+    });
     const repair = await model.chat(
       [
         {
@@ -739,10 +744,20 @@ export async function runRetain(
         languageReferences,
         ...(hasTextRepairs
           ? {
-              additionalLanguageProse: (value: unknown) => [
-                ...reportRepairLanguageProse(value),
-                ...clockRepairLanguageProse(value),
-              ],
+              additionalLanguageProse: (value: unknown) => {
+                const normalized = normalizeClockRepairTransaction(normalizeReportRepairTransaction(value));
+                const checked = transactionSchema.safeParse(normalized);
+                if (
+                  !checked.success ||
+                  new Set(
+                    checked.data.repairs.map(
+                      (entry) => (entry as { candidate_index: number }).candidate_index,
+                    ),
+                  ).size !== checked.data.repairs.length
+                )
+                  throw new Error('retain repair returned an invalid position transaction');
+                return [...reportRepairLanguageProse(normalized), ...clockRepairLanguageProse(normalized)];
+              },
             }
           : {}),
       },
@@ -750,9 +765,6 @@ export async function runRetain(
     repairUsage.repair = modelCallReceipt(model, repair);
     // Candidate fields still go through the same cleaner as extraction. Parse the transaction
     // envelope here; a provider's constrained-decoding declaration is not trusted validation.
-    const transactionSchema = z.strictObject({
-      repairs: z.array(repairEntrySchema(z.record(z.string(), z.unknown()))).max(failedPositions.length),
-    });
     let repairValue: unknown = null;
     if (repair.ok && repair.value) {
       if (hasTextRepairs) {

@@ -4,8 +4,15 @@ import { hasUnretractedClauseEnd } from '../memory/clause-ending.ts';
 
 // Each branch fits the existing 400-unit sentence cap without truncation or borrowed allowance.
 // eslint-disable-next-line no-control-regex -- Keep CR/LF/NUL visible to validation.
-const completeSentence = /^(?=[\s\S]*[\p{L}\p{N}])[^\r\n\u0000]*[.!]$/u;
-const sentence = (max: number) => z.string().min(1).max(max).regex(completeSentence);
+const completeSentence = /^[^\r\n\u0000]*[.!]$/u;
+// Keep Unicode content mandatory locally; the provider rejects property escapes and lookaround.
+const sentence = (max: number) =>
+  z
+    .string()
+    .min(1)
+    .max(max)
+    .regex(completeSentence)
+    .refine((value) => /[\p{L}\p{N}]/u.test(value));
 export const clockRepairFields = {
   proposition_and_nontemporal_scope: sentence(220),
   source_clock_anchor_and_unknown_date: sentence(110),

@@ -4,7 +4,13 @@ import { semanticVerdictFields } from '../models/semantic-verdict.ts';
 
 // Punctuation can be exact while witnessing none of the alleged semantic content.
 const hasContent = /[\p{L}\p{N}]/u;
-const exactText = z.string().min(1).max(80).regex(hasContent);
+// Providers disagree on Unicode-property regex in JSON Schema; enforce the full multilingual
+// requirement in local parsing without exporting an incompatible wire pattern.
+const exactText = z
+  .string()
+  .min(1)
+  .max(80)
+  .refine((value) => hasContent.test(value));
 
 /** Negative decisions must name immutable bytes, never the verifier's own comparison paraphrase. */
 export function retentionNegativeEvidence(candidate: RetainCandidate, hasRepairObligation: boolean) {

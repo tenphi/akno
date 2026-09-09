@@ -8,12 +8,7 @@ import {
   sourceClockRepairWitness,
 } from './retain-clock-repair.ts';
 import { runRetain } from './retain.ts';
-import {
-  type ModelClient,
-  type ChatOptions,
-  toEndpointSchema,
-  strictModeViolations,
-} from '../models/client.ts';
+import { ModelClient, type ChatOptions, toEndpointSchema, strictModeViolations } from '../models/client.ts';
 import { retentionAudit, frameAuditFields } from '../../test/semantic-audit.ts';
 
 const definition =
@@ -151,6 +146,55 @@ describe('owned source clock repair dimensions', () => {
 });
 
 describe('single pre-semantic clock text transaction', () => {
+  it.each(Object.keys(excludedClockRepairFields))(
+    'rejects punctuation in %s before the repair language transport',
+    async (key) => {
+      const model = new ModelClient({
+        role: 'derive',
+        id: 'invented-clock-transport',
+        provider: {
+          name: 'invented',
+          baseUrl: 'https://invented.invalid/v1',
+          api: 'chat_completions',
+          configuredApi: 'chat_completions',
+          apiResolution: 'explicit',
+          apiResolutionError: null,
+          apiKey: null,
+          headers: {},
+          maxRetries: 0,
+        },
+        enabled: true,
+        requested: true,
+        timeoutMs: 1111,
+        unavailableReason: null,
+        knowledgeLanguage: 'en',
+        maxOutputTokens: 2400,
+      });
+      const requests: string[] = [];
+      vi.spyOn(model as any, 'chatTransport').mockImplementation(async (...args: any[]) => {
+        const [messages] = args;
+        const payload = JSON.parse(messages.at(-1).content);
+        const language = messages.some((message: any) => message.content.startsWith('Check the language'));
+        requests.push(language ? 'language' : payload.repair_targets ? 'repair' : 'extraction');
+        expect(requests.length).toBeLessThanOrEqual(3);
+        const value = language
+          ? { hint_roles: [], prose_result: { status: 'compliant', counterexample: null } }
+          : payload.repair_targets
+            ? { repairs: [{ ...delta, [key]: '.' }] }
+            : { candidates: [original] };
+        return { ok: true, latencyMs: 1, endpointRequests: 1, value: JSON.stringify(value) };
+      });
+      const result = await runRetain('', model, {
+        sourceItems: [
+          { item_id: 'turn-1111', role: 'user', speaker: 'Ada Marlow', text: proposal },
+          { item_id: 'turn-2222', role: 'user', speaker: 'Ada Marlow', text: definition },
+        ],
+      });
+      expect(requests).toEqual(['extraction', 'language', 'repair']);
+      expect(result.candidates).toEqual([]);
+      expect(result.modelUsage.verification).toBeNull();
+    },
+  );
   it.each([false, true])(
     'clones metadata and proof and preserves a final semantic hold: %s',
     async (negative) => {
@@ -253,6 +297,8 @@ describe('single pre-semantic clock text transaction', () => {
       const wire = toEndpointSchema(schema);
       expect(strictModeViolations(wire)).toEqual([]);
       expect(JSON.stringify(wire)).not.toMatch(/"(?:oneOf|const)":/u);
+      for (const field of Object.values(wire.properties as Record<string, { pattern: string }>))
+        expect(field.pattern).toBe(String.raw`^[^\r\n\u0000]*[.!]$`);
     }
   });
 });

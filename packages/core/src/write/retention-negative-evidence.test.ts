@@ -127,6 +127,19 @@ describe('candidate-owned negative retention evidence', () => {
       ),
     ).toBe(false);
   });
+  it.each(['Запись', '記録', '1111'])('keeps multilingual and numeric owned evidence valid: %s', (text) => {
+    const record = { ...candidate, text: text + '.', discourse_frame: [{ quote: text + '.' }] };
+    expect(
+      validate(
+        mismatch(
+          'changed_value',
+          { frame_id: 'F1', exact_excerpt: text },
+          { kind: 'text', exact_excerpt: text },
+        ),
+        record,
+      ),
+    ).toBe(true);
+  });
   it('requires an exact governing source witness only for a polarity disagreement', () => {
     const disagreement = {
       ...positive,
@@ -167,6 +180,7 @@ describe('candidate-owned negative retention evidence', () => {
     expect(JSON.stringify(wire)).not.toMatch(/"(?:oneOf|const)":/u);
     expect(JSON.stringify(wire)).toContain('"maxItems":3');
     expect(JSON.stringify(wire)).toContain('"maxLength":80');
+    expect(JSON.stringify(wire)).not.toContain('"pattern":');
   });
 });
 

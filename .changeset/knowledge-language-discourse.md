@@ -180,3 +180,5 @@ atomic and ordinary semantic rejection final. Classify grouped foreign-language 
 existing prose check and validate every claimed reference exemption. Repair otherwise valid unknown
 source clocks with bounded text segments that preserve explicit source exclusions and immutable
 metadata. Recognize complete nominal Russian counterfactuals with a preposed repair consequence.
+
+Keep multilingual retention witness and clock-segment validation local so strict provider schemas avoid unsupported Unicode regex and lookaround, while preserving atomic punctuation rejection and existing budgets.
