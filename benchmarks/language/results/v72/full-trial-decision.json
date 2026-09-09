@@ -1,0 +1,10 @@
+{
+  "runtimeCommit": "93c7444ff2d860d88649af97db3ccf75bc6c82fd",
+  "decision": "deferred",
+  "reason": "The declared once-only exposed diagnostics yield 67/96 independently useful answers and 7/12 complete retained sets. Twenty-nine null answers and five incomplete retained sets do not justify consuming fresh held-out inputs. No published meaning error was observed, but explicit property absence is still sometimes misclassified privately.",
+  "freshHeldOutExecuted": false,
+  "replacementSemanticRunExecuted": false,
+  "acceptanceChanged": false,
+  "runtimeModelChanged": false,
+  "nextAction": "Preserve and independently review all V72 evidence before declaring the next bounded runtime revision in the same open PR."
+}

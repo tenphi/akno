@@ -1,0 +1,1075 @@
+{
+  "note": "Descriptive model classifications from the declared once-only probes. Explicit property absence may still be semantically wrong; independent source review determines quality.",
+  "results": [
+    {
+      "probe": "selected",
+      "entries": [
+        {
+          "traceRow": 14,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 18,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 22,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 26,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 30,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 34,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 38,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 42,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 50,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 54,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 58,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 62,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 66,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 70,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 74,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 78,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 86,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 90,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "changed",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "traceRow": 94,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 101,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 105,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 109,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 120,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            false,
+            false,
+            true
+          ]
+        },
+        {
+          "traceRow": 124,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "continuity",
+          "answerProperty": "непрерывность",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 128,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 132,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 136,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "connector continuity",
+          "answerProperty": "connector continuity",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 140,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 144,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 148,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 156,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 156,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 161,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 164,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 164,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 167,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 167,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 170,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 170,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 173,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 173,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 176,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 176,
+          "blockId": "B1",
+          "evidenceId": "E2",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 188,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 192,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 196,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 200,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 204,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 208,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 212,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 216,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        }
+      ],
+      "counts": {
+        "absent_from_both": 49,
+        "preserved": 2
+      },
+      "selectedOperationWithUnselectedProperty": 0
+    },
+    {
+      "probe": "built-reliability",
+      "entries": [
+        {
+          "traceRow": 9,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 13,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 17,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 21,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 25,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "tension of return spring",
+          "answerProperty": "tension of return spring",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 29,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 33,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "return spring tension",
+          "answerProperty": "return spring tension",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 37,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 45,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 49,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 53,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 57,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 61,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 65,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 69,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 73,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 83,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "rotor-balance",
+          "answerProperty": "rotor-balance",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 87,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 91,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "rotor balance",
+          "answerProperty": "rotor-balance",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 95,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 99,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 103,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "rotor-balance",
+          "answerProperty": "баланса ротора",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 107,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "absent_from_both",
+          "sourceProperty": null,
+          "answerProperty": null,
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        },
+        {
+          "traceRow": 111,
+          "blockId": "B1",
+          "evidenceId": "E1",
+          "operation": "preserved",
+          "property": "preserved",
+          "sourceProperty": "rotor balance",
+          "answerProperty": "баланс ротора",
+          "semanticBooleans": [
+            true,
+            true,
+            true
+          ]
+        }
+      ],
+      "counts": {
+        "absent_from_both": 18,
+        "preserved": 6
+      },
+      "selectedOperationWithUnselectedProperty": 0
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "runtimeCommit": "93c7444ff2d860d88649af97db3ccf75bc6c82fd",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "completeUsefulRetention": 5,
+      "observations": 64,
+      "producedAnswers": 43,
+      "usefulAnswers": 43,
+      "usefulRetrieval": 48,
+      "nullAnswers": 21,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v20-held-report",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 0
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "retention": false,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-exclusion",
+          "retention": true,
+          "usefulAnswers": 5,
+          "producedAnswers": 5
+        },
+        {
+          "id": "v20-held-assistant",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-fiction",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-undated",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 0
+        },
+        {
+          "id": "v20-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "completeUsefulRetention": 2,
+      "observations": 32,
+      "producedAnswers": 24,
+      "usefulAnswers": 24,
+      "usefulRetrieval": 24,
+      "nullAnswers": 8,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v19-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-question",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-rejected",
+          "retention": false,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-alternatives",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 0
+        }
+      ],
+      "problematicProduced": []
+    }
+  ]
+}

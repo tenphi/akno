@@ -1,0 +1,10 @@
+{
+  "answer": {
+    "id": "gpt-5.6-luna",
+    "configuredMaxOutputTokens": 1024
+  },
+  "derive": {
+    "id": "gpt-5.6-luna",
+    "configuredMaxOutputTokens": 2400
+  }
+}
