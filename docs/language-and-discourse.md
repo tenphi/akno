@@ -185,6 +185,22 @@ Answer diagnostics expose `reason_code` and `validation`: generated blocks, bloc
 guards, independently verified blocks, and rejection counts for language, citations, protected values, attribution,
 discourse and semantic support. `verified_blocks: null` means verification did not complete; it is not a failed
 semantic verdict. No eligible evidence is an abstention, without a fabricated `answer_failed` degradation.
+For a record with an exact bound original frame, answer generation first emits a private interpretation
+of that record. It is discarded before independent verification and never becomes answer evidence.
+The existing verifier separately compares action actors, objects/mechanisms and qualifications using
+exact source/answer substring anchors. Missing, malformed or negative comparisons withhold the block
+alongside the existing semantic and retained-excerpt selection checks. These fallible comparisons focus
+attention; they do not establish exhaustive semantic correctness.
+
+The answer role's default output ceiling is 2,400 tokens to accommodate these audits. Ordinary generation
+still requests 1,024; framed generation reserves additional space, and verification can emit a longer
+comparison. This can increase latency and output cost. Explicit caller/provider limits remain authoritative;
+large or verbose audits may still exceed the ceiling and withhold an answer. Akno never truncates the
+required audit into an accepted verdict, retries its semantic decision or adds a fallback pass.
+An isolated language benchmark can explicitly select `--answer-output-tokens 2400`; this overrides only
+that trial's answer-role ceiling and leaves service configuration untouched. Reports and their review
+fingerprints include resolved answer/retention output ceilings so different trial budgets cannot be mixed.
+
 Retain candidates expose `hold_stage` and `routing_reason` for validation, verifier and placement decisions.
 Unavailable or invalid routing models report typed degradation; receipts preserve those diagnostics on replay.
 Old receipts may lack the new optional fields. These fields contain no source text.

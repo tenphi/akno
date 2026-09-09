@@ -383,7 +383,7 @@ describe('frozen language/discourse evaluation', () => {
           providers: {},
           models: {
             derive: { id: null },
-            answer: { id: null },
+            answer: { id: null, max_output_tokens: 777 },
             embedding: { id: null },
             expansion: { id: null },
             reranker: { id: null, enabled: false },
@@ -392,6 +392,7 @@ describe('frozen language/discourse evaluation', () => {
         },
       });
       const report = await runLanguageBench(config, { split: 'development', corpus: 'v1' });
+      expect(report.modelOutputTokenLimits.answer).toBe(777);
       expect(report.metrics.availabilityFailures).toEqual({ numerator: 8, denominator: 8, rate: 1 });
       expect(report.metrics.usefulRetentionCoverage).toEqual({ numerator: 0, denominator: 0, rate: null });
       expect(report.metrics.noncanonicalEligibilityFlags).toEqual({

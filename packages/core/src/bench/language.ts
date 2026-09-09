@@ -149,6 +149,10 @@ export async function runLanguageBench(config: AknoConfig, options: LanguageBenc
       embedding: config.models.embedding.id,
       expansion: config.models.expansion.id,
     },
+    modelOutputTokenLimits: {
+      answer: config.models.answer.maxOutputTokens ?? null,
+      retention: config.models.derive.maxOutputTokens ?? null,
+    },
     indexModelDerivation: false,
     independentlyReviewed: false,
     releaseEligible: false,

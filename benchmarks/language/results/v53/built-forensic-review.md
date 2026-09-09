@@ -19,7 +19,7 @@ Every case uses the same query order:
 
 The run produced 26/32 answers. Six were null: four `empty_draft`, one deterministic `draft_rejected`, and one `verification_rejected` ([result summary](built-reliability.json#L55)). There were no operation/availability failures, schema errors, degraded calls, routing holds or source-byte changes. All four expected retained sets were written, and every query retrieved its relevant retained record.
 
-On the source-only convention now established for this run, 25/32 outputs are useful answers: five nulls are unjustified coverage losses, one null is a correct safe rejection, and one nonnull answer has a material manner/specificity loss. I found no accepted factual promotion, speaker reversal, report-scope globalization, plan acceptance, completed action or language-policy violation.
+On the source-only convention now established for this run, 25/32 outputs are useful answers: all six nulls are unjustified writable-case abstentions because the source offers a faithful answer, while one of those six correctly rejects the particular bad draft it received; one nonnull answer has a material manner/specificity loss. I found no accepted factual promotion, speaker reversal, report-scope globalization, plan acceptance, completed action or language-policy violation.
 
 ## v18-held-report
 
@@ -90,7 +90,7 @@ The main content was faithful, but generation appended:
 
 > The evidence establishes that she is considering these hypotheses, but not that she discussed them.
 
-The source records consideration; it does not support the new meta-claim that discussion is unestablished. The verifier correctly set proposition and qualification support false and `excerpt_selection.selected_by_retained_excerpt=false` ([trace](../../../../bench-results/language-built-reliability-v53-trace.jsonl#L103)). This null is a genuine safe hold. The model could have put the query-presupposition concern only in `missing_concepts`, as q0/q2 did, rather than adding it to the cited answer block.
+The source records consideration; it does not support the new meta-claim that discussion is unestablished. The verifier correctly set proposition and qualification support false and `excerpt_selection.selected_by_retained_excerpt=false` ([trace](../../../../bench-results/language-built-reliability-v53-trace.jsonl#L103)). The runtime correctly held this particular unsupported draft. The case-level abstention is still unjustified under the useful-answer gate because the source offers a faithful answer and generation could have put the query-presupposition concern only in `missing_concepts`, as q0/q2 did, rather than adding it to the cited answer block.
 
 ### Other alternatives answers
 
@@ -102,7 +102,7 @@ q5 and q7 restore the exact `неплотно вставлен` mechanism from t
 | --- | --- | ---: | --- |
 | English query reopens an explicitly clarified dial/regulator referent | report q0–q3 | 4 | Unjustified empty drafts |
 | Russian `гипотетические версии` absent from tentative-language floor | alternatives q3 | 1 | Unjustified deterministic hold |
-| Unsourced “not discussed” evidence claim | alternatives q6 | 1 | Correct semantic hold |
+| Unsourced “not discussed” evidence claim | alternatives q6 | 1 | Correct rejection of this draft; unjustified case-level abstention |
 | Loose seating broadened to general incorrect installation | alternatives q1 | 1 | Accepted specificity/qualification error |
 
 Three bounded follow-ups are supported by this evidence:
@@ -111,4 +111,4 @@ Three bounded follow-ups are supported by this evidence:
 2. Admit a head-bound Russian `гипотетическ...` adjective as tentative/hypothetical language when it directly qualifies `гипотез...` or `верси...`, with unrelated-subject and cross-clause negatives. This is the smallest fix for q3 and does not weaken semantic verification.
 3. Add a bounded degree/mechanism preservation check for source `неплотно` in connector insertion/seating: faithful output may say loose/not firmly/not fully inserted or seated; a generic installed/installation rendering is insufficient. Apply it to retention and answer comparison without changing passes or retries. The existing verifier prompts already state the distinction but both live verifier calls missed q1, so another generic instruction is unlikely to close it.
 
-No change is warranted for the correctly rejected q6 meta-claim, question/rejected record splitting, personal nonselection, scoped report-status wording, placement or retrieval.
+No verifier relaxation is warranted for the correctly rejected q6 meta-claim. Its lost useful coverage belongs to generation/composition, not acceptance of that draft. No change is warranted for question/rejected record splitting, personal nonselection, scoped report-status wording, placement or retrieval.

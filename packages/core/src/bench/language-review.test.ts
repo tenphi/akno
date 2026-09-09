@@ -170,6 +170,16 @@ function fixture(
 }
 
 describe('independently adjudicated language gate', () => {
+  it('binds declared output ceilings to the review fingerprint and rejects mixed budgets', () => {
+    const { reports, inputs, outputs } = fixture('v20');
+    const oldFingerprint = languageReviewPacket(reports, inputs).packetFingerprint;
+    for (const report of reports) report.modelOutputTokenLimits = { answer: 2400, retention: 2400 };
+    expect(languageReviewPacket(reports, inputs).packetFingerprint).not.toBe(oldFingerprint);
+    expect(() => adjudicateLanguageGate(reports, inputs, outputs)).toThrow('stale output review');
+    reports[1]!.modelOutputTokenLimits.answer = 1024;
+    expect(() => languageReviewPacket(reports, inputs)).toThrow();
+  });
+
   it.each([8, 9])('enforces the declared 90% boundary in every broader-corpus run (%s misses)', (misses) => {
     const { reports, inputs, outputs } = fixture('v10');
     const held = reports.find((report) => report.split === 'held-out')!;

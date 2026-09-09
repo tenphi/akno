@@ -95,3 +95,7 @@ Keep candidate-specific retention audits compatible with strict structured-outpu
 Preserve personal plan adoption and meeting arrangement independently in generated memory and answers. Keep speaker uncertainty and record inconclusiveness attached to separate subjects, and focus the existing language checker on descriptive compounds without exempting them or rejecting valid identifiers by syntax alone.
 
 Recognize bounded shared-negation report qualifications and epistemic-head-bound Russian uncertainty adjectives before semantic verification. Preserve source-resolved referents when query wording is ambiguous and attach tentative timing to timing rather than the embedded action.
+
+Interpret bound original records before answer drafting and require separate exact-source comparisons of action actors, objects/mechanisms and qualifications inside existing verifier calls. Keep private readings out of verification evidence and public output; missing, malformed or negative comparisons withhold answers alongside all existing semantic and excerpt-selection gates. Preserve original coverage objects during retention and recognize source-clock intensifiers and explicitly hypothetical versions without adding a model call or semantic retry.
+
+Raise the default answer-role output ceiling to 2,400 tokens to fit structured source comparisons. Ordinary generation still requests 1,024; verification and framed generation can use more, with potential latency/cost increases. Explicit caller/provider limits remain authoritative and incomplete audits still withhold output.

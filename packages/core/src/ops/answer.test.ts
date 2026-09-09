@@ -61,55 +61,179 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
-  it.each([true, false])(
-    'keeps an original retention frame private and honors its semantic verdict: %s',
-    async (supported) => {
-      const frame = await seedSourceFrame();
-      await useAnswerModel({
-        generation: {
+  it.each([
+    ['generation', 'truncated'],
+    ['generation', 'trailing'],
+    ['verification', 'truncated'],
+    ['verification', 'trailing'],
+  ])('does not repair %s %s JSON into an accepted audit', async (phase, defect) => {
+    await seedSourceFrame();
+    await useAnswerModel({
+      generation: {
+        record_readings: sourceFrameReading(),
+        blocks: [
+          {
+            text: 'The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: {
+        verdicts: [
+          {
+            ...verdict('B1', true),
+            source_alignments: sourceFrameAlignment(
+              'warranty covers return delivery',
+              'its answer remains unknown',
+            ),
+            excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+          },
+        ],
+      },
+      transformResponse: (content, verifying) => {
+        if ((phase === 'verification') !== verifying) return content;
+        return defect === 'truncated' ? content.slice(0, -1) : content + ' untrusted trailing text';
+      },
+    });
+    const result = await memory.answer({
+      question: 'Which open silverpine question remains?',
+      memory_view: 'questions',
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer).toBeNull();
+    expect(result.citations).toEqual([]);
+    expect(result.reason_code).toBe(phase === 'generation' ? 'invalid_draft' : 'verification_unavailable');
+    expect(modelRequests).toHaveLength(phase === 'generation' ? 1 : 2);
+  });
+
+  it('audits only framed citations when one block also cites an ordinary retained record', async () => {
+    await seedSourceFrame();
+    write(
+      'products/copperfin.md',
+      '# Zephyr QX-100\n\n<!-- akno:item mem_plain v=2 supports=dddddddddddd@eeeeeeeeeeee@ffffffffffff@provided level=1 kind=question subject=unresolved source-role=user reports=0 commitment=none disposition=active polarity=affirmed basis=self_attested -->\n- **Open question:** The silverpine repair-cost question is unanswered.\n',
+    );
+    await memory.index({ verify: true });
+    let framedId = '';
+    let plainId = '';
+    await useAnswerModel({
+      generation: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        framedId = payload.evidence.find(
+          (item: { retention_source_frame: string | null }) => item.retention_source_frame,
+        )?.evidence_id;
+        plainId = payload.evidence.find(
+          (item: { retention_source_frame: string | null }) => !item.retention_source_frame,
+        )?.evidence_id;
+        expect(framedId).toBeTruthy();
+        expect(plainId).toBeTruthy();
+        return {
+          record_readings: [{ ...sourceFrameReading()[0], evidence_id: framedId }],
           blocks: [
             {
-              text: 'The open silverpine question is whether the warranty includes return delivery. It remains unresolved whether the warranty covers or excludes that delivery.',
-              evidence_ids: ['E1'],
+              text: 'The open silverpine question is whether the warranty covers return delivery; its answer remains unknown. The silverpine repair-cost question is unanswered.',
+              evidence_ids: [framedId, plainId],
             },
           ],
           missing_concepts: [],
-        },
-        verification: {
+        };
+      },
+      verification: (request: Record<string, unknown>) => {
+        const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        expect(
+          payload.blocks[0].cited_evidence.map((item: { evidence_id: string }) => item.evidence_id),
+        ).toEqual([framedId, plainId]);
+        return {
           verdicts: [
             {
-              ...verdict('B1', supported),
+              ...verdict('B1', true),
+              source_alignments: [
+                {
+                  ...sourceFrameAlignment('warranty covers return delivery', 'its answer remains unknown')[0],
+                  evidence_id: framedId,
+                },
+              ],
               excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
             },
           ],
-        },
-      });
-      const before = treeFingerprint();
-      const result = await memory.answer({
-        question: 'Which open silverpine question remains?',
-        memory_view: 'questions',
-        include_context: true,
-        expand: false,
-        graph: false,
-      });
-      expect(result.answer !== null).toBe(supported);
-      expect(modelRequests).toHaveLength(2);
-      const payloads = modelRequests.map((request) =>
-        JSON.parse((request.messages as { content: string }[]).at(-1)!.content),
-      );
-      expect(payloads[0].evidence[0].retention_source_frame).toBe(frame);
-      expect(payloads[1].blocks[0].cited_evidence[0].retention_source_frame).toBe(frame);
-      expect(result.budget_used.evidence_tokens).toBeGreaterThan(Math.ceil(frame.length / 4));
-      expect(JSON.stringify(result)).not.toContain('amberfin');
-      expect(JSON.stringify(result)).not.toContain('retention_source_frame');
-      expect(result.context?.[0]?.type).toBe('page');
-      if (supported)
-        expect(result.citations).toEqual([
-          { id: 'E1', type: 'page', slug: 'products/zephyr-qx-100', lines: [4] },
-        ]);
-      expect(treeFingerprint()).toBe(before);
-    },
-  );
+        };
+      },
+    });
+    const result = await memory.answer({
+      question: 'Which silverpine return-delivery and repair-cost questions remain?',
+      memory_view: 'questions',
+      expand: false,
+      graph: false,
+      max_answer_tokens: 777,
+    });
+    expect(result.answer).not.toBeNull();
+    expect(result.citations).toHaveLength(2);
+    expect(modelRequests).toHaveLength(2);
+    expect(modelRequests[0]!.max_tokens).toBe(777);
+  });
+
+  it.each([
+    'supported',
+    'semantic_rejected',
+    'alignment_generalized',
+    'alignment_missing',
+    'alignment_foreign_quote',
+  ])('keeps an original retention frame private and honors its semantic verdict: %s', async (mode) => {
+    const supported = mode === 'supported';
+    const frame = await seedSourceFrame();
+    const alignment = sourceFrameAlignment('warranty includes return delivery', 'It remains unresolved');
+    if (mode === 'alignment_generalized') alignment[0]!.qualification.relation = 'generalized';
+    if (mode === 'alignment_foreign_quote') alignment[0]!.qualification.source_quote = 'A different original';
+    await useAnswerModel({
+      generation: {
+        record_readings: sourceFrameReading(),
+        blocks: [
+          {
+            text: 'The open silverpine question is whether the warranty includes return delivery. It remains unresolved whether the warranty covers or excludes that delivery.',
+            evidence_ids: ['E1'],
+          },
+        ],
+        missing_concepts: [],
+      },
+      verification: {
+        verdicts: [
+          {
+            ...verdict('B1', mode !== 'semantic_rejected'),
+            ...(mode !== 'alignment_missing' ? { source_alignments: alignment } : {}),
+            excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+          },
+        ],
+      },
+    });
+    const before = treeFingerprint();
+    const result = await memory.answer({
+      question: 'Which open silverpine question remains?',
+      memory_view: 'questions',
+      include_context: true,
+      expand: false,
+      graph: false,
+    });
+    expect(result.answer !== null).toBe(supported);
+    expect(modelRequests).toHaveLength(2);
+    const payloads = modelRequests.map((request) =>
+      JSON.parse((request.messages as { content: string }[]).at(-1)!.content),
+    );
+    expect(payloads[0].evidence[0].retention_source_frame).toBe(frame);
+    expect(payloads[1].blocks[0].cited_evidence[0].retention_source_frame).toBe(frame);
+    expect(JSON.stringify(payloads[1])).not.toContain('Private invented reading');
+    expect(result.budget_used.evidence_tokens).toBeGreaterThan(Math.ceil(frame.length / 4));
+    expect(JSON.stringify(result)).not.toContain('amberfin');
+    expect(JSON.stringify(result)).not.toContain('retention_source_frame');
+    expect(JSON.stringify(result)).not.toContain('record_readings');
+    expect(JSON.stringify(result)).not.toContain('source_alignments');
+    expect(result.context?.[0]?.type).toBe('page');
+    if (supported)
+      expect(result.citations).toEqual([
+        { id: 'E1', type: 'page', slug: 'products/zephyr-qx-100', lines: [4] },
+      ]);
+    expect(treeFingerprint()).toBe(before);
+  });
 
   it.each([
     undefined,
@@ -123,6 +247,7 @@ describe('grounded answer discovery surface', () => {
     await seedSourceFrame();
     await useAnswerModel({
       generation: {
+        record_readings: sourceFrameReading(),
         blocks: [
           {
             text: 'The open silverpine question is whether the warranty covers return delivery; its answer remains unknown. The source also contains an unrelated amberfin phrase.',
@@ -132,7 +257,16 @@ describe('grounded answer discovery surface', () => {
         missing_concepts: [],
       },
       verification: {
-        verdicts: [{ ...verdict('B1', true), ...(selection ? { excerpt_selection: selection } : {}) }],
+        verdicts: [
+          {
+            ...verdict('B1', true),
+            source_alignments: sourceFrameAlignment(
+              'warranty covers return delivery',
+              'its answer remains unknown',
+            ),
+            ...(selection ? { excerpt_selection: selection } : {}),
+          },
+        ],
       },
     });
     const result = await memory.answer({
@@ -146,6 +280,38 @@ describe('grounded answer discovery surface', () => {
     expect(result.citations).toEqual([]);
     expect(JSON.stringify(result)).not.toContain('amberfin');
   });
+
+  it.each(['missing', 'duplicate', 'foreign'])(
+    'requires valid private readings before verification: %s',
+    async (mode) => {
+      await seedSourceFrame();
+      const readings = sourceFrameReading();
+      if (mode === 'duplicate') readings.push(readings[0]!);
+      if (mode === 'foreign') readings[0]!.evidence_id = 'E2';
+      await useAnswerModel({
+        generation: {
+          ...(mode !== 'missing' ? { record_readings: readings } : {}),
+          blocks: [
+            {
+              text: 'The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.',
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', true)] },
+      });
+      const result = await memory.answer({
+        question: 'Which open silverpine question remains?',
+        memory_view: 'questions',
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).toBeNull();
+      expect(result.reason_code).toBe('invalid_draft');
+      expect(modelRequests).toHaveLength(1);
+    },
+  );
 
   it.each([
     'valid',
@@ -1687,6 +1853,11 @@ describe('grounded answer discovery surface', () => {
   });
 
   it.each([
+    ['Ada Marlow рассматривает две пока ещё гипотетические версии silverpine.', true],
+    ['Ada Marlow рассматривает гипотетическую версию silverpine.', true],
+    ['Ada Marlow обсуждала версии silverpine; гипотетический компонент лежал рядом.', false],
+    ['Ada Marlow обсуждала гипотезы silverpine; гипотетические компоненты лежали рядом.', false],
+    ['Ada Marlow обсуждала silverpine. Гипотетические. Версии установлены.', false],
     [
       'Ada Marlow обсуждала две конкурирующие, пока не установленные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
       true,
@@ -1810,7 +1981,7 @@ describe('grounded answer discovery surface', () => {
     if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
   });
 
-  it.each(['не доказанные', 'не установленные'])(
+  it.each(['не доказанные', 'не установленные', 'гипотетические'])(
     'still rejects a semantically unsupported hypothesis after the grammar floor: %s',
     async (uncertainty) => {
       write(
@@ -3141,6 +3312,42 @@ function temporalMarker(
   };
 }
 
+function sourceFrameReading() {
+  return [
+    {
+      evidence_id: 'E1',
+      selected_meaning: 'Private invented reading of the open return-delivery question.',
+      clarification_or_ambiguity: null,
+    },
+  ];
+}
+
+function sourceFrameAlignment(objectQuote: string, qualificationQuote: string) {
+  return [
+    {
+      evidence_id: 'E1',
+      actor: {
+        source_quote: null,
+        answer_quote: null,
+        relation: 'not_selected',
+        detail: 'This question names no action actor.',
+      },
+      object_and_mechanism: {
+        source_quote: 'покрывает ли гарантия обратную доставку',
+        answer_quote: objectQuote,
+        relation: 'preserved',
+        detail: 'The warranty coverage question concerns return delivery.',
+      },
+      qualification: {
+        source_quote: 'Ответ неизвестен',
+        answer_quote: qualificationQuote,
+        relation: 'preserved',
+        detail: 'The answer remains unknown.',
+      },
+    },
+  ];
+}
+
 async function seedSourceFrame(): Promise<string> {
   write(
     'products/zephyr-qx-100.md',
@@ -3185,6 +3392,7 @@ async function useAnswerModel(script: {
   verification: unknown;
   reportUsage?: boolean;
   knowledgeLanguage?: 'en';
+  transformResponse?: (content: string, verifying: boolean) => string;
 }): Promise<void> {
   await memory.close();
   modelServer = http.createServer((request, response) => {
@@ -3207,7 +3415,14 @@ async function useAnswerModel(script: {
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(
         JSON.stringify({
-          choices: [{ message: { content: JSON.stringify(content) } }],
+          choices: [
+            {
+              message: {
+                content:
+                  script.transformResponse?.(JSON.stringify(content), verifying) ?? JSON.stringify(content),
+              },
+            },
+          ],
           ...(script.reportUsage === false
             ? {}
             : {

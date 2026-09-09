@@ -113,7 +113,7 @@
   //   "answer": {
   //     "provider": "openai",
   //     "id": "gpt-5.6-luna",
-  //     "max_output_tokens": 1024,
+  //     "max_output_tokens": 2400,
   //     "reasoning_effort": "low"
   //   },
   //   "vision": {

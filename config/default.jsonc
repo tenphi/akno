@@ -215,11 +215,15 @@
     // Direct grounded synthesis. If this block is omitted from an overlay,
     // Akno inherits the derive model so an existing single-endpoint setup
     // does not need another model declaration. A separate role lets interactive
-    // answering keep a smaller output ceiling and timeout.
+    // answering keep a separate output ceiling and shorter timeout.
     "answer": {
       "provider": "local",
       "id": null,
-      "max_output_tokens": 1024,
+      // Original-source alignment shares the existing verification response. A
+      // larger ceiling permits fuller audits, at possible extra latency/cost;
+      // ordinary generation still asks for 1024. Explicit lower limits can
+      // withhold an answer if its complete structured audit does not fit.
+      "max_output_tokens": 2400,
       "reasoning_effort": null,
       "concurrency": 2,
       "timeout_ms": 60000

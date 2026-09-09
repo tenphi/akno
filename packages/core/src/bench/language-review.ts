@@ -625,6 +625,7 @@ function rate(numerator: number, denominator: number) {
 function contract(report: Report) {
   return {
     models: report.models,
+    ...(report.modelOutputTokenLimits ? { modelOutputTokenLimits: report.modelOutputTokenLimits } : {}),
     proseProjectionVersion: report.proseProjectionVersion,
     memoryViewVersion: report.memoryViewVersion,
     answerPromptVersion: report.answerPromptVersion,

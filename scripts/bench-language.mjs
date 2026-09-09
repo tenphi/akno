@@ -12,6 +12,7 @@ const { values } = parseArgs({
     corpus: { type: 'string', default: 'v2' },
     runs: { type: 'string', default: '1' },
     case: { type: 'string', multiple: true },
+    'answer-output-tokens': { type: 'string' },
   },
 });
 if (
@@ -39,14 +40,24 @@ if (
     'v19',
     'v20',
   ].includes(values.corpus) ||
-  !/^[1-5]$/.test(values.runs)
+  !/^[1-5]$/.test(values.runs) ||
+  (values['answer-output-tokens'] !== undefined &&
+    (!/^[1-9][0-9]*$/.test(values['answer-output-tokens']) || Number(values['answer-output-tokens']) > 8192))
 ) {
   console.error(
-    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2|v3|v4|v5|v6|v7|v8|v9|v10|v11|v12|v13|v14|v15|v16|v17|v18|v19|v20] [--runs 1..5] [--case ID] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
+    'Usage: pnpm bench:language --live --split development|held-out [--corpus v1|v2|v3|v4|v5|v6|v7|v8|v9|v10|v11|v12|v13|v14|v15|v16|v17|v18|v19|v20] [--runs 1..5] [--case ID] [--answer-output-tokens 1..8192] [--output bench-results/language.json]\nThis opt-in run sends only the frozen invented corpus to your configured model providers.',
   );
   process.exitCode = 2;
 } else {
-  const report = await runLanguageBench(loadConfig(), {
+  // An explicit isolated trial setting must not rewrite the user's service configuration.
+  const config = loadConfig(
+    values['answer-output-tokens'] === undefined
+      ? {}
+      : {
+          overrides: { models: { answer: { max_output_tokens: Number(values['answer-output-tokens']) } } },
+        },
+  );
+  const report = await runLanguageBench(config, {
     split: values.split,
     corpus: values.corpus,
     runs: Number(values.runs),
