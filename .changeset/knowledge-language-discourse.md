@@ -121,3 +121,10 @@ quotation masking. Keep unknown-clock and complete semantic checks mandatory. Ex
 epistemic action roles and can suggest a source-established person's page for a passive personal denial
 without assigning an unspecified device or action agent. Ownership remains mandatory. Answer generation
 keeps each record's selected meaning local and cites every record whose proposition it uses.
+
+Recognize a clause-bound Russian nominal assistant attribution with quoted and negated examples excluded.
+Generate coverage relations with the covered service in its proper grammatical role and preserve neutral
+named-source attribution in focused fiction answers. Complete-record support verification receives the
+fixed retained unit and original frame without the user's query; generation and ordinary verification
+retain query context. Per-record comparison separates each citation's contribution while keeping every
+material restriction, source-selection check and negative semantic verdict mandatory.

@@ -161,7 +161,7 @@ describe('grounded answer discovery surface', () => {
     'forged-copy',
     'empty',
   ])('renders one bound record through the existing gates: %s', async (mode) => {
-    await seedSourceFrame();
+    const frame = await seedSourceFrame();
     const copied =
       '**Open question:** The open silverpine question is whether the warranty covers return delivery; its answer remains unknown.';
     const translated =
@@ -171,6 +171,7 @@ describe('grounded answer discovery surface', () => {
       generation: (request: Record<string, unknown>) => {
         const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
         expect(payload.complete_record_rendering).toEqual({ evidence_id: 'E1', text: copied });
+        expect(payload.question).toBe('Which open silverpine question remains?');
         type WireSchema = {
           properties: {
             blocks: { items: { anyOf: { required: string[]; additionalProperties: boolean }[] } };
@@ -219,8 +220,14 @@ describe('grounded answer discovery surface', () => {
       languageCheck: mode !== 'language-negative',
       verification: (request: Record<string, unknown>) => {
         const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        expect(payload).not.toHaveProperty('question');
+        expect(payload.memory_view).toBe('questions');
         const block = payload.blocks[0];
         expect(block.rendering_scope).toBe('complete_retained_record');
+        expect(block.cited_evidence[0].excerpt).toContain(copied);
+        expect(
+          block.cited_evidence[0].retention_source_frame.map((a: { text: string }) => a.text).join(''),
+        ).toBe(frame);
         const body = block.answer_segments.map((s: { text: string }) => s.text).join('');
         const alignment = sourceFrameAlignment(
           mode === 'translate'
@@ -354,7 +361,9 @@ describe('grounded answer discovery surface', () => {
       },
       verification: (request: Record<string, unknown>) => {
         const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+        expect(payload.question).toBe('Has silverpine collection been booked?');
         const block = payload.blocks[0];
+        expect(block).not.toHaveProperty('rendering_scope');
         expect(block.required_records[0]).toMatchObject({ kind: 'claim', polarity: 'negated' });
         expect(
           block.cited_evidence[0].retention_source_frame.map((a: { text: string }) => a.text).join(''),
@@ -2137,6 +2146,34 @@ describe('grounded answer discovery surface', () => {
     ['По предварительному сообщению ассистента, проверка silverpine может требоваться.', true],
     ['По неподтверждённому сообщению ассистента, проверка silverpine может требоваться.', true],
     ['По непроверенному сообщению ассистента: проверка silverpine может требоваться.', true],
+    ['По сообщению ассистента, проверка silverpine может требоваться.', true],
+    ['По сообщению ассистента: проверка silverpine может требоваться.', true],
+    ['**По сообщению ассистента · Предварительно:** Проверка silverpine может требоваться.', true],
+    ['Не по сообщению ассистента, проверка silverpine может требоваться.', false],
+    ['Не\nпо сообщению ассистента, проверка silverpine может требоваться.', false],
+    ['Вовсе не **по сообщению ассистента**, проверка silverpine может требоваться.', false],
+    ['Неверно, что по сообщению ассистента, проверка silverpine может требоваться.', false],
+    ['Пример: **по сообщению ассистента:** проверка silverpine может требоваться.', false],
+    ['«По сообщению ассистента, проверка silverpine может требоваться».', false],
+    ['По «не» сообщению ассистента, проверка silverpine может требоваться.', false],
+    ['По сообщению устройства об ассистенте, проверка silverpine может требоваться.', false],
+    ['По сообщению Bo Winters, проверка silverpine может требоваться. Ассистент стоял рядом.', false],
+    ['По сообщению ассистента. Проверка silverpine может требоваться.', false],
+    ['По сообщению ассистента:', false],
+    ...[
+      ['«', '»'],
+      ['“', '”'],
+      ['‘', '’'],
+      ['"', '"'],
+      ["'", "'"],
+      ['`', '`'],
+    ].map(
+      ([opening, closing]) =>
+        [
+          `${opening}Пример. По сообщению ассистента, проверка silverpine может требоваться.${closing}`,
+          false,
+        ] as const,
+    ),
     [
       'По предварительному сообщению ассистента, проверка silverpine может требоваться. Ассистент не изучал условия и не подтвердил сообщение.',
       true,
@@ -2562,6 +2599,8 @@ describe('grounded answer discovery surface', () => {
   });
 
   it.each([
+    ['**По сообщению ассистента · Предварительно:** Проверка silverpine может требоваться.', true, true],
+    ['**По сообщению ассистента · Предварительно:** Проверка silverpine может требоваться.', false, false],
     [
       '**Сообщено ассистентом · Предварительно:** Неподтверждённое требование проверки silverpine.',
       true,

@@ -60,8 +60,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v56';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v37';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v57';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v38';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -214,6 +214,10 @@ Keep both competing hypotheses and their common lack of evidence when selecting 
 calling them unconfirmed loses explicit absence of evidence. Keep a hypothetical premise and its stated
 conditional consequence hypothetical. A fictional promise keeps promisor, fictional recipient, benefit
 and material limits inside fiction; an actual proposal to discuss it does not establish a real agreement.
+Keep the named outer source even in a focused fictional-promise answer. Neutral attribution such as
+"According to SOURCE, in the fictional example ..." preserves provenance without inventing who
+created the example or proposed discussing it. Name the fictional promisor and recipient separately.
+A question naming a proposal cannot authorize adding that action to a promise-only citation.
 
 Translate ordinary vocabulary and generic roles into output_language, without parenthetical source-language
 glosses. Names, product identifiers and protected values remain exact. Resolve words by their source
@@ -222,6 +226,10 @@ only the component/property actually stated; do not supply a plausible property,
 insertion/engagement is a specific mechanism, not generic incorrect installation. Keep grammatical roles:
 transport for component inspection does not establish transporting that component. Preserve what is covered
 and what provides coverage; in Russian prefer "гарантия покрывает ремонт" when those are the source roles.
+In a passive coverage clause the covered service remains the subject: "покрывается ли гарантией ремонт"
+asks whether repair is covered, while "покрывается ли ремонтом двигатель" makes repair the covering
+instrument. Keep the component as the object of repair, not the subject covered by repair. Use active
+wording when it keeps those source roles clearer, and preserve the record's uncertainty or negation.
 A damaged component, damage to it, and its repair are distinct possible coverage objects.
 
 Preserve identity, negation, dates, quantities, units, scope and current/superseded status. For an undated
@@ -326,8 +334,10 @@ verification nor a statement by the speaker about their evidence. It requires no
 A faithful description of a user's unconfirmed hypotheses preserves self_attested without mentioning it.
 Reject invented "self-attestation", "based on their own assertion", and equivalent translations unless the
 readable evidence itself says that; do not require those phrases or reject an answer for omitting them.
-Use the supplied question and memory_view only to interpret what the answer addresses, including yes/no
-responses and requests to describe competing hypotheses. The question is not evidence for its premises
+For complete_retained_record rendering, the complete retained record fixes the selected unit. No question
+is supplied: judge the whole answer against its retained excerpt, original frame and qualification.
+For ordinary composition, use the supplied question and memory_view only to interpret what the answer
+addresses, including yes/no responses and requests to describe competing hypotheses. The question is not evidence for its premises
 and cannot supply missing facts. A faithful list of incompatible hypotheses answers a discussion question
 without claiming either hypothesis is true.
 The retrieved subset does not establish what a complete original source omitted. Reject claims that the
@@ -803,7 +813,9 @@ async function verifyDraftBlock(
       {
         role: 'user',
         content: JSON.stringify({
-          question,
+          // The complete retained unit is selected before verification. Query wording must not
+          // supply a competing referent or determine which of that record's clauses is audited.
+          ...(completeRecord ? {} : { question }),
           memory_view: memoryView,
           blocks: blocks.map((block, index) => ({
             block_id: blockIds[index],
@@ -1501,6 +1513,23 @@ function attributedReportsSupported(answerText: string, sources: AnswerContextIt
 /** The source must occupy a reporting role, not merely occur near somebody else's report. */
 function hasBoundReporter(text: string, label: string, genericRole = false): boolean {
   const source = `(?<![\\p{L}\\p{N}])${label}(?![\\p{L}\\p{N}])`;
+  // Nominal source labels need no uncertainty adjective; commitment is checked independently.
+  // Keep this new form clause-bound, and leave separators where quoted negation/examples occurred.
+  const nominalProse = text
+    .normalize('NFKC')
+    .replace(
+      /«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`\n]*`|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+      '⟦quotation⟧',
+    )
+    .replace(/\*\*/gu, '');
+  if (
+    genericRole &&
+    new RegExp(`^(?:${label})$`, 'iu').test('ассистента') &&
+    /(?:^|[.!?;])\s*по\s+сообщению\s+ассистента(?!\p{L})\s*(?:·\s*(?:предварительно|предположительно))?\s*[,:]\s*(?=[\p{L}\p{N}])/iu.test(
+      nominalProse,
+    )
+  )
+    return true;
   // A visible passive report label governs the following record. Negated prose, quotations and
   // an assistant performing some other action cannot supply that reporting role.
   const unquoted = text

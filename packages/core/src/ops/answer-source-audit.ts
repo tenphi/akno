@@ -138,6 +138,14 @@ Select source_anchor from that evidence's original frame and answer_anchor from 
 Never invent an ID or substitute a retained paraphrase for an original. An anchor only locates the
 selected aspect. Judge its meaning against the COMPLETE frame and block: content elsewhere in this same
 block can preserve a role or modifier missing from a short anchor. Other blocks cannot supply it.
+For a block citing several records, compare each record's selected contribution separately. When the
+source explicitly identifies the same example or event, a second cited record can describe its content
+without changing or generalizing the first record's object. Do not require each record to supply every
+detail of that shared clause. Generalized requires an actual lost restriction from this record's selected
+meaning, not merely additional detail supported by another citation. Shared topic alone cannot establish
+that the records describe the same thing; all contributed content must still pass excerpt selection.
+Every material restriction belonging to this record's contribution remains required. Sibling evidence
+cannot hide its loss or turn a generalized, changed or omitted contribution into preserved or not_selected.
 
 Use preserved for equivalent meaning, including natural technical paraphrase. Use generalized for a
 material restriction lost from the complete block, changed for a different actor/object/scope, or omitted
