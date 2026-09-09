@@ -62,8 +62,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v66';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v46';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v67';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v47';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,

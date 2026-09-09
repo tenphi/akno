@@ -36,6 +36,7 @@ import {
   normalizeClockRepairTransaction,
   clockRepairLanguageProse,
   sourceClockRepairWitness,
+  hasReadableProcessingClockExclusion,
   CLOCK_TEXT_REPAIR_CONTRACT,
   type ClockTextRepair,
   type SourceClockRepairWitness,
@@ -59,8 +60,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v54';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v38';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v55';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v39';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -756,6 +757,15 @@ export async function runRetain(
                   ).size !== checked.data.repairs.length
                 )
                   throw new Error('retain repair returned an invalid position transaction');
+                for (const entry of checked.data.repairs) {
+                  const delta = entry as ClockTextRepair & { candidate_index: number };
+                  const witness = cleanedBatch.textOnlyClockRepairs.get(delta.candidate_index)?.witness;
+                  if (
+                    witness?.with_exclusion &&
+                    !hasReadableProcessingClockExclusion(clockRepairText(delta), witness)
+                  )
+                    throw new Error('retain clock repair omitted its source-defined reference exclusion');
+                }
                 return [...reportRepairLanguageProse(normalized), ...clockRepairLanguageProse(normalized)];
               },
             }
@@ -1648,23 +1658,34 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
+    let clockWitness: SourceClockRepairWitness | null = null;
     let unreadableClock: {
       missing_relative_anchor: boolean;
       missing_unknown_reference: boolean;
+      missing_excluded_reference: boolean;
       reason: string;
     } | null = null;
     if (RELATIVE_TIME.test(sourceEvidence(spans.frame)) && explicitlyUnknownTime(time)) {
       const relative = hasSourceRelativeAnchor(text);
       const unknown = hasUnknownReferenceClock(text);
-      if (!relative || !unknown) {
+      // An exact owned source definition may require an explicit readable contrast even when
+      // the source-relative paraphrase is already meaningful. Answers must select it from prose.
+      clockWitness = options.generated ? sourceClockRepairWitness(spans.frame) : null;
+      const missingExclusion = Boolean(
+        clockWitness?.with_exclusion && !hasReadableProcessingClockExclusion(text, clockWitness),
+      );
+      if (!relative || !unknown || missingExclusion) {
         unreadableClock = {
           missing_relative_anchor: !relative,
           missing_unknown_reference: !unknown,
-          reason: relative
-            ? 'the source-relative anchor is recognized in readable prose, but the unknown reference date is not; preserve the source date uncertainty without changing the supported clock relation'
-            : unknown
-              ? 'the unknown reference date is recognized in readable prose, but the source-relative anchor is not; clarify the relation to the original source entry rather than processing without changing the supported uncertainty'
-              : 'neither the source-relative anchor nor the unknown reference date is recognized in readable prose; preserve both source-supported clock dimensions without inventing dates or causal relations',
+          missing_excluded_reference: missingExclusion,
+          reason: missingExclusion
+            ? 'the original source explicitly excludes processing as the reference for its relative period; preserve that same named clock contrast in a closed readable clause, along with the source-relative anchor and unknown source date'
+            : relative
+              ? 'the source-relative anchor is recognized in readable prose, but the unknown reference date is not; preserve the source date uncertainty without changing the supported clock relation'
+              : unknown
+                ? 'the unknown reference date is recognized in readable prose, but the source-relative anchor is not; clarify the relation to the original source entry rather than processing without changing the supported uncertainty'
+                : 'neither the source-relative anchor nor the unknown reference date is recognized in readable prose; preserve both source-supported clock dimensions without inventing dates or causal relations',
         };
       }
     }
@@ -1771,8 +1792,8 @@ function cleanCandidateBatchWithPositions(
         Array.isArray(record.relations) &&
         record.relations.length === 0
       ) {
-        const witness = sourceClockRepairWitness(spans.frame);
-        if (witness) textOnlyClockRepairs.set(index, { original: structuredClone(record), witness });
+        if (clockWitness)
+          textOnlyClockRepairs.set(index, { original: structuredClone(record), witness: clockWitness });
       }
       continue;
     }

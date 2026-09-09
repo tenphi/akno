@@ -7,7 +7,8 @@ export function hasNominalCounterfactual(text: string): boolean {
     /«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`]*`|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
     '⟦quotation⟧',
   );
-  if (hasCompleteRussianCounterfactualUnit(unquoted)) return true;
+  if (hasCompleteRussianCounterfactualUnit(unquoted) || hasNamedAcquisitionCounterfactual(unquoted))
+    return true;
   const clauses = unquoted.split(
     /[.!?;:\n]|,[ \t]*(?:а|но|и|однако|хотя|пока|but|and|although|however)(?![\p{L}])/iu,
   );
@@ -67,5 +68,35 @@ function hasCompleteRussianCounterfactualUnit(unquoted: string): boolean {
     return [...unquoted.matchAll(pattern)].some((match) =>
       hasUnretractedClauseEnd(unquoted, match.index + match[0].length),
     );
+  });
+}
+
+/** These acquisition forms need their own named actual-world closure. A quoted label, an
+ * unrelated person's nonpurchase or an arbitrary colon cannot complete the conditional unit. */
+function hasNamedAcquisitionCounterfactual(unquoted: string): boolean {
+  const name = String.raw`(?!(?:Если|Когда|Якобы|Не|Неверно|Пример|Допустим|If|Unless|Example|Not)(?![\p{L}]))\p{Lu}[\p{L}'’-]*(?:[ \t]+\p{Lu}[\p{L}'’-]*){1,3}`;
+  const attribution = String.raw`(?:[Пп]о[ \t]+словам[ \t]+(?<source_name>${name}),[ \t]+)?`;
+  const word = String.raw`(?!(?:она|он|они|я|мы|вы|ты|бы|был[аои]?|есть|будет|при|если|но|а|и|не|что|чтобы|якобы|сказал[аои]?|сообщил[аои]?|подтвердил[аои]?|покрыл[аои]?|приобр[её]л[аи]?)(?![\p{L}]))[\p{L}\p{N}][\p{L}\p{N}'’-]*`;
+  const noun = String.raw`${word}(?:[ \t]+${word}){0,13}`;
+  const consequence = String.raw`${word}(?:[ \t]+${word}){0,15}`;
+  const introduction = String.raw`[Нн]ереализованный[ \t]+вариант[ \t]+(?:состоял|заключался)[ \t]+в[ \t]+том,[ \t]+`;
+  const scenarios = [
+    String.raw`${introduction}что[ \t]+приобретение[ \t]+${noun}[ \t]+покрыло[ \t]+бы[ \t]+${consequence}`,
+    String.raw`${introduction}чтобы[ \t]+приобрести[ \t]+${noun}:[ \t]+в[ \t]+таком[ \t]+случае[ \t]+${consequence}[ \t]+был[ \t]+бы[ \t]+покрыт(?:[ \t]+${word}){0,8}`,
+  ];
+  const nonpurchase = String.raw`(?<actor_name>${name})[ \t]+(?:его[ \t]+не[ \t]+приобр[её]л[аи]?|не[ \t]+приобр[её]л[аи]?[ \t]+(?:это[ \t]+продление|его))`;
+  const inactive = String.raw`(?:оно[ \t]+не[ \t]+являлось[ \t]+(?:её|его|их)[ \t]+действующим[ \t]+покрытием|это[ \t]+не[ \t]+было[ \t]+(?:её|его|их)[ \t]+действующим[ \t]+покрытием)`;
+  return scenarios.some((scenario) => {
+    const pattern = new RegExp(
+      String.raw`(?:^|[.!])[ \t]*${attribution}${scenario}\.[ \t]+${nonpurchase},[ \t]+поэтому[ \t]+${inactive}`,
+      'gu',
+    );
+    return [...unquoted.matchAll(pattern)].some((match) => {
+      const source = match.groups!.source_name?.replace(/[ \t]+/gu, ' ');
+      const actor = match.groups!.actor_name!.replace(/[ \t]+/gu, ' ');
+      return (
+        (!source || source === actor) && hasUnretractedClauseEnd(unquoted, match.index + match[0].length)
+      );
+    });
   });
 }

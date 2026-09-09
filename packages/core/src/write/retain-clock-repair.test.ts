@@ -6,8 +6,9 @@ import {
   clockRepairText,
   clockRepairLanguageProse,
   sourceClockRepairWitness,
+  hasReadableProcessingClockExclusion,
 } from './retain-clock-repair.ts';
-import { runRetain } from './retain.ts';
+import { runRetain, cleanCandidateBatch } from './retain.ts';
 import { ModelClient, type ChatOptions, toEndpointSchema, strictModeViolations } from '../models/client.ts';
 import { retentionAudit, frameAuditFields } from '../../test/semantic-audit.ts';
 
@@ -39,7 +40,7 @@ const delta = {
     'Ada Marlow proposes reviewing Zephyr QX-100 repair terms. She has not accepted a plan or organized a meeting; this is her proposal only.',
   source_clock_anchor_and_unknown_date:
     'Next month means the month after the original record, whose date is unknown.',
-  excluded_reference_clocks: 'The clock is not the time of processing.',
+  excluded_reference_clocks: 'Processing time is not the reference for next month.',
   unresolved_calendar_period: 'The calendar month cannot be established.',
 };
 async function run(
@@ -146,9 +147,12 @@ describe('owned source clock repair dimensions', () => {
 });
 
 describe('single pre-semantic clock text transaction', () => {
-  it.each(Object.keys(excludedClockRepairFields))(
-    'rejects punctuation in %s before the repair language transport',
-    async (key) => {
+  it.each([
+    ...Object.keys(excludedClockRepairFields).map((key) => ({ key, value: '.' })),
+    { key: 'excluded_reference_clocks', value: 'Processing is noted.' },
+  ])(
+    'rejects invalid $key=$value before the repair language transport',
+    async ({ key, value: invalidValue }) => {
       const model = new ModelClient({
         role: 'derive',
         id: 'invented-clock-transport',
@@ -180,7 +184,7 @@ describe('single pre-semantic clock text transaction', () => {
         const value = language
           ? { hint_roles: [], prose_result: { status: 'compliant', counterexample: null } }
           : payload.repair_targets
-            ? { repairs: [{ ...delta, [key]: '.' }] }
+            ? { repairs: [{ ...delta, [key]: invalidValue }] }
             : { candidates: [original] };
         return { ok: true, latencyMs: 1, endpointRequests: 1, value: JSON.stringify(value) };
       });
@@ -503,4 +507,110 @@ describe('combined report and clock validation issues', () => {
     expect(result.candidates).toEqual([]);
     expect(result.held.some((held) => held.reason_code === 'discourse_uncertain')).toBe(true);
   });
+});
+
+describe('same-clock readable processing exclusion', () => {
+  const witness = sourceClockRepairWitness([{ item_id: 'turn-2222', quote: definition }])!;
+  const readable = 'Processing time is not the reference for next month.';
+  it.each([
+    readable,
+    'Next month is not counted from processing time.',
+    'Next month means the month after the original record, not after processing.',
+    'Next month is counted from the original record, not processing time.',
+    'Следующий месяц не отсчитывается от времени обработки.',
+    'Время обработки не задаёт отсчёт для следующего месяца.',
+    'Следующий месяц отсчитывается от первоначальной записи, а не от времени обработки.',
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) =>
+      readable.replace('next month', `${open}next month${close}`),
+    ),
+  ])('binds a closed exclusion to the source-defined period: %s', (text) => {
+    expect(witness.clock).toEqual({ deictic: 'next', period: 'month', direction: 'after' });
+    expect(hasReadableProcessingClockExclusion(text, witness)).toBe(true);
+  });
+  it.each([
+    'Processing is noted.',
+    'Ada Marlow processed the record after the review.',
+    'Next month is not after processing.',
+    'The clock is not the time of processing.',
+    readable.replace('next month', 'last year'),
+    'Next month means the month before the original record, not before processing.',
+    readable.replace('is not', 'is'),
+    readable.replace('reference', 'result'),
+    'If ' + readable,
+    'Example: ' + readable,
+    'It is not false that ' + readable,
+    'Not\n' + readable,
+    readable.replace('.', '?'),
+    readable + ' But this is false.',
+    readable + ' However processing defines the clock.',
+    'Следующий месяц не отсчитывается от времени обработки. Но это неверно.',
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) => `${open}${readable}${close}`),
+  ])('rejects chronology, unrelated clocks and borrowed negations: %s', (text) => {
+    expect(hasReadableProcessingClockExclusion(text, witness)).toBe(false);
+  });
+  it.each(['day', 'week', 'month', 'year'])('uses the source-defined period and direction: %s', (period) => {
+    const quote = english.replaceAll('month', period).replace('Next', 'Last').replaceAll('after', 'before');
+    const prior = sourceClockRepairWitness([{ item_id: 'turn-2222', quote }])!;
+    expect(prior.clock).toEqual({ deictic: 'last', period, direction: 'before' });
+    expect(
+      hasReadableProcessingClockExclusion(`Processing time is not the reference for last ${period}.`, prior),
+    ).toBe(true);
+    expect(
+      hasReadableProcessingClockExclusion(`Processing time is not the reference for next ${period}.`, prior),
+    ).toBe(false);
+  });
+  it('does not activate the exclusion floor from a source without that dimension', () => {
+    const plain = sourceClockRepairWitness([{ quote: english.replace(', not after processing', '') }])!;
+    expect(hasReadableProcessingClockExclusion(readable, plain)).toBe(false);
+  });
+  it.each([false, true])(
+    'repairs only the missing explicit contrast before semantics: %s',
+    async (negative) => {
+      const { excluded_reference_clocks: _, ...without } = delta;
+      const record = { ...original, text: clockRepairText(without) };
+      const { result, requests } = await run({ repairs: [delta] }, { record, negative });
+      expect(requests).toHaveLength(3);
+      expect(requests[1]!.payload.repair_targets[0].repair_contract).toMatchObject({
+        mode: 'clock_text_only_with_exclusion',
+        clock_witness: { clock: witness.clock },
+      });
+      expect(requests[2]!.payload.repair_obligations[0].original.text).toBe(record.text);
+      expect(result.candidates).toHaveLength(negative ? 0 : 1);
+      if (negative) expect(result.held[0]!.hold_stage).toBe('verification');
+    },
+  );
+  it('does not repair a generated record whose explicit contrast is already readable', async () => {
+    const { result, requests } = await run(
+      { repairs: [] },
+      { record: { ...original, text: clockRepairText(delta) } },
+    );
+    expect(requests).toHaveLength(2);
+    expect(requests[1]!.payload).not.toHaveProperty('repair_targets');
+    expect(result.candidates).toHaveLength(1);
+  });
+  it.each([
+    'Processing is noted.',
+    'Processing time is not the reference for last year.',
+    'Next month is not after processing.',
+  ])('does not verify a repair with an irrelevant exclusion: %s', async (text) => {
+    const { result, requests } = await run({ repairs: [{ ...delta, excluded_reference_clocks: text }] });
+    expect(result.candidates).toEqual([]);
+    expect(requests).toHaveLength(2);
+    expect(result.modelUsage.verification).toBeNull();
+  });
+});
+
+it('keeps the source-clock contrast floor out of caller-provided cleaning', () => {
+  const { excluded_reference_clocks: _, ...without } = delta;
+  const record = { ...original, text: clockRepairText(without) };
+  const sourceItems = [
+    { item_id: 'turn-1111', role: 'user' as const, speaker: 'Ada Marlow', text: proposal },
+    { item_id: 'turn-2222', role: 'user' as const, speaker: 'Ada Marlow', text: definition },
+  ];
+  const provided = cleanCandidateBatch([record], { sourceItems });
+  expect(provided.held).toEqual([]);
+  expect(provided.candidates[0]!.text).toBe(record.text);
+  const generated = cleanCandidateBatch([record], { sourceItems, generated: true });
+  expect(generated.candidates).toEqual([]);
+  expect(generated.held[0]!.reason_code).toBe('time_unresolved');
 });

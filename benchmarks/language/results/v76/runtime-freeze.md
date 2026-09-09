@@ -1,0 +1,7 @@
+# V76 bounded counterfactual and clock readability correction
+
+V75 evidence was committed in 2bc8a18 before runtime edits. This revision recognizes two complete named Russian acquisition counterfactual forms and requires generated retained prose to preserve an explicit processing-reference exclusion when one complete owned source clock definition contains it. Source truth still requires the existing mandatory verifier. The clock readability floor uses the source-derived same period and the existing single presemantic structural repair. Provided candidates, caps, model choice and semantic pass counts remain unchanged.
+
+Two independent Sol code review rounds are clean. The corrected full suite passes 3,790 tests in 151 files; typecheck, lint, formatting, unused-code, repository safety, smoke, installed-package and documentation checks pass. The initial version-literal test failure and final targeted test-only clarification remain preserved locally and documented in the gate receipt.
+
+After freeze, build/restart/socket deployment, exact CI, 21 compiled control groups and ten declared actual-provider protocol controls must pass before independently reviewed exposed64+32 diagnostics. The natural maximum-verifier fixture is declared from the outset; the maximum clock-repair fixture retains its60-unit field length while naming the source-defined period. No V76 provider or semantic run has started. Fresh V21 held-out inputs remain unexecuted. The repeated reliability gate remains unmet.

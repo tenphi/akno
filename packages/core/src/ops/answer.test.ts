@@ -484,7 +484,16 @@ describe('grounded answer discovery surface', () => {
             'local-clock-negative',
             'language-negative',
           ] as const)
-        : (['preserved', 'semantic-negative', 'translated-name'] as const)
+        : ([
+            'preserved',
+            'semantic-negative',
+            'translated-name',
+            'nominal-direct',
+            'nominal-infinitive',
+            'nominal-direct-negative',
+            'nominal-infinitive-negative',
+            'nominal-independent-negative',
+          ] as const)
       ).map((mode) => [kind, mode] as const),
     ),
   )(
@@ -498,6 +507,14 @@ describe('grounded answer discovery surface', () => {
         kind === 'clock'
           ? 'Ada Marlow предложила рассмотреть смету silverpine в следующем месяце. Следующий месяц отсчитывается от времени первоначальной записи без даты. Отсчёт ведётся не от времени обработки. Календарный месяц неизвестен. Ada Marlow не приняла план и не организовала встречу; это только предложение.'
           : 'Если бы Ada Marlow купила расширение silverpine для Zephyr QX-100, ремонт в седьмой год был бы покрыт. Ada Marlow не купила расширение. Это не её действующее покрытие.';
+      if (mode.startsWith('nominal-')) {
+        text = mode.includes('infinitive')
+          ? 'По словам Ada Marlow, нереализованный вариант состоял в том, чтобы приобрести продление silverpine для Zephyr QX-100: в таком случае ремонт был бы покрыт в седьмом году. Ada Marlow не приобрела это продление, поэтому оно не являлось её действующим покрытием.'
+          : 'По словам Ada Marlow, нереализованный вариант заключался в том, что приобретение продления silverpine для Zephyr QX-100 покрыло бы ремонт в седьмом году. Ada Marlow его не приобрела, поэтому это не было её действующим покрытием.';
+        if (['nominal-direct-negative', 'nominal-infinitive-negative'].includes(mode))
+          text = text.replace('седьмом', 'восьмом');
+        if (mode === 'nominal-independent-negative') text += ' Продление покрывает ремонт клапана.';
+      }
       if (mode === 'semantic-negative')
         text = text.replace(kind === 'clock' ? 'смету' : 'седьмой', kind === 'clock' ? 'договор' : 'восьмой');
       if (mode === 'translated-name') text = text.replaceAll('Ada Marlow', 'Ада Марлоу');
@@ -554,6 +571,8 @@ describe('grounded answer discovery surface', () => {
       }
       const semanticSupport = [
         'preserved',
+        'nominal-direct',
+        'nominal-infinitive',
         'translated-name',
         'local-clock-negative',
         'language-negative',
@@ -649,7 +668,7 @@ describe('grounded answer discovery surface', () => {
         graph: false,
       });
       expect(result.reason_code, JSON.stringify(result)).toBe(
-        mode === 'preserved'
+        ['preserved', 'nominal-direct', 'nominal-infinitive'].includes(mode)
           ? 'answered'
           : mode === 'language-negative'
             ? 'generation_failed'

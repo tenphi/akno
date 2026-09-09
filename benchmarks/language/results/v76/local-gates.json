@@ -1,0 +1,22 @@
+{
+  "tests": 3790,
+  "testFiles": 151,
+  "logs": {
+    "typecheck": "tmp/v76-typecheck-initial.log",
+    "suite": "tmp/v76-full-suite-version-corrected.log",
+    "lint": "tmp/v76-lint-initial.log",
+    "format": "tmp/v76-format-initial.log",
+    "knip": "tmp/v76-knip-initial.log",
+    "repositorySafety": "tmp/v76-repository-initial.log",
+    "smoke": "tmp/v76-smoke-initial.log",
+    "installedPackageSmoke": "tmp/v76-packages-initial.log",
+    "documentationDoctor": "tmp/v76-docs-doctor-initial.log",
+    "documentationBuild": "tmp/v76-docs-build-initial.log",
+    "independentClaimTargeted": "tmp/v76-independent-claim-test.log"
+  },
+  "allExitCodes": 0,
+  "preservedFailure": "tmp/v76-full-suite-initial.log",
+  "correction": "Updated existing benchmark version literals to generation67/verifier47, then reran complete suite. Later test-only isolation preserved the year in the independent unsupported-claim negative and passed554/554 answer tests; reviewer independently passed943/943 focused tests.",
+  "providerControlsRun": 0,
+  "corpusProbesRun": 0
+}

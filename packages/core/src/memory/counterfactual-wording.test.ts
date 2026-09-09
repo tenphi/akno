@@ -129,3 +129,63 @@ describe('complete Russian nominal counterfactual units', () => {
     expect(hasNominalCounterfactual(text)).toBe(false);
   });
 });
+
+describe('named acquisition counterfactual closure', () => {
+  const direct =
+    'По словам Ada Marlow, нереализованный вариант заключался в том, что приобретение продления silverpine покрыло бы ремонт двигателя в седьмом году. Ada Marlow его не приобрела, поэтому это не было её действующим покрытием.';
+  const infinitive =
+    'По словам Ada Marlow, нереализованный вариант состоял в том, чтобы приобрести продление silverpine: в таком случае ремонт двигателя был бы покрыт в седьмом году. Ada Marlow не приобрела это продление, поэтому оно не являлось её действующим покрытием.';
+  const units = [direct, infinitive];
+  it.each(
+    units.flatMap((text) => [
+      text,
+      text.replace('заключался', 'состоял').replace('состоял в том, чтобы', 'заключался в том, чтобы'),
+      text.replace('По словам Ada Marlow, ', ''),
+      text.replaceAll('Ada Marlow', 'Bo Winters'),
+      text + ' Обсуждение продолжилось.',
+    ]),
+  )('recognizes a complete named unit: %s', (text) => {
+    expect(hasNominalCounterfactual(text)).toBe(true);
+  });
+  it.each(
+    units.flatMap((text) => [
+      text.replace('нереализованный', 'реализованный'),
+      text.replace(' бы ', ' '),
+      text.replace('. Ada Marlow', '. Bo Winters'),
+      text.replace('. Ada Marlow', '. Она'),
+      text.replace('не приобрела', 'приобрела'),
+      text.replace('не приобрела', 'не сообщила о покупке'),
+      text.split('. Ada')[0] + '.',
+      text.split(', поэтому')[0] + '.',
+      text.replace('действующим покрытием', 'покрытием вообще'),
+      text.replace('не было', 'было').replace('не являлось', 'являлось'),
+      text
+        .replace('приобретение', 'сообщил приобретение')
+        .replace('продление silverpine:', 'продление silverpine, но Bo Winters сообщил:'),
+      text
+        .replace('продления silverpine', 'продления ' + 'длинного '.repeat(16) + 'silverpine')
+        .replace('продление silverpine', 'продление ' + 'длинного '.repeat(16) + 'silverpine'),
+      text.replace('. Ada Marlow', '; Ada Marlow'),
+      text.replace('. Ada Marlow', '.\nAda Marlow'),
+      'Если ' + text,
+      'Пример: ' + text,
+      'Не\n' + text,
+      'Неверно, что ' + text,
+      ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) => `${open}${text}${close}`),
+      text.slice(0, -1) + ', но это неверно.',
+      text + ' Но это неверно.',
+      text + ' На самом деле покупка произошла.',
+    ]),
+  )('does not borrow a label, actor or retracted closure: %s', (text) => {
+    expect(hasNominalCounterfactual(text)).toBe(false);
+  });
+  it.each([
+    infinitive.replace(': в таком случае', '. В таком случае'),
+    infinitive.replace(': в таком случае', '; в таком случае'),
+    infinitive.replace(': в таком случае', ': другой пример'),
+    infinitive.replace(': в таком случае', ':\nв таком случае'),
+    infinitive.replace('чтобы приобрести', 'что имеется'),
+  ])('requires the literal acquisition-to-consequence bridge: %s', (text) => {
+    expect(hasNominalCounterfactual(text)).toBe(false);
+  });
+});

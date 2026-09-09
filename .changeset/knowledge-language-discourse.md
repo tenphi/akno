@@ -182,3 +182,7 @@ source clocks with bounded text segments that preserve explicit source exclusion
 metadata. Recognize complete nominal Russian counterfactuals with a preposed repair consequence.
 
 Keep multilingual retention witness and clock-segment validation local so strict provider schemas avoid unsupported Unicode regex and lookaround, while preserving atomic punctuation rejection and existing budgets.
+
+Recognize complete named Russian acquisition counterfactuals without admitting a standalone unrealized
+label. Make a source-defined processing-clock exclusion explicit in generated retained prose before
+answer selection, using the same bounded structural repair and mandatory original-source verification.
