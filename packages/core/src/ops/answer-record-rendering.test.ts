@@ -141,4 +141,28 @@ describe('complete single-record rendering', () => {
       }).success,
     ).toBe(true);
   });
+
+  it.each([
+    { output: 'en', knowledge: 'en', copy: true },
+    { output: 'ru', knowledge: 'ru', copy: true },
+    { output: 'ru', knowledge: 'en', copy: false },
+    { output: 'en', knowledge: 'ru', copy: false },
+    { output: 'ru', knowledge: null, copy: true },
+  ] as const)(
+    'restricts copying by declared policy without classifying old bytes: $output/$knowledge',
+    ({ output, knowledge, copy }) => {
+      const record = answerRecordRendering([evidence], frames, output, knowledge)!;
+      expect(record.text).toBe(answerRecordRendering([evidence], frames, output)!.text);
+      const schema = answerRecordBlockSchema(record);
+      expect(schema.safeParse({ rendering_mode: 'copy', evidence_ids: ['E1'] }).success).toBe(copy);
+      expect(
+        schema.safeParse({
+          rendering_mode: 'translate',
+          evidence_ids: ['E1'],
+          text: 'Faithful text still requires language and source verification.',
+        }).success,
+      ).toBe(true);
+      expect(schema.safeParse({ rendering_mode: 'translate', evidence_ids: ['E1'] }).success).toBe(false);
+    },
+  );
 });

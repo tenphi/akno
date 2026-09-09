@@ -5,6 +5,7 @@ import type { OutputLanguage } from '../models/language.ts';
 export interface AnswerRecordRendering {
   evidence_id: string;
   text: string;
+  copy_allowed?: false;
 }
 
 /** A single bound record permits preservation without guessing its current language from old policy. */
@@ -12,6 +13,7 @@ export function answerRecordRendering(
   evidence: readonly AnswerContextItem[],
   frames: ReadonlyMap<string, string>,
   language: OutputLanguage | null,
+  knowledgeLanguage: OutputLanguage | null = null,
 ): AnswerRecordRendering | undefined {
   if (!language || evidence.length !== 1 || frames.size !== 1) return undefined;
   const item = evidence[0]!;
@@ -29,27 +31,37 @@ export function answerRecordRendering(
   // Copying an embedded citation/link would let payload text impersonate server-owned citations.
   // Leave reference-bearing records to the existing composition path, which selects their prose.
   if (/\[|<(?:\/?[A-Za-z]|!)/u.test(text)) return undefined;
-  return { evidence_id: item.evidence_id, text };
+  return {
+    evidence_id: item.evidence_id,
+    text,
+    // Policy does not prove the language of old bytes. This only removes a shortcut; a translation
+    // can preserve already-localized prose and still must pass actual language and source checks.
+    ...(knowledgeLanguage && language !== knowledgeLanguage ? { copy_allowed: false as const } : {}),
+  };
 }
 
 export function answerRecordBlockSchema(record: AnswerRecordRendering) {
   const evidence_ids = z.array(z.enum([record.evidence_id])).length(1);
+  const translation = z.strictObject({
+    rendering_mode: z.enum(['translate']),
+    text: z.string().trim().min(1).max(2_000),
+    evidence_ids,
+  });
+  if (record.copy_allowed === false) return translation;
   // Ordinary anyOf, not a discriminated oneOf, is supported by the existing provider contract.
   return z.union([
     z.strictObject({
       rendering_mode: z.enum(['copy']),
       evidence_ids,
     }),
-    z.strictObject({
-      rendering_mode: z.enum(['translate']),
-      text: z.string().trim().min(1).max(2_000),
-      evidence_ids,
-    }),
+    translation,
   ]);
 }
 
 export const ANSWER_RECORD_RENDERING_CONTRACT = `When complete_record_rendering is supplied, select that
 single retained record only if it answers the question. Return at most one block. Choose rendering_mode
+translate when copy_allowed is false; the policy disables copying without classifying the stored bytes.
+Otherwise choose rendering_mode
 copy when its readable prose already uses output_language; return only that mode and evidence_ids,
 without a text field. The server will supply the exact current readable text. Otherwise
 choose translate and translate the COMPLETE retained text into output_language. Check the language of the COMPLETE current readable text, including visible status and attribution

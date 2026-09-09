@@ -140,3 +140,9 @@ actor, predicate and object of each selected epistemic limit during the existing
 preserving the distinction between personal uncertainty and what a record establishes. Neutral source
 attribution can scope over a record-level statement without inventing personal agency. Negative source
 alignments still require matching semantic failures; no verifier rejection or consistency gate is relaxed.
+
+Expose the existing normalized 400-unit retention text limit to generation and position-bound repair,
+with precise validation reasons that preserve distinct epistemic predicates during compression. Supply
+localized neutral report-source phrasing as generation-only guidance. Disable the complete-record copy
+shortcut when configured knowledge and requested answer languages differ; actual language, attribution,
+source selection and semantic verification still decide whether any generated answer may be published.

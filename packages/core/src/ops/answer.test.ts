@@ -284,6 +284,89 @@ describe('grounded answer discovery surface', () => {
     expect(JSON.stringify(result)).not.toContain('amberfin');
   });
 
+  it.each(['translate', 'copy', 'language-negative', 'semantic-negative'])(
+    'requires translation across declared policy languages with every existing gate: %s',
+    async (mode) => {
+      const frame = await seedSourceFrame();
+      const translated =
+        'Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.';
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        languageCheck: mode !== 'language-negative',
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload.complete_record_rendering.copy_allowed).toBe(false);
+          expect(JSON.stringify(payload.evidence)).not.toContain('report_source_display_phrase');
+          type WireSchema = {
+            properties: {
+              blocks: {
+                items: {
+                  properties: { rendering_mode: { enum: string[] } };
+                  required: string[];
+                  additionalProperties: boolean;
+                };
+              };
+            };
+          };
+          const format = request.response_format as {
+            schema?: WireSchema;
+            json_schema?: { schema: WireSchema };
+          };
+          const blockSchema = (format.schema ?? format.json_schema!.schema).properties.blocks.items;
+          expect(blockSchema.properties.rendering_mode.enum).toEqual(['translate']);
+          expect(blockSchema.required).toContain('text');
+          expect(blockSchema.additionalProperties).toBe(false);
+          return {
+            record_readings: sourceFrameReading(),
+            blocks: [
+              mode === 'copy'
+                ? { rendering_mode: 'copy', evidence_ids: ['E1'] }
+                : {
+                    rendering_mode: 'translate',
+                    evidence_ids: ['E1'],
+                    text: mode === 'language-negative' ? payload.complete_record_rendering.text : translated,
+                  },
+            ],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload).not.toHaveProperty('question');
+          expect(
+            payload.blocks[0].cited_evidence[0].retention_source_frame
+              .map((s: { text: string }) => s.text)
+              .join(''),
+          ).toBe(frame);
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', mode !== 'semantic-negative'),
+                source_alignments: sourceFrameAlignment(
+                  'покрывает ли гарантия обратную доставку',
+                  'Ответ неизвестен',
+                ),
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'Which open silverpine question remains?',
+        answer_language: 'ru',
+        memory_view: 'questions',
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null).toBe(mode === 'translate');
+      expect(
+        modelRequests.filter((r) => JSON.stringify(r.messages).includes('independently verify')),
+      ).toHaveLength(mode === 'translate' || mode === 'semantic-negative' ? 1 : 0);
+      expect(JSON.stringify(result)).not.toContain('copy_allowed');
+    },
+  );
+
   it.each(['copy', 'translate'] as const)(
     'checks visible English labels on Russian record prose: %s',
     async (mode) => {
@@ -2664,12 +2747,13 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
-  it.each(['assistant', 'Assistant Meridian'])(
+  it.each(['assistant', 'Assistant Meridian', 'Ada Marlow'])(
     'projects generic display labels without changing source names or verifier evidence: %s',
     async (speaker) => {
+      const sourceRole = speaker === 'Ada Marlow' ? 'user' : 'assistant';
       write(
         'products/zephyr-qx-100.md',
-        `# Zephyr QX-100\n\n<!-- akno:item mem_display v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=assistant speaker=${encodeURIComponent(speaker)} reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by ${speaker} · Tentative:** ${speaker} reported an unverified silverpine inspection requirement for Zephyr QX-100.\n`,
+        `# Zephyr QX-100\n\n<!-- akno:item mem_display v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=${sourceRole} speaker=${encodeURIComponent(speaker)} reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by ${speaker} · Tentative:** ${speaker} reported an unverified silverpine inspection requirement for Zephyr QX-100.\n`,
       );
       await memory.index({ verify: true });
       const label = speaker === 'assistant' ? 'ассистента' : speaker;
@@ -2704,7 +2788,8 @@ describe('grounded answer discovery surface', () => {
       const generation = userInput(modelRequests[0]!);
       const excerpt = generation.evidence[0].excerpt as string;
       const qualification = JSON.parse(excerpt.match(/Memory qualification: (.+)/u)![1]!);
-      expect(qualification.source_role).toBe('assistant');
+      expect(qualification.source_role).toBe(sourceRole);
+      expect(qualification.report_source_display_phrase).toBe(`По словам ${label}`);
       expect(qualification).toMatchObject({
         kind: 'claim',
         commitment: 'tentative',
@@ -2732,6 +2817,54 @@ describe('grounded answer discovery surface', () => {
       expect(JSON.stringify(result.context)).toContain(`"source_speaker":"${speaker}"`);
       expect(JSON.stringify(userInput(modelRequests[2]!))).not.toContain('display_labels');
       expect(JSON.stringify(result.context)).not.toContain('display_labels');
+      expect(JSON.stringify(userInput(modelRequests[2]!))).not.toContain('report_source_display_phrase');
+      expect(JSON.stringify(result)).not.toContain('report_source_display_phrase');
+    },
+  );
+
+  it.each([true, false])(
+    'keeps English report-source hints private and subordinate to semantics: %s',
+    async (supported) => {
+      const original =
+        '# Zephyr QX-100\n\n<!-- akno:item mem_hint v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=source_report -->\n- **Reported by Ada Marlow · Tentative:** Ada Marlow reports an unverified silverpine inspection requirement for Zephyr QX-100.\n';
+      write('products/zephyr-qx-100.md', original);
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const qualification = JSON.parse(
+            payload.evidence[0].excerpt.match(/Memory qualification: (.+)/u)[1],
+          );
+          expect(qualification.report_source_display_phrase).toBe('According to Ada Marlow');
+          return {
+            blocks: [
+              {
+                text: 'According to Ada Marlow, the silverpine inspection requirement for Zephyr QX-100 is unverified.',
+                evidence_ids: ['E1'],
+              },
+            ],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          expect(JSON.stringify(request)).not.toContain('report_source_display_phrase');
+          return { verdicts: [verdict('B1', supported)] };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What silverpine report did Ada Marlow give?',
+        answer_language: 'en',
+        memory_view: 'reports',
+        include_context: true,
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null).toBe(supported);
+      expect(JSON.stringify(result)).not.toContain('report_source_display_phrase');
+      expect(fs.readFileSync(path.join(root, 'products/zephyr-qx-100.md'), 'utf8')).toBe(original);
+      expect(modelRequests).toHaveLength(3);
     },
   );
 

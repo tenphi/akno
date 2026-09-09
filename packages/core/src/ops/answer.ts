@@ -60,7 +60,7 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v58';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v59';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v39';
 
 function answerDraftSchema(
@@ -199,6 +199,10 @@ localized prose; source_label provides their requested-language form. Proper nam
 do not transliterate names. Do not write 'According to INNER, OUTER relayed ...' when OUTER is the source
 reporting INNER's words. With indeclinable names, prefer INNER as the explicit reporting subject rather
 than an ambiguous recipient/possessive construction such as 'передала сообщение INNER'.
+A report_source_display_phrase may supply localized neutral wording for the already-supported outer
+source, including a translated attribution heading. It is presentation guidance, never independent
+evidence or text to prepend mechanically. Preserve the actual outer/inner roles from the selected record;
+the hint cannot supply missing source support, a recording act or an adjacent unselected proposition.
 Preserve actors of material embedded actions separately from these outer reporting words. A proposal by
 Ada must still say Ada proposed it; "According to Ada, the proposed action was ..." omits that actor.
 The same applies to the person considering alternatives, selecting no cause, adopting no plan, or
@@ -533,7 +537,12 @@ export async function answer(ctx: AknoContext, rawInput: unknown): Promise<Answe
   }
 
   const sourceFrames = retentionSourceFrames(ctx.store.db, ctx.config.aknoPath, evidence);
-  const recordRendering = answerRecordRendering(evidence, sourceFrames, answerLanguage);
+  const recordRendering = answerRecordRendering(
+    evidence,
+    sourceFrames,
+    answerLanguage,
+    ctx.config.knowledgeLanguage,
+  );
   const liveDraftSchema = answerDraftSchema(
     z.enum(evidence.map((item) => item.evidence_id) as [string, ...string[]]),
     [...sourceFrames.keys()],
@@ -1180,6 +1189,18 @@ function memoryModelFields(
       disposition: labels.disposition[memory.disposition],
       ...(memory.temporal && { temporal_status: labels.temporal_status[memory.temporal.time.status] }),
     };
+    if (memory.basis === 'source_report') {
+      const speaker = genericAssistantSpeaker(memory.source_role, memory.source_speaker)
+        ? outputLanguage === 'ru'
+          ? 'ассистента'
+          : 'the assistant'
+        : memory.source_speaker;
+      // This localizes presentation only. The existing reporting-role and full-source checks still
+      // decide whether the generated phrase expresses this record's actual outer source.
+      if (speaker?.trim())
+        fields.report_source_display_phrase =
+          outputLanguage === 'ru' ? `По словам ${speaker}` : `According to ${speaker}`;
+    }
   }
   return fields;
 }

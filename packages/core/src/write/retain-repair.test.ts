@@ -82,6 +82,105 @@ function modelFor(extracted: unknown[], repair: unknown, verify = true) {
 
 describe('one transactional structural repair', () => {
   it.each([true, false])(
+    'reports the precise text limit to its original repair position, retaining semantics (%s)',
+    async (supported) => {
+      const longText =
+        "According to Ada Marlow's retelling of the words that Bo Winters provided, Bo Winters said that the service terms for Zephyr QX-100 permit sending this device to the service bench for measurement of the return spring, rather than replacement of that same spring; Ada Marlow has not read those service terms herself and has no independent confirmation of the report that she is relaying from Bo Winters.";
+      const shortText =
+        'According to Ada Marlow, Bo Winters says Zephyr QX-100 terms permit sending it to the service bench for return-spring measurement, not replacement; Ada Marlow has not read the terms and has no independent confirmation of the report.';
+      const fullSource = `${longText} ${minor}`;
+      const original = {
+        ...fixed,
+        subject: 'Zephyr QX-100',
+        text: longText,
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        support: [{ quote: longText }],
+        discourse_frame: [{ quote: longText }],
+      };
+      const repaired = {
+        ...original,
+        text: supported
+          ? shortText
+          : shortText.replace(
+              'has no independent confirmation of the report',
+              'has not independently confirmed the report',
+            ),
+      };
+      expect(longText.length).toBeGreaterThan(400);
+      expect(repaired.text.length).toBeLessThanOrEqual(400);
+      const { model, chat } = modelFor(
+        [original, good],
+        { repairs: [{ candidate_index: 0, candidate: repaired }] },
+        supported,
+      );
+      const result = await runRetain(fullSource, model);
+      expect(chat).toHaveBeenCalledTimes(3);
+      const repair = JSON.parse(chat.mock.calls[1]![0].at(-1)!.content);
+      expect(repair.source.text).toBe(fullSource);
+      expect(repair.repair_targets).toEqual([
+        {
+          candidate_index: 0,
+          original_candidate: original,
+          validation_issues: [
+            {
+              reason_code: 'validation_failed',
+              reason: `candidate text has ${longText.length} UTF-16 code units after whitespace normalization; maximum is 400. Shorten wording while preserving the complete source-supported proposition and every material qualification`,
+            },
+          ],
+        },
+      ]);
+      expect(repair.read_only_admitted_context).toEqual([
+        { candidate_index: 1, subject: good.subject, kind: good.kind, text: good.text },
+      ]);
+      const verification = JSON.parse(chat.mock.calls[2]![0].at(-1)!.content);
+      expect(verification.source.text).toBe(fullSource);
+      expect(verification.candidates.some((c: { text: string }) => c.text === repaired.text)).toBe(true);
+      expect(verification.repair_obligations[0].original).toEqual(original);
+      expect(result.candidates.map((c) => c.text)).toEqual(supported ? [shortText, minor] : [minor]);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([399, 400, 401])('enforces the normalized UTF-16 bound at %s units', (length) => {
+    const prefix = 'Ada Marlow describes the label ';
+    const text = prefix + 'x'.repeat(length - prefix.length - 1) + '.';
+    const entry = {
+      ...good,
+      text,
+      subject: 'Ada Marlow',
+      polarity: 'affirmed',
+      support: [{ quote: text }],
+      discourse_frame: [{ quote: text }],
+    };
+    const result = cleanCandidateBatch([entry], { sourceText: text, generated: true });
+    expect(result.candidates).toHaveLength(length <= 400 ? 1 : 0);
+    if (length > 400) expect(result.held[0]?.reason).toContain('401 UTF-16 code units');
+  });
+
+  it('folds whitespace before measuring and counts astral symbols as two units', () => {
+    const prefix = 'Ada Marlow describes the label ';
+    const normalized = prefix + 'x'.repeat(399 - prefix.length - 1) + '.';
+    const spaced = normalized.replaceAll(' ', ' \n\t ');
+    const record = (text: string) => ({
+      ...good,
+      text,
+      subject: 'Ada Marlow',
+      polarity: 'affirmed',
+      support: [{ quote: text }],
+      discourse_frame: [{ quote: text }],
+    });
+    expect(
+      cleanCandidateBatch([record(spaced)], { sourceText: spaced, generated: true }).candidates[0]?.text,
+    ).toBe(normalized);
+    const astral = normalized.slice(0, -1) + '🟦.';
+    expect([...astral]).toHaveLength(400);
+    expect(astral.length).toBe(401);
+    expect(
+      cleanCandidateBatch([record(astral)], { sourceText: astral, generated: true }).held[0]?.reason,
+    ).toContain('401 UTF-16 code units');
+  });
+
+  it.each([true, false])(
     'repairs the deciding report while preserving the admitted minor record (verified=%s)',
     async (verify) => {
       const { model, chat } = modelFor(
