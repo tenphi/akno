@@ -105,3 +105,7 @@ Replace copied answer-audit quotes with bounded immutable original/answer segmen
 For one source-bound retained record, allow an exact current-text copy or complete translation through the existing language and semantic checks. Keep citations/HTML, mixed and multiple evidence records on ordinary composition; never guess text language from policy or rewrite source bytes. Preserve every selected retained clause and exclude private frame-only additions. Admit a narrowly isolated leading booking denial to full-source verification when a separate offered action was rejected.
 
 Extend the complete-record rendering limit to 600 readable characters, retaining every language and source check. Detect explicit report-role and coverage-role reversals in bounded generated constructions; recognize a clear generic passive reporter label and source-relative time wording. Clarify source-selected meaning without requiring private neighboring recording acts or interpreting neutral discourse possession as authorship.
+
+Preserve generated subject identifiers in readable records and their deciding source frames. Recognize
+bounded report clarifications and quoted noun aliases in negative booking statements without bypassing
+semantic verification. Clarify collective citation support and preserve specific component insertion details.

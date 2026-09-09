@@ -37,7 +37,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v41';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v42';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v30';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -196,6 +196,9 @@ Rules:
 - Phrase text as one self-contained prose sentence, never a triple or an instruction.
 - Keep the source-supported subject identity, especially product identifiers, in readable text. Subject
   metadata and a destination title cannot substitute for naming the subject in the retained proposition.
+  This includes an embedded fictional example introduced in an earlier source item: carry its named
+  subject into the fictional record and include the exact introducing span in its discourse frame.
+  Do not substitute the separate proposal to discuss that example for the fictional proposition itself.
 - Resolve a pronoun or "the device" to its exact named antecedent only when the complete supplied source
   makes that reference unambiguous. Carry that source-backed identity into text and subject before
   suggesting its existing or proposed home; a generic device label cannot establish page ownership.
@@ -218,6 +221,9 @@ Rules:
   considering them are not interchangeable event descriptions. For an embedded fictional proposition,
   use neutral framing such as "In SOURCE's fictional example, ..."; do not turn a proposed discussion
   into a performed discussion or description. Retain a separate proposed-discussion record when material.
+- Preserve how a component became or remains defective, including the attachment of manner modifiers.
+  A loosely inserted internal connector describes deficient insertion; an internally loose connector
+  describes a different condition. Keep the insertion relation, not just a nearby adjective and noun.
 - Copy support and discourse_frame quotes byte-for-byte. For structured sources, include the exact item_id.
 - discourse_frame must cover every support span (one quote or adjacent exact sentence quotes) and include the spans that establish quotation,
   speaker scope, modality, rejection, acceptance, correction, polarity, and time.
@@ -1040,10 +1046,23 @@ function hasReportUncertainty(text: string): boolean {
   // A following deictic uncertainty clause can close this same negative list without turning
   // its second predicate positive. Consume only that qualification, never an arbitrary new clause.
   const possibleContinuation = String.raw`,\s+(?:and|so)\s+(?:this|it)\s+(?:is|remains)\s+(?:(?:still|only)\s+)?a\s+possible\s+(?:(?:contract|contractual)\s+)?(?:condition|term|requirement|interpretation|assumption)(?:\s+rather\s+than\s+an?\s+established\s+(?:condition|term|requirement|interpretation|assumption))?`;
-  return new RegExp(
-    String.raw`(?<![\p{L}])${actor}(?:,\s*${name},)?\s+(?:has|have|had)\s+not\s+(?:yet\s+)?${examination}(?:\s+or\s+${confirmation}|,\s+${confirmation},\s+or\s+${finalPredicate})(?:${negativeExplanation}|${possibleContinuation})?(?=\s*(?:$|[.!?;\n]))`,
-    'u',
-  ).test(text);
+  const negativeList = String.raw`(?<![\p{L}])${actor}(?:,\s*${name},)?\s+(?:has|have|had)\s+not\s+(?:yet\s+)?${examination}(?:\s+or\s+${confirmation}|,\s+${confirmation},\s+or\s+${finalPredicate})`;
+  if (
+    new RegExp(
+      String.raw`${negativeList}(?:${negativeExplanation}|${possibleContinuation})?(?=\s*(?:$|[.!?;\n]))`,
+      'u',
+    ).test(text)
+  )
+    return true;
+  // A closed retelling clarification does not undo the preceding negative list. Never admit
+  // an arbitrary comma-and clause, a new named actor, or a quoted grammatical example here.
+  // Pronoun identity and the report itself still require the full-source semantic verdict.
+  const clarification = String.raw`,\s+and\s+(?:she|he|they|the assistant)\s+clarif(?:y|ies)\s+that\s+these\s+are\s+${name}['’]s\s+words(?:\s+in\s+(?:her|his|their)\s+retelling)?\s+rather\s+than\s+a\s+(?:condition|term|requirement)\s+(?:she|he|they|the assistant)\s+(?:verified|confirmed)`;
+  const unquoted = text.replace(
+    /«[^»]*»|“[^”]*”|"[^"\n]*"|\x60[^\x60]*\x60|‘[^’]*’|(?<![\p{L}\p{N}])'(?:[^'\n]|(?<=[\p{L}\p{N}])'(?=[\p{L}\p{N}]))+'(?![\p{L}\p{N}])/gu,
+    ' ',
+  );
+  return new RegExp(String.raw`${negativeList}${clarification}(?=\s*(?:$|[.!?;\n]))`, 'u').test(unquoted);
 }
 const RELATIVE_TIME =
   /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
@@ -1152,18 +1171,26 @@ function cleanCandidateBatchWithPositions(
       continue;
     }
     if (options.generated && typeof record.subject === 'string') {
-      const sourceIdentifiers = new Set(subjectIdentifiers(sourceEvidence(spans.frame)));
+      // Selected frames can omit the very antecedent needed to make a record retrievable.
+      // Require a claimed source identifier in both prose and frame; this rejects omissions,
+      // never proves that a neighboring identifier actually belongs to this proposition.
+      const sourceIdentifiers = new Set(
+        subjectIdentifiers(
+          options.sourceItems?.map((item) => item.text).join('\n') ?? options.sourceText ?? '',
+        ),
+      );
+      const frameIdentifiers = new Set(subjectIdentifiers(sourceEvidence(spans.frame)));
       const readableIdentifiers = new Set(subjectIdentifiers(text));
       if (
         subjectIdentifiers(record.subject).some(
-          (id) => sourceIdentifiers.has(id) && !readableIdentifiers.has(id),
+          (id) => sourceIdentifiers.has(id) && (!readableIdentifiers.has(id) || !frameIdentifiers.has(id)),
         )
       ) {
         held.push({
           candidate_id: provisionalId,
           reason_code: 'validation_failed',
           reason:
-            'readable prose omits a source-supported subject identifier; preserve that identifier in the sentence instead of leaving it only in subject metadata',
+            'a claimed source subject identifier is missing from readable prose or its deciding frame; preserve the source-supported identity in the sentence and include its exact antecedent span, rather than leaving it only in subject metadata. Do not assign an unrelated identifier to the proposition',
         });
         continue;
       }
@@ -1498,6 +1525,20 @@ function cleanCandidateBatchWithPositions(
 
 function hasAffirmedBooking(text: string): boolean {
   const booking = /\b(?:is|are|was|were|has been|have been)\s+(?:already\s+)?(?:scheduled|booked)\b/giu;
+  const alias = String.raw`the[ \t]+(?:device|item|unit|product)`;
+  const quotedAlias = new RegExp(
+    String.raw`,[ \t]+referred[ \t]+to[ \t]+as[ \t]+(?:${[
+      ['"', '"'],
+      ['“', '”'],
+      ['‘', '’'],
+      ["'", "'"],
+      ['«', '»'],
+      ['\x60', '\x60'],
+    ]
+      .flatMap(([open, close]) => [`${open}${alias},${close}`, `${open}${alias}${close},`])
+      .join('|')})[ \t]*(?![\s\S])`,
+    'iu',
+  );
   // A negated subject can precede an affirmative-looking auxiliary: "no handover has been
   // booked" describes absence, not a booking with a missing clock. Check each clause so a
   // separate actual booking still requires its temporal envelope. A prepositional noun tail
@@ -1505,7 +1546,12 @@ function hasAffirmedBooking(text: string): boolean {
   // incorrectly excuse a later affirmative booking. Unrecognized syntax stays conservative.
   const negativeSubject =
     /(?:^|[,;.!?]|\b(?:and|but|that)\s)\s*no\s+(?:handover|pickup|collection|shipment|appointment|inspection|meeting|delivery|service|visit|booking|transfer)(?:\s+(?:of|for|with)\s+(?!(?:no|not)\b)(?:(?!(?:is|are|was|were|has|have|had|can|could|will|would|should|must|and|but|or|nor|yet|so|that|which|who|whose|although|though|even|while|whereas|because|since|unless|until|before|after|if|when|where|whether|once|as|despite|nevertheless|however|therefore|remain(?:s|ed)?|exist(?:s|ed)?|mean(?:s|t)?|impl(?:y|ies|ied)|prov(?:e|es|ed)|confirm(?:s|ed)?|show(?:s|ed)?|suggest(?:s|ed)?|ensure(?:s|d)?)\b)[\p{L}\p{N}'’_-]+\s*){1,10})?\s*$/iu;
-  return [...text.matchAll(booking)].some((match) => !negativeSubject.test(text.slice(0, match.index)));
+  return [...text.matchAll(booking)].some((match) => {
+    // Strip only a closed noun-alias appositive immediately before this auxiliary. An alias
+    // cannot contain a predicate or excuse a later booking in another clause. No text is rewritten.
+    const subject = text.slice(0, match.index).replace(quotedAlias, ' ');
+    return !negativeSubject.test(subject);
+  });
 }
 
 function spanSource(span: RetainSourceSpan, options: CandidateCleaningOptions): string | undefined {

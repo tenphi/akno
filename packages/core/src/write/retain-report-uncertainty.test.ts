@@ -9,6 +9,8 @@ const source = `${report} Ada Marlow has not read the service terms and has no i
 const coordinated = 'Ada Marlow has not read the service terms or independently confirmed the report.';
 const continued =
   'Ada Marlow has not examined the contract or confirmed this assumption, and this remains a possible contract condition rather than an established requirement.';
+const clarified =
+  "Ada Marlow has not read the service terms or independently confirmed this report, and she clarifies that these are Bo Winters's words in her retelling rather than a condition she verified.";
 const record = (qualification: string, original = source) => ({
   kind: 'claim',
   subject: 'Zephyr QX-100',
@@ -28,6 +30,30 @@ const record = (qualification: string, original = source) => ({
 describe('shared negation in readable report uncertainty', () => {
   it.each([
     [coordinated, true],
+    [clarified, true],
+    [clarified.replace(' in her retelling', ''), true],
+    [
+      clarified
+        .replace('Ada Marlow has', 'The assistant has')
+        .replace('she clarifies', 'the assistant clarifies'),
+      true,
+    ],
+    [clarified.replace('has not read', 'has read'), false],
+    [clarified.replace('she clarifies', 'Bo Winters clarifies'), false],
+    [clarified.replace('she clarifies', 'she later confirms'), false],
+    [
+      clarified.replace(
+        "Bo Winters's words in her retelling rather than a condition she verified",
+        "Bo Winters's verified terms",
+      ),
+      false,
+    ],
+    [clarified.replace('.', ', but she later confirmed it.'), false],
+    [clarified.replace('and she clarifies that these are', 'and she discusses'), false],
+    ...['"', '“', '‘', "'", '\x60'].map((open) => {
+      const close = open === '“' ? '”' : open === '‘' ? '’' : open;
+      return [`The manual gives this example: ${open}${clarified}${close}`, false] as const;
+    }),
     [
       'The AI assistant has not examined the contract or confirmed this assumption, and this is a possible contract condition rather than an established requirement.',
       true,
@@ -117,7 +143,7 @@ describe('shared negation in readable report uncertainty', () => {
   });
 
   it.each(
-    [coordinated, continued].flatMap(
+    [coordinated, continued, clarified].flatMap(
       (qualification) =>
         [
           [false, true, qualification],

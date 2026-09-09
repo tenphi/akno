@@ -60,8 +60,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v53';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v36';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v54';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v37';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -233,7 +233,10 @@ Return structured blocks with one coherent selected proposition in each, includi
 clauses. Each block must cite one or more supplied evidence_ids supporting its entire content. If combining
 records, preserve each contributing record's qualifications; a shared topic alone does not justify citing
 an unrelated proposal beside a hypothetical claim. Answer supported parts of compound questions and list
-uncovered parts in missing_concepts. If none are supported, return no blocks. Do not put citation markers,
+uncovered parts in missing_concepts. If none are supported, return no blocks. A related proposal to discuss
+an example does not answer what the example promises: when only that proposal is retained, list the
+missing promise and return no block for it. Use citations that contribute the selected answer content.
+Do not put citation markers,
 storage identifiers, line numbers or file titles in block text; Akno renders citations. Speaker names and
 source-supported qualification belong in the text. Never expose private readings or audit metadata.`;
 
@@ -259,13 +262,21 @@ selected. For example, a retained rejection does not select a separate booking c
 frame. Return unselected_content null when selected is true; otherwise name the unselected clause there.
 This independent selection check is required in addition to all three semantic dimensions below. A
 frame cannot turn a failed selection into a pass. Do not repair or retry the block.
+Selection uses the cited visible excerpts collectively. One excerpt can supply an offered action and
+its purpose while another contributes its rejection; do not require every cited excerpt to select every
+detail. Each citation must still contribute supported content. A detail missing from ALL visible cited
+excerpts remains unselected even if any private frame states it.
 
 A selected proposition can be expressed in equivalent words. Excerpt selection is semantic, not a
 substring test: declining/rejecting an offered action selects nonacceptance of that same offer. It does
 not select a separate shipment, booking, or recording act merely present in the original frame.
 Audit only the proposition this block describes, with all its material qualifications. An independent
-neighboring proposition in a cited record need not be repeated. A mixed source segment is a coordinate,
-not a requirement to assert every clause it contains. For framed input, read answer_segments as one
+neighboring proposition in a cited record need not be repeated. A focused rejection can omit a separate
+lack of a plan under that same offer. This exception does
+not apply to complete_retained_record rendering, which selects all retained clauses. A coupled personal
+verification limit, conditional consequence or qualification of the selected claim is never optional.
+A mixed source segment is a coordinate, not a requirement to assert every clause it contains.
+For framed input, read answer_segments as one
 complete answer_text; metadata and anchor IDs are never part of the candidate claim.
 
 The question asks about a record. Entailment is about what the evidence records, not proof that an embedded
