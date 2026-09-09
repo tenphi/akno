@@ -334,4 +334,75 @@ describe('required retention frame accounting', () => {
       });
     },
   );
+
+  it.each(['inconsistent', 'consistent-negative', 'clipped-summary-negative'] as const)(
+    'keeps the atomic semantic contract with a nullable negative reason: %s',
+    async (mode) => {
+      const otherItems: RetainSourceItem[] = [
+        {
+          item_id: 'turn-3333',
+          role: 'user',
+          speaker: 'Ada Marlow',
+          text: 'Ada Marlow states that Zephyr QX-100 has a blue dial.',
+        },
+        {
+          item_id: 'turn-4444',
+          role: 'user',
+          speaker: 'Ada Marlow',
+          text: 'The dial statement concerns the same device.',
+        },
+      ];
+      const other = {
+        ...record,
+        text: otherItems[0]!.text,
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow' },
+        epistemic: { basis: 'self_attested' },
+        support: [{ item_id: otherItems[0]!.item_id, quote: otherItems[0]!.text }],
+        discourse_frame: otherItems.map(({ item_id, text: quote }) => ({ item_id, quote })),
+      };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1)
+          return { ok: true, value: JSON.stringify({ candidates: [record, other] }), latencyMs: 11 };
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.source.items).toEqual([...items, ...otherItems]);
+        expect(messages[0]!.content).toContain('A detail absent from your summary is not thereby absent');
+        return {
+          ok: true,
+          latencyMs: 11,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map(
+              (candidate: { candidate_id: string; frame_spans: { frame_id: string }[] }, i: number) => ({
+                candidate_id: candidate.candidate_id,
+                span_audit: candidate.frame_spans.map(({ frame_id }) => ({
+                  frame_id,
+                  interpretation:
+                    i === 1 && mode !== 'consistent-negative'
+                      ? 'An incomplete audit summary ends not an-'
+                      : 'The source specifies this device and the statement belongs to its named speaker.',
+                  relationship: 'restatement',
+                })),
+                ...semanticAudit(true, true, i === 0),
+                proposition_supported: i === 0 || mode !== 'inconsistent',
+                action_arguments_preserved: true,
+                qualification_scope_preserved: i === 0,
+                reason_code: null,
+              }),
+            ),
+          }),
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-atomic-verifier',
+        chat,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain('', model, { sourceItems: [...items, ...otherItems] });
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.modelUsage.repair).toBeUndefined();
+      expect(result.candidates).toHaveLength(mode === 'inconsistent' ? 0 : 1);
+      expect(result.degradedReason).toBe(mode === 'inconsistent' ? 'retain_verification_failed' : null);
+      if (mode !== 'inconsistent') expect(result.held[0]?.reason_code).toBe('discourse_uncertain');
+    },
+  );
 });

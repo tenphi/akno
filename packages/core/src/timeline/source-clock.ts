@@ -58,6 +58,8 @@ export function hasSourceRelativeAnchor(text: string): boolean {
   )
     return true;
 
+  if (hasUndatedOriginalClock(text)) return true;
+
   // The intensifier qualifies the source noun, not a new clock or the proposed action.
   if (
     /(?<!\p{L})(?:отсчитыва\p{L}*|считая|отсчит\p{L}*)\s+от\s+самой\s+(?:(?:недатированной|исходной|оригинальной)\s+){0,2}(?:записи|заметки)(?!\p{L})/iu.test(
@@ -71,6 +73,7 @@ export function hasSourceRelativeAnchor(text: string): boolean {
 }
 
 export function hasUnknownReferenceClock(text: string): boolean {
+  if (hasUndatedOriginalClock(text)) return true;
   // "Установить" can mean establish a date or install a component. Require a directly bound
   // date head in this branch; a nearby calendar word or a quoted example cannot supply it.
   const deictic = '(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\\s+(?:day|week|month|year))';
@@ -101,4 +104,29 @@ export function hasUnknownReferenceClock(text: string): boolean {
   return /\bundated (?:(?:original|source) )?(?:source|record(?:ing)?|note|conversation)\b|\b(?:source|record(?:ing)?|note|conversation) (?:is|was) undated\b|\b(?:source|record(?:ing)?|note|conversation) (?:has|had) no (?:reference )?(?:date|timestamp)\b|у\s+(?:(?:исходн|оригинальн|недатированн)\p{L}*\s+)?(?:источник|запис|замет|разговор)\p{L}*\s+нет\s+дат\p{L}*|дат\p{L}*\s+(?:(?:исходн|оригинальн)\p{L}*\s+)?(?:источник|запис|замет|разговор)\p{L}*\s+отсутствует|недатирован\p{L}*\s+(?:(?:исходн|оригинальн)\p{L}*\s+)?(?:источник|запис|замет|разговор)|\b(?:dates?|clocks?|timestamps?|calendar (?:day|week|month|year))[^.!?;\n]{0,60}\b(?:unknown|unspecified|unavailable|not (?:provided|recorded|known)|(?:cannot|could not|can['’]t|couldn['’]t) be (?:recovered|resolved|determined))\b|\b(?:unknown|unspecified|unavailable) (?:(?:original|source|reference|calendar) ){0,3}(?:dates?|clocks?|timestamps?)\b|(?:дат\p{L}*|календарн\p{L}*\s+(?:день|месяц|год))[^.!?;\n]{0,60}(?:неизвест|не указан|утрачен|восстановить нельзя|невозможно восстановить|определить нельзя)|(?:источник|запис|замет|разговор)\p{L}*\s+(?:не датирован\p{L}*|без даты)|\b(?:source|record(?:ing)?|note|conversation)\s+with no date\b|\bcalendar (?:month|week|year)\s+(?:is |was |remains )?(?:unknown|unspecified)\b/iu.test(
     text,
   );
+}
+
+/** The original-record synonym must preserve both attachment and the explicitly absent source date. */
+function hasUndatedOriginalClock(text: string): boolean {
+  const label = String.raw`(?:следующий|прошлый|этот)[ \t]+(?:год|месяц)|(?:следующая|прошлая|эта)[ \t]+неделя`;
+  const unquoted = text.replace(
+    /`[^`]*`|«[^»]*»|“[^”]*”|"[^"\n]*"|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+    (span) =>
+      new RegExp(`^(?:${label})$`, 'iu').test(span.slice(1, -1)) ? span.slice(1, -1) : '⟦quotation⟧',
+  );
+  const interval = String.raw`(?:в[ \t]+(?:следующем|прошлом|этом)[ \t]+(?:году|месяце)|на[ \t]+(?:следующей|прошлой|этой)[ \t]+неделе)[ \t]+относительно|(?:${label})[ \t]+(?:отсчитывается|считается)[ \t]+от(?:[ \t]+времени)?`;
+  const original = String.raw`(?:первоначальной[ \t]+записи[ \t]+без[ \t]+даты|недатированной[ \t]+первоначальной[ \t]+записи)`;
+  // A separate refusal of a plan does not retract its source clock; arbitrary continuations may.
+  const denial = String.raw`,[ \t]+но[ \t]+не[ \t]+принял[аи]?[ \t]+план[ \t]+и[ \t]+не[ \t]+организовал[аи]?[ \t]+встречу(?=[ \t]*(?:$|[.;!]))`;
+  const pattern = new RegExp(
+    String.raw`(?<![\p{L}])(?:${interval})[ \t]+${original}(?=[ \t]*(?:$|[.;!]|${denial}))`,
+    'giu',
+  );
+  return [...unquoted.matchAll(pattern)].some((match) => {
+    const prefix = unquoted
+      .slice(0, match.index)
+      .split(/[.!?;\n]/u)
+      .at(-1)!;
+    return !/(?<![\p{L}])(?:якобы|пример|если)(?![\p{L}])|(?<![\p{L}])не[ \t]*$/iu.test(prefix);
+  });
 }

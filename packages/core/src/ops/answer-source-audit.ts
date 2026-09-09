@@ -49,24 +49,37 @@ export interface AnswerAuditCoordinates {
 }
 
 function anchorIdSchema(ids: readonly string[]) {
-  return z.enum(ids as [string, ...string[]]).nullable();
+  return z.enum(ids as [string, ...string[]]);
 }
 
 function alignmentSchema(coordinates: AnswerAuditCoordinates) {
-  return z
-    .object({
-      source_anchor: anchorIdSchema(
-        [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
-      ),
-      answer_anchor: anchorIdSchema(coordinates.answer.map((span) => span.anchor_id)),
-      relation: z.enum(['preserved', 'generalized', 'changed', 'omitted', 'not_selected']),
-      detail: z.string().trim().min(1).max(160),
-    })
-    .refine((entry) => {
-      if (entry.relation === 'not_selected') return entry.answer_anchor === null;
-      if (entry.source_anchor === null) return false;
-      return (entry.relation === 'omitted') === (entry.answer_anchor === null);
-    });
+  const source = anchorIdSchema(
+    [...coordinates.sources.values()].flatMap((spans) => spans.map((span) => span.anchor_id)),
+  );
+  const answer = anchorIdSchema(coordinates.answer.map((span) => span.anchor_id));
+  const detail = z.string().trim().min(1).max(160);
+  // Refinements cannot constrain provider decoding. Make an omitted aspect's absent answer
+  // coordinate part of its wire shape, without allowing that negative verdict to publish.
+  return z.union([
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: answer,
+      relation: z.enum(['preserved', 'generalized', 'changed']),
+      detail,
+    }),
+    z.strictObject({
+      source_anchor: source,
+      answer_anchor: z.null(),
+      relation: z.enum(['omitted']),
+      detail,
+    }),
+    z.strictObject({
+      source_anchor: source.nullable(),
+      answer_anchor: z.null(),
+      relation: z.enum(['not_selected']),
+      detail,
+    }),
+  ]);
 }
 
 /** Categories prevent an easy object comparison from replacing the separate action-actor audit. */

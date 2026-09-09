@@ -1405,6 +1405,28 @@ describe('grounded answer discovery surface', () => {
     [
       'counterfactual',
       'self_attested',
+      'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, motor repair would have been covered; she did not purchase it, and it is not her active coverage.',
+      'Нереализованной альтернативой было дополнительное продление silverpine, которое в случае покупки покрывало бы ремонт двигателя. Ada Marlow его не приобрела, поэтому это не было её действующим покрытием.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, motor repair would have been covered; she did not purchase it, and it is not her active coverage.',
+      'Ada Marlow описала нереализованный вариант, при котором дополнительное продление silverpine покрывало бы ремонт двигателя. Она не приобрела это продление, поэтому оно не являлось её действующим покрытием.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, motor repair would have been covered; she did not purchase it, and it is not her active coverage.',
+      'Ada Marlow описала нереализованный вариант, при котором дополнительное продление silverpine покрывало бы ремонт двигателя. Она не приобрела это продление, и действующего покрытия у неё нет.',
+      false,
+      'semantic_support',
+    ],
+    [
+      'counterfactual',
+      'self_attested',
       'Ada Marlow described an unrealized counterfactual: had she chosen the silverpine warranty extension, repairs in year seven would have been covered rather than the selected coverage.',
       'Ada Marlow described the unrealized counterfactual where repairs in year seven would have been covered. This was not the coverage she selected.',
       true,
@@ -2687,6 +2709,10 @@ describe('grounded answer discovery surface', () => {
   it.each([
     ['Запись не определяет, покрывается ли ремонтом по гарантии ремонт двигателя silverpine.', false, true],
     ['Запись не определяет, покрывается ли ремонтом двигатель silverpine.', false, true],
+    ['Запись не отвечает на вопрос, покрывается ли ремонтом двигатель silverpine.', false, true],
+    ['Запись не отвечает на вопрос о том, покрывается ли ремонтом двигатель silverpine.', false, true],
+    ['Запись не отвечает на вопрос о покрытии ремонта двигателя silverpine.', true, true],
+    ['Запись не отвечает на вопрос о покрытии ремонта двигателя silverpine.', false, false],
     ['Запись не определяет, покрывается ли гарантией ремонт двигателя silverpine.', true, true],
     ['Запись не определяет, покрывается ли гарантией ремонт двигателя silverpine.', false, false],
   ] as const)(

@@ -1,3 +1,4 @@
+import { hasNominalCounterfactual } from '../memory/counterfactual-wording.ts';
 import { personalNegativeActionsSupported } from '../memory/personal-negative-actions.ts';
 import { reportingRolesSupported } from '../memory/reporting-roles.ts';
 import { coverageRolesSupported } from '../memory/coverage-roles.ts';
@@ -60,8 +61,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v60';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v40';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v61';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v41';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -234,7 +235,8 @@ created the example or proposed discussing it. Name the fictional promisor and r
 A question naming a proposal cannot authorize adding that action to a promise-only citation.
 
 Translate ordinary vocabulary and generic roles into output_language, without parenthetical source-language
-glosses. Names, product identifiers and protected values remain exact. Resolve words by their source
+glosses. Hyphenation and technical context do not make ordinary component vocabulary a protected name
+or identifier; translate such prose too. Names, product identifiers and protected values remain exact. Resolve words by their source
 context. When the selected source meaning is a contractual condition, keep that sense explicit in each
 material epistemic clause or an unambiguous antecedent: "reported contractual condition" / "сообщение
 об условии договора", preserving who has not confirmed what. Keep confirming a report distinct from
@@ -249,6 +251,8 @@ In a passive coverage clause the covered service remains the subject: "покр�
 asks whether repair is covered, while "покрывается ли ремонтом двигатель" makes repair the covering
 instrument. Keep the component as the object of repair, not the subject covered by repair. Use active
 wording when it keeps those source roles clearer, and preserve the record's uncertainty or negation.
+A source-bound nominal such as «вопрос о покрытии ремонта» can also preserve the relation. Do not
+invent a warranty, insurer or agreement as coverer when the source leaves that role unspecified.
 A damaged component, damage to it, and its repair are distinct possible coverage objects.
 
 Preserve identity, negation, dates, quantities, units, scope and current/superseded status. For an undated
@@ -1444,8 +1448,11 @@ function proseStatusSupported(text: string, sources: AnswerContextItem[]): boole
         text,
       );
     if (q.view === 'discussion')
-      return /\b(hypothetical|counterfactual|assum|scenario|might|tentative|if|could|example)\w*\b|гипотез|предполож|сценари|если|возмож|пример/iu.test(
-        text,
+      return (
+        hasNominalCounterfactual(text) ||
+        /\b(hypothetical|counterfactual|assum|scenario|might|tentative|if|could|example)\w*\b|гипотез|предполож|сценари|если|возмож|пример/iu.test(
+          text,
+        )
       );
     if (q.view === 'planning') return /\b(plan|propos|intend|scheduled)\w*\b|план|предлаг|намер/iu.test(text);
     if (q.view === 'history')
@@ -1686,7 +1693,10 @@ function noncanonicalMemoryStatusSupported(answerText: string, sources: AnswerCo
         ),
       );
     if (memory.commitment === 'counterfactual')
-      required.push(/\b(counterfactual|would have|had .* then)\b|контрфактическ|если бы/iu.test(answerText));
+      required.push(
+        hasNominalCounterfactual(answerText) ||
+          /\b(counterfactual|would have|had .* then)\b|контрфактическ|если бы/iu.test(answerText),
+      );
     // A closed plan's disposition already prevents it being mistaken for an actionable schedule.
     const closedPlan =
       memory.kind === 'plan' &&

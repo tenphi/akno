@@ -1,0 +1,9 @@
+# V66 validation evidence
+
+This revision follows the failed V65 full repeated trial preserved in commit 3b85e7f. The [declared plan](../../v66-trial-plan.md) fixes the exposed probe coordinates and keeps all acceptance thresholds unchanged. No V66 live evaluation has started at runtime freeze. Both independent code review rounds are complete, including the round-two coverage-subject correction.
+
+The fresh V21 corpus is fingerprinted as `208d2ea60ef5f5bcf2158ef56a35e57e1ee6b5c36069ac2fbb606abe1ab1cf44`. Independent source-only input review approves 22/22 cases. The initial input/review pair is preserved: its only correction changed a Russian rejected-action query from wording that could imply an agreement to explicit proposal wording. This happened before execution.
+
+The corrected design and its initial version are preserved. Round-one code review has a clean closure addendum; the initial review is also retained. The initial transport test incorrectly named the Chat API and assumed its schema rung; both fixture issues were corrected without runtime changes. The full suite initially reached 2,854 passes with one unchanged ranking-test timeout under concurrent repository checks; the isolated ranking follow-up passed. Initial and follow-up logs remain in `tmp/v66-*.log`. The final full suite passes **2,859 tests in 144 files** after the coverage correction. Build/typecheck, lint, knip, formatting, documentation doctor/build, smoke, installed-package smoke and repository safety all pass. The tighter guard blocks all eight frozen V65 coverage errors; same-clause device/person nonresponse defers to full semantics. The correction and independent pre/post checks remain in round-two review.
+
+Inputs and deterministic tests use invented content only. Source and candidate texts remain the verification authority; presence checks, private interpretations and transport controls are not evidence of model competence. The PR remains open and unmerged.

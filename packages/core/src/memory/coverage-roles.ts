@@ -6,7 +6,7 @@ export function coverageRolesSupported(text: string, support: string): boolean {
     value
       .replace(
         /«[^»]*»|“[^”]*”|"[^"\n]*"|`[^`\n]*`|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
-        ' ',
+        '⟦quotation⟧',
       )
       .split(/[.!?;:\n]|,(?:\s*(?:а|но|и|тогда как|пока)(?![\p{L}]))/iu);
   const sourceClauses = clauses(support);
@@ -23,9 +23,14 @@ export function coverageRolesSupported(text: string, support: string): boolean {
   // borrow uncertainty from another sentence, or activate on a quoted grammatical example.
   const unresolvedInstrument =
     /(?<![\p{L}])(?:не\s+(?:определя|устанавлива|позволя)[\p{L}]*|неизвестно)[^.!?;:\n]{0,100}(?<![\p{L}])покрывается\s+ли\s+ремонтом\s+[\p{L}]/iu;
+  // Answering a coverage question is another explicit unresolved relation. A device that
+  // "does not respond", a quoted example, or a neighboring question cannot activate it.
+  const unansweredInstrument =
+    /(?<![\p{L}])(?:запись(?:\s+об\s+исключении)?|заметка|источник)\s+не\s+отвечает\s+на\s+вопрос\s*(?:о\s+том\s*)?,?\s*покрывается\s+ли\s+ремонтом\s+[\p{L}]/iu;
   return !clauses(text).some(
     (clause) =>
       unresolvedInstrument.test(clause) ||
+      unansweredInstrument.test(clause) ||
       /(?<![\p{L}])покрывается\s+(?:ли\s+)?ремонтом\s+(?:[\p{L}-]+\s+){0,5}ремонт(?![\p{L}])/iu.test(clause),
   );
 }

@@ -11,6 +11,8 @@ const continued =
   'Ada Marlow has not examined the contract or confirmed this assumption, and this remains a possible contract condition rather than an established requirement.';
 const clarified =
   "Ada Marlow has not read the service terms or independently confirmed this report, and she clarifies that these are Bo Winters's words in her retelling rather than a condition she verified.";
+const personalList =
+  'Ada Marlow only conveys this account and has not read the agreement, independently checked the account, or herself checked this reported meaning.';
 const record = (qualification: string, original = source) => ({
   kind: 'claim',
   subject: 'Zephyr QX-100',
@@ -30,6 +32,23 @@ const record = (qualification: string, original = source) => ({
 describe('shared negation in readable report uncertainty', () => {
   it.each([
     [coordinated, true],
+    [personalList, true],
+    [personalList.replace('herself checked this reported meaning', 'herself confirmed it'), true],
+    [personalList.replace('Ada Marlow only conveys this account and', 'She'), true],
+    [
+      personalList.replace('Ada Marlow only conveys this account and', 'She').replace('herself', 'himself'),
+      false,
+    ],
+    [personalList.replace('Ada Marlow only conveys this account and', 'They'), false],
+    [personalList.replace('or herself', 'but she herself has'), false],
+    [personalList.replace('or herself', 'or Bo Winters'), false],
+    [personalList.replace('has not read', 'has read'), false],
+    [personalList.replace('reported meaning', 'device'), false],
+    [personalList.replace(', independently', '; independently'), false],
+    [personalList.replace('.', ', but she has confirmed it.'), false],
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(
+      ([open, close]) => [`Example: ${open}${personalList}${close}`, false] as const,
+    ),
     [clarified, true],
     [clarified.replace(' in her retelling', ''), true],
     [
@@ -143,7 +162,7 @@ describe('shared negation in readable report uncertainty', () => {
   });
 
   it.each(
-    [coordinated, continued, clarified].flatMap(
+    [coordinated, continued, clarified, personalList].flatMap(
       (qualification) =>
         [
           [false, true, qualification],

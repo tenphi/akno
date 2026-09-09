@@ -28,6 +28,12 @@ source span in span_audit before writing the aggregate comparison. Return exactl
 IDs are local to that candidate. Do not echo or invent quote/item coordinates. Interpret each original
 quote in the complete source context, never using the candidate translation as evidence for its meaning.
 Keep the positive claim as well as any contrast, attribution or limit in that span's interpretation.
+Use one compact, complete sentence, aiming below 180 characters within the 240-character maximum.
+State the governing actor, polarity and qualification first; shorten wording instead of ending mid-word
+or leaving a trailing conjunction. This private interpretation is an audit summary, never a substitute
+for its exact original span. A detail absent from your summary is not thereby absent from the source or
+candidate. Compare those original texts before declaring a mismatch, and give one mismatch for each
+false semantic dimension rather than copying a negative boolean from a different dimension.
 The relationship describes how that span contributes to the candidate proposition: restatement,
 clarification, contrast, independent statement or unresolved meaning. Explain the actual contribution in
 interpretation, including what a clarification clarifies. These labels are audit notes, not evidence or

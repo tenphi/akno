@@ -37,8 +37,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v48';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v31';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v49';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v32';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -96,7 +96,9 @@ const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
   when the source supplies both; never derive additional consequences or discard the condition.
 - Competing unconfirmed hypotheses use tentative or hypothetical commitment, even when the readable
   sentence confidently states that the user discussed them. Neither alternative becomes asserted just
-  because the discussion itself is established.
+  because the discussion itself is established. Retain a coupled comparison as one complete candidate:
+  include both alternatives, their lack of evidence and the named person's nonselection when supplied.
+  Do not split these governing qualifications into a second candidate that could survive alone.
 - A direct user assertion, including a denial, uses self_attested unless it relays another source.
   This records the user's assertion, not independent verification. Explicit lack of confirmation or verification
   must remain in readable prose; "reportedly" or source_report alone does not preserve that qualification. Nested reports and assistant, external
@@ -580,7 +582,7 @@ export async function runRetain(
           role: 'system',
           content:
             system +
-            "\nRepair each repair_targets entry once using the complete original source and that entry's validation_issues. Copy its explicit candidate_index into the repair; this is a zero-based original extraction index, not the position in repair_targets or repairs. Preserve that entry's original_candidate source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. read_only_admitted_context is a read-only index of surviving records for relation references, never a list of repair targets. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. If the only issue is missing subject antecedent context, add its exact source span to the deciding frame while preserving the same proposition. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a target if no safe repair exists. Do not return events or new positions.",
+            "\nRepair each repair_targets entry once using the complete original source and that entry's validation_issues. Copy its explicit candidate_index into the repair; this is a zero-based original extraction index, not the position in repair_targets or repairs. Preserve that entry's original_candidate source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. read_only_admitted_context is a read-only index of surviving records for relation references, never a list of repair targets. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. If the only issue is missing subject antecedent context, add its exact source span to the deciding frame while preserving the same proposition. source_identifier_context, when present, lists bounded exact identifier occurrences in original source items; occurrence counts and omitted spans expose ambiguity. It is advisory search context, not a replacement frame or proof of attachment. Select only exact spans that actually resolve the subject of this proposition; never copy an unrelated or quoted occurrence merely because it contains the identifier. Do not expand an independent nonselection or denial into the neighboring hypotheses just to add their antecedent frame. Re-evaluate all metadata from the repaired readable proposition: if the payload does include competing hypotheses, it needs tentative or hypothetical commitment even when the original candidate was an asserted nonselection. Preserve original positions and keep admitted siblings unchanged. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a target if no safe repair exists. Do not return events or new positions.",
         },
         {
           role: 'user',
@@ -595,6 +597,14 @@ export async function runRetain(
             repair_targets: failedPositions.map((candidate_index) => ({
               candidate_index,
               original_candidate: originalCandidates[candidate_index],
+              ...(cleanedBatch.missingIdentifiers.has(candidate_index)
+                ? {
+                    source_identifier_context: sourceIdentifierContext(
+                      cleanedBatch.missingIdentifiers.get(candidate_index)!,
+                      cleaningOptions,
+                    ),
+                  }
+                : {}),
               validation_issues: cleanedBatch.held
                 .filter((held) => cleanedBatch.positions.get(held.candidate_id) === candidate_index)
                 .map(({ reason_code, reason }) => ({ reason_code, reason })),
@@ -1082,6 +1092,10 @@ const REPORT_UNCERTAINTY =
 
 function hasReportUncertainty(text: string): boolean {
   if (REPORT_UNCERTAINTY.test(text)) return true;
+  const unquoted = text.replace(
+    /«[^»]*»|“[^”]*”|"[^"\n]*"|\x60[^\x60]*\x60|‘[^’]*’|(?<![\p{L}\p{N}])'(?:[^'\n]|(?<=[\p{L}\p{N}])'(?=[\p{L}\p{N}]))+'(?![\p{L}\p{N}])/gu,
+    '⟦quotation⟧',
+  );
   // A shared negative auxiliary also governs elided confirmation predicates. Recognize a closed
   // list, never arbitrary text between "not" and "confirmed": that would borrow another clause's
   // negation. This only admits readable uncertainty to the still-mandatory semantic verifier.
@@ -1099,17 +1113,33 @@ function hasReportUncertainty(text: string): boolean {
     new RegExp(
       String.raw`${negativeList}(?:${negativeExplanation}|${possibleContinuation})?(?=\s*(?:$|[.!?;\n]))`,
       'u',
-    ).test(text)
+    ).test(unquoted)
+  )
+    return true;
+  // This three-part list keeps every predicate under the actor's shared negative auxiliary.
+  // Named actors do not establish gender; explicit pronouns constrain only reflexive agreement.
+  const reportCheck = String.raw`(?:independently\s+)?(?:checked|confirmed|verified)\s+(?:(?:the|this|that)\s+)?(?:report|account|claim)`;
+  const personalCheck = String.raw`(?:independently\s+)?(?:checked|confirmed|verified)\s+(?:it|(?:(?:the|this|that)\s+)?(?:reported\s+)?(?:meaning|contractual\s+(?:condition|term|requirement)))`;
+  const namedActor = String.raw`(?:${name}|(?:[Tt]he\s+)?assistant)`;
+  const actorReflexives = [
+    [namedActor, '(?:herself|himself|itself|themself)'],
+    ['[Ss]he', 'herself'],
+    ['[Hh]e', 'himself'],
+    ['I', 'myself'],
+  ];
+  if (
+    actorReflexives.some(([subject, reflexive]) =>
+      new RegExp(
+        String.raw`(?<![\p{L}])${subject}(?:\s+only\s+(?:conveys|relays)\s+(?:this|the)\s+(?:account|report)\s+and)?\s+(?:has|have|had)\s+not\s+${examination},\s+${reportCheck},\s+or\s+${reflexive}\s+${personalCheck}(?=\s*(?:$|[.!?;\n]))`,
+        'u',
+      ).test(unquoted),
+    )
   )
     return true;
   // A closed retelling clarification does not undo the preceding negative list. Never admit
   // an arbitrary comma-and clause, a new named actor, or a quoted grammatical example here.
   // Pronoun identity and the report itself still require the full-source semantic verdict.
   const clarification = String.raw`,\s+and\s+(?:she|he|they|the assistant)\s+clarif(?:y|ies)\s+that\s+these\s+are\s+${name}['’]s\s+words(?:\s+in\s+(?:her|his|their)\s+retelling)?\s+rather\s+than\s+a\s+(?:condition|term|requirement)\s+(?:she|he|they|the assistant)\s+(?:verified|confirmed)`;
-  const unquoted = text.replace(
-    /«[^»]*»|“[^”]*”|"[^"\n]*"|\x60[^\x60]*\x60|‘[^’]*’|(?<![\p{L}\p{N}])'(?:[^'\n]|(?<=[\p{L}\p{N}])'(?=[\p{L}\p{N}]))+'(?![\p{L}\p{N}])/gu,
-    ' ',
-  );
   return new RegExp(String.raw`${negativeList}${clarification}(?=\s*(?:$|[.!?;\n]))`, 'u').test(unquoted);
 }
 const RELATIVE_TIME =
@@ -1120,6 +1150,40 @@ function subjectIdentifiers(text: string): string[] {
   return (text.normalize('NFKC').match(/[\p{L}\p{N}][\p{L}\p{N}._:/+-]*/gu) ?? [])
     .filter((token) => /\p{L}/u.test(token) && /\d/u.test(token))
     .map((token) => token.toLowerCase().replace(/[.:]+$/u, ''));
+}
+
+/** Exact occurrences help the existing repair find context; none establishes subject attachment. */
+function sourceIdentifierContext(identifiers: readonly string[], options: CandidateCleaningOptions) {
+  const items = options.sourceItems
+    ? options.sourceItems.map((item) => ({ item_id: item.item_id, quote: item.text }))
+    : [{ item_id: null, quote: options.sourceText ?? '' }];
+  let remainingUnits = 1_200;
+  let remainingSpans = 4;
+  return {
+    identifiers: identifiers.slice(0, 4).map((identifier) => {
+      const matches = items
+        .map((span) => ({
+          span,
+          count: subjectIdentifiers(span.quote).filter((value) => value === identifier).length,
+        }))
+        .filter(({ count }) => count > 0);
+      const spans = matches.flatMap(({ span }) => {
+        // Do not clip a quote or silently choose an antecedent when the advisory budget is full.
+        if (remainingSpans === 0 || span.quote.length > remainingUnits) return [];
+        remainingUnits -= span.quote.length;
+        remainingSpans--;
+        return [span];
+      });
+      return {
+        identifier,
+        occurrence_count: matches.reduce((sum, match) => sum + match.count, 0),
+        source_span_count: matches.length,
+        spans,
+        omitted_spans: matches.length - spans.length,
+      };
+    }),
+    omitted_identifiers: Math.max(0, identifiers.length - 4),
+  };
 }
 
 function readsAsStatement(text: string): boolean {
@@ -1145,9 +1209,16 @@ export function cleanCandidateBatch(
 function cleanCandidateBatchWithPositions(
   value: unknown,
   options: CandidateCleaningOptions,
-): { candidates: RetainCandidate[]; held: RetainHeldCandidate[]; positions: Map<string, number> } {
+): {
+  candidates: RetainCandidate[];
+  held: RetainHeldCandidate[];
+  positions: Map<string, number>;
+  missingIdentifiers: Map<number, string[]>;
+} {
   const positions = new Map<string, number>();
-  if (!Array.isArray(value)) return { candidates: [], held: [], positions };
+  // Keep the repair diagnosis typed and private instead of recovering it from public reason prose.
+  const missingIdentifiers = new Map<number, string[]>();
+  if (!Array.isArray(value)) return { candidates: [], held: [], positions, missingIdentifiers };
   const candidates: RetainCandidate[] = [];
   const held: RetainHeldCandidate[] = [];
   const seen = new Set<string>();
@@ -1237,11 +1308,11 @@ function cleanCandidateBatchWithPositions(
       );
       const frameIdentifiers = new Set(subjectIdentifiers(sourceEvidence(spans.frame)));
       const readableIdentifiers = new Set(subjectIdentifiers(text));
-      if (
-        subjectIdentifiers(record.subject).some(
-          (id) => sourceIdentifiers.has(id) && (!readableIdentifiers.has(id) || !frameIdentifiers.has(id)),
-        )
-      ) {
+      const missing = [...new Set(subjectIdentifiers(record.subject))].filter(
+        (id) => sourceIdentifiers.has(id) && (!readableIdentifiers.has(id) || !frameIdentifiers.has(id)),
+      );
+      if (missing.length > 0) {
+        missingIdentifiers.set(index, missing);
         held.push({
           candidate_id: provisionalId,
           reason_code: 'validation_failed',
@@ -1580,6 +1651,7 @@ function cleanCandidateBatchWithPositions(
     candidates: candidates.filter((candidate) => !invalidRelations.has(candidate.candidate_id)),
     held,
     positions,
+    missingIdentifiers,
   };
 }
 

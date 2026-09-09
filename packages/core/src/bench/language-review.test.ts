@@ -9,6 +9,7 @@ import { LANGUAGE_CORPUS_V17 } from './language-corpus-v17.ts';
 import { LANGUAGE_CORPUS_V18 } from './language-corpus-v18.ts';
 import { LANGUAGE_CORPUS_V19 } from './language-corpus-v19.ts';
 import { LANGUAGE_CORPUS_V20 } from './language-corpus-v20.ts';
+import { LANGUAGE_CORPUS_V21 } from './language-corpus-v21.ts';
 import { LANGUAGE_CORPUS_V10 } from './language-corpus-v10.ts';
 import { LANGUAGE_CORPUS_V3 } from './language-corpus-v3.ts';
 import { languageReviewPacket, adjudicateLanguageGate, languageGateThresholds } from './language-review.ts';
@@ -24,7 +25,19 @@ type Report = Awaited<ReturnType<typeof runLanguageBench>>;
 /** Synthetic judgments exercise the gate's accounting and integrity, never model quality. */
 function fixture(
   version:
-    'v3' | 'v10' | 'v11' | 'v12' | 'v13' | 'v14' | 'v15' | 'v16' | 'v17' | 'v18' | 'v19' | 'v20' = 'v3',
+    | 'v3'
+    | 'v10'
+    | 'v11'
+    | 'v12'
+    | 'v13'
+    | 'v14'
+    | 'v15'
+    | 'v16'
+    | 'v17'
+    | 'v18'
+    | 'v19'
+    | 'v20'
+    | 'v21' = 'v3',
 ) {
   const corpus =
     version === 'v3'
@@ -49,7 +62,9 @@ function fixture(
                         ? LANGUAGE_CORPUS_V18
                         : version === 'v19'
                           ? LANGUAGE_CORPUS_V19
-                          : LANGUAGE_CORPUS_V20;
+                          : version === 'v20'
+                            ? LANGUAGE_CORPUS_V20
+                            : LANGUAGE_CORPUS_V21;
   const evidence = {
     text: 'An invented qualified memory record.',
     qualification: {
@@ -132,7 +147,7 @@ function fixture(
   })) as unknown as Report[];
   const packet = languageReviewPacket(reports, inputs);
   const outputs = {
-    schemaVersion: ['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20'].includes(version)
+    schemaVersion: ['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21'].includes(version)
       ? 'language-output-review-v2'
       : 'language-output-review-v1',
     packetFingerprint: packet.packetFingerprint,
@@ -142,7 +157,7 @@ function fixture(
       run: entry.run,
       retentionUseful: !entry.source.hold,
       retentionJustifiedHold: entry.source.hold ?? false,
-      ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20'].includes(version)
+      ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21'].includes(version)
         ? { retainedSourceEntailed: true }
         : {}),
       knowledgeLanguageCompliant: true,
@@ -157,7 +172,7 @@ function fixture(
         usefulQualifiedRetrieval: answer.retrievedEvidence.length > 0,
         justifiedAbstention: answer.answer === null,
         languageCompliant: answer.answer === null ? null : true,
-        ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20'].includes(version)
+        ...(['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21'].includes(version)
           ? { sourceEntailed: answer.answer === null ? null : true }
           : {}),
         qualificationPreserved: true,
@@ -219,7 +234,7 @@ describe('independently adjudicated language gate', () => {
     }
   });
 
-  it.each(['v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20'] as const)(
+  it.each(['v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21'] as const)(
     'keeps the stronger gate and complete breakdowns for fresh corpus %s',
     (version) => {
       const { reports, inputs, outputs } = fixture(version);
@@ -300,7 +315,7 @@ describe('independently adjudicated language gate', () => {
     expect(() => adjudicateLanguageGate(reports, inputs, outputs)).toThrow();
   });
 
-  it.each(['v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20'] as const)(
+  it.each(['v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21'] as const)(
     'keeps the source-entailment schema and zero thresholds for %s',
     (version) => {
       const { reports, inputs, outputs } = fixture(version);

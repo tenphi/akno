@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
+import { ModelClient, strictModeViolations } from '../models/client.ts';
+afterEach(() => vi.unstubAllGlobals());
 import {
   answerAlignmentsSupported,
   answerAlignmentSchema,
@@ -173,4 +176,91 @@ describe('private original-source answer audits', () => {
       ]).success,
     ).toBe(false);
   });
+});
+
+describe('provider-visible alignment branches', () => {
+  it.each(['chat_completions', 'responses'] as const)(
+    'sends all relation/null alternatives through %s',
+    async (api) => {
+      let wire: Record<string, any> = {};
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (_url: unknown, init: RequestInit) => {
+          const body = JSON.parse(String(init.body));
+          wire =
+            api === 'chat_completions'
+              ? (body.response_format.schema ?? body.response_format.json_schema?.schema)
+              : body.text.format.schema;
+          const value = JSON.stringify({ alignments: audit() });
+          return new Response(
+            JSON.stringify(
+              api === 'chat_completions'
+                ? { choices: [{ message: { content: value }, finish_reason: 'stop' }] }
+                : {
+                    status: 'completed',
+                    output: [{ type: 'message', content: [{ type: 'output_text', text: value }] }],
+                  },
+            ),
+            { headers: { 'content-type': 'application/json' } },
+          );
+        }),
+      );
+      const model = new ModelClient({
+        role: 'answer',
+        id: 'invented-alignment-schema',
+        enabled: true,
+        requested: true,
+        timeoutMs: 1111,
+        maxOutputTokens: 1111,
+        unavailableReason: null,
+        provider: {
+          name: 'invented',
+          baseUrl: 'https://invented.invalid/v1',
+          apiKey: null,
+          headers: {},
+          maxRetries: 0,
+          api,
+        },
+      });
+      const result = await model.chat([{ role: 'user', content: 'Return the invented alignment.' }], {
+        schema: z.object({ alignments: answerAlignmentSchema(coordinates) }),
+      });
+      expect(result.ok, JSON.stringify(result)).toBe(true);
+      expect(strictModeViolations(wire)).toEqual([]);
+      expect(JSON.stringify(wire)).not.toMatch(/"(?:oneOf|const)":/u);
+      const branches = wire.properties.alignments.items.properties.actor.anyOf;
+      expect(branches).toHaveLength(3);
+      for (const branch of branches) {
+        expect(branch.type).toBe('object');
+        expect(branch.additionalProperties).toBe(false);
+        expect(new Set(branch.required)).toEqual(
+          new Set(['source_anchor', 'answer_anchor', 'relation', 'detail']),
+        );
+      }
+      expect(branches[0].properties.source_anchor.enum).toEqual(['source-actor']);
+      expect(branches[0].properties.answer_anchor.enum).toEqual(['answer-actor']);
+      expect(branches[0].properties.relation.enum).toEqual(['preserved', 'generalized', 'changed']);
+      expect(branches[1].properties.answer_anchor.type).toBe('null');
+      expect(branches[1].properties.relation.enum).toEqual(['omitted']);
+      expect(branches[2].properties.answer_anchor.type).toBe('null');
+      expect(branches[2].properties.relation.enum).toEqual(['not_selected']);
+      expect(branches[2].properties.source_anchor.anyOf).toEqual([
+        { type: 'string', enum: ['source-actor'] },
+        { type: 'null' },
+      ]);
+    },
+  );
+  it.each(['preserved', 'omitted', 'not_selected'])(
+    'rejects extra fields in %s without stripping them',
+    (relation) => {
+      const entries = audit();
+      const actor = {
+        ...entries[0]!.actor,
+        relation,
+        answer_anchor: relation === 'preserved' ? 'answer-actor' : null,
+        invented: true,
+      };
+      expect(answerAlignmentSchema(coordinates).safeParse([{ ...entries[0], actor }]).success).toBe(false);
+    },
+  );
 });
