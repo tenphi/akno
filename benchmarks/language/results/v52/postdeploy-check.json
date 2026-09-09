@@ -1,0 +1,34 @@
+{
+  "runtimeCommit": "76589281e55eb8e824b82444f4c1aff927cdb7c6",
+  "tests": 2348,
+  "testFiles": 137,
+  "checks": {
+    "build/typecheck": "passed",
+    "lint": "passed",
+    "knip": "passed",
+    "suite": "passed",
+    "formatting": "passed",
+    "docs:doctor": "passed",
+    "docs:build": "passed",
+    "smoke": "passed",
+    "smoke:packages": "passed",
+    "check:repository": "passed",
+    "redeploy:build/restart/socket": "passed"
+  },
+  "compiledChecks": {
+    "compiledPersonalActions": true,
+    "generatedRetention": true,
+    "providedRetentionUnchanged": true,
+    "compiledLanguageHints": true,
+    "languageVerdictMandatory": true,
+    "extraModelPasses": 0
+  },
+  "ci": {
+    "run": 34294219658,
+    "conclusion": "success"
+  },
+  "documentationCI": {
+    "run": 34294219641,
+    "conclusion": "success"
+  }
+}

@@ -1,0 +1,7 @@
+# V52 post-probe disposition
+
+Both declared exposed probes completed on `7658928`. Preserve all reports, independent grades, separate review/fix notes, forensic interpretations and the source-only report-status audit under `results/v52`. Final independently useful answers are 39/48 selected and 26/32 built, 65/80 overall. Fifteen writable nulls remain; no accepted source-entailment, qualification, language or promotion error was identified. Source bytes and case availability pass.
+
+The entire selected nested report is blocked before semantic verification by a preliminary uncertainty matcher, while its independent collection denial remains held at ownership. Four built report answers reopen a false query-triggered bilingual ambiguity. Smaller losses involve a Russian epistemic adjective, excerpt-selected recording provenance and provisional-adverb attachment. Full V52 execution is deferred; fresh approved V20 held-out remains unexecuted.
+
+V53 should address the report-floor coordination and epistemic-head-bound inflection, and clarify generation's use of original source disambiguation and tentative timing. Preserve source authority, mandatory semantic/excerpt-selection verdicts, no-retry behavior and unchanged acceptance thresholds. Repeat the separate review/fix, complete local gate, commit/freeze, build/restart/socket and compiled/exposed validation workflow before reconsidering fresh repeated execution.
