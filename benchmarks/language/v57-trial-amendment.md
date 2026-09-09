@@ -1,0 +1,5 @@
+# V57 disposition after the declared exposed probes
+
+Both probes completed on frozen 12ba420. Independent source-only grading found **49/80 useful answers** (30/48 selected, 19/32 built), 30 writable nulls and one nonnull usefulness failure: the proposed discussion does not answer the requested fictional promise. All 50 nonnull answers preserve source entailment, qualification and language; no unsafe factual promotion or source-byte change was found. Complete useful retention is 6/10 and useful retrieval is 56/80. The built rejected-offer case has a typed retention availability failure (derive_failed after an invalid repair).
+
+Full repeated execution is deferred for substantial coverage loss. Fresh approved V20 held-out remains unexecuted. All [reports and reviews](results/v57/README.md), including the initial and corrected forensic quotation, are preserved. Continue with bounded fixes and the same independent review/fix, complete local checks, freeze, redeploy, provider controls and declared exposed evaluation. No semantic retry, model/pass change, threshold weakening or issue edit; PR #70 remains open.
