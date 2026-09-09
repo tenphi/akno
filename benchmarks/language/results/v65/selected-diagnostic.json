@@ -1,0 +1,4157 @@
+{
+  "schemaVersion": "language-benchmark-v2",
+  "createdAt": "2026-09-09T10:49:38.690Z",
+  "corpusVersion": "language-discourse-v20",
+  "corpusFingerprint": "8658f0d00661221cf4e042ffb78f5ed2f3c6b575ab254b81b65ded6e853ea0e9",
+  "selectedCaseIds": [
+    "v19-held-report",
+    "v19-held-hypothesis",
+    "v19-held-exclusion",
+    "v19-held-assistant",
+    "v19-held-fiction",
+    "v19-held-undated"
+  ],
+  "runs": 1,
+  "setup": "separate-writable-fidelity-and-read-only-admission",
+  "queryMatrix": [
+    "query_language",
+    "answer_language",
+    "explicit_view"
+  ],
+  "split": "development",
+  "knowledgeLanguage": "en",
+  "proseProjectionVersion": "prose-v1",
+  "memoryViewVersion": "memory-view-v7",
+  "answerPromptVersion": "answer-generation-v60",
+  "answerVerifierVersion": "answer-verifier-v40",
+  "retentionPromptVersion": "retain-extraction-language-v48",
+  "retentionVerifierVersion": "retain-verifier-language-v31",
+  "models": {
+    "retention": "gpt-5.6-luna",
+    "answer": "gpt-5.6-luna",
+    "embedding": "text-embedding-qwen3-embedding-0.6b",
+    "expansion": "llama-3.2-3b-instruct"
+  },
+  "modelOutputTokenLimits": {
+    "answer": 2400,
+    "retention": 2400
+  },
+  "indexModelDerivation": false,
+  "independentlyReviewed": false,
+  "releaseEligible": false,
+  "adjudication": "pending: inspect review material; verifier agreement and typed expectations are not independent truth labels",
+  "thresholds": {
+    "unsafeFactualPromotion": 0,
+    "acceptedLanguageViolations": 0,
+    "translationQualificationErrors": 0,
+    "sourceByteChanges": 0,
+    "usefulRetentionCoverage": 0.8,
+    "qualifiedRetrievalCoverage": 0.8,
+    "usefulQualifiedAnswerCoverage": 0.9,
+    "availabilityFailureRate": 0.05,
+    "unsupportedRetainedOutputs": 0,
+    "unsupportedNonnullAnswers": 0
+  },
+  "metrics": {
+    "availabilityFailures": {
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0
+    },
+    "answerOperationFailures": {
+      "numerator": 0,
+      "denominator": 48,
+      "rate": 0
+    },
+    "producedAnswers": {
+      "numerator": 44,
+      "denominator": 48,
+      "rate": 0.9166666666666666
+    },
+    "producedAnswersOverRetained": {
+      "numerator": 44,
+      "denominator": 48,
+      "rate": 0.9166666666666666
+    },
+    "answerReasons": {
+      "answered": 44,
+      "draft_rejected": 4
+    },
+    "routingReasons": {
+      "ownership_uncertain": 1
+    },
+    "holdStages": {
+      "placement": 1
+    },
+    "independentlyJudgedQualifiedAnswers": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "independentlyJustifiedAbstentions": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "languagePolicyRejections": {
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0
+    },
+    "acceptedLanguageViolations": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "translationQualificationErrors": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "unsafeFactualPromotion": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "noncanonicalEligibilityFlags": {
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0
+    },
+    "usefulRetentionCoverage": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1
+    },
+    "expectedRetentionMisses": {
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0
+    },
+    "falseHolds": {
+      "numerator": null,
+      "denominator": 0,
+      "rate": null
+    },
+    "expectedSafeHolds": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "typedSemanticsMatch": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1
+    },
+    "qualifiedRetrievalCoverage": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1
+    },
+    "ordinaryProseQualification": {
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1
+    },
+    "sourceByteChanges": {
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0
+    }
+  },
+  "byLanguage": {
+    "en": 1,
+    "ru": 2,
+    "mixed": 3
+  },
+  "byScenario": {
+    "nested-report": 1,
+    "hypothetical-maintenance": 1,
+    "factual-negation": 1,
+    "tentative-assistant-report": 1,
+    "fictional-example": 1,
+    "undated-proposal": 1
+  },
+  "cases": [
+    {
+      "id": "v19-held-report",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve outer Ada and inner Bo, permission to send the device to a service bench for return-spring tension measurement rather than spring replacement, and the unread/unconfirmed status. Keep the separate no-collection-booking assertion. The contrast clarifies the same relayed report; permission is not a booking or completed measurement.",
+      "language": "mixed",
+      "scenario": "nested-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "held",
+            "reason": "routing_uncertain",
+            "holdStage": "placement",
+            "routingReason": "ownership_uncertain"
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 15560,
+            "input_tokens": 6857,
+            "output_tokens": 1637,
+            "total_tokens": 8494
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9912,
+            "input_tokens": 6771,
+            "output_tokens": 994,
+            "total_tokens": 7765
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1789,
+              "input_tokens": 600,
+              "output_tokens": 95,
+              "total_tokens": 695
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2046,
+              "input_tokens": 524,
+              "output_tokens": 75,
+              "total_tokens": 599
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4442,
+              "input_tokens": 431,
+              "output_tokens": 114,
+              "total_tokens": 545
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3858,
+              "input_tokens": 4915,
+              "output_tokens": 272,
+              "total_tokens": 5187
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5623,
+              "input_tokens": 7348,
+              "output_tokens": 608,
+              "total_tokens": 7956
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring. [memory/zephyr-qx-100-service-terms:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4683,
+              "input_tokens": 4894,
+              "output_tokens": 411,
+              "total_tokens": 5305
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5567,
+              "input_tokens": 7352,
+              "output_tokens": 693,
+              "total_tokens": 8045
+            }
+          },
+          "reviewAnswer": "**По словам Ada Marlow:** Ada Marlow не читала условия обслуживания и не имеет независимого подтверждения сообщения Bo Winters о том, что условия обслуживания Zephyr QX-100 разрешают отправить устройство на сервисный стенд для измерения натяжения его возвратной пружины; речь идет об измерении этого натяжения, а не о замене пружины. [memory/zephyr-qx-100-service-terms:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4262,
+              "input_tokens": 4915,
+              "output_tokens": 276,
+              "total_tokens": 5191
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5418,
+              "input_tokens": 7348,
+              "output_tokens": 572,
+              "total_tokens": 7920
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring. [memory/zephyr-qx-100-service-terms:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4204,
+              "input_tokens": 4894,
+              "output_tokens": 335,
+              "total_tokens": 5229
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7645,
+              "input_tokens": 7377,
+              "output_tokens": 668,
+              "total_tokens": 8045
+            }
+          },
+          "reviewAnswer": "**По словам Ada Marlow:** Ada Marlow не читала условия обслуживания и не имеет независимого подтверждения сообщения Bo Winters о том, что условия Zephyr QX-100 разрешают отправить устройство на сервисный стенд для измерения натяжения его возвратной пружины; речь идёт об измерении этого натяжения, а не о замене пружины. [memory/zephyr-qx-100-service-terms:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5889,
+              "input_tokens": 4926,
+              "output_tokens": 297,
+              "total_tokens": 5223
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5884,
+              "input_tokens": 7348,
+              "output_tokens": 610,
+              "total_tokens": 7958
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring. [memory/zephyr-qx-100-service-terms:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "attribution": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5538,
+              "input_tokens": 4908,
+              "output_tokens": 437,
+              "total_tokens": 5345
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4130,
+              "input_tokens": 4926,
+              "output_tokens": 258,
+              "total_tokens": 5184
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5889,
+              "input_tokens": 7348,
+              "output_tokens": 598,
+              "total_tokens": 7946
+            }
+          },
+          "reviewAnswer": "**Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring. [memory/zephyr-qx-100-service-terms:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_3bba7c67",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_18f6fa9de8f91173b858a8b2",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "attribution": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5181,
+              "input_tokens": 4907,
+              "output_tokens": 414,
+              "total_tokens": 5321
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by Ada Marlow:** Ada Marlow has not read the service terms and has no independent confirmation of Bo Winters's report that the Zephyr QX-100 terms permit sending the device to a service bench to measure the tension of its return spring; this concerns measuring that tension, not replacing the spring.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_3bba7c67",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_18f6fa9de8f91173b858a8b2",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v19-held-hypothesis",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain the hypothetical two-month foam-filter check rule and its explicit conditional missed-check consequence together. Actual requirements remain unknown and no actual missed check is reported. Keep Ada attribution and the frequency as a property rather than a calendar event.",
+      "language": "ru",
+      "scenario": "hypothetical-maintenance",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 7413,
+            "input_tokens": 6786,
+            "output_tokens": 750,
+            "total_tokens": 7536
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5667,
+            "input_tokens": 6229,
+            "output_tokens": 639,
+            "total_tokens": 6868
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2443,
+              "input_tokens": 590,
+              "output_tokens": 173,
+              "total_tokens": 763
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1643,
+              "input_tokens": 420,
+              "output_tokens": 84,
+              "total_tokens": 504
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5349,
+              "input_tokens": 4864,
+              "output_tokens": 270,
+              "total_tokens": 5134
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4573,
+              "input_tokens": 7249,
+              "output_tokens": 577,
+              "total_tokens": 7826
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5892,
+              "input_tokens": 4829,
+              "output_tokens": 318,
+              "total_tokens": 5147
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4764,
+              "input_tokens": 7280,
+              "output_tokens": 564,
+              "total_tokens": 7844
+            }
+          },
+          "reviewAnswer": "**Гипотетически:** Ada Marlow предполагает, что поролоновый фильтр Zephyr QX-100 следует проверять каждые два месяца, поэтому пропущенная проверка нарушала бы это предполагаемое правило; настоящие требования нам неизвестны, и она не сообщает о реальном пропуске проверки. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4007,
+              "input_tokens": 4864,
+              "output_tokens": 236,
+              "total_tokens": 5100
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4983,
+              "input_tokens": 7249,
+              "output_tokens": 579,
+              "total_tokens": 7828
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4478,
+              "input_tokens": 4833,
+              "output_tokens": 355,
+              "total_tokens": 5188
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6556,
+              "input_tokens": 7268,
+              "output_tokens": 643,
+              "total_tokens": 7911
+            }
+          },
+          "reviewAnswer": "**Гипотеза:** Ada Marlow гипотетически предполагает, что поролоновый фильтр Zephyr QX-100 следует проверять каждые два месяца, поэтому пропущенная проверка нарушила бы это предполагаемое правило; фактические требования нам неизвестны, и она не сообщает о реальном пропуске проверки. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3646,
+              "input_tokens": 4871,
+              "output_tokens": 226,
+              "total_tokens": 5097
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5032,
+              "input_tokens": 7249,
+              "output_tokens": 594,
+              "total_tokens": 7843
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4646,
+              "input_tokens": 4839,
+              "output_tokens": 363,
+              "total_tokens": 5202
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5805,
+              "input_tokens": 7275,
+              "output_tokens": 621,
+              "total_tokens": 7896
+            }
+          },
+          "reviewAnswer": "**Гипотеза:** Ada Marlow гипотетически допускает, что поролоновый фильтр Zephyr QX-100 следует проверять каждые два месяца, поэтому пропущенная проверка нарушала бы это предполагаемое правило; настоящие требования нам неизвестны, и она не сообщает о реальном пропуске проверки. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4441,
+              "input_tokens": 4871,
+              "output_tokens": 227,
+              "total_tokens": 5098
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5353,
+              "input_tokens": 7249,
+              "output_tokens": 627,
+              "total_tokens": 7876
+            }
+          },
+          "reviewAnswer": "**Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_66954d54",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_af7a4bc77feffd5589ccb59b",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4335,
+              "input_tokens": 4837,
+              "output_tokens": 354,
+              "total_tokens": 5191
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6033,
+              "input_tokens": 7273,
+              "output_tokens": 635,
+              "total_tokens": 7908
+            }
+          },
+          "reviewAnswer": "**Гипотетически:** Ada Marlow предполагает, что поролоновый фильтр Zephyr QX-100 следует проверять каждые два месяца, поэтому пропущенная проверка нарушала бы это предполагаемое правило; фактические требования нам неизвестны, и она не сообщает о реальном пропуске проверки. [memory/zephyr-qx-100:14]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Hypothetical:** Ada Marlow hypothetically assumes that the Zephyr QX-100 foam filter should be checked every two months, so a missed check would violate that assumed rule; the actual requirements are unknown to us, and she reports no real missed check.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_66954d54",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_af7a4bc77feffd5589ccb59b",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v19-held-exclusion",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve the asserted support-bracket exclusion with negated polarity and the narrow statement that this exclusion does not resolve fan-motor repair coverage. Do not claim that the entire contract omits the answer.",
+      "language": "ru",
+      "scenario": "factual-negation",
+      "expectedHold": false,
+      "nonfactualExpected": false,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5706,
+            "input_tokens": 6746,
+            "output_tokens": 549,
+            "total_tokens": 7295
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9197,
+            "input_tokens": 5909,
+            "output_tokens": 840,
+            "total_tokens": 6749
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1646,
+              "input_tokens": 593,
+              "output_tokens": 85,
+              "total_tokens": 678
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1959,
+              "input_tokens": 419,
+              "output_tokens": 90,
+              "total_tokens": 509
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3504,
+              "input_tokens": 4835,
+              "output_tokens": 231,
+              "total_tokens": 5066
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6282,
+              "input_tokens": 7046,
+              "output_tokens": 593,
+              "total_tokens": 7639
+            }
+          },
+          "reviewAnswer": "Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "semantic_support": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4070,
+              "input_tokens": 4802,
+              "output_tokens": 315,
+              "total_tokens": 5117
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3826,
+              "input_tokens": 4835,
+              "output_tokens": 229,
+              "total_tokens": 5064
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6275,
+              "input_tokens": 7046,
+              "output_tokens": 580,
+              "total_tokens": 7626
+            }
+          },
+          "reviewAnswer": "Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3774,
+              "input_tokens": 4795,
+              "output_tokens": 266,
+              "total_tokens": 5061
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6494,
+              "input_tokens": 7060,
+              "output_tokens": 547,
+              "total_tokens": 7607
+            }
+          },
+          "reviewAnswer": "Ada Marlow утверждает, что запись об исключении Zephyr QX-100 указывает: повреждённый опорный кронштейн не покрывается гарантией, однако запись не позволяет определить, покрывается ли ремонт двигателя вентилятора, и не утверждает, что договор молчит об этом ремонте. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3627,
+              "input_tokens": 4841,
+              "output_tokens": 223,
+              "total_tokens": 5064
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5594,
+              "input_tokens": 7046,
+              "output_tokens": 562,
+              "total_tokens": 7608
+            }
+          },
+          "reviewAnswer": "Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3756,
+              "input_tokens": 4804,
+              "output_tokens": 280,
+              "total_tokens": 5084
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6502,
+              "input_tokens": 7038,
+              "output_tokens": 611,
+              "total_tokens": 7649
+            }
+          },
+          "reviewAnswer": "Ada Marlow утверждает, что запись об исключении для Zephyr QX-100 указывает: повреждённый опорный кронштейн не покрывается гарантией. Однако запись не определяет, покрывается ли гарантией ремонт двигателя вентилятора, и не утверждает, что договор молчит об этом ремонте. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5010,
+              "input_tokens": 4841,
+              "output_tokens": 217,
+              "total_tokens": 5058
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6107,
+              "input_tokens": 7046,
+              "output_tokens": 504,
+              "total_tokens": 7550
+            }
+          },
+          "reviewAnswer": "Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "factual",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ee5c448e",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_a6c63a9f817e9751619a5d37",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "active",
+                "polarity": "negated",
+                "basis": "self_attested",
+                "answer_eligible": true,
+                "current_eligible": true
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "not_answered",
+          "answerReason": "draft_rejected",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 0,
+            "verified_blocks": null,
+            "rejection_counts": {
+              "semantic_support": 1
+            }
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4775,
+              "input_tokens": 4803,
+              "output_tokens": 270,
+              "total_tokens": 5073
+            },
+            "verification": null
+          },
+          "reviewAnswer": null
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- Ada Marlow asserts that the Zephyr QX-100 exclusion record states that a damaged support bracket is not covered by the warranty, but the record does not determine whether fan motor repair is covered and does not assert that the contract is silent about that repair.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ee5c448e",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_a6c63a9f817e9751619a5d37",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "active",
+            "polarity": "negated",
+            "basis": "self_attested",
+            "answer_eligible": true,
+            "current_eligible": true
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v19-held-assistant",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Preserve generic assistant attribution, tentative modal possibility, quarterly functional status-display checks, and lack of contract examination or confirmation. The condition is a contractual term, not a claim about the device’s physical state. Do not promote the report to an established servicing requirement.",
+      "language": "en",
+      "scenario": "tentative-assistant-report",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6346,
+            "input_tokens": 6709,
+            "output_tokens": 638,
+            "total_tokens": 7347
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 3544,
+            "input_tokens": 5839,
+            "output_tokens": 353,
+            "total_tokens": 6192
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1375,
+              "input_tokens": 589,
+              "output_tokens": 58,
+              "total_tokens": 647
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2040,
+              "input_tokens": 423,
+              "output_tokens": 91,
+              "total_tokens": 514
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3485,
+              "input_tokens": 4832,
+              "output_tokens": 199,
+              "total_tokens": 5031
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6191,
+              "input_tokens": 7094,
+              "output_tokens": 562,
+              "total_tokens": 7656
+            }
+          },
+          "reviewAnswer": "**Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4900,
+              "input_tokens": 4807,
+              "output_tokens": 363,
+              "total_tokens": 5170
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5594,
+              "input_tokens": 7129,
+              "output_tokens": 591,
+              "total_tokens": 7720
+            }
+          },
+          "reviewAnswer": "**Сообщено ассистентом · Предварительный статус:** Предварительное толкование ассистента состоит в том, что обслуживание Zephyr QX-100 может включать ежеквартальную функциональную проверку индикатора состояния, однако ассистент не изучал договор и не подтверждал это предположение; это возможное условие договора, а не установленное требование. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3230,
+              "input_tokens": 4832,
+              "output_tokens": 200,
+              "total_tokens": 5032
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4857,
+              "input_tokens": 7094,
+              "output_tokens": 482,
+              "total_tokens": 7576
+            }
+          },
+          "reviewAnswer": "**Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3685,
+              "input_tokens": 4804,
+              "output_tokens": 308,
+              "total_tokens": 5112
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5744,
+              "input_tokens": 7103,
+              "output_tokens": 548,
+              "total_tokens": 7651
+            }
+          },
+          "reviewAnswer": "**По словам ассистента · Предварительный статус:** Предварительное понимание ассистента состоит в том, что обслуживание Zephyr QX-100 может включать ежеквартальную функциональную проверку дисплея состояния, однако ассистент не изучал договор и не подтвердил это предположение; это возможное условие договора, а не установленное требование. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3672,
+              "input_tokens": 4837,
+              "output_tokens": 219,
+              "total_tokens": 5056
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4823,
+              "input_tokens": 7094,
+              "output_tokens": 503,
+              "total_tokens": 7597
+            }
+          },
+          "reviewAnswer": "**Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4860,
+              "input_tokens": 4810,
+              "output_tokens": 346,
+              "total_tokens": 5156
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5025,
+              "input_tokens": 7114,
+              "output_tokens": 560,
+              "total_tokens": 7674
+            }
+          },
+          "reviewAnswer": "**Сообщено ассистентом · Предварительный статус:** Предварительная версия ассистента состоит в том, что обслуживание Zephyr QX-100 может включать ежеквартальную функциональную проверку дисплея состояния, однако ассистент не изучал договор и не подтверждал это предположение; это возможное условие договора, а не установленное требование. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3446,
+              "input_tokens": 4837,
+              "output_tokens": 193,
+              "total_tokens": 5030
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5101,
+              "input_tokens": 7094,
+              "output_tokens": 513,
+              "total_tokens": 7607
+            }
+          },
+          "reviewAnswer": "**Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "reports",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_b51936f5",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_22c250d83ff29280697213ab",
+                "source_role": "assistant",
+                "source_speaker": "assistant",
+                "commitment": "tentative",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "source_report",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4149,
+              "input_tokens": 4810,
+              "output_tokens": 312,
+              "total_tokens": 5122
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5293,
+              "input_tokens": 7114,
+              "output_tokens": 565,
+              "total_tokens": 7679
+            }
+          },
+          "reviewAnswer": "**Сообщено ассистентом · Предварительный статус:** Предварительная версия ассистента состоит в том, что обслуживание Zephyr QX-100 может включать ежеквартальную функциональную проверку дисплея состояния, однако ассистент не изучал договор и не подтверждал это предположение; это возможное условие договора, а не установленное требование. [memory/zephyr-qx-100:14]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Reported by assistant · Tentative:** The assistant's preliminary reading is that Zephyr QX-100 servicing may include a quarterly functional check of the status display, but the assistant has not examined the contract or confirmed this assumption; it is a possible contract condition, not an established requirement.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_b51936f5",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_22c250d83ff29280697213ab",
+            "source_role": "assistant",
+            "source_speaker": "assistant",
+            "commitment": "tentative",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "source_report",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v19-held-fiction",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain the actual proposal to discuss separately from, or fully scoped together with, the fictional promise of free axle-cap replacements in the first ten weeks. The complete fictional content keeps Vulpine as promising party and Bo as character/recipient. No real agreement, promise or completed discussion is established.",
+      "language": "mixed",
+      "scenario": "fictional-example",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          },
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9832,
+            "input_tokens": 6816,
+            "output_tokens": 1239,
+            "total_tokens": 8055
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 6762,
+            "input_tokens": 6723,
+            "output_tokens": 779,
+            "total_tokens": 7502
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1360,
+              "input_tokens": 568,
+              "output_tokens": 57,
+              "total_tokens": 625
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1270,
+              "input_tokens": 586,
+              "output_tokens": 52,
+              "total_tokens": 638
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1892,
+              "input_tokens": 398,
+              "output_tokens": 75,
+              "total_tokens": 473
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1857,
+              "input_tokens": 576,
+              "output_tokens": 30,
+              "total_tokens": 606
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 2,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6026,
+              "input_tokens": 4398,
+              "output_tokens": 389,
+              "total_tokens": 4787
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7048,
+              "input_tokens": 7721,
+              "output_tokens": 890,
+              "total_tokens": 8611
+            }
+          },
+          "reviewAnswer": "Ada Marlow proposed discussing a fictional example in which Vulpine Mutual promises the fictional character Bo Winters free axle-cap replacements during the first ten weeks of ownership. The promise belongs only to the fiction, and the discussion itself was only proposed; there was no real agreement. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7082,
+              "input_tokens": 4437,
+              "output_tokens": 574,
+              "total_tokens": 5011
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7019,
+              "input_tokens": 7686,
+              "output_tokens": 809,
+              "total_tokens": 8495
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила обсудить вымышленный пример о Zephyr QX-100, в котором Vulpine Mutual обещает Bo Winters бесплатную замену колпачков оси в течение первых десяти недель владения. Это обещание относится только к вымыслу, а не к реальному соглашению. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4428,
+              "input_tokens": 4415,
+              "output_tokens": 396,
+              "total_tokens": 4811
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6672,
+              "input_tokens": 7701,
+              "output_tokens": 762,
+              "total_tokens": 8463
+            }
+          },
+          "reviewAnswer": "In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises the fictional character Bo Winters free axle-cap replacements during the first ten weeks of ownership. Ada proposed discussing this example; the promise belongs only to the fiction, and there is no real agreement. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5462,
+              "input_tokens": 4445,
+              "output_tokens": 439,
+              "total_tokens": 4884
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6140,
+              "input_tokens": 7744,
+              "output_tokens": 852,
+              "total_tokens": 8596
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила обсудить вымышленный пример о Zephyr QX-100, в котором Vulpine Mutual обещает Bo Winters бесплатную замену колпачков оси в течение первых десяти недель владения. Bo Winters — персонаж этого примера; обещание относится только к вымыслу, а не к реальному соглашению. [memory/equipment:9] [memory/equipment:6]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4919,
+              "input_tokens": 4400,
+              "output_tokens": 388,
+              "total_tokens": 4788
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6569,
+              "input_tokens": 7657,
+              "output_tokens": 740,
+              "total_tokens": 8397
+            }
+          },
+          "reviewAnswer": "Ada Marlow proposed discussing a fictional example in which Vulpine Mutual promises the fictional character Bo Winters free axle-cap replacements during the first ten weeks of ownership. The discussion was only proposed, and there is no real agreement. [memory/equipment:6] [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4795,
+              "input_tokens": 4449,
+              "output_tokens": 388,
+              "total_tokens": 4837
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7174,
+              "input_tokens": 7736,
+              "output_tokens": 780,
+              "total_tokens": 8516
+            }
+          },
+          "reviewAnswer": "В вымышленном примере о Zephyr QX-100 Vulpine Mutual обещает Bo Winters бесплатную замену колпачка оси в течение первых десяти недель владения. Ada Marlow предложила обсудить именно этот пример; обещание существует только в рамках вымысла и не является реальным соглашением. [memory/equipment:6] [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4526,
+              "input_tokens": 4390,
+              "output_tokens": 380,
+              "total_tokens": 4770
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5985,
+              "input_tokens": 7255,
+              "output_tokens": 623,
+              "total_tokens": 7878
+            }
+          },
+          "reviewAnswer": "In Ada Marlow's fictional example, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership. The promise belongs only to the fiction. [memory/equipment:9]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "discussion",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 2,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_ea66e188",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            },
+            {
+              "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_1b9f05dd",
+                "level": 1,
+                "kind": "claim",
+                "subject": "ent_169f74930f79c9499d4b7f31",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "hypothetical",
+                "disposition": "active",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 1,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5518,
+              "input_tokens": 4434,
+              "output_tokens": 397,
+              "total_tokens": 4831
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7365,
+              "input_tokens": 7746,
+              "output_tokens": 957,
+              "total_tokens": 8703
+            }
+          },
+          "reviewAnswer": "Ada Marlow предложила обсудить вымышленный пример, в котором Vulpine Mutual обещает Bo Winters бесплатную замену колпачка оси в течение первых десяти недель владения. Это обещание существует только в рамках вымысла; само обсуждение лишь предложено, и реального соглашения нет. [memory/equipment:6] [memory/equipment:9]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Proposal:** Ada Marlow proposes discussing a fictional example about Zephyr QX-100; the discussion itself is only proposed, and there is no real agreement here.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_ea66e188",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_169f74930f79c9499d4b7f31",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        },
+        {
+          "text": "- **Hypothetical:** In Ada Marlow's fictional example about Zephyr QX-100, Vulpine Mutual promises Bo Winters free axle-cap replacements during the first ten weeks of ownership; Bo Winters is a character, and the promise belongs only to the fiction.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_1b9f05dd",
+            "level": 1,
+            "kind": "claim",
+            "subject": "ent_169f74930f79c9499d4b7f31",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "hypothetical",
+            "disposition": "active",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false
+          }
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "v19-held-undated",
+      "run": 1,
+      "admission": "writable",
+      "reviewExpectation": "Retain Ada’s explicit proposal to review warranty exclusions next year relative to the original undated record, with an unknown calendar/reference year and no adopted plan or arranged meeting. Proposed disposition and tentative timing do not themselves make the stated proposal’s commitment tentative. Preserve an unknown temporal envelope and no processing-date substitution.",
+      "language": "mixed",
+      "scenario": "undated-proposal",
+      "expectedHold": false,
+      "nonfactualExpected": true,
+      "retentionAvailabilityFailure": false,
+      "availabilityFailure": false,
+      "languageRejected": false,
+      "retention": {
+        "status": "ok",
+        "outcome": "ok",
+        "reason": null,
+        "candidates": [
+          {
+            "outcome": "written",
+            "reason": null,
+            "holdStage": null,
+            "routingReason": null
+          }
+        ],
+        "usage": {
+          "extraction": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 9642,
+            "input_tokens": 6774,
+            "output_tokens": 948,
+            "total_tokens": 7722
+          },
+          "verification": {
+            "model": "gpt-5.6-luna",
+            "latency_ms": 5159,
+            "input_tokens": 6177,
+            "output_tokens": 527,
+            "total_tokens": 6704
+          },
+          "placement": [
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 2507,
+              "input_tokens": 603,
+              "output_tokens": 163,
+              "total_tokens": 766
+            },
+            {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 1866,
+              "input_tokens": 422,
+              "output_tokens": 75,
+              "total_tokens": 497
+            }
+          ]
+        },
+        "degraded": []
+      },
+      "retainedItems": 1,
+      "noncanonicalEligibilityFlag": false,
+      "semanticsMatch": true,
+      "ordinaryCorrect": true,
+      "ordinaryInspection": {
+        "status": "ok",
+        "results": 1
+      },
+      "bytesStable": true,
+      "replayOutcome": "replayed",
+      "queries": [
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3445,
+              "input_tokens": 4897,
+              "output_tokens": 243,
+              "total_tokens": 5140
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5444,
+              "input_tokens": 7436,
+              "output_tokens": 599,
+              "total_tokens": 8035
+            }
+          },
+          "reviewAnswer": "**Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4362,
+              "input_tokens": 4858,
+              "output_tokens": 323,
+              "total_tokens": 5181
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5132,
+              "input_tokens": 7451,
+              "output_tokens": 623,
+              "total_tokens": 8074
+            }
+          },
+          "reviewAnswer": "**Предложение · Предварительное:** Ada Marlow предложила в следующем году пересмотреть исключения из гарантии на Zephyr QX-100, но она не приняла этот план и не организовала встречу; «следующий год» отсчитывается от недатированной исходной записи, поэтому определить его календарный год невозможно. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4587,
+              "input_tokens": 4897,
+              "output_tokens": 227,
+              "total_tokens": 5124
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 7393,
+              "input_tokens": 7436,
+              "output_tokens": 609,
+              "total_tokens": 8045
+            }
+          },
+          "reviewAnswer": "**Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "en",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "complete",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4243,
+              "input_tokens": 4857,
+              "output_tokens": 337,
+              "total_tokens": 5194
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6901,
+              "input_tokens": 7426,
+              "output_tokens": 662,
+              "total_tokens": 8088
+            }
+          },
+          "reviewAnswer": "**Предложение · Предварительное:** Ada Marlow предложила в следующем году пересмотреть исключения из гарантии Zephyr QX-100, но не приняла это как план и не организовала встречу; «следующий год» отсчитывается от недатированной исходной записи, поэтому его календарный год невозможно определить. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4134,
+              "input_tokens": 4901,
+              "output_tokens": 259,
+              "total_tokens": 5160
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 8673,
+              "input_tokens": 7436,
+              "output_tokens": 636,
+              "total_tokens": 8072
+            }
+          },
+          "reviewAnswer": "**Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": false,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4532,
+              "input_tokens": 4859,
+              "output_tokens": 341,
+              "total_tokens": 5200
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 5498,
+              "input_tokens": 7448,
+              "output_tokens": 580,
+              "total_tokens": 8028
+            }
+          },
+          "reviewAnswer": "**Предложение · Предварительное:** Ada Marlow предложила в следующем году пересмотреть исключения из гарантии Zephyr QX-100, но она не приняла этот план и не организовала встречу; «следующий год» относится к недатированной исходной записи, поэтому его календарный год невозможно определить. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "en",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 4227,
+              "input_tokens": 4901,
+              "output_tokens": 271,
+              "total_tokens": 5172
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6550,
+              "input_tokens": 7436,
+              "output_tokens": 616,
+              "total_tokens": 8052
+            }
+          },
+          "reviewAnswer": "**Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified. [memory/zephyr-qx-100:14]"
+        },
+        {
+          "queryLanguage": "ru",
+          "explicitView": true,
+          "requestedAnswerLanguage": "ru",
+          "inferredView": "planning",
+          "recallStatus": "ok",
+          "recallDegraded": [],
+          "retainedEvidence": 1,
+          "reviewRetrieval": [
+            {
+              "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+              "qualification": {
+                "status": "qualified",
+                "id": "mem_4cc05760",
+                "level": 1,
+                "kind": "plan",
+                "subject": "ent_d0a9443be7ee421856f27daf",
+                "source_role": "user",
+                "source_speaker": "Ada Marlow",
+                "commitment": "asserted",
+                "disposition": "proposed",
+                "polarity": "affirmed",
+                "basis": "self_attested",
+                "answer_eligible": false,
+                "current_eligible": false,
+                "temporal": {
+                  "time": {
+                    "relation": "scheduled",
+                    "status": "tentative",
+                    "precision": "unknown"
+                  },
+                  "clock_relation": "undated",
+                  "actionable": false
+                }
+              }
+            }
+          ],
+          "contextStatus": "empty",
+          "contextDegraded": [],
+          "contextActivated": false,
+          "contextActivation": {
+            "activated": false,
+            "basis": "none",
+            "candidates": 2,
+            "selected": 0,
+            "qualification_run": true,
+            "reference_resolution": "not_needed"
+          },
+          "answerOutcome": "partial",
+          "answerReason": "answered",
+          "answerValidation": {
+            "generated_blocks": 1,
+            "passed_guards": 1,
+            "verified_blocks": 1,
+            "rejection_counts": {}
+          },
+          "answerDegraded": [],
+          "answerModelUsage": {
+            "generation": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 3794,
+              "input_tokens": 4862,
+              "output_tokens": 303,
+              "total_tokens": 5165
+            },
+            "verification": {
+              "model": "gpt-5.6-luna",
+              "latency_ms": 6091,
+              "input_tokens": 7451,
+              "output_tokens": 611,
+              "total_tokens": 8062
+            }
+          },
+          "reviewAnswer": "**Предложение · Предварительное:** Ada Marlow предложила в следующем году пересмотреть исключения из гарантии Zephyr QX-100, но она не приняла это как план и не организовала встречу; «следующий год» отсчитывается от недатированной исходной записи, поэтому определить его календарный год невозможно. [memory/zephyr-qx-100:14]"
+        }
+      ],
+      "reviewKnowledge": [
+        {
+          "text": "- **Proposal · Tentative:** Ada Marlow proposed reviewing the Zephyr QX-100 warranty exclusions next year, but she has not adopted a plan or arranged a meeting; “next year” is relative to the undated original record, so its calendar year cannot be identified.",
+          "qualification": {
+            "status": "qualified",
+            "id": "mem_4cc05760",
+            "level": 1,
+            "kind": "plan",
+            "subject": "ent_d0a9443be7ee421856f27daf",
+            "source_role": "user",
+            "source_speaker": "Ada Marlow",
+            "commitment": "asserted",
+            "disposition": "proposed",
+            "polarity": "affirmed",
+            "basis": "self_attested",
+            "answer_eligible": false,
+            "current_eligible": false,
+            "temporal": {
+              "time": {
+                "relation": "scheduled",
+                "status": "tentative",
+                "precision": "unknown"
+              },
+              "clock_relation": "undated",
+              "actionable": false
+            }
+          }
+        }
+      ],
+      "error": null
+    }
+  ]
+}
