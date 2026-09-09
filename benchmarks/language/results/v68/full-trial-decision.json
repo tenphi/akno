@@ -1,0 +1,186 @@
+{
+  "runtimeCommit": "c60460d7f8f14020135454059996d632fff6fd46",
+  "decidedAt": "2026-09-09T15:14:23.357Z",
+  "decision": "defer full V21 trial",
+  "probes": [
+    {
+      "probe": "selected",
+      "cases": 8,
+      "completeUsefulRetention": 6,
+      "observations": 64,
+      "producedAnswers": 41,
+      "usefulAnswers": 39,
+      "usefulRetrieval": 48,
+      "nullAnswers": 23,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v20-held-report",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 0
+        },
+        {
+          "id": "v20-held-hypothesis",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v20-held-counterfactual",
+          "retention": true,
+          "usefulAnswers": 4,
+          "producedAnswers": 4
+        },
+        {
+          "id": "v20-held-exclusion",
+          "retention": true,
+          "usefulAnswers": 7,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-assistant",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-fiction",
+          "retention": true,
+          "usefulAnswers": 6,
+          "producedAnswers": 7
+        },
+        {
+          "id": "v20-held-undated",
+          "retention": false,
+          "usefulAnswers": 0,
+          "producedAnswers": 0
+        },
+        {
+          "id": "v20-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": [
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The answer preserves attribution, modality, frequency, and the assistant’s personal limits, but проверка целостности разъёма is a broader connector-integrity check and does not retain the material continuity-test mechanism. It remains a source-supported generalization rather than an invented contradiction.",
+          "id": "v20-held-assistant",
+          "run": 1,
+          "produced": true
+        },
+        {
+          "queryLanguage": "ru",
+          "answerLanguage": "ru",
+          "explicitView": true,
+          "usefulQualifiedAnswer": false,
+          "usefulQualifiedRetrieval": true,
+          "justifiedAbstention": false,
+          "languageCompliant": true,
+          "sourceEntailed": true,
+          "qualificationPreserved": true,
+          "unsafeFactualPromotion": false,
+          "reason": "The prose is source-entailed and preserves the proposal-to-discuss relation and the complete fiction-scoped promise. However, its sole public citation is the fictional-promise record, which does not support the separately stated proposal act; the answer is therefore not fully supported as published. The retrieved evidence set itself includes both relevant records.",
+          "id": "v20-held-fiction",
+          "run": 1,
+          "produced": true
+        }
+      ]
+    },
+    {
+      "probe": "built",
+      "cases": 4,
+      "completeUsefulRetention": 4,
+      "observations": 32,
+      "producedAnswers": 32,
+      "usefulAnswers": 32,
+      "usefulRetrieval": 32,
+      "nullAnswers": 0,
+      "gradeErrors": {
+        "source": 0,
+        "qualification": 0,
+        "language": 0,
+        "promotion": 0
+      },
+      "retainedErrors": [],
+      "caseAvailabilityFailures": 0,
+      "sourceByteChanges": 0,
+      "perCase": [
+        {
+          "id": "v19-held-report",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-question",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-rejected",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        },
+        {
+          "id": "v19-held-alternatives",
+          "retention": true,
+          "usefulAnswers": 8,
+          "producedAnswers": 8
+        }
+      ],
+      "problematicProduced": []
+    }
+  ],
+  "reason": "Final independent grading finds 71/96 useful answers, 10/12 complete retained sets and 80/96 useful retrieval observations. The selected probe has 39/64 useful answers and 6/8 complete retention, while the built probe has 32/32 and 4/4. Coverage loss and two material publication failures do not justify the fresh full repeated trial.",
+  "initialUsefulAnswers": 72,
+  "finalUsefulAnswers": 71,
+  "adjudication": "Fiction q3 is accepted as a focused supported promise subset; the forensic reviewer retains a stricter completeness interpretation. Fiction q7 explicitly states the proposal act but cites only the promise record, so usefulness changes to false while source entailment stays true. Both undated candidate texts are source-faithful; their local clock holds are false. Initial/final grades and separate forensic judgments are preserved.",
+  "materialPublicationFailures": [
+    {
+      "case": "v20-held-assistant",
+      "query": 7,
+      "kind": "mechanism_generalization",
+      "description": "Connector-continuity testing is broadened to generic connector integrity."
+    },
+    {
+      "case": "v20-held-fiction",
+      "query": 7,
+      "kind": "incomplete_selected_record_citation",
+      "description": "The answer states the proposal act but cites only the separate promise record."
+    }
+  ],
+  "additionalForensicDisagreement": {
+    "case": "v20-held-fiction",
+    "query": 3,
+    "description": "Forensics requires the proposal act to be repeated; source-only adjudication accepts a focused promise-object answer."
+  },
+  "caseAvailabilityFailures": 0,
+  "answerOperationFailures": 1,
+  "answerOperationFailureCause": "Language-policy rejection of ordinary untranslated hinge-pin in Russian prose; no provider/schema availability failure.",
+  "sourceByteChanges": 0,
+  "freshHeldOutExecuted": false,
+  "unchangedRuntimeSemanticRerun": false,
+  "sourceFirstForensics": "complete"
+}
