@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
 import type { ModelClient } from '../models/client.ts';
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { retentionAudit } from '../../test/semantic-audit.ts';
 import { hasReportUncertainty } from '../memory/report-uncertainty.ts';
 
 const report =
@@ -139,7 +139,7 @@ describe('shared negation in readable report uncertainty', () => {
             {
               candidate_id: payload.candidates[0].candidate_id,
               source_selected_polarity: 'affirmed',
-              ...semanticAudit(supported, true, true),
+              ...retentionAudit(payload.candidates[0], supported, true, true),
               proposition_supported: supported,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -382,7 +382,7 @@ describe('shared negation in readable report uncertainty', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(supported, true, true),
+                ...retentionAudit(c, supported, true, true),
                 proposition_supported: supported,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,

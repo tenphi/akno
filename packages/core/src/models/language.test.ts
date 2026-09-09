@@ -1,10 +1,14 @@
+import { languageVerdictFixture } from '../../test/language-verdict.ts';
 import { runRetain } from '../write/retain.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ModelClient } from './client.ts';
 import { generatedProse } from './language.ts';
 import { ConfigDoc } from '../config/schema.ts';
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 function client(knowledgeLanguage: 'en' | null = 'en') {
   return new ModelClient({
@@ -31,7 +35,12 @@ function responses(values: unknown[]) {
     'fetch',
     vi.fn(async (_url, init) => {
       requests.push(JSON.parse(String(init.body)));
-      const value = values.shift();
+      let value = values.shift();
+      if (value && typeof value === 'object' && 'compliant' in value)
+        value = languageVerdictFixture(
+          JSON.parse(requests.at(-1)!.messages.at(-1)!.content),
+          Boolean(value.compliant),
+        );
       return new Response(
         JSON.stringify({
           choices: [{ message: { content: JSON.stringify(value) } }],
@@ -295,5 +304,60 @@ describe('explicit generation language', () => {
       'A rewritten body.',
       'A new title.',
     ]);
+  });
+});
+
+describe('bounded language-check typed failures', () => {
+  it.each(['oversized', 'references', 'occurrences', 'expired'])(
+    'returns a typed failure without a checker call: %s',
+    async (mode) => {
+      const text =
+        mode === 'oversized'
+          ? 'x'.repeat(24001)
+          : mode === 'occurrences'
+            ? 'axle-cap '.repeat(1200)
+            : 'Ada Marlow has an invented label.';
+      const model = client();
+      const invalid = vi.spyOn(model, 'reportInvalidResponse');
+      const requests = responses([{ text }]);
+      if (mode === 'expired') {
+        let now = 0;
+        vi.spyOn(performance, 'now').mockImplementation(() => now);
+        const fetch = globalThis.fetch;
+        vi.stubGlobal(
+          'fetch',
+          vi.fn(async (...args: Parameters<typeof fetch>) => {
+            const response = await fetch(...args);
+            now = 22;
+            return response;
+          }),
+        );
+      }
+      const result = await model.chat([{ role: 'user', content: 'Describe.' }], {
+        outputLanguage: mode === 'occurrences' ? 'ru' : 'en',
+        ...(mode === 'references'
+          ? {
+              languageReferences: Array.from({ length: 65 }, () => ({
+                kind: 'name' as const,
+                text: 'Ada Marlow',
+              })),
+            }
+          : {}),
+        ...(mode === 'expired' ? { timeoutMs: 11 } : {}),
+      });
+      expect(result).toMatchObject({ ok: false, value: null, reason: 'language_check_failed' });
+      expect(invalid).toHaveBeenCalledWith('language_check_failed');
+      expect(requests).toHaveLength(1);
+    },
+  );
+  it.each([24000, 24001])('counts the serialized input at its exact %s-unit boundary', async (size) => {
+    const overhead = JSON.stringify({ language: 'en', excerpts: [''] }).length;
+    const text = 'x'.repeat(size - overhead);
+    const requests = responses([{ text }, { compliant: true }]);
+    const result = await client().chat([{ role: 'user', content: 'Describe.' }]);
+    expect(result.ok).toBe(size === 24000);
+    expect(requests).toHaveLength(size === 24000 ? 2 : 1);
+    if (size === 24000) expect(requests[1]!.messages[1]!.content).toHaveLength(24000);
+    else expect(result.reason).toBe('language_check_failed');
   });
 });

@@ -1,12 +1,11 @@
 import {
   generatedProse,
   languageInstruction,
-  languageReviewTokens,
-  LANGUAGE_CHECK_SCHEMA,
   LANGUAGE_CHECK_SYSTEM,
   type LanguageReference,
   type OutputLanguage,
 } from './language.ts';
+import { languageAudit } from './language-audit.ts';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { DegradedReason } from '@tenphi/akno-protocol';
@@ -544,15 +543,14 @@ export class ModelClient {
     const references = (options.languageReferences ?? []).filter((reference) =>
       excerpts.some((excerpt) => excerpt.includes(reference.text)),
     );
-    const reviewTokens = languageReviewTokens(excerpts, language);
-    if (
-      excerpts.join('').length +
-        references.reduce((size, reference) => size + reference.text.length, 0) +
-        reviewTokens.join('').length >
-        24000 ||
+    const audit =
+      excerpts.join('').length > 24000 ||
       references.length > 64 ||
       (remaining !== undefined && remaining <= 0)
-    ) {
+        ? null
+        : languageAudit(excerpts, language, references);
+    const checkInput = audit ? JSON.stringify(audit.input) : null;
+    if (!audit || checkInput === null || checkInput.length > 24000) {
       this.reportInvalidResponse('language_check_failed');
       return {
         ...result,
@@ -567,37 +565,30 @@ export class ModelClient {
         { role: 'system', content: LANGUAGE_CHECK_SYSTEM },
         {
           role: 'user',
-          content: JSON.stringify({
-            language,
-            excerpts,
-            ...(reviewTokens.length ? { review_tokens: reviewTokens } : {}),
-            ...(references.length ? { supplied_references: references } : {}),
-          }),
+          content: checkInput,
         },
       ],
       {
-        schema: LANGUAGE_CHECK_SCHEMA,
+        schema: audit.schema,
         maxTokens: 1024,
         ...(remaining === undefined ? {} : { timeoutMs: remaining }),
       },
     );
-    const verdict = check.ok
-      ? LANGUAGE_CHECK_SCHEMA.safeParse(parseJsonLoose<unknown>(check.value ?? ''))
-      : null;
+    const verdict = check.ok ? audit.parse(check.value ?? '') : null;
     const combined = {
       ...result,
       latencyMs: performance.now() - started,
       endpointRequests: (result.endpointRequests ?? 0) + (check.endpointRequests ?? 0),
       usage: sumModelUsage(result.usage ?? null, check.usage ?? null) ?? undefined,
     };
-    if (!verdict?.success || !verdict.data.compliant) {
-      this.reportInvalidResponse(verdict?.success ? 'language_mismatch' : 'language_check_failed');
+    if (verdict !== 'compliant') {
+      this.reportInvalidResponse(verdict ? 'language_mismatch' : 'language_check_failed');
       return {
         ...combined,
         ok: false,
         value: null,
-        reason: verdict?.success ? 'language_mismatch' : 'language_check_failed',
-        error: verdict?.success
+        reason: verdict ? 'language_mismatch' : 'language_check_failed',
+        error: verdict
           ? 'generated prose did not satisfy the requested output language'
           : 'generated prose language verification was unavailable or invalid',
       };

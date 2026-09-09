@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { retentionAudit } from '../../test/semantic-audit.ts';
 import { runRetain } from './retain.ts';
 
 type Polarity = 'affirmed' | 'negated';
@@ -130,7 +130,7 @@ describe('independent retention source-polarity comparison', () => {
                 {
                   candidate_id: payload.candidates[0].candidate_id,
                   source_selected_polarity: sourcePolarity,
-                  ...semanticAudit(),
+                  ...retentionAudit(payload.candidates[0], true, true, true, sourcePolarity),
                   proposition_supported: true,
                   action_arguments_preserved: true,
                   qualification_scope_preserved: true,
@@ -180,12 +180,12 @@ describe('independent retention source-polarity comparison', () => {
           return { ok: true, value: JSON.stringify({ candidates: records }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
         const verdicts: Record<string, unknown>[] = payload.candidates.map(
-          (item: { candidate_id: string }, index: number) => {
+          (item: { candidate_id: string; polarity: string }, index: number) => {
             const supported = !(mode === 'semantic-negative' && index === 0);
             return {
               candidate_id: item.candidate_id,
               source_selected_polarity: index === 0 ? 'negated' : 'affirmed',
-              ...semanticAudit(supported),
+              ...retentionAudit(item, supported),
               proposition_supported: supported,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -199,6 +199,15 @@ describe('independent retention source-polarity comparison', () => {
             'affirmed',
             'negated',
           ];
+        if (mode === 'first-mismatch' || mode === 'swapped-polarities')
+          for (const [index, verdict] of verdicts.entries())
+            verdict.polarity_evidence = retentionAudit(
+              payload.candidates[index],
+              true,
+              true,
+              true,
+              String(verdict.source_selected_polarity),
+            ).polarity_evidence;
         if (mode === 'missing') delete verdicts[1]!.source_selected_polarity;
         if (mode === 'invalid') verdicts[1]!.source_selected_polarity = 'unknown';
         if (mode === 'duplicate-id') verdicts[1]!.candidate_id = verdicts[0]!.candidate_id;

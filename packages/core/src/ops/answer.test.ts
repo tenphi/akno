@@ -1,3 +1,4 @@
+import { languageVerdictFixture } from '../../test/language-verdict.ts';
 import { semanticAudit } from '../../test/semantic-audit.ts';
 import Database from 'better-sqlite3';
 import { retentionSourceFrames } from '../memory/retention-source-frame.ts';
@@ -5139,7 +5140,10 @@ async function useAnswerModel(script: {
           .join('\n');
         const verifying = system.includes('independently verify');
         const configured = system.startsWith('Check the language of generated prose')
-          ? { compliant: script.languageCheck ?? true }
+          ? languageVerdictFixture(
+              JSON.parse((body.messages as { content: string }[]).at(-1)!.content),
+              script.languageCheck ?? true,
+            )
           : verifying
             ? script.verification
             : script.generation;

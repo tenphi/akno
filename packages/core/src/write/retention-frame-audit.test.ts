@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { RetainSourceItem } from '@tenphi/akno-protocol';
 import { ModelClient } from '../models/client.ts';
-import { semanticAudit, frameAuditFields } from '../../test/semantic-audit.ts';
+import { retentionAudit, frameAuditFields } from '../../test/semantic-audit.ts';
 import { runRetain } from './retain.ts';
 import { retentionFrameAudit } from './retention-frame-audit.ts';
 
@@ -79,7 +79,7 @@ describe('required retention frame accounting', () => {
             relationship: 'clarification',
           },
         ],
-        ...semanticAudit(true, true, mode !== 'semantic-negative'),
+        ...retentionAudit(payload.candidates[0], true, true, mode !== 'semantic-negative'),
         proposition_supported: true,
         action_arguments_preserved: true,
         qualification_scope_preserved: mode !== 'semantic-negative',
@@ -188,7 +188,7 @@ describe('required retention frame accounting', () => {
               candidate_id: candidate.candidate_id,
               source_selected_polarity: candidate.polarity,
               ...frameAuditFields(candidate),
-              ...semanticAudit(),
+              ...retentionAudit(candidate),
               proposition_supported: true,
               action_arguments_preserved: true,
               qualification_scope_preserved: true,
@@ -319,7 +319,7 @@ describe('required retention frame accounting', () => {
                 candidate_id: candidate.candidate_id,
                 source_selected_polarity: candidate.polarity,
                 ...frameAuditFields(candidate),
-                ...semanticAudit(),
+                ...retentionAudit(candidate),
                 proposition_supported: true,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -400,7 +400,7 @@ describe('required retention frame accounting', () => {
                       : 'The source specifies this device and the statement belongs to its named speaker.',
                   relationship: 'restatement',
                 })),
-                ...semanticAudit(true, true, i === 0),
+                ...retentionAudit(candidate, true, true, i === 0),
                 proposition_supported: i === 0 || mode !== 'inconsistent',
                 action_arguments_preserved: true,
                 qualification_scope_preserved: i === 0,

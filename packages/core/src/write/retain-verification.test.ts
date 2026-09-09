@@ -1,4 +1,4 @@
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { retentionAudit } from '../../test/semantic-audit.ts';
 import { describe, expect, it, vi } from 'vitest';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
 import {
@@ -47,7 +47,8 @@ describe('retention semantic verification dimensions', () => {
       const verdict: Record<string, unknown> = {
         candidate_id: payload.candidates[0].candidate_id,
         source_selected_polarity: 'affirmed',
-        ...semanticAudit(
+        ...retentionAudit(
+          payload.candidates[0],
           mode !== 'proposition_supported',
           mode !== 'action_arguments_preserved',
           mode !== 'qualification_scope_preserved',
@@ -64,11 +65,15 @@ describe('retention semantic verification dimensions', () => {
       if (mode === 'wrong-id') verdict.candidate_id = 'invented-other-candidate';
       if (mode === 'missing-comparison') delete verdict.comparison;
       if (mode === 'false-without-mismatch') verdict.proposition_supported = false;
-      if (mode === 'true-with-mismatch') verdict.mismatches = semanticAudit(false).mismatches;
+      if (mode === 'true-with-mismatch')
+        verdict.mismatches = retentionAudit(payload.candidates[0], false).mismatches;
       if (mode === 'accepted-with-hold-reason') verdict.reason_code = 'source_unavailable';
       if (mode === 'duplicate-mismatch') {
         verdict.proposition_supported = false;
-        verdict.mismatches = [...semanticAudit(false).mismatches, ...semanticAudit(false).mismatches];
+        verdict.mismatches = [
+          ...retentionAudit(payload.candidates[0], false).mismatches,
+          ...retentionAudit(payload.candidates[0], false).mismatches,
+        ];
       }
       return {
         ok: true,
@@ -133,7 +138,7 @@ describe('bounded first-pass retention verification', () => {
             return {
               candidate_id: record.candidate_id,
               source_selected_polarity: 'affirmed',
-              ...semanticAudit(),
+              ...retentionAudit(record),
               ...dimensions,
               reason_code: null,
             };
@@ -198,7 +203,7 @@ describe('bounded first-pass retention verification', () => {
               return {
                 candidate_id: record.candidate_id,
                 source_selected_polarity: record.polarity,
-                ...semanticAudit(supported),
+                ...retentionAudit(record, supported),
                 ...dimensions,
                 proposition_supported: supported,
                 reason_code: supported ? null : 'discourse_uncertain',
@@ -404,7 +409,8 @@ describe('record-local tentative scope in retention verification', () => {
                     'This span supplies part of the coupled preliminary hypotheses, their evidence limit and personal nonselection.',
                   relationship: 'restatement',
                 })),
-                ...semanticAudit(
+                ...retentionAudit(
+                  verifyingRecord,
                   mode !== 'proposition_supported',
                   mode !== 'action_arguments_preserved',
                   mode !== 'qualification_scope_preserved',
@@ -494,7 +500,7 @@ describe('explicit original-clock retention repair', () => {
               {
                 candidate_id: payload.candidates[0].candidate_id,
                 source_selected_polarity: 'affirmed',
-                ...semanticAudit(positive),
+                ...retentionAudit(payload.candidates[0], positive),
                 proposition_supported: positive,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,

@@ -174,3 +174,9 @@ immutable siblings and original-source semantics under the existing one-repair a
 Recognize an explicit original-record date and calendar unit that cannot be established. Keep retention
 label definitions separate from untrusted candidates and compare governing predicates before selecting
 source polarity; negative semantic decisions remain final.
+
+Require exact candidate-owned witnesses for negative retention findings, keeping invalid verdicts
+atomic and ordinary semantic rejection final. Classify grouped foreign-language attention hints in the
+existing prose check and validate every claimed reference exemption. Repair otherwise valid unknown
+source clocks with bounded text segments that preserve explicit source exclusions and immutable
+metadata. Recognize complete nominal Russian counterfactuals with a preposed repair consequence.

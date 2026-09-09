@@ -7,7 +7,7 @@ import {
   reportTextRepairFields,
 } from './retain-report-repair.ts';
 import { toEndpointSchema, strictModeViolations, ModelClient, type ChatOptions } from '../models/client.ts';
-import { frameAuditFields, semanticAudit } from '../../test/semantic-audit.ts';
+import { frameAuditFields, retentionAudit } from '../../test/semantic-audit.ts';
 afterEach(() => vi.unstubAllGlobals());
 
 const proposition =
@@ -98,7 +98,13 @@ function modelFor(
           return {
             candidate_id: c.candidate_id,
             ...frameAuditFields(c),
-            ...semanticAudit(propositionSupported, actionSupported, qualificationSupported),
+            ...retentionAudit(
+              c,
+              propositionSupported,
+              actionSupported,
+              qualificationSupported,
+              report && options.negative === 'polarity' ? 'negated' : c.polarity,
+            ),
             source_selected_polarity: report && options.negative === 'polarity' ? 'negated' : c.polarity,
             proposition_supported: propositionSupported,
             action_arguments_preserved: actionSupported,
@@ -341,7 +347,19 @@ describe('private repair provider transport and language boundary', () => {
                 ? (body.response_format.schema ?? body.response_format.json_schema.schema)
                 : body.text.format.schema;
           else expect(JSON.stringify(body)).toContain(reportRepairText(delta()));
-          const value = JSON.stringify(calls === 1 ? { repairs: [delta()] } : { compliant });
+          const value = JSON.stringify(
+            calls === 1
+              ? { repairs: [delta()] }
+              : {
+                  hint_roles: [],
+                  prose_result: compliant
+                    ? { status: 'compliant', counterexample: null }
+                    : {
+                        status: 'noncompliant',
+                        counterexample: { kind: 'range', excerpt_id: 'e0', start: 0, end: 9 },
+                      },
+                },
+          );
           return new Response(
             JSON.stringify(
               api === 'chat_completions'

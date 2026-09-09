@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { RetainSourceItem } from '@tenphi/akno-protocol';
 import type { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
-import { frameAuditFields, semanticAudit } from '../../test/semantic-audit.ts';
+import { frameAuditFields, retentionAudit } from '../../test/semantic-audit.ts';
 
 const sourceItems: RetainSourceItem[] = [
   {
@@ -63,7 +63,7 @@ describe('a negative booking subject with a quoted noun alias', () => {
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
                 ...frameAuditFields(c),
-                ...semanticAudit(supported, true, true),
+                ...retentionAudit(c, supported, true, true),
                 proposition_supported: supported,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,

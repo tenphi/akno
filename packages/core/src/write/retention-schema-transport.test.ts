@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { RetainSourceItem } from '@tenphi/akno-protocol';
 import { ModelClient } from '../models/client.ts';
-import { semanticAudit, frameAuditFields } from '../../test/semantic-audit.ts';
+import { retentionAudit, frameAuditFields } from '../../test/semantic-audit.ts';
 import { runRetain } from './retain.ts';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -110,7 +110,7 @@ describe.each(['chat', 'responses'] as const)('retention wire-schema compatibili
                   candidate_id: candidate.candidate_id,
                   source_selected_polarity: candidate.polarity,
                   ...frameAuditFields(candidate),
-                  ...semanticAudit(),
+                  ...retentionAudit(candidate),
                   proposition_supported: true,
                   action_arguments_preserved: true,
                   qualification_scope_preserved: true,

@@ -132,7 +132,7 @@ describe('language and ordinary prose through production operations', () => {
           message.content.startsWith('Check the language'),
         );
         const value = check
-          ? { compliant: true }
+          ? { hint_roles: [], prose_result: { status: 'compliant', counterexample: null } }
           : {
               summary: claim,
               keywords: ['warranty'],

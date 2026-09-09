@@ -29,7 +29,22 @@ import { z } from 'zod';
 import { parseJsonLoose, type ModelClient, type ModelOutcome } from '../models/client.ts';
 import type { FolderCatalogEntry } from '../kb/folders.ts';
 import { managedMemoryFingerprint } from './managed-memory.ts';
+import {
+  clockRepairFields,
+  excludedClockRepairFields,
+  clockRepairText,
+  normalizeClockRepairTransaction,
+  clockRepairLanguageProse,
+  sourceClockRepairWitness,
+  CLOCK_TEXT_REPAIR_CONTRACT,
+  type ClockTextRepair,
+  type SourceClockRepairWitness,
+} from './retain-clock-repair.ts';
 import { retentionFrameAudit, RETENTION_FRAME_AUDIT_CONTRACT } from './retention-frame-audit.ts';
+import {
+  retentionNegativeEvidence,
+  RETENTION_NEGATIVE_EVIDENCE_CONTRACT,
+} from './retention-negative-evidence.ts';
 import {
   SEMANTIC_COMPARISON_CONTRACT,
   PROPOSITION_SCOPE_CONTRACT,
@@ -44,8 +59,8 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v52';
-export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v36';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v53';
+export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v37';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -384,7 +399,8 @@ error being repaired. Fix that error using the source; do not substitute a diffe
 duplicate a sibling candidate while losing this position's original proposition. A changed repair
 proposition fails qualification_scope_preserved, even when the substitute is independently source-entailing.
 
-${SEMANTIC_COMPARISON_CONTRACT}`;
+${SEMANTIC_COMPARISON_CONTRACT}
+${RETENTION_NEGATIVE_EVIDENCE_CONTRACT}`;
 
 /** Never truncate a source whose omitted discourse could reverse its meaning. */
 const MAX_RETAIN_CONTEXT_CHARS = 120_000;
@@ -612,7 +628,14 @@ export async function runRetain(
       ...new Set(cleanedBatch.held.map((held) => cleanedBatch.positions.get(held.candidate_id)!)),
     ].sort((a, b) => a - b);
     const textPositions = failedPositions.filter((index) => cleanedBatch.textOnlyReportRepairs.has(index));
-    const fullPositions = failedPositions.filter((index) => !cleanedBatch.textOnlyReportRepairs.has(index));
+    const clockPositions = failedPositions.filter((index) => cleanedBatch.textOnlyClockRepairs.has(index));
+    const fullPositions = failedPositions.filter(
+      (index) => !textPositions.includes(index) && !clockPositions.includes(index),
+    );
+    const hasTextRepairs = textPositions.length > 0 || clockPositions.length > 0;
+    const textOriginal = (index: number) =>
+      cleanedBatch.textOnlyReportRepairs.get(index)?.original ??
+      cleanedBatch.textOnlyClockRepairs.get(index)?.original;
     const repairEntrySchema = (candidate: z.ZodType) => {
       const branches: z.ZodType[] = [];
       // A numeric Zod literal emits const for singleton targets. Endpoint strict schemas need
@@ -626,6 +649,18 @@ export async function runRetain(
             ...reportTextRepairFields,
           }),
         );
+      for (const withExclusion of [true, false]) {
+        const positions = clockPositions.filter(
+          (index) => cleanedBatch.textOnlyClockRepairs.get(index)!.witness.with_exclusion === withExclusion,
+        );
+        if (positions.length)
+          branches.push(
+            z.strictObject({
+              candidate_index: indices(positions),
+              ...(withExclusion ? excludedClockRepairFields : clockRepairFields),
+            }),
+          );
+      }
       if (fullPositions.length)
         branches.push(
           z.strictObject({
@@ -633,7 +668,9 @@ export async function runRetain(
             candidate,
           }),
         );
-      return branches.length === 1 ? branches[0]! : z.union([branches[0]!, branches[1]!]);
+      return branches.length === 1
+        ? branches[0]!
+        : z.union(branches as [z.ZodType, z.ZodType, ...z.ZodType[]]);
     };
     const repairSchema = z.strictObject({
       repairs: z.array(repairEntrySchema(RETAIN_SCHEMA.shape.candidates.element)).max(failedPositions.length),
@@ -644,6 +681,8 @@ export async function runRetain(
           role: 'system',
           content:
             system +
+            '\n' +
+            CLOCK_TEXT_REPAIR_CONTRACT +
             "\nRepair each repair_targets entry once using the complete original source and that entry's validation_issues. Copy its explicit candidate_index into the repair; this is a zero-based original extraction index, not the position in repair_targets or repairs. Preserve that entry's original_candidate source-supported core proposition; never replace it with a sibling proposition or erase a separate denial by duplicating a rejected plan. The original candidate is not evidence: fix its structural errors from the source. read_only_admitted_context is a read-only index of surviving records for relation references, never a list of repair targets. For an independent booking denial held because its frame also contains a different rejected offer, preserve the denial in its own complete deciding frame instead of copying the sibling rejection; never omit a context that actually qualifies the denial. If the only issue is missing subject antecedent context, add its exact source span to the deciding frame while preserving the same proposition. source_identifier_context, when present, lists bounded exact identifier occurrences in original source items; occurrence counts and omitted spans expose ambiguity. It is advisory search context, not a replacement frame or proof of attachment. Select only exact spans that actually resolve the subject of this proposition; never copy an unrelated or quoted occurrence merely because it contains the identifier. Do not expand an independent nonselection or denial into the neighboring hypotheses just to add their antecedent frame. Re-evaluate all metadata from the repaired readable proposition: if the payload does include competing hypotheses, it needs tentative or hypothetical commitment even when the original candidate was an asserted nonselection. Preserve original positions and keep admitted siblings unchanged. Relations use original candidate indices, not positions in the repairs array. Keep all deciding source qualifications in each repaired sentence. Omit a target if no safe repair exists. Do not return events or new positions. When repair_contract.mode is report_text_only, return only candidate_index and the three required final prose sentences: reported_proposition, relay_attribution and personal_limits. Their respective maximum lengths are 200, 78 and 120 normalized UTF-16 units, including terminal punctuation. The server joins them with two spaces, within the unchanged 400-unit cap. Do not return candidate, text, metadata or evidence fields for this branch. Each sentence must name its own subject and keep its complete source-supported predicate and object. Preserve the inner reporter and reported proposition in the first sentence, the outer relayer in the second, and every personal verification limit in the third. Use a short independent negative sentence for the personal limits, with an explicit actor. Preserve received evidence versus personally checking a report; never invent either. End each sentence with its own period or exclamation mark. Do not use headings, quotations, examples, conditions, line breaks or fragments. Omit the repair if these bounds cannot preserve the source. All cloned nontext fields remain immutable and every local and semantic check follows.",
         },
         {
@@ -658,11 +697,20 @@ export async function runRetain(
             index_basis: 'zero_based_original_extraction_order',
             repair_targets: failedPositions.map((candidate_index) => ({
               candidate_index,
-              original_candidate:
-                cleanedBatch.textOnlyReportRepairs.get(candidate_index)?.original ??
-                originalCandidates[candidate_index],
+              original_candidate: textOriginal(candidate_index) ?? originalCandidates[candidate_index],
               ...(cleanedBatch.textOnlyReportRepairs.has(candidate_index)
                 ? { repair_contract: { mode: 'report_text_only', issue: 'report_uncertainty_unreadable' } }
+                : {}),
+              ...(cleanedBatch.textOnlyClockRepairs.has(candidate_index)
+                ? {
+                    repair_contract: {
+                      mode: cleanedBatch.textOnlyClockRepairs.get(candidate_index)!.witness.with_exclusion
+                        ? 'clock_text_only_with_exclusion'
+                        : 'clock_text_only',
+                      issue: 'source_clock_readability',
+                      clock_witness: cleanedBatch.textOnlyClockRepairs.get(candidate_index)!.witness,
+                    },
+                  }
                 : {}),
               ...(cleanedBatch.missingIdentifiers.has(candidate_index)
                 ? {
@@ -689,7 +737,14 @@ export async function runRetain(
         schema: repairSchema,
         maxTokens: 3_200,
         languageReferences,
-        ...(textPositions.length ? { additionalLanguageProse: reportRepairLanguageProse } : {}),
+        ...(hasTextRepairs
+          ? {
+              additionalLanguageProse: (value: unknown) => [
+                ...reportRepairLanguageProse(value),
+                ...clockRepairLanguageProse(value),
+              ],
+            }
+          : {}),
       },
     );
     repairUsage.repair = modelCallReceipt(model, repair);
@@ -700,10 +755,12 @@ export async function runRetain(
     });
     let repairValue: unknown = null;
     if (repair.ok && repair.value) {
-      if (textPositions.length) {
+      if (hasTextRepairs) {
         // A text delta is atomic; never salvage a truncated or trailing transaction into a write.
         try {
-          repairValue = normalizeReportRepairTransaction(JSON.parse(repair.value));
+          repairValue = normalizeClockRepairTransaction(
+            normalizeReportRepairTransaction(JSON.parse(repair.value)),
+          );
         } catch {
           /* held below */
         }
@@ -716,6 +773,7 @@ export async function runRetain(
           data: {
             repairs: (
               | { candidate_index: number; candidate: Record<string, unknown> }
+              | (ClockTextRepair & { candidate_index: number })
               | {
                   candidate_index: number;
                   reported_proposition: string;
@@ -740,8 +798,8 @@ export async function runRetain(
           'candidate' in entry
             ? entry.candidate
             : {
-                ...structuredClone(cleanedBatch.textOnlyReportRepairs.get(entry.candidate_index)!.original),
-                text: reportRepairText(entry),
+                ...structuredClone(textOriginal(entry.candidate_index)!),
+                text: 'reported_proposition' in entry ? reportRepairText(entry) : clockRepairText(entry),
               };
       }
       const repairedBatch = cleanCandidateBatchWithPositions(
@@ -772,8 +830,7 @@ export async function runRetain(
         for (const entry of transaction.data.repairs)
           repairObligations.set(
             entry.candidate_index,
-            cleanedBatch.textOnlyReportRepairs.get(entry.candidate_index)?.original ??
-              parsed.candidates[entry.candidate_index],
+            textOriginal(entry.candidate_index) ?? parsed.candidates[entry.candidate_index],
           );
         cleanedBatch = repairedBatch;
       } else {
@@ -934,6 +991,15 @@ async function verifyCandidateBatch(
   const frameAudits = new Map(
     candidates.map((candidate) => [candidate.candidate_id, retentionFrameAudit(candidate.discourse_frame)]),
   );
+  const negativeEvidence = new Map(
+    candidates.map((candidate) => [
+      candidate.candidate_id,
+      retentionNegativeEvidence(
+        candidate,
+        repairObligations.some((entry) => entry.candidate_id === candidate.candidate_id),
+      ),
+    ]),
+  );
   const reason = z.enum([
     'source_unavailable',
     'discourse_uncertain',
@@ -948,7 +1014,7 @@ async function verifyCandidateBatch(
       comparison: semanticVerdictFields.comparison,
       // Source comparison precedes label selection; field order itself supplies no authority.
       source_selected_polarity: z.enum(['affirmed', 'negated']),
-      mismatches: semanticVerdictFields.mismatches,
+      ...negativeEvidence.get(candidate.candidate_id)!.fields,
       proposition_supported: semanticVerdictFields.proposition_supported,
       action_arguments_preserved: semanticVerdictFields.action_arguments_preserved,
       qualification_scope_preserved: semanticVerdictFields.qualification_scope_preserved,
@@ -985,6 +1051,7 @@ async function verifyCandidateBatch(
           candidates: candidates.map(
             ({ page: _page, origin: _origin, evidence: _evidence, ...candidate }) => ({
               ...candidate,
+              negative_evidence_coordinates: negativeEvidence.get(candidate.candidate_id)!.coordinates,
               ...(frameAudits.get(candidate.candidate_id)
                 ? { frame_spans: frameAudits.get(candidate.candidate_id)!.spans }
                 : {}),
@@ -1026,6 +1093,7 @@ async function verifyCandidateBatch(
     !parsed.data.verdicts.every(
       (verdict) =>
         semanticVerdictConsistent(verdict) &&
+        negativeEvidence.get(verdict.candidate_id)!.consistent(verdict) &&
         (!(
           verdict.proposition_supported &&
           verdict.action_arguments_preserved &&
@@ -1277,6 +1345,7 @@ function cleanCandidateBatchWithPositions(
   candidates: RetainCandidate[];
   held: RetainHeldCandidate[];
   positions: Map<string, number>;
+  textOnlyClockRepairs: Map<number, { original: Record<string, unknown>; witness: SourceClockRepairWitness }>;
   missingIdentifiers: Map<number, string[]>;
   textOnlyReportRepairs: Map<
     number,
@@ -1284,6 +1353,10 @@ function cleanCandidateBatchWithPositions(
   >;
 } {
   const positions = new Map<string, number>();
+  const textOnlyClockRepairs = new Map<
+    number,
+    { original: Record<string, unknown>; witness: SourceClockRepairWitness }
+  >();
   // Keep the repair diagnosis typed and private instead of recovering it from public reason prose.
   const missingIdentifiers = new Map<number, string[]>();
   const textOnlyReportRepairs = new Map<
@@ -1294,7 +1367,14 @@ function cleanCandidateBatchWithPositions(
     }
   >();
   if (!Array.isArray(value))
-    return { candidates: [], held: [], positions, missingIdentifiers, textOnlyReportRepairs };
+    return {
+      candidates: [],
+      held: [],
+      positions,
+      missingIdentifiers,
+      textOnlyReportRepairs,
+      textOnlyClockRepairs,
+    };
   const candidates: RetainCandidate[] = [];
   const held: RetainHeldCandidate[] = [];
   const seen = new Set<string>();
@@ -1556,20 +1636,24 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
+    let unreadableClock: {
+      missing_relative_anchor: boolean;
+      missing_unknown_reference: boolean;
+      reason: string;
+    } | null = null;
     if (RELATIVE_TIME.test(sourceEvidence(spans.frame)) && explicitlyUnknownTime(time)) {
       const relative = hasSourceRelativeAnchor(text);
       const unknown = hasUnknownReferenceClock(text);
       if (!relative || !unknown) {
-        held.push({
-          candidate_id: provisionalId,
-          reason_code: 'time_unresolved',
+        unreadableClock = {
+          missing_relative_anchor: !relative,
+          missing_unknown_reference: !unknown,
           reason: relative
             ? 'the source-relative anchor is recognized in readable prose, but the unknown reference date is not; preserve the source date uncertainty without changing the supported clock relation'
             : unknown
               ? 'the unknown reference date is recognized in readable prose, but the source-relative anchor is not; clarify the relation to the original source entry rather than processing without changing the supported uncertainty'
               : 'neither the source-relative anchor nor the unknown reference date is recognized in readable prose; preserve both source-supported clock dimensions without inventing dates or causal relations',
-        });
-        continue;
+        };
       }
     }
     const pageRaw = typeof record.page === 'string' ? record.page : null;
@@ -1655,8 +1739,6 @@ function cleanCandidateBatchWithPositions(
       });
       continue;
     }
-    // Only this deferred failure may certify text-only repair. Every other per-candidate
-    // floor has already run; raw relations must be literally empty because they are cleaned later.
     if (unreadableReportUncertainty) {
       held.push({
         candidate_id: provisionalId,
@@ -1664,6 +1746,27 @@ function cleanCandidateBatchWithPositions(
         reason:
           'the source report has a confirmation or verification limit that was not recognized in a closed readable clause; state that same limit in its own short complete sentence within this record, with an explicit subject when the limit is personal; preserve lacking or receiving evidence versus personally checking it',
       });
+    }
+    if (unreadableClock) {
+      held.push({
+        candidate_id: provisionalId,
+        reason_code: 'time_unresolved',
+        reason: unreadableClock.reason,
+      });
+      if (
+        !unreadableReportUncertainty &&
+        options.generated &&
+        Array.isArray(record.relations) &&
+        record.relations.length === 0
+      ) {
+        const witness = sourceClockRepairWitness(spans.frame);
+        if (witness) textOnlyClockRepairs.set(index, { original: structuredClone(record), witness });
+      }
+      continue;
+    }
+    // Only this deferred failure may certify text-only repair. Every other per-candidate
+    // floor has already run; raw relations must be literally empty because they are cleaned later.
+    if (unreadableReportUncertainty) {
       if (options.generated && Array.isArray(record.relations) && record.relations.length === 0)
         textOnlyReportRepairs.set(index, {
           issue: 'report_uncertainty_unreadable',
@@ -1743,6 +1846,7 @@ function cleanCandidateBatchWithPositions(
     positions,
     missingIdentifiers,
     textOnlyReportRepairs,
+    textOnlyClockRepairs,
   };
 }
 

@@ -1,4 +1,4 @@
-import { semanticAudit, frameAuditFields } from '../../test/semantic-audit.ts';
+import { retentionAudit, frameAuditFields } from '../../test/semantic-audit.ts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
@@ -80,7 +80,7 @@ describe('cross-language retention boundary', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(supported, true, true),
+                ...retentionAudit(c, supported, true, true),
                 proposition_supported: supported,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -261,7 +261,7 @@ describe('cross-language retention boundary', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(supported, true, true),
+                ...retentionAudit(c, supported, true, true),
                 proposition_supported: supported,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -424,7 +424,7 @@ describe('cross-language retention boundary', () => {
                 (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                   candidate_id: c.candidate_id,
                   source_selected_polarity: c.polarity,
-                  ...semanticAudit(outcome === 'accepted', true, true),
+                  ...retentionAudit(c, outcome === 'accepted', true, true),
                   proposition_supported: outcome === 'accepted',
                   action_arguments_preserved: true,
                   qualification_scope_preserved: true,
@@ -626,7 +626,7 @@ describe('cross-language retention boundary', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(outcome === 'verified', true, true),
+                ...retentionAudit(c, outcome === 'verified', true, true),
                 proposition_supported: outcome === 'verified',
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -710,7 +710,7 @@ describe('cross-language retention boundary', () => {
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
                 ...frameAuditFields(c),
-                ...semanticAudit(i === 0 ? supported : true, true, true),
+                ...retentionAudit(c, i === 0 ? supported : true, true, true),
                 proposition_supported: i === 0 ? supported : true,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -1158,7 +1158,7 @@ describe('cross-language retention boundary', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(supported, true, true),
+                ...retentionAudit(c, supported, true, true),
                 proposition_supported: supported,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -1212,7 +1212,7 @@ describe('cross-language retention boundary', () => {
               {
                 candidate_id: payload.candidates[0].candidate_id,
                 source_selected_polarity: 'affirmed',
-                ...semanticAudit(!answersItself, true, true),
+                ...retentionAudit(payload.candidates[0], !answersItself, true, true),
                 proposition_supported: !answersItself,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -1327,7 +1327,7 @@ describe('cross-language retention boundary', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(true, true, true),
+                ...retentionAudit(c, true, true, true),
                 proposition_supported: true,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -1481,7 +1481,7 @@ describe('cross-language retention boundary', () => {
               .flatMap((candidate: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: candidate.candidate_id,
                 source_selected_polarity: candidate.polarity,
-                ...semanticAudit(outcome === 'accepted', true, true),
+                ...retentionAudit(candidate, outcome === 'accepted', true, true),
                 proposition_supported: outcome === 'accepted',
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -1500,7 +1500,7 @@ describe('cross-language retention boundary', () => {
                         verdict,
                         {
                           ...verdict,
-                          ...semanticAudit(true, true, true),
+                          ...retentionAudit(payload.candidates[0], true, true, true),
                           proposition_supported: true,
                           action_arguments_preserved: true,
                           qualification_scope_preserved: true,
@@ -1826,14 +1826,14 @@ describe('cross-language retention boundary', () => {
             .join('\n');
           const user = JSON.parse(body.messages.at(-1).content);
           const output = system.startsWith('Check the language')
-            ? { compliant: true }
+            ? { hint_roles: [], prose_result: { status: 'compliant', counterexample: null } }
             : system.includes('independently verify proposed retained memories')
               ? {
                   verdicts: user.candidates.map(
                     (candidate: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                       candidate_id: candidate.candidate_id,
                       source_selected_polarity: candidate.polarity,
-                      ...semanticAudit(true, true, true),
+                      ...retentionAudit(candidate, true, true, true),
                       proposition_supported: true,
                       action_arguments_preserved: true,
                       qualification_scope_preserved: true,

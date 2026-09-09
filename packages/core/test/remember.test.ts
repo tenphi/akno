@@ -1,4 +1,4 @@
-import { semanticAudit } from './semantic-audit.ts';
+import { retentionAudit } from './semantic-audit.ts';
 import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
@@ -134,7 +134,7 @@ async function startStubChat(): Promise<typeof server> {
                     verdicts: (payload.candidates ?? []).map((candidate) => ({
                       candidate_id: candidate.candidate_id,
                       source_selected_polarity: candidate.polarity,
-                      ...semanticAudit(true, true, true),
+                      ...retentionAudit(candidate, true, true, true),
                       proposition_supported: true,
                       action_arguments_preserved: true,
                       qualification_scope_preserved: true,

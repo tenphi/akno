@@ -1,3 +1,4 @@
+import { languageVerdictFixture } from './language-verdict.ts';
 import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import http from 'node:http';
@@ -2295,9 +2296,12 @@ async function startStub(): Promise<typeof server> {
             choices: [
               {
                 message: {
-                  content: JSON.stringify({
-                    compliant: !excerpts.some((text) => text.includes('Теперь живёт по адресу')),
-                  }),
+                  content: JSON.stringify(
+                    languageVerdictFixture(
+                      JSON.parse(user),
+                      !excerpts.some((text) => text.includes('Теперь живёт по адресу')),
+                    ),
+                  ),
                 },
               },
             ],

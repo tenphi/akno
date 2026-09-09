@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { RetainSourceItem } from '@tenphi/akno-protocol';
 import type { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
-import { frameAuditFields, semanticAudit } from '../../test/semantic-audit.ts';
+import { frameAuditFields, retentionAudit } from '../../test/semantic-audit.ts';
 
 const sourceItems: RetainSourceItem[] = [
   {
@@ -119,7 +119,7 @@ describe('generated subject identity across source items', () => {
               (c: { polarity: 'affirmed' | 'negated'; candidate_id: string }) => ({
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
-                ...semanticAudit(supported, supported, supported),
+                ...retentionAudit(c, supported, supported, supported),
                 proposition_supported: supported,
                 action_arguments_preserved: supported,
                 qualification_scope_preserved: supported,
@@ -216,7 +216,7 @@ describe('generated subject identity across source items', () => {
                 candidate_id: c.candidate_id,
                 source_selected_polarity: c.polarity,
                 ...frameAuditFields(c),
-                ...semanticAudit(supported, true, true),
+                ...retentionAudit(c, supported, true, true),
                 proposition_supported: supported,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,
@@ -369,7 +369,7 @@ describe('generated subject identity across source items', () => {
                 candidate_id: candidate.candidate_id,
                 source_selected_polarity: candidate.polarity,
                 ...frameAuditFields(candidate),
-                ...semanticAudit(false, true, true),
+                ...retentionAudit(candidate, false, true, true),
                 proposition_supported: false,
                 action_arguments_preserved: true,
                 qualification_scope_preserved: true,

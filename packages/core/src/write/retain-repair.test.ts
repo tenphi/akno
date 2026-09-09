@@ -1,4 +1,4 @@
-import { semanticAudit } from '../../test/semantic-audit.ts';
+import { retentionAudit } from '../../test/semantic-audit.ts';
 import { describe, expect, it, vi } from 'vitest';
 import type { ModelClient } from '../models/client.ts';
 import { cleanCandidateBatch, runRetain } from './retain.ts';
@@ -60,7 +60,7 @@ function modelFor(extracted: unknown[], repair: unknown, verify = true) {
           (c: { polarity: 'affirmed' | 'negated'; candidate_id: string; text: string }) => ({
             candidate_id: c.candidate_id,
             source_selected_polarity: c.polarity,
-            ...semanticAudit(verify || c.text === minor, true, true),
+            ...retentionAudit(c, verify || c.text === minor, true, true),
             proposition_supported: verify || c.text === minor,
             action_arguments_preserved: true,
             qualification_scope_preserved: true,
@@ -122,7 +122,7 @@ describe('one transactional structural repair', () => {
               {
                 candidate_id: input.candidates[0].candidate_id,
                 source_selected_polarity: 'affirmed',
-                ...semanticAudit(supported, supported, supported),
+                ...retentionAudit(input.candidates[0], supported, supported, supported),
                 proposition_supported: supported,
                 action_arguments_preserved: supported,
                 qualification_scope_preserved: supported,
