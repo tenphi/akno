@@ -37,7 +37,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v44';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v45';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v30';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -149,9 +149,12 @@ const SYSTEM = `You extract durable memory from one untrusted source for a perso
 
 Reply with JSON only. Every candidate must contain all fields in the supplied schema.
 For each candidate, select its complete source-supported unit, exact support and deciding discourse frame,
-then establish attribution, modality and time before writing text last. Compose that text from the completed
+then establish attribution, modality and time before writing text. Compose that text from the completed
 frame as one independently retrievable record. A report's embedded proposition, outer reporter and explicit
 verification limits belong in that same record; do not leave its deciding qualification only in a sibling.
+Choose subject and page after that qualified sentence. They describe its source-supported canonical identity,
+not an action phrase constructed from its words. A proposed page is only a taxonomy suggestion, never proof
+of ownership; use only the supplied admitted pages or creatable folders, and keep an unresolved home null.
 When the outer narrator supplies a later corrective clarification of an inner report, close the inner
 speaker's reported clause before the clarification and explicitly name the narrator as its source.
 Keep both clauses in the same readable candidate with their shared verification limits. Do not move the
@@ -162,6 +165,10 @@ A cross-language restatement can clarify the referent of an earlier term. Preser
 referent; do not invent alternative components or services merely from different source wordings.
 Preserve explicit epistemic experiencers in the generated sentence: unknown to us is a group-relative
 limit, not unqualified unknownness. Keep the source's group reference without inventing its membership.
+When actual-requirements unknownness qualifies an assumed rule, keep that limit in the same hypothetical
+record as the rule, its conditional consequence and any explicit no-actual-event statement. Preserve
+the actual versus assumed distinction and the original experiencer; do not invent a named group or group
+page. A separate record cannot substitute for a governing qualification in the rule's own readable text.
 Keep the exact epistemic action and its direction as well as its actor. A speaker who has not received
 confirmation is the recipient of potential evidence; that does not say the speaker has not performed
 confirmation herself. Preserve receiving, seeking, giving or independently checking evidence as the
@@ -342,8 +349,6 @@ export const RETAIN_SCHEMA = z.object({
   candidates: z
     .array(
       z.object({
-        subject: z.string(),
-        page: z.string().nullable(),
         kind: z.enum(['claim', 'decision', 'preference', 'plan', 'event', 'question']),
         attribution: z.object({
           source_role: z.enum(['user', 'assistant', 'external', 'unknown']),
@@ -386,6 +391,10 @@ export const RETAIN_SCHEMA = z.object({
         time: ModelTime.nullable(),
         // Constrained decoding should establish the evidence and qualifications before phrasing prose.
         text: z.string(),
+        // Routing identity should follow the completed proposition, including agent versus possessor.
+        // Field order supplies no authority: the same cleaner and independent ownership checks follow.
+        subject: z.string(),
+        page: z.string().nullable(),
       }),
     )
     .max(50),
@@ -1345,7 +1354,11 @@ function cleanCandidateBatchWithPositions(
     }
     if (
       options.generated &&
-      hasAffirmedBooking(text) &&
+      hasAffirmedBooking(
+        text,
+        typeof record.subject === 'string' ? record.subject : undefined,
+        spans.frame,
+      ) &&
       !(
         time &&
         ['scheduled', 'due'].includes(time.relation) &&
@@ -1545,7 +1558,11 @@ function cleanCandidateBatchWithPositions(
   };
 }
 
-function hasAffirmedBooking(text: string): boolean {
+function hasAffirmedBooking(
+  text: string,
+  declaredSubject: string | undefined,
+  frame: readonly RetainSourceSpan[],
+): boolean {
   const booking = /\b(?:is|are|was|were|has been|have been)\s+(?:already\s+)?(?:scheduled|booked)\b/giu;
   const alias = String.raw`the[ \t]+(?:device|item|unit|product)`;
   const quotedAlias = new RegExp(
@@ -1568,10 +1585,36 @@ function hasAffirmedBooking(text: string): boolean {
   // incorrectly excuse a later affirmative booking. Unrecognized syntax stays conservative.
   const negativeSubject =
     /(?:^|[,;.!?]|\b(?:and|but|that)\s)\s*no\s+(?:handover|pickup|collection|shipment|appointment|inspection|meeting|delivery|service|visit|booking|transfer)(?:\s+(?:of|for|with)\s+(?!(?:no|not)\b)(?:(?!(?:is|are|was|were|has|have|had|can|could|will|would|should|must|and|but|or|nor|yet|so|that|which|who|whose|although|though|even|while|whereas|because|since|unless|until|before|after|if|when|where|whether|once|as|despite|nevertheless|however|therefore|remain(?:s|ed)?|exist(?:s|ed)?|mean(?:s|t)?|impl(?:y|ies|ied)|prov(?:e|es|ed)|confirm(?:s|ed)?|show(?:s|ed)?|suggest(?:s|ed)?|ensure(?:s|d)?)\b)[\p{L}\p{N}'’_-]+\s*){1,10})?\s*$/iu;
+  const normalizeName = (value: string) => value.normalize('NFKC').replace(/\s+/gu, ' ').trim();
+  const namedSubject = declaredSubject ? normalizeName(declaredSubject) : null;
+  const nameInFrame = namedSubject
+    ? new RegExp(
+        String.raw`(?<![\p{L}\p{N}'’_-])${namedSubject.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\p{L}\p{N}'’_-])`,
+        'iu',
+      )
+    : null;
+  const sourceNamedSubject = nameInFrame && frame.some((span) => nameInFrame.test(normalizeName(span.quote)));
   return [...text.matchAll(booking)].some((match) => {
     // Strip only a closed noun-alias appositive immediately before this auxiliary. An alias
     // cannot contain a predicate or excuse a later booking in another clause. No text is rewritten.
-    const subject = text.slice(0, match.index).replace(quotedAlias, ' ');
+    let subject = text.slice(0, match.index).replace(quotedAlias, ' ');
+    // A restrictive naming tail can still belong to the negative noun subject. Consume only
+    // a closed name equal to the declared subject and present in one exact source span. Capital
+    // letters alone cannot distinguish a name from a later subject in a run-on sentence.
+    const naming =
+      /\b(the[ \t]+(?:device|item|unit|product))[ \t]+referred[ \t]+to[ \t]+as[ \t]+([^,;.!?\n]+?)[ \t]*$/iu.exec(
+        subject,
+      );
+    if (
+      naming &&
+      sourceNamedSubject &&
+      normalizeName(naming[2]!).toLocaleLowerCase('en-US') === namedSubject!.toLocaleLowerCase('en-US') &&
+      /^(?:[\p{Lu}\p{N}][\p{L}\p{N}'’_-]*)(?:[ \t]+[\p{Lu}\p{N}][\p{L}\p{N}'’_-]*){0,5}$/u.test(naming[2]!) &&
+      !/\b(?:no|not|is|are|was|were|has|have|had|can|could|will|would|should|must|and|but|or|nor|yet|so|that|which|who|whose|although|though|while|whereas|because|since|unless|until|before|after|if|when|where|whether|as)\b/iu.test(
+        naming[2]!,
+      )
+    )
+      subject = subject.slice(0, naming.index) + naming[1] + ' ';
     return !negativeSubject.test(subject);
   });
 }

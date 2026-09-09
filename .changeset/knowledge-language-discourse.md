@@ -128,3 +128,9 @@ named-source attribution in focused fiction answers. Complete-record support ver
 fixed retained unit and original frame without the user's query; generation and ordinary verification
 retain query context. Per-record comparison separates each citation's contribution while keeping every
 material restriction, source-selection check and negative semantic verdict mandatory.
+
+Formulate qualified retained prose before choosing its subject and page suggestion. Keep source-stated
+actual knowledge limits with the hypothetical rule they qualify, without inventing a group identity or
+mutating admitted siblings during repair. Recognize a bounded restrictive naming phrase inside a negative
+booking subject; separate affirmative bookings still require their temporal envelope and every admitted
+candidate still requires full-source verification and independent ownership.

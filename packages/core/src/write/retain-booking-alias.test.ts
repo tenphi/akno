@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { RetainSourceItem } from '@tenphi/akno-protocol';
 import type { ModelClient } from '../models/client.ts';
-import { runRetain } from './retain.ts';
+import { cleanCandidateBatch, runRetain } from './retain.ts';
 import { frameAuditFields, semanticAudit } from '../../test/semantic-audit.ts';
 
 const sourceItems: RetainSourceItem[] = [
@@ -35,15 +35,21 @@ const candidate = {
 };
 
 describe('a negative booking subject with a quoted noun alias', () => {
-  it.each([true, false])(
-    'preserves all original source context and requires semantics: %s',
-    async (supported) => {
+  it.each(
+    [
+      candidate.text,
+      'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 has been booked.',
+    ].flatMap((text) => [true, false].map((supported) => ({ text, supported }))),
+  )(
+    'preserves all original source context and requires semantics: $supported / $text',
+    async ({ text, supported }) => {
+      const draft = { ...candidate, text };
       const chat = vi.fn(async (messages: { content: string }[]) => {
         if (chat.mock.calls.length === 1)
-          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+          return { ok: true, value: JSON.stringify({ candidates: [draft] }), latencyMs: 11 };
         const payload = JSON.parse(messages.at(-1)!.content);
         expect(payload.source.items).toEqual(sourceItems);
-        expect(payload.candidates[0].text).toBe(candidate.text);
+        expect(payload.candidates[0].text).toBe(text);
         expect(payload.candidates[0].time).toBeUndefined();
         return {
           ok: true,
@@ -75,6 +81,35 @@ describe('a negative booking subject with a quoted noun alias', () => {
       expect(result.modelUsage.repair).toBeUndefined();
       expect(result.candidates).toHaveLength(supported ? 1 : 0);
       if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+    },
+  );
+
+  it.each([
+    'Ada Marlow states that handover of the device referred to as Zephyr QX-100 has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 is ready and a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 is ready, but a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 was denied. A collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 has been booked and a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100\nhas been booked, but a collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 AND A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 Is Ready And A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 Then A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 THEN A Collection has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100 Ada Marlow has been booked.',
+    'Ada Marlow states that no handover of the device referred to as Zephyr QX-100\nAda Marlow has been booked.',
+  ])('does not lend a negative naming subject to another booking: %s', (text) => {
+    const result = cleanCandidateBatch([{ ...candidate, text }], { generated: true, sourceItems });
+    expect(result.candidates).toHaveLength(0);
+    expect(result.held).toEqual([expect.objectContaining({ reason_code: 'time_unresolved' })]);
+  });
+
+  it.each(['Zephyr QX-100 Then A Collection', 'Zephyr QX-100 Ada Marlow'])(
+    'cannot self-certify a naming tail by declaring an unsupported subject: %s',
+    (subject) => {
+      const text = `Ada Marlow states that no handover of the device referred to as ${subject} has been booked.`;
+      const result = cleanCandidateBatch([{ ...candidate, subject, text }], { generated: true, sourceItems });
+      expect(result.candidates).toHaveLength(0);
+      expect(result.held).toEqual([expect.objectContaining({ reason_code: 'time_unresolved' })]);
     },
   );
 });

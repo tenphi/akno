@@ -641,12 +641,12 @@ describe('backoffMs', () => {
  * than discovered by noticing derivation got worse.
  */
 describe('every schema stays strict-mode safe', () => {
-  it('emits retention source support and qualifications before the prose field', () => {
+  it('emits retention support and qualifications before prose, then routing fields', () => {
     const schema = toEndpointSchema(RETAIN_SCHEMA) as {
       properties: { candidates: { items: { properties: Record<string, unknown> } } };
     };
     const keys = Object.keys(schema.properties.candidates.items.properties);
-    expect(keys.at(-1)).toBe('text');
+    expect(keys.slice(-3)).toEqual(['text', 'subject', 'page']);
     for (const key of ['attribution', 'discourse', 'epistemic', 'support', 'discourse_frame', 'time'])
       expect(keys.indexOf(key)).toBeLessThan(keys.indexOf('text'));
   });
