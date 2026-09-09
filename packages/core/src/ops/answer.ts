@@ -44,7 +44,7 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v48';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v49';
 export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v32';
 
 function answerDraftSchema(evidenceId: z.ZodType<string>) {
@@ -146,6 +146,10 @@ Use a term's explicitly clarified referent consistently throughout the answer. I
 an ambiguous component name, translate that meaning rather than another isolated dictionary sense. Do not
 introduce an additional component and then repeat the correct one in a later clause. Only the supplied
 clarification establishes the shared referent; similarity or domain knowledge cannot establish it.
+If the question uses an ambiguous term whose meaning the selected record's bound original frame explicitly
+clarifies, answer with that source-resolved referent. The question's earlier wording does not reopen that
+resolved ambiguity or make the record unavailable. Without that explicit clarification, preserve ambiguity;
+an adjacent unselected proposition, dictionary sense or question presupposition cannot establish an alias.
 When a generic source_label is supplied, use that localized label for attribution. It names the role, not a person.
 For a source_report record, use a direct outer-attribution clause: English "According to SOURCE, ..."
 or Russian "По словам SOURCE, ...", using the supplied speaker name or localized generic role.
@@ -204,6 +208,9 @@ Attribution alone does not establish a separate writing or recording action by t
 person wrote or recorded it when the evidence explicitly supports that action; never invent its time or method.
 Unknown temporal precision means the record has no resolved date. Describe any relative time as relative
 to the undated source, never to today, and preserve that the calendar date is unknown.
+Attach tentative temporal status to timing/date words: "the timing is tentative" / "срок предварительный".
+Do not attach it to the embedded action's manner (such as reviewing preliminarily), or make an asserted
+proposal tentative merely because its time is tentative. Preserve a genuinely tentative proposition separately.
 When a source has this unresolved relative timing, retain BOTH its source-relative anchor and unknown
 reference date in the answer. An unknown date alone drops the anchor. Preserve the relative interval
 actually stated in the evidence, anchor it to the original undated source rather than today, and preserve
@@ -1566,7 +1573,40 @@ function tentativeLanguage(text: string): boolean {
     `${unconfirmed}\\s+${epistemicHead}|${epistemicHead}\\s+(?:(?:пока|ещ[её]|остаются?|оста[её]тся)\\s+){0,2}${unconfirmed}`,
     'iu',
   );
+  // Adjacency alone mistakes "не установленный версией компонент" for an uncertain version:
+  // the instrumental version is a dependent, while the uninstalled component is the actual head.
+  // Keep this new adjective family to agreeing epistemic noun forms; broader legacy forms below
+  // and full semantic verification remain separate contracts.
+  const unestablishedAdjective = [
+    ['ые', 'гипотезы|версии|сообщения|утверждения'],
+    ['ая', 'гипотеза|версия'],
+    ['ую', 'гипотезу|версию'],
+    ['ое', 'сообщение|утверждение'],
+    ['ых', 'гипотез|версиях|гипотезах|версий|сообщений|сообщениях|утверждений|утверждениях'],
+    ['ым', 'гипотезам|версиям|сообщениям|утверждениям|сообщением|утверждением'],
+    ['ыми', 'гипотезами|версиями|сообщениями|утверждениями'],
+    ['ой', 'гипотезы|гипотезе|гипотезой|версии|версией'],
+    ['ого', 'сообщения|утверждения'],
+    ['ому', 'сообщению|утверждению'],
+    ['ом', 'сообщении|утверждении'],
+  ].some(([ending, heads]) =>
+    new RegExp(String.raw`(?<![\p{L}])не\s+установленн${ending}\s+(?:${heads})(?![\p{L}])`, 'iu').test(text),
+  );
+  // Reverse predicates need an end boundary too: "гипотезы не установленными компонентами ..."
+  // attaches the adjective to the following components, not to the preceding hypotheses.
+  const unestablishedPredicate = [
+    ['гипотезы|версии|сообщения|утверждения', 'ые|ыми'],
+    ['гипотеза|версия', 'ая|ой'],
+    ['сообщение|утверждение', 'ое|ым'],
+  ].some(([heads, endings]) =>
+    new RegExp(
+      String.raw`(?<![\p{L}])(?:${heads})\s+(?:(?:пока|ещ[её]|остаются|оста[её]тся|остались|осталась|осталось)\s+){0,2}не\s+установленн(?:${endings})(?=\s*(?:$|[.!?;,\n]))`,
+      'iu',
+    ).test(text),
+  );
   return (
+    unestablishedAdjective ||
+    unestablishedPredicate ||
     spacedUncertainty.test(text) ||
     /\bpreliminary (?:hypothes(?:is|es)|explanations?|claims?|reports?|accounts?|beliefs?|assumptions?|proposals?|interpretations?|readings?)\b|\b(?:hypothes(?:is|es)|explanations?|claims?|reports?|accounts?|beliefs?|assumptions?|proposals?|interpretations?|readings?) (?:is|are|was|were|remains?|remained) (?:still )?preliminary\b/iu.test(
       text,

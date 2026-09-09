@@ -1688,6 +1688,34 @@ describe('grounded answer discovery surface', () => {
 
   it.each([
     [
+      'Ada Marlow обсуждала две конкурирующие, пока не установленные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      true,
+    ],
+    ['Ada Marlow обсуждала не установленную гипотезу silverpine об ослабленном клапане.', true],
+    ['Ada Marlow обсуждала silverpine; это не установленная версия об ослабленном клапане.', true],
+    ['Ada Marlow обсуждала silverpine с не установленными гипотезами об ослабленном клапане.', true],
+    ['Ada Marlow обсуждала silverpine. Эти гипотезы остались не установленными.', true],
+    ['Ada Marlow обсуждала silverpine. Гипотеза остаётся не установленной.', true],
+    ['Ada Marlow обсуждала silverpine. Сообщение осталось не установленным.', true],
+    ['Ada Marlow обсуждала silverpine. Гипотезы не установленные.', true],
+    ['Ada Marlow обсуждала silverpine. Гипотезы не установленными компонентами не объясняются.', false],
+    ['Ada Marlow обсуждала silverpine. Эти гипотезы пока не установлены.', true],
+    [
+      'Ada Marlow обсуждала две установленные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
+      false,
+    ],
+    [
+      'Ada Marlow обсуждала гипотезы silverpine: ослабленный клапан и изношенный кабель. Не установленный компонент лежал рядом.',
+      false,
+    ],
+    ['Ada Marlow обсуждала гипотезы silverpine. Не установленная деталь лежала рядом.', false],
+    ['Ada Marlow обсуждала гипотезы silverpine; компоненты были не установленные.', false],
+    [
+      'Ada Marlow обсуждала гипотезы silverpine. Гипотезы подтверждены. Не установленный версией компонент лежал рядом.',
+      false,
+    ],
+    ['Ada Marlow обсуждала гипотезы silverpine. Не установленная гипотезой деталь лежала рядом.', false],
+    [
       'Ada Marlow обсуждала две пока не доказанные гипотезы silverpine: ослабленный клапан и изношенный кабель.',
       true,
     ],
@@ -1782,36 +1810,39 @@ describe('grounded answer discovery surface', () => {
     if (!accepted) expect(result.validation?.rejection_counts).toEqual({ discourse: 1 });
   });
 
-  it('still rejects a semantically unsupported unproven-hypothesis draft after the grammar floor', async () => {
-    write(
-      'products/zephyr-qx-100.md',
-      '# Zephyr QX-100\n\n<!-- akno:item mem_unproven v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow considers two unconfirmed silverpine explanations: a loose valve and a worn cable.\n',
-    );
-    await memory.index({ verify: true });
-    await useAnswerModel({
-      generation: {
-        blocks: [
-          {
-            text: 'Ada Marlow рассматривает две пока не доказанные гипотезы silverpine: сломанный клапан и сгоревший кабель.',
-            evidence_ids: ['E1'],
-          },
-        ],
-        missing_concepts: [],
-      },
-      verification: { verdicts: [verdict('B1', false)] },
-    });
-    const result = await memory.answer({
-      question: 'Which silverpine hypotheses did Ada Marlow consider?',
-      memory_view: 'discussion',
-      filter: { source: 'page' },
-      expand: false,
-      graph: false,
-    });
-    expect(result.answer).toBeNull();
-    expect(result.reason_code).toBe('verification_rejected');
-    expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
-    expect(modelRequests).toHaveLength(2);
-  });
+  it.each(['не доказанные', 'не установленные'])(
+    'still rejects a semantically unsupported hypothesis after the grammar floor: %s',
+    async (uncertainty) => {
+      write(
+        'products/zephyr-qx-100.md',
+        '# Zephyr QX-100\n\n<!-- akno:item mem_unproven v=2 supports=aaaaaaaaaaaa@bbbbbbbbbbbb@cccccccccccc@provided level=1 kind=claim subject=unresolved source-role=user speaker=Ada%20Marlow reports=0 commitment=tentative disposition=active polarity=affirmed basis=self_attested -->\n- **Tentative:** Ada Marlow considers two unconfirmed silverpine explanations: a loose valve and a worn cable.\n',
+      );
+      await memory.index({ verify: true });
+      await useAnswerModel({
+        generation: {
+          blocks: [
+            {
+              text: `Ada Marlow рассматривает две пока ${uncertainty} гипотезы silverpine: сломанный клапан и сгоревший кабель.`,
+              evidence_ids: ['E1'],
+            },
+          ],
+          missing_concepts: [],
+        },
+        verification: { verdicts: [verdict('B1', false)] },
+      });
+      const result = await memory.answer({
+        question: 'Which silverpine hypotheses did Ada Marlow consider?',
+        memory_view: 'discussion',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).toBeNull();
+      expect(result.reason_code).toBe('verification_rejected');
+      expect(result.validation?.rejection_counts).toEqual({ semantic_support: 1 });
+      expect(modelRequests).toHaveLength(2);
+    },
+  );
 
   it.each([
     ['Запись не определяет, покрывается ли ремонтом по гарантии ремонт двигателя silverpine.', false, true],

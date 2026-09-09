@@ -93,3 +93,5 @@ Require exact per-span accounting for multi-span retention inside the existing s
 Keep candidate-specific retention audits compatible with strict structured-output endpoints using direct single-candidate objects or nested `anyOf` unions with distinct single-value ID enums. Validate both transport envelopes and retain strict parsing, candidate/frame accounting and semantic rejection behavior.
 
 Preserve personal plan adoption and meeting arrangement independently in generated memory and answers. Keep speaker uncertainty and record inconclusiveness attached to separate subjects, and focus the existing language checker on descriptive compounds without exempting them or rejecting valid identifiers by syntax alone.
+
+Recognize bounded shared-negation report qualifications and epistemic-head-bound Russian uncertainty adjectives before semantic verification. Preserve source-resolved referents when query wording is ambiguous and attach tentative timing to timing rather than the embedded action.

@@ -37,7 +37,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v38';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v39';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v29';
 
 const QUALIFICATION_CONTRACT = `Interpret independent dimensions consistently:
@@ -972,6 +972,23 @@ function hasLeadingExistentialDenial(text: string, speaker: string | undefined):
 
 const REPORT_UNCERTAINTY =
   /\b(?:unverified|unconfirmed|not (?:yet )?(?:been )?(?:independently )?(?:verified|confirmed)|(?:no|without|lacks?) (?:independent )?confirmation)\b|неподтвержд|непроверенн|не провер|не подтверд|не (?:был[аои]? )?подтвержд[её]н|подтверждения[^.!?;\n]{0,40}нет|без подтверждени/iu;
+
+function hasReportUncertainty(text: string): boolean {
+  if (REPORT_UNCERTAINTY.test(text)) return true;
+  // A shared negative auxiliary also governs elided confirmation predicates. Recognize a closed
+  // list, never arbitrary text between "not" and "confirmed": that would borrow another clause's
+  // negation. This only admits readable uncertainty to the still-mandatory semantic verifier.
+  const name = String.raw`(?!(?:The|This|That|A|An)\b)\p{Lu}[\p{L}’'-]*(?:\s+\p{Lu}[\p{L}’'-]*){1,3}`;
+  const actor = String.raw`(?:${name}|I|[Hh]e|[Ss]he|[Ww]e|[Tt]hey|(?:[Tt]he\s+)?assistant)`;
+  const examination = String.raw`(?:read|examined|seen|reviewed)\s+(?:(?:the|these|those|any)\s+)?(?:service\s+)?(?:terms|contract|agreement)`;
+  const confirmation = String.raw`(?:independently\s+)?(?:confirmed|verified)\s+(?:(?:the|this|that|any)\s+)?(?:report|message|claim|account|assumption)`;
+  const finalPredicate = String.raw`(?:independently\s+)?(?:confirmed|verified)\s+(?:it|this|that)(?:\s+as\s+(?:a|the|this|that)\s+(?:condition|term|requirement))?`;
+  const negativeExplanation = String.raw`,\s+(?:so|therefore)\s+it\s+(?:is|was)\s+not\s+(?:a|the)\s+(?:condition|term|requirement)\s+${actor}\s+(?:has|have|had)\s+(?:independently\s+)?(?:verified|confirmed)`;
+  return new RegExp(
+    String.raw`(?<![\p{L}])${actor}(?:,\s*${name},)?\s+(?:has|have|had)\s+not\s+(?:yet\s+)?${examination}(?:\s+or\s+${confirmation}|,\s+${confirmation},\s+or\s+${finalPredicate})(?:${negativeExplanation})?(?=\s*(?:$|[.!?;\n]))`,
+    'u',
+  ).test(text);
+}
 const RELATIVE_TIME =
   /\b(today|tomorrow|yesterday|tonight|next\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|last\s+(?:night|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|this\s+(?:morning|afternoon|evening|week|month|year))\b|сегодня|завтра|вчера|на следующ|на прошл|в следующ|в прошл/iu;
 
@@ -1140,8 +1157,8 @@ function cleanCandidateBatchWithPositions(
     );
     if (
       epistemic.basis === 'source_report' &&
-      REPORT_UNCERTAINTY.test(sourceEvidence(spans.frame)) &&
-      !REPORT_UNCERTAINTY.test(text)
+      hasReportUncertainty(sourceEvidence(spans.frame)) &&
+      !hasReportUncertainty(text)
     ) {
       held.push({
         candidate_id: provisionalId,
