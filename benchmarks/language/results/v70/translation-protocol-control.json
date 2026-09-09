@@ -1,0 +1,34 @@
+{
+  "runtimeCommit": "1ceb557224602d132bb3c5944c2ac81ac7d2a696",
+  "purpose": "protocol-only",
+  "answerOutputTokenLimit": 2400,
+  "results": [
+    {
+      "kind": "generation",
+      "status": "completed",
+      "expected": {
+        "record_readings": [
+          {
+            "evidence_id": "E1",
+            "selected_meaning": "The retained coverage question remains unanswered.",
+            "clarification_or_ambiguity": null
+          }
+        ],
+        "blocks": [
+          {
+            "rendering_mode": "translate",
+            "text": "Открытый вопрос silverpine: покрывает ли гарантия обратную доставку? Ответ неизвестен.",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "missing_concepts": []
+      },
+      "ok": true,
+      "schemaValid": true,
+      "exact": true,
+      "reason": null
+    }
+  ]
+}
