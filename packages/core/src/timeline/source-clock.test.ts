@@ -358,3 +358,52 @@ describe('undated original-record synonym', () => {
     expect(hasSourceRelativeAnchor(text)).toBe(false);
   });
 });
+
+describe('English explained source-entry clock', () => {
+  it.each([
+    'Ada Marlow denied that next month means the month after her undated source entry.',
+    'The note does not say next month means the month after her undated source entry.',
+    'It is false that next month means the month after her undated source entry.',
+    'Ada Marlow asked: next month means the month after her undated source entry;',
+    'Ada Marlow falsely proposes reviewing terms next month, meaning the month after her undated source entry.',
+    'Next month means the after her undated source entry.',
+  ])('requires an affirmative clock relation: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text)).toBe(false);
+  });
+  it.each([
+    'Next month means the month after her undated source entry.',
+    'A proposal is recorded; next month means the month after her undated source entry.',
+    'Last week means the week before his undated source entry.',
+  ])('admits a standalone affirmative explanation: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text)).toBe(true);
+    expect(hasUnknownReferenceClock(text)).toBe(true);
+  });
+
+  const original =
+    'Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month, meaning the month after her undated source entry; the calendar month is impossible to determine, and she has not accepted a plan or organized a meeting.';
+  const repaired =
+    'Ada Marlow proposes reviewing the Zephyr QX-100 repair terms next month, meaning the month after her original source entry rather than after processing; the entry’s calendar date is unknown.';
+  it.each([original, repaired])('recognizes both independent clock requirements: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text)).toBe(true);
+    expect(hasUnknownReferenceClock(text)).toBe(true);
+  });
+  it('does not infer an absent source date from an original-record anchor alone', () => {
+    const text = 'Next month means the month after her original source entry.';
+    expect(hasSourceRelativeAnchor(text)).toBe(true);
+    expect(hasUnknownReferenceClock(text)).toBe(false);
+  });
+  it.each([
+    original.replace('her undated source entry', 'processing'),
+    original.replace('her undated source entry', 'her undated entry'),
+    original.replace('month after her', 'week after her'),
+    original.replace('meaning the month', 'meaning she said the month'),
+    original.replace('month after her', 'month after\nher'),
+    original.replace('next month, meaning', 'next month does not mean'),
+    original.replace('source entry;', 'source entry?'),
+    original.replace('source entry;', 'source entry, but actually after processing;'),
+    original.replace('Ada Marlow proposes', 'If Ada Marlow proposes'),
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(([open, close]) => `${open}${original}${close}`),
+  ])('does not borrow a source noun across an invalid clock relation: %s', (text) => {
+    expect(hasSourceRelativeAnchor(text)).toBe(false);
+  });
+});

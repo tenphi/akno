@@ -64,6 +64,88 @@ afterEach(async () => {
 });
 
 describe('grounded answer discovery surface', () => {
+  it.each(['en', 'ru'] as const)(
+    'keeps a generalized measured property unpublished even when its broader claim is entailed (%s query)',
+    async (queryLanguage) => {
+      const frame =
+        'The open silverpine question is whether the Zephyr QX-100 terms require a connector continuity test; its answer remains unknown.';
+      const text =
+        'Открытый вопрос silverpine: требуют ли условия Zephyr QX-100 проверки целостности разъёма; ответ остаётся неизвестным.';
+      const original = await seedSourceFrame({
+        text: '- **Open question:** ' + frame,
+        frame,
+        kind: 'question',
+        commitment: 'none',
+        polarity: 'affirmed',
+      });
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        generation: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload.output_language).toBe('ru');
+          expect(JSON.stringify(request.messages)).toContain('terse role plan in output_language');
+          return {
+            record_readings: sourceFrameReading(),
+            blocks: [{ rendering_mode: 'translate', text, evidence_ids: ['E1'] }],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload).not.toHaveProperty('question');
+          expect(JSON.stringify(payload)).not.toContain('record_readings');
+          const block = payload.blocks[0];
+          expect(
+            block.cited_evidence[0].retention_source_frame.map((a: { text: string }) => a.text).join(''),
+          ).toBe(original);
+          expect(block.answer_segments.map((a: { text: string }) => a.text).join('')).toBe(text);
+          const compared = {
+            source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+            answer_anchor: block.answer_segments[0].anchor_id,
+            detail: 'The selected question and unknown answer remain.',
+            relation: 'preserved',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true, false, true),
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context: frame,
+                    actor: compared,
+                    qualification: compared,
+                    object_and_mechanism: {
+                      ...compared,
+                      detail:
+                        'Source tests electrical continuity; answer tests generic connector integrity. The specific property is lost.',
+                      relation: 'generalized',
+                    },
+                  },
+                ],
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question:
+          queryLanguage === 'en'
+            ? 'Which silverpine test question remains?'
+            : 'Какой вопрос silverpine о проверке остаётся?',
+        answer_language: 'ru',
+        memory_view: 'questions',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer).toBeNull();
+      expect(result.reason_code).toBe('verification_rejected');
+      expect(modelRequests).toHaveLength(3);
+      expect(JSON.stringify(result)).not.toContain('source_alignments');
+    },
+  );
   it.each([false, true])(
     'renders the complete selected record while keeping private neighbors and embedded citations out: %s',
     async (hasReference) => {
@@ -1415,6 +1497,28 @@ describe('grounded answer discovery surface', () => {
       'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, motor repair would have been covered; she did not purchase it, and it is not her active coverage.',
       'Ada Marlow описала нереализованный вариант, при котором дополнительное продление silverpine покрывало бы ремонт двигателя. Она не приобрела это продление, поэтому оно не являлось её действующим покрытием.',
       true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, wheel-hub repair in the fifth year would have been covered; she did not purchase it, and it is not her active coverage.',
+      'Ada Marlow described an unrealized option in which purchasing the optional silverpine extension would have covered wheel-hub repair in the fifth year. She did not purchase it, so this was not her current coverage.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, wheel-hub repair in the fifth year would have been covered; she did not purchase it, and it is not her active coverage.',
+      'Ada Marlow описала нереализованный вариант, при котором после покупки дополнительного продления silverpine ремонт ступицы колеса в пятом году был бы покрыт. Она его не приобрела, поэтому это не её действующее покрытие.',
+      true,
+    ],
+    [
+      'counterfactual',
+      'self_attested',
+      'Ada Marlow described an unrealized alternative: if she had purchased the silverpine extension, wheel-hub repair in the fifth year would have been covered; she did not purchase it, and it is not her active coverage.',
+      'Ada Marlow described an unrealized option in which purchasing the optional silverpine extension would have covered wheel-hub repair in the fifth year. She did not purchase it and has no active coverage at all.',
+      false,
+      'semantic_support',
     ],
     [
       'counterfactual',

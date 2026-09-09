@@ -150,3 +150,7 @@ source selection and semantic verification still decide whether any generated an
 Keep named entities attached to the record or object identified by the source during retention,
 without adding component ownership from routing metadata. Preserve selected group-relative knowledge
 limits through answer generation and source audit, including the experiencer of "unknown to us".
+
+Preserve bounded personal report-check lists, explicit source-entry time explanations and affirmative
+counterfactual alternatives across translation. Compare tested properties before accepting technical
+paraphrases, keeping private translation notes subordinate to original evidence and all semantic checks.

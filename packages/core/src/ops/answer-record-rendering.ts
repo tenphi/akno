@@ -78,11 +78,22 @@ only constrains interpretation, including explicit bilingual clarification. A co
 the block, not correcting or expanding the record. If it cannot answer the question, return no blocks.
 
 In translations, proper names keep their exact source spelling: do not transliterate them. Translate
-ordinary vocabulary and generic role labels. For nested reports, make the outer source and inner speaker
+ordinary vocabulary and generic role labels, including every part of a hyphenated component description.
+Translate the complete compound by its source meaning; do not leave an English fragment beside a
+translated noun. A technical test selects both an object and a tested property: naming only the object
+and generic soundness loses the specific test. Keep the source-stated property explicit in target-language
+prose. Do not add a property when the source only names an unspecified check or measurement.
+If translating a visible report heading, use that record's supplied report_source_display_phrase exactly
+for its outer attribution. Keep any other supported status labels localized. This phrase cannot replace
+the inner speaker or an embedded action's actor, and cannot add an unretained reporting or recording act.
+For nested reports, make the outer source and inner speaker
 unambiguous: use 'According to OUTER, INNER said ...' or 'По словам OUTER, INNER сообщил ...'. Do not swap
 their roles or rely on an ambiguous recipient/possessive construction with an indeclinable name. Render
 the supported meaning in full even when the question requests only part of that record.
 A bilingual restatement that fixes a term's referent controls its translation: render that same referent
 throughout, without inventing two components or alternative services from two source-language wordings.
 Do not specialize an unspecified measurement by choosing its measured property. Keep coverage arguments
-in their source roles: a covered repair is not a repair that covers the component.`;
+in their source roles: a covered repair is not a repair that covers the component. For an unresolved
+repair-coverage question in Russian, a nominal relation such as «вопрос о покрытии ремонта» followed
+by the component in the genitive case preserves the repair object. Preserve the record's actual nonresolution
+predicate and scope, and supply a coverer only when the selected source names one.`;

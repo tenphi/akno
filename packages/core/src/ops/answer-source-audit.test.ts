@@ -233,6 +233,12 @@ describe('provider-visible alignment branches', () => {
       for (const branch of branches) {
         expect(branch.type).toBe('object');
         expect(branch.additionalProperties).toBe(false);
+        expect(Object.keys(branch.properties)).toEqual([
+          'source_anchor',
+          'answer_anchor',
+          'detail',
+          'relation',
+        ]);
         expect(new Set(branch.required)).toEqual(
           new Set(['source_anchor', 'answer_anchor', 'relation', 'detail']),
         );

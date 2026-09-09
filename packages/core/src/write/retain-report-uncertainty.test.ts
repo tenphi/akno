@@ -13,6 +13,9 @@ const clarified =
   "Ada Marlow has not read the service terms or independently confirmed this report, and she clarifies that these are Bo Winters's words in her retelling rather than a condition she verified.";
 const personalList =
   'Ada Marlow only conveys this account and has not read the agreement, independently checked the account, or herself checked this reported meaning.';
+const checked = 'Ada Marlow has not read the agreement or independently checked this account.';
+const repeatedCheck =
+  'Ada Marlow is only passing on this meaning, has not read the agreement, and has not independently checked Bo Winters’s account.';
 const record = (qualification: string, original = source) => ({
   kind: 'claim',
   subject: 'Zephyr QX-100',
@@ -32,6 +35,32 @@ const record = (qualification: string, original = source) => ({
 describe('shared negation in readable report uncertainty', () => {
   it.each([
     [coordinated, true],
+    [checked, true],
+    [`The report says ${checked}`, true],
+    [`Ada Marlow denied she has not read the agreement or independently checked this account.`, false],
+    [`It is false that ${checked}`, false],
+    [`Ada Marlow asked whether she has not read the agreement or independently checked this account.`, false],
+    [`The note does not say ${checked}`, false],
+    [`Ada Marlow asked: ${checked}`, false],
+    [`Ada Marlow falsely has not read the agreement or independently checked this account.`, false],
+    [repeatedCheck, true],
+    [checked.replace(' or independently', ', and has not independently'), true],
+    [checked.replace(' or independently', ', and has independently'), false],
+    [checked.replace(' or independently', ', and Bo Winters has independently'), false],
+    [checked.replace('this account', 'the device'), false],
+    [checked.replace('this account', 'this assumption'), false],
+    [checked.replace('the agreement', 'the report'), false],
+    [checked.replace(' or independently', '; independently'), false],
+    [checked.replace(' or independently', '\nindependently'), false],
+    [checked.replace('.', ', but she checked it.'), false],
+    [checked.replace('has not read', 'has read'), false],
+    [repeatedCheck.replace('has not independently checked', 'has independently checked'), false],
+    [repeatedCheck.replace('and has not', 'and Bo Winters has not'), false],
+    [`If ${checked}`, false],
+    [`Example: ${checked}`, false],
+    ...['«»', '“”', '‘’', '""', "''", '``'].map(
+      ([open, close]) => [`Example: ${open}${repeatedCheck}${close}`, false] as const,
+    ),
     [personalList, true],
     [personalList.replace('herself checked this reported meaning', 'herself confirmed it'), true],
     [personalList.replace('Ada Marlow only conveys this account and', 'She'), true],
@@ -162,7 +191,7 @@ describe('shared negation in readable report uncertainty', () => {
   });
 
   it.each(
-    [coordinated, continued, clarified, personalList].flatMap(
+    [coordinated, continued, clarified, personalList, checked, repeatedCheck].flatMap(
       (qualification) =>
         [
           [false, true, qualification],

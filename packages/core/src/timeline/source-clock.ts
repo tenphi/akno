@@ -6,6 +6,7 @@ export function hasDeicticTime(text: string): boolean {
 }
 
 export function hasSourceRelativeAnchor(text: string): boolean {
+  if (hasExplainedSourceEntryClock(text)) return true;
   // A quoted deictic word can name the record's clock; a quoted example of an entire anchoring
   // sentence cannot supply it. Require the time expression as the subject of this new construction.
   const deictic = '(?:today|tomorrow|yesterday|tonight|(?:next|last|this)\\s+(?:day|week|month|year))';
@@ -128,5 +129,38 @@ function hasUndatedOriginalClock(text: string): boolean {
       .split(/[.!?;\n]/u)
       .at(-1)!;
     return !/(?<![\p{L}])(?:якобы|пример|если)(?![\p{L}])|(?<![\p{L}])не[ \t]*$/iu.test(prefix);
+  });
+}
+
+/** An explained deictic interval can name a source entry without resolving its unknown date. */
+function hasExplainedSourceEntryClock(text: string): boolean {
+  const unquoted = text.replace(
+    /`[^`]*`|«[^»]*»|“[^”]*”|"[^"\n]*"|‘[^’]*’|(?<![\p{L}\p{N}])'[^'\n]*'(?![\p{L}\p{N}])/gu,
+    (span) =>
+      /^(?:next|last) (?:day|week|month|year)$/iu.test(span.slice(1, -1)) ? span.slice(1, -1) : '⟦quotation⟧',
+  );
+  const sourceEntry = String.raw`(?:the|this|that|her|his|their)[ \t]+(?:(?:undated|original)[ \t]+){1,2}source[ \t]+(?:entry|record|note)`;
+  const actor = String.raw`(?:I|[Hh]e|[Ss]he|[Ww]e|[Tt]hey|(?!(?:The|This|That|If|Unless|When|Suppose|Example|Not)\b)\p{Lu}[\p{L}'’-]*(?:[ \t]+\p{Lu}[\p{L}'’-]*){0,3})`;
+  const objectWord = String.raw`(?!(?:not|if|unless|when|that|whether|and|but|said|says|asked|asks|denied|denies|false|allegedly|next|last)(?![\p{L}]))[\p{L}\p{N}'’-]+`;
+  // The comma explanation may follow an actual proposal; an arbitrary prefix could instead
+  // deny or question the clock. Finite meaning statements must begin their own affirmative clause.
+  const proposal = String.raw`${actor}[ \t]+(?:proposes|proposed)[ \t]+(?:reviewing|checking)[ \t]+(?:${objectWord}[ \t]+){1,12}`;
+  return (
+    [
+      ['[Nn]ext', 'after'],
+      ['[Ll]ast', 'before'],
+    ] as const
+  ).some(([deictic, direction]) => {
+    const period = String.raw`(day|week|month|year)`;
+    const beginnings = [
+      String.raw`${proposal}${deictic}[ \t]+${period},[ \t]+meaning`,
+      String.raw`${deictic}[ \t]+${period}[ \t]+(?:means|is|refers[ \t]+to)`,
+    ];
+    return beginnings.some((beginning) =>
+      new RegExp(
+        String.raw`(?:^|[.;!])[ \t]*${beginning}[ \t]+the[ \t]+\1[ \t]+${direction}[ \t]+${sourceEntry}(?:[ \t]+rather[ \t]+than[ \t]+after[ \t]+processing|,[ \t]+not[ \t]+after[ \t]+processing)?(?=[ \t]*(?:$|[.;!]))`,
+        'u',
+      ).test(unquoted),
+    );
   });
 }

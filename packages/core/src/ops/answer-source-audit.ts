@@ -60,24 +60,26 @@ function alignmentSchema(coordinates: AnswerAuditCoordinates) {
   const detail = z.string().trim().min(1).max(160);
   // Refinements cannot constrain provider decoding. Make an omitted aspect's absent answer
   // coordinate part of its wire shape, without allowing that negative verdict to publish.
+  // Write the concrete comparison before choosing its relation; an early "preserved" must
+  // not turn the later explanation into an assumption that two technical properties match.
   return z.union([
     z.strictObject({
       source_anchor: source,
       answer_anchor: answer,
-      relation: z.enum(['preserved', 'generalized', 'changed']),
       detail,
+      relation: z.enum(['preserved', 'generalized', 'changed']),
     }),
     z.strictObject({
       source_anchor: source,
       answer_anchor: z.null(),
-      relation: z.enum(['omitted']),
       detail,
+      relation: z.enum(['omitted']),
     }),
     z.strictObject({
       source_anchor: source.nullable(),
       answer_anchor: z.null(),
-      relation: z.enum(['not_selected']),
       detail,
+      relation: z.enum(['not_selected']),
     }),
   ]);
 }
@@ -125,8 +127,14 @@ export function answerAlignmentsSupported(value: unknown, coordinates: AnswerAud
 export const ANSWER_READING_CONTRACT = `When record_readings is required, fill it BEFORE drafting blocks.
 Return exactly one reading per evidence_id with a non-null retention_source_frame. Read the original
 frame in full, then identify the proposition selected by its retained excerpt. Preserve content and polarity,
-explicit cross-language clarification, actors, mechanism and qualifications in selected_meaning. Explain
-any explicit clarification or remaining ambiguity in clarification_or_ambiguity; otherwise use null.
+explicit cross-language clarification, actors, mechanism and qualifications in selected_meaning.
+When translating, use this existing field as a terse role plan in output_language, within 320 characters:
+state the operation, its object, any source-specified tested property, and material modifiers separately.
+For coverage, distinguish the covered item/service from its coverer; leave an unspecified coverer
+unspecified. Separate exact protected names/identifiers from ordinary compound vocabulary and translate
+the latter. Put material roles and scope first, without narrative padding or a term dictionary.
+Explain actual source clarification or ambiguity in clarification_or_ambiguity (at most 240 characters);
+otherwise use null. These notes do not need to repeat every word of the complete record.
 Only the source can establish equivalence; query wording and adjacent independent propositions cannot.
 Keep selected_meaning local to this evidence_id's retained excerpt: a shared original frame does not
 merge separately retained propositions into one citable record. If a drafted clause uses a second
@@ -148,6 +156,14 @@ the query and generated notes cannot establish that relationship; preserve truly
 Then independently compare actor (the selected action's actor, separate from outer reporter),
 object_and_mechanism (object, purpose, degree/manner), and qualification (scope and epistemic/time limits,
 including who lacks knowledge/confirmation, of what, and which selected proposition that limit qualifies).
+For a test or measurement, compare the tested object and the tested property separately within
+object_and_mechanism. In detail, state the source property and the actual target-language answer property
+separately before choosing relation. Do not collapse them into a slash pair that assumes equivalence.
+Read what the complete answer actually tests; do not supply a missing property from the source or familiar object.
+Generic soundness or physical integrity of an object is broader than a specified electrical property.
+If the source specifies such a property and the answer lacks that sense, mark generalized and set
+action_arguments_preserved false with a matching mismatch even if the broader claim remains entailed.
+A natural equivalent that retains the property passes; an unspecified source test must stay unspecified.
 For an epistemic predicate, actor compares its grammatical subject or experiencer, including a source-stated
 note/record subject; it is not automatically the outer reporter. Direct self-attested provenance alone
 requires no repeated speaker wording. Still preserve required report attribution and personal agency.
