@@ -38,6 +38,111 @@ const record = (readable: boolean, antecedent: boolean, subject = 'Zephyr QX-100
 
 describe('generated subject identity across source items', () => {
   it.each([
+    [
+      'named-record',
+      'The Zephyr QX-100 exclusion concerns the damaged bracket. This exclusion record does not settle motor-repair coverage and does not assert that the contract is silent about that repair.',
+      'The Zephyr QX-100 exclusion record does not settle motor-repair coverage and does not assert that the contract is silent about that repair.',
+      true,
+    ],
+    [
+      'explicit-ownership',
+      "The exclusion record does not settle repair coverage for Zephyr QX-100's motor.",
+      "The exclusion record does not settle repair coverage for Zephyr QX-100's motor.",
+      true,
+    ],
+    [
+      'invented-ownership',
+      'The Zephyr QX-100 exclusion concerns the damaged bracket. This record does not settle coverage for a separate unidentified motor repair.',
+      "The exclusion record does not settle repair coverage for Zephyr QX-100's motor.",
+      false,
+    ],
+    [
+      'competing-record',
+      'The Zephyr QX-100 record excludes the damaged bracket. A separate Vulpine Mutual record does not settle motor-repair coverage.',
+      'The Zephyr QX-100 record does not settle motor-repair coverage.',
+      false,
+    ],
+    [
+      'unrelated-neighbor',
+      'The Zephyr QX-100 label is blue. An unrelated record does not settle motor-repair coverage.',
+      'The Zephyr QX-100 record does not settle motor-repair coverage.',
+      false,
+    ],
+    [
+      'wrong-polarity',
+      'The Zephyr QX-100 exclusion record does not settle motor-repair coverage.',
+      'The Zephyr QX-100 exclusion record settles motor-repair coverage.',
+      false,
+    ],
+    [
+      'document-silence',
+      'The Zephyr QX-100 exclusion record does not settle motor-repair coverage and does not assert contractual silence.',
+      'The Zephyr QX-100 contract is silent about motor-repair coverage.',
+      false,
+    ],
+    [
+      'changed-object',
+      'The Zephyr QX-100 exclusion record does not settle motor-repair coverage.',
+      'The Zephyr QX-100 exclusion record does not settle seal-replacement coverage.',
+      false,
+    ],
+  ] as const)(
+    'keeps named-record attachment subordinate to full-source verification: %s',
+    async (_name, source, candidateText, supported) => {
+      const candidate = {
+        kind: 'claim',
+        subject: 'Zephyr QX-100',
+        text: candidateText,
+        attribution: { source_role: 'user', source_speaker: 'Ada Marlow', chain: [] },
+        discourse: { commitment: 'asserted', disposition: 'active' },
+        epistemic: { basis: 'self_attested' },
+        polarity: 'negated',
+        support: [{ quote: source }],
+        discourse_frame: [{ quote: source }],
+      };
+      const chat = vi.fn(async (messages: { content: string }[]) => {
+        if (chat.mock.calls.length === 1) {
+          expect(
+            messages.some((m) =>
+              m.content.includes('Record identity does not establish component ownership'),
+            ),
+          ).toBe(true);
+          return { ok: true, value: JSON.stringify({ candidates: [candidate] }), latencyMs: 11 };
+        }
+        const payload = JSON.parse(messages.at(-1)!.content);
+        expect(payload.source.text).toBe(source);
+        expect(payload.candidates[0].text).toBe(candidateText);
+        return {
+          ok: true,
+          value: JSON.stringify({
+            verdicts: payload.candidates.map((c: { candidate_id: string }) => ({
+              candidate_id: c.candidate_id,
+              ...semanticAudit(supported, supported, supported),
+              proposition_supported: supported,
+              action_arguments_preserved: supported,
+              qualification_scope_preserved: supported,
+              reason_code: supported ? null : 'discourse_uncertain',
+            })),
+          }),
+          latencyMs: 11,
+        };
+      });
+      const model = {
+        available: true,
+        modelId: 'invented-record-attachment',
+        chat,
+        degradedReason: () => null,
+        reportInvalidResponse: vi.fn(),
+      } as unknown as ModelClient;
+      const result = await runRetain(source, model);
+      expect(chat).toHaveBeenCalledTimes(2);
+      expect(result.candidates).toHaveLength(supported ? 1 : 0);
+      if (!supported) expect(result.held[0]?.hold_stage).toBe('verification');
+      expect(result.modelUsage.repair).toBeUndefined();
+    },
+  );
+
+  it.each([
     [false, false],
     [true, false],
     [false, true],

@@ -60,8 +60,8 @@ import {
   semanticRecordScope,
 } from '../models/semantic-verdict.ts';
 
-export const ANSWER_PROMPT_VERSION = 'answer-generation-v59';
-export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v39';
+export const ANSWER_PROMPT_VERSION = 'answer-generation-v60';
+export const ANSWER_VERIFIER_PROMPT_VERSION = 'answer-verifier-v40';
 
 function answerDraftSchema(
   evidenceId: z.ZodType<string>,
@@ -211,6 +211,16 @@ an actor of one action cannot fill a passive absence of another action. Leave tr
 unspecified. A proposed discussion is not a completed discussion, and permission is not a booking.
 
 ${PROPOSITION_SCOPE_CONTRACT}
+
+Preserve the experiencer of each selected knowledge limit: "unknown to us" / "нам неизвестны" may
+become "we do not know" / "мы не знаем", but not bare "unknown" / "неизвестны", "Ada does not know",
+"nobody knows", "unknowable", or "the record does not establish". Keep the original group reference
+without inventing its members. A named person introducing a neighboring hypothesis or reporting no
+actual event does not supply the experiencer of the group's separate knowledge predicate. When the
+selected hypothetical rule contrasts assumed and actual requirements, keep the group-relative limit
+with that contrast. This applies to selected meaning; do not import an independent knowledge clause
+from the private frame into a citation that did not retain it. Preserve genuinely impersonal source
+unknownness as impersonal rather than inventing an experiencer.
 
 An open question is answerable as a question: preserve whose answer is unknown and what the note fails
 to establish. Personal uncertainty does not establish the agreement's silence or inconclusiveness.

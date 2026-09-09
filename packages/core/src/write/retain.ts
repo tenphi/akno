@@ -37,7 +37,7 @@ import {
  * consumed by keyed `retain` and unkeyed `remember`; keeping the interpretation here prevents
  * the two public operations from gradually learning different meanings for the same source.
  */
-export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v47';
+export const RETAIN_PROMPT_VERSION = 'retain-extraction-language-v48';
 export const RETAIN_VERIFIER_VERSION = 'retain-verifier-language-v31';
 const MAX_CANDIDATE_TEXT_UNITS = 400;
 
@@ -167,6 +167,14 @@ a broader restriction on the underlying document. Use source_speaker for the out
 only for the actual inner reporters; do not repeat the outer narrator in that chain.
 A cross-language restatement can clarify the referent of an earlier term. Preserve the clarified shared
 referent; do not invent alternative components or services merely from different source wordings.
+Keep a named entity attached to what the source actually identifies. When a source names an exclusion
+about Zephyr QX-100 and then says "this exclusion record" does not settle motor-repair coverage, a
+self-contained candidate can name "the Zephyr QX-100 exclusion record" while leaving "motor repair"
+at its original specificity. Do not instead attach the product possessively to the motor merely to
+include the subject identifier. Record identity does not establish component ownership. A competing
+record, an unrelated neighboring name, or subject/page metadata cannot supply that attachment. Preserve
+explicit component ownership when the source states it; if the record's identity is unresolved, leave
+it unresolved. The complete deciding source frame must support every named relationship in the prose.
 Preserve explicit epistemic experiencers in the generated sentence: unknown to us is a group-relative
 limit, not unqualified unknownness. Keep the source's group reference without inventing its membership.
 When actual-requirements unknownness qualifies an assumed rule, keep that limit in the same hypothetical

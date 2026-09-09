@@ -425,6 +425,206 @@ describe('grounded answer discovery surface', () => {
     },
   );
 
+  it.each([
+    ['en', 'The actual requirements are unknown to us.', 'preserved'],
+    ['en', 'We do not know the actual requirements.', 'preserved'],
+    ['ru', 'Настоящие требования нам неизвестны.', 'preserved'],
+    ['ru', 'Мы не знаем настоящих требований.', 'preserved'],
+    ['en', 'The actual requirements are unknown.', 'omitted'],
+    ['ru', 'Настоящие требования неизвестны.', 'omitted'],
+    ['en', 'According to Ada Marlow, the actual requirements are unknown.', 'omitted'],
+    ['ru', 'Ada Marlow не знает настоящих требований.', 'changed'],
+    ['en', 'Nobody knows the actual requirements.', 'changed'],
+    ['en', 'The actual requirements are unknowable.', 'omitted'],
+    ['en', 'The record does not establish the actual requirements.', 'changed'],
+  ] as const)(
+    'uses the supplied epistemic experiencer audit for %s / %s',
+    async (language, limit, relation) => {
+      const premise =
+        'Ada Marlow hypothetically assumes a silverpine seal-check rule for Zephyr QX-100; under that assumption, a missed check would violate the assumed rule.';
+      const source =
+        premise + ' The actual requirements are unknown to us. Ada Marlow reports no actual missed check.';
+      const retained = '**Hypothetical:** ' + source;
+      const text =
+        language === 'en'
+          ? premise + ' ' + limit + ' Ada Marlow reports no actual missed check.'
+          : 'Ada Marlow гипотетически допускает правило проверки уплотнения silverpine для Zephyr QX-100; если принять это правило, пропуск проверки нарушил бы предполагаемое требование. ' +
+            limit +
+            ' Ada Marlow не сообщает о реальном пропуске проверки.';
+      await seedSourceFrame({
+        text: '- ' + retained,
+        frame: source,
+        kind: 'claim',
+        commitment: 'hypothetical',
+        polarity: 'affirmed',
+      });
+      const supported = relation === 'preserved';
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        generation: (request: Record<string, unknown>) => {
+          expect(JSON.stringify(request.messages)).toContain('experiencer of each selected knowledge limit');
+          const generationPayload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(
+            generationPayload.complete_record_rendering,
+            JSON.stringify(generationPayload),
+          ).toBeDefined();
+          return {
+            record_readings: [
+              {
+                evidence_id: 'E1',
+                selected_meaning:
+                  'The assumed rule and consequence retain the group-relative actual-requirements limit and no actual missed check.',
+                clarification_or_ambiguity: null,
+              },
+            ],
+            blocks: [{ rendering_mode: 'translate', text, evidence_ids: ['E1'] }],
+            missing_concepts: [],
+          };
+        },
+        verification: (request: Record<string, unknown>) => {
+          expect(JSON.stringify(request.messages)).toContain('group-relative or dative experiencer');
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          expect(payload).not.toHaveProperty('question');
+          const block = payload.blocks[0];
+          expect(block.rendering_scope).toBe('complete_retained_record');
+          const anchors = block.cited_evidence[0].retention_source_frame as {
+            anchor_id: string;
+            text: string;
+          }[];
+          const answer = block.answer_segments as { anchor_id: string; text: string }[];
+          expect(anchors.map((a) => a.text).join('')).toBe(source);
+          expect(answer.map((a) => a.text).join('')).toBe(text);
+          const sourceAnchor = anchors.find((a) => a.text.includes('unknown to us'))!.anchor_id;
+          const answerAnchor = answer.find((a) => a.text.includes(limit))!.anchor_id;
+          const compared = {
+            source_anchor: sourceAnchor,
+            answer_anchor: answerAnchor,
+            relation: 'preserved',
+            detail: 'The actual requirements remain the epistemic object.',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', supported, supported, supported),
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context:
+                      'The rule is hypothetical, actual requirements are unknown to us, and no actual missed check is reported.',
+                    actor: {
+                      ...compared,
+                      relation,
+                      answer_anchor: relation === 'omitted' ? null : answerAnchor,
+                      detail: supported
+                        ? 'The original group remains the experiencer.'
+                        : 'The group experiencer is missing or replaced despite the neighboring Ada predicates.',
+                    },
+                    object_and_mechanism: compared,
+                    qualification: {
+                      ...compared,
+                      relation: supported ? 'preserved' : relation === 'omitted' ? 'generalized' : 'changed',
+                      detail: supported
+                        ? 'The group-relative scope remains.'
+                        : 'The actual epistemic predicate loses or changes its group-relative scope.',
+                    },
+                  },
+                ],
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'Which hypothetical silverpine rule is recorded?',
+        filter: { source: 'page' },
+        memory_view: 'discussion',
+        answer_language: language,
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer !== null, JSON.stringify(result)).toBe(supported);
+      if (!supported) expect(result.reason_code).toBe('verification_rejected');
+      expect(modelRequests).toHaveLength(3);
+      expect(JSON.stringify(result)).not.toContain('source_alignments');
+      expect(fs.readFileSync(path.join(root, 'products/zephyr-qx-100.md'), 'utf8')).toContain(retained);
+    },
+  );
+
+  it.each([false, true])(
+    'does not invent an epistemic experiencer or import private group limits: %s',
+    async (privateGroup) => {
+      const text = privateGroup
+        ? 'The silverpine warranty excludes the damaged bracket.'
+        : 'The actual silverpine requirements are unknown.';
+      const source = text + (privateGroup ? ' The annual limit is unknown to us.' : '');
+      await seedSourceFrame({
+        text: '- ' + text,
+        frame: source,
+        kind: 'claim',
+        commitment: 'asserted',
+        polarity: privateGroup ? 'negated' : 'affirmed',
+      });
+      await useAnswerModel({
+        knowledgeLanguage: 'en',
+        generation: {
+          record_readings: [{ evidence_id: 'E1', selected_meaning: text, clarification_or_ambiguity: null }],
+          blocks: [{ rendering_mode: 'copy', evidence_ids: ['E1'] }],
+          missing_concepts: [],
+        },
+        verification: (request: Record<string, unknown>) => {
+          const payload = JSON.parse((request.messages as { content: string }[]).at(-1)!.content);
+          const block = payload.blocks[0];
+          expect(block.rendering_scope).toBe('complete_retained_record');
+          expect(block.answer_segments.map((a: { text: string }) => a.text).join('')).toBe(text);
+          expect(
+            block.cited_evidence[0].retention_source_frame.map((a: { text: string }) => a.text).join(''),
+          ).toBe(source);
+          const compared = {
+            source_anchor: block.cited_evidence[0].retention_source_frame[0].anchor_id,
+            answer_anchor: block.answer_segments[0].anchor_id,
+            relation: 'preserved',
+            detail: 'The complete selected proposition preserves its source scope.',
+          };
+          return {
+            verdicts: [
+              {
+                ...verdict('B1', true),
+                source_alignments: [
+                  {
+                    evidence_id: 'E1',
+                    source_context: text,
+                    actor: {
+                      source_anchor: null,
+                      answer_anchor: null,
+                      relation: 'not_selected',
+                      detail:
+                        'No selected epistemic experiencer: source is impersonal or the separate group limit is private.',
+                    },
+                    object_and_mechanism: compared,
+                    qualification: compared,
+                  },
+                ],
+                excerpt_selection: { selected_by_retained_excerpt: true, unselected_content: null },
+              },
+            ],
+          };
+        },
+      });
+      const result = await memory.answer({
+        question: 'What does the silverpine record establish?',
+        answer_language: 'en',
+        memory_view: 'factual',
+        filter: { source: 'page' },
+        expand: false,
+        graph: false,
+      });
+      expect(result.answer, JSON.stringify(result)).toContain(text);
+      expect(result.answer).not.toContain('unknown to us');
+      expect(modelRequests).toHaveLength(3);
+    },
+  );
+
   it('verifies a framed denial while keeping independent positive source content unselected', async () => {
     const source =
       'No silverpine collection of Zephyr QX-100 has been booked. Ada Marlow proposed a separate inspection.';
@@ -3994,7 +4194,7 @@ async function seedSourceFrame(options?: {
   text: string;
   frame: string;
   kind: 'claim' | 'question';
-  commitment: 'asserted' | 'none';
+  commitment: 'asserted' | 'none' | 'hypothetical';
   polarity: 'negated' | 'affirmed';
 }): Promise<string> {
   write(

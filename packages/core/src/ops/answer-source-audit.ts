@@ -138,6 +138,17 @@ including who lacks knowledge/confirmation, of what, and which selected proposit
 For an epistemic predicate, actor compares its grammatical subject or experiencer, including a source-stated
 note/record subject; it is not automatically the outer reporter. Direct self-attested provenance alone
 requires no repeated speaker wording. Still preserve required report attribution and personal agency.
+Assess an explicit group-relative or dative experiencer separately from neighboring actors. Source
+"unknown to us" / "нам неизвестны" is equivalent to "we do not know" / "мы не знаем", not bare
+"unknown" / "неизвестны". A nearby person introducing a hypothesis or reporting no actual event
+does not supply the missing group. For a selected group-relative limit changed to bare unknownness,
+actor is omitted with the original epistemic source anchor and answer_anchor null; qualification is
+generalized or changed at the actual bare-unknownness answer anchor. Set action_arguments_preserved
+and qualification_scope_preserved false with separate mismatches; the stronger unqualified claim also
+fails proposition_supported. A substituted explicit experiencer uses changed with its actual answer
+anchor. Do not mark every actor preserved merely because one neighboring actor survives. Apply this
+only to the selected epistemic limit: an independent private-frame clause stays unselected, and source
+unknownness that is genuinely impersonal requires no invented group.
 Compare every material selected limit against its actual answer counterpart; matching uncertainty words
 cannot preserve a changed verification object. Source_context describes only the original source;
 comparison detail must retain any specification added by the answer instead of silently correcting it.

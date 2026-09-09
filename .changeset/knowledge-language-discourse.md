@@ -146,3 +146,7 @@ with precise validation reasons that preserve distinct epistemic predicates duri
 localized neutral report-source phrasing as generation-only guidance. Disable the complete-record copy
 shortcut when configured knowledge and requested answer languages differ; actual language, attribution,
 source selection and semantic verification still decide whether any generated answer may be published.
+
+Keep named entities attached to the record or object identified by the source during retention,
+without adding component ownership from routing metadata. Preserve selected group-relative knowledge
+limits through answer generation and source audit, including the experiencer of "unknown to us".
